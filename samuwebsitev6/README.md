@@ -1,36 +1,111 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<p align="center">
+  <img src="/assets/samuwebsite-banner.png" alt="SamuWebsiteV6 Banner" width="100%" />
+</p>
 
-## Getting Started
+<h1 align="center">🌐 SamuWebsiteV6</h1>
 
-First, run the development server:
+<p align="center">
+  The modern, scalable website for Salve Mundi — built with Next.js, TypeScript, TailwindCSS, and real dev workflow standards.
+</p>
 
-```bash
+<p align="center">
+  <a href="https://github.com/salvemundi/website/commits/main"><img alt="Last Commit" src="https://img.shields.io/github/last-commit/salvemundi/website?color=blue"></a>
+  <a href="https://github.com/salvemundi/website/issues"><img alt="Issues" src="https://img.shields.io/github/issues/salvemundi/website"></a>
+  <a href="https://github.com/salvemundi/website/pulls"><img alt="Pull Requests" src="https://img.shields.io/github/issues-pr/salvemundi/website"></a>
+  <a href="https://github.com/salvemundi/website/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/salvemundi/website"></a>
+</p>
+
+---
+
+<h2 align="center">🚀 Tech Stack</h2>
+
+| Tool / Library               | Purpose                             |
+|------------------------------|-------------------------------------|
+| **Next.js (App Router)**     | Fullstack React framework           |
+| **TypeScript**               | Static typing and clean code        |
+| **Tailwind CSS**             | Utility-first styling               |
+| **ESLint**                   | Code quality and formatting         |
+| **Turbopack**                | Super-fast bundler for dev mode     |
+
+<p align="center">
+  ✅ Uses default import alias: <code>@/*</code><br/>
+  ✅ Based on real-world scalable development workflows
+</p>
+
+---
+
+<h2 align="center">🛠️ Getting Started</h2>
+
+<p align="center"><strong>📖 See setup guide:</strong></p>
+<p align="center">👉 <a href="https://github.com/salvemundi/website/wiki/setup-instructions">Setup Instructions</a></p>
+
+<p>Basic steps:</p>
+
+```
+git clone https://github.com/salvemundi/website.git
+cd /website/samuwebsitev6
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+<p align="center">Then open: <a href="http://localhost:3000">http://localhost:3000</a></p>
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+<h2 align="center">🧠 Contributing</h2>
 
-## Learn More
+<p align="center">
+  We follow a consistent Way of Working across the team:
+</p>
 
-To learn more about Next.js, take a look at the following resources:
+<ul>
+  <li>Clear issue tracking</li>
+  <li>Branch naming rules</li>
+  <li>Commit message format</li>
+  <li>Code in English, PascalCase naming, kebab-case branches</li>
+</ul>
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+<p align="center">
+  🔎 See: <a href="[Place appropriate link]">Way of Working</a>
+</p>
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+<h2 align="center">📚 Wiki Index</h2>
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+<p align="center">
+  <strong>Page & Description</strong><br/>
+  ⚙️ Setup Instructions: How to get the app running<br/>
+  🛠️ Way of Working: Git workflow, commits, tasks, branches<br/>
+  🧑‍💻 Contributors: Thanks to these awesome people
+</p>
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+<p align="center">
+  <a href="https://github.com/salvemundi/website/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=salvemundi/website" alt="Contributors" />
+  </a>
+</p>
+
+<p align="center">
+  Want to join the wall? Open a PR and contribute!
+</p>
+
+---
+
+<h2 align="center">💬 Questions or Issues?</h2>
+
+<p align="center">
+  Found a bug? Open an issue.<br/>
+  Want to improve the docs or code? Fork and submit a PR 🚀
+</p>
+
+---
+
+<h2 align="center">📄 License</h2>
+
+<p align="center">
+  Licensed under SAMU??
+</p>
+
+<p align="center">
+  "Code is communication. Keep it clean."
+</p>
