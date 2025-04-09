@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="/assets/samuwebsite-banner.png" alt="SamuWebsiteV6 Banner" width="100%" />
+  <img src="/banner.jpg" alt="SamuWebsiteV6 Banner" width="100%" />
 </p>
 
 <h1 align="center">🌐 SamuWebsiteV6</h1>
@@ -105,6 +105,8 @@ npm run dev
 <p align="center">
   Licensed under SAMU??
 </p>
+
+--- 
 
 <p align="center">
   "Code is communication. Keep it clean."
