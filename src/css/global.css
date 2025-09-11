@@ -1,25 +1,60 @@
-/* app/globals.css */
+@import 'tailwindcss';
 
-@import "tailwindcss";
-
+#root {
+  text-align: center;
+}
 
 @theme {
-    --color-samu: #132A40;
-    --color-paars: #5a3761;
-    --color-oranje: #FF6542;
-    --color-geel: #FFCE1B;
-    --color-beige: #F0EBD8;
+  /* Removed invalid --color-* variable. Define specific color variables below. */
+  --color-samu: #132a40;
+  --color-paars: #5a3761;
+  --color-oranje: #ff6542;
+  --color-geel: #ffce1b;
+  --color-beige: #f0ebd8;
+}
+
+/* Poppins font faces */
+@font-face {
+  font-family: 'Poppins';
+  src: url('/fonts/poppins/Poppins-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('/fonts/poppins/Poppins-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('/fonts/poppins/Poppins-Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('/fonts/poppins/Poppins-BoldItalic.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
 }
 
 :root {
-    --background: #F0EBD8;
-    --foreground: #171717;
-}
+  font-family: 'Poppins', Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: black;
 
+  color-scheme: light dark;
 
+  background-color: var(--color-beige);
 
-body {
-    background-color: var(--background);
-    color: var(--foreground);
-    font-family: Poppins, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
