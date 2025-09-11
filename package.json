@@ -1,17 +1,46 @@
 {
-    "scripts": {
-        "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-        "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
-        "format": "prettier --write ."
-    },
-    "devDependencies": {
-        "@typescript-eslint/eslint-plugin": "^8.29.1",
-        "@typescript-eslint/parser": "^8.29.1",
-        "eslint": "^9.24.0",
-        "eslint-config-prettier": "^10.1.1",
-        "eslint-plugin-prettier": "^5.2.6",
-        "eslint-plugin-react": "^7.37.5",
-        "eslint-plugin-react-hooks": "^5.2.0",
-        "prettier": "^3.5.3"
-    }
+  "name": "my-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@giphy/js-fetch-api": "^5.7.0",
+    "@giphy/react-components": "^10.1.0",
+    "@headlessui/react": "^2.2.7",
+    "@mui/material": "^6.5.0",
+    "@mui/x-date-pickers": "^8.11.1",
+    "@tailwindcss/vite": "^4.1.13",
+    "date-fns": "^4.1.0",
+    "gsap": "^3.13.0",
+    "install": "^0.13.0",
+    "lucide-react": "^0.543.0",
+    "npm": "^11.6.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.8.2",
+    "swiper": "^11.2.10",
+    "tailwindcss": "^4.1.13"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.33.0",
+    "@types/date-fns": "^2.5.3",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-react": "^5.0.0",
+    "eslint": "^9.33.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.3.0",
+    "prettier": "^3.6.2",
+    "vite": "^7.1.2",
+    "vite-plugin-qrcode": "^0.3.0"
+  }
 }

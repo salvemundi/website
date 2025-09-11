@@ -1,0 +1,60 @@
+@import 'tailwindcss';
+
+#root {
+  text-align: center;
+}
+
+@theme {
+  /* Removed invalid --color-* variable. Define specific color variables below. */
+  --color-samu: #132a40;
+  --color-paars: #5a3761;
+  --color-oranje: #ff6542;
+  --color-geel: #ffce1b;
+  --color-beige: #f0ebd8;
+}
+
+/* Poppins font faces */
+@font-face {
+  font-family: 'Poppins';
+  src: url('/fonts/poppins/Poppins-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('/fonts/poppins/Poppins-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('/fonts/poppins/Poppins-Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('/fonts/poppins/Poppins-BoldItalic.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  font-family: 'Poppins', Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: black;
+
+  color-scheme: light dark;
+
+  background-color: var(--color-beige);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
