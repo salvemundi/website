@@ -54,7 +54,7 @@ We follow a consistent Way of Working across the team:
 - Commit message format
 - Code in English, PascalCase naming, kebab-case branches
 
-🔎 See: [Way of Working]\([Place appropriate link]\)
+🔎 See: [Way of Working](https://github.com/salvemundi/website/wiki/way-of-working)
 
 ---
 
