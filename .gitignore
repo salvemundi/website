@@ -1,0 +1,43 @@
+# Node modules
+node_modules/
+
+# Build output
+dist/
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+
+# Vite cache
+.vite/
+
+# Env files
+.env
+.env.local
+
+# IDE files
+.vscode/
+.idea/
+
+# Misc
+*.swp
+*.swo
+
+# Coverage
+coverage/
+
+# TypeScript
+*.tsbuildinfo
+
+# Yarn
+.yarn/
+
+# npm
+package-lock.json
+yarn.lock
+
+# Images and fonts (if generated)
+public/fonts/
+public/img/
