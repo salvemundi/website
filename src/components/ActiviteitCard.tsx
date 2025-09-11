@@ -1,0 +1,69 @@
+import React from "react";
+
+// Assuming CardSidebar is a separate component and doesn't need to be imported here based on the original code
+// import CardSidebar from "./CardSidebar";
+
+// Define the shape of the props for type safety
+interface ActiviteitCardProps {
+  description: string;
+  image?: string;
+  date?: string;
+  title: string;
+  price: number;
+  onSignup?: (data: { title: string; date?: string; description: string; price: number }) => void;
+}
+
+const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
+  description,
+  image,
+  title,
+  date,
+  price,
+  onSignup,
+}) => {
+  return (
+    <div className="bg-paars p-6 rounded-2xl shadow-lg transition-transform hover:scale-[1.02] hover:shadow-xl duration-300 flex flex-col max-w-full mx-auto">
+      {/* Image with rounded corners at the top */}
+      {image && (
+        <img
+          src={image}
+          alt={title}
+          className="w-full h-48 object-cover rounded-xl mb-4"
+        />
+      )}
+
+      {/* Content Section */}
+      <div className="flex flex-col flex-grow text-white">
+        {/* Header - Title, Date, and Price */}
+        <div className="flex flex-row justify-between items-start mb-2">
+          <h1 className="text-xl font-bold text-geel leading-tight pr-4">{title}</h1>
+          <div className="flex flex-col items-end whitespace-nowrap">
+            {date && (
+              <p className="text-sm font-semibold text-white">{date}</p>
+            )}
+            <span className="text-lg font-bold text-white">€{price.toFixed(2)}</span>
+          </div>
+        </div>
+        
+        {/* Description */}
+        <p className="text-white text-base mb-6 flex-grow">{description}</p>
+        
+        {/* Footer - Button and Info Icon */}
+        <div className="flex justify-between items-center mt-auto">
+          {/* Sign-up Button */}
+          <a
+            onClick={() => onSignup?.({ title, date, description, price })}
+            className="bg-geel text-white font-semibold px-6 py-3 rounded-full shadow-lg transition-transform duration-300 hover:scale-105 hover:bg-opacity-80 flex-shrink-0"
+          >
+            AANMELDEN
+          </a>
+          
+          {/* Info icon */}
+         
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ActiviteitCard;
