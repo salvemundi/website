@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../components/NavBar';
 import Header from '../components/header';
 import BackToTopButton from '../components/backtotop';
+import Footer from '../components/Footer';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -67,7 +68,8 @@ export default function SignUp() {
         />
       </div>
 
-      <main className="flex flex-col sm:flex-row gap-6 p-6 sm:p-10 bg-beige">
+      <main className="bg-beige">
+        <div className="flex flex-col sm:flex-row gap-6 p-6 sm:p-10">
         {/* Form Section */}
         <section className="w-full sm:w-1/2 bg-paars rounded-3xl shadow-lg p-6 sm:p-8">
           <h1 className="text-3xl font-bold text-geel mb-6">
@@ -258,6 +260,9 @@ export default function SignUp() {
             )}
           </div>
         </div>
+        </div>
+        
+        <Footer />
       </main>
 
       <BackToTopButton />

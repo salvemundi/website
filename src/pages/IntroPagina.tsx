@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import Navbar from '../components/NavBar';
 import Header from '../components/header';
 import BackToTopButton from '../components/backtotop';
+import Footer from '../components/Footer';
 
 export default function IntroPagina() {
   const [form, setForm] = useState({
@@ -193,55 +194,7 @@ export default function IntroPagina() {
           </div>
         </section>
 
-        {/* Footer Info Section */}
-        <section className="px-10 py-10 bg-paars">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold text-geel mb-6">INFORMATIE</h2>
-            <div className="text-beige space-y-2 text-left">
-              <p><strong className="text-geel">Rachelsmolen 1</strong></p>
-              <p><strong className="text-geel">5612 MA Eindhoven</strong></p>
-              <p><strong className="text-geel">KvK nr. 70280606</strong></p>
-              <p><strong className="text-geel">Responsible Disclosure</strong></p>
-              <p><strong className="text-geel">Download privacyvoorwaarden</strong></p>
-              <p><strong className="text-geel">Download huisreglement</strong></p>
-              <p><strong className="text-geel">Download statuten</strong></p>
-            </div>
-          </div>
-
-          <div className="max-w-4xl mx-auto mt-10">
-            <h3 className="text-2xl font-bold text-geel mb-4 text-center">CONTACT</h3>
-            <div className="text-beige text-center space-y-2">
-              <p><strong className="text-geel">info@salvemundi.nl</strong></p>
-              <p><strong className="text-geel">+31 6 24827777</strong></p>
-              <p><strong className="text-geel">WhatsApp</strong></p>
-            </div>
-          </div>
-
-          <div className="max-w-4xl mx-auto mt-10">
-            <h3 className="text-2xl font-bold text-geel mb-4 text-center">COMMISSIES</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-beige text-center">
-              <p>Bestuur</p>
-              <p>Feestcommissie</p>
-              <p>Mediacommissie</p>
-              <p>Introcommissie</p>
-              <p>Kascommissie</p>
-              <p>ICT-commissie</p>
-              <p>Kampcommissie</p>
-              <p>Activiteitencommissie</p>
-              <p>Studicommissie</p>
-              <p>Reiscommissie</p>
-            </div>
-          </div>
-
-          <div className="max-w-4xl mx-auto mt-10">
-            <h3 className="text-2xl font-bold text-geel mb-4 text-center">SOCIAL MEDIA</h3>
-            <div className="flex justify-center gap-4 text-beige">
-              <p>Instagram</p>
-              <p>Facebook</p>
-              <p>LinkedIn</p>
-            </div>
-          </div>
-        </section>
+        <Footer />
       </main>
 
       <BackToTopButton />
