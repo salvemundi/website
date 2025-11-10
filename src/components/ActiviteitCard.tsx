@@ -11,6 +11,7 @@ interface ActiviteitCardProps {
   title: string;
   price: number;
   onSignup?: (data: { title: string; date?: string; description: string; price: number }) => void;
+  onShowDetails?: () => void;
 }
 
 const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
@@ -20,6 +21,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
   date,
   price,
   onSignup,
+  onShowDetails,
 }) => {
   return (
     <div className="bg-paars p-6 rounded-2xl shadow-lg transition-transform hover:scale-[1.02] hover:shadow-xl duration-300 flex flex-col max-w-full mx-auto">
@@ -48,18 +50,23 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
         {/* Description */}
         <p className="text-white text-base mb-6 flex-grow">{description}</p>
         
-        {/* Footer - Button and Info Icon */}
-        <div className="flex justify-between items-center mt-auto">
+        {/* Footer - Buttons */}
+        <div className="flex justify-between items-center gap-3 mt-auto">
+          {/* Details Button */}
+          <button
+            onClick={onShowDetails}
+            className="bg-white text-paars font-semibold px-6 py-3 rounded-full shadow-lg transition-transform duration-300 hover:scale-105 hover:bg-opacity-90 flex-shrink-0"
+          >
+            MEER INFO
+          </button>
+          
           {/* Sign-up Button */}
-          <a
+          <button
             onClick={() => onSignup?.({ title, date, description, price })}
             className="bg-geel text-white font-semibold px-6 py-3 rounded-full shadow-lg transition-transform duration-300 hover:scale-105 hover:bg-opacity-80 flex-shrink-0"
           >
             AANMELDEN
-          </a>
-          
-          {/* Info icon */}
-         
+          </button>
         </div>
       </div>
     </div>
