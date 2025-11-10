@@ -5,6 +5,7 @@ import BackToTopButton from "../components/backtotop";
 import ActiviteitCard from "../components/ActiviteitCard";
 import Countdown from "../components/CountDown";
 import CartSidebar from "../components/CardSidebar";
+import Footer from "../components/Footer";
 
 export default function ActiviteitenPagina() {
   // Cart: array of { activity, email }
@@ -115,6 +116,8 @@ export default function ActiviteitenPagina() {
         </div>
         
       </main>
+
+      <Footer />
 
       <BackToTopButton />
     </>
