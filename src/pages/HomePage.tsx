@@ -4,6 +4,7 @@ import Navbar from "../components/NavBar";
 import Header from "../components/header";
 import BackToTopButton from "../components/backtotop";
 import SamuCard from "../components/JoinCard";
+import Footer from "../components/Footer";
 import { Swiper, SwiperSlide } from "swiper/react";
 import {
   Navigation,
@@ -137,6 +138,8 @@ export default function Home() {
         <div className="flex items-center justify-center w-full">
           <h2 className="text-oranje font-black text-4xl">Partners</h2>
         </div>
+
+        <Footer />
       </main>
       <BackToTopButton />
     </>
