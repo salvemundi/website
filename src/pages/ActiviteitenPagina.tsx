@@ -28,7 +28,12 @@ export default function ActiviteitenPagina() {
 
   // Open modal with activity details
   const handleShowDetails = (activity: any) => {
-    setSelectedActivity(activity);
+    // Process the activity data to include the full image URL
+    const processedActivity = {
+      ...activity,
+      image: getImageUrl(activity.image)
+    };
+    setSelectedActivity(processedActivity);
     setIsModalOpen(true);
   };
 

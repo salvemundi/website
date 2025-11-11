@@ -1,4 +1,4 @@
-import { directusFetch, directusUrl } from './directus';
+import { directusFetch } from './directus';
 
 function buildQueryString(params: Record<string, any>): string {
   const queryParams = new URLSearchParams();
@@ -158,8 +158,25 @@ export const stickersApi = {
   }
 };
 
-export function getImageUrl(imageId: string | undefined): string {
-  if (!imageId) return '/img/backgrounds/Kroto2025.jpg';
+export function getImageUrl(imageId: string | undefined | any): string {
+  // Handle null/undefined
+  if (!imageId) {
+    console.log('[getImageUrl] No imageId provided, using default');
+    return '/img/backgrounds/Kroto2025.jpg';
+  }
+
+  // Handle if imageId is an object (sometimes Directus returns file objects)
+  let actualImageId: string;
+  if (typeof imageId === 'object' && imageId !== null) {
+    console.log('[getImageUrl] Image is an object:', imageId);
+    actualImageId = imageId.id || imageId.filename_disk || imageId.filename_download;
+    if (!actualImageId) {
+      console.error('[getImageUrl] Could not extract image ID from object:', imageId);
+      return '/img/backgrounds/Kroto2025.jpg';
+    }
+  } else {
+    actualImageId = String(imageId);
+  }
 
   // Use proxy when running on localhost (both dev and preview) to avoid CORS
   const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
@@ -167,6 +184,10 @@ export function getImageUrl(imageId: string | undefined): string {
     ? '/api'  // Uses /api/assets proxy (no auth header, no CORS)
     : (import.meta.env.VITE_DIRECTUS_URL || '/api');
 
-  return `${baseUrl}/assets/${imageId}`;
+  // Add access token as query parameter for authenticated access
+  const apiKey = import.meta.env.VITE_DIRECTUS_API_KEY || 'nEnHgseLaPzNgUQ0kCPQvjj2kFhA3kL3';
+  const imageUrl = `${baseUrl}/assets/${actualImageId}?access_token=${apiKey}`;
+  console.log('[getImageUrl] Generated URL:', imageUrl, 'for imageId:', actualImageId);
+  return imageUrl;
 }
 
