@@ -152,7 +152,7 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
               )}
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-geel">💰 Prijs:</span>
-                <span className="text-lg font-bold">€{activity.price.toFixed(2)}</span>
+                <span className="text-lg font-bold">€{(Number(activity.price) || 0).toFixed(2)}</span>
               </div>
               {activity.capacity && (
                 <div className="flex items-center gap-2">

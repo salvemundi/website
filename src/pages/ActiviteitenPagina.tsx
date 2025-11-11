@@ -7,14 +7,19 @@ import Countdown from "../components/CountDown";
 import CartSidebar from "../components/CardSidebar";
 import Footer from "../components/Footer";
 import ActiviteitDetailModal from "../components/ActiviteitDetailModal";
+import { useEvents } from "../hooks/useApi";
+import { getImageUrl } from "../lib/api";
 
 export default function ActiviteitenPagina() {
+  const { data: events = [], isLoading, error } = useEvents();
+
   // Cart: array of { activity, email, name, studentNumber }
   const [cart, setCart] = useState<Array<{ activity: any; email: string; name: string; studentNumber: string }>>([]);
   
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<any>(null);
+
 
   // Add ticket to cart (quick signup without modal)
   const handleSignup = (activity: any) => {
@@ -63,139 +68,32 @@ export default function ActiviteitenPagina() {
             
             <div className="flex flex-row md:flex-row gap-6">
               <div className=" grid grid-cols-3 gap-6">
-                <ActiviteitCard
-                  description="Pubquiz & borrel in de Kroto! Doe mee met de gezelligste quiz van het jaar. Test je kennis, win geweldige prijzen en geniet van een gezellige avond met medestudenten!"
-                  image="/img/backgrounds/Kroto2025.jpg"
-                  date="15 september 2025"
-                  title="Pubquiz & Borrel"
-                  price={5.00}
-                  onSignup={handleSignup}
-                  onShowDetails={() => handleShowDetails({
-                    title: "Pubquiz & Borrel",
-                    date: "15 september 2025",
-                    time: "20:00 - 23:30",
-                    location: "Café de Kroto",
-                    description: "Pubquiz & borrel in de Kroto! Doe mee met de gezelligste quiz van het jaar. Test je kennis, win geweldige prijzen en geniet van een gezellige avond met medestudenten! De quiz bestaat uit verschillende rondes met gevarieerde onderwerpen. Aansluitend is er een borrel waar je kunt napraten over de vragen en antwoorden.",
-                    price: 5.00,
-                    capacity: 80,
-                    organizer: "Feestcommissie",
-                    image: "/img/backgrounds/Kroto2025.jpg"
-                  })}
-                />
-                <ActiviteitCard
-                  description="Nog een activiteit met veel gezelligheid!"
-                  image="/img/backgrounds/Kroto2025.jpg"
-                  date="20 september 2025"
-                  title="Feestavond"
-                  price={7.50}
-                  onSignup={handleSignup}
-                  onShowDetails={() => handleShowDetails({
-                    title: "Feestavond",
-                    date: "20 september 2025",
-                    time: "21:00 - 02:00",
-                    location: "Studentenvereniging",
-                    description: "Nog een activiteit met veel gezelligheid! Dans de hele nacht door op de beste hits en geniet van goede sfeer met je medestudenten.",
-                    price: 7.50,
-                    capacity: 120,
-                    organizer: "Feestcommissie",
-                    image: "/img/backgrounds/Kroto2025.jpg"
-                  })}
-                />
-                <ActiviteitCard
-                  description="Nog een activiteit met veel gezelligheid!"
-                  image="/img/backgrounds/Kroto2025.jpg"
-                  date="20 september 2025"
-                  title="Feestavond"
-                  price={7.50}
-                  onSignup={handleSignup}
-                  onShowDetails={() => handleShowDetails({
-                    title: "Feestavond",
-                    date: "20 september 2025",
-                    time: "21:00 - 02:00",
-                    location: "Studentenvereniging",
-                    description: "Nog een activiteit met veel gezelligheid! Dans de hele nacht door op de beste hits en geniet van goede sfeer met je medestudenten.",
-                    price: 7.50,
-                    capacity: 120,
-                    organizer: "Feestcommissie",
-                    image: "/img/backgrounds/Kroto2025.jpg"
-                  })}
-                />
-                <ActiviteitCard
-                  description="Nog een activiteit met veel gezelligheid!"
-                  image="/img/backgrounds/Kroto2025.jpg"
-                  date="20 september 2025"
-                  title="Feestavond"
-                  price={7.50}
-                  onSignup={handleSignup}
-                  onShowDetails={() => handleShowDetails({
-                    title: "Feestavond",
-                    date: "20 september 2025",
-                    time: "21:00 - 02:00",
-                    location: "Studentenvereniging",
-                    description: "Nog een activiteit met veel gezelligheid! Dans de hele nacht door op de beste hits en geniet van goede sfeer met je medestudenten.",
-                    price: 7.50,
-                    capacity: 120,
-                    organizer: "Feestcommissie",
-                    image: "/img/backgrounds/Kroto2025.jpg"
-                  })}
-                />
-                <ActiviteitCard
-                  description="Nog een activiteit met veel gezelligheid!"
-                  image="/img/backgrounds/Kroto2025.jpg"
-                  date="20 september 2025"
-                  title="Feestavond"
-                  price={7.50}
-                  onSignup={handleSignup}
-                  onShowDetails={() => handleShowDetails({
-                    title: "Feestavond",
-                    date: "20 september 2025",
-                    time: "21:00 - 02:00",
-                    location: "Studentenvereniging",
-                    description: "Nog een activiteit met veel gezelligheid! Dans de hele nacht door op de beste hits en geniet van goede sfeer met je medestudenten.",
-                    price: 7.50,
-                    capacity: 120,
-                    organizer: "Feestcommissie",
-                    image: "/img/backgrounds/Kroto2025.jpg"
-                  })}
-                />
-                <ActiviteitCard
-                  description="Nog een activiteit met veel gezelligheid!"
-                  image="/img/backgrounds/Kroto2025.jpg"
-                  date="20 september 2025"
-                  title="Feestavond"
-                  price={7.50}
-                  onSignup={handleSignup}
-                  onShowDetails={() => handleShowDetails({
-                    title: "Feestavond",
-                    date: "20 september 2025",
-                    time: "21:00 - 02:00",
-                    location: "Studentenvereniging",
-                    description: "Nog een activiteit met veel gezelligheid! Dans de hele nacht door op de beste hits en geniet van goede sfeer met je medestudenten.",
-                    price: 7.50,
-                    capacity: 120,
-                    organizer: "Feestcommissie",
-                    image: "/img/backgrounds/Kroto2025.jpg"
-                  })}
-                />
-                <ActiviteitCard
-                  description="Nog een activiteit met veel gezelligheid!"
-                  image="/img/backgrounds/Kroto2025.jpg"
-                  date="20 september 2025"
-                  title="Feestavond"
-                  price={7.50}
-                  onSignup={handleSignup}
-                  onShowDetails={() => handleShowDetails({
-                    title: "Feestavond",
-                    date: "20 september 2025",
-                    time: "21:00 - 02:00",
-                    location: "Studentenvereniging",
-                    description: "Nog een activiteit met veel gezelligheid! Dans de hele nacht door op de beste hits en geniet van goede sfeer met je medestudenten.",
-                    price: 7.50,
-                    capacity: 120,
-                    organizer: "Feestcommissie",
-                    image: "/img/backgrounds/Kroto2025.jpg"
-                  })}
-                />
+                {isLoading ? (
+                  <div className="col-span-3 text-center py-10">
+                    <p className="text-lg text-gray-600">Activiteiten laden...</p>
+                  </div>
+                ) : error ? (
+                  <div className="col-span-3 text-center py-10">
+                    <p className="text-lg text-red-600">Fout bij laden van activiteiten</p>
+                  </div>
+                ) : events.length === 0 ? (
+                  <div className="col-span-3 text-center py-10">
+                    <p className="text-lg text-gray-600">Geen aankomende activiteiten</p>
+                  </div>
+                ) : (
+                  events.map((event) => (
+                    <ActiviteitCard
+                      key={event.id}
+                      description={event.description}
+                      image={getImageUrl(event.image)}
+                      date={event.event_date}
+                      title={event.name}
+                      price={Number(event.price_members) || 0}
+                      onSignup={() => handleSignup(event)}
+                      onShowDetails={() => handleShowDetails(event)}
+                    />
+                  ))
+                )}
               </div>
               
                         <CartSidebar

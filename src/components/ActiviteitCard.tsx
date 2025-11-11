@@ -9,7 +9,7 @@ interface ActiviteitCardProps {
   image?: string;
   date?: string;
   title: string;
-  price: number;
+  price?: number;
   onSignup?: (data: { title: string; date?: string; description: string; price: number }) => void;
   onShowDetails?: () => void;
 }
@@ -43,7 +43,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
             {date && (
               <p className="text-sm font-semibold text-white">{date}</p>
             )}
-            <span className="text-lg font-bold text-white">€{price.toFixed(2)}</span>
+            <span className="text-lg font-bold text-white">€{(Number(price) || 0).toFixed(2)}</span>
           </div>
         </div>
         
