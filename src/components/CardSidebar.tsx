@@ -18,7 +18,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ cart, onEmailChange, onRemove
     let discount = 0;
 
     cart.forEach(item => {
-      const itemPrice = item.activity.price;
+      const itemPrice = Number(item.activity.price) || 0;
       subtotal += itemPrice;
 
       if (hasDiscount(item.email)) {
