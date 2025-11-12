@@ -24,38 +24,40 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
   onShowDetails,
 }) => {
   return (
-    <div className="bg-paars p-6 rounded-2xl shadow-lg transition-transform hover:scale-[1.02] hover:shadow-xl duration-300 flex flex-col max-w-full mx-auto">
+  <div className="bg-paars p-4 sm:p-6 rounded-2xl shadow-lg flex flex-col max-w-full mx-auto overflow-hidden">
       {/* Image with rounded corners at the top */}
       {image && (
         <img
           src={image}
           alt={title}
-          className="w-full h-48 object-cover rounded-xl mb-4"
+          className="w-full h-40 sm:h-48 object-cover rounded-xl mb-4"
         />
       )}
 
       {/* Content Section */}
       <div className="flex flex-col flex-grow text-white">
         {/* Header - Title, Date, and Price */}
-        <div className="flex flex-row justify-between items-start mb-2">
-          <h1 className="text-xl font-bold text-geel leading-tight pr-4">{title}</h1>
-          <div className="flex flex-col items-end whitespace-nowrap">
+        <div className="flex flex-row justify-between items-start mb-2 gap-3 flex-wrap">
+          <h1 className="text-lg sm:text-xl font-bold text-geel leading-tight pr-2 sm:pr-4 break-words w-full sm:flex-1">
+            {title}
+          </h1>
+          <div className="flex flex-col items-end whitespace-nowrap text-right ml-auto">
             {date && (
-              <p className="text-sm font-semibold text-white">{date}</p>
+              <p className="text-xs sm:text-sm font-semibold text-white">{date}</p>
             )}
-            <span className="text-lg font-bold text-white">€{price.toFixed(2)}</span>
+            <span className="text-base sm:text-lg font-bold text-white">€{price.toFixed(2)}</span>
           </div>
         </div>
         
         {/* Description */}
-        <p className="text-white text-base mb-6 flex-grow">{description}</p>
+  <p className="text-white text-sm sm:text-base mb-4 sm:mb-6 flex-grow break-words">{description}</p>
         
         {/* Footer - Buttons */}
-        <div className="flex justify-between items-center gap-3 mt-auto">
+    <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 mt-auto w-full">
           {/* Details Button */}
           <button
             onClick={onShowDetails}
-            className="bg-white text-paars font-semibold px-6 py-3 rounded-full shadow-lg transition-transform duration-300 hover:scale-105 hover:bg-opacity-90 flex-shrink-0"
+      className="bg-white text-paars font-semibold px-5 py-3 rounded-full shadow-lg hover:bg-opacity-90 w-full sm:w-auto"
           >
             MEER INFO
           </button>
@@ -63,7 +65,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
           {/* Sign-up Button */}
           <button
             onClick={() => onSignup?.({ title, date, description, price })}
-            className="bg-geel text-white font-semibold px-6 py-3 rounded-full shadow-lg transition-transform duration-300 hover:scale-105 hover:bg-opacity-80 flex-shrink-0"
+      className="bg-geel text-white font-semibold px-5 py-3 rounded-full shadow-lg hover:bg-opacity-80 w-full sm:w-auto"
           >
             AANMELDEN
           </button>

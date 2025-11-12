@@ -35,7 +35,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ cart, onEmailChange, onRemove
   const { subtotal, discount, total } = calculateTotals();
 
   return (
-    <aside className="w-full md:w-80 min-w-80 bg-beige sticky top-10 h-fit  rounded-2xl shadow-xl p-6 flex flex-col border-2 border-oranje min-h-[400px] max-h-[80vh] overflow-y-auto">
+    <aside className="w-full bg-beige lg:sticky lg:top-10 h-fit rounded-2xl shadow-xl p-5 sm:p-6 flex flex-col border-2 border-oranje min-h-[320px] lg:min-h-[400px] max-h-[70vh] lg:max-h-[80vh] overflow-y-auto">
       <h2 className="text-2xl font-bold text-oranje mb-4 text-left">Jouw Winkelwagen</h2>
       {cart.length === 0 ? (
         <p className="text-gray-600 text-center">Je winkelwagen is leeg.</p>
