@@ -3,7 +3,8 @@ import Navbar from "../components/NavBar";
 import Header from "../components/header";
 import BackToTopButton from "../components/backtotop";
 import ActiviteitCard from "../components/ActiviteitCard";
-import Countdown from "../components/CountDown";
+// Fixed import casing (file is Countdown.tsx)
+import Countdown from "../components/Countdown";
 import CartSidebar from "../components/CardSidebar";
 import Footer from "../components/Footer";
 import ActiviteitDetailModal from "../components/ActiviteitDetailModal";
@@ -52,17 +53,17 @@ export default function ActiviteitenPagina() {
         />
       </div>
 
-      <main className="flex w-full gap-6 p-6 sm:p-10 bg-beige">
-        <div className="flex-1 flex flex-col gap-6">
+      <main className="w-full p-4 sm:p-6 lg:p-10 bg-beige">
+        <div className="flex flex-col gap-6 max-w-7xl mx-auto">
           <Countdown targetDate="2025-09-11T15:00:00Z" title="BIERPROEVERIJ" />
           <section className="w-full rounded-3xl">
             <h2 className="text-2xl font-bold text-geel mb-4">
               Komende Activiteiten
             </h2>
-
-            
-            <div className="flex flex-row md:flex-row gap-6">
-              <div className=" grid grid-cols-3 gap-6">
+            {/* Layout wrapper: cards + sidebar. Stack on small screens */}
+            <div className="flex flex-col lg:flex-row gap-8">
+              {/* Cards grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 flex-1">
                 <ActiviteitCard
                   description="Pubquiz & borrel in de Kroto! Doe mee met de gezelligste quiz van het jaar. Test je kennis, win geweldige prijzen en geniet van een gezellige avond met medestudenten!"
                   image="/img/backgrounds/Kroto2025.jpg"
@@ -82,6 +83,7 @@ export default function ActiviteitenPagina() {
                     image: "/img/backgrounds/Kroto2025.jpg"
                   })}
                 />
+                {/* Duplicate sample cards can be refactored later into a map */}
                 <ActiviteitCard
                   description="Nog een activiteit met veel gezelligheid!"
                   image="/img/backgrounds/Kroto2025.jpg"
@@ -197,12 +199,14 @@ export default function ActiviteitenPagina() {
                   })}
                 />
               </div>
-              
-                        <CartSidebar
-              cart={cart}
-              onEmailChange={handleEmailChange}
-              onRemoveTicket={handleRemoveTicket}
-                        />
+              {/* Sidebar */}
+              <div className="lg:w-80 w-full order-first lg:order-none">
+                <CartSidebar
+                  cart={cart}
+                  onEmailChange={handleEmailChange}
+                  onRemoveTicket={handleRemoveTicket}
+                />
+              </div>
             </div>
       
           </section>
