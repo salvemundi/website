@@ -3,7 +3,8 @@ import Navbar from "../components/NavBar";
 import Header from "../components/header";
 import BackToTopButton from "../components/backtotop";
 import ActiviteitCard from "../components/ActiviteitCard";
-import Countdown from "../components/CountDown";
+// Fixed import casing (file is Countdown.tsx)
+import Countdown from "../components/Countdown";
 import CartSidebar from "../components/CardSidebar";
 import Footer from "../components/Footer";
 import ActiviteitDetailModal from "../components/ActiviteitDetailModal";
@@ -62,8 +63,8 @@ export default function ActiviteitenPagina() {
         />
       </div>
 
-      <main className="flex w-full gap-6 p-6 sm:p-10 bg-beige">
-        <div className="flex-1 flex flex-col gap-6">
+      <main className="w-full p-4 sm:p-6 lg:p-10 bg-beige">
+        <div className="flex flex-col gap-6 max-w-7xl mx-auto">
           <Countdown targetDate="2025-09-11T15:00:00Z" title="BIERPROEVERIJ" />
           <section className="w-full rounded-3xl">
             <h2 className="text-2xl font-bold text-geel mb-4">
@@ -100,12 +101,14 @@ export default function ActiviteitenPagina() {
                   ))
                 )}
               </div>
-              
-                        <CartSidebar
-              cart={cart}
-              onEmailChange={handleEmailChange}
-              onRemoveTicket={handleRemoveTicket}
-                        />
+              {/* Sidebar */}
+              <div className="lg:w-80 w-full order-first lg:order-none">
+                <CartSidebar
+                  cart={cart}
+                  onEmailChange={handleEmailChange}
+                  onRemoveTicket={handleRemoveTicket}
+                />
+              </div>
             </div>
       
           </section>
