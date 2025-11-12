@@ -49,44 +49,44 @@ const Countdown: React.FC<CountdownProps> = ({ targetDate, title }) => {
   };
 
   return (
-    <section className="w-full bg-[#1A1A3C] rounded-3xl shadow-lg p-6 sm:p-8 text-white">
-      <h2 className="text-2xl font-bold text-[#FDD835] mb-4 text-center">Volgende Activiteit:</h2>
-      <h3 className="text-4xl font-bold text-[#FDD835] mb-6 text-center">{title}</h3>
-      <div className="flex justify-center gap-4 text-center">
+    <section className="w-full bg-[#1A1A3C] rounded-3xl shadow-lg p-4 sm:p-8 text-white">
+      <h2 className="text-xl sm:text-2xl font-bold text-[#FDD835] mb-3 sm:mb-4 text-center">Volgende Activiteit:</h2>
+      <h3 className="text-2xl sm:text-4xl font-bold text-[#FDD835] mb-4 sm:mb-6 text-center">{title}</h3>
+      <div className="flex flex-wrap justify-center gap-3 sm:gap-4 text-center">
         <div className="flex flex-col items-center">
-          <div className="bg-[#5A3859] text-5xl font-bold text-white rounded-xl p-4 w-28 h-28 flex items-center justify-center">
+          <div className="bg-[#5A3859] text-3xl sm:text-5xl font-bold text-white rounded-xl p-3 sm:p-4 w-20 h-20 sm:w-28 sm:h-28 flex items-center justify-center">
             <span className="relative">
               {formatTime(timeLeft.days)}
               <span className="absolute bottom-[-10px] left-1/2 transform -translate-x-1/2 w-8 h-1 bg-white"></span>
             </span>
           </div>
-          <p className="mt-2 text-sm text-[#FDD835]">Dagen</p>
+          <p className="mt-2 text-xs sm:text-sm text-[#FDD835]">Dagen</p>
         </div>
 
         <div className="flex flex-col items-center">
-          <div className="bg-[#5A3859] text-5xl font-bold text-white rounded-xl p-4 w-28 h-28 flex items-center justify-center">
+          <div className="bg-[#5A3859] text-3xl sm:text-5xl font-bold text-white rounded-xl p-3 sm:p-4 w-20 h-20 sm:w-28 sm:h-28 flex items-center justify-center">
             {formatTime(timeLeft.hours)}
           </div>
-          <p className="mt-2 text-sm text-[#FDD835]">Uren</p>
+          <p className="mt-2 text-xs sm:text-sm text-[#FDD835]">Uren</p>
         </div>
 
         <div className="flex flex-col items-center">
-          <div className="bg-[#5A3859] text-5xl font-bold text-white rounded-xl p-4 w-28 h-28 flex items-center justify-center">
+          <div className="bg-[#5A3859] text-3xl sm:text-5xl font-bold text-white rounded-xl p-3 sm:p-4 w-20 h-20 sm:w-28 sm:h-28 flex items-center justify-center">
             {formatTime(timeLeft.minutes)}
           </div>
-          <p className="mt-2 text-sm text-[#FDD835]">Minuten</p>
+          <p className="mt-2 text-xs sm:text-sm text-[#FDD835]">Minuten</p>
         </div>
 
         <div className="flex flex-col items-center">
-          <div className="bg-[#5A3859] text-5xl font-bold text-white rounded-xl p-4 w-28 h-28 flex items-center justify-center">
+          <div className="bg-[#5A3859] text-3xl sm:text-5xl font-bold text-white rounded-xl p-3 sm:p-4 w-20 h-20 sm:w-28 sm:h-28 flex items-center justify-center">
             {formatTime(timeLeft.seconds)}
           </div>
-          <p className="mt-2 text-sm text-[#FDD835]">Seconden</p>
+          <p className="mt-2 text-xs sm:text-sm text-[#FDD835]">Seconden</p>
         </div>
       </div>
 
-      <div className="flex justify-center mt-6">
-        <button className="bg-[#5A3859] text-white py-2 px-6 rounded-lg text-lg hover:bg-opacity-80 transition">
+      <div className="flex justify-center mt-4 sm:mt-6">
+        <button className="bg-[#5A3859] text-white py-2 px-6 rounded-lg text-base sm:text-lg hover:bg-opacity-80 transition w-full sm:w-auto">
           Meld je Aan
         </button>
       </div>
