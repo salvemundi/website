@@ -8,20 +8,7 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     proxy: {
-      // Separate proxy for assets (no auth header)
-      '/api/assets': {
-        target: 'https://admin.salvemundi.nl',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-        secure: false,
-        configure: (proxy, options) => {
-          proxy.on('proxyReq', (proxyReq) => {
-            // Remove authorization header for asset requests
-            proxyReq.removeHeader('Authorization');
-          });
-        }
-      },
-      // Regular API proxy (with auth header)
+      // API proxy with auth support for both data and assets
       '/api': {
         target: 'https://admin.salvemundi.nl',
         changeOrigin: true,
@@ -34,20 +21,7 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     proxy: {
-      // Separate proxy for assets (no auth header)
-      '/api/assets': {
-        target: 'https://admin.salvemundi.nl',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-        secure: false,
-        configure: (proxy, options) => {
-          proxy.on('proxyReq', (proxyReq) => {
-            // Remove authorization header for asset requests
-            proxyReq.removeHeader('Authorization');
-          });
-        }
-      },
-      // Regular API proxy (with auth header)
+      // API proxy with auth support for both data and assets
       '/api': {
         target: 'https://admin.salvemundi.nl',
         changeOrigin: true,

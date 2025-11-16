@@ -29,15 +29,26 @@ export interface Committee {
   image?: string;
   created_at: string;
   updated_at?: string;
-  members?: CommitteeMember[];
+  committee_members?: CommitteeMember[];
 }
 
 export interface CommitteeMember {
   id: number;
   committee_id: number;
-  member_id: Member;
+  user_id: DirectusUser; // Links to directus_users via user_id
   is_visible: boolean;
   is_leader: boolean;
+}
+
+// Directus User (from the committee_members.user_id relationship)
+export interface DirectusUser {
+  id: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  avatar?: string;
+  phone_number?: string;
+  title?: string;
 }
 
 // Members
