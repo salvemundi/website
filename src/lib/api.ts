@@ -31,6 +31,12 @@ export const eventsApi = {
       sort: ['-event_date']
     });
     return directusFetch<any[]>(`/items/events?${query}`);
+  },
+  createSignup: async (signupData: { event_id: number; email: string; name: string; student_number?: string }) => {
+    return directusFetch<any>(`/items/event_signups`, {
+      method: 'POST',
+      body: JSON.stringify(signupData)
+    });
   }
 };
 

@@ -17,7 +17,10 @@ export interface Event {
 export interface EventSignup {
   id: number;
   event_id: number;
-  member_id: number;
+  member_id?: number;
+  email: string;
+  name: string;
+  student_number?: string;
   submission_file_url?: string;
   created_at: string;
 }
