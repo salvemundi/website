@@ -71,7 +71,18 @@ export default function ActiviteitenPagina() {
 
   // Add ticket to cart (quick signup without modal)
   const handleSignup = (activity: any) => {
-    setCart((prev) => [...prev, { activity, email: "", name: "", studentNumber: "" }]);
+    // Normalize the activity object to ensure consistent naming
+    const normalizedActivity = {
+      ...activity,
+      title: activity.name || activity.title,
+      price: Number(activity.price_members) || 0
+    };
+    setCart((prev) => [...prev, { 
+      activity: normalizedActivity, 
+      email: "", 
+      name: "", 
+      studentNumber: "" 
+    }]);
   };
 
   // Open modal with activity details
@@ -87,12 +98,31 @@ export default function ActiviteitenPagina() {
 
   // Handle signup from modal
   const handleModalSignup = (data: { activity: any; email: string; name: string; studentNumber: string }) => {
-    setCart((prev) => [...prev, data]);
+    // Normalize the activity object to ensure consistent naming
+    const normalizedData = {
+      ...data,
+      activity: {
+        ...data.activity,
+        title: data.activity.name || data.activity.title,
+        price: Number(data.activity.price_members) || Number(data.activity.price) || 0
+      }
+    };
+    setCart((prev) => [...prev, normalizedData]);
   };
 
   // Update email for a ticket
   const handleEmailChange = (index: number, email: string) => {
     setCart((prev) => prev.map((item, i) => i === index ? { ...item, email } : item));
+  };
+
+  // Update name for a ticket
+  const handleNameChange = (index: number, name: string) => {
+    setCart((prev) => prev.map((item, i) => i === index ? { ...item, name } : item));
+  };
+
+  // Update student number for a ticket
+  const handleStudentNumberChange = (index: number, studentNumber: string) => {
+    setCart((prev) => prev.map((item, i) => i === index ? { ...item, studentNumber } : item));
   };
 
   // Remove ticket from cart
@@ -206,7 +236,10 @@ export default function ActiviteitenPagina() {
                 <CartSidebar
                   cart={cart}
                   onEmailChange={handleEmailChange}
+                  onNameChange={handleNameChange}
+                  onStudentNumberChange={handleStudentNumberChange}
                   onRemoveTicket={handleRemoveTicket}
+                  onCheckoutComplete={() => setCart([])}
                 />
               </div>
             </div>
