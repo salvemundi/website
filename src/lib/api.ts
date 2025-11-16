@@ -37,43 +37,81 @@ export const eventsApi = {
 export const committeesApi = {
   getAll: async () => {
     const query = buildQueryString({
-      fields: ['id', 'name', 'image', 'created_at', 'updated_at'],
+      fields: ['id', 'name', 'image', 'is_visible', 'created_at', 'updated_at'],
       sort: ['name']
     });
     return directusFetch<any[]>(`/items/committees?${query}`);
   },
   getAllWithMembers: async () => {
-    // Fetch committees (basic fields only, no user relationships)
-    const committees = await directusFetch<any[]>(`/items/committees?fields=id,name,image,created_at,updated_at&sort=name`);
-    console.log('[committeesApi.getAllWithMembers] Committees:', committees);
-    
-    // For each committee, fetch the full member details from junction table
-    const committeesWithMembers = await Promise.all(
-      committees.map(async (committee) => {
-        // Always try to fetch members from junction table
-        const members = await directusFetch<any[]>(
-          `/items/committee_members?filter[committee_id][_eq]=${committee.id}&fields=*,user_id.*`
-        );
-        return { ...committee, committee_members: members };
-      })
-    );
-    
-    console.log('[committeesApi.getAllWithMembers] With members:', committeesWithMembers);
-    return committeesWithMembers;
+    try {
+      // Try to fetch with is_visible field first
+      const committees = await directusFetch<any[]>(`/items/committees?fields=id,name,image,is_visible,created_at,updated_at&sort=name`);
+      console.log('[committeesApi.getAllWithMembers] Committees:', committees);
+      
+      // Filter only visible committees (if is_visible field exists)
+      const visibleCommittees = committees.filter(c => c.is_visible !== false);
+      
+      // For each committee, fetch the full member details from junction table
+      const committeesWithMembers = await Promise.all(
+        visibleCommittees.map(async (committee) => {
+          // Always try to fetch members from junction table
+          const members = await directusFetch<any[]>(
+            `/items/committee_members?filter[committee_id][_eq]=${committee.id}&fields=*,user_id.*`
+          );
+          return { ...committee, committee_members: members };
+        })
+      );
+      
+      console.log('[committeesApi.getAllWithMembers] With members:', committeesWithMembers);
+      return committeesWithMembers;
+    } catch (error) {
+      // If is_visible field doesn't exist, fall back to fetching without it
+      console.log('[committeesApi.getAllWithMembers] Trying without is_visible field:', error);
+      const committees = await directusFetch<any[]>(`/items/committees?fields=id,name,image,created_at,updated_at&sort=name`);
+      console.log('[committeesApi.getAllWithMembers] Committees (fallback):', committees);
+      
+      // For each committee, fetch the full member details from junction table
+      const committeesWithMembers = await Promise.all(
+        committees.map(async (committee) => {
+          const members = await directusFetch<any[]>(
+            `/items/committee_members?filter[committee_id][_eq]=${committee.id}&fields=*,user_id.*`
+          );
+          return { ...committee, committee_members: members };
+        })
+      );
+      
+      console.log('[committeesApi.getAllWithMembers] With members (fallback):', committeesWithMembers);
+      return committeesWithMembers;
+    }
   },
   getById: async (id: number) => {
-    // Fetch committee (basic fields only, no user relationships)
-    const committee = await directusFetch<any>(`/items/committees/${id}?fields=id,name,image,created_at,updated_at`);
-    console.log('[committeesApi.getById] Committee:', committee);
-    
-    // Always fetch member details from junction table
-    const members = await directusFetch<any[]>(
-      `/items/committee_members?filter[committee_id][_eq]=${id}&fields=*,user_id.*`
-    );
-    committee.committee_members = members;
-    console.log('[committeesApi.getById] Committee members:', members);
-    
-    return committee;
+    try {
+      // Try to fetch with is_visible field first
+      const committee = await directusFetch<any>(`/items/committees/${id}?fields=id,name,image,is_visible,created_at,updated_at`);
+      console.log('[committeesApi.getById] Committee:', committee);
+      
+      // Always fetch member details from junction table
+      const members = await directusFetch<any[]>(
+        `/items/committee_members?filter[committee_id][_eq]=${id}&fields=*,user_id.*`
+      );
+      committee.committee_members = members;
+      console.log('[committeesApi.getById] Committee members:', members);
+      
+      return committee;
+    } catch (error) {
+      // If is_visible field doesn't exist, fall back to fetching without it
+      console.log('[committeesApi.getById] Trying without is_visible field:', error);
+      const committee = await directusFetch<any>(`/items/committees/${id}?fields=id,name,image,created_at,updated_at`);
+      console.log('[committeesApi.getById] Committee (fallback):', committee);
+      
+      const members = await directusFetch<any[]>(
+        `/items/committee_members?filter[committee_id][_eq]=${id}&fields=*,user_id.*`
+      );
+      committee.committee_members = members;
+      console.log('[committeesApi.getById] Committee members (fallback):', members);
+      
+      return committee;
+    }
   }
 };
 
