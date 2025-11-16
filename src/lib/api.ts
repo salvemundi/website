@@ -42,11 +42,38 @@ export const committeesApi = {
     });
     return directusFetch<any[]>(`/items/committees?${query}`);
   },
+  getAllWithMembers: async () => {
+    // Fetch committees (basic fields only, no user relationships)
+    const committees = await directusFetch<any[]>(`/items/committees?fields=id,name,image,created_at,updated_at&sort=name`);
+    console.log('[committeesApi.getAllWithMembers] Committees:', committees);
+    
+    // For each committee, fetch the full member details from junction table
+    const committeesWithMembers = await Promise.all(
+      committees.map(async (committee) => {
+        // Always try to fetch members from junction table
+        const members = await directusFetch<any[]>(
+          `/items/committee_members?filter[committee_id][_eq]=${committee.id}&fields=*,user_id.*`
+        );
+        return { ...committee, committee_members: members };
+      })
+    );
+    
+    console.log('[committeesApi.getAllWithMembers] With members:', committeesWithMembers);
+    return committeesWithMembers;
+  },
   getById: async (id: number) => {
-    const query = buildQueryString({
-      fields: ['id', 'name', 'image', 'created_at', 'updated_at', 'members.id', 'members.member_id.id', 'members.member_id.first_name', 'members.member_id.last_name', 'members.member_id.picture', 'members.is_visible', 'members.is_leader']
-    });
-    return directusFetch<any>(`/items/committees/${id}?${query}`);
+    // Fetch committee (basic fields only, no user relationships)
+    const committee = await directusFetch<any>(`/items/committees/${id}?fields=id,name,image,created_at,updated_at`);
+    console.log('[committeesApi.getById] Committee:', committee);
+    
+    // Always fetch member details from junction table
+    const members = await directusFetch<any[]>(
+      `/items/committee_members?filter[committee_id][_eq]=${id}&fields=*,user_id.*`
+    );
+    committee.committee_members = members;
+    console.log('[committeesApi.getById] Committee members:', members);
+    
+    return committee;
   }
 };
 
@@ -181,12 +208,12 @@ export function getImageUrl(imageId: string | undefined | any): string {
   // Use proxy when running on localhost (both dev and preview) to avoid CORS
   const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
   const baseUrl = isLocalhost
-    ? '/api'  // Uses /api/assets proxy (no auth header, no CORS)
+    ? '/api'  // Uses /api proxy
     : (import.meta.env.VITE_DIRECTUS_URL || '/api');
 
-  // Add access token as query parameter for authenticated access
-  const apiKey = import.meta.env.VITE_DIRECTUS_API_KEY || 'nEnHgseLaPzNgUQ0kCPQvjj2kFhA3kL3';
-  const imageUrl = `${baseUrl}/assets/${actualImageId}?access_token=${apiKey}`;
+  // Try without access_token first - assets might be public
+  // If this doesn't work, we need to configure Directus to make assets public
+  const imageUrl = `${baseUrl}/assets/${actualImageId}`;
   console.log('[getImageUrl] Generated URL:', imageUrl, 'for imageId:', actualImageId);
   return imageUrl;
 }

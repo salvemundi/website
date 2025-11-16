@@ -6,7 +6,7 @@ export const directusUrl = isLocalhost
   ? '/api'  // Use proxy for localhost (both dev and preview)
   : (import.meta.env.VITE_DIRECTUS_URL || '/api');
 
-const apiKey = import.meta.env.VITE_DIRECTUS_API_KEY || 'nEnHgseLaPzNgUQ0kCPQvjj2kFhA3kL3';
+const apiKey = import.meta.env.VITE_DIRECTUS_API_KEY || 'Dp8exZFEp1l9Whq2o2-5FYeiGoKFwZ2m';
 
 // Create a simple fetch wrapper for Directus REST API
 export async function directusFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
