@@ -16,11 +16,23 @@ function cleanCommitteeName(name: string): string {
 
 export default function CommissiesPagina() {
   // Fetch committees with member details
-  const { data: committeesWithMembers = [], isLoading, error } = useQuery<Committee[]>({
+  const { data: committeesData = [], isLoading, error } = useQuery<Committee[]>({
     queryKey: ['committees-with-members'],
     queryFn: () => committeesApi.getAllWithMembers(),
     staleTime: 5 * 60 * 1000
   });
+
+  // Sort committees so Bestuur is first
+  const committeesWithMembers = React.useMemo(() => {
+    return [...committeesData].sort((a, b) => {
+      const aIsBestuur = cleanCommitteeName(a.name).toLowerCase().includes('bestuur');
+      const bIsBestuur = cleanCommitteeName(b.name).toLowerCase().includes('bestuur');
+      
+      if (aIsBestuur && !bIsBestuur) return -1;
+      if (!aIsBestuur && bIsBestuur) return 1;
+      return 0;
+    });
+  }, [committeesData]);
 
   // Debug logging
   React.useEffect(() => {
@@ -47,48 +59,69 @@ export default function CommissiesPagina() {
       </div>
 
       <main className="bg-beige min-h-screen">
-        {/* Commissies Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-10 py-16 bg-beige">
+        {/* Bento Grid Layout */}
+        <div className="px-10 py-16">
           {isLoading ? (
-            <div className="col-span-full text-center py-10">
+            <div className="text-center py-10">
               <p className="text-lg text-gray-600">Commissies laden...</p>
             </div>
           ) : error ? (
-            <div className="col-span-full text-center py-10">
+            <div className="text-center py-10">
               <p className="text-lg text-red-600 mb-2">Fout bij laden van commissies</p>
               <p className="text-sm text-gray-600">{String(error)}</p>
             </div>
           ) : committeesWithMembers.length === 0 ? (
-            <div className="col-span-full text-center py-10">
+            <div className="text-center py-10">
               <p className="text-lg text-gray-600">Geen commissies gevonden</p>
             </div>
           ) : (
-            committeesWithMembers.map((committee) => {
-              // Get member images from committee_members
-              const memberImages = committee.committee_members
-                ?.filter((member: any) => member.is_visible && member.user_id?.avatar)
-                .map((member: any) => getImageUrl(member.user_id.avatar)) || [];
-              
-              console.log(`Committee ${committee.name}:`, {
-                hasMembers: !!committee.committee_members,
-                membersCount: committee.committee_members?.length || 0,
-                visibleCount: committee.committee_members?.filter((m: any) => m.is_visible).length || 0,
-                memberImages: memberImages,
-                hasDescription: !!committee.short_description
-              });
-              
-              return (
-                <CommissieCard
-                  key={committee.id}
-                  title={cleanCommitteeName(committee.name)}
-                  description={committee.short_description || ""}
-                  buttonText="Meer Lezen"
-                  buttonLink={`/commissies/${committee.id}`}
-                  image={getImageUrl(committee.image)}
-                  memberImages={memberImages}
-                />
-              );
-            })
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-fr">
+              {committeesWithMembers.map((committee) => {
+                // Get member images from committee_members
+                const memberImages = committee.committee_members
+                  ?.filter((member: any) => member.is_visible && member.user_id?.avatar)
+                  .map((member: any) => getImageUrl(member.user_id.avatar)) || [];
+                
+                const isBestuur = cleanCommitteeName(committee.name).toLowerCase().includes('bestuur');
+                
+                // Prepare member data with names for Bestuur
+                const membersWithNames = committee.committee_members
+                  ?.filter((member: any) => member.is_visible && member.user_id?.avatar)
+                  .map((member: any) => ({
+                    image: getImageUrl(member.user_id.avatar),
+                    firstName: member.user_id.first_name || ''
+                  })) || [];
+                
+                console.log(`Committee ${committee.name}:`, {
+                  hasMembers: !!committee.committee_members,
+                  membersCount: committee.committee_members?.length || 0,
+                  visibleCount: committee.committee_members?.filter((m: any) => m.is_visible).length || 0,
+                  memberImages: memberImages,
+                  hasDescription: !!committee.short_description,
+                  isBestuur
+                });
+                
+                return (
+                  <div
+                    key={committee.id}
+                    className={`${isBestuur ? 'md:col-span-2 lg:col-span-2' : ''}`}
+                  >
+                    <div className={`h-full ${isBestuur ? 'ring-4 ring-geel rounded-3xl' : ''}`}>
+                      <CommissieCard
+                        title={cleanCommitteeName(committee.name)}
+                        description={committee.short_description || ""}
+                        buttonText="Meer Lezen"
+                        buttonLink={`/commissies/${committee.id}`}
+                        image={getImageUrl(committee.image)}
+                        memberImages={memberImages}
+                        members={membersWithNames}
+                        isBestuur={isBestuur}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
 
