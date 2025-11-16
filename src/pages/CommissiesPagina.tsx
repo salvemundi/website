@@ -9,6 +9,11 @@ import { committeesApi } from "../lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { Committee } from "../types";
 
+// Helper function to clean committee names
+function cleanCommitteeName(name: string): string {
+  return name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim();
+}
+
 export default function CommissiesPagina() {
   // Fetch committees with member details
   const { data: committeesWithMembers = [], isLoading, error } = useQuery<Committee[]>({
@@ -75,7 +80,7 @@ export default function CommissiesPagina() {
               return (
                 <CommissieCard
                   key={committee.id}
-                  title={committee.name}
+                  title={cleanCommitteeName(committee.name)}
                   description={committee.short_description || ""}
                   buttonText="Meer Lezen"
                   buttonLink={`/commissies/${committee.id}`}
