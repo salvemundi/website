@@ -68,14 +68,15 @@ export default function CommissiesPagina() {
                 hasMembers: !!committee.committee_members,
                 membersCount: committee.committee_members?.length || 0,
                 visibleCount: committee.committee_members?.filter((m: any) => m.is_visible).length || 0,
-                memberImages: memberImages
+                memberImages: memberImages,
+                hasDescription: !!committee.short_description
               });
               
               return (
                 <CommissieCard
                   key={committee.id}
                   title={committee.name}
-                  description=""
+                  description={committee.short_description || ""}
                   buttonText="Meer Lezen"
                   buttonLink={`/commissies/${committee.id}`}
                   image={getImageUrl(committee.image)}
