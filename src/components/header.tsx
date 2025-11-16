@@ -31,8 +31,13 @@ const Header: React.FC<HeaderProps> = ({
         />
         {/* Content */}
         <div className="relative flex flex-col items-center z-10 px-2 py-8 sm:py-12">
-          <h1 className="text-beige font-bold text-5xl sm:text-7xl md:text-8xl lg:text-[120px] xl:text-[180px] ">
-            {title}
+          <h1 className="text-beige font-bold text-5xl sm:text-7xl md:text-8xl lg:text-[120px] xl:text-[180px] text-center">
+            {title.split('\n').map((line, index) => (
+              <React.Fragment key={index}>
+                {line}
+                {index < title.split('\n').length - 1 && <br />}
+              </React.Fragment>
+            ))}
           </h1>
           <div className="relative flex justify-center items-center ">
             <img
