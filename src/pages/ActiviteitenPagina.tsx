@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import Navbar from "../components/NavBar";
 import Header from "../components/header";
 import BackToTopButton from "../components/backtotop";
@@ -13,6 +14,7 @@ import { getImageUrl } from "../lib/api";
 
 export default function ActiviteitenPagina() {
   const { data: events = [], isLoading, error } = useEvents();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Cart: array of { activity, email, name, studentNumber }
   const [cart, setCart] = useState<Array<{ activity: any; email: string; name: string; studentNumber: string }>>([]);
@@ -21,6 +23,18 @@ export default function ActiviteitenPagina() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<any>(null);
 
+  // Check for event query parameter and open modal automatically
+  useEffect(() => {
+    const eventId = searchParams.get('event');
+    if (eventId && events.length > 0) {
+      const event = events.find(e => e.id === parseInt(eventId));
+      if (event) {
+        handleShowDetails(event);
+        // Clear the query parameter after opening the modal without adding to history
+        setSearchParams({}, { replace: true });
+      }
+    }
+  }, [searchParams, events]);
 
   // Add ticket to cart (quick signup without modal)
   const handleSignup = (activity: any) => {
