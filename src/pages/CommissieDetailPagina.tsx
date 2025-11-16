@@ -1,5 +1,5 @@
 import React from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import Navbar from "../components/NavBar";
 import Header from "../components/header";
 import BackToTopButton from "../components/backtotop";
@@ -15,13 +15,8 @@ function cleanCommitteeName(name: string): string {
 // Helper function to split committee name for header display
 function formatCommitteeNameForHeader(name: string): string {
   const cleanName = cleanCommitteeName(name).toUpperCase();
-  console.log('Original name:', name);
-  console.log('Clean name (uppercase):', cleanName);
   // Replace "COMMISSIE" with a line break before it (handles both with and without spaces)
-  const result = cleanName.replace(/\s*COMMISSIE/g, '\nCOMMISSIE');
-  console.log('After replace:', result);
-  console.log('Result includes \\n:', result.includes('\n'));
-  return result;
+  return cleanName.replace(/\s*COMMISSIE/g, '\nCOMMISSIE');
 }
 
 export default function CommissieDetailPagina() {
@@ -199,9 +194,10 @@ export default function CommissieDetailPagina() {
               <h2 className="text-4xl font-bold text-geel mb-12 text-center">Aankomende Evenementen</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {events.map((event) => (
-                  <div
+                  <Link
                     key={event.id}
-                    className="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 border-t-4 border-geel"
+                    to={`/activiteiten?event=${event.id}`}
+                    className="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 border-t-4 border-geel hover:scale-[1.02] cursor-pointer block"
                   >
                     <div className="flex items-start justify-between mb-4">
                       <h3 className="text-2xl font-bold text-gray-800 flex-1">
@@ -233,7 +229,7 @@ export default function CommissieDetailPagina() {
                         </div>
                       )}
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
