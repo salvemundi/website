@@ -12,6 +12,18 @@ function cleanCommitteeName(name: string): string {
   return name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim();
 }
 
+// Helper function to split committee name for header display
+function formatCommitteeNameForHeader(name: string): string {
+  const cleanName = cleanCommitteeName(name).toUpperCase();
+  console.log('Original name:', name);
+  console.log('Clean name (uppercase):', cleanName);
+  // Replace "COMMISSIE" with a line break before it (handles both with and without spaces)
+  const result = cleanName.replace(/\s*COMMISSIE/g, '\nCOMMISSIE');
+  console.log('After replace:', result);
+  console.log('Result includes \\n:', result.includes('\n'));
+  return result;
+}
+
 export default function CommissieDetailPagina() {
   const { slug } = useParams<{ slug: string }>();
   const committeeId = slug ? parseInt(slug) : undefined;
@@ -103,7 +115,7 @@ export default function CommissieDetailPagina() {
       <div className="flex h-screen flex-col w-full">
         <Navbar activePage="Commissies" />
         <Header
-          title={cleanCommitteeName(committee.name).toUpperCase()}
+          title={formatCommitteeNameForHeader(committee.name)}
           backgroundImage={getImageUrl(committee.image)}
         />
       </div>
