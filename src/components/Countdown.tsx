@@ -4,9 +4,10 @@ import React, { useState, useEffect } from 'react';
 interface CountdownProps {
   targetDate: string; // ISO 8601 string for easy Date object creation
   title: string;
+  onSignup?: () => void; // Optional callback for signup button
 }
 
-const Countdown: React.FC<CountdownProps> = ({ targetDate, title }) => {
+const Countdown: React.FC<CountdownProps> = ({ targetDate, title, onSignup }) => {
   // Parse the target date string into a Date object
   const countdownDate = new Date(targetDate).getTime();
 
@@ -85,11 +86,16 @@ const Countdown: React.FC<CountdownProps> = ({ targetDate, title }) => {
         </div>
       </div>
 
-      <div className="flex justify-center mt-4 sm:mt-6">
-        <button className="bg-[#5A3859] text-white py-2 px-6 rounded-lg text-base sm:text-lg hover:bg-opacity-80 transition w-full sm:w-auto">
-          Meld je Aan
-        </button>
-      </div>
+      {onSignup && (
+        <div className="flex justify-center mt-4 sm:mt-6">
+          <button 
+            onClick={onSignup}
+            className="bg-[#5A3859] text-white py-2 px-6 rounded-lg text-base sm:text-lg hover:bg-opacity-80 hover:scale-105 transition-all duration-300 ease-in-out transform w-full sm:w-auto shadow-lg hover:shadow-xl"
+          >
+            Meld je Aan
+          </button>
+        </div>
+      )}
     </section>
   );
 };

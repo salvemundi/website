@@ -13,8 +13,8 @@ export const eventsApi = {
   getAll: async () => {
     const query = buildQueryString({
       fields: ['id', 'name', 'event_date', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id'],
-      sort: ['-event_date'],
-      filter: { event_date: { _gte: new Date().toISOString().split('T')[0] } }
+      sort: ['-event_date']
+      // Removed filter to allow fetching all events (past and future)
     });
     return directusFetch<any[]>(`/items/events?${query}`);
   },
@@ -224,18 +224,17 @@ export const stickersApi = {
 };
 
 export function getImageUrl(imageId: string | undefined | any): string {
-  // Handle null/undefined
+  // Handle null/undefined - silently return default
   if (!imageId) {
-    console.log('[getImageUrl] No imageId provided, using default');
     return '/img/backgrounds/Kroto2025.jpg';
   }
 
   // Handle if imageId is an object (sometimes Directus returns file objects)
   let actualImageId: string;
   if (typeof imageId === 'object' && imageId !== null) {
-    console.log('[getImageUrl] Image is an object:', imageId);
     actualImageId = imageId.id || imageId.filename_disk || imageId.filename_download;
     if (!actualImageId) {
+      // Only log errors, not info messages
       console.error('[getImageUrl] Could not extract image ID from object:', imageId);
       return '/img/backgrounds/Kroto2025.jpg';
     }
@@ -252,7 +251,6 @@ export function getImageUrl(imageId: string | undefined | any): string {
   // Try without access_token first - assets might be public
   // If this doesn't work, we need to configure Directus to make assets public
   const imageUrl = `${baseUrl}/assets/${actualImageId}`;
-  console.log('[getImageUrl] Generated URL:', imageUrl, 'for imageId:', actualImageId);
   return imageUrl;
 }
 
