@@ -72,7 +72,7 @@ export default function CommissieDetailPagina() {
   }
 
   // Check if committee is visible on website
-  if (committee.is_vissible === false) {
+  if (committee.is_visible === false) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-beige">
         <div className="text-center">
@@ -105,9 +105,15 @@ export default function CommissieDetailPagina() {
             <h2 className="text-4xl font-bold text-geel mb-6">
               Over {committee.name}
             </h2>
-            <p className="text-gray-700 text-lg leading-relaxed">
-              Informatie over de {committee.name} komt binnenkort beschikbaar.
-            </p>
+            {committee.description ? (
+              <div className="text-gray-700 text-lg leading-relaxed whitespace-pre-line">
+                {committee.description}
+              </div>
+            ) : (
+              <p className="text-gray-700 text-lg leading-relaxed">
+                Informatie over de {committee.name} komt binnenkort beschikbaar.
+              </p>
+            )}
           </div>
         </section>
 

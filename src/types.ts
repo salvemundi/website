@@ -28,6 +28,8 @@ export interface Committee {
   name: string;
   image?: string;
   is_visible?: boolean; // Whether committee should be visible on website
+  short_description?: string; // Short description for cards/list view
+  description?: string; // Full description for detail page
   created_at: string;
   updated_at?: string;
   committee_members?: CommitteeMember[];
