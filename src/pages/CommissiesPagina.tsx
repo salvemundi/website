@@ -50,7 +50,8 @@ export default function CommissiesPagina() {
             </div>
           ) : error ? (
             <div className="col-span-full text-center py-10">
-              <p className="text-lg text-red-600">Fout bij laden van commissies</p>
+              <p className="text-lg text-red-600 mb-2">Fout bij laden van commissies</p>
+              <p className="text-sm text-gray-600">{String(error)}</p>
             </div>
           ) : committeesWithMembers.length === 0 ? (
             <div className="col-span-full text-center py-10">

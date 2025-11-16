@@ -27,6 +27,7 @@ export interface Committee {
   id: number;
   name: string;
   image?: string;
+  is_visible?: boolean; // Whether committee should be visible on website
   created_at: string;
   updated_at?: string;
   committee_members?: CommitteeMember[];
