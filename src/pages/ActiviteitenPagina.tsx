@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import Navbar from "../components/NavBar";
 import Header from "../components/header";
 import BackToTopButton from "../components/backtotop";
@@ -11,10 +12,12 @@ import Footer from "../components/Footer";
 import ActiviteitDetailModal from "../components/ActiviteitDetailModal";
 import { useEvents } from "../hooks/useApi";
 import { getImageUrl } from "../lib/api";
+import { createEventSignup } from "../lib/auth";
 
 export default function ActiviteitenPagina() {
   const { data: events = [], isLoading, error } = useEvents();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { user, isAuthenticated } = useAuth();
 
   // Cart: array of { activity, email, name, studentNumber }
   const [cart, setCart] = useState<Array<{ activity: any; email: string; name: string; studentNumber: string }>>([]);
@@ -22,6 +25,39 @@ export default function ActiviteitenPagina() {
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<any>(null);
+
+  // Toggle for showing past activities
+  const [showPastActivities, setShowPastActivities] = useState(false);
+
+  // Calculate next activity and sort events
+  const { nextActivity, upcomingEvents, pastEvents } = useMemo(() => {
+    if (!events || events.length === 0) {
+      return { nextActivity: null, upcomingEvents: [], pastEvents: [] };
+    }
+    
+    const now = new Date();
+    const upcoming = events
+      .filter(event => new Date(event.event_date) > now)
+      .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime());
+    
+    const past = events
+      .filter(event => new Date(event.event_date) <= now)
+      .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime());
+    
+    return {
+      nextActivity: upcoming.length > 0 ? upcoming[0] : null,
+      upcomingEvents: upcoming,
+      pastEvents: past
+    };
+  }, [events]);
+
+  // Combine events based on toggle
+  const displayedEvents = useMemo(() => {
+    if (showPastActivities) {
+      return [...upcomingEvents, ...pastEvents];
+    }
+    return upcomingEvents;
+  }, [upcomingEvents, pastEvents, showPastActivities]);
 
   // Check for event query parameter and open modal automatically
   useEffect(() => {
@@ -38,7 +74,22 @@ export default function ActiviteitenPagina() {
 
   // Add ticket to cart (quick signup without modal)
   const handleSignup = (activity: any) => {
-    setCart((prev) => [...prev, { activity, email: "", name: "", studentNumber: "" }]);
+    // Normalize the activity object to ensure consistent naming
+    const normalizedActivity = {
+      ...activity,
+      title: activity.name || activity.title,
+      price: Number(activity.price_members) || 0
+    };
+    
+    // Pre-fill with user data if logged in
+    const fullName = user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : '';
+    
+    setCart((prev) => [...prev, { 
+      activity: normalizedActivity, 
+      email: user?.email || "", 
+      name: fullName || "", 
+      studentNumber: "" 
+    }]);
   };
 
   // Open modal with activity details
@@ -54,12 +105,43 @@ export default function ActiviteitenPagina() {
 
   // Handle signup from modal
   const handleModalSignup = (data: { activity: any; email: string; name: string; studentNumber: string }) => {
-    setCart((prev) => [...prev, data]);
+    // Normalize the activity object to ensure consistent naming
+    const normalizedData = {
+      ...data,
+      activity: {
+        ...data.activity,
+        title: data.activity.name || data.activity.title,
+        price: Number(data.activity.price_members) || Number(data.activity.price) || 0
+      }
+    };
+    
+    // Pre-fill email and name if not provided
+    if (!normalizedData.email && user?.email) {
+      normalizedData.email = user.email;
+    }
+    if (!normalizedData.name && user) {
+      const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+      if (fullName) {
+        normalizedData.name = fullName;
+      }
+    }
+    
+    setCart((prev) => [...prev, normalizedData]);
   };
 
   // Update email for a ticket
   const handleEmailChange = (index: number, email: string) => {
     setCart((prev) => prev.map((item, i) => i === index ? { ...item, email } : item));
+  };
+
+  // Update name for a ticket
+  const handleNameChange = (index: number, name: string) => {
+    setCart((prev) => prev.map((item, i) => i === index ? { ...item, name } : item));
+  };
+
+  // Update student number for a ticket
+  const handleStudentNumberChange = (index: number, studentNumber: string) => {
+    setCart((prev) => prev.map((item, i) => i === index ? { ...item, studentNumber } : item));
   };
 
   // Remove ticket from cart
@@ -77,42 +159,95 @@ export default function ActiviteitenPagina() {
         />
       </div>
 
-      <main className="w-full p-4 sm:p-6 lg:p-10 bg-beige">
-        <div className="flex flex-col gap-6 max-w-7xl mx-auto">
-          <Countdown targetDate="2025-09-11T15:00:00Z" title="BIERPROEVERIJ" />
+      <main className="w-full px-4 sm:px-6 lg:px-8 py-6 bg-beige">
+        <div className="flex flex-col gap-6 w-full">
+          {nextActivity && (
+            <Countdown 
+              targetDate={nextActivity.event_date} 
+              title={nextActivity.name}
+              onSignup={() => handleShowDetails(nextActivity)}
+            />
+          )}
           <section className="w-full rounded-3xl">
-            <h2 className="text-2xl font-bold text-geel mb-4">
-              Komende Activiteiten
-            </h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-geel">
+                {showPastActivities ? 'Alle Activiteiten' : 'Komende Activiteiten'}
+              </h2>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowPastActivities(prev => !prev);
+                }}
+                className={`px-4 py-2 rounded-lg font-semibold transition-all hover:scale-105 shadow-md ${
+                  showPastActivities 
+                    ? 'bg-paars text-white hover:bg-opacity-90' 
+                    : 'bg-geel text-paars hover:bg-opacity-90'
+                }`}
+              >
+                {showPastActivities ? 'Verberg Afgelopen' : 'Toon Afgelopen'}
+              </button>
+            </div>
 
             
             <div className="flex flex-row md:flex-row gap-6">
-              <div className=" grid grid-cols-3 gap-6">
+              <div className="flex-1 flex flex-col gap-6">
                 {isLoading ? (
-                  <div className="col-span-3 text-center py-10">
+                  <div className="text-center py-10">
                     <p className="text-lg text-gray-600">Activiteiten laden...</p>
                   </div>
                 ) : error ? (
-                  <div className="col-span-3 text-center py-10">
+                  <div className="text-center py-10">
                     <p className="text-lg text-red-600">Fout bij laden van activiteiten</p>
                   </div>
-                ) : events.length === 0 ? (
-                  <div className="col-span-3 text-center py-10">
-                    <p className="text-lg text-gray-600">Geen aankomende activiteiten</p>
+                ) : displayedEvents.length === 0 ? (
+                  <div className="text-center py-10">
+                    <p className="text-lg text-gray-600">Geen activiteiten gevonden</p>
                   </div>
                 ) : (
-                  events.map((event) => (
-                    <ActiviteitCard
-                      key={event.id}
-                      description={event.description}
-                      image={getImageUrl(event.image)}
-                      date={event.event_date}
-                      title={event.name}
-                      price={Number(event.price_members) || 0}
-                      onSignup={() => handleSignup(event)}
-                      onShowDetails={() => handleShowDetails(event)}
-                    />
-                  ))
+                  <>
+                    {/* Upcoming Activities */}
+                    {upcomingEvents.length > 0 && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
+                        {upcomingEvents.map((event) => (
+                          <ActiviteitCard
+                            key={event.id}
+                            description={event.description}
+                            image={getImageUrl(event.image)}
+                            date={event.event_date}
+                            title={event.name}
+                            price={Number(event.price_members) || 0}
+                            isPast={false}
+                            onSignup={() => handleSignup(event)}
+                            onShowDetails={() => handleShowDetails(event)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Separator */}
+                    {showPastActivities && upcomingEvents.length > 0 && pastEvents.length > 0 && (
+                      <div className="border-t-4 border-dashed border-paars opacity-50"></div>
+                    )}
+                    
+                    {/* Past Activities */}
+                    {showPastActivities && pastEvents.length > 0 && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
+                        {pastEvents.map((event) => (
+                          <ActiviteitCard
+                            key={event.id}
+                            description={event.description}
+                            image={getImageUrl(event.image)}
+                            date={event.event_date}
+                            title={event.name}
+                            price={Number(event.price_members) || 0}
+                            isPast={true}
+                            onSignup={() => handleSignup(event)}
+                            onShowDetails={() => handleShowDetails(event)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
               {/* Sidebar */}
@@ -120,7 +255,10 @@ export default function ActiviteitenPagina() {
                 <CartSidebar
                   cart={cart}
                   onEmailChange={handleEmailChange}
+                  onNameChange={handleNameChange}
+                  onStudentNumberChange={handleStudentNumberChange}
                   onRemoveTicket={handleRemoveTicket}
+                  onCheckoutComplete={() => setCart([])}
                 />
               </div>
             </div>
@@ -140,6 +278,7 @@ export default function ActiviteitenPagina() {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           activity={selectedActivity}
+          isPast={selectedActivity.event_date ? new Date(selectedActivity.event_date) <= new Date() : false}
           onSignup={handleModalSignup}
         />
       )}

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
 
 interface ActiviteitDetailModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ interface ActiviteitDetailModalProps {
     capacity?: number;
     organizer?: string;
   };
+  isPast?: boolean;
   onSignup: (data: { activity: any; email: string; name: string; studentNumber: string }) => void;
 }
 
@@ -21,14 +23,28 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
   isOpen,
   onClose,
   activity,
+  isPast = false,
   onSignup,
 }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     studentNumber: "",
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  // Pre-fill form with user data when modal opens
+  useEffect(() => {
+    if (isOpen && user) {
+      const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+      setFormData({
+        name: fullName || "",
+        email: user.email || "",
+        studentNumber: user.phone_number || "", // or leave empty if you prefer
+      });
+    }
+  }, [isOpen, user]);
 
   // Prevent body scroll when modal is open
   React.useEffect(() => {
@@ -120,14 +136,14 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
 
         {/* Content */}
         <div className="p-6">
-          {/* Image */}
-          {activity.image && (
+          {/* Image - always show */}
+          <div className="relative mb-6">
             <img
-              src={activity.image}
+              src={activity.image || '/img/backgrounds/Kroto2025.jpg'}
               alt={activity.title}
-              className="w-full h-64 object-cover rounded-xl mb-6"
+              className="w-full h-64 object-cover rounded-xl"
             />
-          )}
+          </div>
 
           {/* Activity Details */}
           <div className="mb-6 space-y-4">
@@ -176,9 +192,17 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
           </div>
 
           {/* Registration Form */}
-          <div className="mt-8 border-t border-geel/20 pt-6">
-            <h3 className="text-2xl font-bold text-geel mb-4">Inschrijven</h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
+          {isPast ? (
+            <div className="mt-8 border-t border-geel/20 pt-6">
+              <div className="bg-gray-700 bg-opacity-50 p-6 rounded-xl text-center">
+                <h3 className="text-2xl font-bold text-gray-400 mb-2">Inschrijving Gesloten</h3>
+                <p className="text-gray-300">Deze activiteit is al geweest. Inschrijven is niet meer mogelijk.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-8 border-t border-geel/20 pt-6">
+              <h3 className="text-2xl font-bold text-geel mb-4">Inschrijven</h3>
+              <form onSubmit={handleSubmit} className="space-y-4">
               {/* Name Field */}
               <div>
                 <label htmlFor="name" className="block text-white font-semibold mb-2">
@@ -259,7 +283,8 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                 </button>
               </div>
             </form>
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

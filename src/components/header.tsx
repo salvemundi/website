@@ -17,7 +17,7 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   return (
     <header
-      className={`relative flex items-center max-h-full h-full justify-center mb-5 mx-10 ${className}`}
+      className={`relative flex items-center max-h-full h-full justify-center mb-5 ${className}`}
     >
       <div>
         <div
