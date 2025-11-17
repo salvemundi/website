@@ -156,12 +156,26 @@ export default function AccountPagina() {
                 </div>
               </div>
 
-              <button
-                onClick={handleLogout}
-                className="px-6 py-2 bg-paars text-beige rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md"
-              >
-                Uitloggen
-              </button>
+              <div className="flex flex-col gap-2">
+                {/* Admin Panel Button - Only for Microsoft users */}
+                {user.entra_id && (
+                  <a
+                    href="https://admin.salvemundi.nl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-2 bg-geel text-paars rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md text-center"
+                  >
+                    Admin Panel
+                  </a>
+                )}
+                
+                <button
+                  onClick={handleLogout}
+                  className="px-6 py-2 bg-paars text-beige rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md"
+                >
+                  Uitloggen
+                </button>
+              </div>
             </div>
 
             <div className="border-t-2 border-oranje/20 pt-6">

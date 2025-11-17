@@ -15,6 +15,8 @@ import AccountPagina from "./pages/AccountPagina";
 import TransactionsPagina from "./pages/TransactionsPagina";
 import WhatsAppGroupsPagina from "./pages/WhatsAppGroupsPagina";
 import StickersPagina from "./pages/StickersPagina";
+import ContactPagina from "./pages/ContactPagina";
+import SafeHavensPagina from "./pages/SafeHavensPagina";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -73,6 +75,8 @@ export default function App() {
               } 
             />
             <Route path="/stickers" element={<StickersPagina />} />
+            <Route path="/contact" element={<ContactPagina />} />
+            <Route path="/safe-havens" element={<SafeHavensPagina />} />
           </Routes>
         </Router>
         <ReactQueryDevtools initialIsOpen={false} />
