@@ -11,11 +11,6 @@ export interface LoginResponse {
 // Login with email and password (for non-members)
 export async function loginWithPassword(email: string, password: string): Promise<LoginResponse> {
   try {
-    console.log('🔐 Attempting login with email:', email);
-    console.log('� Password length:', password?.length);
-    console.log('�📡 Directus URL:', directusUrl);
-    console.log('📦 Request body:', JSON.stringify({ email, password: '***' }));
-    
     const response = await fetch(`${directusUrl}/auth/login`, {
       method: 'POST',
       headers: {
@@ -26,8 +21,6 @@ export async function loginWithPassword(email: string, password: string): Promis
         password,
       }),
     });
-
-    console.log('📥 Login response status:', response.status);
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -53,24 +46,14 @@ export async function loginWithPassword(email: string, password: string): Promis
 
     const data = await response.json();
     
-    console.log('✅ Login response:', data);
-    console.log('✅ Login response keys:', Object.keys(data));
-    console.log('✅ data.data keys:', data.data ? Object.keys(data.data) : 'no data.data');
-    
     // Directus wraps the response in a 'data' object
     const authData = data.data || data;
-    
-    console.log('🔑 authData keys:', Object.keys(authData));
-    console.log('🔑 Access token received:', authData.access_token ? 'Yes' : 'No');
-    console.log('👤 User data in login response:', authData.user);
-    console.log('👤 User keys:', authData.user ? Object.keys(authData.user) : 'no user');
     
     // Try to use user data from login response first, fallback to fetching
     let userDetails: User;
     
     if (authData.user && authData.user.email) {
       // Use user data from login response
-      console.log('✅ Using user data from login response');
       const isMember = !!(authData.user.entra_id || authData.user.fontys_email);
       userDetails = {
         id: authData.user.id,
@@ -86,7 +69,6 @@ export async function loginWithPassword(email: string, password: string): Promis
       };
     } else {
       // Fallback: Fetch user details
-      console.log('⚠️ No user data in login response, fetching from /users/me');
       userDetails = await fetchUserDetails(authData.access_token);
     }
     
@@ -105,13 +87,6 @@ export async function loginWithPassword(email: string, password: string): Promis
 // Login with Microsoft Entra ID
 export async function loginWithEntraId(entraIdToken: string, userEmail: string): Promise<LoginResponse> {
   try {
-    console.log('📤 Sending login request:', {
-      url: `${directusUrl}/directus-extension-entra-auth/auth/login/entra`,
-      tokenPresent: !!entraIdToken,
-      tokenLength: entraIdToken?.length,
-      email: userEmail
-    });
-    
     // This endpoint should be created on your Directus backend
     // It will verify the Entra ID token and match it with the user's entra_id field
     const response = await fetch(`${directusUrl}/directus-extension-entra-auth/auth/login/entra`, {
@@ -131,7 +106,6 @@ export async function loginWithEntraId(entraIdToken: string, userEmail: string):
     }
 
     const data = await response.json();
-    console.log('📦 Received from backend:', data);
     
     // The backend returns the data directly, not nested in data.data
     return {
@@ -149,17 +123,10 @@ export async function loginWithEntraId(entraIdToken: string, userEmail: string):
 // Signup for non-members
 export async function signupWithPassword(userData: SignupData): Promise<LoginResponse> {
   try {
-    console.log('📝 Creating new user:', { email: userData.email, firstName: userData.first_name });
-    
     const roleId = import.meta.env.VITE_DEFAULT_USER_ROLE_ID;
-    console.log('🔑 Using role ID:', roleId);
-    
-    if (!roleId) {
-      console.warn('⚠️ No default role ID configured. User might not have proper permissions.');
-    }
     
     // Create the Directus user directly
-    const createUserResponse = await directusFetch<any>('/users', {
+    await directusFetch<any>('/users', {
       method: 'POST',
       body: JSON.stringify({
         email: userData.email,
@@ -172,10 +139,7 @@ export async function signupWithPassword(userData: SignupData): Promise<LoginRes
       }),
     });
     
-    console.log('✅ User created successfully:', createUserResponse);
-
     // Now login with the new credentials
-    console.log('🔐 Attempting login with new credentials...');
     return await loginWithPassword(userData.email, userData.password);
   } catch (error: any) {
     console.error('❌ Signup error:', error);
@@ -198,8 +162,6 @@ export async function signupWithPassword(userData: SignupData): Promise<LoginRes
 // Fetch current user details
 export async function fetchUserDetails(token: string): Promise<User> {
   try {
-    console.log('👤 Fetching user details...');
-    
     // Fetch with * to get all available fields
     const response = await fetch(`${directusUrl}/users/me?fields=*`, {
       headers: {
@@ -215,8 +177,6 @@ export async function fetchUserDetails(token: string): Promise<User> {
     }
 
     const userData = await response.json();
-    console.log('📦 Raw user data from Directus (with * fields):', userData);
-    console.log('📦 All available fields:', Object.keys(userData.data || {}));
     const user = userData.data;
 
     // Determine if user is a member based on having entra_id or fontys_email
@@ -237,12 +197,6 @@ export async function fetchUserDetails(token: string): Promise<User> {
       membership_expiry: user.membership_expiry,
       minecraft_username: user.minecraft_username,
     };
-    
-    console.log('✅ Processed user details:', {
-      name: `${userDetails.first_name} ${userDetails.last_name}`,
-      email: userDetails.email,
-      is_member: userDetails.is_member
-    });
 
     return userDetails;
   } catch (error) {

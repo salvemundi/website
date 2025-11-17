@@ -58,3 +58,16 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Leaflet map styles */
+.leaflet-container {
+  font-family: 'Poppins', Arial, Helvetica, sans-serif;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+}
+
+.leaflet-popup-content {
+  margin: 8px;
+}

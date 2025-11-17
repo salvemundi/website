@@ -34,20 +34,6 @@ export default function CommissiesPagina() {
     });
   }, [committeesData]);
 
-  // Debug logging
-  React.useEffect(() => {
-    console.log('=== CommissiesPagina Debug ===');
-    console.log('committees count:', committeesWithMembers.length);
-    console.log('committees:', committeesWithMembers);
-    console.log('loading:', isLoading);
-    console.log('error:', error);
-    if (committeesWithMembers.length > 0) {
-      console.log('First committee:', committeesWithMembers[0]);
-      console.log('First committee_members:', committeesWithMembers[0].committee_members);
-    }
-    console.log('============================');
-  }, [committeesWithMembers, isLoading, error]);
-
   return (
     <>
       <div className="flex h-screen flex-col w-full">
@@ -91,15 +77,6 @@ export default function CommissiesPagina() {
                     image: getImageUrl(member.user_id.avatar),
                     firstName: member.user_id.first_name || ''
                   })) || [];
-                
-                console.log(`Committee ${committee.name}:`, {
-                  hasMembers: !!committee.committee_members,
-                  membersCount: committee.committee_members?.length || 0,
-                  visibleCount: committee.committee_members?.filter((m: any) => m.is_visible).length || 0,
-                  memberImages: memberImages,
-                  hasDescription: !!committee.short_description,
-                  isBestuur
-                });
                 
                 return (
                   <div
