@@ -81,7 +81,7 @@ export default function AccountPagina() {
       setIsEditingMinecraft(false);
     } catch (error) {
       console.error('Failed to update minecraft username:', error);
-      alert('Failed to update Minecraft username. Please try again.');
+      alert('Kon Minecraft gebruikersnaam niet bijwerken. Probeer het opnieuw.');
     } finally {
       setIsSavingMinecraft(false);
     }
@@ -89,18 +89,18 @@ export default function AccountPagina() {
 
   const getMembershipStatusDisplay = () => {
     if (!user?.membership_status || user.membership_status === 'none') {
-      return { text: 'No Active Membership', color: 'bg-gray-400', textColor: 'text-white' };
+      return { text: 'Geen Actief Lidmaatschap', color: 'bg-gray-400', textColor: 'text-white' };
     }
     if (user.membership_status === 'active') {
-      return { text: 'Active Member', color: 'bg-geel', textColor: 'text-paars' };
+      return { text: 'Actief Lid', color: 'bg-geel', textColor: 'text-paars' };
     }
-    return { text: 'Membership Expired', color: 'bg-oranje/50', textColor: 'text-paars' };
+    return { text: 'Lidmaatschap Verlopen', color: 'bg-oranje/50', textColor: 'text-paars' };
   };
 
   if (authLoading || !user) {
     return (
       <div className="min-h-screen bg-beige flex items-center justify-center">
-        <div className="text-paars text-xl font-semibold">Loading...</div>
+        <div className="text-paars text-xl font-semibold">Laden...</div>
       </div>
     );
   }
@@ -137,7 +137,7 @@ export default function AccountPagina() {
                   </h1>
                   {(!user.first_name || !user.last_name) && (
                     <p className="text-sm text-paars/70 mb-2">
-                      (Name not set)
+                      (Naam niet ingesteld)
                     </p>
                   )}
                   <div className="flex items-center gap-2 flex-wrap">
@@ -147,7 +147,7 @@ export default function AccountPagina() {
                       </span>
                     ) : (
                       <span className="px-3 py-1 bg-oranje/20 text-paars text-sm font-semibold rounded-full">
-                        Registered User
+                        Geregistreerde Gebruiker
                       </span>
                     )}
                     <span className={`px-3 py-1 ${getMembershipStatusDisplay().color} ${getMembershipStatusDisplay().textColor} text-sm font-semibold rounded-full`}>
@@ -161,41 +161,41 @@ export default function AccountPagina() {
                 onClick={handleLogout}
                 className="px-6 py-2 bg-paars text-beige rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md"
               >
-                Logout
+                Uitloggen
               </button>
             </div>
 
             <div className="border-t-2 border-oranje/20 pt-6">
-              <h2 className="text-lg font-semibold text-paars mb-4">Account Information</h2>
+              <h2 className="text-lg font-semibold text-paars mb-4">Account Informatie</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-paars/70 font-semibold">Email</p>
+                  <p className="text-sm text-paars/70 font-semibold">E-mail</p>
                   <p className="font-medium text-paars">{user.email}</p>
                 </div>
                 
                 {user.fontys_email && (
                   <div>
-                    <p className="text-sm text-paars/70 font-semibold">Fontys Email</p>
+                    <p className="text-sm text-paars/70 font-semibold">Fontys E-mail</p>
                     <p className="font-medium text-paars">{user.fontys_email}</p>
                   </div>
                 )}
                 
                 {user.phone_number && (
                   <div>
-                    <p className="text-sm text-paars/70 font-semibold">Phone Number</p>
+                    <p className="text-sm text-paars/70 font-semibold">Telefoonnummer</p>
                     <p className="font-medium text-paars">{user.phone_number}</p>
                   </div>
                 )}
 
                 <div>
-                  <p className="text-sm text-paars/70 font-semibold">Login Method</p>
+                  <p className="text-sm text-paars/70 font-semibold">Inlogmethode</p>
                   <p className="font-medium text-paars">
-                    {user.entra_id ? 'Microsoft Account' : 'Email & Password'}
+                    {user.entra_id ? 'Microsoft Account' : 'E-mail & Wachtwoord'}
                   </p>
                 </div>
 
                 <div>
-                  <p className="text-sm text-paars/70 font-semibold mb-1">Minecraft Username</p>
+                  <p className="text-sm text-paars/70 font-semibold mb-1">Minecraft Gebruikersnaam</p>
                   {isEditingMinecraft ? (
                     <div className="flex gap-2 items-center">
                       <input
@@ -203,7 +203,7 @@ export default function AccountPagina() {
                         value={minecraftUsername}
                         onChange={(e) => setMinecraftUsername(e.target.value)}
                         className="flex-1 px-3 py-1 text-sm border-2 border-oranje rounded-lg focus:outline-none focus:border-paars"
-                        placeholder="Minecraft username"
+                        placeholder="Minecraft gebruikersnaam"
                       />
                       <button
                         onClick={handleSaveMinecraftUsername}
@@ -225,13 +225,13 @@ export default function AccountPagina() {
                   ) : (
                     <div className="flex gap-2 items-center">
                       <p className="font-medium text-paars text-sm flex-1">
-                        {user.minecraft_username || 'Not set'}
+                        {user.minecraft_username || 'Niet ingesteld'}
                       </p>
                       <button
                         onClick={() => setIsEditingMinecraft(true)}
                         className="px-3 py-1 text-xs bg-oranje/20 text-paars rounded-lg font-semibold hover:bg-oranje/30 transition-all"
                       >
-                        {user.minecraft_username ? 'Edit' : 'Add'}
+                        {user.minecraft_username ? 'Bewerken' : 'Toevoegen'}
                       </button>
                     </div>
                   )}
@@ -239,9 +239,9 @@ export default function AccountPagina() {
 
                 {user.membership_expiry && (
                   <div>
-                    <p className="text-sm text-paars/70 font-semibold">Membership Valid Until</p>
+                    <p className="text-sm text-paars/70 font-semibold">Lidmaatschap Geldig Tot</p>
                     <p className="font-medium text-paars">
-                      {format(new Date(user.membership_expiry), 'MMMM d, yyyy')}
+                      {format(new Date(user.membership_expiry), 'd MMMM yyyy')}
                     </p>
                   </div>
                 )}
@@ -250,7 +250,7 @@ export default function AccountPagina() {
 
             {/* Quick Links Section */}
             <div className="border-t-2 border-oranje/20 pt-6 mt-6">
-              <h2 className="text-lg font-semibold text-paars mb-4">Quick Links</h2>
+              <h2 className="text-lg font-semibold text-paars mb-4">Snelle Links</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button
                   onClick={() => navigate('/account/transactions')}
@@ -259,8 +259,8 @@ export default function AccountPagina() {
                   <div className="flex items-center gap-3">
                     <span className="text-3xl">💳</span>
                     <div>
-                      <h3 className="font-semibold text-paars">Transactions</h3>
-                      <p className="text-sm text-paars/70">View your payment history</p>
+                      <h3 className="font-semibold text-paars">Transacties</h3>
+                      <p className="text-sm text-paars/70">Bekijk je betalingsgeschiedenis</p>
                     </div>
                   </div>
                 </button>
@@ -273,13 +273,13 @@ export default function AccountPagina() {
                     <span className="text-3xl">💬</span>
                     <div>
                       <h3 className="font-semibold text-paars flex items-center gap-2">
-                        WhatsApp Groups
+                        WhatsApp Groepen
                         {user.membership_status !== 'active' && (
                           <span className="text-xs px-2 py-0.5 bg-oranje/20 rounded-full">🔒</span>
                         )}
                       </h3>
                       <p className="text-sm text-paars/70">
-                        {user.membership_status === 'active' ? 'Join member groups' : 'Requires active membership'}
+                        {user.membership_status === 'active' ? 'Word lid van groepen' : 'Vereist actief lidmaatschap'}
                       </p>
                     </div>
                   </div>
@@ -290,20 +290,20 @@ export default function AccountPagina() {
 
           {/* Event Signups Section */}
           <div className="bg-white rounded-3xl shadow-2xl p-8 border-4 border-oranje">
-            <h2 className="text-2xl font-bold text-paars mb-6">My Event Registrations</h2>
+            <h2 className="text-2xl font-bold text-paars mb-6">Mijn Evenement Inschrijvingen</h2>
             
             {isLoading ? (
               <div className="text-center py-12">
-                <div className="text-paars">Loading your registrations...</div>
+                <div className="text-paars">Je inschrijvingen worden geladen...</div>
               </div>
             ) : eventSignups.length === 0 ? (
               <div className="text-center py-12">
-                <div className="text-paars mb-4">You haven't registered for any events yet.</div>
+                <div className="text-paars mb-4">Je hebt je nog niet ingeschreven voor evenementen.</div>
                 <button
                   onClick={() => navigate('/activiteiten')}
                   className="px-6 py-3 bg-oranje text-beige rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md"
                 >
-                  Browse Events
+                  Bekijk Evenementen
                 </button>
               </div>
             ) : (
@@ -330,10 +330,10 @@ export default function AccountPagina() {
                         {signup.event_id.name}
                       </h3>
                       <p className="text-sm text-paars/70 mb-2">
-                        Event Date: {format(new Date(signup.event_id.event_date), 'MMMM d, yyyy')}
+                        Evenement Datum: {format(new Date(signup.event_id.event_date), 'd MMMM yyyy')}
                       </p>
                       <p className="text-xs text-paars/50">
-                        Registered on: {format(new Date(signup.created_at), 'MMMM d, yyyy')}
+                        Ingeschreven op: {format(new Date(signup.created_at), 'd MMMM yyyy')}
                       </p>
                     </div>
 
@@ -341,7 +341,7 @@ export default function AccountPagina() {
                       onClick={() => navigate('/activiteiten')}
                       className="px-4 py-2 text-oranje border-2 border-oranje rounded-full font-semibold hover:bg-oranje hover:text-beige transition-all"
                     >
-                      View Details
+                      Bekijk Details
                     </button>
                   </div>
                 ))}
