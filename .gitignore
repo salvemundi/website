@@ -38,6 +38,3 @@ coverage/
 package-lock.json
 yarn.lock
 
-# Images and fonts (if generated)
-public/fonts/
-public/img/
