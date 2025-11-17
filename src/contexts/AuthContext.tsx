@@ -133,6 +133,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const idToken = loginResponse.idToken;
         const userEmail = loginResponse.account.username;
         
+        console.log('🔍 Sending to backend:', { 
+          tokenLength: idToken?.length, 
+          email: userEmail 
+        });
+        
         // Authenticate with backend using Entra ID token
         const response = await authApi.loginWithEntraId(idToken, userEmail);
         localStorage.setItem('auth_token', response.access_token);

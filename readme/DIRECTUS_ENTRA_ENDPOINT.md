@@ -15,15 +15,14 @@ In your Directus project, create this folder structure:
 ```
 directus/
 └── extensions/
-    └── endpoints/
-        └── entra-auth/
+        └─ entra-auth/
             ├── index.js
             └── package.json
 ```
 
 ### Step 2: Create package.json
 
-Create `extensions/endpoints/entra-auth/package.json`:
+Create `extensions/entra-auth/package.json`:
 
 ```json
 {
@@ -52,136 +51,245 @@ Create `extensions/endpoints/entra-auth/package.json`:
 Create `extensions/endpoints/entra-auth/index.js`:
 
 ```javascript
-const jwt = require('jsonwebtoken');
-const fetch = require('node-fetch');
+export default function (router, { services, exceptions, database, logger }) {
+  const { ItemsService, UsersService } = services;
+  const { ServiceUnavailableException } = exceptions;
 
-export default {
-  id: 'entra-auth',
-  handler: (router, { services, exceptions, database, logger }) => {
-    const { UsersService, AuthenticationService } = services;
-    const { InvalidPayloadException, InvalidCredentialsException } = exceptions;
-
-    router.post('/login/entra', async (req, res, next) => {
-      try {
-        const { token, email } = req.body;
-
-        if (!token || !email) {
-          throw new InvalidPayloadException('Token and email are required');
+  router.post('/auth/login/entra', async (req, res) => {
+    try {
+      // Read and parse the request body
+      let body = req.body;
+      
+      // If body is a string, parse it
+      if (typeof body === 'string') {
+        try {
+          body = JSON.parse(body);
+        } catch (e) {
+          logger.error('Failed to parse request body:', e);
         }
-
-        // Verify Microsoft token
-        const microsoftUser = await verifyMicrosoftToken(token);
-        
-        if (!microsoftUser || microsoftUser.email.toLowerCase() !== email.toLowerCase()) {
-          throw new InvalidCredentialsException('Invalid Microsoft token');
-        }
-
-        // Find or create user in Directus
-        const usersService = new UsersService({ schema: req.schema, accountability: req.accountability });
-        
-        // Try to find user by entra_id first, then by email
-        let user = await database('directus_users')
-          .where({ entra_id: microsoftUser.oid })
-          .first();
-
-        if (!user) {
-          user = await database('directus_users')
-            .where({ email: email.toLowerCase() })
-            .first();
-        }
-
-        // If user doesn't exist, create one (optional - you might want to restrict this)
-        if (!user) {
-          // Check if member exists in members table
-          const member = await database('members')
-            .where({ fontys_email: email.toLowerCase() })
-            .orWhere({ email: email.toLowerCase() })
-            .first();
-
-          if (!member) {
-            throw new InvalidCredentialsException('No member account found for this email');
-          }
-
-          // Create Directus user linked to member
-          user = await usersService.createOne({
-            email: email.toLowerCase(),
-            entra_id: microsoftUser.oid,
-            first_name: microsoftUser.given_name || member.first_name,
-            last_name: microsoftUser.family_name || member.last_name,
-            fontys_email: email.toLowerCase(),
-            role: process.env.DEFAULT_USER_ROLE_ID,
-            status: 'active',
-            provider: 'entra'
-          });
-        } else {
-          // Update user's entra_id if not set
-          if (!user.entra_id) {
-            await usersService.updateOne(user.id, {
-              entra_id: microsoftUser.oid,
-              fontys_email: email.toLowerCase()
-            });
-          }
-        }
-
-        // Create authentication session
-        const authService = new AuthenticationService({ schema: req.schema, accountability: req.accountability });
-        const { accessToken, refreshToken, expires } = await authService.login('default', {
-          email: user.email,
-          password: null // Skip password check for SSO
-        }, {
-          session: true
-        });
-
-        // Return tokens
-        res.json({
-          data: {
-            access_token: accessToken,
-            refresh_token: refreshToken,
-            expires: expires
-          }
-        });
-
-      } catch (error) {
-        logger.error('Entra authentication error:', error);
-        next(error);
       }
-    });
-  }
-};
 
-// Helper function to verify Microsoft token
-async function verifyMicrosoftToken(idToken) {
-  try {
-    // Decode token without verification (for development)
-    // In production, you should verify the signature
-    const decoded = jwt.decode(idToken, { complete: true });
-    
-    if (!decoded) {
-      throw new Error('Invalid token format');
+      logger.info('📥 Request received');
+      logger.info('hasBody: ' + !!body);
+      logger.info('bodyType: ' + typeof body);
+      logger.info('bodyKeys: ' + (body ? JSON.stringify(Object.keys(body)) : 'null'));
+      logger.info('body content: ' + JSON.stringify(body));
+
+      const { token, email } = body || {};
+      
+      logger.info('Extracted token: ' + (token ? 'YES (length: ' + token.length + ')' : 'NO'));
+      logger.info('Extracted email: ' + (email || 'NONE'));
+
+      if (!token || !email) {
+        logger.error('Missing token or email in request');
+        logger.error('hasToken: ' + !!token);
+        logger.error('hasEmail: ' + !!email);
+        logger.error('tokenLength: ' + (token ? token.length : 0));
+        return res.status(400).json({ 
+          error: 'Missing required fields: token and email',
+          received: { hasToken: !!token, hasEmail: !!email }
+        });
+      }
+
+      logger.info('🔐 Entra ID login attempt for: ' + email);
+
+      // Verify Microsoft token
+      const microsoftUser = await verifyMicrosoftToken(token);
+      logger.info('✅ Microsoft token verified for: ' + microsoftUser.email);
+
+      // Check if user exists
+      // Use accountability: null to bypass permissions (we're authenticating, so no user exists yet)
+      const usersService = new UsersService({ schema: req.schema, accountability: null });
+      
+      let user = null;
+      
+      // Try to find user by entra_id first
+      if (microsoftUser.oid) {
+        const usersByEntraId = await database('directus_users')
+          .where('entra_id', microsoftUser.oid)
+          .first();
+        
+        if (usersByEntraId) {
+          user = usersByEntraId;
+          logger.info('✅ Found user by entra_id: ' + user.id);
+        }
+      }
+      
+      // If not found by entra_id, try by email
+      if (!user) {
+        const usersByEmail = await database('directus_users')
+          .where('email', email.toLowerCase())
+          .first();
+        
+        if (usersByEmail) {
+          user = usersByEmail;
+          logger.info('✅ Found user by email: ' + user.id);
+        }
+      }
+
+      const isFontysMember = email.toLowerCase().endsWith('@student.fontys.nl') || 
+                            email.toLowerCase().endsWith('@fontys.nl');
+      
+      if (!user) {
+        // Create new user
+        logger.info('📝 Creating new user for: ' + email);
+        
+        const newUser = {
+          email: email.toLowerCase(),
+          first_name: microsoftUser.given_name || '',
+          last_name: microsoftUser.family_name || '',
+          entra_id: microsoftUser.oid,
+          fontys_email: isFontysMember ? email.toLowerCase() : null,
+          status: 'active',
+          role: process.env.DEFAULT_USER_ROLE_ID || null,
+          password: Math.random().toString(36).substring(2, 15), // Random password (won't be used)
+        };
+
+        user = await usersService.createOne(newUser);
+        logger.info('✅ User created: ' + user.id);
+      } else {
+        // Update existing user with Entra ID and sync data from Microsoft
+        logger.info('🔄 Updating existing user: ' + user.id);
+        
+        const updates = {};
+        
+        // Always update entra_id if not set
+        if (!user.entra_id && microsoftUser.oid) {
+          updates.entra_id = microsoftUser.oid;
+        }
+        
+        // Update fontys_email if user is a Fontys member
+        if (isFontysMember && !user.fontys_email) {
+          updates.fontys_email = email.toLowerCase();
+        }
+
+        // Sync name from Microsoft if it changed
+        if (microsoftUser.given_name && user.first_name !== microsoftUser.given_name) {
+          updates.first_name = microsoftUser.given_name;
+        }
+        if (microsoftUser.family_name && user.last_name !== microsoftUser.family_name) {
+          updates.last_name = microsoftUser.family_name;
+        }
+        
+        // Sync email if it changed
+        if (email.toLowerCase() !== user.email) {
+          updates.email = email.toLowerCase();
+        }
+
+        if (Object.keys(updates).length > 0) {
+          await usersService.updateOne(user.id, updates);
+          logger.info('✅ User updated with: ' + JSON.stringify(updates));
+        }
+      }
+
+      // Generate Directus access token
+      logger.info('🎫 Generating Directus tokens for user: ' + user.id);
+      
+      // Import JWT library to create tokens manually
+      const jwt = await import('jsonwebtoken');
+      const ms = await import('ms');
+      
+      // Get environment variables for token configuration
+      const SECRET = process.env.SECRET || 'directus-secret';
+      const ACCESS_TOKEN_TTL = process.env.ACCESS_TOKEN_TTL || '15m';
+      const REFRESH_TOKEN_TTL = process.env.REFRESH_TOKEN_TTL || '7d';
+      
+      // Generate access token
+      const accessTokenPayload = {
+        id: user.id,
+        role: user.role,
+        app_access: true,
+        admin_access: user.role === 'admin' || false,
+      };
+      
+      const accessToken = jwt.default.sign(accessTokenPayload, SECRET, {
+        expiresIn: ACCESS_TOKEN_TTL,
+        issuer: 'directus',
+      });
+      
+      // Generate refresh token
+      const refreshTokenPayload = {
+        id: user.id,
+      };
+      
+      const refreshToken = jwt.default.sign(refreshTokenPayload, SECRET, {
+        expiresIn: REFRESH_TOKEN_TTL,
+        issuer: 'directus',
+      });
+
+      // Fetch full user details
+      const fullUser = await usersService.readOne(user.id, {
+        fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'fontys_email', 'phone_number', 'avatar']
+      });
+
+      // Add is_member flag based on entra_id or fontys_email presence
+      const userData = {
+        ...fullUser,
+        is_member: !!(fullUser.entra_id || fullUser.fontys_email),
+      };
+
+      logger.info('✅ Login successful for: ' + email);
+      
+      return res.json({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        user: userData,
+      });
+
+    } catch (error) {
+      logger.error('❌ Entra ID login error: ' + (error.message || 'Unknown error'));
+      logger.error('Error stack: ' + (error.stack || 'No stack trace'));
+      logger.error('Error type: ' + (error.constructor.name || 'Unknown'));
+      return res.status(500).json({ 
+        error: 'Authentication failed',
+        details: error.message 
+      });
     }
+  });
 
-    const payload = decoded.payload;
+  // Verify Microsoft JWT token
+  async function verifyMicrosoftToken(token) {
+    // Dynamic imports for ES modules
+    const jwt = await import('jsonwebtoken');
+    const jwksRsa = await import('jwks-rsa');
+    const jwksClient = jwksRsa.default;
 
-    // Basic validation
-    const now = Math.floor(Date.now() / 1000);
-    if (payload.exp && payload.exp < now) {
-      throw new Error('Token expired');
+    try {
+      // Decode without verification first to get the header
+      const decoded = jwt.default.decode(token, { complete: true });
+      
+      if (!decoded || !decoded.header || !decoded.header.kid) {
+        throw new Error('Invalid token format');
+      }
+
+      // Get the tenant ID from the decoded token
+      const tenantId = decoded.payload.tid || 'common';
+      
+      // Create JWKS client
+      const client = jwksClient({
+        jwksUri: `https://login.microsoftonline.com/${tenantId}/discovery/v2.0/keys`,
+        cache: true,
+        rateLimit: true,
+      });
+
+      // Get the signing key
+      const key = await client.getSigningKey(decoded.header.kid);
+      const signingKey = key.getPublicKey();
+
+      // Verify the token
+      const verified = jwt.default.verify(token, signingKey, {
+        algorithms: ['RS256'],
+        // Don't verify audience or issuer for now - can be added if needed
+      });
+
+      return verified;
+    } catch (error) {
+      logger.error('Token verification failed:', error);
+      throw new Error('Invalid Microsoft token: ' + error.message);
     }
-
-    // Return user info
-    return {
-      oid: payload.oid, // Microsoft user ID
-      email: payload.email || payload.preferred_username,
-      given_name: payload.given_name,
-      family_name: payload.family_name,
-      name: payload.name
-    };
-
-  } catch (error) {
-    console.error('Token verification error:', error);
-    throw new Error('Token verification failed');
   }
 }
+
 ```
 
 ### Step 4: Install Dependencies in Directus
