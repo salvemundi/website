@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
 
 interface ActiviteitDetailModalProps {
   isOpen: boolean;
@@ -25,12 +26,25 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
   isPast = false,
   onSignup,
 }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     studentNumber: "",
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  // Pre-fill form with user data when modal opens
+  useEffect(() => {
+    if (isOpen && user) {
+      const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+      setFormData({
+        name: fullName || "",
+        email: user.email || "",
+        studentNumber: user.phone_number || "", // or leave empty if you prefer
+      });
+    }
+  }, [isOpen, user]);
 
   // Prevent body scroll when modal is open
   React.useEffect(() => {

@@ -32,10 +32,20 @@ export const eventsApi = {
     });
     return directusFetch<any[]>(`/items/events?${query}`);
   },
-  createSignup: async (signupData: { event_id: number; email: string; name: string; student_number?: string }) => {
+  createSignup: async (signupData: { event_id: number; email: string; name: string; student_number?: string; user_id?: string }) => {
+    const payload: any = {
+      event_id: signupData.event_id,
+      directus_relations: signupData.user_id || null,
+    };
+    
+    // Only add optional fields if they exist
+    if (signupData.student_number) {
+      payload.submission_file_url = signupData.student_number;
+    }
+    
     return directusFetch<any>(`/items/event_signups`, {
       method: 'POST',
-      body: JSON.stringify(signupData)
+      body: JSON.stringify(payload)
     });
   }
 };

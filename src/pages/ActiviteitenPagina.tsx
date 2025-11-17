@@ -80,10 +80,14 @@ export default function ActiviteitenPagina() {
       title: activity.name || activity.title,
       price: Number(activity.price_members) || 0
     };
+    
+    // Pre-fill with user data if logged in
+    const fullName = user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : '';
+    
     setCart((prev) => [...prev, { 
       activity: normalizedActivity, 
-      email: "", 
-      name: "", 
+      email: user?.email || "", 
+      name: fullName || "", 
       studentNumber: "" 
     }]);
   };
@@ -110,6 +114,18 @@ export default function ActiviteitenPagina() {
         price: Number(data.activity.price_members) || Number(data.activity.price) || 0
       }
     };
+    
+    // Pre-fill email and name if not provided
+    if (!normalizedData.email && user?.email) {
+      normalizedData.email = user.email;
+    }
+    if (!normalizedData.name && user) {
+      const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+      if (fullName) {
+        normalizedData.name = fullName;
+      }
+    }
+    
     setCart((prev) => [...prev, normalizedData]);
   };
 
