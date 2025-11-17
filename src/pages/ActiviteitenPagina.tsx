@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import Navbar from "../components/NavBar";
 import Header from "../components/header";
 import BackToTopButton from "../components/backtotop";
@@ -11,10 +12,12 @@ import Footer from "../components/Footer";
 import ActiviteitDetailModal from "../components/ActiviteitDetailModal";
 import { useEvents } from "../hooks/useApi";
 import { getImageUrl } from "../lib/api";
+import { createEventSignup } from "../lib/auth";
 
 export default function ActiviteitenPagina() {
   const { data: events = [], isLoading, error } = useEvents();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { user, isAuthenticated } = useAuth();
 
   // Cart: array of { activity, email, name, studentNumber }
   const [cart, setCart] = useState<Array<{ activity: any; email: string; name: string; studentNumber: string }>>([]);
@@ -27,7 +30,7 @@ export default function ActiviteitenPagina() {
   const [showPastActivities, setShowPastActivities] = useState(false);
 
   // Calculate next activity and sort events
-  const { nextActivity, upcomingEvents, pastEvents } = React.useMemo(() => {
+  const { nextActivity, upcomingEvents, pastEvents } = useMemo(() => {
     if (!events || events.length === 0) {
       return { nextActivity: null, upcomingEvents: [], pastEvents: [] };
     }
@@ -49,7 +52,7 @@ export default function ActiviteitenPagina() {
   }, [events]);
 
   // Combine events based on toggle
-  const displayedEvents = React.useMemo(() => {
+  const displayedEvents = useMemo(() => {
     if (showPastActivities) {
       return [...upcomingEvents, ...pastEvents];
     }

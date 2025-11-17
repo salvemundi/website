@@ -1,10 +1,6 @@
 // Directus REST API configuration
-// Always use proxy when running locally (dev or preview) to avoid CORS issues
-// In production deployment, set VITE_DIRECTUS_URL or it will also use /api proxy
-const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
-export const directusUrl = isLocalhost
-  ? '/api'  // Use proxy for localhost (both dev and preview)
-  : (import.meta.env.VITE_DIRECTUS_URL || '/api');
+// Use the environment variable directly - CORS should be configured on Directus server
+export const directusUrl = import.meta.env.VITE_DIRECTUS_URL || 'https://admin.salvemundi.nl';
 
 const apiKey = import.meta.env.VITE_DIRECTUS_API_KEY || 'Dp8exZFEp1l9Whq2o2-5FYeiGoKFwZ2m';
 
