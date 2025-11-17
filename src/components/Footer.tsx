@@ -116,6 +116,11 @@ export default function Footer() {
                 Inschrijven
               </Link>
             </li>
+            <li>
+              <Link to="/kroegentocht" className="hover:text-geel transition-colors">
+                Kroegentocht
+              </Link>
+            </li>
           </ul>
         </div>
 
