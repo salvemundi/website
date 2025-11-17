@@ -204,7 +204,7 @@ export async function logout(refreshToken: string): Promise<void> {
 // Get user's event signups
 export async function getUserEventSignups(userId: string) {
   const query = new URLSearchParams({
-    'filter[user_id][_eq]': userId,
+    'filter[directus_relations][_eq]': userId,
     'fields': 'id,event_id,event_id.id,event_id.name,event_id.event_date,event_id.image,event_id.description,created_at',
     'sort': '-created_at',
   }).toString();
@@ -218,7 +218,7 @@ export async function createEventSignup(eventId: number, userId: string, submiss
     method: 'POST',
     body: JSON.stringify({
       event_id: eventId,
-      user_id: userId,
+      directus_relations: userId,
       submission_file_url: submissionFileUrl,
     }),
   });

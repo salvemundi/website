@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import ConfirmationModal from "./ConfirmationModal";
 import { eventsApi } from "../lib/api";
+import { useAuth } from "../contexts/AuthContext";
 
 interface CartSidebarProps {
   cart: Array<{ 
@@ -31,6 +32,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
   onRemoveTicket, 
   onCheckoutComplete 
 }) => {
+  const { user } = useAuth();
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -92,7 +94,8 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
           event_id: eventId,
           email: item.email,
           name: item.name || '',
-          student_number: item.studentNumber || undefined
+          student_number: item.studentNumber || undefined,
+          user_id: user?.id // Pass the logged-in user's ID
         });
       });
 
