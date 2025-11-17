@@ -11,7 +11,7 @@ export interface User {
   entra_id?: string;
   fontys_email?: string;
   phone_number?: string;
-  picture?: string;
+  avatar?: string;  // Directus uses 'avatar' not 'picture'
   is_member: boolean;
   member_id?: number;
 }

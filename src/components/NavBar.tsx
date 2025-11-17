@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import { useAuth } from "../contexts/AuthContext";
+import { getImageUrl } from "../lib/api-clean";
 
 interface navProps {
   activePage?: string;
@@ -98,16 +99,38 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
           {isAuthenticated ? (
             <button
               type="button"
-              onClick={() => navigate('/account')}
+              onClick={() => {
+                console.log('User object:', user);
+                console.log('User avatar:', user?.avatar);
+                console.log('Avatar check:', !!user?.avatar);
+                console.log('Image URL would be:', user?.avatar ? getImageUrl(user.avatar) : 'no avatar');
+                navigate('/account');
+              }}
               className="bg-oranje text-beige rounded-full font-semibold text-sm px-5 py-3 transition duration-300 hover:scale-105 flex items-center gap-2"
             >
-              {user?.picture ? (
-                <img src={user.picture} alt="Profile" className="w-6 h-6 rounded-full" />
-              ) : (
-                <span className="w-6 h-6 rounded-full bg-geel text-oranje flex items-center justify-center text-xs font-bold">
-                  {user?.first_name?.[0]}{user?.last_name?.[0]}
-                </span>
-              )}
+              {(() => {
+                console.log('Rendering avatar section. user?.avatar =', user?.avatar);
+                if (user?.avatar) {
+                  const imgUrl = getImageUrl(user.avatar);
+                  console.log('Showing image with URL:', imgUrl);
+                  return (
+                    <img 
+                      src={imgUrl} 
+                      alt="Profile" 
+                      className="w-6 h-6 rounded-full object-cover"
+                      onError={(e) => console.error('Image failed to load:', e)}
+                      onLoad={() => console.log('Image loaded successfully!')}
+                    />
+                  );
+                } else {
+                  console.log('Showing initials instead');
+                  return (
+                    <span className="w-6 h-6 rounded-full bg-geel text-oranje flex items-center justify-center text-xs font-bold">
+                      {user?.first_name?.[0]}{user?.last_name?.[0]}
+                    </span>
+                  );
+                }
+              })()}
               <span className="hidden sm:inline">Account</span>
             </button>
           ) : (

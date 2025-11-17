@@ -214,6 +214,30 @@ export const stickersApi = {
 // Helper to construct image URL
 export function getImageUrl(imageId: string | undefined): string {
   if (!imageId) return '/img/backgrounds/Kroto2025.jpg';
-  return `${directusUrl}/assets/${imageId}`;
+  
+  // If imageId looks like a full URL, return as-is
+  if (typeof imageId === 'string' && (imageId.startsWith('http://') || imageId.startsWith('https://'))) {
+    return imageId;
+  }
+  
+  // Get the access token from localStorage for authenticated requests
+  let token: string | null = null;
+  try {
+    // The token is stored as 'auth_token' not 'access_token'
+    token = localStorage.getItem('auth_token');
+    console.log('getImageUrl: Token found in localStorage:', !!token);
+  } catch (e) {
+    console.warn('getImageUrl: Could not access localStorage', e);
+  }
+  
+  // Directus v10+ uses /assets/ for serving files
+  // Add access_token as query parameter for authentication
+  const imageUrl = token 
+    ? `${directusUrl}/assets/${imageId}?access_token=${token}`
+    : `${directusUrl}/assets/${imageId}`;
+  
+  console.log('getImageUrl: Final URL:', imageUrl);
+  
+  return imageUrl;
 }
 
