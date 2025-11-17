@@ -190,17 +190,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     const refreshToken = localStorage.getItem('refresh_token');
     if (refreshToken) {
-      await authApi.logout(refreshToken);
-    }
-    
-    // Also logout from Microsoft if logged in via MSAL
-    if (msalInstance) {
-      const accounts = msalInstance.getAllAccounts();
-      if (accounts.length > 0) {
-        await msalInstance.logoutPopup();
+      try {
+        await authApi.logout(refreshToken);
+      } catch (error) {
+        console.error('Failed to logout from Directus:', error);
       }
     }
     
+    // Only clear local session, don't logout from Microsoft
     localStorage.removeItem('auth_token');
     localStorage.removeItem('refresh_token');
     setUser(null);
