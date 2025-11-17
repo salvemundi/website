@@ -26,6 +26,10 @@ export default function AccountPagina() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log('🔍 AccountPagina - Current user state:', user);
+  }, [user]);
+
+  useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       navigate('/login');
     }
@@ -92,16 +96,23 @@ export default function AccountPagina() {
                 
                 <div>
                   <h1 className="text-3xl font-bold text-paars mb-2">
-                    {user.first_name} {user.last_name}
+                    {user.first_name && user.last_name 
+                      ? `${user.first_name} ${user.last_name}`
+                      : user.email || 'User'}
                   </h1>
+                  {(!user.first_name || !user.last_name) && (
+                    <p className="text-sm text-paars/70 mb-2">
+                      (Name not set)
+                    </p>
+                  )}
                   <div className="flex items-center gap-2">
                     {user.is_member ? (
                       <span className="px-3 py-1 bg-geel text-paars text-sm font-semibold rounded-full">
                         Active Member
                       </span>
                     ) : (
-                      <span className="px-3 py-1 bg-gray-100 text-paars text-sm font-semibold rounded-full">
-                        Guest
+                      <span className="px-3 py-1 bg-oranje/20 text-paars text-sm font-semibold rounded-full">
+                        Registered User
                       </span>
                     )}
                   </div>
@@ -138,12 +149,12 @@ export default function AccountPagina() {
                   </div>
                 )}
 
-                {user.entra_id && (
-                  <div>
-                    <p className="text-sm text-paars/70 font-semibold">Login Method</p>
-                    <p className="font-medium text-paars">Microsoft Account</p>
-                  </div>
-                )}
+                <div>
+                  <p className="text-sm text-paars/70 font-semibold">Login Method</p>
+                  <p className="font-medium text-paars">
+                    {user.entra_id ? 'Microsoft Account' : 'Email & Password'}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
