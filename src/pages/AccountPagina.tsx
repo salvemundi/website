@@ -60,47 +60,47 @@ export default function AccountPagina() {
 
   if (authLoading || !user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
+      <div className="min-h-screen bg-beige flex items-center justify-center">
+        <div className="text-paars text-xl font-semibold">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
+    <div className="min-h-screen bg-beige">
       <NavBar />
       
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto">
           {/* Profile Section */}
-          <div className="bg-white rounded-xl shadow-2xl p-8 mb-8">
+          <div className="bg-white rounded-3xl shadow-2xl p-8 mb-8 border-4 border-oranje">
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center gap-6">
                 {user.avatar ? (
                   <img
                     src={getImageUrl(user.avatar)}
                     alt={`${user.first_name} ${user.last_name}`}
-                    className="w-24 h-24 rounded-full object-cover border-4 border-purple-200"
+                    className="w-24 h-24 rounded-full object-cover border-4 border-oranje"
                   />
                 ) : (
-                  <div className="w-24 h-24 rounded-full bg-purple-200 flex items-center justify-center border-4 border-purple-300">
-                    <span className="text-3xl font-bold text-purple-600">
+                  <div className="w-24 h-24 rounded-full bg-geel flex items-center justify-center border-4 border-oranje">
+                    <span className="text-3xl font-bold text-paars">
                       {user.first_name?.[0]}{user.last_name?.[0]}
                     </span>
                   </div>
                 )}
                 
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  <h1 className="text-3xl font-bold text-paars mb-2">
                     {user.first_name} {user.last_name}
                   </h1>
                   <div className="flex items-center gap-2">
                     {user.is_member ? (
-                      <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-semibold rounded-full">
+                      <span className="px-3 py-1 bg-geel text-paars text-sm font-semibold rounded-full">
                         Active Member
                       </span>
                     ) : (
-                      <span className="px-3 py-1 bg-gray-100 text-gray-800 text-sm font-semibold rounded-full">
+                      <span className="px-3 py-1 bg-gray-100 text-paars text-sm font-semibold rounded-full">
                         Guest
                       </span>
                     )}
@@ -110,38 +110,38 @@ export default function AccountPagina() {
 
               <button
                 onClick={handleLogout}
-                className="px-6 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition-colors"
+                className="px-6 py-2 bg-paars text-beige rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md"
               >
                 Logout
               </button>
             </div>
 
-            <div className="border-t pt-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Account Information</h2>
+            <div className="border-t-2 border-oranje/20 pt-6">
+              <h2 className="text-lg font-semibold text-paars mb-4">Account Information</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-600">Email</p>
-                  <p className="font-medium text-gray-900">{user.email}</p>
+                  <p className="text-sm text-paars/70 font-semibold">Email</p>
+                  <p className="font-medium text-paars">{user.email}</p>
                 </div>
                 
                 {user.fontys_email && (
                   <div>
-                    <p className="text-sm text-gray-600">Fontys Email</p>
-                    <p className="font-medium text-gray-900">{user.fontys_email}</p>
+                    <p className="text-sm text-paars/70 font-semibold">Fontys Email</p>
+                    <p className="font-medium text-paars">{user.fontys_email}</p>
                   </div>
                 )}
                 
                 {user.phone_number && (
                   <div>
-                    <p className="text-sm text-gray-600">Phone Number</p>
-                    <p className="font-medium text-gray-900">{user.phone_number}</p>
+                    <p className="text-sm text-paars/70 font-semibold">Phone Number</p>
+                    <p className="font-medium text-paars">{user.phone_number}</p>
                   </div>
                 )}
 
                 {user.entra_id && (
                   <div>
-                    <p className="text-sm text-gray-600">Login Method</p>
-                    <p className="font-medium text-gray-900">Microsoft Account</p>
+                    <p className="text-sm text-paars/70 font-semibold">Login Method</p>
+                    <p className="font-medium text-paars">Microsoft Account</p>
                   </div>
                 )}
               </div>
@@ -149,19 +149,19 @@ export default function AccountPagina() {
           </div>
 
           {/* Event Signups Section */}
-          <div className="bg-white rounded-xl shadow-2xl p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">My Event Registrations</h2>
+          <div className="bg-white rounded-3xl shadow-2xl p-8 border-4 border-oranje">
+            <h2 className="text-2xl font-bold text-paars mb-6">My Event Registrations</h2>
             
             {isLoading ? (
               <div className="text-center py-12">
-                <div className="text-gray-600">Loading your registrations...</div>
+                <div className="text-paars">Loading your registrations...</div>
               </div>
             ) : eventSignups.length === 0 ? (
               <div className="text-center py-12">
-                <div className="text-gray-600 mb-4">You haven't registered for any events yet.</div>
+                <div className="text-paars mb-4">You haven't registered for any events yet.</div>
                 <button
                   onClick={() => navigate('/activiteiten')}
-                  className="px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors"
+                  className="px-6 py-3 bg-oranje text-beige rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md"
                 >
                   Browse Events
                 </button>
@@ -171,35 +171,35 @@ export default function AccountPagina() {
                 {eventSignups.map((signup) => (
                   <div
                     key={signup.id}
-                    className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors"
+                    className="flex items-center gap-4 p-4 border-2 border-oranje/20 rounded-xl hover:border-oranje transition-all hover:shadow-md"
                   >
                     {signup.event_id.image ? (
                       <img
                         src={getImageUrl(signup.event_id.image)}
                         alt={signup.event_id.name}
-                        className="w-24 h-24 rounded-lg object-cover"
+                        className="w-24 h-24 rounded-xl object-cover border-2 border-oranje"
                       />
                     ) : (
-                      <div className="w-24 h-24 rounded-lg bg-purple-100 flex items-center justify-center">
-                        <span className="text-purple-600 text-2xl">📅</span>
+                      <div className="w-24 h-24 rounded-xl bg-geel flex items-center justify-center border-2 border-oranje">
+                        <span className="text-paars text-2xl">📅</span>
                       </div>
                     )}
                     
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                      <h3 className="text-lg font-semibold text-paars mb-1">
                         {signup.event_id.name}
                       </h3>
-                      <p className="text-sm text-gray-600 mb-2">
+                      <p className="text-sm text-paars/70 mb-2">
                         Event Date: {format(new Date(signup.event_id.event_date), 'MMMM d, yyyy')}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-paars/50">
                         Registered on: {format(new Date(signup.created_at), 'MMMM d, yyyy')}
                       </p>
                     </div>
 
                     <button
                       onClick={() => navigate('/activiteiten')}
-                      className="px-4 py-2 text-purple-600 border border-purple-600 rounded-lg font-semibold hover:bg-purple-50 transition-colors"
+                      className="px-4 py-2 text-oranje border-2 border-oranje rounded-full font-semibold hover:bg-oranje hover:text-beige transition-all"
                     >
                       View Details
                     </button>

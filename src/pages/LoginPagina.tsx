@@ -38,13 +38,13 @@ export default function LoginPagina() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
+    <div className="min-h-screen bg-beige">
       <NavBar />
       
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-md mx-auto">
-          <div className="bg-white rounded-xl shadow-2xl p-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2 text-center">
+          <div className="bg-white rounded-3xl shadow-2xl p-8 border-4 border-oranje">
+            <h1 className="text-3xl font-bold text-paars mb-2 text-center">
               Welcome Back
             </h1>
             <p className="text-gray-600 text-center mb-8">
@@ -61,7 +61,7 @@ export default function LoginPagina() {
             <button
               onClick={handleMicrosoftLogin}
               disabled={isLoading}
-              className="w-full mb-6 flex items-center justify-center gap-3 px-6 py-3 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full mb-6 flex items-center justify-center gap-3 px-6 py-3 bg-paars text-beige rounded-full hover:bg-opacity-90 transition-all hover:scale-105 shadow-md disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
             >
               <svg className="w-5 h-5" viewBox="0 0 23 23" fill="none">
                 <path fill="#f25022" d="M0 0h11v11H0z"/>
@@ -69,24 +69,24 @@ export default function LoginPagina() {
                 <path fill="#7fba00" d="M0 12h11v11H0z"/>
                 <path fill="#ffb900" d="M12 12h11v11H12z"/>
               </svg>
-              <span className="font-semibold text-gray-700">
+              <span>
                 {isLoading ? 'Logging in...' : 'Login with Microsoft'}
               </span>
             </button>
 
             <div className="relative mb-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
+                <div className="w-full border-t border-oranje/30"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-gray-500">Or continue with email</span>
+                <span className="px-4 bg-white text-paars font-semibold">Or continue with email</span>
               </div>
             </div>
 
             {/* Email/Password Login Form */}
             <form onSubmit={handleEmailLogin} className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="email" className="block text-sm font-semibold text-paars mb-2">
                   Email Address
                 </label>
                 <input
@@ -95,13 +95,13 @@ export default function LoginPagina() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border-2 border-paars/20 rounded-xl focus:ring-2 focus:ring-oranje focus:border-oranje transition-all"
                   placeholder="your.email@example.com"
                 />
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="password" className="block text-sm font-semibold text-paars mb-2">
                   Password
                 </label>
                 <input
@@ -110,7 +110,7 @@ export default function LoginPagina() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border-2 border-paars/20 rounded-xl focus:ring-2 focus:ring-oranje focus:border-oranje transition-all"
                   placeholder="••••••••"
                 />
               </div>
@@ -118,7 +118,7 @@ export default function LoginPagina() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-3 bg-oranje text-beige rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Logging in...' : 'Login'}
               </button>
@@ -127,17 +127,17 @@ export default function LoginPagina() {
             <div className="mt-6 text-center">
               <p className="text-gray-600 text-sm">
                 Don't have an account?{' '}
-                <Link to="/signup" className="text-purple-600 hover:text-purple-700 font-semibold">
+                <Link to="/signup" className="text-oranje hover:text-paars font-semibold transition-colors">
                   Sign up
                 </Link>
               </p>
             </div>
 
-            <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-900">
+            <div className="mt-8 p-4 bg-geel/20 border-2 border-geel rounded-xl">
+              <p className="text-sm text-paars">
                 <strong>For Salve Mundi members:</strong> Use "Login with Microsoft" with your Fontys account.
               </p>
-              <p className="text-sm text-blue-700 mt-2">
+              <p className="text-sm text-paars mt-2">
                 <strong>Not a member?</strong> Create an account with email and password to sign up for events.
               </p>
             </div>
