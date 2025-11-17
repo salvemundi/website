@@ -14,6 +14,9 @@ export interface User {
   avatar?: string;  // Directus uses 'avatar' not 'picture'
   is_member: boolean;
   member_id?: number;
+  membership_status?: 'active' | 'expired' | 'none';
+  membership_expiry?: string; // ISO date string
+  minecraft_username?: string;
 }
 
 // Initialize MSAL instance with error handling

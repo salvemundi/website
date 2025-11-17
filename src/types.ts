@@ -154,3 +154,26 @@ export interface Sticker {
   id: number;
   date_created: string;
 }
+
+// Transactions
+export interface Transaction {
+  id: number;
+  user_id: string;
+  amount: number;
+  description: string;
+  transaction_type: 'payment' | 'membership' | 'event' | 'other';
+  status: 'pending' | 'completed' | 'failed';
+  created_at: string;
+  updated_at?: string;
+}
+
+// WhatsApp Groups
+export interface WhatsAppGroup {
+  id: number;
+  name: string;
+  description?: string;
+  invite_link: string;
+  is_active: boolean;
+  requires_membership: boolean;
+  created_at: string;
+}

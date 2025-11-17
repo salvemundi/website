@@ -12,6 +12,8 @@ import CommissieDetailPagina from "./pages/CommissieDetailPagina";
 import LoginPagina from "./pages/LoginPagina";
 import SignupPagina from "./pages/SignupPagina";
 import AccountPagina from "./pages/AccountPagina";
+import TransactionsPagina from "./pages/TransactionsPagina";
+import WhatsAppGroupsPagina from "./pages/WhatsAppGroupsPagina";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -42,6 +44,22 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <AccountPagina />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/account/transactions" 
+              element={
+                <ProtectedRoute>
+                  <TransactionsPagina />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/account/whatsapp-groups" 
+              element={
+                <ProtectedRoute>
+                  <WhatsAppGroupsPagina />
                 </ProtectedRoute>
               } 
             />

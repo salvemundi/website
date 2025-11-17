@@ -233,6 +233,9 @@ export async function fetchUserDetails(token: string): Promise<User> {
       avatar: user.avatar,
       is_member: isMember,
       member_id: undefined, // No longer using members table
+      membership_status: user.membership_status,
+      membership_expiry: user.membership_expiry,
+      minecraft_username: user.minecraft_username,
     };
     
     console.log('✅ Processed user details:', {
@@ -319,4 +322,82 @@ export async function createEventSignup(eventId: number, userId: string, submiss
       submission_file_url: submissionFileUrl,
     }),
   });
+}
+
+// Update minecraft username
+export async function updateMinecraftUsername(userId: string, minecraftUsername: string, token: string) {
+  const response = await fetch(`${directusUrl}/users/${userId}`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      minecraft_username: minecraftUsername,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to update minecraft username');
+  }
+
+  return response.json();
+}
+
+// Get user transactions
+export async function getUserTransactions(userId: string, token: string) {
+  const query = new URLSearchParams({
+    'filter[user_id][_eq]': userId,
+    'sort': '-created_at',
+  }).toString();
+
+  const response = await fetch(`${directusUrl}/items/transactions?${query}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    // If 403, the collection might not exist or user doesn't have permission
+    if (response.status === 403) {
+      console.warn('Transactions collection not accessible. Returning empty array.');
+      return [];
+    }
+    throw new Error('Failed to fetch transactions');
+  }
+
+  const data = await response.json();
+  return data.data || [];
+}
+
+// Get WhatsApp groups
+export async function getWhatsAppGroups(token: string, memberOnly: boolean = false) {
+  const filter = memberOnly 
+    ? { is_active: { _eq: true }, requires_membership: { _eq: true } }
+    : { is_active: { _eq: true } };
+  
+  const query = new URLSearchParams({
+    'filter': JSON.stringify(filter),
+    'sort': 'name',
+  }).toString();
+
+  const response = await fetch(`${directusUrl}/items/whatsapp_groups?${query}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    // If 403, the collection might not exist or user doesn't have permission
+    if (response.status === 403) {
+      console.warn('WhatsApp groups collection not accessible. Returning empty array.');
+      return [];
+    }
+    throw new Error('Failed to fetch WhatsApp groups');
+  }
+
+  const data = await response.json();
+  return data.data || [];
 }
