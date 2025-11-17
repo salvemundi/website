@@ -47,9 +47,16 @@ export async function loginWithPassword(email: string, password: string): Promis
 // Login with Microsoft Entra ID
 export async function loginWithEntraId(entraIdToken: string, userEmail: string): Promise<LoginResponse> {
   try {
+    console.log('📤 Sending login request:', {
+      url: `${directusUrl}/directus-extension-entra-auth/auth/login/entra`,
+      tokenPresent: !!entraIdToken,
+      tokenLength: entraIdToken?.length,
+      email: userEmail
+    });
+    
     // This endpoint should be created on your Directus backend
     // It will verify the Entra ID token and match it with the user's entra_id field
-    const response = await fetch(`${directusUrl}/auth/login/entra`, {
+    const response = await fetch(`${directusUrl}/directus-extension-entra-auth/auth/login/entra`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -62,19 +69,18 @@ export async function loginWithEntraId(entraIdToken: string, userEmail: string):
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.errors?.[0]?.message || 'Microsoft login failed');
+      throw new Error(error.error || error.errors?.[0]?.message || 'Microsoft login failed');
     }
 
     const data = await response.json();
+    console.log('📦 Received from backend:', data);
     
-    // Fetch full user details
-    const userDetails = await fetchUserDetails(data.data.access_token);
-    
+    // The backend returns the data directly, not nested in data.data
     return {
-      access_token: data.data.access_token,
-      refresh_token: data.data.refresh_token,
-      expires: data.data.expires,
-      user: userDetails,
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      expires: data.expires,
+      user: data.user, // Backend already returns full user details
     };
   } catch (error) {
     console.error('Entra ID login error:', error);
