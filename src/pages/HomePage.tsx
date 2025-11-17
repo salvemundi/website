@@ -26,7 +26,7 @@ export default function Home() {
           <Navbar activePage="Home" />
           <Header
             title="SALVE MUNDI"
-            backgroundImage="/img/backgrounds/Kroto2025.jpg"
+            backgroundImage=" /img/backgrounds/homepage-banner.jpg"
             className=""
           />
         </div>
