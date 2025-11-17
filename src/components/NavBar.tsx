@@ -1,7 +1,10 @@
 // Navbar.tsx
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import gsap from "gsap";
+import { useAuth } from "../contexts/AuthContext";
+import { getImageUrl } from "../lib/api-clean";
 
 interface navProps {
   activePage?: string;
@@ -9,6 +12,8 @@ interface navProps {
 
 // Responsive NavBar with scroll animation and GSAP mobile menu
 const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
+  const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -89,14 +94,36 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
           ))}
         </div>
 
-        {/* Login + Hamburger */}
+        {/* Auth buttons + Hamburger */}
         <div className="flex items-center space-x-2">
-          <button
-            type="button"
-            className="bg-oranje text-beige rounded-full font-semibold text-sm px-5 py-3 transition duration-300 hover:scale-105"
-          >
-            Login
-          </button>
+          {isAuthenticated ? (
+            <button
+              type="button"
+              onClick={() => navigate('/account')}
+              className="bg-oranje text-beige rounded-full font-semibold text-sm px-5 py-3 transition duration-300 hover:scale-105 flex items-center gap-2"
+            >
+              {user?.avatar ? (
+                <img 
+                  src={getImageUrl(user.avatar)} 
+                  alt="Profile" 
+                  className="w-6 h-6 rounded-full object-cover"
+                />
+              ) : (
+                <span className="w-6 h-6 rounded-full bg-geel text-oranje flex items-center justify-center text-xs font-bold">
+                  {user?.first_name?.[0]}{user?.last_name?.[0]}
+                </span>
+              )}
+              <span className="hidden sm:inline">Account</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              className="bg-oranje text-beige rounded-full font-semibold text-sm px-5 py-3 transition duration-300 hover:scale-105"
+            >
+              Login
+            </button>
+          )}
 
           {/* Hamburger */}
           <button
@@ -163,6 +190,27 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
               </a>
             </li>
           ))}
+          
+          {/* Auth links in mobile menu */}
+          <li className="pt-4 border-t border-beige/30 w-full text-center">
+            {isAuthenticated ? (
+              <a
+                href="/account"
+                className="block font-semibold text-beige hover:text-geel transition duration-300"
+                onClick={() => setMenuOpen(false)}
+              >
+                My Account
+              </a>
+            ) : (
+              <a
+                href="/login"
+                className="block font-semibold text-beige hover:text-geel transition duration-300"
+                onClick={() => setMenuOpen(false)}
+              >
+                Login / Sign Up
+              </a>
+            )}
+          </li>
         </ul>
       </div>
     </nav>
