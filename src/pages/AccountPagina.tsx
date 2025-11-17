@@ -33,6 +33,8 @@ export default function AccountPagina() {
 
   useEffect(() => {
     if (user?.id) {
+      console.log('Current user data:', user);
+      console.log('User avatar:', user?.avatar);
       loadEventSignups();
     } else {
       setIsLoading(false);
@@ -76,16 +78,16 @@ export default function AccountPagina() {
           <div className="bg-white rounded-xl shadow-2xl p-8 mb-8">
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center gap-6">
-                {user.picture ? (
+                {user.avatar ? (
                   <img
-                    src={getImageUrl(user.picture)}
+                    src={getImageUrl(user.avatar)}
                     alt={`${user.first_name} ${user.last_name}`}
                     className="w-24 h-24 rounded-full object-cover border-4 border-purple-200"
                   />
                 ) : (
                   <div className="w-24 h-24 rounded-full bg-purple-200 flex items-center justify-center border-4 border-purple-300">
                     <span className="text-3xl font-bold text-purple-600">
-                      {user.first_name[0]}{user.last_name[0]}
+                      {user.first_name?.[0]}{user.last_name?.[0]}
                     </span>
                   </div>
                 )}

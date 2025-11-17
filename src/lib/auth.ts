@@ -19,23 +19,38 @@ export async function loginWithPassword(email: string, password: string): Promis
       body: JSON.stringify({
         email,
         password,
+        mode: 'cookie', // Optional: use session mode
       }),
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.errors?.[0]?.message || 'Login failed');
+      const errorData = await response.json().catch(() => ({}));
+      const errorMsg = errorData.errors?.[0]?.message || errorData.message || 'Invalid user credentials.';
+      
+      // Provide helpful error messages
+      if (response.status === 401) {
+        if (errorMsg.includes('Invalid user credentials')) {
+          throw new Error('Email or password is incorrect. If you signed up with Microsoft, please use "Login with Microsoft" instead.');
+        }
+      }
+      
+      throw new Error(errorMsg);
     }
 
     const data = await response.json();
     
+    console.log('Login response:', data);
+    
+    // Directus wraps the response in a 'data' object
+    const authData = data.data || data;
+    
     // Fetch full user details including member data
-    const userDetails = await fetchUserDetails(data.data.access_token);
+    const userDetails = await fetchUserDetails(authData.access_token);
     
     return {
-      access_token: data.data.access_token,
-      refresh_token: data.data.refresh_token,
-      expires: data.data.expires,
+      access_token: authData.access_token,
+      refresh_token: authData.refresh_token,
+      expires: authData.expires,
       user: userDetails,
     };
   } catch (error) {
@@ -141,7 +156,7 @@ export async function fetchUserDetails(token: string): Promise<User> {
       entra_id: user.entra_id,
       fontys_email: user.fontys_email,
       phone_number: user.phone_number,
-      picture: user.avatar,
+      avatar: user.avatar,
       is_member: isMember,
       member_id: undefined, // No longer using members table
     };
@@ -205,7 +220,7 @@ export async function logout(refreshToken: string): Promise<void> {
 export async function getUserEventSignups(userId: string) {
   const query = new URLSearchParams({
     'filter[directus_relations][_eq]': userId,
-    'fields': 'id,event_id,event_id.id,event_id.name,event_id.event_date,event_id.image,event_id.description,created_at',
+    'fields': 'id,event_id.id,event_id.name,event_id.event_date,event_id.image,event_id.description,created_at',
     'sort': '-created_at',
   }).toString();
   
