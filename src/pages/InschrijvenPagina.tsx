@@ -1,5 +1,6 @@
-// src/pages/Home.tsx
-import React, { useState, useEffect } from 'react';
+// src/pages/InschrijvenPagina.tsx
+import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/NavBar';
 import Header from '../components/header';
 import BackToTopButton from '../components/backtotop';
@@ -14,13 +15,15 @@ import { Grid } from '@giphy/react-components';
 const gf = new GiphyFetch('rEB6G7lJ2bM6n1enoImai0iGoFm7tMnm');
 
 export default function SignUp() {
+  const { user } = useAuth();
+  
   const [form, setForm] = useState({
-    voornaam: '',
+    voornaam: user?.first_name || '',
     tussenvoegsel: '',
-    achternaam: '',
-    email: '',
+    achternaam: user?.last_name || '',
+    email: user?.email || '',
     geboortedatum: null as Date | null,
-    telefoon: '',
+    telefoon: user?.phone_number || '',
     favorieteGif: '',
   });
   const [submitted, setSubmitted] = useState(false);
@@ -53,6 +56,19 @@ export default function SignUp() {
     console.log('Form verstuurd:', form);
   };
 
+  // Pre-fill form with user data when user loads
+  useEffect(() => {
+    if (user) {
+      setForm(prev => ({
+        ...prev,
+        voornaam: user.first_name || prev.voornaam,
+        achternaam: user.last_name || prev.achternaam,
+        email: user.email || prev.email,
+        telefoon: user.phone_number || prev.telefoon,
+      }));
+    }
+  }, [user]);
+
   // Run default search on page load
   useEffect(() => {
     searchGifs(gifQuery);
@@ -76,8 +92,19 @@ export default function SignUp() {
             Inschrijfformulier
           </h1>
 
-          {submitted ? (
-            <div className="text-green-600 text-xl font-semibold">
+          {user?.is_member ? (
+            <div className="text-geel text-xl">
+              <p className="mb-4">Je bent al lid van Salve Mundi!</p>
+              <p className="text-beige text-base">
+                Je kunt nu deelnemen aan alle activiteiten. Ga naar de{' '}
+                <a href="/activiteiten" className="text-geel underline">
+                  activiteiten pagina
+                </a>{' '}
+                om je in te schrijven voor evenementen.
+              </p>
+            </div>
+          ) : submitted ? (
+            <div className="text-geel text-xl font-semibold">
               Bedankt voor je inschrijving! We nemen snel contact met je op.
             </div>
           ) : (
