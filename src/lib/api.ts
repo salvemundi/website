@@ -170,6 +170,12 @@ export const pubCrawlEventsApi = {
       sort: ['-created_at']
     });
     return directusFetch<any[]>(`/items/pub_crawl_events?${query}`);
+  },
+  create: async (data: { name: string; email: string; association: string; amount_tickets: number }) => {
+    return directusFetch<any>(`/items/pub_crawl_events`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
   }
 };
 
