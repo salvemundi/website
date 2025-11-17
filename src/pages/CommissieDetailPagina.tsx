@@ -26,17 +26,6 @@ export default function CommissieDetailPagina() {
   const { data: committee, isLoading: committeeLoading, error: committeeError } = useCommittee(committeeId);
   const { data: events = [], isLoading: eventsLoading } = useEventsByCommittee(committeeId);
 
-  // Debug logging
-  React.useEffect(() => {
-    console.log('=== CommissieDetailPagina Debug ===');
-    console.log('slug:', slug);
-    console.log('committeeId:', committeeId);
-    console.log('committee data:', committee);
-    console.log('loading:', committeeLoading);
-    console.log('error:', committeeError);
-    console.log('================================');
-  }, [slug, committeeId, committee, committeeLoading, committeeError]);
-
   // Check for invalid ID early
   if (!slug || !committeeId || isNaN(committeeId)) {
     return (

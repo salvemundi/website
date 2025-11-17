@@ -8,12 +8,12 @@ This application implements a dual authentication system:
 
 ## Features
 
-- ✅ Microsoft Entra ID OAuth2 login for members
-- ✅ Email/password signup and login for guests
-- ✅ Protected routes requiring authentication
-- ✅ User account overview page
-- ✅ Event signup tracking
-- ✅ Session management with token refresh
+-  Microsoft Entra ID OAuth2 login for members
+-  Email/password signup and login for guests
+-  Protected routes requiring authentication
+-  User account overview page
+-  Event signup tracking
+-  Session management with token refresh
 
 ## Environment Variables
 

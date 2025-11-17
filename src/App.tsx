@@ -14,6 +14,7 @@ import SignupPagina from "./pages/SignupPagina";
 import AccountPagina from "./pages/AccountPagina";
 import TransactionsPagina from "./pages/TransactionsPagina";
 import WhatsAppGroupsPagina from "./pages/WhatsAppGroupsPagina";
+import StickersPagina from "./pages/StickersPagina";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -71,6 +72,7 @@ export default function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route path="/stickers" element={<StickersPagina />} />
           </Routes>
         </Router>
         <ReactQueryDevtools initialIsOpen={false} />
