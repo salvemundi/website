@@ -16,6 +16,8 @@ interface EventSignup {
     event_date: string;
     description: string;
     image?: string;
+    contact_phone?: string;
+    contact_name?: string;
   };
 }
 
@@ -355,9 +357,17 @@ export default function AccountPagina() {
                       <h3 className="text-lg font-semibold text-paars mb-1">
                         {signup.event_id.name}
                       </h3>
-                      <p className="text-sm text-paars/70 mb-2">
+                      <p className="text-sm text-paars/70 mb-1">
                         Evenement Datum: {format(new Date(signup.event_id.event_date), 'd MMMM yyyy')}
                       </p>
+                      {signup.event_id.contact_phone && (
+                        <p className="text-sm text-paars/70 mb-1">
+                          📞 Contact: {signup.event_id.contact_name && `${signup.event_id.contact_name} - `}
+                          <a href={`tel:${signup.event_id.contact_phone}`} className="underline hover:text-oranje">
+                            {signup.event_id.contact_phone}
+                          </a>
+                        </p>
+                      )}
                       <p className="text-xs text-paars/50">
                         Ingeschreven op: {format(new Date(signup.created_at), 'd MMMM yyyy')}
                       </p>

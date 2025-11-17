@@ -259,15 +259,58 @@ export async function logout(refreshToken: string): Promise<void> {
 export async function getUserEventSignups(userId: string) {
   const query = new URLSearchParams({
     'filter[directus_relations][_eq]': userId,
-    'fields': 'id,event_id.id,event_id.name,event_id.event_date,event_id.image,event_id.description,created_at',
+    'fields': 'id,event_id.id,event_id.name,event_id.event_date,event_id.image,event_id.description,event_id.contact,event_id.committee_id,created_at',
     'sort': '-created_at',
   }).toString();
   
-  return directusFetch<any[]>(`/items/event_signups?${query}`);
+  const signups = await directusFetch<any[]>(`/items/event_signups?${query}`);
+  
+  // For each signup, fetch committee leader contact if no direct contact is provided
+  const signupsWithContact = await Promise.all(
+    signups.map(async (signup) => {
+      if (signup.event_id && !signup.event_id.contact && signup.event_id.committee_id) {
+        try {
+          // Fetch committee leader's contact info
+          const leaderQuery = new URLSearchParams({
+            'filter[committee_id][_eq]': signup.event_id.committee_id.toString(),
+            'filter[is_leader][_eq]': 'true',
+            'fields': 'user_id.phone_number,user_id.first_name,user_id.last_name',
+            'limit': '1'
+          }).toString();
+          
+          const leaders = await directusFetch<any[]>(`/items/committee_members?${leaderQuery}`);
+          if (leaders && leaders.length > 0 && leaders[0].user_id?.phone_number) {
+            signup.event_id.contact_phone = leaders[0].user_id.phone_number;
+            signup.event_id.contact_name = `${leaders[0].user_id.first_name || ''} ${leaders[0].user_id.last_name || ''}`.trim();
+          }
+        } catch (error) {
+          console.warn(`Could not fetch committee leader for event ${signup.event_id.id}`, error);
+        }
+      } else if (signup.event_id?.contact) {
+        signup.event_id.contact_phone = signup.event_id.contact;
+      }
+      return signup;
+    })
+  );
+  
+  return signupsWithContact;
 }
 
 // Create event signup
 export async function createEventSignup(eventId: number, userId: string, submissionFileUrl?: string) {
+  // First check if user has already signed up for this event
+  const existingQuery = new URLSearchParams({
+    'filter[event_id][_eq]': eventId.toString(),
+    'filter[directus_relations][_eq]': userId,
+    'fields': 'id',
+  }).toString();
+  
+  const existingSignups = await directusFetch<any[]>(`/items/event_signups?${existingQuery}`);
+  
+  if (existingSignups && existingSignups.length > 0) {
+    throw new Error('Je bent al ingeschreven voor deze activiteit');
+  }
+  
   return directusFetch<any>('/items/event_signups', {
     method: 'POST',
     body: JSON.stringify({

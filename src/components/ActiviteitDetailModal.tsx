@@ -14,6 +14,8 @@ interface ActiviteitDetailModalProps {
     time?: string;
     capacity?: number;
     organizer?: string;
+    contact_phone?: string;
+    contact_name?: string;
   };
   isPast?: boolean;
   onSignup: (data: { activity: any; email: string; name: string; studentNumber: string }) => void;
@@ -180,6 +182,17 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-geel">👤 Organisator:</span>
                   <span>{activity.organizer}</span>
+                </div>
+              )}
+              {activity.contact_phone && (
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-geel">📞 Contact:</span>
+                  <span>
+                    {activity.contact_name && `${activity.contact_name} - `}
+                    <a href={`tel:${activity.contact_phone}`} className="underline hover:text-geel">
+                      {activity.contact_phone}
+                    </a>
+                  </span>
                 </div>
               )}
             </div>

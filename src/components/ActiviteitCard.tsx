@@ -75,8 +75,12 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
           </div>
         </div>
         
-        {/* Description */}
-  <p className="text-white text-sm sm:text-base mb-4 sm:mb-6 flex-grow break-words">{description}</p>
+        {/* Description - truncated to 150 characters */}
+        <p className="text-white text-sm sm:text-base mb-4 sm:mb-6 flex-grow break-words overflow-hidden">
+          {description && description.length > 150 
+            ? `${description.substring(0, 150)}...` 
+            : description}
+        </p>
         
         {/* Footer - Buttons */}
     <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 mt-auto w-full">
