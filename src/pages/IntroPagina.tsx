@@ -57,7 +57,7 @@ export default function IntroPagina() {
         <Navbar activePage="Intro" />
         <Header
           title="INTRO"
-          backgroundImage="/img/backgrounds/Kroto2025.jpg"
+          backgroundImage="/img/backgrounds/intro-banner.jpg"
         />
       </div>
 
