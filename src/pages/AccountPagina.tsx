@@ -29,7 +29,6 @@ export default function AccountPagina() {
   const [isSavingMinecraft, setIsSavingMinecraft] = useState(false);
 
   useEffect(() => {
-    console.log('🔍 AccountPagina - Current user state:', user);
     if (user?.minecraft_username) {
       setMinecraftUsername(user.minecraft_username);
     }
@@ -251,7 +250,7 @@ export default function AccountPagina() {
             {/* Quick Links Section */}
             <div className="border-t-2 border-oranje/20 pt-6 mt-6">
               <h2 className="text-lg font-semibold text-paars mb-4">Snelle Links</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <button
                   onClick={() => navigate('/account/transactions')}
                   className="p-4 border-2 border-oranje rounded-xl hover:bg-oranje/10 transition-all text-left"
@@ -281,6 +280,19 @@ export default function AccountPagina() {
                       <p className="text-sm text-paars/70">
                         {user.membership_status === 'active' ? 'Word lid van groepen' : 'Vereist actief lidmaatschap'}
                       </p>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => navigate('/stickers')}
+                  className="p-4 border-2 border-oranje rounded-xl hover:bg-oranje/10 transition-all text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">🗺️</span>
+                    <div>
+                      <h3 className="font-semibold text-paars">Sticker Map</h3>
+                      <p className="text-sm text-paars/70">Bekijk en voeg sticker locaties toe</p>
                     </div>
                   </div>
                 </button>

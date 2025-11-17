@@ -1,10 +1,5 @@
 import { Configuration, PopupRequest } from '@azure/msal-browser';
 
-// Debug: Log environment variables
-console.log('🔧 MSAL Config - Environment Variables:');
-console.log('  VITE_ENTRA_CLIENT_ID:', import.meta.env.VITE_ENTRA_CLIENT_ID);
-console.log('  VITE_ENTRA_TENANT_ID:', import.meta.env.VITE_ENTRA_TENANT_ID);
-
 // MSAL configuration
 export const msalConfig: Configuration = {
   auth: {
