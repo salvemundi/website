@@ -1,4 +1,3 @@
-import React from "react";
 import { useParams, Link } from "react-router-dom";
 import Navbar from "../components/NavBar";
 import Header from "../components/header";
@@ -111,15 +110,42 @@ export default function CommissieDetailPagina() {
             <h2 className="text-4xl font-bold text-geel mb-6">
               Over {cleanCommitteeName(committee.name)}
             </h2>
-            {committee.description ? (
-              <div className="text-gray-700 text-lg leading-relaxed whitespace-pre-line">
-                {committee.description}
+
+            {/* Responsive two-column: image left, description right (stack on small screens) */}
+            <div className="flex flex-col md:flex-row items-start gap-8">
+              <div className="w-full md:w-1/3 flex-shrink-0">
+                <div className="w-full aspect-[4/3] overflow-hidden rounded-lg bg-gray-100 shadow-md">
+                  {committee.image ? (
+                    <img
+                      src={getImageUrl(committee.image)}
+                      alt={`Foto van ${cleanCommitteeName(committee.name)}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.parentElement!.innerHTML = `\n                          <div class="w-full h-full flex items-center justify-center text-gray-400">\n                            <svg class="w-20 h-20" fill="currentColor" viewBox="0 0 20 20">\n                              <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />\n                            </svg>\n                          </div>`;
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      <svg className="w-20 h-20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
               </div>
-            ) : (
-              <p className="text-gray-700 text-lg leading-relaxed">
-                Informatie over de {cleanCommitteeName(committee.name)} komt binnenkort beschikbaar.
-              </p>
-            )}
+
+              <div className="w-full md:w-2/3 text-gray-700 text-lg leading-relaxed whitespace-pre-line">
+                {committee.description ? (
+                  <div>{committee.description}</div>
+                ) : (
+                  <p>
+                    Informatie over de {cleanCommitteeName(committee.name)} komt binnenkort beschikbaar.
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         </section>
 
