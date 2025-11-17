@@ -106,9 +106,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const response = await authApi.loginWithPassword(email, password);
+      console.log('🔐 AuthContext - Login response received:', response);
+      console.log('👤 AuthContext - User data:', response.user);
       localStorage.setItem('auth_token', response.access_token);
       localStorage.setItem('refresh_token', response.refresh_token);
       setUser(response.user);
+      console.log('✅ AuthContext - User state set:', response.user);
     } catch (error) {
       console.error('Login error:', error);
       throw error;
