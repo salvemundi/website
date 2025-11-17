@@ -4,6 +4,7 @@ import Navbar from '../components/NavBar';
 import Header from '../components/header';
 import BackToTopButton from '../components/backtotop';
 import Footer from '../components/Footer';
+import { introSignupsApi } from '../lib/api';
 
 export default function IntroPagina() {
   const [form, setForm] = useState({
@@ -17,15 +18,37 @@ export default function IntroPagina() {
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    // Clear error when user starts typing
+    if (error) setError(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    // Hier zou je de data naar een backend kunnen sturen
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      await introSignupsApi.create({
+        first_name: form.voornaam,
+        middle_name: form.tussenvoegsel || undefined,
+        last_name: form.achternaam,
+        date_of_birth: form.geboortedatum,
+        email: form.email,
+        phone_number: form.telefoonnummer,
+        favorite_gif: form.favorieteGif || undefined,
+      });
+      setSubmitted(true);
+    } catch (err: any) {
+      console.error('Failed to submit intro signup:', err);
+      setError(err.message || 'Er is een fout opgetreden bij het versturen van je inschrijving. Probeer het opnieuw.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -76,6 +99,11 @@ export default function IntroPagina() {
                   onSubmit={handleSubmit}
                   className="bg-paars rounded-3xl p-8 shadow-lg space-y-4"
                 >
+                  {error && (
+                    <div className="bg-red-500 text-white p-3 rounded-lg">
+                      {error}
+                    </div>
+                  )}
                   {/* Voornaam */}
                   <div>
                     <label className="block font-semibold text-beige mb-2">
@@ -183,9 +211,10 @@ export default function IntroPagina() {
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    className="w-full bg-oranje text-white font-bold py-3 px-6 rounded-lg hover:bg-geel hover:text-paars transition-colors duration-300"
+                    disabled={isSubmitting}
+                    className="w-full bg-oranje text-white font-bold py-3 px-6 rounded-lg hover:bg-geel hover:text-paars transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Verstuur
+                    {isSubmitting ? 'Bezig met versturen...' : 'Verstuur'}
                   </button>
                 </form>
               )}

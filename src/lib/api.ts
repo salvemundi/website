@@ -12,17 +12,68 @@ function buildQueryString(params: Record<string, any>): string {
 export const eventsApi = {
   getAll: async () => {
     const query = buildQueryString({
-      fields: ['id', 'name', 'event_date', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id'],
+      fields: ['id', 'name', 'event_date', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact'],
       sort: ['-event_date']
       // Removed filter to allow fetching all events (past and future)
     });
-    return directusFetch<any[]>(`/items/events?${query}`);
+    const events = await directusFetch<any[]>(`/items/events?${query}`);
+    
+    // For each event, fetch committee leader contact if no direct contact is provided
+    const eventsWithContact = await Promise.all(
+      events.map(async (event) => {
+        if (!event.contact && event.committee_id) {
+          try {
+            // Fetch committee leader's contact info
+            const leaderQuery = buildQueryString({
+              filter: { committee_id: { _eq: event.committee_id }, is_leader: { _eq: true } },
+              fields: ['user_id.phone_number', 'user_id.first_name', 'user_id.last_name'],
+              limit: 1
+            });
+            const leaders = await directusFetch<any[]>(`/items/committee_members?${leaderQuery}`);
+            if (leaders && leaders.length > 0 && leaders[0].user_id?.phone_number) {
+              event.contact_phone = leaders[0].user_id.phone_number;
+              event.contact_name = `${leaders[0].user_id.first_name || ''} ${leaders[0].user_id.last_name || ''}`.trim();
+            }
+          } catch (error) {
+            console.warn(`Could not fetch committee leader for event ${event.id}`, error);
+          }
+        } else if (event.contact) {
+          // Use the contact field from events table
+          event.contact_phone = event.contact;
+        }
+        return event;
+      })
+    );
+    
+    return eventsWithContact;
   },
   getById: async (id: string) => {
     const query = buildQueryString({
-      fields: ['id', 'name', 'event_date', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id']
+      fields: ['id', 'name', 'event_date', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact']
     });
-    return directusFetch<any>(`/items/events/${id}?${query}`);
+    const event = await directusFetch<any>(`/items/events/${id}?${query}`);
+    
+    // Fetch committee leader contact if no direct contact is provided
+    if (!event.contact && event.committee_id) {
+      try {
+        const leaderQuery = buildQueryString({
+          filter: { committee_id: { _eq: event.committee_id }, is_leader: { _eq: true } },
+          fields: ['user_id.phone_number', 'user_id.first_name', 'user_id.last_name'],
+          limit: 1
+        });
+        const leaders = await directusFetch<any[]>(`/items/committee_members?${leaderQuery}`);
+        if (leaders && leaders.length > 0 && leaders[0].user_id?.phone_number) {
+          event.contact_phone = leaders[0].user_id.phone_number;
+          event.contact_name = `${leaders[0].user_id.first_name || ''} ${leaders[0].user_id.last_name || ''}`.trim();
+        }
+      } catch (error) {
+        console.warn(`Could not fetch committee leader for event ${event.id}`, error);
+      }
+    } else if (event.contact) {
+      event.contact_phone = event.contact;
+    }
+    
+    return event;
   },
   getByCommittee: async (committeeId: number) => {
     const query = buildQueryString({
@@ -33,6 +84,23 @@ export const eventsApi = {
     return directusFetch<any[]>(`/items/events?${query}`);
   },
   createSignup: async (signupData: { event_id: number; email: string; name: string; student_number?: string; user_id?: string }) => {
+    // First check if user has already signed up for this event
+    if (signupData.user_id) {
+      const existingQuery = buildQueryString({
+        filter: { 
+          event_id: { _eq: signupData.event_id },
+          directus_relations: { _eq: signupData.user_id }
+        },
+        fields: ['id']
+      });
+      
+      const existingSignups = await directusFetch<any[]>(`/items/event_signups?${existingQuery}`);
+      
+      if (existingSignups && existingSignups.length > 0) {
+        throw new Error('Je bent al ingeschreven voor deze activiteit');
+      }
+    }
+    
     const payload: any = {
       event_id: signupData.event_id,
       directus_relations: signupData.user_id || null,
@@ -232,6 +300,23 @@ export const stickersApi = {
       sort: ['-date_created']
     });
     return directusFetch<any[]>(`/items/Stickers?${query}`);
+  }
+};
+
+export const introSignupsApi = {
+  create: async (data: {
+    first_name: string;
+    middle_name?: string;
+    last_name: string;
+    date_of_birth: string;
+    email: string;
+    phone_number: string;
+    favorite_gif?: string;
+  }) => {
+    return directusFetch<any>(`/items/intro_signups`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
   }
 };
 

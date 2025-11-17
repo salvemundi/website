@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import ConfirmationModal from "./ConfirmationModal";
+import AlertModal from "./AlertModal";
 import { eventsApi } from "../lib/api";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -37,6 +38,17 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [alertModal, setAlertModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'error' | 'warning' | 'info' | 'success';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'info'
+  });
 
   // Helper to check for discount
   const hasDiscount = (email: string) => {
@@ -112,9 +124,21 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
 
       // Clear success message after 5 seconds
       setTimeout(() => setSuccessMessage(null), 5000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating signups:', error);
-      setErrorMessage('Er is iets misgegaan bij het inschrijven. Probeer het opnieuw.');
+      
+      // Check if it's a duplicate signup error
+      if (error?.message && error.message.includes('al ingeschreven')) {
+        setAlertModal({
+          isOpen: true,
+          title: 'Al ingeschreven',
+          message: error.message,
+          type: 'warning'
+        });
+      } else {
+        setErrorMessage('Er is iets misgegaan bij het inschrijven. Probeer het opnieuw.');
+      }
+      
       setIsConfirmationOpen(false);
     } finally {
       setIsLoading(false);
@@ -242,6 +266,15 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
         }))}
         totalCost={total}
         isLoading={isLoading}
+      />
+
+      {/* Alert Modal for duplicate signups and other alerts */}
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+        title={alertModal.title}
+        message={alertModal.message}
+        type={alertModal.type}
       />
     </>
   );
