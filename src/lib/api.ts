@@ -62,7 +62,6 @@ export const committeesApi = {
     try {
       // Try to fetch with is_visible and description fields
       const committees = await directusFetch<any[]>(`/items/committees?fields=id,name,image,is_visible,short_description,created_at,updated_at&sort=name`);
-      console.log('[committeesApi.getAllWithMembers] Committees:', committees);
       
       // Filter only visible committees (if is_visible field exists)
       const visibleCommittees = committees.filter(c => c.is_visible !== false);
@@ -78,13 +77,10 @@ export const committeesApi = {
         })
       );
       
-      console.log('[committeesApi.getAllWithMembers] With members:', committeesWithMembers);
       return committeesWithMembers;
     } catch (error) {
       // If new fields don't exist, fall back to fetching without them
-      console.log('[committeesApi.getAllWithMembers] Trying without optional fields:', error);
       const committees = await directusFetch<any[]>(`/items/committees?fields=id,name,image,created_at,updated_at&sort=name`);
-      console.log('[committeesApi.getAllWithMembers] Committees (fallback):', committees);
       
       // For each committee, fetch the full member details from junction table
       const committeesWithMembers = await Promise.all(
@@ -96,7 +92,6 @@ export const committeesApi = {
         })
       );
       
-      console.log('[committeesApi.getAllWithMembers] With members (fallback):', committeesWithMembers);
       return committeesWithMembers;
     }
   },
@@ -104,27 +99,22 @@ export const committeesApi = {
     try {
       // Try to fetch with all fields including descriptions
       const committee = await directusFetch<any>(`/items/committees/${id}?fields=id,name,image,is_visible,short_description,description,created_at,updated_at`);
-      console.log('[committeesApi.getById] Committee:', committee);
       
       // Always fetch member details from junction table
       const members = await directusFetch<any[]>(
         `/items/committee_members?filter[committee_id][_eq]=${id}&fields=*,user_id.*`
       );
       committee.committee_members = members;
-      console.log('[committeesApi.getById] Committee members:', members);
       
       return committee;
     } catch (error) {
       // If new fields don't exist, fall back to fetching without them
-      console.log('[committeesApi.getById] Trying without optional fields:', error);
       const committee = await directusFetch<any>(`/items/committees/${id}?fields=id,name,image,created_at,updated_at`);
-      console.log('[committeesApi.getById] Committee (fallback):', committee);
       
       const members = await directusFetch<any[]>(
         `/items/committee_members?filter[committee_id][_eq]=${id}&fields=*,user_id.*`
       );
       committee.committee_members = members;
-      console.log('[committeesApi.getById] Committee members (fallback):', members);
       
       return committee;
     }

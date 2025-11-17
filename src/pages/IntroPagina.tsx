@@ -25,7 +25,6 @@ export default function IntroPagina() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
-    console.log('Introweek inschrijving:', form);
     // Hier zou je de data naar een backend kunnen sturen
   };
 

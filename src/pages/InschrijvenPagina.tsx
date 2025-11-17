@@ -53,7 +53,6 @@ export default function SignUp() {
       return;
     }
     setSubmitted(true);
-    console.log('Form verstuurd:', form);
   };
 
   // Pre-fill form with user data when user loads

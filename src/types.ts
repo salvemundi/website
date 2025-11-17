@@ -152,7 +152,17 @@ export interface SafeHaven {
 // Stickers
 export interface Sticker {
   id: number;
+  user_created?: string;
   date_created: string;
+  date_updated?: string;
+  location_name?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  description?: string;
+  image?: string;
+  country?: string;
+  city?: string;
 }
 
 // Transactions

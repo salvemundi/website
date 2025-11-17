@@ -65,17 +65,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const token = localStorage.getItem('auth_token');
       const refreshToken = localStorage.getItem('refresh_token');
       
-      console.log('🔍 Checking auth status:', { hasToken: !!token, hasRefreshToken: !!refreshToken });
-      
       if (token) {
         try {
-          // Try to fetch user data with current token
-          console.log('📡 Fetching user details with token...');
           const userData = await authApi.fetchUserDetails(token);
-          console.log('✅ User data fetched:', userData.email);
           setUser(userData);
         } catch (error) {
-          console.log('❌ Token validation failed, trying to refresh...', error);
           // If token is expired, try to refresh
           if (refreshToken) {
             try {
@@ -83,15 +77,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               localStorage.setItem('auth_token', response.access_token);
               localStorage.setItem('refresh_token', response.refresh_token);
               setUser(response.user);
-              console.log('✅ Token refreshed successfully');
             } catch (refreshError) {
-              console.log('❌ Refresh failed, clearing storage');
               // Refresh failed, clear storage
               localStorage.removeItem('auth_token');
               localStorage.removeItem('refresh_token');
             }
           } else {
-            console.log('❌ No refresh token available, clearing storage');
             localStorage.removeItem('auth_token');
           }
         }
@@ -109,12 +100,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const response = await authApi.loginWithPassword(email, password);
-      console.log('🔐 AuthContext - Login response received:', response);
-      console.log('👤 AuthContext - User data:', response.user);
       localStorage.setItem('auth_token', response.access_token);
       localStorage.setItem('refresh_token', response.refresh_token);
       setUser(response.user);
-      console.log('✅ AuthContext - User state set:', response.user);
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -149,25 +137,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const idToken = loginResponse.idToken;
         const userEmail = loginResponse.account.username;
         
-        console.log('🔍 Sending to backend:', { 
-          tokenLength: idToken?.length, 
-          email: userEmail 
-        });
-        
         // Authenticate with backend using Entra ID token
         const response = await authApi.loginWithEntraId(idToken, userEmail);
-        console.log('💾 Saving tokens to localStorage:', {
-          hasAccessToken: !!response.access_token,
-          hasRefreshToken: !!response.refresh_token,
-          accessTokenLength: response.access_token?.length,
-          user: response.user?.email
-        });
         localStorage.setItem('auth_token', response.access_token);
         localStorage.setItem('refresh_token', response.refresh_token);
-        console.log('✅ Tokens saved. Verifying:', {
-          storedAccessToken: localStorage.getItem('auth_token')?.substring(0, 20) + '...',
-          storedRefreshToken: localStorage.getItem('refresh_token')?.substring(0, 20) + '...'
-        });
         setUser(response.user);
       }
     } catch (error) {
