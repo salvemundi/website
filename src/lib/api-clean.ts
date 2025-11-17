@@ -225,7 +225,6 @@ export function getImageUrl(imageId: string | undefined): string {
   try {
     // The token is stored as 'auth_token' not 'access_token'
     token = localStorage.getItem('auth_token');
-    console.log('getImageUrl: Token found in localStorage:', !!token);
   } catch (e) {
     console.warn('getImageUrl: Could not access localStorage', e);
   }
@@ -235,8 +234,6 @@ export function getImageUrl(imageId: string | undefined): string {
   const imageUrl = token 
     ? `${directusUrl}/assets/${imageId}?access_token=${token}`
     : `${directusUrl}/assets/${imageId}`;
-  
-  console.log('getImageUrl: Final URL:', imageUrl);
   
   return imageUrl;
 }

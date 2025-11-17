@@ -33,8 +33,6 @@ export default function AccountPagina() {
 
   useEffect(() => {
     if (user?.id) {
-      console.log('Current user data:', user);
-      console.log('User avatar:', user?.avatar);
       loadEventSignups();
     } else {
       setIsLoading(false);
