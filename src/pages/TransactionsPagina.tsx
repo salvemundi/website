@@ -43,7 +43,7 @@ export default function TransactionsPagina() {
       if (error instanceof Error && error.message.includes('Failed to fetch transactions')) {
         setTransactions([]);
       } else {
-        setError('Failed to load transactions. Please try again later.');
+        setError('Kon transacties niet laden. Probeer het later opnieuw.');
       }
     } finally {
       setIsLoading(false);
@@ -84,7 +84,7 @@ export default function TransactionsPagina() {
   if (authLoading || !user) {
     return (
       <div className="min-h-screen bg-beige flex items-center justify-center">
-        <div className="text-paars text-xl font-semibold">Loading...</div>
+        <div className="text-paars text-xl font-semibold">Laden...</div>
       </div>
     );
   }
@@ -102,17 +102,17 @@ export default function TransactionsPagina() {
               className="mb-4 flex items-center gap-2 text-paars hover:text-oranje transition-colors"
             >
               <span>←</span>
-              <span>Back to Account</span>
+              <span>Terug naar Account</span>
             </button>
-            <h1 className="text-4xl font-bold text-paars mb-2">My Transactions</h1>
-            <p className="text-paars/70">View all your payment history and transactions</p>
+            <h1 className="text-4xl font-bold text-paars mb-2">Mijn Transacties</h1>
+            <p className="text-paars/70">Bekijk al je betalingsgeschiedenis en transacties</p>
           </div>
 
           {/* Transactions Section */}
           <div className="bg-white rounded-3xl shadow-2xl p-8 border-4 border-oranje">
             {isLoading ? (
               <div className="text-center py-12">
-                <div className="text-paars">Loading your transactions...</div>
+                <div className="text-paars">Je transacties worden geladen...</div>
               </div>
             ) : error ? (
               <div className="text-center py-12">
@@ -121,19 +121,19 @@ export default function TransactionsPagina() {
                   onClick={loadTransactions}
                   className="px-6 py-3 bg-oranje text-beige rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md"
                 >
-                  Try Again
+                  Probeer Opnieuw
                 </button>
               </div>
             ) : transactions.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-6xl mb-4">📊</div>
-                <div className="text-paars mb-4 font-semibold">No transactions found.</div>
+                <div className="text-paars mb-4 font-semibold">Geen transacties gevonden.</div>
                 <p className="text-paars/70 text-sm mb-4">
-                  Your payment history will appear here once you make your first transaction.
+                  Je betalingsgeschiedenis verschijnt hier zodra je je eerste transactie hebt gedaan.
                 </p>
                 <div className="mt-6 p-4 bg-geel/10 rounded-xl max-w-md mx-auto">
                   <p className="text-xs text-paars/60">
-                    💡 Note: The transactions feature is being set up. Your transaction history will be tracked automatically once the system is fully configured.
+                    💡 Let op: De transactiefunctie wordt ingesteld. Je transactiegeschiedenis wordt automatisch bijgehouden zodra het systeem volledig is geconfigureerd.
                   </p>
                 </div>
               </div>
@@ -144,10 +144,10 @@ export default function TransactionsPagina() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b-2 border-oranje/20">
-                        <th className="text-left py-3 px-4 font-semibold text-paars">Date</th>
-                        <th className="text-left py-3 px-4 font-semibold text-paars">Description</th>
+                        <th className="text-left py-3 px-4 font-semibold text-paars">Datum</th>
+                        <th className="text-left py-3 px-4 font-semibold text-paars">Beschrijving</th>
                         <th className="text-left py-3 px-4 font-semibold text-paars">Type</th>
-                        <th className="text-right py-3 px-4 font-semibold text-paars">Amount</th>
+                        <th className="text-right py-3 px-4 font-semibold text-paars">Bedrag</th>
                         <th className="text-center py-3 px-4 font-semibold text-paars">Status</th>
                       </tr>
                     </thead>
@@ -155,7 +155,7 @@ export default function TransactionsPagina() {
                       {transactions.map((transaction) => (
                         <tr key={transaction.id} className="border-b border-oranje/10 hover:bg-oranje/5 transition-colors">
                           <td className="py-4 px-4 text-paars/70">
-                            {format(new Date(transaction.created_at), 'MMM d, yyyy')}
+                            {format(new Date(transaction.created_at), 'd MMM yyyy')}
                           </td>
                           <td className="py-4 px-4 text-paars font-medium">
                             {transaction.description}
@@ -192,7 +192,7 @@ export default function TransactionsPagina() {
                             {transaction.description}
                           </h3>
                           <p className="text-sm text-paars/70">
-                            {format(new Date(transaction.created_at), 'MMMM d, yyyy')}
+                            {format(new Date(transaction.created_at), 'd MMMM yyyy')}
                           </p>
                         </div>
                         <div className="text-right">
@@ -216,11 +216,11 @@ export default function TransactionsPagina() {
                 {/* Summary */}
                 <div className="mt-8 pt-6 border-t-2 border-oranje/20">
                   <div className="flex justify-between items-center">
-                    <span className="text-paars/70 font-semibold">Total Transactions:</span>
+                    <span className="text-paars/70 font-semibold">Totaal Transacties:</span>
                     <span className="text-paars font-bold">{transactions.length}</span>
                   </div>
                   <div className="flex justify-between items-center mt-2">
-                    <span className="text-paars/70 font-semibold">Total Amount:</span>
+                    <span className="text-paars/70 font-semibold">Totaal Bedrag:</span>
                     <span className="text-paars font-bold text-xl">
                       €{formatAmount(transactions.reduce((sum, t) => {
                         const amount = typeof t.amount === 'string' ? parseFloat(t.amount) : t.amount;
