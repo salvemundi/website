@@ -170,6 +170,14 @@ export default function Footer() {
                 WhatsApp
               </a>
             </li>
+            <li>
+              <Link 
+                to="/safe-havens"
+                className="hover:text-geel transition-colors"
+              >
+                Safe Havens
+              </Link>
+            </li>
           </ul>
 
           <h3 className="font-bold text-lg mb-4">SOCIAL MEDIA</h3>
