@@ -129,6 +129,57 @@ export default function AttendancePagina() {
     console.error('Scan error:', error);
   };
 
+  const handleToggleAttendance = async (signup: any) => {
+    try {
+      const newCheckedInStatus = !signup.checked_in;
+      
+      // Update in database
+      await fetch(`${import.meta.env.VITE_DIRECTUS_URL}/items/event_signups/${signup.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+        },
+        body: JSON.stringify({
+          checked_in: newCheckedInStatus,
+          checked_in_at: newCheckedInStatus ? new Date().toISOString() : null,
+        }),
+      });
+
+      // Refresh the list
+      await loadEventAndSignups();
+      
+      // Show success message
+      const userName = signup.directus_relations
+        ? `${signup.directus_relations.first_name || ''} ${signup.directus_relations.last_name || ''}`.trim()
+        : 'Deelnemer';
+      
+      setCheckInResult({
+        success: true,
+        message: newCheckedInStatus 
+          ? `${userName} is nu ingecheckt` 
+          : `${userName} is nu uitgecheckt`,
+        participantName: userName,
+        timestamp: new Date().toLocaleString('nl-NL'),
+      });
+
+      // Clear result after 3 seconds
+      setTimeout(() => {
+        setCheckInResult(null);
+      }, 3000);
+    } catch (error) {
+      console.error('Error toggling attendance:', error);
+      setCheckInResult({
+        success: false,
+        message: 'Er is een fout opgetreden bij het wijzigen van de aanwezigheid.',
+      });
+      
+      setTimeout(() => {
+        setCheckInResult(null);
+      }, 3000);
+    }
+  };
+
   const checkedInCount = signups.filter(s => s.checked_in).length;
   const totalCount = signups.length;
 
@@ -290,6 +341,26 @@ export default function AttendancePagina() {
             <div className="bg-white rounded-3xl p-6 shadow-lg">
               <h3 className="text-2xl font-bold text-paars mb-4">Deelnemerslijst</h3>
               
+              {/* Check-in Result for manual toggle */}
+              {checkInResult && (
+                <div
+                  className={`mb-6 p-4 rounded-lg ${
+                    checkInResult.success
+                      ? 'bg-green-100 border-2 border-green-500'
+                      : 'bg-red-100 border-2 border-red-500'
+                  }`}
+                >
+                  <p
+                    className={`font-semibold ${
+                      checkInResult.success ? 'text-green-700' : 'text-red-700'
+                    }`}
+                  >
+                    {checkInResult.success ? '✅ ' : '❌ '}
+                    {checkInResult.message}
+                  </p>
+                </div>
+              )}
+              
               {signups.length === 0 ? (
                 <div className="text-center py-8 text-paars">
                   <p>Nog geen inschrijvingen voor deze activiteit.</p>
@@ -310,7 +381,7 @@ export default function AttendancePagina() {
                             : 'bg-gray-50 border-gray-300'
                         }`}
                       >
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-4">
                           <div className="flex-1">
                             <p className="font-semibold text-paars">{userName}</p>
                             {signup.directus_relations?.email && (
@@ -324,7 +395,8 @@ export default function AttendancePagina() {
                               </p>
                             )}
                           </div>
-                          <div>
+                          <div className="flex items-center gap-2">
+                            {/* Status Badge */}
                             {signup.checked_in ? (
                               <span className="inline-block bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
                                 ✓ Aanwezig
@@ -334,6 +406,19 @@ export default function AttendancePagina() {
                                 - Afwezig
                               </span>
                             )}
+                            
+                            {/* Toggle Button */}
+                            <button
+                              onClick={() => handleToggleAttendance(signup)}
+                              className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                                signup.checked_in
+                                  ? 'bg-red-500 hover:bg-red-600 text-white'
+                                  : 'bg-oranje hover:bg-geel text-white hover:text-paars'
+                              }`}
+                              title={signup.checked_in ? 'Uitchecken' : 'Inchecken'}
+                            >
+                              {signup.checked_in ? '✗ Uitchecken' : '✓ Inchecken'}
+                            </button>
                           </div>
                         </div>
                       </div>
