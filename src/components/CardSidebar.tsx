@@ -3,6 +3,7 @@ import ConfirmationModal from "./ConfirmationModal";
 import AlertModal from "./AlertModal";
 import { eventsApi } from "../lib/api";
 import { useAuth } from "../contexts/AuthContext";
+import { sendEventSignupEmail } from "../lib/email-service";
 
 interface CartSidebarProps {
   cart: Array<{ 
@@ -113,6 +114,26 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
 
       await Promise.all(signupPromises);
 
+      // Send email notifications for each signup (don't wait for these to complete)
+      cart.forEach(item => {
+        const eventName = item.activity.title || item.activity.name || 'Onbekende activiteit';
+        const eventDate = item.activity.date || new Date().toISOString();
+        const userName = user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : item.name;
+        
+        sendEventSignupEmail({
+          recipientEmail: item.email,
+          recipientName: item.name || 'Deelnemer',
+          eventName: eventName,
+          eventDate: eventDate,
+          eventPrice: item.activity.price || 0,
+          studentNumber: item.studentNumber || undefined,
+          userName: userName || 'Onbekend',
+        }).catch(err => {
+          // Log but don't fail the signup
+          console.warn('Failed to send email notification:', err);
+        });
+      });
+
       // Success!
       setSuccessMessage(`Je bent succesvol ingeschreven voor ${cart.length} activiteit${cart.length > 1 ? 'en' : ''}!`);
       setIsConfirmationOpen(false);
@@ -170,15 +191,19 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
           <div className="space-y-6">
             {cart.map((item, idx) => (
               <div key={idx} className="border-b pb-4 mb-4 last-of-type:border-b-0 last-of-type:mb-0">
-                <div className="flex justify-between text-left items-left mb-2">
-                  <div>
+                <div className="flex justify-between text-left items-start mb-2">
+                  <div className="flex-1 mr-2">
                     <p className="text-lg font-semibold text-paars">{item.activity.title || item.activity.name}</p>
                     {item.activity.date && <p className="text-sm text-gray-600">📅 {item.activity.date}</p>}
-                    <p className="text-sm text-paars">{item.activity.description}</p>
+                    <p className="text-sm text-paars line-clamp-2">
+                      {item.activity.description && item.activity.description.length > 80
+                        ? `${item.activity.description.substring(0, 80)}...`
+                        : item.activity.description}
+                    </p>
                     <p className="text-sm text-oranje font-bold mt-1">Prijs: €{item.activity.price?.toFixed(2)}</p>
                   </div>
                   <button
-                    className="text-oranje font-bold text-xl ml-2 hover:text-red-600 transition-colors"
+                    className="text-oranje font-bold text-xl hover:text-red-600 transition-colors flex-shrink-0"
                     onClick={() => onRemoveTicket(idx)}
                     title="Verwijder ticket"
                   >

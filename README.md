@@ -58,11 +58,14 @@ We follow a consistent Way of Working across the team:
 
 ---
 
-## 📚 Wiki Index
+## 📚 Documentation
 
 **Page & Description**  
 ⚙️ Setup Instructions: How to get the app running  
 🛠️ Way of Working: Git workflow, commits, tasks, branches  
+🔐 [Authentication Setup](readme/AUTH_SETUP.md): Microsoft Entra ID integration  
+📧 [Email Setup](readme/EMAIL_SETUP.md): Email notification configuration  
+📨 [Directus Email Flow](readme/DIRECTUS_EMAIL_FLOW.md): Setup Directus for email sending  
 🧑‍💻 Contributors: Thanks to these awesome people
 
 [![Contributors](https://contrib.rocks/image?repo=salvemundi/website)](https://github.com/salvemundi/website/graphs/contributors)
