@@ -3,6 +3,7 @@ import ConfirmationModal from "./ConfirmationModal";
 import AlertModal from "./AlertModal";
 import { eventsApi } from "../lib/api";
 import { useAuth } from "../contexts/AuthContext";
+import { sendEventSignupEmail } from "../lib/email-service";
 
 interface CartSidebarProps {
   cart: Array<{ 
@@ -112,6 +113,26 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
       });
 
       await Promise.all(signupPromises);
+
+      // Send email notifications for each signup (don't wait for these to complete)
+      cart.forEach(item => {
+        const eventName = item.activity.title || item.activity.name || 'Onbekende activiteit';
+        const eventDate = item.activity.date || new Date().toISOString();
+        const userName = user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : item.name;
+        
+        sendEventSignupEmail({
+          recipientEmail: item.email,
+          recipientName: item.name || 'Deelnemer',
+          eventName: eventName,
+          eventDate: eventDate,
+          eventPrice: item.activity.price || 0,
+          studentNumber: item.studentNumber || undefined,
+          userName: userName || 'Onbekend',
+        }).catch(err => {
+          // Log but don't fail the signup
+          console.warn('Failed to send email notification:', err);
+        });
+      });
 
       // Success!
       setSuccessMessage(`Je bent succesvol ingeschreven voor ${cart.length} activiteit${cart.length > 1 ? 'en' : ''}!`);

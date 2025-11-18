@@ -83,7 +83,7 @@ export const eventsApi = {
     });
     return directusFetch<any[]>(`/items/events?${query}`);
   },
-  createSignup: async (signupData: { event_id: number; email: string; name: string; student_number?: string; user_id?: string }) => {
+  createSignup: async (signupData: { event_id: number; email: string; name: string; student_number?: string; user_id?: string; event_name?: string; event_date?: string; event_price?: number }) => {
     // First check if user has already signed up for this event
     if (signupData.user_id) {
       const existingQuery = buildQueryString({
