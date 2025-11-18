@@ -11,6 +11,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { nl } from 'date-fns/locale';
 import { GiphyFetch } from '@giphy/js-fetch-api';
 import { Grid } from '@giphy/react-components';
+import { sendMembershipSignupEmail } from '../lib/email-service';
 
 const gf = new GiphyFetch('rEB6G7lJ2bM6n1enoImai0iGoFm7tMnm');
 
@@ -46,12 +47,26 @@ export default function SignUp() {
     await searchGifs(gifQuery);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.favorieteGif) {
       alert('Selecteer een favoriete GIF om het formulier te versturen.');
       return;
     }
+    
+    // Send email notification (don't wait for it to complete)
+    sendMembershipSignupEmail({
+      recipientEmail: form.email,
+      firstName: form.voornaam,
+      lastName: form.achternaam,
+      phoneNumber: form.telefoon,
+      dateOfBirth: form.geboortedatum ? form.geboortedatum.toLocaleDateString('nl-NL') : undefined,
+      favoriteGif: form.favorieteGif,
+    }).catch(err => {
+      // Log but don't fail the signup
+      console.warn('Failed to send membership signup email:', err);
+    });
+    
     setSubmitted(true);
   };
 

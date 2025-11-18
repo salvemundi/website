@@ -5,6 +5,7 @@ import Header from '../components/header';
 import BackToTopButton from '../components/backtotop';
 import Footer from '../components/Footer';
 import { introSignupsApi } from '../lib/api';
+import { sendIntroSignupEmail } from '../lib/email-service';
 
 export default function IntroPagina() {
   const [form, setForm] = useState({
@@ -42,6 +43,19 @@ export default function IntroPagina() {
         phone_number: form.telefoonnummer,
         favorite_gif: form.favorieteGif || undefined,
       });
+      
+      // Send confirmation + notification email (non-blocking)
+      sendIntroSignupEmail({
+        participantEmail: form.email,
+        participantFirstName: form.voornaam,
+        participantLastName: form.achternaam,
+        phoneNumber: form.telefoonnummer,
+        dateOfBirth: form.geboortedatum || undefined,
+        favoriteGif: form.favorieteGif || undefined,
+      }).catch((emailError) => {
+        console.warn('Failed to send intro signup email:', emailError);
+      });
+
       setSubmitted(true);
     } catch (err: any) {
       console.error('Failed to submit intro signup:', err);
