@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import AttendanceButton from "./AttendanceButton";
 
 interface ActiviteitDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   activity: {
+    id?: number;
     title: string;
     date?: string;
     description: string;
@@ -16,6 +18,8 @@ interface ActiviteitDetailModalProps {
     organizer?: string;
     contact_phone?: string;
     contact_name?: string;
+    committee_name?: string;
+    committee_id?: number;
   };
   isPast?: boolean;
   onSignup: (data: { activity: any; email: string; name: string; studentNumber: string }) => void;
@@ -178,6 +182,12 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                   <span>{activity.capacity} personen</span>
                 </div>
               )}
+              {activity.committee_name && (
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-geel">🏛️ Commissie:</span>
+                  <span>{activity.committee_name}</span>
+                </div>
+              )}
               {activity.organizer && (
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-geel">👤 Organisator:</span>
@@ -296,6 +306,14 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                 </button>
               </div>
             </form>
+            
+            {/* Attendance Button for Committee Members */}
+            {activity.id && (
+              <AttendanceButton 
+                eventId={activity.id} 
+                eventName={activity.title}
+              />
+            )}
             </div>
           )}
         </div>
