@@ -128,13 +128,11 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
         try {
           let qrCodeDataUrl: string | undefined;
           
-          // Check if QR token exists
+          // Check if QR token exists and generate QR code
           if (signup.qr_token) {
-            console.log('📱 Generating QR code for token:', signup.qr_token);
             qrCodeDataUrl = await generateQRCode(signup.qr_token);
-            console.log('✅ QR code generated successfully');
           } else {
-            console.warn('⚠️ No QR token found for signup:', signup.id);
+            console.error('No QR token found for signup:', signup.id);
           }
           
           await sendEventSignupEmail({
@@ -147,11 +145,8 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
             userName: userName || 'Onbekend',
             qrCodeDataUrl: qrCodeDataUrl,
           });
-          
-          console.log('✅ Email sent to:', item.email);
         } catch (err) {
-          // Log but don't fail the signup
-          console.error('❌ Failed to send email notification:', err);
+          console.error('Failed to send email notification:', err);
         }
       }
 

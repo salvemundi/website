@@ -129,15 +129,25 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
     >
       <div className="bg-paars rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header with close button */}
-        <div className="sticky top-0 bg-paars z-10 flex justify-between items-start p-6 border-b border-geel/20">
-          <h2 className="text-3xl font-bold text-geel pr-8">{activity.title}</h2>
-          <button
-            onClick={onClose}
-            className="text-white hover:text-geel transition-colors text-3xl font-bold leading-none"
-            aria-label="Sluiten"
-          >
-            ×
-          </button>
+        <div className="sticky top-0 bg-paars z-10 p-6 border-b border-geel/20">
+          <div className="flex justify-between items-start mb-3">
+            <h2 className="text-3xl font-bold text-geel pr-8">{activity.title}</h2>
+            <button
+              onClick={onClose}
+              className="text-white hover:text-geel transition-colors text-3xl font-bold leading-none"
+              aria-label="Sluiten"
+            >
+              ×
+            </button>
+          </div>
+          
+          {/* Attendance Button for Committee Members */}
+          {activity.id && !isPast && (
+            <AttendanceButton 
+              eventId={activity.id} 
+              eventName={activity.title}
+            />
+          )}
         </div>
 
         {/* Content */}
@@ -306,14 +316,6 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                 </button>
               </div>
             </form>
-            
-            {/* Attendance Button for Committee Members */}
-            {activity.id && (
-              <AttendanceButton 
-                eventId={activity.id} 
-                eventName={activity.title}
-              />
-            )}
             </div>
           )}
         </div>

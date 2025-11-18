@@ -151,10 +151,8 @@ export const eventsApi = {
         
         // Add to returned object so caller has it immediately
         signup.qr_token = qrToken;
-        
-        console.log('✅ QR token generated and saved:', qrToken);
       } catch (error) {
-        console.error('❌ Failed to generate QR token:', error);
+        console.error('Failed to generate QR token:', error);
         // Don't fail the signup if QR generation fails
       }
     }

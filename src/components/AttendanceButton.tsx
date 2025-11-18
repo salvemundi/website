@@ -44,7 +44,7 @@ const AttendanceButton: React.FC<AttendanceButtonProps> = ({ eventId }) => {
   return (
     <button
       onClick={() => navigate(`/attendance/${eventId}`)}
-      className="w-full mt-4 bg-oranje text-white font-semibold py-3 px-6 rounded-full hover:bg-geel hover:text-paars transition-all shadow-lg flex items-center justify-center gap-2"
+      className="w-full bg-oranje text-white font-semibold py-2.5 px-5 rounded-full hover:bg-geel hover:text-paars transition-all shadow-lg flex items-center justify-center gap-2"
     >
       <span>📋</span>
       <span>Aanwezigheid Controleren</span>
