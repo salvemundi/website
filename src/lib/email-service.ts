@@ -27,10 +27,19 @@ export interface MembershipSignupEmailData {
   favoriteGif?: string;
 }
 
+export interface IntroSignupEmailData {
+  participantEmail: string;
+  participantFirstName: string;
+  participantLastName: string;
+  dateOfBirth?: string;
+  phoneNumber: string;
+  favoriteGif?: string;
+}
+
 // Get email configuration from environment variables
 function getEmailConfig(): EmailConfig {
   const apiEndpoint = import.meta.env.VITE_EMAIL_API_ENDPOINT || '';
-  const fromEmail = import.meta.env.VITE_EMAIL_FROM || 'noreply@salvemundi.nl';
+  const fromEmail = import.meta.env.VITE_EMAIL_FROM || 'info@salvemundi.nl';
   
   // Check if using Microsoft Graph API
   const useMicrosoftGraph = apiEndpoint.includes('graph.microsoft.com');
@@ -151,13 +160,22 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
       </html>
     `;
 
-    // Send both emails
-    await Promise.all([
-      sendEmail(config, data.recipientEmail, `Bevestiging aanmelding: ${data.eventName}`, userEmailBody),
-      sendEmail(config, config.fromEmail, `Nieuwe aanmelding: ${data.eventName} - ${data.recipientName}`, orgEmailBody),
-    ]);
+    // Send emails sequentially to avoid race conditions
+    try {
+      await sendEmail(config, data.recipientEmail, `Bevestiging aanmelding: ${data.eventName}`, userEmailBody);
+      console.log('✅ Participant email sent');
+    } catch (err) {
+      console.error('❌ Failed to send participant email:', err);
+    }
 
-    console.log('✅ Event signup emails sent successfully');
+    try {
+      await sendEmail(config, config.fromEmail, `Nieuwe aanmelding: ${data.eventName} - ${data.recipientName}`, orgEmailBody);
+      console.log('✅ Organization notification email sent');
+    } catch (err) {
+      console.error('❌ Failed to send organization email:', err);
+    }
+
+    console.log('✅ Event signup email process completed');
   } catch (error) {
     console.error('❌ Failed to send event signup email:', error);
     // Don't throw error - we don't want to fail the signup if email fails
@@ -247,5 +265,84 @@ export async function sendNotificationEmail(
   } catch (error) {
     console.error('❌ Failed to send notification email:', error);
     throw error;
+  }
+}
+
+/**
+ * Send intro week signup confirmation email to the participant
+ * and a notification email to the organization mailbox.
+ */
+export async function sendIntroSignupEmail(data: IntroSignupEmailData): Promise<void> {
+  const config = getEmailConfig();
+
+  if (!config.apiEndpoint) {
+    console.warn('Email API endpoint not configured. Skipping intro signup email.');
+    return;
+  }
+
+  try {
+    const participantName = `${data.participantFirstName} ${data.participantLastName}`.trim();
+    const userEmailBody = `
+      <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h1 style="color: #7B2CBF;">Bevestiging inschrijving intro week</h1>
+            <p>Hoi ${data.participantFirstName},</p>
+            <p>Wat leuk dat je je hebt aangemeld voor de introweek! We hebben je gegevens ontvangen:</p>
+            <ul>
+              <li><strong>Naam:</strong> ${participantName}</li>
+              ${data.dateOfBirth ? `<li><strong>Geboortedatum:</strong> ${data.dateOfBirth}</li>` : ''}
+              <li><strong>Telefoonnummer:</strong> ${data.phoneNumber}</li>
+            </ul>
+            ${data.favoriteGif ? `
+              <p>Je favoriete GIF kon ons erg bekoren 🎉</p>
+              <img src="${data.favoriteGif}" alt="Favoriete GIF" style="max-width: 240px; border-radius: 12px;" />
+            ` : ''}
+            <p>We sturen je binnenkort meer informatie, maar zet de introweek alvast in je agenda.</p>
+            <p style="margin-top: 30px;">Tot snel!<br/><strong>Het Salve Mundi team</strong></p>
+          </div>
+        </body>
+      </html>
+    `;
+
+    const orgEmailBody = `
+      <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h1 style="color: #7B2CBF;">Nieuwe intro aanmelding</h1>
+            <p>Er is een nieuwe inschrijving voor de introweek:</p>
+            <ul>
+              <li><strong>Naam:</strong> ${participantName}</li>
+              <li><strong>Email:</strong> ${data.participantEmail}</li>
+              <li><strong>Telefoonnummer:</strong> ${data.phoneNumber}</li>
+              ${data.dateOfBirth ? `<li><strong>Geboortedatum:</strong> ${data.dateOfBirth}</li>` : ''}
+            </ul>
+            ${data.favoriteGif ? `
+              <p><strong>Favoriete GIF:</strong></p>
+              <img src="${data.favoriteGif}" alt="Favoriete GIF" style="max-width: 300px; border-radius: 12px;" />
+            ` : ''}
+          </div>
+        </body>
+      </html>
+    `;
+
+    // Send emails sequentially to avoid race conditions
+    try {
+      await sendEmail(config, data.participantEmail, 'Bevestiging introweek aanmelding', userEmailBody);
+      console.log('✅ Participant email sent');
+    } catch (err) {
+      console.error('❌ Failed to send participant email:', err);
+    }
+
+    try {
+      await sendEmail(config, config.fromEmail, `Nieuwe introweek aanmelding: ${participantName}`, orgEmailBody);
+      console.log('✅ Organization notification email sent');
+    } catch (err) {
+      console.error('❌ Failed to send organization email:', err);
+    }
+
+    console.log('✅ Intro signup email process completed');
+  } catch (error) {
+    console.error('❌ Failed to send intro signup emails:', error);
   }
 }

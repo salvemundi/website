@@ -73,7 +73,44 @@ export default function ActiviteitenPagina() {
   }, [searchParams, events]);
 
   // Add ticket to cart (quick signup without modal)
-  const handleSignup = (activity: any) => {
+  const handleSignup = async (activity: any) => {
+    // Check if activity is already in the cart
+    const isInCart = cart.some(item => 
+      (item.activity.id && item.activity.id === activity.id) ||
+      (item.activity.title === (activity.name || activity.title))
+    );
+    
+    if (isInCart) {
+      // Show modal that activity is already in cart
+      handleShowDetails(activity);
+      return;
+    }
+
+    // Check if user is already signed up for this activity
+    if (user && activity.id) {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_DIRECTUS_URL}/items/event_signups?filter[event_id][_eq]=${activity.id}&filter[user_id][_eq]=${user.id}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+            },
+          }
+        );
+        
+        const result = await response.json();
+        
+        if (result.data && result.data.length > 0) {
+          // User is already signed up, show modal
+          handleShowDetails(activity);
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking signup status:', error);
+        // Continue with signup even if check fails
+      }
+    }
+    
     // Normalize the activity object to ensure consistent naming
     const normalizedActivity = {
       ...activity,
@@ -104,7 +141,44 @@ export default function ActiviteitenPagina() {
   };
 
   // Handle signup from modal
-  const handleModalSignup = (data: { activity: any; email: string; name: string; studentNumber: string }) => {
+  const handleModalSignup = async (data: { activity: any; email: string; name: string; studentNumber: string }) => {
+    // Check if activity is already in the cart
+    const isInCart = cart.some(item => 
+      (item.activity.id && item.activity.id === data.activity.id) ||
+      (item.activity.title === (data.activity.name || data.activity.title))
+    );
+    
+    if (isInCart) {
+      // Activity already in cart, just close modal
+      setIsModalOpen(false);
+      return;
+    }
+
+    // Check if user is already signed up for this activity
+    if (user && data.activity.id) {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_DIRECTUS_URL}/items/event_signups?filter[event_id][_eq]=${data.activity.id}&filter[user_id][_eq]=${user.id}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+            },
+          }
+        );
+        
+        const result = await response.json();
+        
+        if (result.data && result.data.length > 0) {
+          // User is already signed up, don't add to cart
+          setIsModalOpen(false);
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking signup status:', error);
+        // Continue with signup even if check fails
+      }
+    }
+    
     // Normalize the activity object to ensure consistent naming
     const normalizedData = {
       ...data,
