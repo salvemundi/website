@@ -138,7 +138,7 @@ export async function getSignupByQRToken(qrToken: string): Promise<any | null> {
 export async function getEventSignupsWithCheckIn(eventId: number): Promise<any[]> {
   try {
     const signups = await directusFetch<any[]>(
-      `/items/event_signups?filter[event_id][_eq]=${eventId}&fields=id,event_id,directus_relations.*,checked_in,checked_in_at,created_at&sort=checked_in_at,-created_at`
+      `/items/event_signups?filter[event_id][_eq]=${eventId}&fields=id,event_id,directus_relations.*,checked_in,checked_in_at,created_at,name,email,phone_number,qr_token&sort=checked_in_at,-created_at`
     );
     return signups || [];
   } catch (error) {

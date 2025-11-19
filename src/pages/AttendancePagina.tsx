@@ -12,6 +12,7 @@ import {
   isUserCommitteeMember, 
   getEventSignupsWithCheckIn 
 } from '../lib/qr-service';
+import exportEventSignups from '../lib/exportSignups';
 import { eventsApi } from '../lib/api-clean';
 
 interface CheckInResult {
@@ -33,6 +34,8 @@ export default function AttendancePagina() {
   const [signups, setSignups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'scan' | 'list'>('scan');
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportMessage, setExportMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -127,6 +130,33 @@ export default function AttendancePagina() {
 
   const handleScanError = (error: string) => {
     console.error('Scan error:', error);
+  };
+
+  const handleExportSignups = async () => {
+    if (signups.length === 0) {
+      setExportMessage('Er zijn nog geen inschrijvingen om te exporteren.');
+      setTimeout(() => setExportMessage(null), 4000);
+      return;
+    }
+
+    try {
+      setIsExporting(true);
+      setExportMessage(null);
+      const safeName = event?.name
+        ? event.name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/gi, '-')
+            .replace(/^-+|-+$/g, '')
+        : 'activiteit';
+      exportEventSignups(signups, `aanmeldingen-${safeName}.xlsx`);
+      setExportMessage('Export gestart, controleer je downloads.');
+    } catch (error) {
+      console.error('Failed to export signups', error);
+      setExportMessage('Exporteren is mislukt. Probeer het opnieuw.');
+    } finally {
+      setIsExporting(false);
+      setTimeout(() => setExportMessage(null), 4000);
+    }
   };
 
   const handleToggleAttendance = async (signup: any) => {
@@ -235,7 +265,7 @@ export default function AttendancePagina() {
                   day: 'numeric',
                 })}
               </p>
-              <div className="mt-4 flex items-center gap-4 text-beige">
+              <div className="mt-4 flex items-center gap-4 text-beige flex-wrap">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-geel">{checkedInCount}</div>
                   <div className="text-sm">Ingecheckt</div>
@@ -250,10 +280,10 @@ export default function AttendancePagina() {
           )}
 
           {/* Tabs */}
-          <div className="flex gap-2 mb-6">
+          <div className="flex flex-col sm:flex-row gap-2 mb-6">
             <button
               onClick={() => setActiveTab('scan')}
-              className={`flex-1 py-3 px-6 rounded-full font-semibold transition-all ${
+              className={`w-full sm:flex-1 py-3 px-6 rounded-full font-semibold transition-all ${
                 activeTab === 'scan'
                   ? 'bg-oranje text-white shadow-lg'
                   : 'bg-white text-paars border-2 border-paars'
@@ -263,7 +293,7 @@ export default function AttendancePagina() {
             </button>
             <button
               onClick={() => setActiveTab('list')}
-              className={`flex-1 py-3 px-6 rounded-full font-semibold transition-all ${
+              className={`w-full sm:flex-1 py-3 px-6 rounded-full font-semibold transition-all ${
                 activeTab === 'list'
                   ? 'bg-oranje text-white shadow-lg'
                   : 'bg-white text-paars border-2 border-paars'
@@ -337,7 +367,32 @@ export default function AttendancePagina() {
           {/* List Tab */}
           {activeTab === 'list' && (
             <div className="bg-white rounded-3xl p-6 shadow-lg">
-              <h3 className="text-2xl font-bold text-paars mb-4">Deelnemerslijst</h3>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+                <h3 className="text-2xl font-bold text-paars">Deelnemerslijst</h3>
+                <button
+                  onClick={handleExportSignups}
+                  disabled={isExporting || signups.length === 0}
+                  className={`px-5 py-2 rounded-full font-semibold shadow-md transition-all w-full sm:w-auto ${
+                    signups.length === 0
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      : 'bg-paars text-beige hover:bg-oranje'
+                  } ${isExporting ? 'opacity-80 cursor-wait' : ''}`}
+                >
+                  {isExporting ? 'Exporteren...' : '📁 Exporteer inschrijvingen'}
+                </button>
+              </div>
+
+              {exportMessage && (
+                <div
+                  className={`mb-4 rounded-lg px-4 py-3 text-sm ${
+                    exportMessage.includes('mislukt')
+                      ? 'bg-red-100 text-red-700 border border-red-200'
+                      : 'bg-green-100 text-green-700 border border-green-200'
+                  }`}
+                >
+                  {exportMessage}
+                </div>
+              )}
               
               {/* Check-in Result for manual toggle */}
               {checkInResult && (
