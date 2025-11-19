@@ -23,7 +23,7 @@ app.get('/health', (req, res) => {
 // Send email endpoint
 app.post('/send-email', async (req, res) => {
   try {
-    const { to, subject, html, from, fromName } = req.body;
+    const { to, subject, html, from, fromName, attachments } = req.body;
 
     // Validate required fields
     if (!to || !subject || !html) {
@@ -81,6 +81,35 @@ app.post('/send-email', async (req, res) => {
       },
       saveToSentItems: false,
     };
+    
+    // Add attachments if provided
+    if (Array.isArray(attachments) && attachments.length > 0) {
+      emailPayload.message.attachments = attachments.map((attachment) => {
+        const attachmentObj = {
+          '@odata.type': '#microsoft.graph.fileAttachment',
+          name: attachment.name,
+          contentType: attachment.contentType,
+          contentBytes: attachment.contentBytes,
+          isInline: Boolean(attachment.isInline),
+        };
+        
+        // Add contentId for inline attachments (required for cid: references)
+        if (attachment.isInline && attachment.contentId) {
+          // Ensure contentId is in the correct format
+          attachmentObj.contentId = attachment.contentId;
+        }
+        
+        return attachmentObj;
+      });
+      
+      console.log('📎 Prepared attachments:', emailPayload.message.attachments.map(att => ({
+        name: att.name,
+        contentType: att.contentType,
+        isInline: att.isInline,
+        contentId: att.contentId,
+        bytesLength: att.contentBytes ? att.contentBytes.length : 0,
+      })));
+    }
 
     console.log('📤 Sending to Graph API...');
 
