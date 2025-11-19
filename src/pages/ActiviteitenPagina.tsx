@@ -7,23 +7,37 @@ import BackToTopButton from "../components/backtotop";
 import ActiviteitCard from "../components/ActiviteitCard";
 // Fixed import casing (file is Countdown.tsx)
 import Countdown from "../components/Countdown";
-import CartSidebar from "../components/CardSidebar";
 import Footer from "../components/Footer";
 import ActiviteitDetailModal from "../components/ActiviteitDetailModal";
 import { useEvents } from "../hooks/useApi";
-import { getImageUrl } from "../lib/api";
-import { createEventSignup } from "../lib/auth";
+import { eventsApi, getImageUrl } from "../lib/api";
+import { sendEventSignupEmail } from "../lib/email-service";
+
+const buildCommitteeEmail = (name?: string | null) => {
+  if (!name) return undefined;
+  const normalized = name.toLowerCase();
+  if (normalized.includes('feest')) return 'feest@salvemundi.nl';
+  if (normalized.includes('activiteit')) return 'activiteiten@salvemundi.nl';
+  if (normalized.includes('studie')) return 'studie@salvemundi.nl';
+
+  const slug = name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/commissie|committee/g, '')
+    .replace(/[^a-z0-9]+/g, '')
+    .trim();
+  if (!slug) return undefined;
+  return `${slug}@salvemundi.nl`;
+};
 
 export default function ActiviteitenPagina() {
   const { data: events = [], isLoading, error } = useEvents();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const [userSignups, setUserSignups] = useState<number[]>([]);
-  const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-
-  // Cart: array of { activity, email, name, studentNumber }
-  const [cart, setCart] = useState<Array<{ activity: any; email: string; name: string; studentNumber: string }>>([]);
+  const [signupFeedback, setSignupFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -101,68 +115,9 @@ export default function ActiviteitenPagina() {
     loadUserSignups();
   }, [loadUserSignups]);
   
-  const openCartIfMobile = () => {
-    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
-      setIsMobileCartOpen(true);
-    }
-  };
-
-  // Add ticket to cart (quick signup without modal)
-  const handleSignup = async (activity: any) => {
-    // Check if activity is already in the cart
-    const isInCart = cart.some(item => 
-      (item.activity.id && item.activity.id === activity.id) ||
-      (item.activity.title === (activity.name || activity.title))
-    );
-    
-    if (isInCart) {
-      // Show modal that activity is already in cart
-      handleShowDetails(activity);
-      return;
-    }
-
-    // Check if user is already signed up for this activity
-    if (user && activity.id) {
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_DIRECTUS_URL}/items/event_signups?filter[event_id][_eq]=${activity.id}&filter[directus_relations][_eq]=${user.id}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-            },
-          }
-        );
-        
-        const result = await response.json();
-        
-        if (result.data && result.data.length > 0) {
-          // User is already signed up, show modal
-          handleShowDetails(activity);
-          return;
-        }
-      } catch (error) {
-        console.error('Error checking signup status:', error);
-        // Continue with signup even if check fails
-      }
-    }
-    
-    // Normalize the activity object to ensure consistent naming
-    const normalizedActivity = {
-      ...activity,
-      title: activity.name || activity.title,
-      price: Number(activity.price_members) || 0
-    };
-    
-    // Pre-fill with user data if logged in
-    const fullName = user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : '';
-    
-    setCart((prev) => [...prev, { 
-      activity: normalizedActivity, 
-      email: user?.email || "", 
-      name: fullName || "", 
-      studentNumber: "" 
-    }]);
-    openCartIfMobile();
+  // Start signup by opening the details modal
+  const handleSignup = (activity: any) => {
+    handleShowDetails(activity);
   };
 
   // Open modal with activity details
@@ -170,101 +125,75 @@ export default function ActiviteitenPagina() {
     // Process the activity data to include the full image URL
     const processedActivity = {
       ...activity,
-      image: getImageUrl(activity.image)
+      title: activity.name || activity.title,
+      price: Number(activity.price_members) || Number(activity.price) || 0,
+      date: activity.event_date || activity.date,
+      image: getImageUrl(activity.image),
+      committee_email: activity.committee_email || buildCommitteeEmail(activity.committee_name),
     };
     setSelectedActivity(processedActivity);
     setIsModalOpen(true);
   };
 
-  // Handle signup from modal
-  const handleModalSignup = async (data: { activity: any; email: string; name: string; studentNumber: string }) => {
-    // Check if activity is already in the cart
-    const isInCart = cart.some(item => 
-      (item.activity.id && item.activity.id === data.activity.id) ||
-      (item.activity.title === (data.activity.name || data.activity.title))
-    );
-    
-    if (isInCart) {
-      // Activity already in cart, just close modal
-      setIsModalOpen(false);
-      return;
+  // Handle signup from modal and submit immediately
+  const handleModalSignup = async (data: { activity: any; email: string; name: string; phoneNumber: string }) => {
+    if (!data.activity?.id) {
+      throw new Error('Deze activiteit kan niet worden gevonden.');
     }
 
-    // Check if user is already signed up for this activity
-    if (user && data.activity.id) {
+    const eventTitle = data.activity.title || data.activity.name || 'Activiteit';
+    const eventDate = data.activity.event_date || data.activity.date || new Date().toISOString();
+    const eventPrice = Number(data.activity.price) || Number(data.activity.price_members) || 0;
+    const userName = user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || 'Onbekend' : data.name || 'Onbekend';
+
+    try {
+      const signup = await eventsApi.createSignup({
+        event_id: data.activity.id,
+        email: data.email,
+        name: data.name,
+        phone_number: data.phoneNumber,
+        user_id: user?.id,
+        event_name: eventTitle,
+        event_date: eventDate,
+        event_price: eventPrice,
+      });
+
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_DIRECTUS_URL}/items/event_signups?filter[event_id][_eq]=${data.activity.id}&filter[directus_relations][_eq]=${user.id}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-            },
-          }
-        );
-        
-        const result = await response.json();
-        
-        if (result.data && result.data.length > 0) {
-          // User is already signed up, don't add to cart
-          setIsModalOpen(false);
-          return;
-        }
-      } catch (error) {
-        console.error('Error checking signup status:', error);
-        // Continue with signup even if check fails
+        const { generateQRCode } = await import('../lib/qr-service');
+        const qrCodeDataUrl = signup?.qr_token ? await generateQRCode(signup.qr_token) : undefined;
+
+        await sendEventSignupEmail({
+          recipientEmail: data.email,
+          recipientName: data.name || 'Deelnemer',
+          eventName: eventTitle,
+          eventDate,
+          eventPrice,
+          phoneNumber: data.phoneNumber,
+          userName,
+          qrCodeDataUrl,
+          committeeName: data.activity.committee_name,
+          committeeEmail: data.activity.committee_email,
+          contactName: data.activity.contact_name,
+          contactPhone: data.activity.contact_phone,
+        });
+      } catch (emailError) {
+        console.error('Kon bevestigingsmail niet versturen:', emailError);
       }
+
+      setSignupFeedback({
+        type: 'success',
+        message: `Je bent succesvol ingeschreven voor ${eventTitle}.`,
+      });
+      setTimeout(() => setSignupFeedback(null), 5000);
+
+      await loadUserSignups();
+    } catch (error: any) {
+      console.error('Error creating signup:', error);
+      const message = error?.message || 'Er is iets misgegaan bij het inschrijven. Probeer het opnieuw.';
+      throw new Error(message);
     }
-    
-    // Normalize the activity object to ensure consistent naming
-    const normalizedData = {
-      ...data,
-      activity: {
-        ...data.activity,
-        title: data.activity.name || data.activity.title,
-        price: Number(data.activity.price_members) || Number(data.activity.price) || 0
-      }
-    };
-    
-    // Pre-fill email and name if not provided
-    if (!normalizedData.email && user?.email) {
-      normalizedData.email = user.email;
-    }
-    if (!normalizedData.name && user) {
-      const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
-      if (fullName) {
-        normalizedData.name = fullName;
-      }
-    }
-    
-    setCart((prev) => [...prev, normalizedData]);
-    openCartIfMobile();
   };
 
-  // Update email for a ticket
-  const handleEmailChange = (index: number, email: string) => {
-    setCart((prev) => prev.map((item, i) => i === index ? { ...item, email } : item));
-  };
-
-  // Update name for a ticket
-  const handleNameChange = (index: number, name: string) => {
-    setCart((prev) => prev.map((item, i) => i === index ? { ...item, name } : item));
-  };
-
-  // Update student number for a ticket
-  const handleStudentNumberChange = (index: number, studentNumber: string) => {
-    setCart((prev) => prev.map((item, i) => i === index ? { ...item, studentNumber } : item));
-  };
-
-  // Remove ticket from cart
-  const handleRemoveTicket = (index: number) => {
-    setCart((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleCheckoutComplete = () => {
-    setCart([]);
-    loadUserSignups();
-    setIsMobileCartOpen(false);
-  };
 
   return (
     <>
@@ -328,7 +257,18 @@ export default function ActiviteitenPagina() {
               </div>
             </div>
 
-            
+            {signupFeedback && (
+              <div
+                className={`mb-6 rounded-2xl border px-4 py-3 font-semibold ${
+                  signupFeedback.type === 'success'
+                    ? 'bg-green-50 border-green-400 text-green-800'
+                    : 'bg-red-50 border-red-400 text-red-800'
+                }`}
+              >
+                {signupFeedback.message}
+              </div>
+            )}
+
             <div className="flex flex-col lg:flex-row gap-6">
               <div className="flex-1 flex flex-col gap-6">
                 {isLoading ? (
@@ -396,69 +336,12 @@ export default function ActiviteitenPagina() {
                   </>
                 )}
               </div>
-              {/* Sidebar */}
-              <div className="hidden lg:block lg:w-80 flex-shrink-0">
-                <CartSidebar
-                  cart={cart}
-                  onEmailChange={handleEmailChange}
-                  onNameChange={handleNameChange}
-                  onStudentNumberChange={handleStudentNumberChange}
-                  onRemoveTicket={handleRemoveTicket}
-                  onCheckoutComplete={handleCheckoutComplete}
-                />
-              </div>
             </div>
       
           </section>
         </div>
         
       </main>
-
-      {/* Floating cart button for mobile - only on this page */}
-      <button
-        type="button"
-        onClick={() => setIsMobileCartOpen(true)}
-        className={`${isMobileCartOpen ? 'hidden' : 'flex'} lg:hidden fixed bottom-5 left-5 z-40 items-center gap-2 px-4 py-3 rounded-full shadow-2xl bg-oranje text-beige font-semibold border-2 border-beige/30`}
-        aria-label="Open winkelwagen"
-      >
-        🛒
-        <span>Winkelwagen</span>
-        {cart.length > 0 && (
-          <span className="ml-1 text-sm bg-geel text-paars font-bold rounded-full px-2 py-0.5">
-            {cart.length}
-          </span>
-        )}
-      </button>
-
-      {/* Mobile cart overlay */}
-      {isMobileCartOpen && (
-        <div className="lg:hidden fixed inset-0 z-40">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setIsMobileCartOpen(false)}
-            aria-hidden="true"
-          />
-          <div className="absolute bottom-0 left-0 right-0 bg-beige rounded-t-3xl shadow-2xl p-4 pt-10">
-            <button
-              type="button"
-              className="absolute top-3 right-5 text-paars text-2xl font-bold"
-              onClick={() => setIsMobileCartOpen(false)}
-              aria-label="Sluit winkelwagen"
-            >
-              ×
-            </button>
-            <CartSidebar
-              cart={cart}
-              onEmailChange={handleEmailChange}
-              onNameChange={handleNameChange}
-              onStudentNumberChange={handleStudentNumberChange}
-              onRemoveTicket={handleRemoveTicket}
-              onCheckoutComplete={handleCheckoutComplete}
-              className="max-h-[65vh] pt-2"
-            />
-          </div>
-        </div>
-      )}
 
       <Footer />
 

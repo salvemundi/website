@@ -61,23 +61,18 @@ export default function CommissiesPagina() {
               <p className="text-lg text-gray-600">Geen commissies gevonden</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-fr">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-auto">
               {committeesWithMembers.map((committee) => {
-                // Get member images from committee_members
-                const memberImages = committee.committee_members
-                  ?.filter((member: any) => member.is_visible && member.user_id?.avatar)
-                  .map((member: any) => getImageUrl(member.user_id.avatar)) || [];
-                
                 const isBestuur = cleanCommitteeName(committee.name).toLowerCase().includes('bestuur');
-                
-                // Prepare member data with names for Bestuur
-                const membersWithNames = committee.committee_members
+
+                const members = committee.committee_members
                   ?.filter((member: any) => member.is_visible && member.user_id?.avatar)
                   .map((member: any) => ({
                     image: getImageUrl(member.user_id.avatar),
-                    firstName: member.user_id.first_name || ''
+                    firstName: member.user_id.first_name || '',
+                    isLeader: Boolean(member.is_leader),
                   })) || [];
-                
+
                 return (
                   <div
                     key={committee.id}
@@ -90,8 +85,7 @@ export default function CommissiesPagina() {
                         buttonText="Meer Lezen"
                         buttonLink={`/commissies/${committee.id}`}
                         image={getImageUrl(committee.image)}
-                        memberImages={memberImages}
-                        members={membersWithNames}
+                        members={members}
                         isBestuur={isBestuur}
                       />
                     </div>

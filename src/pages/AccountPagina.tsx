@@ -203,13 +203,6 @@ export default function AccountPagina() {
                 )}
 
                 <div>
-                  <p className="text-sm text-paars/70 font-semibold">Inlogmethode</p>
-                  <p className="font-medium text-paars">
-                    {user.entra_id ? 'Microsoft Account' : 'E-mail & Wachtwoord'}
-                  </p>
-                </div>
-
-                <div>
                   <p className="text-sm text-paars/70 font-semibold mb-1">Minecraft Gebruikersnaam</p>
                   {isEditingMinecraft ? (
                     <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
@@ -300,18 +293,20 @@ export default function AccountPagina() {
                   </div>
                 </button>
 
-                <button
-                  onClick={() => navigate('/stickers')}
+                <a
+                  href="https://salvemundi.sharepoint.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="p-4 border-2 border-oranje rounded-xl hover:bg-oranje/10 transition-all text-left w-full"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-3xl">🗺️</span>
+                    <span className="text-3xl">📁</span>
                     <div>
-                      <h3 className="font-semibold text-paars">Sticker Map</h3>
-                      <p className="text-sm text-paars/70">Bekijk en voeg sticker locaties toe</p>
+                      <h3 className="font-semibold text-paars">SharePoint</h3>
+                      <p className="text-sm text-paars/70">Open het Salve Mundi archief in een nieuw tabblad</p>
                     </div>
                   </div>
-                </button>
+                </a>
               </div>
             </div>
           </div>

@@ -93,3 +93,12 @@ iframe {
 .leaflet-popup-content {
   margin: 8px;
 }
+
+@keyframes committeeAvatarScroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}

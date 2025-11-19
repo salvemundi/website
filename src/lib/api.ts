@@ -1,4 +1,5 @@
 import { directusFetch } from './directus';
+import { SiteSettings } from '../types';
 
 function buildQueryString(params: Record<string, any>): string {
   const queryParams = new URLSearchParams();
@@ -107,7 +108,7 @@ export const eventsApi = {
     });
     return directusFetch<any[]>(`/items/events?${query}`);
   },
-  createSignup: async (signupData: { event_id: number; email: string; name: string; student_number?: string; user_id?: string; event_name?: string; event_date?: string; event_price?: number }) => {
+  createSignup: async (signupData: { event_id: number; email: string; name: string; phone_number?: string; user_id?: string; event_name?: string; event_date?: string; event_price?: number }) => {
     // First check if user has already signed up for this event
     if (signupData.user_id) {
       const existingQuery = buildQueryString({
@@ -128,12 +129,10 @@ export const eventsApi = {
     const payload: any = {
       event_id: signupData.event_id,
       directus_relations: signupData.user_id || null,
+      participant_name: signupData.name || null,
+      participant_email: signupData.email || null,
+      participant_phone: signupData.phone_number ?? null,
     };
-    
-    // Only add optional fields if they exist
-    if (signupData.student_number) {
-      payload.submission_file_url = signupData.student_number;
-    }
     
     const signup = await directusFetch<any>(`/items/event_signups`, {
       method: 'POST',
@@ -277,26 +276,43 @@ export const clubsApi = {
 export const pubCrawlEventsApi = {
   getAll: async () => {
     const query = buildQueryString({
-      fields: ['id', 'name', 'email', 'association', 'amount_tickets', 'name_initials', 'created_at'],
+      fields: ['id', 'name', 'email', 'association', 'amount_tickets', 'date', 'description', 'image', 'created_at', 'updated_at'],
       sort: ['-created_at']
     });
     return directusFetch<any[]>(`/items/pub_crawl_events?${query}`);
-  },
-  create: async (data: { name: string; email: string; association: string; amount_tickets: number }) => {
-    return directusFetch<any>(`/items/pub_crawl_events`, {
-      method: 'POST',
-      body: JSON.stringify(data)
-    });
   }
 };
 
-export const pubCrawlGroupsApi = {
+export const pubCrawlSignupsApi = {
   getAll: async () => {
     const query = buildQueryString({
-      fields: ['group_id', 'name', 'initials', 'pub_crawl_events_id'],
-      sort: ['name']
+      fields: ['id', 'pub_crawl_event_id', 'name', 'email', 'association', 'amount_tickets', 'name_initials', 'created_at', 'updated_at'],
+      sort: ['-created_at']
     });
-    return directusFetch<any[]>(`/items/pub_crawl_groups?${query}`);
+    return directusFetch<any[]>(`/items/pub_crawl_signups?${query}`);
+  },
+  create: async (data: { name: string; email: string; association?: string; amount_tickets: number; pub_crawl_event_id: number; name_initials?: string }) => {
+    // Prevent duplicate signups per event/email combo by updating the existing record
+    const existingQuery = buildQueryString({
+      filter: {
+        pub_crawl_event_id: { _eq: data.pub_crawl_event_id },
+        email: { _eq: data.email }
+      },
+      fields: ['id'],
+      limit: 1
+    });
+    const existing = await directusFetch<any[]>(`/items/pub_crawl_signups?${existingQuery}`);
+    if (existing && existing.length > 0) {
+      return directusFetch<any>(`/items/pub_crawl_signups/${existing[0].id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data)
+      });
+    }
+    
+    return directusFetch<any>(`/items/pub_crawl_signups`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
   }
 };
 
@@ -343,6 +359,21 @@ export const stickersApi = {
       sort: ['-date_created']
     });
     return directusFetch<any[]>(`/items/Stickers?${query}`);
+  }
+};
+
+export const siteSettingsApi = {
+  get: async (): Promise<SiteSettings | null> => {
+    const query = buildQueryString({
+      fields: ['id', 'show_intro', 'intro_disabled_message'],
+      limit: 1
+    });
+    
+    const data = await directusFetch<SiteSettings | SiteSettings[] | null>(`/items/site_settings?${query}`);
+    if (Array.isArray(data)) {
+      return data[0] || null;
+    }
+    return data ?? null;
   }
 };
 
@@ -393,4 +424,3 @@ export function getImageUrl(imageId: string | undefined | any): string {
   const imageUrl = `${baseUrl}/assets/${actualImageId}`;
   return imageUrl;
 }
-
