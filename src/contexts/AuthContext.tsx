@@ -34,7 +34,6 @@ export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
   loginWithMicrosoft: () => Promise<void>;
   logout: () => void;
   signup: (userData: SignupData) => Promise<void>;
@@ -137,21 +136,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const login = async (email: string, password: string) => {
-    setIsLoading(true);
-    try {
-      const response = await authApi.loginWithPassword(email, password);
-      localStorage.setItem('auth_token', response.access_token);
-      localStorage.setItem('refresh_token', response.refresh_token);
-      setUser(response.user);
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const loginWithMicrosoft = async () => {
     if (!msalInstance) {
       throw new Error('Microsoft login is not available. Please access the app via http://localhost (not an IP address) to enable Microsoft authentication.');
@@ -242,7 +226,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         isAuthenticated: !!user,
         isLoading,
-        login,
         loginWithMicrosoft,
         logout,
         signup,

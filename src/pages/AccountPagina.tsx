@@ -203,13 +203,6 @@ export default function AccountPagina() {
                 )}
 
                 <div>
-                  <p className="text-sm text-paars/70 font-semibold">Inlogmethode</p>
-                  <p className="font-medium text-paars">
-                    {user.entra_id ? 'Microsoft Account' : 'E-mail & Wachtwoord'}
-                  </p>
-                </div>
-
-                <div>
                   <p className="text-sm text-paars/70 font-semibold mb-1">Minecraft Gebruikersnaam</p>
                   {isEditingMinecraft ? (
                     <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
