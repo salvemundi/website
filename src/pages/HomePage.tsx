@@ -1,5 +1,5 @@
 // src/pages/Home.tsx
-import React from "react";
+import React, { useRef } from "react";
 import Navbar from "../components/NavBar";
 import Header from "../components/header";
 import BackToTopButton from "../components/backtotop";
@@ -15,6 +15,7 @@ import {
 import { ArrowRight, CalendarRange, MapPin, Users } from "lucide-react";
 import { useSiteSettings, useSponsors } from "../hooks/useApi";
 import { getImageUrl } from "../lib/api";
+import useHomeScrollAnimations from "../hooks/useHomeScrollAnimations";
 
 // Swiper styles
 import "swiper/css";
@@ -29,10 +30,13 @@ export default function Home() {
   } = useSponsors();
   const { data: siteSettings } = useSiteSettings();
   const introEnabled = siteSettings?.show_intro ?? true;
+  const pageRef = useRef<HTMLElement | null>(null);
+
+  useHomeScrollAnimations(pageRef);
 
   return (
     <>
-      <main className="bg-beige text-samu">
+      <main ref={pageRef} className="bg-beige text-samu">
         <section className="relative overflow-hidden">
           <div className="absolute -left-10 top-12 h-40 w-40 bg-geel/30 blur-3xl lg:hidden" aria-hidden="true" />
           <div className="absolute -right-10 top-0 h-52 w-52 bg-oranje/25 blur-3xl lg:hidden" aria-hidden="true" />
@@ -45,7 +49,7 @@ export default function Home() {
                 title="SALVE MUNDI"
                 backgroundImage="/img/backgrounds/homepage-banner.jpg"
               >
-                <div className="lg:hidden">
+                <div className="lg:hidden" data-scroll-fade>
                   <p className="mt-4 max-w-2xl text-center text-lg sm:text-xl text-beige">
                     Dé studievereniging voor Fontys ICT. Samen ontdekken we nieuwe technologie, bouwen we community en maken we impact op én buiten de campus.
                   </p>
@@ -95,14 +99,11 @@ export default function Home() {
 
         {/* Cards */}
         <section className="bg-beige px-4 sm:px-6 lg:px-10 py-10">
-          <div className="mb-6 flex items-center justify-between gap-3">
+          <div className="mb-6 flex items-center justify-between gap-3" data-scroll-fade>
             <div>
               <p className="text-sm uppercase tracking-wide text-oranje/80">Snel aan de slag</p>
               <h2 className="text-3xl font-bold text-samu">Kies je volgende stap</h2>
             </div>
-            <span className="rounded-full bg-samu/10 px-3 py-1 text-xs font-semibold text-samu sm:text-sm">
-              Swipe op mobiel
-            </span>
           </div>
           <div className="-mx-2 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 md:mx-0 md:grid md:grid-cols-3 md:gap-5 md:overflow-visible">
             <div className="min-w-[260px] max-w-[320px] snap-start md:min-w-0 md:max-w-none">
@@ -137,7 +138,7 @@ export default function Home() {
         {/* About section with swiper */}
         <section className="px-4 sm:px-6 lg:px-10 pb-12">
           <div className="flex flex-col-reverse items-center gap-10 rounded-3xl border border-samu/5 bg-white/80 p-6 shadow-xl backdrop-blur lg:flex-row lg:justify-between lg:p-10">
-            <div className="flex flex-1 flex-col justify-center space-y-4">
+            <div className="flex flex-1 flex-col justify-center space-y-4" data-scroll-fade>
               <h1 className="text-3xl font-bold text-oranje sm:text-4xl">
                 OVER SALVE MUNDI
               </h1>
@@ -161,7 +162,7 @@ export default function Home() {
                 gelijkgestemden en groei mee.
               </p>
               <div className="flex flex-wrap gap-2">
-                {["Workshops", "Hackathons", "Studietrips", "Netwerken"].map((tag) => (
+                {["Workshops", "Studietrips", "Netwerken"].map((tag) => (
                   <span
                     key={tag}
                     className="rounded-full border border-samu/15 bg-samu/5 px-3 py-1 text-sm font-semibold text-samu"
@@ -201,13 +202,13 @@ export default function Home() {
 
         {/* Contact */}
         <section className="px-4 sm:px-6 lg:px-10 pb-12">
-          <div className="mb-4 flex items-center justify-center">
+          <div className="mb-4 flex items-center justify-center" data-scroll-fade>
             <h2 className="text-3xl font-black text-oranje sm:text-4xl">
               Kom in contact met Salve Mundi
             </h2>
           </div>
           <div className="flex flex-col gap-8 rounded-3xl bg-samu p-6 text-beige shadow-2xl sm:p-8 lg:flex-row lg:items-stretch">
-            <div className="w-full space-y-4">
+            <div className="w-full space-y-4" data-scroll-fade>
               <h3 className="text-2xl font-bold text-geel">CONTACT</h3>
               <p className="text-base leading-relaxed sm:text-lg">
                 Heb jij een vraag voor ons of wil je voor iets anders met ons in contact komen?
@@ -242,7 +243,10 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="w-full overflow-hidden rounded-3xl border border-beige/15 shadow-lg">
+            <div
+              className="w-full overflow-hidden rounded-3xl border border-beige/15 shadow-lg"
+              data-scroll-fade
+            >
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2486.3762423950466!2d5.477010676986035!3d51.4512482148034!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c6d9a14c2598a7%3A0x749672e4952620b8!2sSalve%20Mundi!5e0!3m2!1sen!2sfr!4v1749761290183!5m2!1sen!2sfr"
                 className="h-72 w-full border-none sm:h-96"
@@ -255,7 +259,7 @@ export default function Home() {
         {/* Partners */}
         <section className="px-4 sm:px-6 lg:px-10 pb-16">
           <div className="flex flex-col items-center justify-center gap-6">
-            <h2 className="text-3xl font-black text-oranje sm:text-4xl">Partners</h2>
+            <h2 className="text-3xl font-black text-oranje sm:text-4xl" data-scroll-fade>Partners</h2>
             <div className="w-full max-w-5xl rounded-3xl border border-samu/5 bg-white/80 p-4 shadow-lg">
               {sponsorsError && (
                 <p className="text-center text-red-600">
