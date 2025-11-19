@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Navbar from '../components/NavBar';
 import Header from '../components/header';
 import BackToTopButton from '../components/backtotop';
 import Footer from '../components/Footer';
-import { pubCrawlEventsApi } from '../lib/api';
+import { pubCrawlSignupsApi, getImageUrl } from '../lib/api';
+import { usePubCrawlEvents } from '../hooks/useApi';
+import { format } from 'date-fns';
 
 const ASSOCIATIONS = [
   'Salve Mundi',
@@ -35,6 +37,43 @@ export default function KroegentochtPagina() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { data: pubCrawlEvents, isLoading: eventsLoading } = usePubCrawlEvents();
+
+  const nextEvent = useMemo(() => {
+    if (!pubCrawlEvents || pubCrawlEvents.length === 0) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const validEvents = pubCrawlEvents.filter((event) => {
+      if (!event.date) return false;
+      const parsed = new Date(event.date);
+      if (isNaN(parsed.getTime())) return false;
+
+      const normalized = new Date(parsed);
+      normalized.setHours(0, 0, 0, 0);
+      return normalized.getTime() >= today.getTime();
+    });
+
+    if (validEvents.length === 0) return null;
+
+    validEvents.sort((a, b) => {
+      const dateA = new Date(a.date!);
+      const dateB = new Date(b.date!);
+      return dateA.getTime() - dateB.getTime();
+    });
+
+    return validEvents[0];
+  }, [pubCrawlEvents]);
+
+  const nextEventDate = nextEvent?.date ? new Date(nextEvent.date) : null;
+  const formattedNextEventDate =
+    nextEventDate && !isNaN(nextEventDate.getTime())
+      ? format(nextEventDate, 'd MMMM yyyy')
+      : null;
+  const canSignUp = Boolean(nextEvent);
+  const headerBackgroundImage = nextEvent?.image
+    ? getImageUrl(nextEvent.image)
+    : '/img/backgrounds/Kroto2025.jpg';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -42,6 +81,11 @@ export default function KroegentochtPagina() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!nextEvent) {
+      setError('Er is momenteel geen kroegentocht beschikbaar om voor in te schrijven.');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -52,11 +96,12 @@ export default function KroegentochtPagina() {
         : form.association;
 
       // Create signup
-      await pubCrawlEventsApi.create({
+      await pubCrawlSignupsApi.create({
         name: form.name,
         email: form.email,
         association: finalAssociation,
         amount_tickets: form.amount_tickets,
+        pub_crawl_event_id: nextEvent.id,
       });
 
       setSubmitted(true);
@@ -74,7 +119,7 @@ export default function KroegentochtPagina() {
         <Navbar activePage="Kroegentocht" />
         <Header
           title="KROEGENTOCHT"
-          backgroundImage="/img/backgrounds/Kroto2025.jpg"
+          backgroundImage={headerBackgroundImage}
         />
       </div>
 
@@ -116,6 +161,12 @@ export default function KroegentochtPagina() {
                 {error && (
                   <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                     {error}
+                  </div>
+                )}
+
+                {!eventsLoading && !canSignUp && (
+                  <div className="bg-oranje/10 border border-oranje text-beige px-4 py-3 rounded">
+                    Momenteel is er geen kroegentocht gepland. Houd deze pagina in de gaten voor nieuwe data!
                   </div>
                 )}
 
@@ -202,10 +253,14 @@ export default function KroegentochtPagina() {
 
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || !canSignUp}
                   className="bg-oranje text-white font-bold py-3 px-6 rounded hover:bg-geel hover:text-paars transition mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? 'Bezig met inschrijven...' : 'Inschrijven'}
+                  {loading
+                    ? 'Bezig met inschrijven...'
+                    : canSignUp
+                      ? 'Inschrijven'
+                      : 'Inschrijving nog niet beschikbaar'}
                 </button>
               </form>
             )}
@@ -219,13 +274,23 @@ export default function KroegentochtPagina() {
                 🍻 Over de Kroegentocht
               </h2>
               <div className="text-beige space-y-3">
-                <p>
-                  De jaarlijkse Kroegentocht is een van de grootste evenementen die tweemaal per jaar wordt georganiseerd!
-                </p>
-                <p>
-                  Dit is een fantastische kans om verschillende kroegen te bezoeken, nieuwe mensen te ontmoeten 
-                  en een onvergetelijke avond te beleven met andere studenten en verenigingen.
-                </p>
+                {eventsLoading ? (
+                  <p>Evenementomschrijving wordt geladen...</p>
+                ) : nextEvent?.description ? (
+                  nextEvent.description.split('\n').map((paragraph, index) => (
+                    <p key={index}>{paragraph}</p>
+                  ))
+                ) : (
+                  <>
+                    <p>
+                      De jaarlijkse Kroegentocht is een van de grootste evenementen die tweemaal per jaar wordt georganiseerd!
+                    </p>
+                    <p>
+                      Dit is een fantastische kans om verschillende kroegen te bezoeken, nieuwe mensen te ontmoeten 
+                      en een onvergetelijke avond te beleven met andere studenten en verenigingen.
+                    </p>
+                  </>
+                )}
               </div>
             </div>
 
@@ -234,24 +299,48 @@ export default function KroegentochtPagina() {
               <h2 className="text-2xl font-bold text-geel mb-4">
                 📅 Evenement Details
               </h2>
-              <div className="text-beige space-y-2">
-                <div className="flex items-start gap-2">
-                  <span className="font-semibold text-geel">Datum:</span>
-                  <span>TBA</span>
+              {eventsLoading ? (
+                <div className="text-beige">Evenementgegevens worden geladen...</div>
+              ) : nextEvent ? (
+                <div className="text-beige space-y-4">
+                  {nextEvent.image && (
+                    <img
+                      src={getImageUrl(nextEvent.image)}
+                      alt={nextEvent.name}
+                      className="w-full h-48 object-cover rounded-2xl border-2 border-geel/40"
+                    />
+                  )}
+
+                  <div className="space-y-2">
+                    <div className="flex items-start gap-2">
+                      <span className="font-semibold text-geel">Evenement:</span>
+                      <span>{nextEvent.name}</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-semibold text-geel">Datum:</span>
+                      <span>{formattedNextEventDate ?? 'Nog te bepalen'}</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-semibold text-geel">Organisatie:</span>
+                      <span>{nextEvent.association || 'Salve Mundi'}</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-semibold text-geel">Contact:</span>
+                      <a href={`mailto:${nextEvent.email}`} className="underline text-geel break-all">
+                        {nextEvent.email}
+                      </a>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-semibold text-geel">Locatie:</span>
+                      <span>Verschillende locaties in Eindhoven</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-start gap-2">
-                  <span className="font-semibold text-geel">Tijd:</span>
-                  <span>TBA</span>
+              ) : (
+                <div className="text-beige">
+                  Er is momenteel geen kroegentocht gepland. Houd onze website in de gaten voor toekomstige aankondigingen!
                 </div>
-                <div className="flex items-start gap-2">
-                  <span className="font-semibold text-geel">Locatie:</span>
-                  <span>Verschillende locaties in Eindhoven</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="font-semibold text-geel">Prijs:</span>
-                  <span>TBA per ticket</span>
-                </div>
-              </div>
+              )}
             </div>
 
             {/* Important Info */}

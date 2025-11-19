@@ -109,15 +109,23 @@ export interface PubCrawlEvent {
   email: string;
   association?: string;
   amount_tickets: number;
-  name_initials?: string;
+  date?: string;
+  description?: string;
+  image?: string;
   created_at: string;
+  updated_at?: string;
 }
 
-export interface PubCrawlGroup {
-  group_id: number;
+export interface PubCrawlSignup {
+  id: number;
+  pub_crawl_event_id: number;
   name: string;
-  initials?: string;
-  pub_crawl_events_id?: number;
+  email: string;
+  association?: string;
+  amount_tickets: number;
+  name_initials?: string;
+  created_at: string;
+  updated_at?: string;
 }
 
 // Sponsors
