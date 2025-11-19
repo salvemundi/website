@@ -6,6 +6,7 @@ import Footer from '../components/Footer';
 import { pubCrawlSignupsApi, getImageUrl } from '../lib/api';
 import { usePubCrawlEvents } from '../hooks/useApi';
 import { format } from 'date-fns';
+import { sendEventSignupEmail } from '../lib/email-service';
 
 const ASSOCIATIONS = [
   'Salve Mundi',
@@ -76,7 +77,14 @@ export default function KroegentochtPagina() {
     : '/img/backgrounds/Kroto2025.jpg';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === 'amount_tickets') {
+      const parsed = parseInt(value, 10);
+      const clamped = Number.isNaN(parsed) ? 1 : Math.min(10, Math.max(1, parsed));
+      setForm({ ...form, amount_tickets: clamped });
+      return;
+    }
+    setForm({ ...form, [name]: value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -95,7 +103,7 @@ export default function KroegentochtPagina() {
         ? form.customAssociation 
         : form.association;
 
-      // Create signup
+      // Create or update signup
       await pubCrawlSignupsApi.create({
         name: form.name,
         email: form.email,
@@ -103,11 +111,42 @@ export default function KroegentochtPagina() {
         amount_tickets: form.amount_tickets,
         pub_crawl_event_id: nextEvent.id,
       });
+      
+      const eventDate = nextEvent.date || new Date().toISOString();
+      const eventPrice = Number(
+        (nextEvent as any).price ??
+        (nextEvent as any).ticket_price ??
+        (nextEvent as any).price_members ??
+        0
+      );
+      const contactName = (nextEvent as any).contact_name;
+      const contactPhone = (nextEvent as any).contact_phone;
+
+      try {
+        await sendEventSignupEmail({
+          recipientEmail: form.email,
+          recipientName: form.name || 'Deelnemer',
+          eventName: nextEvent.name || 'Kroegentocht',
+          eventDate,
+          eventPrice,
+          phoneNumber: undefined,
+          userName: form.name || form.email,
+          committeeName: nextEvent.association || 'Salve Mundi',
+          committeeEmail: nextEvent.email,
+          contactName,
+          contactPhone,
+        });
+      } catch (emailErr) {
+        console.error('Kon kroegentocht bevestigingsmail niet versturen:', emailErr);
+      }
 
       setSubmitted(true);
     } catch (err: any) {
       console.error('Error submitting kroegentocht signup:', err);
-      setError(err.message || 'Er is een fout opgetreden bij het inschrijven. Probeer het opnieuw.');
+      const friendlyMessage = err?.message?.includes('RECORD_NOT_UNIQUE')
+        ? 'Dit e-mailadres staat al geregistreerd voor deze kroegentocht.'
+        : (err.message || 'Er is een fout opgetreden bij het inschrijven. Probeer het opnieuw.');
+      setError(friendlyMessage);
     } finally {
       setLoading(false);
     }
