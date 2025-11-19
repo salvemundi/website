@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import AttendanceButton from "./AttendanceButton";
+import { isUserCommitteeMember, getEventSignupsWithCheckIn } from "../lib/qr-service";
+import exportEventSignups from "../lib/exportSignups";
 
 interface ActiviteitDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   activity: {
+    id?: number;
     title: string;
     date?: string;
     description: string;
@@ -16,6 +20,8 @@ interface ActiviteitDetailModalProps {
     organizer?: string;
     contact_phone?: string;
     contact_name?: string;
+    committee_name?: string;
+    committee_id?: number;
   };
   isPast?: boolean;
   onSignup: (data: { activity: any; email: string; name: string; studentNumber: string }) => void;
@@ -119,25 +125,40 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4"
+      style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
       onClick={handleBackdropClick}
     >
-      <div className="bg-paars rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-paars rounded-3xl shadow-2xl max-w-4xl w-full sm:w-[92%] md:w-3/4 lg:max-w-3xl max-h-[90vh] overflow-y-auto">
         {/* Header with close button */}
-        <div className="sticky top-0 bg-paars z-10 flex justify-between items-start p-6 border-b border-geel/20">
-          <h2 className="text-3xl font-bold text-geel pr-8">{activity.title}</h2>
-          <button
-            onClick={onClose}
-            className="text-white hover:text-geel transition-colors text-3xl font-bold leading-none"
-            aria-label="Sluiten"
-          >
-            ×
-          </button>
+        <div className="sticky top-0 bg-paars z-10 p-6 border-b border-geel/20">
+          <div className="flex justify-between items-start mb-3">
+            <h2 className="text-3xl font-bold text-geel pr-8">{activity.title}</h2>
+            <button
+              onClick={onClose}
+              className="text-white hover:text-geel transition-colors text-3xl font-bold leading-none"
+              aria-label="Sluiten"
+            >
+              ×
+            </button>
+          </div>
+          
+          {/* Attendance Button for Committee Members */}
+            <div className="space-y-3">
+              {activity.id && !isPast && (
+                <AttendanceButton 
+                  eventId={activity.id} 
+                  eventName={activity.title}
+                />
+              )}
+              {activity.id && (
+                <ExportSignupsButton activity={activity} />
+              )}
+            </div>
         </div>
 
         {/* Content */}
-        <div className="p-6">
+  <div className="p-4 sm:p-6">
           {/* Image - always show */}
           <div className="relative mb-6">
             <img
@@ -176,6 +197,12 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-geel">👥 Capaciteit:</span>
                   <span>{activity.capacity} personen</span>
+                </div>
+              )}
+              {activity.committee_name && (
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-geel">🏛️ Commissie:</span>
+                  <span>{activity.committee_name}</span>
                 </div>
               )}
               {activity.organizer && (
@@ -227,7 +254,7 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 rounded-lg bg-white text-paars placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-geel ${
+                  className={`w-full px-3 py-3 rounded-lg bg-white text-paars placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-geel ${
                     errors.name ? "border-2 border-red-500" : ""
                   }`}
                   placeholder="Jouw naam"
@@ -248,7 +275,7 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 rounded-lg bg-white text-paars placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-geel ${
+                  className={`w-full px-3 py-3 rounded-lg bg-white text-paars placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-geel ${
                     errors.email ? "border-2 border-red-500" : ""
                   }`}
                   placeholder="jouw.email@student.avans.nl"
@@ -269,7 +296,7 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                   name="studentNumber"
                   value={formData.studentNumber}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 rounded-lg bg-white text-paars placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-geel ${
+                  className={`w-full px-3 py-3 rounded-lg bg-white text-paars placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-geel ${
                     errors.studentNumber ? "border-2 border-red-500" : ""
                   }`}
                   placeholder="2012345"
@@ -305,3 +332,54 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
 };
 
 export default ActiviteitDetailModal;
+
+function ExportSignupsButton({ activity }: { activity: any }) {
+  const { user } = useAuth();
+  const [allowed, setAllowed] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    async function check() {
+      if (!user || !activity) {
+        if (mounted) { setAllowed(false); setLoading(false); }
+        return;
+      }
+      try {
+        // Allow if user is committee member OR if user's id equals organizer (if available)
+        const member = await isUserCommitteeMember(user.id, activity.id);
+        const isOrganizer = activity.organizer && user.email && activity.organizer.includes(user.email);
+        if (mounted) setAllowed(!!member || !!isOrganizer);
+      } catch (e) {
+        console.error('Error checking committee membership', e);
+        if (mounted) setAllowed(false);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+    check();
+    return () => { mounted = false; };
+  }, [user, activity]);
+
+  const handleExport = async () => {
+    try {
+      const signups = await getEventSignupsWithCheckIn(activity.id);
+      await exportEventSignups(signups, `${activity.title || 'event'}-signups.xlsx`);
+    } catch (e) {
+      console.error('Export failed', e);
+      alert('Kon aanmeldingen niet exporteren.');
+    }
+  };
+
+  if (loading || !allowed) return null;
+
+  return (
+    <button
+      onClick={handleExport}
+      className="w-full bg-white text-paars font-semibold py-2.5 px-5 rounded-full hover:bg-opacity-90 transition-all shadow-lg flex items-center justify-center gap-2"
+    >
+      <span>📥</span>
+      <span>Export Aanmeldingen (Excel)</span>
+    </button>
+  );
+}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import Navbar from "../components/NavBar";
@@ -18,6 +18,9 @@ export default function ActiviteitenPagina() {
   const { data: events = [], isLoading, error } = useEvents();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, isAuthenticated } = useAuth();
+  const [userSignups, setUserSignups] = useState<number[]>([]);
+  const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // Cart: array of { activity, email, name, studentNumber }
   const [cart, setCart] = useState<Array<{ activity: any; email: string; name: string; studentNumber: string }>>([]);
@@ -72,6 +75,38 @@ export default function ActiviteitenPagina() {
     }
   }, [searchParams, events]);
 
+  const loadUserSignups = useCallback(async () => {
+    if (!user) {
+      setUserSignups([]);
+      return;
+    }
+
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_DIRECTUS_URL}/items/event_signups?filter[directus_relations][_eq]=${user.id}&fields=event_id.id&limit=-1`,
+        { headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` } }
+      );
+      const data = await resp.json();
+      const ids = (data.data || [])
+        .map((s: any) => s.event_id?.id || s.event_id)
+        .filter(Boolean);
+      setUserSignups(ids);
+    } catch (e) {
+      console.error('Failed to load user signups', e);
+      setUserSignups([]);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    loadUserSignups();
+  }, [loadUserSignups]);
+  
+  const openCartIfMobile = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setIsMobileCartOpen(true);
+    }
+  };
+
   // Add ticket to cart (quick signup without modal)
   const handleSignup = async (activity: any) => {
     // Check if activity is already in the cart
@@ -90,7 +125,7 @@ export default function ActiviteitenPagina() {
     if (user && activity.id) {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_DIRECTUS_URL}/items/event_signups?filter[event_id][_eq]=${activity.id}&filter[user_id][_eq]=${user.id}`,
+          `${import.meta.env.VITE_DIRECTUS_URL}/items/event_signups?filter[event_id][_eq]=${activity.id}&filter[directus_relations][_eq]=${user.id}`,
           {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
@@ -127,6 +162,7 @@ export default function ActiviteitenPagina() {
       name: fullName || "", 
       studentNumber: "" 
     }]);
+    openCartIfMobile();
   };
 
   // Open modal with activity details
@@ -158,7 +194,7 @@ export default function ActiviteitenPagina() {
     if (user && data.activity.id) {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_DIRECTUS_URL}/items/event_signups?filter[event_id][_eq]=${data.activity.id}&filter[user_id][_eq]=${user.id}`,
+          `${import.meta.env.VITE_DIRECTUS_URL}/items/event_signups?filter[event_id][_eq]=${data.activity.id}&filter[directus_relations][_eq]=${user.id}`,
           {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
@@ -201,6 +237,7 @@ export default function ActiviteitenPagina() {
     }
     
     setCart((prev) => [...prev, normalizedData]);
+    openCartIfMobile();
   };
 
   // Update email for a ticket
@@ -223,9 +260,15 @@ export default function ActiviteitenPagina() {
     setCart((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleCheckoutComplete = () => {
+    setCart([]);
+    loadUserSignups();
+    setIsMobileCartOpen(false);
+  };
+
   return (
     <>
-      <div className="flex h-screen flex-col w-full">
+      <div className="flex flex-col w-full">
         <Navbar activePage="Activiteiten" />
         <Header
           title="ACTIVITEITEN"
@@ -243,27 +286,50 @@ export default function ActiviteitenPagina() {
             />
           )}
           <section className="w-full rounded-3xl">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
               <h2 className="text-2xl font-bold text-geel">
                 {showPastActivities ? 'Alle Activiteiten' : 'Komende Activiteiten'}
               </h2>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  setShowPastActivities(prev => !prev);
-                }}
-                className={`px-4 py-2 rounded-lg font-semibold transition-all hover:scale-105 shadow-md ${
-                  showPastActivities 
-                    ? 'bg-paars text-white hover:bg-opacity-90' 
-                    : 'bg-geel text-paars hover:bg-opacity-90'
-                }`}
-              >
-                {showPastActivities ? 'Verberg Afgelopen' : 'Toon Afgelopen'}
-              </button>
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex rounded-full border-2 border-paars overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('grid')}
+                    className={`px-4 py-2 text-sm font-semibold transition-colors ${
+                      viewMode === 'grid' ? 'bg-paars text-beige' : 'bg-white text-paars'
+                    }`}
+                  >
+                    Raster
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('list')}
+                    className={`px-4 py-2 text-sm font-semibold transition-colors ${
+                      viewMode === 'list' ? 'bg-paars text-beige' : 'bg-white text-paars'
+                    }`}
+                  >
+                    Lijst
+                  </button>
+                </div>
+                
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowPastActivities(prev => !prev);
+                  }}
+                  className={`px-4 py-2 rounded-full font-semibold transition-all hover:scale-105 shadow-md ${
+                    showPastActivities 
+                      ? 'bg-paars text-white hover:bg-opacity-90' 
+                      : 'bg-geel text-paars hover:bg-opacity-90'
+                  }`}
+                >
+                  {showPastActivities ? 'Verberg Afgelopen' : 'Toon Afgelopen'}
+                </button>
+              </div>
             </div>
 
             
-            <div className="flex flex-row md:flex-row gap-6">
+            <div className="flex flex-col lg:flex-row gap-6">
               <div className="flex-1 flex flex-col gap-6">
                 {isLoading ? (
                   <div className="text-center py-10">
@@ -281,7 +347,7 @@ export default function ActiviteitenPagina() {
                   <>
                     {/* Upcoming Activities */}
                     {upcomingEvents.length > 0 && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
+                      <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr' : 'flex flex-col gap-3'}>
                         {upcomingEvents.map((event) => (
                           <ActiviteitCard
                             key={event.id}
@@ -293,6 +359,9 @@ export default function ActiviteitenPagina() {
                             isPast={false}
                             onSignup={() => handleSignup(event)}
                             onShowDetails={() => handleShowDetails(event)}
+                            isSignedUp={userSignups.includes(event.id)}
+                            variant={viewMode}
+                            committeeName={event.committee_name}
                           />
                         ))}
                       </div>
@@ -305,7 +374,7 @@ export default function ActiviteitenPagina() {
                     
                     {/* Past Activities */}
                     {showPastActivities && pastEvents.length > 0 && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
+                      <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr' : 'flex flex-col gap-3'}>
                         {pastEvents.map((event) => (
                           <ActiviteitCard
                             key={event.id}
@@ -317,6 +386,9 @@ export default function ActiviteitenPagina() {
                             isPast={true}
                             onSignup={() => handleSignup(event)}
                             onShowDetails={() => handleShowDetails(event)}
+                            isSignedUp={userSignups.includes(event.id)}
+                            variant={viewMode}
+                            committeeName={event.committee_name}
                           />
                         ))}
                       </div>
@@ -325,14 +397,14 @@ export default function ActiviteitenPagina() {
                 )}
               </div>
               {/* Sidebar */}
-              <div className="lg:w-80 w-full order-first lg:order-none">
+              <div className="hidden lg:block lg:w-80 flex-shrink-0">
                 <CartSidebar
                   cart={cart}
                   onEmailChange={handleEmailChange}
                   onNameChange={handleNameChange}
                   onStudentNumberChange={handleStudentNumberChange}
                   onRemoveTicket={handleRemoveTicket}
-                  onCheckoutComplete={() => setCart([])}
+                  onCheckoutComplete={handleCheckoutComplete}
                 />
               </div>
             </div>
@@ -341,6 +413,52 @@ export default function ActiviteitenPagina() {
         </div>
         
       </main>
+
+      {/* Floating cart button for mobile - only on this page */}
+      <button
+        type="button"
+        onClick={() => setIsMobileCartOpen(true)}
+        className={`${isMobileCartOpen ? 'hidden' : 'flex'} lg:hidden fixed bottom-5 left-5 z-40 items-center gap-2 px-4 py-3 rounded-full shadow-2xl bg-oranje text-beige font-semibold border-2 border-beige/30`}
+        aria-label="Open winkelwagen"
+      >
+        🛒
+        <span>Winkelwagen</span>
+        {cart.length > 0 && (
+          <span className="ml-1 text-sm bg-geel text-paars font-bold rounded-full px-2 py-0.5">
+            {cart.length}
+          </span>
+        )}
+      </button>
+
+      {/* Mobile cart overlay */}
+      {isMobileCartOpen && (
+        <div className="lg:hidden fixed inset-0 z-40">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setIsMobileCartOpen(false)}
+            aria-hidden="true"
+          />
+          <div className="absolute bottom-0 left-0 right-0 bg-beige rounded-t-3xl shadow-2xl p-4 pt-10">
+            <button
+              type="button"
+              className="absolute top-3 right-5 text-paars text-2xl font-bold"
+              onClick={() => setIsMobileCartOpen(false)}
+              aria-label="Sluit winkelwagen"
+            >
+              ×
+            </button>
+            <CartSidebar
+              cart={cart}
+              onEmailChange={handleEmailChange}
+              onNameChange={handleNameChange}
+              onStudentNumberChange={handleStudentNumberChange}
+              onRemoveTicket={handleRemoveTicket}
+              onCheckoutComplete={handleCheckoutComplete}
+              className="max-h-[65vh] pt-2"
+            />
+          </div>
+        </div>
+      )}
 
       <Footer />
 

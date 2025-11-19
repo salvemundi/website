@@ -18,12 +18,24 @@ export const eventsApi = {
     });
     const events = await directusFetch<any[]>(`/items/events?${query}`);
     
-    // For each event, fetch committee leader contact if no direct contact is provided
-    const eventsWithContact = await Promise.all(
+    // For each event, fetch committee info and leader contact
+    const eventsWithDetails = await Promise.all(
       events.map(async (event) => {
+        // Fetch committee name if committee_id exists
+        if (event.committee_id) {
+          try {
+            const committee = await directusFetch<any>(`/items/committees/${event.committee_id}?fields=id,name`);
+            if (committee) {
+              event.committee_name = committee.name;
+            }
+          } catch (error) {
+            console.warn(`Could not fetch committee for event ${event.id}`, error);
+          }
+        }
+        
+        // Fetch committee leader contact if no direct contact is provided
         if (!event.contact && event.committee_id) {
           try {
-            // Fetch committee leader's contact info
             const leaderQuery = buildQueryString({
               filter: { committee_id: { _eq: event.committee_id }, is_leader: { _eq: true } },
               fields: ['user_id.phone_number', 'user_id.first_name', 'user_id.last_name'],
@@ -45,13 +57,25 @@ export const eventsApi = {
       })
     );
     
-    return eventsWithContact;
+    return eventsWithDetails;
   },
   getById: async (id: string) => {
     const query = buildQueryString({
       fields: ['id', 'name', 'event_date', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact']
     });
     const event = await directusFetch<any>(`/items/events/${id}?${query}`);
+    
+    // Fetch committee name if committee_id exists
+    if (event.committee_id) {
+      try {
+        const committee = await directusFetch<any>(`/items/committees/${event.committee_id}?fields=id,name`);
+        if (committee) {
+          event.committee_name = committee.name;
+        }
+      } catch (error) {
+        console.warn(`Could not fetch committee for event ${event.id}`, error);
+      }
+    }
     
     // Fetch committee leader contact if no direct contact is provided
     if (!event.contact && event.committee_id) {
@@ -111,10 +135,29 @@ export const eventsApi = {
       payload.submission_file_url = signupData.student_number;
     }
     
-    return directusFetch<any>(`/items/event_signups`, {
+    const signup = await directusFetch<any>(`/items/event_signups`, {
       method: 'POST',
       body: JSON.stringify(payload)
     });
+
+    // Generate and update QR token immediately after creation
+    if (signup && signup.id) {
+      try {
+        const { generateQRToken, updateSignupWithQRToken } = await import('./qr-service');
+        const qrToken = generateQRToken(signup.id, signupData.event_id);
+        
+        // Update the signup with QR token in database
+        await updateSignupWithQRToken(signup.id, qrToken);
+        
+        // Add to returned object so caller has it immediately
+        signup.qr_token = qrToken;
+      } catch (error) {
+        console.error('Failed to generate QR token:', error);
+        // Don't fail the signup if QR generation fails
+      }
+    }
+    
+    return signup;
   }
 };
 

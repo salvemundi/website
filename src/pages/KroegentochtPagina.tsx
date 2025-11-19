@@ -70,7 +70,7 @@ export default function KroegentochtPagina() {
 
   return (
     <>
-      <div className="flex h-screen flex-col w-full">
+      <div className="flex flex-col w-full">
         <Navbar activePage="Kroegentocht" />
         <Header
           title="KROEGENTOCHT"

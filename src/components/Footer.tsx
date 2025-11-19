@@ -46,7 +46,7 @@ export default function Footer() {
   }, [committeesData]);
 
   return (
-    <footer className="bg-paars text-beige py-12 px-10">
+    <footer className="bg-paars text-beige py-12 px-4 sm:px-8 lg:px-10">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Information */}
         <div>
