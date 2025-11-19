@@ -1,5 +1,5 @@
-import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 // Define the shape of the props for type safety
 interface ActiviteitCardProps {
@@ -26,7 +26,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
   isPast = false,
   onSignup,
   onShowDetails,
-  requiresLogin = true,
+  requiresLogin = false,
   isSignedUp = false,
   variant = 'grid',
   committeeName,

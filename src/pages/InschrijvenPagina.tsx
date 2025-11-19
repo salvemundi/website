@@ -9,11 +9,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { nl } from 'date-fns/locale';
-import { GiphyFetch } from '@giphy/js-fetch-api';
-import { Grid } from '@giphy/react-components';
 import { sendMembershipSignupEmail } from '../lib/email-service';
-
-const gf = new GiphyFetch('rEB6G7lJ2bM6n1enoImai0iGoFm7tMnm');
 
 export default function SignUp() {
   const { user } = useAuth();
@@ -25,34 +21,15 @@ export default function SignUp() {
     email: user?.email || '',
     geboortedatum: null as Date | null,
     telefoon: user?.phone_number || '',
-    favorieteGif: '',
   });
   const [submitted, setSubmitted] = useState(false);
-  const [gifs, setGifs] = useState<any[]>([]);
-  const [gifQuery, setGifQuery] = useState('Fontys'); // default search
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  async function searchGifs(query: string) {
-    const { data } = await gf.search(query, { limit: 200 });
-    setGifs(data);
-  }
-
-  const handleGifSearch = async () => {
-    if (form.favorieteGif) {
-      setForm({ ...form, favorieteGif: '' });
-    }
-    await searchGifs(gifQuery);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.favorieteGif) {
-      alert('Selecteer een favoriete GIF om het formulier te versturen.');
-      return;
-    }
     
     // Send email notification (don't wait for it to complete)
     sendMembershipSignupEmail({
@@ -61,7 +38,6 @@ export default function SignUp() {
       lastName: form.achternaam,
       phoneNumber: form.telefoon,
       dateOfBirth: form.geboortedatum ? form.geboortedatum.toLocaleDateString('nl-NL') : undefined,
-      favoriteGif: form.favorieteGif,
     }).catch(err => {
       // Log but don't fail the signup
       console.warn('Failed to send membership signup email:', err);
@@ -82,11 +58,6 @@ export default function SignUp() {
       }));
     }
   }, [user]);
-
-  // Run default search on page load
-  useEffect(() => {
-    searchGifs(gifQuery);
-  }, []);
 
   return (
     <>
@@ -233,73 +204,6 @@ export default function SignUp() {
             </p>
           </div>
 
-          {/* GIF Search Section */}
-          <div className="w-full text-center bg-paars rounded-3xl p-6 flex flex-col">
-            <label className="font-semibold text-geel mb-2">
-              Favoriete GIF
-            </label>
-            <div className="flex flex-col sm:flex-row gap-2 mb-2">
-              <input
-                type="text"
-                placeholder="Zoek een GIF..."
-                value={gifQuery}
-                onChange={(e) => setGifQuery(e.target.value)}
-                className="p-2 rounded w-full bg-beige text-paars flex-1"
-              />
-              <button
-                type="button"
-                className="bg-oranje text-white font-bold py-2 px-4 rounded hover:bg-geel hover:text-paars transition"
-                onClick={handleGifSearch}
-              >
-                Zoeken
-              </button>
-            </div>
-
-            <div className="overflow-auto rounded-lg border border-oranje max-h-[50vh]">
-              {!form.favorieteGif && gifs.length > 0 && (
-                  <Grid
-                  className="w-full"
-                  width={Math.min(window.innerWidth * 0.9, 1200)}
-                  columns={Math.floor(
-                    Math.min(window.innerWidth * 0.9, 1200) / 150
-                  )}
-                  fetchGifs={() =>
-                    Promise.resolve({
-                      data: gifs,
-                      pagination: {
-                        total_count: gifs.length,
-                        count: gifs.length,
-                        offset: 0,
-                      },
-                      meta: { status: 200, msg: 'OK', response_id: '0' },
-                    })
-                  }
-                  onGifClick={(gif, e) => {
-                    e.preventDefault();
-                    setForm({
-                      ...form,
-                      favorieteGif: gif.images.fixed_height.url,
-                    });
-                  }}
-                />
-              )}
-            </div>
-
-            {form.favorieteGif && (
-              <div className="mt-2">
-                <p className="text-beige">Geselecteerde GIF:</p>
-                <img
-                  src={form.favorieteGif}
-                  alt="favoriete gif"
-                  className="rounded-lg w-full h-auto cursor-pointer"
-                  onClick={() => setForm({ ...form, favorieteGif: '' })} 
-                />
-                <p className="text-sm text-beige mt-1">
-                  Klik op de GIF om een nieuwe te kiezen
-                </p>
-              </div>
-            )}
-          </div>
         </div>
         </div>
         

@@ -5,6 +5,7 @@ interface HeaderProps {
   title: string;
   backgroundImage?: string;
   className?: string;
+  titleClassName?: string;
   children?: React.ReactNode;
 }
 
@@ -12,6 +13,7 @@ const Header: React.FC<HeaderProps> = ({
   title,
   backgroundImage = "",
   className = "",
+  titleClassName = "text-4xl sm:text-6xl md:text-7xl lg:text-[120px] xl:text-[180px]",
   
   children,
 }) => {
@@ -31,7 +33,7 @@ const Header: React.FC<HeaderProps> = ({
         />
         {/* Content */}
         <div className="relative flex flex-col items-center z-10 px-3 py-6 sm:py-10">
-          <h1 className="text-beige font-bold text-4xl sm:text-6xl md:text-7xl lg:text-[120px] xl:text-[180px] text-center leading-tight">
+          <h1 className={`text-beige font-bold text-center leading-tight ${titleClassName}`}>
             {title.split('\n').map((line, index) => (
               <React.Fragment key={index}>
                 {line}

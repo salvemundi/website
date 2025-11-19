@@ -6,13 +6,13 @@ import {
   boardApi,
   clubsApi,
   pubCrawlEventsApi,
-  pubCrawlGroupsApi,
   sponsorsApi,
   jobsApi,
   safeHavensApi,
-  stickersApi
+  stickersApi,
+  siteSettingsApi
 } from '../lib/api';
-import { Event, Committee, Member, Board, Club, Job, Sponsor, SafeHaven } from '../types';
+import { Event, Committee, Member, Board, Club, Job, Sponsor, SafeHaven, SiteSettings } from '../types';
 
 // Events (Activities) Hooks
 export function useEvents(options?: UseQueryOptions<Event[]>) {
@@ -116,14 +116,6 @@ export function usePubCrawlEvents() {
   });
 }
 
-export function usePubCrawlGroups() {
-  return useQuery({
-    queryKey: ['pubCrawlGroups'],
-    queryFn: pubCrawlGroupsApi.getAll,
-    staleTime: 5 * 60 * 1000
-  });
-}
-
 // Sponsors Hook
 export function useSponsors() {
   return useQuery({
@@ -169,3 +161,12 @@ export function useStickers() {
   });
 }
 
+// Site Settings Hook
+export function useSiteSettings(options?: UseQueryOptions<SiteSettings | null>) {
+  return useQuery({
+    queryKey: ['siteSettings'],
+    queryFn: siteSettingsApi.get,
+    staleTime: 5 * 60 * 1000,
+    ...options
+  });
+}

@@ -18,16 +18,18 @@ export function generateQRToken(signupId: number, eventId: number): string {
 export async function generateQRCode(token: string): Promise<string> {
   try {
     // Generate QR code as data URL (base64)
+    // Using smaller size to ensure email compatibility
     const qrDataUrl = await QRCode.toDataURL(token, {
-      errorCorrectionLevel: 'H',
+      errorCorrectionLevel: 'M', // Changed from H to M for smaller size
       type: 'image/png' as const,
       margin: 1,
-      width: 300,
+      width: 250, // Reduced from 300 to 250 for smaller file size
       color: {
         dark: '#7B2CBF', // Purple
         light: '#F5F5DC', // Beige
       },
     });
+    console.log('QR code generated, data URL length:', qrDataUrl.length);
     return qrDataUrl;
   } catch (error) {
     console.error('Error generating QR code:', error);
