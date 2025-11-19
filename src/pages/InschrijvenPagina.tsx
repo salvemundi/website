@@ -90,7 +90,7 @@ export default function SignUp() {
 
   return (
     <>
-      <div className="flex flex-col w-full min-h-[65vh] lg:min-h-screen">
+      <div className="flex flex-col w-full">
         <Navbar activePage="Inschrijven" />
         <Header
           title="WORD LID!"

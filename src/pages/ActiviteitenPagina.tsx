@@ -267,7 +267,7 @@ export default function ActiviteitenPagina() {
 
   return (
     <>
-      <div className="flex flex-col w-full min-h-[65vh] lg:min-h-screen">
+      <div className="flex flex-col w-full">
         <Navbar activePage="Activiteiten" />
         <Header
           title="ACTIVITEITEN"
@@ -386,11 +386,11 @@ export default function ActiviteitenPagina() {
         
       </main>
 
-      {/* Floating cart button for mobile */}
+      {/* Floating cart button for mobile - only on this page */}
       <button
         type="button"
         onClick={() => setIsMobileCartOpen(true)}
-        className={`${isMobileCartOpen ? 'hidden' : 'flex'} lg:hidden fixed bottom-5 right-5 z-30 items-center gap-2 px-4 py-3 rounded-full shadow-2xl bg-oranje text-beige font-semibold border-2 border-beige/30`}
+        className={`${isMobileCartOpen ? 'hidden' : 'flex'} lg:hidden fixed bottom-5 left-5 z-40 items-center gap-2 px-4 py-3 rounded-full shadow-2xl bg-oranje text-beige font-semibold border-2 border-beige/30`}
         aria-label="Open winkelwagen"
       >
         🛒
