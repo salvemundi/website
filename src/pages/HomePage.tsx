@@ -232,7 +232,7 @@ export default function Home() {
                   Stuur een mail
                 </a>
                 <a
-                  href="https://maps.app.goo.gl/vRCaY7RNMc8q7Dgh8"
+                  href="https://www.google.com/maps/dir/?api=1&destination=Salve%20Mundi%2C%20Rachelsmolen%201%2C%205612MA%20Eindhoven"
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center justify-center gap-2 rounded-2xl border border-beige/30 bg-beige/10 px-4 py-3 text-center text-beige font-semibold transition hover:-translate-y-0.5 hover:border-beige/60"
