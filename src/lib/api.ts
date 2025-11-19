@@ -1,4 +1,5 @@
 import { directusFetch } from './directus';
+import { SiteSettings } from '../types';
 
 function buildQueryString(params: Record<string, any>): string {
   const queryParams = new URLSearchParams();
@@ -341,6 +342,21 @@ export const stickersApi = {
       sort: ['-date_created']
     });
     return directusFetch<any[]>(`/items/Stickers?${query}`);
+  }
+};
+
+export const siteSettingsApi = {
+  get: async (): Promise<SiteSettings | null> => {
+    const query = buildQueryString({
+      fields: ['id', 'show_intro', 'intro_disabled_message'],
+      limit: 1
+    });
+    
+    const data = await directusFetch<SiteSettings | SiteSettings[] | null>(`/items/site_settings?${query}`);
+    if (Array.isArray(data)) {
+      return data[0] || null;
+    }
+    return data ?? null;
   }
 };
 

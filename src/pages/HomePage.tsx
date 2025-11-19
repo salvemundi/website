@@ -12,7 +12,7 @@ import {
   Autoplay,
   EffectCoverflow,
 } from "swiper/modules";
-import { useSponsors } from "../hooks/useApi";
+import { useSiteSettings, useSponsors } from "../hooks/useApi";
 import { getImageUrl } from "../lib/api";
 
 // Swiper styles
@@ -26,6 +26,8 @@ export default function Home() {
     isLoading: isSponsorsLoading,
     error: sponsorsError,
   } = useSponsors();
+  const { data: siteSettings } = useSiteSettings();
+  const introEnabled = siteSettings?.show_intro ?? true;
 
   return (
     <>
@@ -47,12 +49,14 @@ export default function Home() {
             button="WORD LID"
             link="https://www.salmundi.nl/lid-worden"
           />
-          <SamuCard
-            description="Doe mee aan onze geweldige introweek! Een week vol spannende activiteiten en onvergetelijke ervaringen."
-            image="/img/backgrounds/Kroto2025.jpg"
-            button="INTRO WEEK"
-            link="https://www.salmundi.nl/intro"
-          />
+          {introEnabled && (
+            <SamuCard
+              description="Doe mee aan onze geweldige introweek! Een week vol spannende activiteiten en onvergetelijke ervaringen."
+              image="/img/backgrounds/Kroto2025.jpg"
+              button="INTRO WEEK"
+              link="https://www.salmundi.nl/intro"
+            />
+          )}
           <SamuCard
             description="Wil je deelnemen aan de volgende activiteit? Meld je dan nu aan en zorg ervoor dat je niets mist van deze."
             image="/img/backgrounds/Kroto2025.jpg"

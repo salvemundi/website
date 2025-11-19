@@ -187,3 +187,10 @@ export interface WhatsAppGroup {
   requires_membership: boolean;
   created_at: string;
 }
+
+// Site Settings (singleton)
+export interface SiteSettings {
+  id?: number;
+  show_intro?: boolean;
+  intro_disabled_message?: string;
+}
