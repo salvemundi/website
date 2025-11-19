@@ -107,7 +107,7 @@ export const eventsApi = {
     });
     return directusFetch<any[]>(`/items/events?${query}`);
   },
-  createSignup: async (signupData: { event_id: number; email: string; name: string; student_number?: string; user_id?: string; event_name?: string; event_date?: string; event_price?: number }) => {
+  createSignup: async (signupData: { event_id: number; email: string; name: string; phone_number?: string; user_id?: string; event_name?: string; event_date?: string; event_price?: number }) => {
     // First check if user has already signed up for this event
     if (signupData.user_id) {
       const existingQuery = buildQueryString({
@@ -128,12 +128,10 @@ export const eventsApi = {
     const payload: any = {
       event_id: signupData.event_id,
       directus_relations: signupData.user_id || null,
+      participant_name: signupData.name || null,
+      participant_email: signupData.email || null,
+      participant_phone: signupData.phone_number ?? null,
     };
-    
-    // Only add optional fields if they exist
-    if (signupData.student_number) {
-      payload.submission_file_url = signupData.student_number;
-    }
     
     const signup = await directusFetch<any>(`/items/event_signups`, {
       method: 'POST',
@@ -393,4 +391,3 @@ export function getImageUrl(imageId: string | undefined | any): string {
   const imageUrl = `${baseUrl}/assets/${actualImageId}`;
   return imageUrl;
 }
-
