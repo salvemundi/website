@@ -20,6 +20,7 @@ export default function ActiviteitenPagina() {
   const { user, isAuthenticated } = useAuth();
   const [userSignups, setUserSignups] = useState<number[]>([]);
   const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // Cart: array of { activity, email, name, studentNumber }
   const [cart, setCart] = useState<Array<{ activity: any; email: string; name: string; studentNumber: string }>>([]);
@@ -285,23 +286,46 @@ export default function ActiviteitenPagina() {
             />
           )}
           <section className="w-full rounded-3xl">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
               <h2 className="text-2xl font-bold text-geel">
                 {showPastActivities ? 'Alle Activiteiten' : 'Komende Activiteiten'}
               </h2>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  setShowPastActivities(prev => !prev);
-                }}
-                className={`px-4 py-2 rounded-lg font-semibold transition-all hover:scale-105 shadow-md ${
-                  showPastActivities 
-                    ? 'bg-paars text-white hover:bg-opacity-90' 
-                    : 'bg-geel text-paars hover:bg-opacity-90'
-                }`}
-              >
-                {showPastActivities ? 'Verberg Afgelopen' : 'Toon Afgelopen'}
-              </button>
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex rounded-full border-2 border-paars overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('grid')}
+                    className={`px-4 py-2 text-sm font-semibold transition-colors ${
+                      viewMode === 'grid' ? 'bg-paars text-beige' : 'bg-white text-paars'
+                    }`}
+                  >
+                    Raster
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('list')}
+                    className={`px-4 py-2 text-sm font-semibold transition-colors ${
+                      viewMode === 'list' ? 'bg-paars text-beige' : 'bg-white text-paars'
+                    }`}
+                  >
+                    Lijst
+                  </button>
+                </div>
+                
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowPastActivities(prev => !prev);
+                  }}
+                  className={`px-4 py-2 rounded-full font-semibold transition-all hover:scale-105 shadow-md ${
+                    showPastActivities 
+                      ? 'bg-paars text-white hover:bg-opacity-90' 
+                      : 'bg-geel text-paars hover:bg-opacity-90'
+                  }`}
+                >
+                  {showPastActivities ? 'Verberg Afgelopen' : 'Toon Afgelopen'}
+                </button>
+              </div>
             </div>
 
             
@@ -323,7 +347,7 @@ export default function ActiviteitenPagina() {
                   <>
                     {/* Upcoming Activities */}
                     {upcomingEvents.length > 0 && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
+                      <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr' : 'flex flex-col gap-3'}>
                         {upcomingEvents.map((event) => (
                           <ActiviteitCard
                             key={event.id}
@@ -336,6 +360,8 @@ export default function ActiviteitenPagina() {
                             onSignup={() => handleSignup(event)}
                             onShowDetails={() => handleShowDetails(event)}
                             isSignedUp={userSignups.includes(event.id)}
+                            variant={viewMode}
+                            committeeName={event.committee_name}
                           />
                         ))}
                       </div>
@@ -348,7 +374,7 @@ export default function ActiviteitenPagina() {
                     
                     {/* Past Activities */}
                     {showPastActivities && pastEvents.length > 0 && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
+                      <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr' : 'flex flex-col gap-3'}>
                         {pastEvents.map((event) => (
                           <ActiviteitCard
                             key={event.id}
@@ -361,6 +387,8 @@ export default function ActiviteitenPagina() {
                             onSignup={() => handleSignup(event)}
                             onShowDetails={() => handleShowDetails(event)}
                             isSignedUp={userSignups.includes(event.id)}
+                            variant={viewMode}
+                            committeeName={event.committee_name}
                           />
                         ))}
                       </div>
