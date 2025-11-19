@@ -278,7 +278,7 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
                   className="block font-semibold text-beige hover:text-geel transition duration-300"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Login / Sign Up
+                  Login
                 </a>
               )}
             </li>
