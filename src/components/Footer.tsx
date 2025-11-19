@@ -102,6 +102,11 @@ export default function Footer() {
               </Link>
             </li>
             <li>
+              <Link to="/clubs" className="hover:text-geel transition-colors">
+                Clubs
+              </Link>
+            </li>
+            <li>
               <Link to="/contact" className="hover:text-geel transition-colors">
                 Contact
               </Link>
