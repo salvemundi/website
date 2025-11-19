@@ -19,6 +19,7 @@ import ContactPagina from "./pages/ContactPagina";
 import SafeHavensPagina from "./pages/SafeHavensPagina";
 import KroegentochtPagina from "./pages/KroegentochtPagina";
 import AttendancePagina from "./pages/AttendancePagina";
+import ClubsPagina from "./pages/ClubsPagina";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="/activiteiten" element={<ActiviteitenPagina />} />
             <Route path="/commissies" element={<CommissiesPagina />} />
             <Route path="/commissies/:slug" element={<CommissieDetailPagina />} />
+            <Route path="/clubs" element={<ClubsPagina />} />
             <Route path="/login" element={<LoginPagina />} />
             <Route path="/signup" element={<SignupPagina />} />
             <Route 
