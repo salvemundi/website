@@ -22,7 +22,7 @@ export default function Home() {
   return (
     <>
       <main>
-    <div className="flex flex-col min-h-[60vh] lg:min-h-screen">
+    <div className="flex flex-col">
           <Navbar activePage="Home" />
           <Header
             title="SALVE MUNDI"
