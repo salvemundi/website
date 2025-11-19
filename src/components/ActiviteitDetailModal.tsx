@@ -24,7 +24,7 @@ interface ActiviteitDetailModalProps {
     committee_id?: number;
   };
   isPast?: boolean;
-  onSignup: (data: { activity: any; email: string; name: string; studentNumber: string }) => void;
+  onSignup: (data: { activity: any; email: string; name: string; phoneNumber: string }) => Promise<void>;
 }
 
 const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
@@ -38,19 +38,32 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    studentNumber: "",
+    phoneNumber: "",
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Pre-fill form with user data when modal opens
   useEffect(() => {
-    if (isOpen && user) {
-      const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
-      setFormData({
-        name: fullName || "",
-        email: user.email || "",
-        studentNumber: user.phone_number || "", // or leave empty if you prefer
-      });
+    if (isOpen) {
+      if (user) {
+        const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+        setFormData({
+          name: fullName || "",
+          email: user.email || "",
+          phoneNumber: user.phone_number || "",
+        });
+      } else {
+        setFormData({
+          name: "",
+          email: "",
+          phoneNumber: "",
+        });
+      }
+      setErrors({});
+      setSubmitError(null);
+      setIsSubmitting(false);
     }
   }, [isOpen, user]);
 
@@ -92,28 +105,38 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
       newErrors.email = "Ongeldig email adres";
     }
 
-    if (!formData.studentNumber.trim()) {
-      newErrors.studentNumber = "Studentnummer is verplicht";
+    if (!formData.phoneNumber.trim()) {
+      newErrors.phoneNumber = "Telefoonnummer is verplicht";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (validateForm()) {
-      onSignup({
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      await onSignup({
         activity,
         email: formData.email,
         name: formData.name,
-        studentNumber: formData.studentNumber,
+        phoneNumber: formData.phoneNumber,
       });
-      // Reset form
-      setFormData({ name: "", email: "", studentNumber: "" });
+      setFormData({ name: "", email: "", phoneNumber: "" });
       setErrors({});
       onClose();
+    } catch (error: any) {
+      setSubmitError(error?.message || 'Er is iets misgegaan tijdens het inschrijven.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -171,10 +194,10 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
           {/* Activity Details */}
           <div className="mb-6 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-white">
-              {activity.date && (
+              {(activity.date || activity.event_date) && (
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-geel">📅 Datum:</span>
-                  <span>{activity.date}</span>
+                  <span>{activity.date || activity.event_date}</span>
                 </div>
               )}
               {activity.time && (
@@ -285,24 +308,24 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                 )}
               </div>
 
-              {/* Student Number Field */}
+              {/* Phone Number Field */}
               <div>
-                <label htmlFor="studentNumber" className="block text-white font-semibold mb-2">
-                  Studentnummer *
+                <label htmlFor="phoneNumber" className="block text-white font-semibold mb-2">
+                  Telefoonnummer *
                 </label>
                 <input
-                  type="text"
-                  id="studentNumber"
-                  name="studentNumber"
-                  value={formData.studentNumber}
+                  type="tel"
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-3 rounded-lg bg-white text-paars placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-geel ${
-                    errors.studentNumber ? "border-2 border-red-500" : ""
+                    errors.phoneNumber ? "border-2 border-red-500" : ""
                   }`}
-                  placeholder="2012345"
+                  placeholder="0612345678"
                 />
-                {errors.studentNumber && (
-                  <p className="text-red-400 text-sm mt-1">{errors.studentNumber}</p>
+                {errors.phoneNumber && (
+                  <p className="text-red-400 text-sm mt-1">{errors.phoneNumber}</p>
                 )}
               </div>
 
@@ -310,9 +333,10 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
               <div className="flex gap-4 pt-4">
                 <button
                   type="submit"
-                  className="flex-1 bg-geel text-white font-bold py-3 px-6 rounded-full hover:scale-105 transition-transform duration-300 shadow-lg"
+                  disabled={isSubmitting}
+                  className="flex-1 bg-geel text-white font-bold py-3 px-6 rounded-full hover:scale-105 transition-transform duration-300 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  AANMELDEN
+                  {isSubmitting ? 'BEZIG...' : 'AANMELDEN'}
                 </button>
                 <button
                   type="button"
@@ -322,6 +346,9 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                   ANNULEREN
                 </button>
               </div>
+              {submitError && (
+                <p className="text-red-400 font-semibold text-center mt-3">{submitError}</p>
+              )}
             </form>
             </div>
           )}
