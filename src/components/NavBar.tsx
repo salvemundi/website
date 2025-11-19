@@ -1,6 +1,6 @@
 // Navbar.tsx
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import { useAuth } from "../contexts/AuthContext";
@@ -17,6 +17,9 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const scrollPositionRef = useRef(0);
+  const navRef = useRef<HTMLElement | null>(null);
+  const [navHeight, setNavHeight] = useState(96);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,26 +32,79 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
 
   // Animate mobile menu open/close
   useEffect(() => {
-    if (menuRef.current) {
-      if (menuOpen) {
-        gsap.to(menuRef.current, {
-          height: "100%",
-          opacity: 1,
-          duration: 0.3,
-          ease: "power2.out",
-          display: "",
-        });
-      } else {
-        gsap.to(menuRef.current, {
-          height: 0,
-          opacity: 0,
-          duration: 0.3,
-          ease: "power2.in",
-          display: "flex",
-        });
-      }
+    if (!menuRef.current) return;
+
+    const targetHeight =
+      typeof window !== "undefined" && window.CSS?.supports?.("height: 100dvh")
+        ? "100dvh"
+        : "100vh";
+
+    if (menuOpen) {
+      gsap.to(menuRef.current, {
+        height: targetHeight,
+        opacity: 1,
+        duration: 0.3,
+        ease: "power2.out",
+        display: "",
+      });
+    } else {
+      gsap.to(menuRef.current, {
+        height: 0,
+        opacity: 0,
+        duration: 0.3,
+        ease: "power2.in",
+        display: "flex",
+      });
     }
   }, [menuOpen]);
+
+  useEffect(() => {
+    if (typeof document === "undefined") {
+      return;
+    }
+
+    const body = document.body;
+
+    if (menuOpen) {
+      scrollPositionRef.current = window.scrollY;
+      body.style.position = "fixed";
+      body.style.top = `-${scrollPositionRef.current}px`;
+      body.style.width = "100%";
+      body.style.overflowY = "hidden";
+    } else {
+      body.style.position = "";
+      body.style.top = "";
+      body.style.width = "";
+      body.style.overflowY = "";
+      window.scrollTo(0, scrollPositionRef.current);
+    }
+
+    return () => {
+      body.style.position = "";
+      body.style.top = "";
+      body.style.width = "";
+      body.style.overflowY = "";
+    };
+  }, [menuOpen]);
+
+  const updateNavHeight = useCallback(() => {
+    if (navRef.current) {
+      setNavHeight(navRef.current.offsetHeight);
+    }
+  }, []);
+
+  useEffect(() => {
+    updateNavHeight();
+  }, [updateNavHeight, isScrolled]);
+
+  useEffect(() => {
+    window.addEventListener("resize", updateNavHeight);
+    window.addEventListener("orientationchange", updateNavHeight);
+    return () => {
+      window.removeEventListener("resize", updateNavHeight);
+      window.removeEventListener("orientationchange", updateNavHeight);
+    };
+  }, [updateNavHeight]);
 
   const navItems = [
     { name: "Home", href: "/" },
@@ -64,8 +120,14 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
     : "bg-beige transition-all duration-300";
 
   return (
-    <nav id="navbar" className={`w-full z-20 px-8 sticky top-0 ${navbarBg}`}>
-      <div className="max-w-screen mx-auto flex items-center justify-between h-24">
+    <>
+      <nav
+        ref={navRef}
+        id="navbar"
+        style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+        className={`w-full z-40 px-4 sm:px-6 md:px-8 fixed md:sticky top-0 left-0 right-0 ${navbarBg}`}
+      >
+        <div className="max-w-screen mx-auto flex items-center justify-between h-24">
         {/* Logo */}
         <a href="https://salvemundi.nl" className="flex items-center space-x-3">
           <img
@@ -156,64 +218,76 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
             </svg>
           </button>
         </div>
-      </div>
+        </div>
 
-      {/* Mobile menu (GSAP animated, full-page overlay) */}
-      <div
-        ref={menuRef}
-        style={{ display: 'none', opacity: 0, overflow: "hidden" }}
-        className="fixed top-0 left-0 w-screen h-screen z-40 md:hidden bg-oranje flex flex-col items-center justify-center p-5"
-      >
-        {/* Close button */}
-        <button
-          aria-label="Close menu"
-          onClick={() => setMenuOpen(false)}
-          className="absolute top-6 right-6 text-beige bg-paars rounded-full p-3 shadow-lg hover:bg-geel transition"
+        {/* Mobile menu (GSAP animated, full-page overlay) */}
+        <div
+          ref={menuRef}
+          style={{
+            display: 'none',
+            opacity: 0,
+            overflow: "hidden",
+            height: 0,
+            paddingTop: "calc(env(safe-area-inset-top, 0px) + 1.25rem)",
+          }}
+          className="fixed inset-0 z-40 md:hidden bg-oranje flex flex-col items-center justify-center px-5 pb-5"
         >
-          <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-        <ul className="flex flex-col items-center justify-center space-y-8 font-bold text-2xl">
-          {navItems.map((item) => (
-            <li key={item.name}>
-              <a
-                href={item.href}
-                className={`block font-semibold transition duration-300 ${
-                  activePage === item.name
-                    ? "text-geel underline underline-offset-4"
-                    : "text-beige hover:text-geel"
-                }`}
-                onClick={() => setMenuOpen(false)}
-              >
-                {item.name}
-              </a>
+          {/* Close button */}
+          <button
+            aria-label="Close menu"
+            onClick={() => setMenuOpen(false)}
+            className="absolute top-6 right-6 text-beige bg-paars rounded-full p-3 shadow-lg hover:bg-geel transition"
+          >
+            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <ul className="flex flex-col items-center justify-center space-y-8 font-bold text-2xl">
+            {navItems.map((item) => (
+              <li key={item.name}>
+                <a
+                  href={item.href}
+                  className={`block font-semibold transition duration-300 ${
+                    activePage === item.name
+                      ? "text-geel underline underline-offset-4"
+                      : "text-beige hover:text-geel"
+                  }`}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {item.name}
+                </a>
+              </li>
+            ))}
+            
+            {/* Auth links in mobile menu */}
+            <li className="pt-4 border-t border-beige/30 w-full text-center">
+              {isAuthenticated ? (
+                <a
+                  href="/account"
+                  className="block font-semibold text-beige hover:text-geel transition duration-300"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  My Account
+                </a>
+              ) : (
+                <a
+                  href="/login"
+                  className="block font-semibold text-beige hover:text-geel transition duration-300"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Login / Sign Up
+                </a>
+              )}
             </li>
-          ))}
-          
-          {/* Auth links in mobile menu */}
-          <li className="pt-4 border-t border-beige/30 w-full text-center">
-            {isAuthenticated ? (
-              <a
-                href="/account"
-                className="block font-semibold text-beige hover:text-geel transition duration-300"
-                onClick={() => setMenuOpen(false)}
-              >
-                My Account
-              </a>
-            ) : (
-              <a
-                href="/login"
-                className="block font-semibold text-beige hover:text-geel transition duration-300"
-                onClick={() => setMenuOpen(false)}
-              >
-                Login / Sign Up
-              </a>
-            )}
-          </li>
-        </ul>
-      </div>
-    </nav>
+          </ul>
+        </div>
+      </nav>
+      <div
+        aria-hidden="true"
+        className="block md:hidden w-full"
+        style={{ height: `${navHeight}px` }}
+      />
+    </>
   );
 };
 

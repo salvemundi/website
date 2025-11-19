@@ -12,6 +12,8 @@ import {
   Autoplay,
   EffectCoverflow,
 } from "swiper/modules";
+import { useSponsors } from "../hooks/useApi";
+import { getImageUrl } from "../lib/api";
 
 // Swiper styles
 import "swiper/css";
@@ -19,6 +21,12 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 
 export default function Home() {
+  const {
+    data: sponsors = [],
+    isLoading: isSponsorsLoading,
+    error: sponsorsError,
+  } = useSponsors();
+
   return (
     <>
       <main>
@@ -135,8 +143,42 @@ export default function Home() {
         </section>
 
         {/* Partners */}
-        <div className="flex items-center justify-center w-full px-4">
+        <div className="flex flex-col items-center justify-center w-full px-4 gap-6 pb-16">
           <h2 className="text-oranje font-black text-4xl">Partners</h2>
+          <section className="w-full max-w-5xl">
+            {sponsorsError && (
+              <p className="text-center text-red-600">
+                Kan partners niet laden, probeer het later opnieuw.
+              </p>
+            )}
+            {!sponsorsError && (
+              <div className="flex flex-wrap justify-center gap-6">
+                {isSponsorsLoading && sponsors.length === 0 && (
+                  <p className="text-center text-gray-500">Partners worden geladen…</p>
+                )}
+                {!isSponsorsLoading && sponsors.length === 0 && (
+                  <p className="text-center text-gray-500">
+                    Er zijn momenteel geen partners om te tonen.
+                  </p>
+                )}
+                {sponsors.map((sponsor) => (
+                  <a
+                    key={sponsor.sponsor_id}
+                    href={sponsor.website_url || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block hover:scale-105 transition-transform"
+                  >
+                    <img
+                      src={getImageUrl(sponsor.image)}
+                      alt="Sponsor logo"
+                      className="max-h-28 max-w-60 object-contain"
+                    />
+                  </a>
+                ))}
+              </div>
+            )}
+          </section>
         </div>
 
         <Footer />
