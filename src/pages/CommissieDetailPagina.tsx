@@ -100,14 +100,16 @@ export default function CommissieDetailPagina() {
         <Header
           title={formatCommitteeNameForHeader(committee.name)}
           backgroundImage={getImageUrl(committee.image)}
+          titleClassName="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl"
+          className="px-4"
         />
       </div>
 
       <main className="bg-beige min-h-screen">
         {/* About Section */}
-        <section className="px-10 py-16">
+        <section className="px-4 sm:px-6 lg:px-10 py-12">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-4xl font-bold text-geel mb-6">
+            <h2 className="text-3xl sm:text-4xl font-bold text-geel mb-6">
               Over {cleanCommitteeName(committee.name)}
             </h2>
 
@@ -151,9 +153,9 @@ export default function CommissieDetailPagina() {
 
         {/* Team Members Section */}
         {visibleMembers.length > 0 && (
-          <section className="px-10 py-16 bg-white">
+          <section className="px-4 sm:px-6 lg:px-10 py-12 bg-white">
             <div className="max-w-6xl mx-auto">
-              <h2 className="text-4xl font-bold text-geel mb-12 text-center">Het Team</h2>
+              <h2 className="text-3xl sm:text-4xl font-bold text-geel mb-10 text-center">Het Team</h2>
               
               {/* All Team Members (Leaders and Regular Members together) */}
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
