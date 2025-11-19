@@ -13,6 +13,8 @@ interface ActiviteitCardProps {
   onShowDetails?: () => void;
   requiresLogin?: boolean;
   isSignedUp?: boolean;
+  variant?: 'grid' | 'list';
+  committeeName?: string;
 }
 
 const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
@@ -26,10 +28,13 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
   onShowDetails,
   requiresLogin = true,
   isSignedUp = false,
+  variant = 'grid',
+  committeeName,
 }) => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const alreadySignedUp = Boolean(isSignedUp);
+  const isListVariant = variant === 'list';
 
   const handleSignupClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -48,11 +53,74 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     onSignup?.({ title, date, description, price: price || 0 });
   };
 
+  const safePrice = (Number(price) || 0).toFixed(2);
+  const committeeLabel = committeeName || 'Algemene Activiteit';
+
+  const formatDate = (value?: string) => {
+    if (!value) return 'Datum volgt';
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return value;
+    }
+    return parsed.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+  };
+
+  if (isListVariant) {
+    return (
+      <div
+        onClick={onShowDetails}
+        className={`w-full rounded-2xl border-2 border-paars/10 bg-white p-4 shadow-sm hover:shadow-md transition-all cursor-pointer ${isPast ? 'opacity-75' : ''}`}
+      >
+        <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
+          <div className="flex-1 min-w-[180px]">
+            <p className="text-xs uppercase tracking-wider text-paars/60 font-semibold">
+              {committeeLabel}
+            </p>
+            <h3 className="text-lg font-bold text-paars leading-snug">{title}</h3>
+          </div>
+
+          <div className="flex flex-row flex-wrap gap-4 text-right text-paars font-semibold">
+            <div className="min-w-[120px]">
+              <p className="text-xs text-paars/60 uppercase tracking-wide">Datum</p>
+              <p className="text-base">{formatDate(date)}</p>
+            </div>
+            <div className="min-w-[90px]">
+              <p className="text-xs text-paars/60 uppercase tracking-wide">Prijs</p>
+              <p className="text-base">€{safePrice}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap justify-end gap-2 mt-3">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onShowDetails?.();
+            }}
+            className="px-4 py-2 text-sm font-semibold rounded-full border border-paars text-paars hover:bg-paars hover:text-beige transition"
+          >
+            MEER INFO
+          </button>
+
+          {!isPast && (
+            <button
+              onClick={handleSignupClick}
+              className={`${alreadySignedUp ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-paars text-beige hover:bg-opacity-90'} px-4 py-2 text-sm font-semibold rounded-full transition`}
+              disabled={alreadySignedUp}
+            >
+              {alreadySignedUp ? 'AL AANGEMELD' : 'AANMELDEN'}
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
-  <div 
-    onClick={onShowDetails}
-    className="bg-paars p-4 sm:p-6 rounded-2xl shadow-lg flex flex-col w-full overflow-hidden cursor-pointer transition-all hover:scale-[1.02] relative h-full"
-  >
+    <div 
+      onClick={onShowDetails}
+      className="bg-paars p-4 sm:p-6 rounded-2xl shadow-lg flex flex-col w-full overflow-hidden cursor-pointer transition-all hover:scale-[1.02] relative h-full"
+    >
       {/* Greyed out overlay for past activities */}
       {isPast && (
         <div className="absolute inset-0 bg-gray-900 bg-opacity-40 rounded-2xl z-0 pointer-events-none" />
@@ -78,7 +146,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
             {date && (
               <p className="text-xs sm:text-sm font-semibold text-white">{date}</p>
             )}
-            <span className="text-lg font-bold text-white">€{(Number(price) || 0).toFixed(2)}</span>
+            <span className="text-lg font-bold text-white">€{safePrice}</span>
           </div>
         </div>
         
