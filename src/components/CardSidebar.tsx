@@ -184,7 +184,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
 
   return (
     <>
-      <aside className="w-full bg-beige lg:sticky lg:top-10 h-fit rounded-2xl shadow-xl p-5 sm:p-6 flex flex-col border-2 border-oranje min-h-[320px] lg:min-h-[400px] max-h-[70vh] lg:max-h-[80vh] overflow-y-auto">
+      <aside className="w-full bg-beige lg:sticky lg:top-10 h-fit rounded-2xl shadow-xl p-4 sm:p-6 flex flex-col border-2 border-oranje min-h-[260px] lg:min-h-[400px] max-h-[70vh] lg:max-h-[80vh] overflow-y-auto">
         <h2 className="text-2xl font-bold text-oranje mb-4 text-left">Jouw Winkelwagen</h2>
         
         {/* Success Message */}

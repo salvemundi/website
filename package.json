@@ -33,6 +33,7 @@
     "lucide-react": "^0.543.0",
     "npm": "^11.6.0",
     "qrcode": "^1.5.4",
+  "xlsx": "^0.18.5",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-leaflet": "^5.0.0",

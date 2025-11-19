@@ -69,7 +69,11 @@ export async function loginWithPassword(email: string, password: string): Promis
       };
     } else {
       // Fallback: Fetch user details
-      userDetails = await fetchUserDetails(authData.access_token);
+      const fetched = await fetchUserDetails(authData.access_token);
+      if (!fetched) {
+        throw new Error('Failed to fetch user details after login');
+      }
+      userDetails = fetched;
     }
     
     return {
@@ -160,7 +164,7 @@ export async function signupWithPassword(userData: SignupData): Promise<LoginRes
 }
 
 // Fetch current user details
-export async function fetchUserDetails(token: string): Promise<User> {
+export async function fetchUserDetails(token: string): Promise<User | null> {
   try {
     // Fetch with * to get all available fields
     const response = await fetch(`${directusUrl}/users/me?fields=*`, {
@@ -171,8 +175,36 @@ export async function fetchUserDetails(token: string): Promise<User> {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Failed to fetch user details:', errorText);
+      // Try to parse JSON error payload
+      let payload: any;
+      try {
+        payload = await response.json();
+      } catch (e) {
+        payload = await response.text();
+      }
+
+      console.error('❌ Failed to fetch user details:', payload);
+
+      // If Directus indicates token expired, clear stored tokens and signal app
+      if (payload && payload.errors && payload.errors[0]?.extensions?.code === 'TOKEN_EXPIRED') {
+        try {
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('refresh_token');
+        } catch (e) {
+          // ignore
+        }
+
+        // Notify application that auth expired
+        try {
+          window.dispatchEvent(new CustomEvent('auth:expired'));
+        } catch (e) {
+          // ignore
+        }
+
+        // Return null to indicate no valid user
+        return null;
+      }
+
       throw new Error('Failed to fetch user details');
     }
 
@@ -224,7 +256,10 @@ export async function refreshAccessToken(refreshToken: string): Promise<LoginRes
 
     const data = await response.json();
     const userDetails = await fetchUserDetails(data.data.access_token);
-    
+    if (!userDetails) {
+      throw new Error('Failed to fetch user details after token refresh');
+    }
+
     return {
       access_token: data.data.access_token,
       refresh_token: data.data.refresh_token,

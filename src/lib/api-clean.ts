@@ -230,7 +230,7 @@ export const contactsApi = {
       headers['Authorization'] = `Bearer ${authToken}`;
     } else {
       // Fallback to API key for public access
-      const apiKey = import.meta.env.VITE_DIRECTUS_API_KEY || 'Dp8exZFEp1l9Whq2o2-5FYeiGoKFwZ2m';
+      const apiKey = import.meta.env.VITE_DIRECTUS_API_KEY;
       headers['Authorization'] = `Bearer ${apiKey}`;
     }
     
@@ -279,7 +279,7 @@ export function getImageUrl(imageId: string | undefined): string {
   
   // If no user token, try to use API key for public access
   if (!token) {
-    const apiKey = import.meta.env.VITE_DIRECTUS_API_KEY || 'Dp8exZFEp1l9Whq2o2-5FYeiGoKFwZ2m';
+    const apiKey = import.meta.env.VITE_DIRECTUS_API_KEY;
     token = apiKey;
   }
   
