@@ -59,14 +59,6 @@ export default function LoginPagina() {
               </span>
             </button>
 
-            <div className="mt-8 p-4 bg-geel/20 border-2 border-geel rounded-xl">
-              <p className="text-sm text-paars">
-                <strong>For Salve Mundi members:</strong> Use "Login with Microsoft" with your Fontys account.
-              </p>
-              <p className="text-sm text-paars mt-2">
-                Having trouble logging in? Contact the Salve Mundi board for support.
-              </p>
-            </div>
           </div>
         </div>
       </div>
