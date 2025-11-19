@@ -142,21 +142,21 @@ export const clubsApi = {
 export const pubCrawlEventsApi = {
   getAll: async () => {
     const query = buildQueryString({
-      fields: ['id', 'name', 'email', 'association', 'amount_tickets', 'name_initials', 'created_at'],
+      fields: ['id', 'name', 'email', 'association', 'amount_tickets', 'date', 'description', 'image', 'created_at', 'updated_at'],
       sort: ['-created_at']
     });
     return directusFetch<any[]>(`/items/pub_crawl_events?${query}`);
   }
 };
 
-// Pub Crawl Groups API
-export const pubCrawlGroupsApi = {
+// Pub Crawl Signups API
+export const pubCrawlSignupsApi = {
   getAll: async () => {
     const query = buildQueryString({
-      fields: ['group_id', 'name', 'initials', 'pub_crawl_events_id'],
-      sort: ['name']
+      fields: ['id', 'pub_crawl_event_id', 'name', 'email', 'association', 'amount_tickets', 'name_initials', 'created_at', 'updated_at'],
+      sort: ['-created_at']
     });
-    return directusFetch<any[]>(`/items/pub_crawl_groups?${query}`);
+    return directusFetch<any[]>(`/items/pub_crawl_signups?${query}`);
   }
 };
 
@@ -289,4 +289,3 @@ export function getImageUrl(imageId: string | undefined): string {
   
   return imageUrl;
 }
-

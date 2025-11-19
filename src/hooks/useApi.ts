@@ -6,7 +6,6 @@ import {
   boardApi,
   clubsApi,
   pubCrawlEventsApi,
-  pubCrawlGroupsApi,
   sponsorsApi,
   jobsApi,
   safeHavensApi,
@@ -113,14 +112,6 @@ export function usePubCrawlEvents() {
   return useQuery({
     queryKey: ['pubCrawlEvents'],
     queryFn: pubCrawlEventsApi.getAll,
-    staleTime: 5 * 60 * 1000
-  });
-}
-
-export function usePubCrawlGroups() {
-  return useQuery({
-    queryKey: ['pubCrawlGroups'],
-    queryFn: pubCrawlGroupsApi.getAll,
     staleTime: 5 * 60 * 1000
   });
 }
