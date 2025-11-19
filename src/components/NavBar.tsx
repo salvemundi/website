@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import { useAuth } from "../contexts/AuthContext";
 import { getImageUrl } from "../lib/api-clean";
+import { useSiteSettings } from "../hooks/useApi";
 
 interface navProps {
   activePage?: string;
@@ -20,6 +21,8 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
   const scrollPositionRef = useRef(0);
   const navRef = useRef<HTMLElement | null>(null);
   const [navHeight, setNavHeight] = useState(96);
+  const { data: siteSettings } = useSiteSettings();
+  const introEnabled = siteSettings?.show_intro ?? true;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -108,7 +111,7 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
 
   const navItems = [
     { name: "Home", href: "/" },
-    { name: "Intro", href: "/intro" },
+    ...(introEnabled ? [{ name: "Intro", href: "/intro" }] : []),
     { name: "Inschrijven", href: "/inschrijven" },
     { name: "Activiteiten", href: "/activiteiten" },
     { name: "Commissies", href: "/commissies" },
