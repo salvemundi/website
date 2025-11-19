@@ -130,12 +130,7 @@ export default function TransactionsPagina() {
                 <div className="text-paars mb-4 font-semibold">Geen transacties gevonden.</div>
                 <p className="text-paars/70 text-sm mb-4">
                   Je betalingsgeschiedenis verschijnt hier zodra je je eerste transactie hebt gedaan.
-                </p>
-                <div className="mt-6 p-4 bg-geel/10 rounded-xl max-w-md mx-auto">
-                  <p className="text-xs text-paars/60">
-                    💡 Let op: De transactiefunctie wordt ingesteld. Je transactiegeschiedenis wordt automatisch bijgehouden zodra het systeem volledig is geconfigureerd.
-                  </p>
-                </div>
+                </p>             
               </div>
             ) : (
               <div className="space-y-4">
