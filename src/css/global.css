@@ -156,6 +156,14 @@ iframe {
   }
 }
 
+[data-scroll-speed] {
+  will-change: transform;
+}
+
+[data-scroll-fade] {
+  will-change: transform, opacity;
+}
+
 @keyframes committeeAvatarScroll {
   0% {
     transform: translateX(0);
