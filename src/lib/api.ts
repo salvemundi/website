@@ -292,6 +292,23 @@ export const pubCrawlSignupsApi = {
     return directusFetch<any[]>(`/items/pub_crawl_signups?${query}`);
   },
   create: async (data: { name: string; email: string; association?: string; amount_tickets: number; pub_crawl_event_id: number; name_initials?: string }) => {
+    // Prevent duplicate signups per event/email combo by updating the existing record
+    const existingQuery = buildQueryString({
+      filter: {
+        pub_crawl_event_id: { _eq: data.pub_crawl_event_id },
+        email: { _eq: data.email }
+      },
+      fields: ['id'],
+      limit: 1
+    });
+    const existing = await directusFetch<any[]>(`/items/pub_crawl_signups?${existingQuery}`);
+    if (existing && existing.length > 0) {
+      return directusFetch<any>(`/items/pub_crawl_signups/${existing[0].id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data)
+      });
+    }
+    
     return directusFetch<any>(`/items/pub_crawl_signups`, {
       method: 'POST',
       body: JSON.stringify(data)

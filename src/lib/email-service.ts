@@ -335,7 +335,7 @@ export async function sendMembershipSignupEmail(data: MembershipSignupEmailData)
               ${data.dateOfBirth ? `<p><strong>Geboortedatum:</strong> ${data.dateOfBirth}</p>` : ''}
             </div>
             <p>Heb je nog vragen? <a href="mailto:intro@salvemundi.nl?subject=Vraag%20over%20lidmaatschap" style="color: #7B2CBF; font-weight: bold;">Stuur ons gerust een bericht</a>, we helpen je graag verder.</p>
-            <p style="margin-top: 30px;">Tot snel!<br/><strong>Het Salve Mundi team</strong></p>
+            <p style="margin-top: 30px;">Tot snel!<br/><strong>Salve Mundi</strong></p>
           </div>
         </body>
       </html>
@@ -425,7 +425,7 @@ export async function sendIntroSignupEmail(data: IntroSignupEmailData): Promise<
               <img src="${data.favoriteGif}" alt="Favoriete GIF" style="max-width: 240px; border-radius: 12px;" />
             ` : ''}
             <p>We sturen je binnenkort meer informatie, maar zet de introweek alvast in je agenda.</p>
-            <p style="margin-top: 30px;">Tot snel!<br/><strong>Het Salve Mundi team</strong></p>
+            <p style="margin-top: 30px;">Tot snel!<br/><strong>Salve Mundi</strong></p>
           </div>
         </body>
       </html>
