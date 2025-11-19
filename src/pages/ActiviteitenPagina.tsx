@@ -13,6 +13,24 @@ import { useEvents } from "../hooks/useApi";
 import { eventsApi, getImageUrl } from "../lib/api";
 import { sendEventSignupEmail } from "../lib/email-service";
 
+const buildCommitteeEmail = (name?: string | null) => {
+  if (!name) return undefined;
+  const normalized = name.toLowerCase();
+  if (normalized.includes('feest')) return 'feest@salvemundi.nl';
+  if (normalized.includes('activiteit')) return 'activiteiten@salvemundi.nl';
+  if (normalized.includes('studie')) return 'studie@salvemundi.nl';
+
+  const slug = name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/commissie|committee/g, '')
+    .replace(/[^a-z0-9]+/g, '')
+    .trim();
+  if (!slug) return undefined;
+  return `${slug}@salvemundi.nl`;
+};
+
 export default function ActiviteitenPagina() {
   const { data: events = [], isLoading, error } = useEvents();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -110,7 +128,8 @@ export default function ActiviteitenPagina() {
       title: activity.name || activity.title,
       price: Number(activity.price_members) || Number(activity.price) || 0,
       date: activity.event_date || activity.date,
-      image: getImageUrl(activity.image)
+      image: getImageUrl(activity.image),
+      committee_email: activity.committee_email || buildCommitteeEmail(activity.committee_name),
     };
     setSelectedActivity(processedActivity);
     setIsModalOpen(true);
@@ -152,6 +171,10 @@ export default function ActiviteitenPagina() {
           phoneNumber: data.phoneNumber,
           userName,
           qrCodeDataUrl,
+          committeeName: data.activity.committee_name,
+          committeeEmail: data.activity.committee_email,
+          contactName: data.activity.contact_name,
+          contactPhone: data.activity.contact_phone,
         });
       } catch (emailError) {
         console.error('Kon bevestigingsmail niet versturen:', emailError);

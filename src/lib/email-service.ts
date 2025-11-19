@@ -17,6 +17,10 @@ export interface EventSignupEmailData {
   phoneNumber?: string;
   userName: string;
   qrCodeDataUrl?: string; // Base64 QR code image
+  committeeName?: string;
+  committeeEmail?: string;
+  contactName?: string;
+  contactPhone?: string;
 }
 
 export interface MembershipSignupEmailData {
@@ -53,10 +57,42 @@ function getEmailConfig(): EmailConfig {
   };
 }
 
+function buildCommitteeEmailFromName(name?: string | null): string | undefined {
+  if (!name) return undefined;
+  const normalized = name.toLowerCase();
+  if (normalized.includes('feest')) return 'feest@salvemundi.nl';
+  if (normalized.includes('activiteit')) return 'activiteiten@salvemundi.nl';
+  if (normalized.includes('studie')) return 'studie@salvemundi.nl';
+
+  const slug = name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/commissie|committee/g, '')
+    .replace(/[^a-z0-9]+/g, '')
+    .trim();
+  if (!slug) return undefined;
+  return `${slug}@salvemundi.nl`;
+}
+
 /**
  * Send email using the configured email service
  */
-async function sendEmail(config: EmailConfig, to: string, subject: string, htmlBody: string): Promise<void> {
+interface EmailAttachment {
+  name: string;
+  contentType: string;
+  contentBytes: string;
+  isInline?: boolean;
+  contentId?: string;
+}
+
+async function sendEmail(
+  config: EmailConfig,
+  to: string,
+  subject: string,
+  htmlBody: string,
+  attachments?: EmailAttachment[]
+): Promise<void> {
   if (config.useMicrosoftGraph) {
     console.warn('⚠️ Microsoft Graph API requires backend authentication. Email functionality is disabled.');
     console.warn('ℹ️ Please use Directus email endpoint or another email service.');
@@ -76,6 +112,7 @@ async function sendEmail(config: EmailConfig, to: string, subject: string, htmlB
       fromName: config.fromName,
       subject,
       html: htmlBody,
+      attachments: attachments && attachments.length ? attachments : undefined,
     }),
   });
 
@@ -107,7 +144,42 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
       minute: '2-digit'
     });
 
-    // Email to the user
+    // Prepare QR code attachment for email
+    let qrCodeAttachment: EmailAttachment | undefined;
+    let qrCodeCid = '';
+    if (data.qrCodeDataUrl) {
+      const base64Data = data.qrCodeDataUrl.includes(',')
+        ? data.qrCodeDataUrl.split(',')[1]
+        : data.qrCodeDataUrl;
+      // Use a unique content ID without special characters
+      qrCodeCid = `qrcode${Date.now()}`;
+      qrCodeAttachment = {
+        name: 'qr-code.png',
+        contentType: 'image/png',
+        contentBytes: base64Data,
+        isInline: true,
+        contentId: qrCodeCid,
+      };
+      console.log('ℹ️ QR code attachment prepared:', {
+        cid: qrCodeCid,
+        dataLength: base64Data.length,
+        hasComma: data.qrCodeDataUrl.includes(','),
+      });
+    } else {
+      console.log('ℹ️ No QR code data provided for this signup');
+    }
+    const committeeEmail = data.committeeEmail || buildCommitteeEmailFromName(data.committeeName);
+    const contactInfoSection = (data.contactName || data.contactPhone || committeeEmail || data.committeeName)
+      ? `
+        <div style="background-color: #F5F5DC; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="color: #FF6B35; margin-top: 0;">Contactinformatie</h3>
+          ${data.committeeName ? `<p><strong>Commissie:</strong> ${data.committeeName}</p>` : ''}
+          ${data.contactName ? `<p><strong>Contactpersoon:</strong> ${data.contactName}</p>` : ''}
+          ${data.contactPhone ? `<p><strong>Telefoon:</strong> ${data.contactPhone}</p>` : ''}
+          ${committeeEmail ? `<p><strong>E-mail:</strong> <a href="mailto:${committeeEmail}" style="color: #7B2CBF; font-weight: bold;">${committeeEmail}</a></p>` : ''}
+        </div>
+      ` : '';
+
     const userEmailBody = `
       <html>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
@@ -122,12 +194,12 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
               <p><strong>Prijs:</strong> €${data.eventPrice.toFixed(2)}</p>
               ${data.phoneNumber ? `<p><strong>Telefoonnummer:</strong> ${data.phoneNumber}</p>` : ''}
             </div>
-            
-            ${data.qrCodeDataUrl ? `
+            ${contactInfoSection}
+            ${qrCodeAttachment ? `
               <div style="background-color: #F5F5DC; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
                 <h3 style="color: #7B2CBF; margin-top: 0;">Jouw Toegangscode</h3>
                 <p style="margin-bottom: 15px;">Laat deze QR code zien bij de ingang van de activiteit:</p>
-                <img src="${data.qrCodeDataUrl}" alt="QR Code" style="max-width: 250px; border: 3px solid #7B2CBF; border-radius: 8px;" />
+                <img src="cid:${qrCodeCid}" alt="QR Code voor toegang" style="max-width: 250px; height: auto; border: 3px solid #7B2CBF; border-radius: 8px; display: block; margin: 0 auto;" />
                 <p style="margin-top: 15px; font-size: 12px; color: #666;">
                   <em>Bewaar deze email of maak een screenshot van de QR code</em>
                 </p>
@@ -174,7 +246,13 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
 
     // Send emails sequentially to avoid race conditions
     try {
-      await sendEmail(config, data.recipientEmail, `Bevestiging aanmelding: ${data.eventName}`, userEmailBody);
+      await sendEmail(
+        config,
+        data.recipientEmail,
+        `Bevestiging aanmelding: ${data.eventName}`,
+        userEmailBody,
+        qrCodeAttachment ? [qrCodeAttachment] : undefined
+      );
       console.log('✅ Participant email sent');
     } catch (err) {
       console.error('❌ Failed to send participant email:', err);
@@ -206,7 +284,7 @@ export async function sendMembershipSignupEmail(data: MembershipSignupEmailData)
   }
 
   try {
-    const emailBody = `
+    const adminEmailBody = `
       <html>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
           <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -242,14 +320,50 @@ export async function sendMembershipSignupEmail(data: MembershipSignupEmailData)
       </html>
     `;
 
-    await sendEmail(
-      config, 
-      config.fromEmail, 
-      `Nieuwe lidmaatschap aanmelding: ${data.firstName} ${data.lastName}`,
-      emailBody
-    );
+    const userEmailBody = `
+      <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h1 style="color: #7B2CBF;">Bevestiging inschrijving lidmaatschap</h1>
+            <p>Hoi ${data.firstName},</p>
+            <p>Bedankt voor je aanmelding bij Salve Mundi! We hebben je gegevens ontvangen en nemen snel contact met je op om je lidmaatschap in orde te maken.</p>
+            <div style="background-color: #F5F5DC; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <h2 style="color: #FF6B35; margin-top: 0;">Jouw gegevens</h2>
+              <p><strong>Naam:</strong> ${data.firstName} ${data.lastName}</p>
+              <p><strong>Email:</strong> ${data.recipientEmail}</p>
+              <p><strong>Telefoonnummer:</strong> ${data.phoneNumber}</p>
+              ${data.dateOfBirth ? `<p><strong>Geboortedatum:</strong> ${data.dateOfBirth}</p>` : ''}
+            </div>
+            <p>Heb je nog vragen? <a href="mailto:intro@salvemundi.nl?subject=Vraag%20over%20lidmaatschap" style="color: #7B2CBF; font-weight: bold;">Stuur ons gerust een bericht</a>, we helpen je graag verder.</p>
+            <p style="margin-top: 30px;">Tot snel!<br/><strong>Het Salve Mundi team</strong></p>
+          </div>
+        </body>
+      </html>
+    `;
 
-    console.log('✅ Membership signup email sent successfully');
+    try {
+      await sendEmail(
+        config,
+        data.recipientEmail,
+        'Bevestiging lidmaatschap inschrijving',
+        userEmailBody
+      );
+      console.log('✅ Membership signup confirmation sent to participant');
+    } catch (error) {
+      console.error('❌ Failed to send membership confirmation to participant:', error);
+    }
+
+    try {
+      await sendEmail(
+        config, 
+        config.fromEmail, 
+        `Nieuwe lidmaatschap aanmelding: ${data.firstName} ${data.lastName}`,
+        adminEmailBody
+      );
+      console.log('✅ Membership signup notification sent to organization');
+    } catch (error) {
+      console.error('❌ Failed to send membership signup notification to organization:', error);
+    }
   } catch (error) {
     console.error('❌ Failed to send membership signup email:', error);
     // Don't throw error - we don't want to fail the signup if email fails

@@ -22,10 +22,29 @@ interface ActiviteitDetailModalProps {
     contact_name?: string;
     committee_name?: string;
     committee_id?: number;
+    committee_email?: string;
   };
   isPast?: boolean;
   onSignup: (data: { activity: any; email: string; name: string; phoneNumber: string }) => Promise<void>;
 }
+
+const buildCommitteeEmail = (name?: string | null) => {
+  if (!name) return undefined;
+  const normalized = name.toLowerCase();
+  if (normalized.includes('feest')) return 'feest@salvemundi.nl';
+  if (normalized.includes('activiteit')) return 'activiteiten@salvemundi.nl';
+  if (normalized.includes('studie')) return 'studie@salvemundi.nl';
+
+  const slug = name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/commissie|committee/g, '')
+    .replace(/[^a-z0-9]+/g, '')
+    .trim();
+  if (!slug) return undefined;
+  return `${slug}@salvemundi.nl`;
+};
 
 const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
   isOpen,
@@ -35,6 +54,7 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
   onSignup,
 }) => {
   const { user } = useAuth();
+  const committeeEmail = activity?.committee_email || buildCommitteeEmail(activity?.committee_name);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -265,91 +285,143 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
           ) : (
             <div className="mt-8 border-t border-geel/20 pt-6">
               <h3 className="text-2xl font-bold text-geel mb-4">Inschrijven</h3>
-              <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Name Field */}
-              <div>
-                <label htmlFor="name" className="block text-white font-semibold mb-2">
-                  Naam *
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className={`w-full px-3 py-3 rounded-lg bg-white text-paars placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-geel ${
-                    errors.name ? "border-2 border-red-500" : ""
-                  }`}
-                  placeholder="Jouw naam"
-                />
-                {errors.name && (
-                  <p className="text-red-400 text-sm mt-1">{errors.name}</p>
-                )}
-              </div>
+              <div className="flex flex-col lg:flex-row gap-6">
+                <form onSubmit={handleSubmit} className="space-y-4 flex-1">
+                {/* Name Field */}
+                <div>
+                  <label htmlFor="name" className="block text-white font-semibold mb-2">
+                    Naam *
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className={`w-full px-3 py-3 rounded-lg bg-white text-paars placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-geel ${
+                      errors.name ? "border-2 border-red-500" : ""
+                    }`}
+                    placeholder="Jouw naam"
+                  />
+                  {errors.name && (
+                    <p className="text-red-400 text-sm mt-1">{errors.name}</p>
+                  )}
+                </div>
 
-              {/* Email Field */}
-              <div>
-                <label htmlFor="email" className="block text-white font-semibold mb-2">
-                  Email *
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className={`w-full px-3 py-3 rounded-lg bg-white text-paars placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-geel ${
-                    errors.email ? "border-2 border-red-500" : ""
-                  }`}
-                  placeholder="jouw.email@student.avans.nl"
-                />
-                {errors.email && (
-                  <p className="text-red-400 text-sm mt-1">{errors.email}</p>
-                )}
-              </div>
+                {/* Email Field */}
+                <div>
+                  <label htmlFor="email" className="block text-white font-semibold mb-2">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className={`w-full px-3 py-3 rounded-lg bg-white text-paars placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-geel ${
+                      errors.email ? "border-2 border-red-500" : ""
+                    }`}
+                    placeholder="jouw.email@student.avans.nl"
+                  />
+                  {errors.email && (
+                    <p className="text-red-400 text-sm mt-1">{errors.email}</p>
+                  )}
+                </div>
 
-              {/* Phone Number Field */}
-              <div>
-                <label htmlFor="phoneNumber" className="block text-white font-semibold mb-2">
-                  Telefoonnummer *
-                </label>
-                <input
-                  type="tel"
-                  id="phoneNumber"
-                  name="phoneNumber"
-                  value={formData.phoneNumber}
-                  onChange={handleInputChange}
-                  className={`w-full px-3 py-3 rounded-lg bg-white text-paars placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-geel ${
-                    errors.phoneNumber ? "border-2 border-red-500" : ""
-                  }`}
-                  placeholder="0612345678"
-                />
-                {errors.phoneNumber && (
-                  <p className="text-red-400 text-sm mt-1">{errors.phoneNumber}</p>
-                )}
-              </div>
+                {/* Phone Number Field */}
+                <div>
+                  <label htmlFor="phoneNumber" className="block text-white font-semibold mb-2">
+                    Telefoonnummer *
+                  </label>
+                  <input
+                    type="tel"
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
+                    onChange={handleInputChange}
+                    className={`w-full px-3 py-3 rounded-lg bg-white text-paars placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-geel ${
+                      errors.phoneNumber ? "border-2 border-red-500" : ""
+                    }`}
+                    placeholder="0612345678"
+                  />
+                  {errors.phoneNumber && (
+                    <p className="text-red-400 text-sm mt-1">{errors.phoneNumber}</p>
+                  )}
+                </div>
 
-              {/* Submit Buttons */}
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 bg-geel text-white font-bold py-3 px-6 rounded-full hover:scale-105 transition-transform duration-300 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? 'BEZIG...' : 'AANMELDEN'}
-                </button>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="flex-1 bg-white text-paars font-bold py-3 px-6 rounded-full hover:scale-105 transition-transform duration-300 shadow-lg"
-                >
-                  ANNULEREN
-                </button>
-              </div>
-              {submitError && (
-                <p className="text-red-400 font-semibold text-center mt-3">{submitError}</p>
+                {/* Submit Buttons */}
+                <div className="flex gap-4 pt-4">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex-1 bg-geel text-white font-bold py-3 px-6 rounded-full hover:scale-105 transition-transform duration-300 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? 'BEZIG...' : 'AANMELDEN'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="flex-1 bg-white text-paars font-bold py-3 px-6 rounded-full hover:scale-105 transition-transform duration-300 shadow-lg"
+                  >
+                    ANNULEREN
+                  </button>
+                </div>
+                {submitError && (
+                  <p className="text-red-400 font-semibold text-center mt-3">{submitError}</p>
+                )}
+              </form>
+
+              {(activity.committee_name || activity.contact_name || activity.contact_phone || committeeEmail) && (
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-white w-full lg:max-w-sm">
+                  <h4 className="text-xl font-semibold text-geel mb-3">Contact commissie</h4>
+                  <p className="text-sm text-white/80 mb-4">
+                    Vragen over deze activiteit? Neem direct contact op met de commissie die het evenement organiseert.
+                  </p>
+                  <div className="space-y-3 text-white">
+                    {activity.committee_name && (
+                      <p>
+                        <span className="font-semibold text-geel block text-sm uppercase tracking-wide">Commissie</span>
+                        <span className="text-base">{activity.committee_name}</span>
+                      </p>
+                    )}
+                    {activity.contact_name && (
+                      <p>
+                        <span className="font-semibold text-geel block text-sm uppercase tracking-wide">Contactpersoon</span>
+                        <span className="text-base">{activity.contact_name}</span>
+                      </p>
+                    )}
+                    {activity.contact_phone && (
+                      <p>
+                        <span className="font-semibold text-geel block text-sm uppercase tracking-wide">Telefoon</span>
+                        <a href={`tel:${activity.contact_phone}`} className="text-base underline hover:text-geel transition">
+                          {activity.contact_phone}
+                        </a>
+                      </p>
+                    )}
+                    {committeeEmail && (
+                      <p>
+                        <span className="font-semibold text-geel block text-sm uppercase tracking-wide">E-mail</span>
+                        <a
+                          href={`mailto:${committeeEmail}`}
+                          className="text-base underline hover:text-geel transition break-all"
+                        >
+                          {committeeEmail}
+                        </a>
+                      </p>
+                    )}
+                  </div>
+                  {committeeEmail && (
+                    <a
+                      href={`mailto:${committeeEmail}`}
+                      className="mt-4 inline-flex items-center justify-center w-full rounded-full bg-geel text-paars font-semibold py-3 px-4 hover:bg-opacity-90 transition"
+                    >
+                      ✉️ Mail de commissie
+                    </a>
+                  )}
+                </div>
               )}
-            </form>
+              </div>
             </div>
           )}
         </div>

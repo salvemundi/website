@@ -68,14 +68,7 @@ export default function App() {
                 </ProtectedRoute>
               } 
             />
-            <Route 
-              path="/inschrijven" 
-              element={
-                <ProtectedRoute>
-                  <InschrijvenPagina />
-                </ProtectedRoute>
-              } 
-            />
+            <Route path="/inschrijven" element={<InschrijvenPagina />} />
             <Route path="/stickers" element={<StickersPagina />} />
             <Route path="/contact" element={<ContactPagina />} />
             <Route path="/safe-havens" element={<SafeHavensPagina />} />
