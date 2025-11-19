@@ -58,6 +58,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Check for existing session on mount
   useEffect(() => {
     checkAuthStatus();
+
+    // Listen for external auth expiration events
+    const onAuthExpired = () => {
+      // Clear stored tokens and update state
+      try {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('refresh_token');
+      } catch (e) {
+        // ignore
+      }
+      setUser(null);
+      setIsLoading(false);
+    };
+
+    window.addEventListener('auth:expired', onAuthExpired as EventListener);
+    return () => {
+      window.removeEventListener('auth:expired', onAuthExpired as EventListener);
+    };
   }, []);
 
   const checkAuthStatus = async () => {
@@ -68,9 +86,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (token) {
         try {
           const userData = await authApi.fetchUserDetails(token);
-          setUser(userData);
+          if (userData) {
+            setUser(userData);
+          } else {
+            // Token was invalid/expired and was cleared by fetchUserDetails
+            // Try refresh if we still have a refresh token
+            if (refreshToken) {
+              try {
+                const response = await authApi.refreshAccessToken(refreshToken);
+                localStorage.setItem('auth_token', response.access_token);
+                localStorage.setItem('refresh_token', response.refresh_token);
+                setUser(response.user);
+              } catch (refreshError) {
+                // Refresh failed, clear storage
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('refresh_token');
+                setUser(null);
+              }
+            } else {
+              setUser(null);
+            }
+          }
         } catch (error) {
-          // If token is expired, try to refresh
+          // An unexpected error occurred while fetching details
+          console.error('Auth check failed (fetch user):', error);
+          // Attempt refresh flow
           if (refreshToken) {
             try {
               const response = await authApi.refreshAccessToken(refreshToken);
@@ -78,12 +118,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               localStorage.setItem('refresh_token', response.refresh_token);
               setUser(response.user);
             } catch (refreshError) {
-              // Refresh failed, clear storage
               localStorage.removeItem('auth_token');
               localStorage.removeItem('refresh_token');
+              setUser(null);
             }
           } else {
             localStorage.removeItem('auth_token');
+            setUser(null);
           }
         }
       }

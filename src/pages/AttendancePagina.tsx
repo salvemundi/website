@@ -215,13 +215,11 @@ export default function AttendancePagina() {
 
   return (
     <>
-      <div className="flex h-screen flex-col w-full">
-        <Navbar activePage="Activiteiten" />
-        <Header
-          title="AANWEZIGHEID CONTROLEREN"
-          backgroundImage="/img/backgrounds/homepage-banner.jpg"
-        />
-      </div>
+      <Navbar activePage="Activiteiten" />
+      <Header
+        title="AANWEZIGHEID CONTROLEREN"
+        backgroundImage="/img/backgrounds/homepage-banner.jpg"
+      />
 
       <main className="bg-beige min-h-screen">
         <section className="px-4 sm:px-10 py-10">

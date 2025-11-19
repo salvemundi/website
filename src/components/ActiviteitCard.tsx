@@ -12,6 +12,7 @@ interface ActiviteitCardProps {
   onSignup?: (data: { title: string; date?: string; description: string; price: number }) => void;
   onShowDetails?: () => void;
   requiresLogin?: boolean;
+  isSignedUp?: boolean;
 }
 
 const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
@@ -24,6 +25,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
   onSignup,
   onShowDetails,
   requiresLogin = true,
+  isSignedUp = false,
 }) => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -52,11 +54,11 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
       )}
 
       {/* Image with rounded corners at the top - always show */}
-      <div className="relative z-10">
+        <div className="relative z-10">
         <img
           src={image || '/img/backgrounds/Kroto2025.jpg'}
           alt={title}
-          className="w-full h-40 sm:h-48 object-cover rounded-xl mb-4"
+          className="w-full h-40 sm:h-44 md:h-48 object-cover rounded-xl mb-4"
         />
       </div>
 
@@ -83,7 +85,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
         </p>
         
         {/* Footer - Buttons */}
-    <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 mt-auto w-full">
+  <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 mt-auto w-full">
           {/* Details Button */}
           <button
             onClick={(e) => {
@@ -99,14 +101,15 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
           {!isPast && (
             <button
               onClick={handleSignupClick}
-              className="bg-geel text-white font-semibold px-5 py-3 rounded-full shadow-lg hover:bg-opacity-80 w-full sm:w-auto flex items-center justify-center gap-2"
+              className={`${isAuthenticated && isSignedUp ? 'bg-gray-400 text-white' : 'bg-geel text-white'} font-semibold px-5 py-3 rounded-full shadow-lg hover:bg-opacity-80 w-full sm:w-auto flex items-center justify-center gap-2`}
+              disabled={isAuthenticated && isSignedUp}
             >
               {requiresLogin && !isAuthenticated && (
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               )}
-              AANMELDEN
+              {isAuthenticated && isSignedUp ? 'AL AANGEMELD' : 'AANMELDEN'}
             </button>
           )}
         </div>

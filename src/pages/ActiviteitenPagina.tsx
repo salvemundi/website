@@ -18,6 +18,7 @@ export default function ActiviteitenPagina() {
   const { data: events = [], isLoading, error } = useEvents();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, isAuthenticated } = useAuth();
+  const [userSignups, setUserSignups] = useState<number[]>([]);
 
   // Cart: array of { activity, email, name, studentNumber }
   const [cart, setCart] = useState<Array<{ activity: any; email: string; name: string; studentNumber: string }>>([]);
@@ -71,6 +72,31 @@ export default function ActiviteitenPagina() {
       }
     }
   }, [searchParams, events]);
+
+  // Load current user's signups to mark cards
+  useEffect(() => {
+    let mounted = true;
+    async function loadSignups() {
+      if (!user) {
+        if (mounted) setUserSignups([]);
+        return;
+      }
+      try {
+        const resp = await fetch(
+          `${import.meta.env.VITE_DIRECTUS_URL}/items/event_signups?filter[directus_relations][_eq]=${user.id}&fields=event_id.id&limit=-1`,
+          { headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` } }
+        );
+        const data = await resp.json();
+        const ids = (data.data || []).map((s: any) => s.event_id?.id || s.event_id).filter(Boolean);
+        if (mounted) setUserSignups(ids);
+      } catch (e) {
+        console.error('Failed to load user signups', e);
+        if (mounted) setUserSignups([]);
+      }
+    }
+    loadSignups();
+    return () => { mounted = false; };
+  }, [user]);
 
   // Add ticket to cart (quick signup without modal)
   const handleSignup = async (activity: any) => {
@@ -293,6 +319,7 @@ export default function ActiviteitenPagina() {
                             isPast={false}
                             onSignup={() => handleSignup(event)}
                             onShowDetails={() => handleShowDetails(event)}
+                            isSignedUp={isAuthenticated && userSignups.includes(event.id)}
                           />
                         ))}
                       </div>
