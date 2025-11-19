@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import Navbar from "../components/NavBar";
@@ -19,6 +19,7 @@ export default function ActiviteitenPagina() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, isAuthenticated } = useAuth();
   const [userSignups, setUserSignups] = useState<number[]>([]);
+  const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
 
   // Cart: array of { activity, email, name, studentNumber }
   const [cart, setCart] = useState<Array<{ activity: any; email: string; name: string; studentNumber: string }>>([]);
@@ -73,30 +74,37 @@ export default function ActiviteitenPagina() {
     }
   }, [searchParams, events]);
 
-  // Load current user's signups to mark cards
-  useEffect(() => {
-    let mounted = true;
-    async function loadSignups() {
-      if (!user) {
-        if (mounted) setUserSignups([]);
-        return;
-      }
-      try {
-        const resp = await fetch(
-          `${import.meta.env.VITE_DIRECTUS_URL}/items/event_signups?filter[directus_relations][_eq]=${user.id}&fields=event_id.id&limit=-1`,
-          { headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` } }
-        );
-        const data = await resp.json();
-        const ids = (data.data || []).map((s: any) => s.event_id?.id || s.event_id).filter(Boolean);
-        if (mounted) setUserSignups(ids);
-      } catch (e) {
-        console.error('Failed to load user signups', e);
-        if (mounted) setUserSignups([]);
-      }
+  const loadUserSignups = useCallback(async () => {
+    if (!user) {
+      setUserSignups([]);
+      return;
     }
-    loadSignups();
-    return () => { mounted = false; };
+
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_DIRECTUS_URL}/items/event_signups?filter[directus_relations][_eq]=${user.id}&fields=event_id.id&limit=-1`,
+        { headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` } }
+      );
+      const data = await resp.json();
+      const ids = (data.data || [])
+        .map((s: any) => s.event_id?.id || s.event_id)
+        .filter(Boolean);
+      setUserSignups(ids);
+    } catch (e) {
+      console.error('Failed to load user signups', e);
+      setUserSignups([]);
+    }
   }, [user]);
+
+  useEffect(() => {
+    loadUserSignups();
+  }, [loadUserSignups]);
+  
+  const openCartIfMobile = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setIsMobileCartOpen(true);
+    }
+  };
 
   // Add ticket to cart (quick signup without modal)
   const handleSignup = async (activity: any) => {
@@ -116,7 +124,7 @@ export default function ActiviteitenPagina() {
     if (user && activity.id) {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_DIRECTUS_URL}/items/event_signups?filter[event_id][_eq]=${activity.id}&filter[user_id][_eq]=${user.id}`,
+          `${import.meta.env.VITE_DIRECTUS_URL}/items/event_signups?filter[event_id][_eq]=${activity.id}&filter[directus_relations][_eq]=${user.id}`,
           {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
@@ -153,6 +161,7 @@ export default function ActiviteitenPagina() {
       name: fullName || "", 
       studentNumber: "" 
     }]);
+    openCartIfMobile();
   };
 
   // Open modal with activity details
@@ -184,7 +193,7 @@ export default function ActiviteitenPagina() {
     if (user && data.activity.id) {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_DIRECTUS_URL}/items/event_signups?filter[event_id][_eq]=${data.activity.id}&filter[user_id][_eq]=${user.id}`,
+          `${import.meta.env.VITE_DIRECTUS_URL}/items/event_signups?filter[event_id][_eq]=${data.activity.id}&filter[directus_relations][_eq]=${user.id}`,
           {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
@@ -227,6 +236,7 @@ export default function ActiviteitenPagina() {
     }
     
     setCart((prev) => [...prev, normalizedData]);
+    openCartIfMobile();
   };
 
   // Update email for a ticket
@@ -249,9 +259,15 @@ export default function ActiviteitenPagina() {
     setCart((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleCheckoutComplete = () => {
+    setCart([]);
+    loadUserSignups();
+    setIsMobileCartOpen(false);
+  };
+
   return (
     <>
-      <div className="flex h-screen flex-col w-full">
+      <div className="flex flex-col w-full min-h-[65vh] lg:min-h-screen">
         <Navbar activePage="Activiteiten" />
         <Header
           title="ACTIVITEITEN"
@@ -289,7 +305,7 @@ export default function ActiviteitenPagina() {
             </div>
 
             
-            <div className="flex flex-row md:flex-row gap-6">
+            <div className="flex flex-col lg:flex-row gap-6">
               <div className="flex-1 flex flex-col gap-6">
                 {isLoading ? (
                   <div className="text-center py-10">
@@ -319,7 +335,7 @@ export default function ActiviteitenPagina() {
                             isPast={false}
                             onSignup={() => handleSignup(event)}
                             onShowDetails={() => handleShowDetails(event)}
-                            isSignedUp={isAuthenticated && userSignups.includes(event.id)}
+                            isSignedUp={userSignups.includes(event.id)}
                           />
                         ))}
                       </div>
@@ -344,6 +360,7 @@ export default function ActiviteitenPagina() {
                             isPast={true}
                             onSignup={() => handleSignup(event)}
                             onShowDetails={() => handleShowDetails(event)}
+                            isSignedUp={userSignups.includes(event.id)}
                           />
                         ))}
                       </div>
@@ -352,14 +369,14 @@ export default function ActiviteitenPagina() {
                 )}
               </div>
               {/* Sidebar */}
-              <div className="lg:w-80 w-full order-first lg:order-none">
+              <div className="hidden lg:block lg:w-80 flex-shrink-0">
                 <CartSidebar
                   cart={cart}
                   onEmailChange={handleEmailChange}
                   onNameChange={handleNameChange}
                   onStudentNumberChange={handleStudentNumberChange}
                   onRemoveTicket={handleRemoveTicket}
-                  onCheckoutComplete={() => setCart([])}
+                  onCheckoutComplete={handleCheckoutComplete}
                 />
               </div>
             </div>
@@ -368,6 +385,52 @@ export default function ActiviteitenPagina() {
         </div>
         
       </main>
+
+      {/* Floating cart button for mobile */}
+      <button
+        type="button"
+        onClick={() => setIsMobileCartOpen(true)}
+        className={`${isMobileCartOpen ? 'hidden' : 'flex'} lg:hidden fixed bottom-5 right-5 z-30 items-center gap-2 px-4 py-3 rounded-full shadow-2xl bg-oranje text-beige font-semibold border-2 border-beige/30`}
+        aria-label="Open winkelwagen"
+      >
+        🛒
+        <span>Winkelwagen</span>
+        {cart.length > 0 && (
+          <span className="ml-1 text-sm bg-geel text-paars font-bold rounded-full px-2 py-0.5">
+            {cart.length}
+          </span>
+        )}
+      </button>
+
+      {/* Mobile cart overlay */}
+      {isMobileCartOpen && (
+        <div className="lg:hidden fixed inset-0 z-40">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setIsMobileCartOpen(false)}
+            aria-hidden="true"
+          />
+          <div className="absolute bottom-0 left-0 right-0 bg-beige rounded-t-3xl shadow-2xl p-4 pt-10">
+            <button
+              type="button"
+              className="absolute top-3 right-5 text-paars text-2xl font-bold"
+              onClick={() => setIsMobileCartOpen(false)}
+              aria-label="Sluit winkelwagen"
+            >
+              ×
+            </button>
+            <CartSidebar
+              cart={cart}
+              onEmailChange={handleEmailChange}
+              onNameChange={handleNameChange}
+              onStudentNumberChange={handleStudentNumberChange}
+              onRemoveTicket={handleRemoveTicket}
+              onCheckoutComplete={handleCheckoutComplete}
+              className="max-h-[65vh] pt-2"
+            />
+          </div>
+        </div>
+      )}
 
       <Footer />
 

@@ -36,7 +36,7 @@ export default function CommissiesPagina() {
 
   return (
     <>
-      <div className="flex h-screen flex-col w-full">
+      <div className="flex flex-col w-full min-h-[65vh] lg:min-h-screen">
         <Navbar activePage="Commissies" />
         <Header
           title="COMMISSIES"
@@ -46,7 +46,7 @@ export default function CommissiesPagina() {
 
       <main className="bg-beige min-h-screen">
         {/* Bento Grid Layout */}
-        <div className="px-10 py-16">
+        <div className="px-4 sm:px-6 lg:px-10 py-10 sm:py-16">
           {isLoading ? (
             <div className="text-center py-10">
               <p className="text-lg text-gray-600">Commissies laden...</p>

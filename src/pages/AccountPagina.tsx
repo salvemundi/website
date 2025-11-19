@@ -110,28 +110,28 @@ export default function AccountPagina() {
     <div className="min-h-screen bg-beige">
       <NavBar />
       
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+        <div className="max-w-4xl mx-auto space-y-8">
           {/* Profile Section */}
-          <div className="bg-white rounded-3xl shadow-2xl p-8 mb-8 border-4 border-oranje">
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex items-center gap-6">
+          <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 border-4 border-oranje">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 w-full">
                 {user.avatar ? (
                   <img
                     src={getImageUrl(user.avatar)}
                     alt={`${user.first_name} ${user.last_name}`}
-                    className="w-24 h-24 rounded-full object-cover border-4 border-oranje"
+                    className="w-24 h-24 rounded-full object-cover border-4 border-oranje self-center sm:self-auto"
                   />
                 ) : (
-                  <div className="w-24 h-24 rounded-full bg-geel flex items-center justify-center border-4 border-oranje">
+                  <div className="w-24 h-24 rounded-full bg-geel flex items-center justify-center border-4 border-oranje self-center sm:self-auto">
                     <span className="text-3xl font-bold text-paars">
                       {user.first_name?.[0]}{user.last_name?.[0]}
                     </span>
                   </div>
                 )}
                 
-                <div>
-                  <h1 className="text-3xl font-bold text-paars mb-2">
+                <div className="text-center sm:text-left w-full">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-paars mb-2">
                     {user.first_name && user.last_name 
                       ? `${user.first_name} ${user.last_name}`
                       : user.email || 'User'}
@@ -141,7 +141,7 @@ export default function AccountPagina() {
                       (Naam niet ingesteld)
                     </p>
                   )}
-                  <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
                     {user.is_member ? (
                       <span className="px-3 py-1 bg-geel text-paars text-sm font-semibold rounded-full">
                         Fontys Student
@@ -158,14 +158,14 @@ export default function AccountPagina() {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col sm:flex-row lg:flex-col gap-2 w-full lg:w-auto">
                 {/* Admin Panel Button - Only for Microsoft users */}
                 {user.entra_id && (
                   <a
                     href="https://admin.salvemundi.nl"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-6 py-2 bg-geel text-paars rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md text-center"
+                    className="px-6 py-2 bg-geel text-paars rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md text-center w-full"
                   >
                     Admin Panel
                   </a>
@@ -173,7 +173,7 @@ export default function AccountPagina() {
                 
                 <button
                   onClick={handleLogout}
-                  className="px-6 py-2 bg-paars text-beige rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md"
+                  className="px-6 py-2 bg-paars text-beige rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md w-full"
                 >
                   Uitloggen
                 </button>
@@ -182,7 +182,7 @@ export default function AccountPagina() {
 
             <div className="border-t-2 border-oranje/20 pt-6">
               <h2 className="text-lg font-semibold text-paars mb-4">Account Informatie</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-paars/70 font-semibold">E-mail</p>
                   <p className="font-medium text-paars">{user.email}</p>
@@ -212,7 +212,7 @@ export default function AccountPagina() {
                 <div>
                   <p className="text-sm text-paars/70 font-semibold mb-1">Minecraft Gebruikersnaam</p>
                   {isEditingMinecraft ? (
-                    <div className="flex gap-2 items-center">
+                    <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
                       <input
                         type="text"
                         value={minecraftUsername}
@@ -238,7 +238,7 @@ export default function AccountPagina() {
                       </button>
                     </div>
                   ) : (
-                    <div className="flex gap-2 items-center">
+                    <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
                       <p className="font-medium text-paars text-sm flex-1">
                         {user.minecraft_username || 'Niet ingesteld'}
                       </p>
@@ -266,10 +266,10 @@ export default function AccountPagina() {
             {/* Quick Links Section */}
             <div className="border-t-2 border-oranje/20 pt-6 mt-6">
               <h2 className="text-lg font-semibold text-paars mb-4">Snelle Links</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                 <button
                   onClick={() => navigate('/account/transactions')}
-                  className="p-4 border-2 border-oranje rounded-xl hover:bg-oranje/10 transition-all text-left"
+                  className="p-4 border-2 border-oranje rounded-xl hover:bg-oranje/10 transition-all text-left w-full"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-3xl">💳</span>
@@ -282,7 +282,7 @@ export default function AccountPagina() {
 
                 <button
                   onClick={() => navigate('/account/whatsapp-groups')}
-                  className="p-4 border-2 border-oranje rounded-xl hover:bg-oranje/10 transition-all text-left relative"
+                  className="p-4 border-2 border-oranje rounded-xl hover:bg-oranje/10 transition-all text-left relative w-full"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-3xl">💬</span>
@@ -302,7 +302,7 @@ export default function AccountPagina() {
 
                 <button
                   onClick={() => navigate('/stickers')}
-                  className="p-4 border-2 border-oranje rounded-xl hover:bg-oranje/10 transition-all text-left"
+                  className="p-4 border-2 border-oranje rounded-xl hover:bg-oranje/10 transition-all text-left w-full"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-3xl">🗺️</span>
@@ -317,7 +317,7 @@ export default function AccountPagina() {
           </div>
 
           {/* Event Signups Section */}
-          <div className="bg-white rounded-3xl shadow-2xl p-8 border-4 border-oranje">
+          <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 border-4 border-oranje">
             <h2 className="text-2xl font-bold text-paars mb-6">Mijn Evenement Inschrijvingen</h2>
             
             {isLoading ? (
@@ -339,7 +339,7 @@ export default function AccountPagina() {
                 {eventSignups.map((signup) => (
                   <div
                     key={signup.id}
-                    className="flex items-center gap-4 p-4 border-2 border-oranje/20 rounded-xl hover:border-oranje transition-all hover:shadow-md"
+                    className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 border-2 border-oranje/20 rounded-xl hover:border-oranje transition-all hover:shadow-md"
                   >
                     {signup.event_id.image ? (
                       <img
@@ -353,7 +353,7 @@ export default function AccountPagina() {
                       </div>
                     )}
                     
-                    <div className="flex-1">
+                    <div className="flex-1 w-full">
                       <h3 className="text-lg font-semibold text-paars mb-1">
                         {signup.event_id.name}
                       </h3>
@@ -373,12 +373,14 @@ export default function AccountPagina() {
                       </p>
                     </div>
 
-                    <button
-                      onClick={() => navigate('/activiteiten')}
-                      className="px-4 py-2 text-oranje border-2 border-oranje rounded-full font-semibold hover:bg-oranje hover:text-beige transition-all"
-                    >
-                      Bekijk Details
-                    </button>
+                    <div className="w-full sm:w-auto">
+                      <button
+                        onClick={() => navigate('/activiteiten')}
+                        className="w-full px-4 py-2 text-oranje border-2 border-oranje rounded-full font-semibold hover:bg-oranje hover:text-beige transition-all"
+                      >
+                        Bekijk Details
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

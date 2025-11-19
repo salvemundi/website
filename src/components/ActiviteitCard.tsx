@@ -29,9 +29,14 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
 }) => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const alreadySignedUp = Boolean(isSignedUp);
 
   const handleSignupClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+
+    if (alreadySignedUp) {
+      return;
+    }
     
     if (requiresLogin && !isAuthenticated) {
       // Redirect to login page
@@ -101,15 +106,15 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
           {!isPast && (
             <button
               onClick={handleSignupClick}
-              className={`${isAuthenticated && isSignedUp ? 'bg-gray-400 text-white' : 'bg-geel text-white'} font-semibold px-5 py-3 rounded-full shadow-lg hover:bg-opacity-80 w-full sm:w-auto flex items-center justify-center gap-2`}
-              disabled={isAuthenticated && isSignedUp}
+              className={`${alreadySignedUp ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-geel text-white hover:bg-opacity-80'} font-semibold px-5 py-3 rounded-full shadow-lg w-full sm:w-auto flex items-center justify-center gap-2 transition`}
+              disabled={alreadySignedUp}
             >
               {requiresLogin && !isAuthenticated && (
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               )}
-              {isAuthenticated && isSignedUp ? 'AL AANGEMELD' : 'AANMELDEN'}
+              {alreadySignedUp ? 'AL AANGEMELD' : 'AANMELDEN'}
             </button>
           )}
         </div>

@@ -34,30 +34,30 @@ export default function SafeHavensPagina() {
     <div className="min-h-screen bg-beige">
       <NavBar />
       
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         <div className="max-w-6xl mx-auto">
           {/* Header Section */}
-          <div className="text-center mb-12">
-            <h1 className="text-5xl font-bold text-paars mb-4">
+          <div className="text-center mb-12 px-2">
+            <h1 className="text-4xl sm:text-5xl font-bold text-paars mb-4">
               Safe Havens
             </h1>
-            <p className="text-xl text-paars/70 max-w-3xl mx-auto">
+            <p className="text-lg sm:text-xl text-paars/70 max-w-3xl mx-auto">
               Een veilig aanspreekpunt voor jouw zorgen en vragen
             </p>
           </div>
 
           {/* Introduction Section */}
-          <div className="bg-white rounded-3xl shadow-xl p-8 mb-12 border-4 border-oranje">
+          <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8 mb-12 border-4 border-oranje">
             <div className="max-w-4xl mx-auto">
-              <div className="flex items-start gap-4 mb-6">
+              <div className="flex flex-col md:flex-row items-start gap-4 mb-6">
                 <div className="w-16 h-16 rounded-full bg-oranje flex items-center justify-center flex-shrink-0">
                   <span className="text-3xl">🛡️</span>
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-paars mb-4">
+                  <h2 className="text-2xl font-bold text-paars mb-4 text-center md:text-left">
                     Wat zijn Safe Havens?
                   </h2>
-                  <p className="text-paars/80 leading-relaxed mb-4">
+                  <p className="text-paars/80 leading-relaxed mb-4 text-justify md:text-left">
                     Binnen Salve Mundi vinden wij een veilige en comfortable omgeving heel belangrijk voor al onze leden. 
                     Hierom hebben wij Safe Havens aangesteld die een luisterend oor bieden, begrip tonen, en advies geven 
                     voor jouw situatie.
@@ -78,11 +78,11 @@ export default function SafeHavensPagina() {
           </div>
 
           {/* Topics Section */}
-          <div className="bg-white rounded-3xl shadow-xl p-8 mb-12 border-4 border-geel">
-            <h2 className="text-2xl font-bold text-paars mb-6 text-center">
+          <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8 mb-12 border-4 border-geel">
+            <h2 className="text-2xl font-bold text-paars mb-6 text-center px-2">
               Waar Kun Je Bij Ons Terecht?
             </h2>
-            <p className="text-paars/70 text-center mb-6">
+            <p className="text-paars/70 text-center mb-6 px-2">
               Onze Safe Havens zijn er voor (maar niet gelimiteerd tot):
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
@@ -203,7 +203,7 @@ export default function SafeHavensPagina() {
           )}
 
           {/* Alternative Contact Section */}
-          <div className="bg-white rounded-3xl shadow-xl p-8 border-4 border-paars">
+          <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8 border-4 border-paars">
             <div className="max-w-3xl mx-auto text-center">
               <div className="w-16 h-16 rounded-full bg-paars flex items-center justify-center mx-auto mb-4">
                 <span className="text-3xl">🏫</span>
