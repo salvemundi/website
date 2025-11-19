@@ -12,6 +12,8 @@ import {
   Autoplay,
   EffectCoverflow,
 } from "swiper/modules";
+import { useSponsors } from "../hooks/useApi";
+import { getImageUrl } from "../lib/api";
 
 // Swiper styles
 import "swiper/css";
@@ -19,10 +21,16 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 
 export default function Home() {
+  const {
+    data: sponsors = [],
+    isLoading: isSponsorsLoading,
+    error: sponsorsError,
+  } = useSponsors();
+
   return (
     <>
       <main>
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col">
           <Navbar activePage="Home" />
           <Header
             title="SALVE MUNDI"
@@ -32,7 +40,7 @@ export default function Home() {
         </div>
 
         {/* Cards */}
-        <div className="grid grid-cols-1  md:grid-cols-3 gap-5 px-10 py-10 bg-beige">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 px-4 sm:px-6 lg:px-10 py-10 bg-beige">
           <SamuCard
             description="Word lid van Salve Mundi en ontdek de wereld van ICT! Sluit je aan bij onze exclusieve activiteiten en mis niets!"
             image="/img/backgrounds/Kroto2025.jpg"
@@ -54,7 +62,7 @@ export default function Home() {
         </div>
 
         {/* About section with swiper */}
-        <section className="flex flex-row justify-between gap-10 p-10">
+        <section className="flex flex-col-reverse lg:flex-row justify-between gap-10 px-4 sm:px-6 lg:px-10 py-10">
           <div className="flex-1 flex flex-col justify-center space-y-4">
             <h1 className="text-4xl text-oranje font-bold mb-4">
               OVER SALVE MUNDI
@@ -82,7 +90,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="flex-1 h-full w-3/12">
+          <div className="flex-1 h-full w-full max-w-2xl mx-auto lg:mx-0">
             <Swiper
               modules={[Navigation, Pagination, Autoplay, EffectCoverflow]}
               spaceBetween={30}
@@ -109,13 +117,13 @@ export default function Home() {
         </section>
 
         {/* Contact */}
-        <div className="flex items-center justify-center w-full">
+        <div className="flex items-center justify-center w-full px-4">
           <h2 className="text-oranje font-black text-4xl">
             Kom in contact met Salve Mundi
           </h2>
         </div>
-        <section className="flex flex-row justify-center items-center m-10 p-10 gap-10 rounded-3xl bg-paars">
-          <div className="w-3/4 text-start">
+        <section className="flex flex-col lg:flex-row justify-center items-stretch m-6 sm:m-10 p-6 sm:p-10 gap-10 rounded-3xl bg-paars">
+          <div className="w-full text-start">
             <h1 className="text-3xl font-bold text-geel ">CONTACT</h1>
             <p className="text-xl mt-4 text-beige">
               Heb jij een vraag voor ons of wil je voor iets anders met ons in
@@ -129,14 +137,48 @@ export default function Home() {
 
           <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2486.3762423950466!2d5.477010676986035!3d51.4512482148034!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c6d9a14c2598a7%3A0x749672e4952620b8!2sSalve%20Mundi!5e0!3m2!1sen!2sfr!4v1749761290183!5m2!1sen!2sfr"
-            className="w-full h-96 rounded-3xl"
+            className="w-full h-72 sm:h-96 rounded-3xl border-none"
             loading="lazy"
           />
         </section>
 
         {/* Partners */}
-        <div className="flex items-center justify-center w-full">
+        <div className="flex flex-col items-center justify-center w-full px-4 gap-6 pb-16">
           <h2 className="text-oranje font-black text-4xl">Partners</h2>
+          <section className="w-full max-w-5xl">
+            {sponsorsError && (
+              <p className="text-center text-red-600">
+                Kan partners niet laden, probeer het later opnieuw.
+              </p>
+            )}
+            {!sponsorsError && (
+              <div className="flex flex-wrap justify-center gap-6">
+                {isSponsorsLoading && sponsors.length === 0 && (
+                  <p className="text-center text-gray-500">Partners worden geladen…</p>
+                )}
+                {!isSponsorsLoading && sponsors.length === 0 && (
+                  <p className="text-center text-gray-500">
+                    Er zijn momenteel geen partners om te tonen.
+                  </p>
+                )}
+                {sponsors.map((sponsor) => (
+                  <a
+                    key={sponsor.sponsor_id}
+                    href={sponsor.website_url || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block hover:scale-105 transition-transform"
+                  >
+                    <img
+                      src={getImageUrl(sponsor.image)}
+                      alt="Sponsor logo"
+                      className="max-h-28 max-w-60 object-contain"
+                    />
+                  </a>
+                ))}
+              </div>
+            )}
+          </section>
         </div>
 
         <Footer />
@@ -145,5 +187,3 @@ export default function Home() {
     </>
   );
 }
-
-

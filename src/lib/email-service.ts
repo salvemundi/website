@@ -16,6 +16,7 @@ export interface EventSignupEmailData {
   eventPrice: number;
   studentNumber?: string;
   userName: string;
+  qrCodeDataUrl?: string; // Base64 QR code image
 }
 
 export interface MembershipSignupEmailData {
@@ -121,6 +122,17 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
               <p><strong>Prijs:</strong> €${data.eventPrice.toFixed(2)}</p>
               ${data.studentNumber ? `<p><strong>Studentnummer:</strong> ${data.studentNumber}</p>` : ''}
             </div>
+            
+            ${data.qrCodeDataUrl ? `
+              <div style="background-color: #F5F5DC; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+                <h3 style="color: #7B2CBF; margin-top: 0;">Jouw Toegangscode</h3>
+                <p style="margin-bottom: 15px;">Laat deze QR code zien bij de ingang van de activiteit:</p>
+                <img src="${data.qrCodeDataUrl}" alt="QR Code" style="max-width: 250px; border: 3px solid #7B2CBF; border-radius: 8px;" />
+                <p style="margin-top: 15px; font-size: 12px; color: #666;">
+                  <em>Bewaar deze email of maak een screenshot van de QR code</em>
+                </p>
+              </div>
+            ` : ''}
             
             <p>We kijken ernaar uit om je te zien bij deze activiteit!</p>
             <p>Heb je vragen? Neem dan contact met ons op.</p>

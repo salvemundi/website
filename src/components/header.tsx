@@ -17,7 +17,7 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   return (
     <header
-      className={`relative flex items-center max-h-full h-full justify-center mb-5 ${className}`}
+      className={`relative flex items-center justify-center mb-5 ${className}`}
     >
       <div>
         <div
@@ -30,8 +30,8 @@ const Header: React.FC<HeaderProps> = ({
           aria-hidden="true"
         />
         {/* Content */}
-        <div className="relative flex flex-col items-center z-10 px-2 py-8 sm:py-12">
-          <h1 className="text-beige font-bold text-5xl sm:text-7xl md:text-8xl lg:text-[120px] xl:text-[180px] text-center">
+        <div className="relative flex flex-col items-center z-10 px-3 py-6 sm:py-10">
+          <h1 className="text-beige font-bold text-4xl sm:text-6xl md:text-7xl lg:text-[120px] xl:text-[180px] text-center leading-tight">
             {title.split('\n').map((line, index) => (
               <React.Fragment key={index}>
                 {line}
@@ -44,7 +44,7 @@ const Header: React.FC<HeaderProps> = ({
               src="/img/newlogo.svg"
               alt="Salve Mundi Logo"
 
-              className="object-contain w-full max-w-3/4 max-h-96 "
+              className="object-contain w-full max-w-3/4 max-h-72 sm:max-h-96"
             />
           </div>
           {children}

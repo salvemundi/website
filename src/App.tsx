@@ -18,6 +18,7 @@ import StickersPagina from "./pages/StickersPagina";
 import ContactPagina from "./pages/ContactPagina";
 import SafeHavensPagina from "./pages/SafeHavensPagina";
 import KroegentochtPagina from "./pages/KroegentochtPagina";
+import AttendancePagina from "./pages/AttendancePagina";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -79,6 +80,14 @@ export default function App() {
             <Route path="/contact" element={<ContactPagina />} />
             <Route path="/safe-havens" element={<SafeHavensPagina />} />
             <Route path="/kroegentocht" element={<KroegentochtPagina />} />
+            <Route 
+              path="/attendance/:eventId" 
+              element={
+                <ProtectedRoute>
+                  <AttendancePagina />
+                </ProtectedRoute>
+              } 
+            />
           </Routes>
         </Router>
         <ReactQueryDevtools initialIsOpen={false} />

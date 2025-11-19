@@ -24,6 +24,7 @@ interface CartSidebarProps {
   onStudentNumberChange?: (index: number, studentNumber: string) => void;
   onRemoveTicket: (index: number) => void;
   onCheckoutComplete?: () => void;
+  className?: string;
 }
 
 const CartSidebar: React.FC<CartSidebarProps> = ({ 
@@ -32,7 +33,8 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
   onNameChange,
   onStudentNumberChange,
   onRemoveTicket, 
-  onCheckoutComplete 
+  onCheckoutComplete,
+  className = ''
 }) => {
   const { user } = useAuth();
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
@@ -112,27 +114,43 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
         });
       });
 
-      await Promise.all(signupPromises);
+      const signups = await Promise.all(signupPromises);
 
-      // Send email notifications for each signup (don't wait for these to complete)
-      cart.forEach(item => {
+      // Send email notifications for each signup with QR code
+      const { generateQRCode } = await import('../lib/qr-service');
+      
+      // Process emails sequentially to avoid overwhelming the email service
+      for (let index = 0; index < signups.length; index++) {
+        const signup = signups[index];
+        const item = cart[index];
         const eventName = item.activity.title || item.activity.name || 'Onbekende activiteit';
         const eventDate = item.activity.date || new Date().toISOString();
         const userName = user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : item.name;
         
-        sendEventSignupEmail({
-          recipientEmail: item.email,
-          recipientName: item.name || 'Deelnemer',
-          eventName: eventName,
-          eventDate: eventDate,
-          eventPrice: item.activity.price || 0,
-          studentNumber: item.studentNumber || undefined,
-          userName: userName || 'Onbekend',
-        }).catch(err => {
-          // Log but don't fail the signup
-          console.warn('Failed to send email notification:', err);
-        });
-      });
+        try {
+          let qrCodeDataUrl: string | undefined;
+          
+          // Check if QR token exists and generate QR code
+          if (signup.qr_token) {
+            qrCodeDataUrl = await generateQRCode(signup.qr_token);
+          } else {
+            console.error('No QR token found for signup:', signup.id);
+          }
+          
+          await sendEventSignupEmail({
+            recipientEmail: item.email,
+            recipientName: item.name || 'Deelnemer',
+            eventName: eventName,
+            eventDate: eventDate,
+            eventPrice: item.activity.price || 0,
+            studentNumber: item.studentNumber || undefined,
+            userName: userName || 'Onbekend',
+            qrCodeDataUrl: qrCodeDataUrl,
+          });
+        } catch (err) {
+          console.error('Failed to send email notification:', err);
+        }
+      }
 
       // Success!
       setSuccessMessage(`Je bent succesvol ingeschreven voor ${cart.length} activiteit${cart.length > 1 ? 'en' : ''}!`);
@@ -168,7 +186,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
 
   return (
     <>
-      <aside className="w-full bg-beige lg:sticky lg:top-10 h-fit rounded-2xl shadow-xl p-5 sm:p-6 flex flex-col border-2 border-oranje min-h-[320px] lg:min-h-[400px] max-h-[70vh] lg:max-h-[80vh] overflow-y-auto">
+      <aside className={`w-full bg-beige lg:sticky lg:top-10 h-fit rounded-2xl shadow-xl p-4 sm:p-6 flex flex-col border-2 border-oranje min-h-[260px] lg:min-h-[400px] max-h-[70vh] lg:max-h-[80vh] overflow-y-auto ${className}`}>
         <h2 className="text-2xl font-bold text-oranje mb-4 text-left">Jouw Winkelwagen</h2>
         
         {/* Success Message */}

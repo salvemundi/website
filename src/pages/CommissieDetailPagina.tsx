@@ -95,7 +95,7 @@ export default function CommissieDetailPagina() {
 
   return (
     <>
-      <div className="flex h-screen flex-col w-full">
+      <div className="flex flex-col w-full">
         <Navbar activePage="Commissies" />
         <Header
           title={formatCommitteeNameForHeader(committee.name)}
