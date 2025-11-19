@@ -8,6 +8,104 @@ export interface LoginResponse {
   user: User;
 }
 
+const MEMBERSHIP_COMMITTEE_NAME = 'Actief Lidmaatschap';
+let membershipCommitteeIdPromise: Promise<string | number | null> | null = null;
+
+async function getMembershipCommitteeId() {
+  if (!membershipCommitteeIdPromise) {
+    membershipCommitteeIdPromise = (async () => {
+      try {
+        const params = new URLSearchParams({
+          filter: JSON.stringify({ name: { _eq: MEMBERSHIP_COMMITTEE_NAME } }),
+          fields: 'id',
+          limit: '1',
+        }).toString();
+        const committees = await directusFetch<any[]>(`/items/committees?${params}`);
+        const committee = committees?.[0];
+        if (!committee) {
+          console.warn(`Membership committee "${MEMBERSHIP_COMMITTEE_NAME}" not found in Directus.`);
+          return null;
+        }
+        return committee.id;
+      } catch (error) {
+        console.error('Failed to fetch membership committee id:', error);
+        return null;
+      }
+    })();
+  }
+  const committeeId = await membershipCommitteeIdPromise;
+  if (!committeeId) {
+    membershipCommitteeIdPromise = null;
+  }
+  return committeeId;
+}
+
+async function hasActiveCommitteeMembership(userId: string): Promise<boolean | null> {
+  if (!userId) return null;
+  const committeeId = await getMembershipCommitteeId();
+  if (!committeeId) {
+    return null;
+  }
+
+  const params = new URLSearchParams({
+    filter: JSON.stringify({
+      user_id: { _eq: userId },
+      committee_id: { _eq: committeeId },
+    }),
+    fields: 'id',
+    limit: '1',
+  }).toString();
+
+  try {
+    const memberships = await directusFetch<any[]>(`/items/committee_members?${params}`);
+    return Array.isArray(memberships) && memberships.length > 0;
+  } catch (error) {
+    console.error('Failed to check membership via committee_members:', error);
+    return null;
+  }
+}
+
+async function mapDirectusUserToUser(rawUser: any): Promise<User> {
+  if (!rawUser || !rawUser.id) {
+    throw new Error('Invalid user data received from Directus');
+  }
+
+  let membershipStatus: 'active' | 'expired' | 'none' = 'none';
+  let isMember = false;
+
+  const committeeMembership = await hasActiveCommitteeMembership(rawUser.id);
+  if (committeeMembership === true) {
+    isMember = true;
+    membershipStatus = 'active';
+  } else if (committeeMembership === false) {
+    isMember = false;
+    membershipStatus = 'none';
+  } else if (rawUser.membership_status === 'active' || rawUser.membership_status === 'expired' || rawUser.membership_status === 'none') {
+    membershipStatus = rawUser.membership_status;
+    isMember = rawUser.membership_status === 'active';
+  } else {
+    const fallbackMember = !!(rawUser.entra_id || rawUser.fontys_email);
+    isMember = fallbackMember;
+    membershipStatus = fallbackMember ? 'active' : 'none';
+  }
+
+  return {
+    id: rawUser.id,
+    email: rawUser.email || '',
+    first_name: rawUser.first_name || '',
+    last_name: rawUser.last_name || '',
+    entra_id: rawUser.entra_id,
+    fontys_email: rawUser.fontys_email,
+    phone_number: rawUser.phone_number,
+    avatar: rawUser.avatar,
+    is_member: isMember,
+    member_id: undefined,
+    membership_status: membershipStatus,
+    membership_expiry: rawUser.membership_expiry,
+    minecraft_username: rawUser.minecraft_username,
+  };
+}
+
 // Login with email and password (for non-members)
 export async function loginWithPassword(email: string, password: string): Promise<LoginResponse> {
   try {
@@ -52,21 +150,9 @@ export async function loginWithPassword(email: string, password: string): Promis
     // Try to use user data from login response first, fallback to fetching
     let userDetails: User;
     
-    if (authData.user && authData.user.email) {
-      // Use user data from login response
-      const isMember = !!(authData.user.entra_id || authData.user.fontys_email);
-      userDetails = {
-        id: authData.user.id,
-        email: authData.user.email,
-        first_name: authData.user.first_name || '',
-        last_name: authData.user.last_name || '',
-        entra_id: authData.user.entra_id,
-        fontys_email: authData.user.fontys_email,
-        phone_number: authData.user.phone_number,
-        avatar: authData.user.avatar,
-        is_member: isMember,
-        member_id: undefined,
-      };
+    if (authData.user && authData.user.id) {
+      // Use user data from login response enriched with membership info
+      userDetails = await mapDirectusUserToUser(authData.user);
     } else {
       // Fallback: Fetch user details
       const fetched = await fetchUserDetails(authData.access_token);
@@ -110,13 +196,24 @@ export async function loginWithEntraId(entraIdToken: string, userEmail: string):
     }
 
     const data = await response.json();
+
+    let enrichedUser: User | null = null;
+    try {
+      enrichedUser = await fetchUserDetails(data.access_token);
+    } catch (error) {
+      console.warn('Failed to refresh user details after Entra login. Falling back to response payload.', error);
+    }
+
+    const userDetails = enrichedUser 
+      ? enrichedUser 
+      : await mapDirectusUserToUser(data.user);
     
     // The backend returns the data directly, not nested in data.data
     return {
       access_token: data.access_token,
       refresh_token: data.refresh_token,
       expires: data.expires,
-      user: data.user, // Backend already returns full user details
+      user: userDetails,
     };
   } catch (error) {
     console.error('Entra ID login error:', error);
@@ -211,26 +308,7 @@ export async function fetchUserDetails(token: string): Promise<User | null> {
     const userData = await response.json();
     const user = userData.data;
 
-    // Determine if user is a member based on having entra_id or fontys_email
-    const isMember = !!(user.entra_id || user.fontys_email);
-
-    const userDetails = {
-      id: user.id,
-      email: user.email,
-      first_name: user.first_name || '',
-      last_name: user.last_name || '',
-      entra_id: user.entra_id,
-      fontys_email: user.fontys_email,
-      phone_number: user.phone_number,
-      avatar: user.avatar,
-      is_member: isMember,
-      member_id: undefined, // No longer using members table
-      membership_status: user.membership_status,
-      membership_expiry: user.membership_expiry,
-      minecraft_username: user.minecraft_username,
-    };
-
-    return userDetails;
+    return await mapDirectusUserToUser(user);
   } catch (error) {
     console.error('Failed to fetch user details:', error);
     throw error;
