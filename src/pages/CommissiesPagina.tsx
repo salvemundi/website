@@ -1,9 +1,7 @@
 import React from "react";
-import Navbar from "../components/NavBar";
 import Header from "../components/header";
 import BackToTopButton from "../components/backtotop";
 import CommissieCard from "../components/CommissieCard";
-import Footer from "../components/Footer";
 import { getImageUrl } from "../lib/api";
 import { committeesApi } from "../lib/api";
 import { useQuery } from "@tanstack/react-query";
@@ -27,7 +25,7 @@ export default function CommissiesPagina() {
     return [...committeesData].sort((a, b) => {
       const aIsBestuur = cleanCommitteeName(a.name).toLowerCase().includes('bestuur');
       const bIsBestuur = cleanCommitteeName(b.name).toLowerCase().includes('bestuur');
-      
+
       if (aIsBestuur && !bIsBestuur) return -1;
       if (!aIsBestuur && bIsBestuur) return 1;
       return 0;
@@ -37,7 +35,6 @@ export default function CommissiesPagina() {
   return (
     <>
       <div className="flex flex-col w-full">
-        <Navbar activePage="Commissies" />
         <Header
           title="COMMISSIES"
           backgroundImage="/img/backgrounds/Kroto2025.jpg"
@@ -96,7 +93,6 @@ export default function CommissiesPagina() {
           )}
         </div>
 
-        <Footer />
       </main>
       <BackToTopButton />
     </>

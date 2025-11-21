@@ -1,6 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import NavBar from '../components/NavBar';
-import Footer from '../components/Footer';
 import { safeHavensApi, getImageUrl } from '../lib/api-clean';
 
 interface SafeHaven {
@@ -32,8 +30,7 @@ export default function SafeHavensPagina() {
 
   return (
     <div className="min-h-screen bg-beige">
-      <NavBar />
-      
+
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         <div className="max-w-6xl mx-auto">
           {/* Header Section */}
@@ -58,8 +55,8 @@ export default function SafeHavensPagina() {
                     Wat zijn Safe Havens?
                   </h2>
                   <p className="text-paars/80 leading-relaxed mb-4 text-justify md:text-left">
-                    Binnen Salve Mundi vinden wij een veilige en comfortable omgeving heel belangrijk voor al onze leden. 
-                    Hierom hebben wij Safe Havens aangesteld die een luisterend oor bieden, begrip tonen, en advies geven 
+                    Binnen Salve Mundi vinden wij een veilige en comfortable omgeving heel belangrijk voor al onze leden.
+                    Hierom hebben wij Safe Havens aangesteld die een luisterend oor bieden, begrip tonen, en advies geven
                     voor jouw situatie.
                   </p>
                   <div className="bg-geel/20 border-2 border-geel rounded-xl p-4">
@@ -68,7 +65,7 @@ export default function SafeHavensPagina() {
                       Een Safe Haven heeft een <strong>geheimhoudingsplicht</strong>
                     </p>
                     <p className="text-paars/80 text-sm mt-2">
-                      Jouw klachten of meldingen zullen nooit verspreid worden, ook niet naar het bestuur; 
+                      Jouw klachten of meldingen zullen nooit verspreid worden, ook niet naar het bestuur;
                       Tenzij door jou anders aangegeven.
                     </p>
                   </div>
@@ -98,8 +95,8 @@ export default function SafeHavensPagina() {
             </div>
             <div className="mt-8 p-6 bg-paars/5 rounded-xl border-2 border-paars/20">
               <p className="text-paars/80 text-center">
-                We streven ernaar dat deze personen verschillen van geslacht en dat wij Safe Havens zowel binnen 
-                als buiten het bestuur hebben. Zo hopen we dat er altijd iemand is waar je je veilig genoeg bij 
+                We streven ernaar dat deze personen verschillen van geslacht en dat wij Safe Havens zowel binnen
+                als buiten het bestuur hebben. Zo hopen we dat er altijd iemand is waar je je veilig genoeg bij
                 voelt om je klachten of meldingen mee te delen.
               </p>
             </div>
@@ -173,7 +170,7 @@ export default function SafeHavensPagina() {
                             <span className="text-sm font-medium break-all">{safeHaven.email}</span>
                           </a>
                         )}
-                        
+
                         {/* Phone */}
                         {safeHaven.phone_number && (
                           <a
@@ -212,7 +209,7 @@ export default function SafeHavensPagina() {
                 Voel Je Je Niet Veilig Genoeg?
               </h2>
               <p className="text-paars/80 mb-6">
-                Als je je niet veilig genoeg voelt om bij onze Safe Havens terecht te komen, 
+                Als je je niet veilig genoeg voelt om bij onze Safe Havens terecht te komen,
                 ben vooral niet bang om rechtstreeks naar Fontys zelf te stappen.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -236,7 +233,6 @@ export default function SafeHavensPagina() {
         </div>
       </div>
 
-      <Footer />
     </div>
   );
 }

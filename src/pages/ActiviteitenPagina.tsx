@@ -1,17 +1,16 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import Navbar from "../components/NavBar";
 import Header from "../components/header";
 import BackToTopButton from "../components/backtotop";
 import ActiviteitCard from "../components/ActiviteitCard";
 // Fixed import casing (file is Countdown.tsx)
 import Countdown from "../components/Countdown";
-import Footer from "../components/Footer";
 import ActiviteitDetailModal from "../components/ActiviteitDetailModal";
 import { useEvents } from "../hooks/useApi";
 import { eventsApi, getImageUrl } from "../lib/api";
 import { sendEventSignupEmail } from "../lib/email-service";
+import CalendarView from "../components/CalendarView";
 
 const buildCommitteeEmail = (name?: string | null) => {
   if (!name) return undefined;
@@ -36,9 +35,9 @@ export default function ActiviteitenPagina() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const [userSignups, setUserSignups] = useState<number[]>([]);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'calendar'>('grid');
   const [signupFeedback, setSignupFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  
+
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<any>(null);
@@ -51,16 +50,16 @@ export default function ActiviteitenPagina() {
     if (!events || events.length === 0) {
       return { nextActivity: null, upcomingEvents: [], pastEvents: [] };
     }
-    
+
     const now = new Date();
     const upcoming = events
       .filter(event => new Date(event.event_date) > now)
       .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime());
-    
+
     const past = events
       .filter(event => new Date(event.event_date) <= now)
       .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime());
-    
+
     return {
       nextActivity: upcoming.length > 0 ? upcoming[0] : null,
       upcomingEvents: upcoming,
@@ -114,7 +113,7 @@ export default function ActiviteitenPagina() {
   useEffect(() => {
     loadUserSignups();
   }, [loadUserSignups]);
-  
+
   // Start signup by opening the details modal
   const handleSignup = (activity: any) => {
     handleShowDetails(activity);
@@ -198,7 +197,6 @@ export default function ActiviteitenPagina() {
   return (
     <>
       <div className="flex flex-col w-full">
-        <Navbar activePage="Activiteiten" />
         <Header
           title="ACTIVITEITEN"
           backgroundImage="/img/backgrounds/Kroto2025.jpg"
@@ -208,8 +206,8 @@ export default function ActiviteitenPagina() {
       <main className="w-full px-4 sm:px-6 lg:px-8 py-6 bg-beige">
         <div className="flex flex-col gap-6 w-full">
           {nextActivity && (
-            <Countdown 
-              targetDate={nextActivity.event_date} 
+            <Countdown
+              targetDate={nextActivity.event_date}
               title={nextActivity.name}
               onSignup={() => handleShowDetails(nextActivity)}
             />
@@ -220,37 +218,66 @@ export default function ActiviteitenPagina() {
                 {showPastActivities ? 'Alle Activiteiten' : 'Komende Activiteiten'}
               </h2>
               <div className="flex flex-wrap items-center gap-3">
+                <button
+                  onClick={() => {
+                    const calendarUrl = `${import.meta.env.VITE_EMAIL_API_ENDPOINT || 'http://localhost:3001'}/calendar`;
+                    const webcalUrl = calendarUrl.replace(/^https?:/, 'webcal:');
+
+                    // Try to open webcal URL for automatic subscription
+                    window.location.href = webcalUrl;
+
+                    // Also show the URL for manual subscription
+                    setTimeout(() => {
+                      alert(
+                        `Agenda abonnement gestart!\n\n` +
+                        `Als het niet automatisch opent, gebruik deze URL:\n${calendarUrl}\n\n` +
+                        `Voor Google Calendar: Ga naar instellingen > "Agenda toevoegen" > "Via URL" en plak de URL.\n` +
+                        `Voor Outlook: Ga naar "Agenda toevoegen" > "Abonneren via internet" en plak de URL.`
+                      );
+                    }, 1000);
+                  }}
+                  className="px-4 py-2 rounded-full font-semibold transition-all hover:scale-105 shadow-md bg-white text-paars border-2 border-paars hover:bg-paars hover:text-white"
+                  title="Abonneer op de agenda - updates automatisch"
+                >
+                  📅 Sync Agenda
+                </button>
+
                 <div className="flex rounded-full border-2 border-paars overflow-hidden">
                   <button
                     type="button"
                     onClick={() => setViewMode('grid')}
-                    className={`px-4 py-2 text-sm font-semibold transition-colors ${
-                      viewMode === 'grid' ? 'bg-paars text-beige' : 'bg-white text-paars'
-                    }`}
+                    className={`px-4 py-2 text-sm font-semibold transition-colors ${viewMode === 'grid' ? 'bg-paars text-beige' : 'bg-white text-paars'
+                      }`}
                   >
                     Raster
                   </button>
                   <button
                     type="button"
                     onClick={() => setViewMode('list')}
-                    className={`px-4 py-2 text-sm font-semibold transition-colors ${
-                      viewMode === 'list' ? 'bg-paars text-beige' : 'bg-white text-paars'
-                    }`}
+                    className={`px-4 py-2 text-sm font-semibold transition-colors ${viewMode === 'list' ? 'bg-paars text-beige' : 'bg-white text-paars'
+                      }`}
                   >
                     Lijst
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('calendar')}
+                    className={`px-4 py-2 text-sm font-semibold transition-colors ${viewMode === 'calendar' ? 'bg-paars text-beige' : 'bg-white text-paars'
+                      }`}
+                  >
+                    Kalender
+                  </button>
                 </div>
-                
+
                 <button
                   onClick={(e) => {
                     e.preventDefault();
                     setShowPastActivities(prev => !prev);
                   }}
-                  className={`px-4 py-2 rounded-full font-semibold transition-all hover:scale-105 shadow-md ${
-                    showPastActivities 
-                      ? 'bg-paars text-white hover:bg-opacity-90' 
-                      : 'bg-geel text-paars hover:bg-opacity-90'
-                  }`}
+                  className={`px-4 py-2 rounded-full font-semibold transition-all hover:scale-105 shadow-md ${showPastActivities
+                    ? 'bg-paars text-white hover:bg-opacity-90'
+                    : 'bg-geel text-paars hover:bg-opacity-90'
+                    }`}
                 >
                   {showPastActivities ? 'Verberg Afgelopen' : 'Toon Afgelopen'}
                 </button>
@@ -259,11 +286,10 @@ export default function ActiviteitenPagina() {
 
             {signupFeedback && (
               <div
-                className={`mb-6 rounded-2xl border px-4 py-3 font-semibold ${
-                  signupFeedback.type === 'success'
-                    ? 'bg-green-50 border-green-400 text-green-800'
-                    : 'bg-red-50 border-red-400 text-red-800'
-                }`}
+                className={`mb-6 rounded-2xl border px-4 py-3 font-semibold ${signupFeedback.type === 'success'
+                  ? 'bg-green-50 border-green-400 text-green-800'
+                  : 'bg-red-50 border-red-400 text-red-800'
+                  }`}
               >
                 {signupFeedback.message}
               </div>
@@ -286,64 +312,71 @@ export default function ActiviteitenPagina() {
                 ) : (
                   <>
                     {/* Upcoming Activities */}
-                    {upcomingEvents.length > 0 && (
-                      <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr' : 'flex flex-col gap-3'}>
-                        {upcomingEvents.map((event) => (
-                          <ActiviteitCard
-                            key={event.id}
-                            description={event.description}
-                            image={getImageUrl(event.image)}
-                            date={event.event_date}
-                            title={event.name}
-                            price={Number(event.price_members) || 0}
-                            isPast={false}
-                            onSignup={() => handleSignup(event)}
-                            onShowDetails={() => handleShowDetails(event)}
-                            isSignedUp={userSignups.includes(event.id)}
-                            variant={viewMode}
-                            committeeName={event.committee_name}
-                          />
-                        ))}
-                      </div>
-                    )}
-                    
-                    {/* Separator */}
-                    {showPastActivities && upcomingEvents.length > 0 && pastEvents.length > 0 && (
-                      <div className="border-t-4 border-dashed border-paars opacity-50"></div>
-                    )}
-                    
-                    {/* Past Activities */}
-                    {showPastActivities && pastEvents.length > 0 && (
-                      <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr' : 'flex flex-col gap-3'}>
-                        {pastEvents.map((event) => (
-                          <ActiviteitCard
-                            key={event.id}
-                            description={event.description}
-                            image={getImageUrl(event.image)}
-                            date={event.event_date}
-                            title={event.name}
-                            price={Number(event.price_members) || 0}
-                            isPast={true}
-                            onSignup={() => handleSignup(event)}
-                            onShowDetails={() => handleShowDetails(event)}
-                            isSignedUp={userSignups.includes(event.id)}
-                            variant={viewMode}
-                            committeeName={event.committee_name}
-                          />
-                        ))}
-                      </div>
+                    {viewMode === 'calendar' ? (
+                      <CalendarView
+                        events={[...upcomingEvents, ...(showPastActivities ? pastEvents : [])]}
+                        onEventClick={handleShowDetails}
+                      />
+                    ) : (
+                      <>
+                        {upcomingEvents.length > 0 && (
+                          <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr' : 'flex flex-col gap-3'}>
+                            {upcomingEvents.map((event) => (
+                              <ActiviteitCard
+                                key={event.id}
+                                description={event.description}
+                                image={getImageUrl(event.image)}
+                                date={event.event_date}
+                                title={event.name}
+                                price={Number(event.price_members) || 0}
+                                isPast={false}
+                                onSignup={() => handleSignup(event)}
+                                onShowDetails={() => handleShowDetails(event)}
+                                isSignedUp={userSignups.includes(event.id)}
+                                variant={viewMode}
+                                committeeName={event.committee_name}
+                              />
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Separator */}
+                        {showPastActivities && upcomingEvents.length > 0 && pastEvents.length > 0 && (
+                          <div className="border-t-4 border-dashed border-paars opacity-50"></div>
+                        )}
+
+                        {/* Past Activities */}
+                        {showPastActivities && pastEvents.length > 0 && (
+                          <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr' : 'flex flex-col gap-3'}>
+                            {pastEvents.map((event) => (
+                              <ActiviteitCard
+                                key={event.id}
+                                description={event.description}
+                                image={getImageUrl(event.image)}
+                                date={event.event_date}
+                                title={event.name}
+                                price={Number(event.price_members) || 0}
+                                isPast={true}
+                                onSignup={() => handleSignup(event)}
+                                onShowDetails={() => handleShowDetails(event)}
+                                isSignedUp={userSignups.includes(event.id)}
+                                variant={viewMode}
+                                committeeName={event.committee_name}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </>
                     )}
                   </>
                 )}
               </div>
             </div>
-      
+
           </section>
         </div>
-        
-      </main>
 
-      <Footer />
+      </main>
 
       <BackToTopButton />
 

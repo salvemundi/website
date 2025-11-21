@@ -1,7 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import NavBar from '../components/NavBar';
-import Footer from '../components/Footer';
 import { documentsApi } from '../lib/api-clean';
 
 interface Document {
@@ -15,7 +13,7 @@ interface Document {
 
 export default function ContactPagina() {
   const navigate = useNavigate();
-  
+
   const { data: documents, isLoading: documentsLoading } = useQuery({
     queryKey: ['documents'],
     queryFn: documentsApi.getAll,
@@ -23,8 +21,7 @@ export default function ContactPagina() {
 
   return (
     <div className="min-h-screen bg-beige">
-      <NavBar />
-      
+
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-6xl mx-auto">
           {/* Header Section */}
@@ -43,7 +40,7 @@ export default function ContactPagina() {
               <h2 className="text-3xl font-bold text-paars mb-6">
                 Informatie
               </h2>
-              
+
               <div className="space-y-6">
                 {/* Address */}
                 <div className="flex items-start gap-4">
@@ -75,7 +72,7 @@ export default function ContactPagina() {
                     <span className="text-2xl">📅</span>
                   </div>
                   <div>
-                    <a 
+                    <a
                       href="/activiteiten"
                       className="text-paars font-medium hover:text-oranje transition-colors"
                     >
@@ -97,9 +94,9 @@ export default function ContactPagina() {
                       documents.map((doc: Document) => {
                         // Construct file download URL
                         const fileUrl = `${import.meta.env.VITE_DIRECTUS_URL || 'https://admin.salvemundi.nl'}/assets/${doc.file}`;
-                        
+
                         return (
-                          <a 
+                          <a
                             key={doc.id}
                             href={fileUrl}
                             target="_blank"
@@ -124,7 +121,7 @@ export default function ContactPagina() {
               <h2 className="text-3xl font-bold text-paars mb-6">
                 Contact
               </h2>
-              
+
               <div className="space-y-6">
                 {/* Email */}
                 <div className="flex items-start gap-4">
@@ -132,7 +129,7 @@ export default function ContactPagina() {
                     <span className="text-2xl">✉️</span>
                   </div>
                   <div>
-                    <a 
+                    <a
                       href="mailto:info@salvemundi.nl"
                       className="text-paars font-medium hover:text-oranje transition-colors"
                     >
@@ -147,7 +144,7 @@ export default function ContactPagina() {
                     <span className="text-2xl">📞</span>
                   </div>
                   <div>
-                    <a 
+                    <a
                       href="tel:+31624827777"
                       className="text-paars font-medium hover:text-oranje transition-colors"
                     >
@@ -162,7 +159,7 @@ export default function ContactPagina() {
                     <span className="text-2xl">💬</span>
                   </div>
                   <div>
-                    <a 
+                    <a
                       href="https://wa.me/31624827777"
                       target="_blank"
                       rel="noopener noreferrer"
@@ -181,7 +178,7 @@ export default function ContactPagina() {
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-full bg-beige/20 flex items-center justify-center flex-shrink-0">
-                        <span className="text-2xl">�️</span>
+                        <span className="text-2xl">️</span>
                       </div>
                       <div className="text-left">
                         <div className="text-lg font-bold">Safe Havens</div>
@@ -201,18 +198,18 @@ export default function ContactPagina() {
               Volg Ons Op Social Media
             </h2>
             <div className="flex flex-wrap justify-center gap-4">
-              <a 
-                href="https://www.instagram.com/salvemundi/" 
-                target="_blank" 
+              <a
+                href="https://www.instagram.com/salvemundi/"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 px-6 py-3 bg-oranje/10 border-2 border-oranje rounded-full hover:bg-oranje hover:text-beige transition-all text-paars font-semibold"
               >
                 <span className="text-xl">📸</span>
                 Instagram
               </a>
-              <a 
-                href="https://www.facebook.com/salvemundi/" 
-                target="_blank" 
+              <a
+                href="https://www.facebook.com/salvemundi/"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 px-6 py-3 bg-oranje/10 border-2 border-oranje rounded-full hover:bg-oranje hover:text-beige transition-all text-paars font-semibold"
               >
@@ -224,7 +221,6 @@ export default function ContactPagina() {
         </div>
       </div>
 
-      <Footer />
     </div>
   );
 }
