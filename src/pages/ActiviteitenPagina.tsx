@@ -10,6 +10,7 @@ import ActiviteitDetailModal from "../components/ActiviteitDetailModal";
 import { useEvents } from "../hooks/useApi";
 import { eventsApi, getImageUrl } from "../lib/api";
 import { sendEventSignupEmail } from "../lib/email-service";
+import CalendarView from "../components/CalendarView";
 
 const buildCommitteeEmail = (name?: string | null) => {
   if (!name) return undefined;
@@ -34,7 +35,7 @@ export default function ActiviteitenPagina() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const [userSignups, setUserSignups] = useState<number[]>([]);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'calendar'>('grid');
   const [signupFeedback, setSignupFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Modal state
@@ -217,6 +218,30 @@ export default function ActiviteitenPagina() {
                 {showPastActivities ? 'Alle Activiteiten' : 'Komende Activiteiten'}
               </h2>
               <div className="flex flex-wrap items-center gap-3">
+                <button
+                  onClick={() => {
+                    const calendarUrl = `${import.meta.env.VITE_EMAIL_API_ENDPOINT || 'http://localhost:3001'}/calendar`;
+                    const webcalUrl = calendarUrl.replace(/^https?:/, 'webcal:');
+
+                    // Try to open webcal URL for automatic subscription
+                    window.location.href = webcalUrl;
+
+                    // Also show the URL for manual subscription
+                    setTimeout(() => {
+                      alert(
+                        `Agenda abonnement gestart!\n\n` +
+                        `Als het niet automatisch opent, gebruik deze URL:\n${calendarUrl}\n\n` +
+                        `Voor Google Calendar: Ga naar instellingen > "Agenda toevoegen" > "Via URL" en plak de URL.\n` +
+                        `Voor Outlook: Ga naar "Agenda toevoegen" > "Abonneren via internet" en plak de URL.`
+                      );
+                    }, 1000);
+                  }}
+                  className="px-4 py-2 rounded-full font-semibold transition-all hover:scale-105 shadow-md bg-white text-paars border-2 border-paars hover:bg-paars hover:text-white"
+                  title="Abonneer op de agenda - updates automatisch"
+                >
+                  📅 Sync Agenda
+                </button>
+
                 <div className="flex rounded-full border-2 border-paars overflow-hidden">
                   <button
                     type="button"
@@ -233,6 +258,14 @@ export default function ActiviteitenPagina() {
                       }`}
                   >
                     Lijst
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('calendar')}
+                    className={`px-4 py-2 text-sm font-semibold transition-colors ${viewMode === 'calendar' ? 'bg-paars text-beige' : 'bg-white text-paars'
+                      }`}
+                  >
+                    Kalender
                   </button>
                 </div>
 
@@ -279,52 +312,61 @@ export default function ActiviteitenPagina() {
                 ) : (
                   <>
                     {/* Upcoming Activities */}
-                    {upcomingEvents.length > 0 && (
-                      <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr' : 'flex flex-col gap-3'}>
-                        {upcomingEvents.map((event) => (
-                          <ActiviteitCard
-                            key={event.id}
-                            description={event.description}
-                            image={getImageUrl(event.image)}
-                            date={event.event_date}
-                            title={event.name}
-                            price={Number(event.price_members) || 0}
-                            isPast={false}
-                            onSignup={() => handleSignup(event)}
-                            onShowDetails={() => handleShowDetails(event)}
-                            isSignedUp={userSignups.includes(event.id)}
-                            variant={viewMode}
-                            committeeName={event.committee_name}
-                          />
-                        ))}
-                      </div>
-                    )}
+                    {viewMode === 'calendar' ? (
+                      <CalendarView
+                        events={[...upcomingEvents, ...(showPastActivities ? pastEvents : [])]}
+                        onEventClick={handleShowDetails}
+                      />
+                    ) : (
+                      <>
+                        {upcomingEvents.length > 0 && (
+                          <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr' : 'flex flex-col gap-3'}>
+                            {upcomingEvents.map((event) => (
+                              <ActiviteitCard
+                                key={event.id}
+                                description={event.description}
+                                image={getImageUrl(event.image)}
+                                date={event.event_date}
+                                title={event.name}
+                                price={Number(event.price_members) || 0}
+                                isPast={false}
+                                onSignup={() => handleSignup(event)}
+                                onShowDetails={() => handleShowDetails(event)}
+                                isSignedUp={userSignups.includes(event.id)}
+                                variant={viewMode}
+                                committeeName={event.committee_name}
+                              />
+                            ))}
+                          </div>
+                        )}
 
-                    {/* Separator */}
-                    {showPastActivities && upcomingEvents.length > 0 && pastEvents.length > 0 && (
-                      <div className="border-t-4 border-dashed border-paars opacity-50"></div>
-                    )}
+                        {/* Separator */}
+                        {showPastActivities && upcomingEvents.length > 0 && pastEvents.length > 0 && (
+                          <div className="border-t-4 border-dashed border-paars opacity-50"></div>
+                        )}
 
-                    {/* Past Activities */}
-                    {showPastActivities && pastEvents.length > 0 && (
-                      <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr' : 'flex flex-col gap-3'}>
-                        {pastEvents.map((event) => (
-                          <ActiviteitCard
-                            key={event.id}
-                            description={event.description}
-                            image={getImageUrl(event.image)}
-                            date={event.event_date}
-                            title={event.name}
-                            price={Number(event.price_members) || 0}
-                            isPast={true}
-                            onSignup={() => handleSignup(event)}
-                            onShowDetails={() => handleShowDetails(event)}
-                            isSignedUp={userSignups.includes(event.id)}
-                            variant={viewMode}
-                            committeeName={event.committee_name}
-                          />
-                        ))}
-                      </div>
+                        {/* Past Activities */}
+                        {showPastActivities && pastEvents.length > 0 && (
+                          <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr' : 'flex flex-col gap-3'}>
+                            {pastEvents.map((event) => (
+                              <ActiviteitCard
+                                key={event.id}
+                                description={event.description}
+                                image={getImageUrl(event.image)}
+                                date={event.event_date}
+                                title={event.name}
+                                price={Number(event.price_members) || 0}
+                                isPast={true}
+                                onSignup={() => handleSignup(event)}
+                                onShowDetails={() => handleShowDetails(event)}
+                                isSignedUp={userSignups.includes(event.id)}
+                                variant={viewMode}
+                                committeeName={event.committee_name}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </>
                     )}
                   </>
                 )}

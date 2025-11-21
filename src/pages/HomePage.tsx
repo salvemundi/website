@@ -115,7 +115,7 @@ export default function Home() {
               <div className="min-w-[260px] max-w-[320px] snap-start md:min-w-0 md:max-w-none">
                 <SamuCard
                   description="Doe mee aan de introweek: de snelste manier om nieuwe mensen, de stad en de vereniging te leren kennen."
-                  image="/img/backgrounds/Kroto2025.jpg"
+                  image="/img/backgrounds/intro-banner.jpg"
                   button="INTRO WEEK"
                   link="/intro"
                 />

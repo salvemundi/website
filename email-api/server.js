@@ -81,7 +81,7 @@ app.post('/send-email', async (req, res) => {
       },
       saveToSentItems: false,
     };
-    
+
     // Add attachments if provided
     if (Array.isArray(attachments) && attachments.length > 0) {
       emailPayload.message.attachments = attachments.map((attachment) => {
@@ -92,16 +92,16 @@ app.post('/send-email', async (req, res) => {
           contentBytes: attachment.contentBytes,
           isInline: Boolean(attachment.isInline),
         };
-        
+
         // Add contentId for inline attachments (required for cid: references)
         if (attachment.isInline && attachment.contentId) {
           // Ensure contentId is in the correct format
           attachmentObj.contentId = attachment.contentId;
         }
-        
+
         return attachmentObj;
       });
-      
+
       console.log('📎 Prepared attachments:', emailPayload.message.attachments.map(att => ({
         name: att.name,
         contentType: att.contentType,
@@ -151,7 +151,97 @@ app.post('/send-email', async (req, res) => {
   }
 });
 
+// Calendar feed endpoint
+app.get('/calendar', async (req, res) => {
+  try {
+    console.log('📅 Calendar feed requested');
+
+    // Fetch events from Directus
+    const directusUrl = process.env.DIRECTUS_URL || 'https://admin.salvemundi.nl';
+    const directusToken = process.env.DIRECTUS_API_KEY;
+
+    if (!directusToken) {
+      return res.status(500).json({ error: 'Directus API key not configured' });
+    }
+
+    const eventsResponse = await fetch(
+      `${directusUrl}/items/events?fields=id,name,event_date,description,location&sort=-event_date&limit=-1`,
+      {
+        headers: {
+          'Authorization': `Bearer ${directusToken}`
+        }
+      }
+    );
+
+    if (!eventsResponse.ok) {
+      throw new Error(`Failed to fetch events: ${eventsResponse.statusText}`);
+    }
+
+    const eventsData = await eventsResponse.json();
+    const events = eventsData.data || [];
+
+    // Generate ICS content
+    const icsLines = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Salve Mundi//Website//NL',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'X-WR-CALNAME:Salve Mundi Activiteiten',
+      'X-WR-TIMEZONE:Europe/Amsterdam',
+      'X-WR-CALDESC:Alle activiteiten van Salve Mundi',
+    ];
+
+    events.forEach(event => {
+      const startDate = new Date(event.event_date);
+      const endDate = new Date(startDate.getTime() + 3 * 60 * 60 * 1000); // +3 hours
+      const now = new Date();
+
+      const formatDate = (date) => {
+        return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      };
+
+      const escapeText = (text) => {
+        if (!text) return '';
+        return text.replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
+      };
+
+      icsLines.push(
+        'BEGIN:VEVENT',
+        `UID:${event.id}@salvemundi.nl`,
+        `DTSTAMP:${formatDate(now)}`,
+        `DTSTART:${formatDate(startDate)}`,
+        `DTEND:${formatDate(endDate)}`,
+        `SUMMARY:${escapeText(event.name)}`,
+        `DESCRIPTION:${escapeText(event.description || '')}`,
+        `LOCATION:${escapeText(event.location || 'Salve Mundi')}`,
+        `URL:https://salvemundi.nl/activiteiten?event=${event.id}`,
+        'END:VEVENT'
+      );
+    });
+
+    icsLines.push('END:VCALENDAR');
+
+    const icsContent = icsLines.join('\r\n');
+
+    // Set headers for calendar subscription
+    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+    res.setHeader('Content-Disposition', 'inline; filename="salve-mundi.ics"');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.send(icsContent);
+
+    console.log(`✅ Calendar feed served with ${events.length} events`);
+  } catch (error) {
+    console.error('❌ Calendar feed error:', error);
+    res.status(500).json({
+      error: 'Failed to generate calendar feed',
+      message: error.message
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Email API server running on port ${PORT}`);
   console.log(`📧 Ready to send emails via Microsoft Graph`);
+  console.log(`📅 Calendar feed available at /calendar`);
 });
