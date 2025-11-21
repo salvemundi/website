@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserEventSignups, updateMinecraftUsername } from '../lib/auth';
 import { getImageUrl } from '../lib/api-clean';
-import NavBar from '../components/NavBar';
-import Footer from '../components/Footer';
 import { format } from 'date-fns';
 
 interface EventSignup {
@@ -52,7 +50,7 @@ export default function AccountPagina() {
 
   const loadEventSignups = async () => {
     if (!user?.id) return;
-    
+
     try {
       setIsLoading(true);
       const signups = await getUserEventSignups(user.id);
@@ -71,12 +69,12 @@ export default function AccountPagina() {
 
   const handleSaveMinecraftUsername = async () => {
     if (!user?.id) return;
-    
+
     setIsSavingMinecraft(true);
     try {
       const token = localStorage.getItem('auth_token');
       if (!token) throw new Error('No auth token');
-      
+
       await updateMinecraftUsername(user.id, minecraftUsername, token);
       await refreshUser();
       setIsEditingMinecraft(false);
@@ -108,8 +106,7 @@ export default function AccountPagina() {
 
   return (
     <div className="min-h-screen bg-beige">
-      <NavBar />
-      
+
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Profile Section */}
@@ -129,10 +126,10 @@ export default function AccountPagina() {
                     </span>
                   </div>
                 )}
-                
+
                 <div className="text-center sm:text-left w-full">
                   <h1 className="text-2xl sm:text-3xl font-bold text-paars mb-2">
-                    {user.first_name && user.last_name 
+                    {user.first_name && user.last_name
                       ? `${user.first_name} ${user.last_name}`
                       : user.email || 'User'}
                   </h1>
@@ -170,7 +167,7 @@ export default function AccountPagina() {
                     Admin Panel
                   </a>
                 )}
-                
+
                 <button
                   onClick={handleLogout}
                   className="px-6 py-2 bg-paars text-beige rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md w-full"
@@ -187,14 +184,14 @@ export default function AccountPagina() {
                   <p className="text-sm text-paars/70 font-semibold">E-mail</p>
                   <p className="font-medium text-paars">{user.email}</p>
                 </div>
-                
+
                 {user.fontys_email && (
                   <div>
                     <p className="text-sm text-paars/70 font-semibold">Fontys E-mail</p>
                     <p className="font-medium text-paars">{user.fontys_email}</p>
                   </div>
                 )}
-                
+
                 {user.phone_number && (
                   <div>
                     <p className="text-sm text-paars/70 font-semibold">Telefoonnummer</p>
@@ -314,7 +311,7 @@ export default function AccountPagina() {
           {/* Event Signups Section */}
           <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 border-4 border-oranje">
             <h2 className="text-2xl font-bold text-paars mb-6">Mijn Evenement Inschrijvingen</h2>
-            
+
             {isLoading ? (
               <div className="text-center py-12">
                 <div className="text-paars">Je inschrijvingen worden geladen...</div>
@@ -347,7 +344,7 @@ export default function AccountPagina() {
                         <span className="text-paars text-2xl">📅</span>
                       </div>
                     )}
-                    
+
                     <div className="flex-1 w-full">
                       <h3 className="text-lg font-semibold text-paars mb-1">
                         {signup.event_id.name}
@@ -384,7 +381,6 @@ export default function AccountPagina() {
         </div>
       </div>
 
-      <Footer />
     </div>
   );
 }

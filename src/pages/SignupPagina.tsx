@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import NavBar from '../components/NavBar';
-import Footer from '../components/Footer';
 
 export default function SignupPagina() {
   const navigate = useNavigate();
   const { signup, isLoading } = useAuth();
-  
+
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -57,8 +55,7 @@ export default function SignupPagina() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
-      <NavBar />
-      
+
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-md mx-auto">
           <div className="bg-white rounded-xl shadow-2xl p-8">
@@ -207,7 +204,6 @@ export default function SignupPagina() {
         </div>
       </div>
 
-      <Footer />
     </div>
   );
 }

@@ -16,10 +16,7 @@ export default defineConfig({
         secure: false,
         configure: (proxy, options) => {
           proxy.on('proxyReq', (proxyReq, req, res) => {
-            // Add Authorization header for all requests through the proxy
-            // Use the same API key as in directus.ts
-            const apiKey = 'Dp8exZFEp1l9Whq2o2-5FYeiGoKFwZ2m';
-            proxyReq.setHeader('Authorization', `Bearer ${apiKey}`);
+            // Do not overwrite Authorization header
           });
         }
       },
@@ -37,10 +34,7 @@ export default defineConfig({
         secure: false,
         configure: (proxy, options) => {
           proxy.on('proxyReq', (proxyReq, req, res) => {
-            // Add Authorization header for all requests through the proxy
-            // Use the same API key as in directus.ts
-            const apiKey = 'Dp8exZFEp1l9Whq2o2-5FYeiGoKFwZ2m';
-            proxyReq.setHeader('Authorization', `Bearer ${apiKey}`);
+            // Do not overwrite Authorization header
           });
         }
       },

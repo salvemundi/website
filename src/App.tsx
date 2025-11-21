@@ -1,25 +1,33 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Home from "./pages/HomePage";
-import InschrijvenPagina from "./pages/InschrijvenPagina";
-import IntroPagina from "./pages/IntroPagina";
-import ActiviteitenPagina from "./pages/ActiviteitenPagina";
-import CommissiesPagina from "./pages/CommissiesPagina";
-import CommissieDetailPagina from "./pages/CommissieDetailPagina";
-import LoginPagina from "./pages/LoginPagina";
-import SignupPagina from "./pages/SignupPagina";
-import AccountPagina from "./pages/AccountPagina";
-import TransactionsPagina from "./pages/TransactionsPagina";
-import WhatsAppGroupsPagina from "./pages/WhatsAppGroupsPagina";
-import StickersPagina from "./pages/StickersPagina";
-import ContactPagina from "./pages/ContactPagina";
-import SafeHavensPagina from "./pages/SafeHavensPagina";
-import KroegentochtPagina from "./pages/KroegentochtPagina";
-import AttendancePagina from "./pages/AttendancePagina";
-import ClubsPagina from "./pages/ClubsPagina";
+import { Suspense, lazy } from "react";
+import { AnimatePresence } from "framer-motion";
+import PageTransition from "./components/PageTransition";
+import Layout from "./components/Layout";
+import Loading from "./components/Loading";
+import ScrollToTop from "./components/ScrollToTop";
+
+// Lazy load pages
+const Home = lazy(() => import("./pages/HomePage"));
+const InschrijvenPagina = lazy(() => import("./pages/InschrijvenPagina"));
+const IntroPagina = lazy(() => import("./pages/IntroPagina"));
+const ActiviteitenPagina = lazy(() => import("./pages/ActiviteitenPagina"));
+const CommissiesPagina = lazy(() => import("./pages/CommissiesPagina"));
+const CommissieDetailPagina = lazy(() => import("./pages/CommissieDetailPagina"));
+const LoginPagina = lazy(() => import("./pages/LoginPagina"));
+const SignupPagina = lazy(() => import("./pages/SignupPagina"));
+const AccountPagina = lazy(() => import("./pages/AccountPagina"));
+const TransactionsPagina = lazy(() => import("./pages/TransactionsPagina"));
+const WhatsAppGroupsPagina = lazy(() => import("./pages/WhatsAppGroupsPagina"));
+const StickersPagina = lazy(() => import("./pages/StickersPagina"));
+const ContactPagina = lazy(() => import("./pages/ContactPagina"));
+const SafeHavensPagina = lazy(() => import("./pages/SafeHavensPagina"));
+const KroegentochtPagina = lazy(() => import("./pages/KroegentochtPagina"));
+const AttendancePagina = lazy(() => import("./pages/AttendancePagina"));
+const ClubsPagina = lazy(() => import("./pages/ClubsPagina"));
 
 // Create a client
 const queryClient = new QueryClient({
@@ -32,58 +40,87 @@ const queryClient = new QueryClient({
   },
 });
 
+const LazyPage = ({ children }: { children: React.ReactNode }) => (
+  <PageTransition>
+    <Suspense fallback={<Loading />}>
+      {children}
+    </Suspense>
+  </PageTransition>
+);
+
+function AnimatedRoutes() {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<LazyPage><Home /></LazyPage>} />
+        <Route path="/intro" element={<LazyPage><IntroPagina /></LazyPage>} />
+        <Route path="/activiteiten" element={<LazyPage><ActiviteitenPagina /></LazyPage>} />
+        <Route path="/commissies" element={<LazyPage><CommissiesPagina /></LazyPage>} />
+        <Route path="/commissies/:slug" element={<LazyPage><CommissieDetailPagina /></LazyPage>} />
+        <Route path="/clubs" element={<LazyPage><ClubsPagina /></LazyPage>} />
+        <Route path="/login" element={<LazyPage><LoginPagina /></LazyPage>} />
+        <Route path="/signup" element={<LazyPage><SignupPagina /></LazyPage>} />
+        <Route
+          path="/account"
+          element={
+            <LazyPage>
+              <ProtectedRoute>
+                <AccountPagina />
+              </ProtectedRoute>
+            </LazyPage>
+          }
+        />
+        <Route
+          path="/account/transactions"
+          element={
+            <LazyPage>
+              <ProtectedRoute>
+                <TransactionsPagina />
+              </ProtectedRoute>
+            </LazyPage>
+          }
+        />
+        <Route
+          path="/account/whatsapp-groups"
+          element={
+            <LazyPage>
+              <ProtectedRoute>
+                <WhatsAppGroupsPagina />
+              </ProtectedRoute>
+            </LazyPage>
+          }
+        />
+        <Route path="/inschrijven" element={<LazyPage><InschrijvenPagina /></LazyPage>} />
+        <Route path="/stickers" element={<LazyPage><StickersPagina /></LazyPage>} />
+        <Route path="/contact" element={<LazyPage><ContactPagina /></LazyPage>} />
+        <Route path="/safe-havens" element={<LazyPage><SafeHavensPagina /></LazyPage>} />
+        <Route path="/kroegentocht" element={<LazyPage><KroegentochtPagina /></LazyPage>} />
+        <Route
+          path="/attendance/:eventId"
+          element={
+            <LazyPage>
+              <ProtectedRoute>
+                <AttendancePagina />
+              </ProtectedRoute>
+            </LazyPage>
+          }
+        />
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/intro" element={<IntroPagina />} />
-            <Route path="/activiteiten" element={<ActiviteitenPagina />} />
-            <Route path="/commissies" element={<CommissiesPagina />} />
-            <Route path="/commissies/:slug" element={<CommissieDetailPagina />} />
-            <Route path="/clubs" element={<ClubsPagina />} />
-            <Route path="/login" element={<LoginPagina />} />
-            <Route path="/signup" element={<SignupPagina />} />
-            <Route 
-              path="/account" 
-              element={
-                <ProtectedRoute>
-                  <AccountPagina />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/account/transactions" 
-              element={
-                <ProtectedRoute>
-                  <TransactionsPagina />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/account/whatsapp-groups" 
-              element={
-                <ProtectedRoute>
-                  <WhatsAppGroupsPagina />
-                </ProtectedRoute>
-              } 
-            />
-            <Route path="/inschrijven" element={<InschrijvenPagina />} />
-            <Route path="/stickers" element={<StickersPagina />} />
-            <Route path="/contact" element={<ContactPagina />} />
-            <Route path="/safe-havens" element={<SafeHavensPagina />} />
-            <Route path="/kroegentocht" element={<KroegentochtPagina />} />
-            <Route 
-              path="/attendance/:eventId" 
-              element={
-                <ProtectedRoute>
-                  <AttendancePagina />
-                </ProtectedRoute>
-              } 
-            />
-          </Routes>
+          <ScrollToTop />
+          <Layout>
+            <AnimatedRoutes />
+          </Layout>
         </Router>
         <ReactQueryDevtools initialIsOpen={false} />
       </AuthProvider>

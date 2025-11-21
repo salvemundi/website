@@ -11,6 +11,8 @@ export interface Event {
   only_members: boolean;
   image?: string;
   committee_id?: number;
+  committee_name?: string;
+  committee_email?: string;
   signups?: EventSignup[];
 }
 

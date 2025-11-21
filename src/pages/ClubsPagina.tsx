@@ -1,8 +1,6 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import Navbar from "../components/NavBar";
 import Header from "../components/header";
-import Footer from "../components/Footer";
 import BackToTopButton from "../components/backtotop";
 import ClubCard from "../components/ClubCard";
 import { clubsApi, getImageUrl } from "../lib/api";
@@ -26,7 +24,6 @@ export default function ClubsPagina() {
   return (
     <>
       <div className="flex flex-col w-full">
-        <Navbar />
         <Header title="CLUBS" backgroundImage="/img/backgrounds/Kroto2025.jpg" />
       </div>
 
@@ -62,7 +59,6 @@ export default function ClubsPagina() {
           )}
         </section>
 
-        <Footer />
       </main>
 
       <BackToTopButton />

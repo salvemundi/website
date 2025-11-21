@@ -1,18 +1,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import NavBar from '../components/NavBar';
-import Footer from '../components/Footer';
 
 export default function LoginPagina() {
   const navigate = useNavigate();
   const { loginWithMicrosoft, isLoading } = useAuth();
-  
+
   const [error, setError] = useState('');
 
   const handleMicrosoftLogin = async () => {
     setError('');
-    
+
     try {
       await loginWithMicrosoft();
       navigate('/account');
@@ -24,8 +22,7 @@ export default function LoginPagina() {
 
   return (
     <div className="min-h-screen bg-beige">
-      <NavBar />
-      
+
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-md mx-auto">
           <div className="bg-white rounded-3xl shadow-2xl p-8 border-4 border-oranje">
@@ -49,10 +46,10 @@ export default function LoginPagina() {
               className="w-full mb-6 flex items-center justify-center gap-3 px-6 py-3 bg-paars text-beige rounded-full hover:bg-opacity-90 transition-all hover:scale-105 shadow-md disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
             >
               <svg className="w-5 h-5" viewBox="0 0 23 23" fill="none">
-                <path fill="#f25022" d="M0 0h11v11H0z"/>
-                <path fill="#00a4ef" d="M12 0h11v11H12z"/>
-                <path fill="#7fba00" d="M0 12h11v11H0z"/>
-                <path fill="#ffb900" d="M12 12h11v11H12z"/>
+                <path fill="#f25022" d="M0 0h11v11H0z" />
+                <path fill="#00a4ef" d="M12 0h11v11H12z" />
+                <path fill="#7fba00" d="M0 12h11v11H0z" />
+                <path fill="#ffb900" d="M12 12h11v11H12z" />
               </svg>
               <span>
                 {isLoading ? 'Logging in...' : 'Login with Microsoft'}
@@ -63,7 +60,6 @@ export default function LoginPagina() {
         </div>
       </div>
 
-      <Footer />
     </div>
   );
 }

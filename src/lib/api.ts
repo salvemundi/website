@@ -18,7 +18,7 @@ export const eventsApi = {
       // Removed filter to allow fetching all events (past and future)
     });
     const events = await directusFetch<any[]>(`/items/events?${query}`);
-    
+
     // For each event, fetch committee info and leader contact
     const eventsWithDetails = await Promise.all(
       events.map(async (event) => {
@@ -33,7 +33,7 @@ export const eventsApi = {
             console.warn(`Could not fetch committee for event ${event.id}`, error);
           }
         }
-        
+
         // Fetch committee leader contact if no direct contact is provided
         if (!event.contact && event.committee_id) {
           try {
@@ -57,7 +57,7 @@ export const eventsApi = {
         return event;
       })
     );
-    
+
     return eventsWithDetails;
   },
   getById: async (id: string) => {
@@ -65,7 +65,7 @@ export const eventsApi = {
       fields: ['id', 'name', 'event_date', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact']
     });
     const event = await directusFetch<any>(`/items/events/${id}?${query}`);
-    
+
     // Fetch committee name if committee_id exists
     if (event.committee_id) {
       try {
@@ -77,7 +77,7 @@ export const eventsApi = {
         console.warn(`Could not fetch committee for event ${event.id}`, error);
       }
     }
-    
+
     // Fetch committee leader contact if no direct contact is provided
     if (!event.contact && event.committee_id) {
       try {
@@ -97,7 +97,7 @@ export const eventsApi = {
     } else if (event.contact) {
       event.contact_phone = event.contact;
     }
-    
+
     return event;
   },
   getByCommittee: async (committeeId: number) => {
@@ -112,20 +112,20 @@ export const eventsApi = {
     // First check if user has already signed up for this event
     if (signupData.user_id) {
       const existingQuery = buildQueryString({
-        filter: { 
+        filter: {
           event_id: { _eq: signupData.event_id },
           directus_relations: { _eq: signupData.user_id }
         },
         fields: ['id']
       });
-      
+
       const existingSignups = await directusFetch<any[]>(`/items/event_signups?${existingQuery}`);
-      
+
       if (existingSignups && existingSignups.length > 0) {
         throw new Error('Je bent al ingeschreven voor deze activiteit');
       }
     }
-    
+
     const payload: any = {
       event_id: signupData.event_id,
       directus_relations: signupData.user_id || null,
@@ -133,7 +133,7 @@ export const eventsApi = {
       participant_email: signupData.email || null,
       participant_phone: signupData.phone_number ?? null,
     };
-    
+
     const signup = await directusFetch<any>(`/items/event_signups`, {
       method: 'POST',
       body: JSON.stringify(payload)
@@ -144,10 +144,10 @@ export const eventsApi = {
       try {
         const { generateQRToken, updateSignupWithQRToken } = await import('./qr-service');
         const qrToken = generateQRToken(signup.id, signupData.event_id);
-        
+
         // Update the signup with QR token in database
         await updateSignupWithQRToken(signup.id, qrToken);
-        
+
         // Add to returned object so caller has it immediately
         signup.qr_token = qrToken;
       } catch (error) {
@@ -155,7 +155,7 @@ export const eventsApi = {
         // Don't fail the signup if QR generation fails
       }
     }
-    
+
     return signup;
   }
 };
@@ -163,7 +163,7 @@ export const eventsApi = {
 export const committeesApi = {
   getAll: async () => {
     const query = buildQueryString({
-      fields: ['id', 'name', 'image', 'is_visible', 'short_description', 'created_at', 'updated_at'],
+      fields: ['id', 'name', 'image.id', 'is_visible', 'short_description', 'created_at', 'updated_at'],
       sort: ['name']
     });
     return directusFetch<any[]>(`/items/committees?${query}`);
@@ -171,11 +171,11 @@ export const committeesApi = {
   getAllWithMembers: async () => {
     try {
       // Try to fetch with is_visible and description fields
-      const committees = await directusFetch<any[]>(`/items/committees?fields=id,name,image,is_visible,short_description,created_at,updated_at&sort=name`);
-      
+      const committees = await directusFetch<any[]>(`/items/committees?fields=id,name,image.id,is_visible,short_description,created_at,updated_at&sort=name`);
+
       // Filter only visible committees (if is_visible field exists)
       const visibleCommittees = committees.filter(c => c.is_visible !== false);
-      
+
       // For each committee, fetch the full member details from junction table
       const committeesWithMembers = await Promise.all(
         visibleCommittees.map(async (committee) => {
@@ -186,12 +186,12 @@ export const committeesApi = {
           return { ...committee, committee_members: members };
         })
       );
-      
+
       return committeesWithMembers;
     } catch (error) {
       // If new fields don't exist, fall back to fetching without them
-      const committees = await directusFetch<any[]>(`/items/committees?fields=id,name,image,created_at,updated_at&sort=name`);
-      
+      const committees = await directusFetch<any[]>(`/items/committees?fields=id,name,image.id,created_at,updated_at&sort=name`);
+
       // For each committee, fetch the full member details from junction table
       const committeesWithMembers = await Promise.all(
         committees.map(async (committee) => {
@@ -201,31 +201,31 @@ export const committeesApi = {
           return { ...committee, committee_members: members };
         })
       );
-      
+
       return committeesWithMembers;
     }
   },
   getById: async (id: number) => {
     try {
       // Try to fetch with all fields including descriptions
-      const committee = await directusFetch<any>(`/items/committees/${id}?fields=id,name,image,is_visible,short_description,description,created_at,updated_at`);
-      
+      const committee = await directusFetch<any>(`/items/committees/${id}?fields=id,name,image.id,is_visible,short_description,description,created_at,updated_at`);
+
       // Always fetch member details from junction table
       const members = await directusFetch<any[]>(
         `/items/committee_members?filter[committee_id][_eq]=${id}&fields=*,user_id.*`
       );
       committee.committee_members = members;
-      
+
       return committee;
     } catch (error) {
       // If new fields don't exist, fall back to fetching without them
-      const committee = await directusFetch<any>(`/items/committees/${id}?fields=id,name,image,created_at,updated_at`);
-      
+      const committee = await directusFetch<any>(`/items/committees/${id}?fields=id,name,image.id,created_at,updated_at`);
+
       const members = await directusFetch<any[]>(
         `/items/committee_members?filter[committee_id][_eq]=${id}&fields=*,user_id.*`
       );
       committee.committee_members = members;
-      
+
       return committee;
     }
   }
@@ -308,7 +308,7 @@ export const pubCrawlSignupsApi = {
         body: JSON.stringify(data)
       });
     }
-    
+
     return directusFetch<any>(`/items/pub_crawl_signups`, {
       method: 'POST',
       body: JSON.stringify(data)
@@ -368,7 +368,7 @@ export const siteSettingsApi = {
       fields: ['id', 'show_intro', 'intro_disabled_message'],
       limit: 1
     });
-    
+
     const data = await directusFetch<SiteSettings | SiteSettings[] | null>(`/items/site_settings?${query}`);
     if (Array.isArray(data)) {
       return data[0] || null;
@@ -413,14 +413,28 @@ export function getImageUrl(imageId: string | undefined | any): string {
     actualImageId = String(imageId);
   }
 
+  // Get the access token from localStorage for authenticated requests
+  let token: string | null = null;
+  try {
+    // The token is stored as 'auth_token' not 'access_token'
+    token = localStorage.getItem('auth_token');
+  } catch (e) {
+    console.warn('getImageUrl: Could not access localStorage', e);
+  }
+
+  // If no user token, try to use API key for public access
+  if (!token) {
+    const apiKey = import.meta.env.VITE_DIRECTUS_API_KEY;
+    token = apiKey;
+  }
+
   // Use proxy when running on localhost (both dev and preview) to avoid CORS
   const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
   const baseUrl = isLocalhost
     ? '/api'  // Uses /api proxy
     : (import.meta.env.VITE_DIRECTUS_URL || '/api');
 
-  // Try without access_token first - assets might be public
-  // If this doesn't work, we need to configure Directus to make assets public
-  const imageUrl = `${baseUrl}/assets/${actualImageId}`;
+  // Add access_token as query parameter for authentication
+  const imageUrl = `${baseUrl}/assets/${actualImageId}?access_token=${token}`;
   return imageUrl;
 }
