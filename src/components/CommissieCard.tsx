@@ -41,11 +41,10 @@ const CommissieCard: React.FC<CommissieCardProps> = ({
     <div key={`${member.image}-${index}`} className="flex flex-col items-center gap-1">
       <div className="relative">
         <div
-          className={`rounded-full overflow-hidden border-2 ${
-            member.isLeader
+          className={`rounded-full overflow-hidden border-2 ${member.isLeader
               ? "border-geel ring-4 ring-geel/30"
               : "border-beige/40"
-          } ${isBestuur ? "w-16 h-16" : "w-14 h-14"}`}
+            } ${isBestuur ? "w-16 h-16" : "w-14 h-14"}`}
         >
           <img src={member.image} alt={member.firstName || "Commissielid"} className="w-full h-full object-cover" />
         </div>
@@ -67,9 +66,8 @@ const CommissieCard: React.FC<CommissieCardProps> = ({
     <div className="relative">
       <div className="overflow-hidden">
         <div
-          className={`flex gap-4 items-center ${
-            shouldScroll ? "w-max" : `${alignStart ? "justify-start" : "justify-center"} flex-wrap`
-          }`}
+          className={`flex gap-4 items-center ${shouldScroll ? "w-max" : `${alignStart ? "justify-start" : "justify-center"} flex-wrap`
+            }`}
           style={
             shouldScroll
               ? { animation: `committeeAvatarScroll ${scrollDuration}s linear infinite` }
@@ -85,21 +83,22 @@ const CommissieCard: React.FC<CommissieCardProps> = ({
   return (
     <Link to={buttonLink} className="block h-full group">
       <div
-        className={`bg-paars text-beige rounded-3xl p-6 lg:p-7 h-full shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer flex flex-col gap-5 ${
-          isBestuur ? "lg:gap-6" : ""
-        }`}
+        className={`bg-paars text-beige rounded-3xl p-6 lg:p-7 h-full shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer flex flex-col gap-5 ${isBestuur ? "lg:gap-6" : ""
+          }`}
       >
         <div className={`flex flex-col gap-5 ${isBestuur ? "lg:flex-row lg:gap-8" : ""}`}>
           <div className={`${isBestuur ? "lg:w-1/2" : ""} flex flex-col gap-4`}>
-            {image && (
-              <div className="w-full">
-                <img
-                  src={image}
-                  alt={title}
-                  className={`w-full ${imageHeightClass} object-cover rounded-2xl`}
-                />
-              </div>
-            )}
+            <div className="w-full">
+              <img
+                src={image || '/img/group-jump.gif'}
+                alt={title}
+                className={`w-full ${imageHeightClass} object-cover rounded-2xl`}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/img/group-jump.gif';
+                }}
+              />
+            </div>
 
             <h3
               className="text-geel font-bold text-center lg:text-left break-words leading-tight"
@@ -131,11 +130,10 @@ const CommissieCard: React.FC<CommissieCardProps> = ({
                       <div key={`${member.image}-${index}`} className="flex items-center gap-4 bg-paars/60 rounded-2xl p-3">
                         <div className="relative">
                           <div
-                            className={`rounded-full overflow-hidden border-2 ${
-                              member.isLeader
+                            className={`rounded-full overflow-hidden border-2 ${member.isLeader
                                 ? "border-geel ring-4 ring-geel/30"
                                 : "border-beige/40"
-                            } w-16 h-16`}
+                              } w-16 h-16`}
                           >
                             <img src={member.image} alt={member.firstName || "Bestuurslid"} className="w-full h-full object-cover" />
                           </div>
