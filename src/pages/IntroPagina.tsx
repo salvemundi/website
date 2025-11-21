@@ -109,6 +109,19 @@ export default function IntroPagina() {
                     <span className="font-bold">onvergetelijke week</span> vol spannende activiteiten die je met ons en je nieuwe klasgenoten kunt beleven.
                     Sluit je aan bij de <span className="font-bold text-paars">SalveMundi</span>, waar je kunt genieten van een gezellige sfeer en nieuwe vrienden kunt maken. Of doe mee aan een potje <span className="font-bold text-paars">weerwolven van wakkerdam</span>, een spel vol strategie en plezier. Iedereen is welkom, en we beloven dat het niet een <span className="font-bold">geweldige ervaring</span> wordt waar je nog lang over zult napraten!
                   </p>
+
+                  {/* YouTube Video */}
+                  <div className="mt-6">
+                    <iframe
+                      className="w-full rounded-lg shadow-lg"
+                      style={{ aspectRatio: '16/9' }}
+                      src="https://www.youtube.com/embed/WJwaM5Qmbr0"
+                      title="Intro Video"
+                      frameBorder="0"
+                      allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
                 </div>
 
                 {/* Right side - Form */}
