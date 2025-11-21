@@ -1,8 +1,6 @@
 import { useMemo, useState } from 'react';
-import Navbar from '../components/NavBar';
 import Header from '../components/header';
 import BackToTopButton from '../components/backtotop';
-import Footer from '../components/Footer';
 import { pubCrawlSignupsApi, getImageUrl } from '../lib/api';
 import { usePubCrawlEvents } from '../hooks/useApi';
 import { format } from 'date-fns';
@@ -99,8 +97,8 @@ export default function KroegentochtPagina() {
 
     try {
       // Determine final association value
-      const finalAssociation = form.association === 'Anders' 
-        ? form.customAssociation 
+      const finalAssociation = form.association === 'Anders'
+        ? form.customAssociation
         : form.association;
 
       // Create or update signup
@@ -111,7 +109,7 @@ export default function KroegentochtPagina() {
         amount_tickets: form.amount_tickets,
         pub_crawl_event_id: nextEvent.id,
       });
-      
+
       const eventDate = nextEvent.date || new Date().toISOString();
       const eventPrice = Number(
         (nextEvent as any).price ??
@@ -155,7 +153,6 @@ export default function KroegentochtPagina() {
   return (
     <>
       <div className="flex flex-col w-full">
-        <Navbar activePage="Kroegentocht" />
         <Header
           title="KROEGENTOCHT"
           backgroundImage={headerBackgroundImage}
@@ -316,7 +313,7 @@ export default function KroegentochtPagina() {
                 {eventsLoading ? (
                   <p>Evenementomschrijving wordt geladen...</p>
                 ) : nextEvent?.description ? (
-                  nextEvent.description.split('\n').map((paragraph, index) => (
+                  nextEvent.description.split('\n').map((paragraph: string, index: number) => (
                     <p key={index}>{paragraph}</p>
                   ))
                 ) : (
@@ -325,7 +322,7 @@ export default function KroegentochtPagina() {
                       De jaarlijkse Kroegentocht is een van de grootste evenementen die tweemaal per jaar wordt georganiseerd!
                     </p>
                     <p>
-                      Dit is een fantastische kans om verschillende kroegen te bezoeken, nieuwe mensen te ontmoeten 
+                      Dit is een fantastische kans om verschillende kroegen te bezoeken, nieuwe mensen te ontmoeten
                       en een onvergetelijke avond te beleven met andere studenten en verenigingen.
                     </p>
                   </>
@@ -413,7 +410,6 @@ export default function KroegentochtPagina() {
           </div>
         </div>
 
-        <Footer />
       </main>
 
       <BackToTopButton />

@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserTransactions } from '../lib/auth';
 import { Transaction } from '../types';
-import NavBar from '../components/NavBar';
-import Footer from '../components/Footer';
 import { format } from 'date-fns';
 
 export default function TransactionsPagina() {
@@ -28,13 +26,13 @@ export default function TransactionsPagina() {
 
   const loadTransactions = async () => {
     if (!user?.id) return;
-    
+
     try {
       setIsLoading(true);
       setError(null);
       const token = localStorage.getItem('auth_token');
       if (!token) throw new Error('No auth token');
-      
+
       const data = await getUserTransactions(user.id, token);
       setTransactions(data);
     } catch (error) {
@@ -91,8 +89,7 @@ export default function TransactionsPagina() {
 
   return (
     <div className="min-h-screen bg-beige">
-      <NavBar />
-      
+
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
@@ -130,7 +127,7 @@ export default function TransactionsPagina() {
                 <div className="text-paars mb-4 font-semibold">Geen transacties gevonden.</div>
                 <p className="text-paars/70 text-sm mb-4">
                   Je betalingsgeschiedenis verschijnt hier zodra je je eerste transactie hebt gedaan.
-                </p>             
+                </p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -230,7 +227,6 @@ export default function TransactionsPagina() {
         </div>
       </div>
 
-      <Footer />
     </div>
   );
 }

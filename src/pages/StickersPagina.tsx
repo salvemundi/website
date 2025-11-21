@@ -3,8 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import NavBar from '../components/NavBar';
-import Footer from '../components/Footer';
 import { getAllStickers, createSticker, calculateStickerStats, geocodeAddress, reverseGeocode, CreateStickerData } from '../lib/stickers-api';
 import { Sticker } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -37,7 +35,7 @@ export default function StickersPagina() {
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [searchAddress, setSearchAddress] = useState('');
   const [isGeocoding, setIsGeocoding] = useState(false);
-  
+
   // Form state
   const [formData, setFormData] = useState<CreateStickerData>({
     latitude: 0,
@@ -92,7 +90,7 @@ export default function StickersPagina() {
 
   const handleSearchAddress = async () => {
     if (!searchAddress.trim()) return;
-    
+
     setIsGeocoding(true);
     const result = await geocodeAddress(searchAddress);
     setIsGeocoding(false);
@@ -142,7 +140,7 @@ export default function StickersPagina() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.latitude || !formData.longitude || formData.latitude === 0 || formData.longitude === 0) {
       alert('Please select a location on the map or search for an address.');
       return;
@@ -153,8 +151,7 @@ export default function StickersPagina() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      <NavBar />
-      
+
       <div className="container mx-auto px-4 py-8 mt-20">
         {/* Header */}
         <div className="text-center mb-12">
@@ -503,7 +500,6 @@ export default function StickersPagina() {
         </div>
       )}
 
-      <Footer />
     </div>
   );
 }

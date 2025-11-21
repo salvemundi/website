@@ -1,8 +1,6 @@
 import { useParams, Link } from "react-router-dom";
-import Navbar from "../components/NavBar";
 import Header from "../components/header";
 import BackToTopButton from "../components/backtotop";
-import Footer from "../components/Footer";
 import { useCommittee, useEventsByCommittee } from "../hooks/useApi";
 import { getImageUrl } from "../lib/api";
 
@@ -96,7 +94,6 @@ export default function CommissieDetailPagina() {
   return (
     <>
       <div className="flex flex-col w-full">
-        <Navbar activePage="Commissies" />
         <Header
           title={formatCommitteeNameForHeader(committee.name)}
           backgroundImage={getImageUrl(committee.image)}
@@ -155,18 +152,17 @@ export default function CommissieDetailPagina() {
         {visibleMembers.length > 0 && (
           <section className="px-4 sm:px-6 lg:px-10 py-12 bg-white">
             <div className="max-w-6xl mx-auto">
-              <h2 className="text-3xl sm:text-4xl font-bold text-geel mb-10 text-center">Het Team</h2>
-              
+              <h2 className="text-3xl sm:text-4xl font-bold text-geel mb-10 text-center">De Commissie</h2>
+
               {/* All Team Members (Leaders and Regular Members together) */}
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
                 {visibleMembers.map((member: any) => (
                   <div key={member.id} className="text-center group">
                     {/* Profile Picture */}
-                    <div className={`w-32 h-32 rounded-full mx-auto mb-4 overflow-hidden bg-gray-200 shadow-lg group-hover:shadow-xl transition-shadow duration-300 ring-2 ${
-                      member.is_leader 
-                        ? 'ring-geel ring-4' 
-                        : 'ring-gray-200 group-hover:ring-geel'
-                    }`}>
+                    <div className={`w-32 h-32 rounded-full mx-auto mb-4 overflow-hidden bg-gray-200 shadow-lg group-hover:shadow-xl transition-shadow duration-300 ring-2 ${member.is_leader
+                      ? 'ring-geel ring-4'
+                      : 'ring-gray-200 group-hover:ring-geel'
+                      }`}>
                       <img
                         src={getImageUrl(member.user_id.avatar)}
                         alt={`${member.user_id.first_name || ''} ${member.user_id.last_name || ''}`}
@@ -182,18 +178,18 @@ export default function CommissieDetailPagina() {
                         }}
                       />
                     </div>
-                    
+
                     <h3 className="text-lg font-semibold text-gray-800">
                       {member.user_id.first_name} {member.user_id.last_name}
                     </h3>
-                    
+
                     {member.is_leader && (
                       <p className="text-geel text-sm font-bold mt-1 flex items-center justify-center gap-1">
-                        
+
                         <span>Commissieleider</span>
                       </p>
                     )}
-                    
+
                     {member.user_id.title && (
                       <p className="text-gray-600 text-sm mt-1">{member.user_id.title}</p>
                     )}
@@ -221,9 +217,9 @@ export default function CommissieDetailPagina() {
                         {event.name}
                       </h3>
                       <span className="bg-paars text-white px-3 py-1 rounded-full text-sm font-semibold whitespace-nowrap ml-4">
-                        {new Date(event.event_date).toLocaleDateString('nl-NL', { 
-                          day: 'numeric', 
-                          month: 'short' 
+                        {new Date(event.event_date).toLocaleDateString('nl-NL', {
+                          day: 'numeric',
+                          month: 'short'
                         })}
                       </span>
                     </div>
@@ -253,7 +249,6 @@ export default function CommissieDetailPagina() {
           </section>
         )}
 
-        <Footer />
       </main>
       <BackToTopButton />
     </>

@@ -25,8 +25,8 @@ try {
   msalInstance = new PublicClientApplication(msalConfig);
 } catch (error) {
   console.warn('⚠️ MSAL initialization failed. Microsoft login will be disabled.');
-  console.warn('💡 Tip: MSAL requires HTTPS or "localhost" (not IP addresses like 192.168.x.x)');
-  console.warn('   Please access the app via http://localhost:5175/ instead');
+  console.warn('💡 Tip: MSAL requires HTTPS or "localhost" (not IP addresses like 192.168.x.x).');
+  console.warn('   Over LAN, expose the dev server over HTTPS and set VITE_AUTH_REDIRECT_URI to that HTTPS origin, also adding it in the Entra app.');
   console.error('Error details:', error);
 }
 
@@ -138,7 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginWithMicrosoft = async () => {
     if (!msalInstance) {
-      throw new Error('Microsoft login is not available. Please access the app via http://localhost (not an IP address) to enable Microsoft authentication.');
+      throw new Error('Microsoft login is not available. Use HTTPS with a redirect URI that matches your Entra app (set VITE_AUTH_REDIRECT_URI for LAN/IP testing).');
     }
     
     setIsLoading(true);

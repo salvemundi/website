@@ -1,9 +1,7 @@
 // src/pages/IntroPagina.tsx
 import React, { useState } from 'react';
-import Navbar from '../components/NavBar';
 import Header from '../components/header';
 import BackToTopButton from '../components/backtotop';
-import Footer from '../components/Footer';
 import { introSignupsApi } from '../lib/api';
 import { sendIntroSignupEmail } from '../lib/email-service';
 import { useSiteSettings } from '../hooks/useApi';
@@ -66,7 +64,7 @@ export default function IntroPagina() {
       console.error('Failed to submit intro signup:', err);
       setError(
         err.message ||
-          'Er is een fout opgetreden bij het versturen van je inschrijving. Probeer het opnieuw.'
+        'Er is een fout opgetreden bij het versturen van je inschrijving. Probeer het opnieuw.'
       );
     } finally {
       setIsSubmitting(false);
@@ -76,7 +74,6 @@ export default function IntroPagina() {
   return (
     <>
       <div className="flex flex-col w-full">
-        <Navbar activePage={isIntroEnabled ? 'Intro' : ''} />
         <Header title="INTRO" backgroundImage="/img/backgrounds/intro-banner.jpg" />
       </div>
 
@@ -204,19 +201,6 @@ export default function IntroPagina() {
                         />
                       </div>
 
-                      {/* Favoriete GIF */}
-                      <div>
-                        <label className="block font-semibold text-beige mb-2">Favoriete GIF</label>
-                        <input
-                          type="text"
-                          name="favorieteGif"
-                          value={form.favorieteGif}
-                          onChange={handleChange}
-                          placeholder="URL van je favoriete GIF"
-                          className="w-full p-3 bg-beige text-paars rounded-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-oranje"
-                        />
-                      </div>
-
                       {/* Submit Button */}
                       <button
                         type="submit"
@@ -233,7 +217,6 @@ export default function IntroPagina() {
           </>
         )}
 
-        <Footer />
       </main>
 
       <BackToTopButton />
