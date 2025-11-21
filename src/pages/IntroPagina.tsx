@@ -201,19 +201,6 @@ export default function IntroPagina() {
                         />
                       </div>
 
-                      {/* Favoriete GIF */}
-                      <div>
-                        <label className="block font-semibold text-beige mb-2">Favoriete GIF</label>
-                        <input
-                          type="text"
-                          name="favorieteGif"
-                          value={form.favorieteGif}
-                          onChange={handleChange}
-                          placeholder="URL van je favoriete GIF"
-                          className="w-full p-3 bg-beige text-paars rounded-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-oranje"
-                        />
-                      </div>
-
                       {/* Submit Button */}
                       <button
                         type="submit"
