@@ -1,13 +1,11 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import Navbar from "../components/NavBar";
 import Header from "../components/header";
 import BackToTopButton from "../components/backtotop";
 import ActiviteitCard from "../components/ActiviteitCard";
 // Fixed import casing (file is Countdown.tsx)
 import Countdown from "../components/Countdown";
-import Footer from "../components/Footer";
 import ActiviteitDetailModal from "../components/ActiviteitDetailModal";
 import { useEvents } from "../hooks/useApi";
 import { eventsApi, getImageUrl } from "../lib/api";
@@ -38,7 +36,7 @@ export default function ActiviteitenPagina() {
   const [userSignups, setUserSignups] = useState<number[]>([]);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [signupFeedback, setSignupFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  
+
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<any>(null);
@@ -51,16 +49,16 @@ export default function ActiviteitenPagina() {
     if (!events || events.length === 0) {
       return { nextActivity: null, upcomingEvents: [], pastEvents: [] };
     }
-    
+
     const now = new Date();
     const upcoming = events
       .filter(event => new Date(event.event_date) > now)
       .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime());
-    
+
     const past = events
       .filter(event => new Date(event.event_date) <= now)
       .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime());
-    
+
     return {
       nextActivity: upcoming.length > 0 ? upcoming[0] : null,
       upcomingEvents: upcoming,
@@ -114,7 +112,7 @@ export default function ActiviteitenPagina() {
   useEffect(() => {
     loadUserSignups();
   }, [loadUserSignups]);
-  
+
   // Start signup by opening the details modal
   const handleSignup = (activity: any) => {
     handleShowDetails(activity);
@@ -198,7 +196,6 @@ export default function ActiviteitenPagina() {
   return (
     <>
       <div className="flex flex-col w-full">
-        <Navbar activePage="Activiteiten" />
         <Header
           title="ACTIVITEITEN"
           backgroundImage="/img/backgrounds/Kroto2025.jpg"
@@ -208,8 +205,8 @@ export default function ActiviteitenPagina() {
       <main className="w-full px-4 sm:px-6 lg:px-8 py-6 bg-beige">
         <div className="flex flex-col gap-6 w-full">
           {nextActivity && (
-            <Countdown 
-              targetDate={nextActivity.event_date} 
+            <Countdown
+              targetDate={nextActivity.event_date}
               title={nextActivity.name}
               onSignup={() => handleShowDetails(nextActivity)}
             />
@@ -224,33 +221,30 @@ export default function ActiviteitenPagina() {
                   <button
                     type="button"
                     onClick={() => setViewMode('grid')}
-                    className={`px-4 py-2 text-sm font-semibold transition-colors ${
-                      viewMode === 'grid' ? 'bg-paars text-beige' : 'bg-white text-paars'
-                    }`}
+                    className={`px-4 py-2 text-sm font-semibold transition-colors ${viewMode === 'grid' ? 'bg-paars text-beige' : 'bg-white text-paars'
+                      }`}
                   >
                     Raster
                   </button>
                   <button
                     type="button"
                     onClick={() => setViewMode('list')}
-                    className={`px-4 py-2 text-sm font-semibold transition-colors ${
-                      viewMode === 'list' ? 'bg-paars text-beige' : 'bg-white text-paars'
-                    }`}
+                    className={`px-4 py-2 text-sm font-semibold transition-colors ${viewMode === 'list' ? 'bg-paars text-beige' : 'bg-white text-paars'
+                      }`}
                   >
                     Lijst
                   </button>
                 </div>
-                
+
                 <button
                   onClick={(e) => {
                     e.preventDefault();
                     setShowPastActivities(prev => !prev);
                   }}
-                  className={`px-4 py-2 rounded-full font-semibold transition-all hover:scale-105 shadow-md ${
-                    showPastActivities 
-                      ? 'bg-paars text-white hover:bg-opacity-90' 
-                      : 'bg-geel text-paars hover:bg-opacity-90'
-                  }`}
+                  className={`px-4 py-2 rounded-full font-semibold transition-all hover:scale-105 shadow-md ${showPastActivities
+                    ? 'bg-paars text-white hover:bg-opacity-90'
+                    : 'bg-geel text-paars hover:bg-opacity-90'
+                    }`}
                 >
                   {showPastActivities ? 'Verberg Afgelopen' : 'Toon Afgelopen'}
                 </button>
@@ -259,11 +253,10 @@ export default function ActiviteitenPagina() {
 
             {signupFeedback && (
               <div
-                className={`mb-6 rounded-2xl border px-4 py-3 font-semibold ${
-                  signupFeedback.type === 'success'
-                    ? 'bg-green-50 border-green-400 text-green-800'
-                    : 'bg-red-50 border-red-400 text-red-800'
-                }`}
+                className={`mb-6 rounded-2xl border px-4 py-3 font-semibold ${signupFeedback.type === 'success'
+                  ? 'bg-green-50 border-green-400 text-green-800'
+                  : 'bg-red-50 border-red-400 text-red-800'
+                  }`}
               >
                 {signupFeedback.message}
               </div>
@@ -306,12 +299,12 @@ export default function ActiviteitenPagina() {
                         ))}
                       </div>
                     )}
-                    
+
                     {/* Separator */}
                     {showPastActivities && upcomingEvents.length > 0 && pastEvents.length > 0 && (
                       <div className="border-t-4 border-dashed border-paars opacity-50"></div>
                     )}
-                    
+
                     {/* Past Activities */}
                     {showPastActivities && pastEvents.length > 0 && (
                       <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr' : 'flex flex-col gap-3'}>
@@ -337,13 +330,11 @@ export default function ActiviteitenPagina() {
                 )}
               </div>
             </div>
-      
+
           </section>
         </div>
-        
-      </main>
 
-      <Footer />
+      </main>
 
       <BackToTopButton />
 

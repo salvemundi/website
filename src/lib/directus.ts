@@ -7,7 +7,7 @@ const useDevProxy = import.meta.env.DEV && import.meta.env.VITE_DIRECTUS_USE_PRO
 // When using the proxy, requests stay same-origin with the dev server (no CORS preflights).
 export const directusUrl = useDevProxy ? '/api' : (envDirectusUrl || fallbackDirectusUrl);
 
-const apiKey = import.meta.env.VITE_DIRECTUS_API_KEY || 'Dp8exZFEp1l9Whq2o2-5FYeiGoKFwZ2m';
+const apiKey = import.meta.env.VITE_DIRECTUS_API_KEY;
 
 // Create a simple fetch wrapper for Directus REST API
 export async function directusFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {

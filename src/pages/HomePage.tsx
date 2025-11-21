@@ -1,10 +1,8 @@
 // src/pages/Home.tsx
 import React, { useRef } from "react";
-import Navbar from "../components/NavBar";
 import Header from "../components/header";
 import BackToTopButton from "../components/backtotop";
 import SamuCard from "../components/JoinCard";
-import Footer from "../components/Footer";
 import { Swiper, SwiperSlide } from "swiper/react";
 import {
   Navigation,
@@ -43,7 +41,6 @@ export default function Home() {
           <div className="absolute left-10 bottom-0 h-40 w-56 bg-paars/25 blur-3xl lg:hidden" aria-hidden="true" />
 
           <div className="relative flex flex-col">
-            <Navbar activePage="Home" />
             <div className="px-2 sm:px-6 pb-8">
               <Header
                 title="SALVE MUNDI"
@@ -297,7 +294,6 @@ export default function Home() {
           </div>
         </section>
 
-        <Footer />
       </main>
       <BackToTopButton />
     </>

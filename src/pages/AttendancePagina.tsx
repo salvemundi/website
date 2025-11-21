@@ -2,15 +2,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import Navbar from '../components/NavBar';
 import Header from '../components/header';
-import Footer from '../components/Footer';
 import BackToTopButton from '../components/backtotop';
 import QRScanner from '../components/QRScanner';
-import { 
-  checkInParticipant, 
-  isUserCommitteeMember, 
-  getEventSignupsWithCheckIn 
+import {
+  checkInParticipant,
+  isUserCommitteeMember,
+  getEventSignupsWithCheckIn
 } from '../lib/qr-service';
 import exportEventSignups from '../lib/exportSignups';
 import { eventsApi } from '../lib/api-clean';
@@ -73,7 +71,7 @@ export default function AttendancePagina() {
 
     try {
       setLoading(true);
-      
+
       // Load event details
       const eventData = await eventsApi.getById(eventId);
       setEvent(eventData);
@@ -91,14 +89,14 @@ export default function AttendancePagina() {
   const handleScanSuccess = async (qrToken: string) => {
     try {
       setIsScanning(false);
-      
+
       const result = await checkInParticipant(qrToken);
-      
+
       if (result.success && result.signup) {
-        const userName = result.signup.directus_relations 
+        const userName = result.signup.directus_relations
           ? `${result.signup.directus_relations.first_name || ''} ${result.signup.directus_relations.last_name || ''}`.trim()
           : 'Deelnemer';
-        
+
         setCheckInResult({
           success: true,
           message: result.message,
@@ -144,9 +142,9 @@ export default function AttendancePagina() {
       setExportMessage(null);
       const safeName = event?.name
         ? event.name
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/gi, '-')
-            .replace(/^-+|-+$/g, '')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/gi, '-')
+          .replace(/^-+|-+$/g, '')
         : 'activiteit';
       exportEventSignups(signups, `aanmeldingen-${safeName}.xlsx`);
       setExportMessage('Export gestart, controleer je downloads.');
@@ -162,7 +160,7 @@ export default function AttendancePagina() {
   const handleToggleAttendance = async (signup: any) => {
     try {
       const newCheckedInStatus = !signup.checked_in;
-      
+
       // Update in database
       await fetch(`${import.meta.env.VITE_DIRECTUS_URL}/items/event_signups/${signup.id}`, {
         method: 'PATCH',
@@ -178,16 +176,16 @@ export default function AttendancePagina() {
 
       // Refresh the list
       await loadEventAndSignups();
-      
+
       // Show success message
       const userName = signup.directus_relations
         ? `${signup.directus_relations.first_name || ''} ${signup.directus_relations.last_name || ''}`.trim()
         : 'Deelnemer';
-      
+
       setCheckInResult({
         success: true,
-        message: newCheckedInStatus 
-          ? `${userName} is nu ingecheckt` 
+        message: newCheckedInStatus
+          ? `${userName} is nu ingecheckt`
           : `${userName} is nu uitgecheckt`,
         participantName: userName,
         timestamp: new Date().toLocaleString('nl-NL'),
@@ -203,7 +201,7 @@ export default function AttendancePagina() {
         success: false,
         message: 'Er is een fout opgetreden bij het wijzigen van de aanwezigheid.',
       });
-      
+
       setTimeout(() => {
         setCheckInResult(null);
       }, 3000);
@@ -216,7 +214,6 @@ export default function AttendancePagina() {
   if (loading || isAuthorized === null) {
     return (
       <>
-        <Navbar activePage="Activiteiten" />
         <div className="min-h-screen bg-beige flex items-center justify-center">
           <div className="text-paars text-xl">Laden...</div>
         </div>
@@ -227,7 +224,6 @@ export default function AttendancePagina() {
   if (isAuthorized === false) {
     return (
       <>
-        <Navbar activePage="Activiteiten" />
         <div className="min-h-screen bg-beige flex items-center justify-center">
           <div className="bg-white p-8 rounded-xl shadow-lg max-w-md text-center">
             <h2 className="text-2xl font-bold text-red-600 mb-4">Geen Toegang</h2>
@@ -245,7 +241,6 @@ export default function AttendancePagina() {
 
   return (
     <>
-      <Navbar activePage="Activiteiten" />
       <Header
         title="AANWEZIGHEID CONTROLEREN"
         backgroundImage="/img/backgrounds/homepage-banner.jpg"
@@ -283,21 +278,19 @@ export default function AttendancePagina() {
           <div className="flex flex-col sm:flex-row gap-2 mb-6">
             <button
               onClick={() => setActiveTab('scan')}
-              className={`w-full sm:flex-1 py-3 px-6 rounded-full font-semibold transition-all ${
-                activeTab === 'scan'
-                  ? 'bg-oranje text-white shadow-lg'
-                  : 'bg-white text-paars border-2 border-paars'
-              }`}
+              className={`w-full sm:flex-1 py-3 px-6 rounded-full font-semibold transition-all ${activeTab === 'scan'
+                ? 'bg-oranje text-white shadow-lg'
+                : 'bg-white text-paars border-2 border-paars'
+                }`}
             >
               📷 QR Scanner
             </button>
             <button
               onClick={() => setActiveTab('list')}
-              className={`w-full sm:flex-1 py-3 px-6 rounded-full font-semibold transition-all ${
-                activeTab === 'list'
-                  ? 'bg-oranje text-white shadow-lg'
-                  : 'bg-white text-paars border-2 border-paars'
-              }`}
+              className={`w-full sm:flex-1 py-3 px-6 rounded-full font-semibold transition-all ${activeTab === 'list'
+                ? 'bg-oranje text-white shadow-lg'
+                : 'bg-white text-paars border-2 border-paars'
+                }`}
             >
               📋 Deelnemerslijst
             </button>
@@ -307,20 +300,18 @@ export default function AttendancePagina() {
           {activeTab === 'scan' && (
             <div className="bg-white rounded-3xl p-6 shadow-lg">
               <h3 className="text-2xl font-bold text-paars mb-4">QR Code Scanner</h3>
-              
+
               {/* Check-in Result */}
               {checkInResult && (
                 <div
-                  className={`mb-6 p-4 rounded-lg ${
-                    checkInResult.success
-                      ? 'bg-green-100 border-2 border-green-500'
-                      : 'bg-red-100 border-2 border-red-500'
-                  }`}
+                  className={`mb-6 p-4 rounded-lg ${checkInResult.success
+                    ? 'bg-green-100 border-2 border-green-500'
+                    : 'bg-red-100 border-2 border-red-500'
+                    }`}
                 >
                   <p
-                    className={`font-semibold ${
-                      checkInResult.success ? 'text-green-700' : 'text-red-700'
-                    }`}
+                    className={`font-semibold ${checkInResult.success ? 'text-green-700' : 'text-red-700'
+                      }`}
                   >
                     {checkInResult.success ? '✅ ' : '❌ '}
                     {checkInResult.message}
@@ -372,11 +363,10 @@ export default function AttendancePagina() {
                 <button
                   onClick={handleExportSignups}
                   disabled={isExporting || signups.length === 0}
-                  className={`px-5 py-2 rounded-full font-semibold shadow-md transition-all w-full sm:w-auto ${
-                    signups.length === 0
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      : 'bg-paars text-beige hover:bg-oranje'
-                  } ${isExporting ? 'opacity-80 cursor-wait' : ''}`}
+                  className={`px-5 py-2 rounded-full font-semibold shadow-md transition-all w-full sm:w-auto ${signups.length === 0
+                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                    : 'bg-paars text-beige hover:bg-oranje'
+                    } ${isExporting ? 'opacity-80 cursor-wait' : ''}`}
                 >
                   {isExporting ? 'Exporteren...' : '📁 Exporteer inschrijvingen'}
                 </button>
@@ -384,36 +374,33 @@ export default function AttendancePagina() {
 
               {exportMessage && (
                 <div
-                  className={`mb-4 rounded-lg px-4 py-3 text-sm ${
-                    exportMessage.includes('mislukt')
-                      ? 'bg-red-100 text-red-700 border border-red-200'
-                      : 'bg-green-100 text-green-700 border border-green-200'
-                  }`}
+                  className={`mb-4 rounded-lg px-4 py-3 text-sm ${exportMessage.includes('mislukt')
+                    ? 'bg-red-100 text-red-700 border border-red-200'
+                    : 'bg-green-100 text-green-700 border border-green-200'
+                    }`}
                 >
                   {exportMessage}
                 </div>
               )}
-              
+
               {/* Check-in Result for manual toggle */}
               {checkInResult && (
                 <div
-                  className={`mb-6 p-4 rounded-lg ${
-                    checkInResult.success
-                      ? 'bg-green-100 border-2 border-green-500'
-                      : 'bg-red-100 border-2 border-red-500'
-                  }`}
+                  className={`mb-6 p-4 rounded-lg ${checkInResult.success
+                    ? 'bg-green-100 border-2 border-green-500'
+                    : 'bg-red-100 border-2 border-red-500'
+                    }`}
                 >
                   <p
-                    className={`font-semibold ${
-                      checkInResult.success ? 'text-green-700' : 'text-red-700'
-                    }`}
+                    className={`font-semibold ${checkInResult.success ? 'text-green-700' : 'text-red-700'
+                      }`}
                   >
                     {checkInResult.success ? '✅ ' : '❌ '}
                     {checkInResult.message}
                   </p>
                 </div>
               )}
-              
+
               {signups.length === 0 ? (
                 <div className="text-center py-8 text-paars">
                   <p>Nog geen inschrijvingen voor deze activiteit.</p>
@@ -424,15 +411,14 @@ export default function AttendancePagina() {
                     const userName = signup.directus_relations
                       ? `${signup.directus_relations.first_name || ''} ${signup.directus_relations.last_name || ''}`.trim()
                       : 'Onbekende deelnemer';
-                    
+
                     return (
                       <div
                         key={signup.id}
-                        className={`p-4 rounded-lg border-2 ${
-                          signup.checked_in
-                            ? 'bg-green-50 border-green-500'
-                            : 'bg-gray-50 border-gray-300'
-                        }`}
+                        className={`p-4 rounded-lg border-2 ${signup.checked_in
+                          ? 'bg-green-50 border-green-500'
+                          : 'bg-gray-50 border-gray-300'
+                          }`}
                       >
                         <div className="flex items-center justify-between gap-4">
                           <div className="flex-1">
@@ -459,15 +445,14 @@ export default function AttendancePagina() {
                                 - Afwezig
                               </span>
                             )}
-                            
+
                             {/* Toggle Button */}
                             <button
                               onClick={() => handleToggleAttendance(signup)}
-                              className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-                                signup.checked_in
-                                  ? 'bg-red-500 hover:bg-red-600 text-white'
-                                  : 'bg-oranje hover:bg-geel text-white hover:text-paars'
-                              }`}
+                              className={`px-4 py-2 rounded-lg font-semibold transition-all ${signup.checked_in
+                                ? 'bg-red-500 hover:bg-red-600 text-white'
+                                : 'bg-oranje hover:bg-geel text-white hover:text-paars'
+                                }`}
                               title={signup.checked_in ? 'Uitchecken' : 'Inchecken'}
                             >
                               {signup.checked_in ? '✗ Uitchecken' : '✓ Inchecken'}
@@ -483,7 +468,6 @@ export default function AttendancePagina() {
           )}
         </section>
 
-        <Footer />
       </main>
 
       <BackToTopButton />

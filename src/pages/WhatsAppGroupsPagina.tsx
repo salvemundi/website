@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getWhatsAppGroups } from '../lib/auth';
 import { WhatsAppGroup } from '../types';
-import NavBar from '../components/NavBar';
-import Footer from '../components/Footer';
 
 export default function WhatsAppGroupsPagina() {
   const navigate = useNavigate();
@@ -27,13 +25,13 @@ export default function WhatsAppGroupsPagina() {
 
   const loadWhatsAppGroups = async () => {
     if (!user?.id) return;
-    
+
     try {
       setIsLoading(true);
       setError(null);
       const token = localStorage.getItem('auth_token');
       if (!token) throw new Error('No auth token');
-      
+
       const data = await getWhatsAppGroups(token, true);
       setGroups(data);
     } catch (error) {
@@ -65,8 +63,7 @@ export default function WhatsAppGroupsPagina() {
   if (user.membership_status !== 'active') {
     return (
       <div className="min-h-screen bg-beige">
-        <NavBar />
-        
+
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto">
             <div className="bg-white rounded-3xl shadow-2xl p-8 border-4 border-oranje text-center">
@@ -86,15 +83,13 @@ export default function WhatsAppGroupsPagina() {
           </div>
         </div>
 
-        <Footer />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-beige">
-      <NavBar />
-      
+
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
@@ -221,7 +216,6 @@ export default function WhatsAppGroupsPagina() {
         </div>
       </div>
 
-      <Footer />
     </div>
   );
 }
