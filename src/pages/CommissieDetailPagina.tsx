@@ -16,6 +16,12 @@ function formatCommitteeNameForHeader(name: string): string {
   return cleanName.replace(/\s*COMMISSIE/g, '\nCOMMISSIE');
 }
 
+// Helper function to get a default committee image with variety
+function getDefaultCommitteeImage(committeeId: number): string {
+  // Use committee ID to consistently assign one of two group gifs
+  return committeeId % 2 === 0 ? '/img/group-jump.gif' : '/img/groupgif.gif';
+}
+
 export default function CommissieDetailPagina() {
   const { slug } = useParams<{ slug: string }>();
   const committeeId = slug ? parseInt(slug) : undefined;
@@ -96,7 +102,7 @@ export default function CommissieDetailPagina() {
       <div className="flex flex-col w-full">
         <Header
           title={formatCommitteeNameForHeader(committee.name)}
-          backgroundImage={getImageUrl(committee.image)}
+          backgroundImage={committee.image ? getImageUrl(committee.image) : getDefaultCommitteeImage(committeeId!)}
           titleClassName="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl"
           className="px-4"
         />
@@ -114,24 +120,15 @@ export default function CommissieDetailPagina() {
             <div className="flex flex-col md:flex-row items-start gap-8">
               <div className="w-full md:w-1/3 flex-shrink-0">
                 <div className="w-full aspect-[4/3] overflow-hidden rounded-lg bg-gray-100 shadow-md">
-                  {committee.image ? (
-                    <img
-                      src={getImageUrl(committee.image)}
-                      alt={`Foto van ${cleanCommitteeName(committee.name)}`}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        target.parentElement!.innerHTML = `\n                          <div class="w-full h-full flex items-center justify-center text-gray-400">\n                            <svg class="w-20 h-20" fill="currentColor" viewBox="0 0 20 20">\n                              <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />\n                            </svg>\n                          </div>`;
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      <svg className="w-20 h-20" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  )}
+                  <img
+                    src={committee.image ? getImageUrl(committee.image) : getDefaultCommitteeImage(committeeId!)}
+                    alt={`Foto van ${cleanCommitteeName(committee.name)}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = getDefaultCommitteeImage(committeeId!);
+                    }}
+                  />
                 </div>
               </div>
 

@@ -12,6 +12,12 @@ function cleanCommitteeName(name: string): string {
   return name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim();
 }
 
+// Helper function to get a default committee image with variety
+function getDefaultCommitteeImage(committeeId: number): string {
+  // Use committee ID to consistently assign one of two group gifs
+  return committeeId % 2 === 0 ? '/img/group-jump.gif' : '/img/groupgif.gif';
+}
+
 export default function CommissiesPagina() {
   // Fetch committees with member details
   const { data: committeesData = [], isLoading, error } = useQuery<Committee[]>({
@@ -81,7 +87,7 @@ export default function CommissiesPagina() {
                         description={committee.short_description || ""}
                         buttonText="Meer Lezen"
                         buttonLink={`/commissies/${committee.id}`}
-                        image={getImageUrl(committee.image)}
+                        image={committee.image ? getImageUrl(committee.image) : getDefaultCommitteeImage(committee.id)}
                         members={members}
                         isBestuur={isBestuur}
                       />
