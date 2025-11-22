@@ -1,15 +1,17 @@
 FROM node:18-alpine AS build
 WORKDIR /app
 
-# We zetten deze variabelen alvast klaar. 
-# Als de code ze nodig heeft, zijn ze er. Zo niet, doen ze geen kwaad.
-ARG VITE_API_URL
-ARG VITE_AZURE_CLIENT_ID
-ARG VITE_AZURE_TENANT_ID
+# Build arguments (deze komen uit je GitHub Secrets)
+ARG VITE_ENTRA_CLIENT_ID
+ARG VITE_ENTRA_TENANT_ID
+ARG VITE_AUTH_REDIRECT_URI
+ARG VITE_DIRECTUS_URL
 
-ENV VITE_API_URL=$VITE_API_URL
-ENV VITE_AZURE_CLIENT_ID=$VITE_AZURE_CLIENT_ID
-ENV VITE_AZURE_TENANT_ID=$VITE_AZURE_TENANT_ID
+# Zet ze om naar environment variabelen voor het build process (Vite)
+ENV VITE_ENTRA_CLIENT_ID=$VITE_ENTRA_CLIENT_ID
+ENV VITE_ENTRA_TENANT_ID=$VITE_ENTRA_TENANT_ID
+ENV VITE_AUTH_REDIRECT_URI=$VITE_AUTH_REDIRECT_URI
+ENV VITE_DIRECTUS_URL=$VITE_DIRECTUS_URL
 
 COPY package*.json ./
 RUN npm ci
