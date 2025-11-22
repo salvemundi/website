@@ -44,20 +44,22 @@ jobs:
           context: .
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
-          # We geven de secrets door. Als ze leeg zijn in GitHub, is dat voor nu prima.
+          # Hier koppelen we de GitHub Secrets aan de Dockerfile args
           build-args: |
-            VITE_API_URL=${{ secrets.VITE_API_URL }}
-            VITE_AZURE_CLIENT_ID=${{ secrets.VITE_AZURE_CLIENT_ID }}
-            VITE_AZURE_TENANT_ID=${{ secrets.VITE_AZURE_TENANT_ID }}
+            VITE_ENTRA_CLIENT_ID=${{ secrets.VITE_ENTRA_CLIENT_ID }}
+            VITE_ENTRA_TENANT_ID=${{ secrets.VITE_ENTRA_TENANT_ID }}
+            VITE_AUTH_REDIRECT_URI=${{ secrets.VITE_AUTH_REDIRECT_URI }}
+            VITE_DIRECTUS_URL=${{ secrets.VITE_DIRECTUS_URL }}
 
       - name: Deploy to Server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             cd ${{ env.DEPLOY_PATH }}
+            # Pull de nieuwe image en herstart de container
             docker compose pull
             docker compose up -d
