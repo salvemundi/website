@@ -261,7 +261,7 @@ export const documentsApi = {
 
 // Helper to construct image URL
 export function getImageUrl(imageId: string | undefined): string {
-  if (!imageId) return '/img/backgrounds/Kroto2025.jpg';
+  if (!imageId) return '/img/placeholder.svg';
   
   // If imageId looks like a full URL, return as-is
   if (typeof imageId === 'string' && (imageId.startsWith('http://') || imageId.startsWith('https://'))) {

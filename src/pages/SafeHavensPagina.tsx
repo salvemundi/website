@@ -134,6 +134,10 @@ export default function SafeHavensPagina() {
                         src={getImageUrl(safeHaven.image)}
                         alt={safeHaven.contact_name}
                         className="w-32 h-32 rounded-full object-cover mx-auto mb-4 border-4 border-geel"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/img/avatar-placeholder.svg';
+                        }}
                       />
                     ) : (
                       <div className="w-32 h-32 rounded-full bg-geel flex items-center justify-center mx-auto mb-4 border-4 border-oranje">

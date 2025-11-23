@@ -72,7 +72,7 @@ export default function KroegentochtPagina() {
   const canSignUp = Boolean(nextEvent);
   const headerBackgroundImage = nextEvent?.image
     ? getImageUrl(nextEvent.image)
-    : '/img/backgrounds/Kroto2025.jpg';
+    : '/img/placeholder.svg';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -344,6 +344,10 @@ export default function KroegentochtPagina() {
                       src={getImageUrl(nextEvent.image)}
                       alt={nextEvent.name}
                       className="w-full h-48 object-cover rounded-2xl border-2 border-geel/40"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/img/placeholder.svg';
+                      }}
                     />
                   )}
 

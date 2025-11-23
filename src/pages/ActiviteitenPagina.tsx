@@ -199,7 +199,7 @@ export default function ActiviteitenPagina() {
       <div className="flex flex-col w-full">
         <Header
           title="ACTIVITEITEN"
-          backgroundImage="/img/backgrounds/Kroto2025.jpg"
+          backgroundImage="/img/placeholder.svg"
         />
       </div>
 
