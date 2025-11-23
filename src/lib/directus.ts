@@ -1,6 +1,12 @@
 // Directus REST API configuration
 // Use the environment variable directly - CORS should be configured on Directus server
-export const directusUrl = import.meta.env.VITE_DIRECTUS_URL || 'https://admin.salvemundi.nl';
+// Use the proxied `/api` path during local development so Vite dev server proxy
+// forwards requests to the real Directus host and avoids CORS issues.
+export const directusUrl = (
+  import.meta.env.DEV
+    ? '/api'
+    : (import.meta.env.VITE_DIRECTUS_URL || 'https://admin.salvemundi.nl')
+);
 
 const apiKey = import.meta.env.VITE_DIRECTUS_API_KEY || '';
 
