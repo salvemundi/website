@@ -45,14 +45,43 @@ export interface IntroSignupEmailData {
 function getEmailConfig(): EmailConfig {
   const apiEndpoint = import.meta.env.VITE_EMAIL_API_ENDPOINT || '';
   const fromEmail = import.meta.env.VITE_EMAIL_FROM || 'info@salvemundi.nl';
-  
+  const fromName = import.meta.env.VITE_EMAIL_FROM_NAME || 'Salve Mundi';
+
   // Check if using Microsoft Graph API
   const useMicrosoftGraph = apiEndpoint.includes('graph.microsoft.com');
-  
+
+  // Diagnostic logging to help debug environment loading in dev
+  try {
+    // Print a small, safe summary to the console in the browser
+    // Mask values that look like long secrets
+    const mask = (val: unknown) => {
+      if (typeof val !== 'string') return String(val);
+      if (val.length > 64) return val.slice(0, 8) + '…' + val.slice(-8);
+      return val;
+    };
+
+    // Log which env keys are present and a masked summary of key values
+    // This runs in the browser console (client-side) when the module is imported
+    // so you can check whether Vite injected the variables correctly.
+    // NOTE: avoid logging full secrets; we mask long values above.
+    // eslint-disable-next-line no-console
+    console.info('EmailService: import.meta.env keys:', Object.keys(import.meta.env || {}));
+    // eslint-disable-next-line no-console
+    console.info('EmailService: VITE_EMAIL_API_ENDPOINT=', mask(apiEndpoint));
+    // eslint-disable-next-line no-console
+    console.info('EmailService: VITE_EMAIL_FROM=', mask(fromEmail));
+    // eslint-disable-next-line no-console
+    console.info('EmailService: VITE_EMAIL_FROM_NAME=', mask(fromName));
+    // eslint-disable-next-line no-console
+    console.info('EmailService: useMicrosoftGraph=', useMicrosoftGraph);
+  } catch (e) {
+    // ignore logging failures
+  }
+
   return {
     apiEndpoint,
     fromEmail,
-    fromName: import.meta.env.VITE_EMAIL_FROM_NAME || 'Salve Mundi',
+    fromName,
     useMicrosoftGraph,
   };
 }
