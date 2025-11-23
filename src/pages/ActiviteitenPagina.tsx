@@ -411,6 +411,7 @@ export default function ActiviteitenPagina() {
           activity={selectedActivity}
           isPast={selectedActivity.event_date ? new Date(selectedActivity.event_date) <= new Date() : false}
           onSignup={handleModalSignup}
+          isSignedUp={userSignups.includes(selectedActivity.id)}
         />
       )}
     </>
