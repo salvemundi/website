@@ -352,12 +352,9 @@ export default function AccountPagina() {
                       <p className="text-sm text-paars/70 mb-1">
                         Evenement Datum: {format(new Date(signup.event_id.event_date), 'd MMMM yyyy')}
                       </p>
-                      {signup.event_id.contact_phone && (
+                      {signup.event_id.contact_name && (
                         <p className="text-sm text-paars/70 mb-1">
-                          📞 Contact: {signup.event_id.contact_name && `${signup.event_id.contact_name} - `}
-                          <a href={`tel:${signup.event_id.contact_phone}`} className="underline hover:text-oranje">
-                            {signup.event_id.contact_phone}
-                          </a>
+                          Contact: {signup.event_id.contact_name}
                         </p>
                       )}
                       <p className="text-xs text-paars/50">
