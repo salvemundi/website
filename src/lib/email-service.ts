@@ -43,7 +43,7 @@ export interface IntroSignupEmailData {
 
 // Get email configuration from environment variables
 function getEmailConfig(): EmailConfig {
-  const apiEndpoint = import.meta.env.VITE_EMAIL_API_ENDPOINT || '';
+  const apiEndpoint = import.meta.env.VITE_EMAIL_API_ENDPOINT || 'https://api.salvemundi.nl/send-email';
   const fromEmail = import.meta.env.VITE_EMAIL_FROM || 'info@salvemundi.nl';
   const fromName = import.meta.env.VITE_EMAIL_FROM_NAME || 'Salve Mundi';
 
