@@ -2,7 +2,9 @@ import { useParams, Link } from "react-router-dom";
 import Header from "../components/header";
 import BackToTopButton from "../components/backtotop";
 import { useCommittee, useEventsByCommittee } from "../hooks/useApi";
-import { getImageUrl } from "../lib/api";
+import { getImageUrl, committeesApi } from "../lib/api";
+import { useQuery } from "@tanstack/react-query";
+import { slugify } from "../lib/slug";
 
 // Helper function to clean committee names
 function cleanCommitteeName(name: string): string {
@@ -24,55 +26,94 @@ function getDefaultCommitteeImage(committeeId: number): string {
 
 export default function CommissieDetailPagina() {
   const { slug } = useParams<{ slug: string }>();
-  const committeeId = slug ? parseInt(slug) : undefined;
 
-  const { data: committee, isLoading: committeeLoading, error: committeeError } = useCommittee(committeeId);
-  const { data: events = [], isLoading: eventsLoading } = useEventsByCommittee(committeeId);
-
-  // Check for invalid ID early
-  if (!slug || !committeeId || isNaN(committeeId)) {
+  if (!slug) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-beige">
         <div className="text-center">
-          <p className="text-lg mb-2">Ongeldige commissie ID</p>
-          <p className="text-sm text-gray-600">URL slug: {slug || 'geen'}</p>
+          <p className="text-lg mb-2">Ongeldige commissie URL</p>
         </div>
       </div>
     );
   }
 
-  if (committeeLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-beige">
-        <div className="text-center">
-          <p className="text-lg mb-2">Commissie laden...</p>
-          <p className="text-sm text-gray-600">ID: {committeeId}</p>
-        </div>
-      </div>
-    );
-  }
+  // If the slug is numeric, treat as ID; otherwise resolve by slugified name
+  const numericId = !isNaN(Number(slug)) ? Number(slug) : undefined;
 
-  if (committeeError) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-beige">
-        <div className="text-center">
-          <p className="text-lg text-red-600 mb-2">Fout bij laden van commissie</p>
-          <p className="text-sm text-gray-600 mb-2">ID: {committeeId}</p>
-          <p className="text-xs text-gray-500">{String(committeeError)}</p>
-        </div>
-      </div>
-    );
-  }
+  const { data: committeeById, isLoading: committeeLoading, error: committeeError } = useCommittee(numericId);
 
-  if (!committee) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-beige">
-        <div className="text-center">
-          <p className="text-lg mb-2">Commissie niet gevonden</p>
-          <p className="text-sm text-gray-600">ID: {committeeId}</p>
+  const { data: committeesWithMembers = [], isLoading: listLoading } = useQuery({
+    queryKey: ['committees-with-members'],
+    queryFn: () => committeesApi.getAllWithMembers(),
+    enabled: numericId === undefined,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Resolve committee: prefer numeric lookup, otherwise find by slugified cleaned name
+  const committee = numericId !== undefined
+    ? committeeById
+    : committeesWithMembers.find((c: any) => slugify(cleanCommitteeName(c.name)) === slug);
+
+  // Use resolved committee id for hooks and image fallbacks
+  const resolvedCommitteeId = committee?.id;
+
+  // Fetch events for the resolved committee id
+  const { data: events = [], isLoading: eventsLoading } = useEventsByCommittee(resolvedCommitteeId);
+
+  // Loading states
+  if (numericId !== undefined) {
+    if (committeeLoading) {
+      return (
+        <div className="flex items-center justify-center min-h-screen bg-beige">
+          <div className="text-center">
+            <p className="text-lg mb-2">Commissie laden...</p>
+            <p className="text-sm text-gray-600">ID: {numericId}</p>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+    if (committeeError) {
+      return (
+        <div className="flex items-center justify-center min-h-screen bg-beige">
+          <div className="text-center">
+            <p className="text-lg text-red-600 mb-2">Fout bij laden van commissie</p>
+            <p className="text-sm text-gray-600 mb-2">ID: {numericId}</p>
+            <p className="text-xs text-gray-500">{String(committeeError)}</p>
+          </div>
+        </div>
+      );
+    }
+    if (!committee) {
+      return (
+        <div className="flex items-center justify-center min-h-screen bg-beige">
+          <div className="text-center">
+            <p className="text-lg mb-2">Commissie niet gevonden</p>
+            <p className="text-sm text-gray-600">ID: {numericId}</p>
+          </div>
+        </div>
+      );
+    }
+  } else {
+    if (listLoading) {
+      return (
+        <div className="flex items-center justify-center min-h-screen bg-beige">
+          <div className="text-center">
+            <p className="text-lg mb-2">Commissie laden...</p>
+            <p className="text-sm text-gray-600">Slug: {slug}</p>
+          </div>
+        </div>
+      );
+    }
+    if (!committee) {
+      return (
+        <div className="flex items-center justify-center min-h-screen bg-beige">
+          <div className="text-center">
+            <p className="text-lg mb-2">Commissie niet gevonden</p>
+            <p className="text-sm text-gray-600">Slug: {slug}</p>
+          </div>
+        </div>
+      );
+    }
   }
 
   // Check if committee is visible on website
@@ -102,7 +143,7 @@ export default function CommissieDetailPagina() {
       <div className="flex flex-col w-full">
         <Header
           title={formatCommitteeNameForHeader(committee.name)}
-          backgroundImage={committee.image ? getImageUrl(committee.image) : getDefaultCommitteeImage(committeeId!)}
+          backgroundImage={committee.image ? getImageUrl(committee.image) : getDefaultCommitteeImage(resolvedCommitteeId ?? 0)}
           titleClassName="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl"
           className="px-4"
         />
@@ -121,12 +162,12 @@ export default function CommissieDetailPagina() {
               <div className="w-full md:w-1/3 flex-shrink-0">
                 <div className="w-full aspect-[4/3] overflow-hidden rounded-lg bg-gray-100 shadow-md">
                   <img
-                    src={committee.image ? getImageUrl(committee.image) : getDefaultCommitteeImage(committeeId!)}
+                    src={committee.image ? getImageUrl(committee.image) : getDefaultCommitteeImage(resolvedCommitteeId ?? 0)}
                     alt={`Foto van ${cleanCommitteeName(committee.name)}`}
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.src = getDefaultCommitteeImage(committeeId!);
+                      target.src = getDefaultCommitteeImage(resolvedCommitteeId ?? 0);
                     }}
                   />
                 </div>
@@ -149,7 +190,9 @@ export default function CommissieDetailPagina() {
         {visibleMembers.length > 0 && (
           <section className="px-4 sm:px-6 lg:px-10 py-12 bg-white">
             <div className="max-w-6xl mx-auto">
-              <h2 className="text-3xl sm:text-4xl font-bold text-geel mb-10 text-center">De Commissie</h2>
+              <h2 className="text-3xl sm:text-4xl font-bold text-geel mb-10 text-center">
+                {cleanCommitteeName(committee.name).toLowerCase().includes('bestuur') ? 'Het Bestuur' : 'De Commissie'}
+              </h2>
 
               {/* All Team Members (Leaders and Regular Members together) */}
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">

@@ -3,6 +3,7 @@ import Header from "../components/header";
 import BackToTopButton from "../components/backtotop";
 import CommissieCard from "../components/CommissieCard";
 import { getImageUrl } from "../lib/api";
+import { slugify } from "../lib/slug";
 import { committeesApi } from "../lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { Committee } from "../types";
@@ -82,15 +83,15 @@ export default function CommissiesPagina() {
                     className={`${isBestuur ? 'md:col-span-2 lg:col-span-2' : ''}`}
                   >
                     <div className={`h-full ${isBestuur ? 'ring-4 ring-geel rounded-3xl' : ''}`}>
-                      <CommissieCard
-                        title={cleanCommitteeName(committee.name)}
-                        description={committee.short_description || ""}
-                        buttonText="Meer Lezen"
-                        buttonLink={`/commissies/${committee.id}`}
-                        image={committee.image ? getImageUrl(committee.image) : getDefaultCommitteeImage(committee.id)}
-                        members={members}
-                        isBestuur={isBestuur}
-                      />
+                          <CommissieCard
+                            title={cleanCommitteeName(committee.name)}
+                            description={committee.short_description || ""}
+                            buttonText="Meer Lezen"
+                            buttonLink={`/commissies/${slugify(cleanCommitteeName(committee.name))}`}
+                            image={committee.image ? getImageUrl(committee.image) : getDefaultCommitteeImage(committee.id)}
+                            members={members}
+                            isBestuur={isBestuur}
+                          />
                     </div>
                   </div>
                 );
