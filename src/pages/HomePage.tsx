@@ -48,7 +48,7 @@ export default function Home() {
               >
                 <div className="lg:hidden" data-scroll-fade>
                   <p className="mt-4 max-w-2xl text-center text-lg sm:text-xl text-beige">
-                    Dé studievereniging voor Fontys ICT. Samen ontde1kken we nieuwe technologie, bouwen we community en maken we impact op én buiten de campus.
+                    Dé studievereniging voor Fontys ICT. Samen ontdekken we nieuwe technologie, bouwen we community en maken we impact op én buiten de campus.
                   </p>
                   <div className="mt-6 flex w-full flex-col items-center gap-3 sm:flex-row sm:justify-center">
                     <a
