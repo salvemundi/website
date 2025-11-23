@@ -434,7 +434,7 @@ export function getImageUrl(imageId: string | undefined | any): string {
     ? '/api'  // Uses /api proxy
     : (import.meta.env.VITE_DIRECTUS_URL || '/api');
   // If token is falsy (missing or 'null'), omit the access_token query parameter so public files load.
-  const cleanedToken = token && token !== 'null' ? token : null;
+  const cleanedToken = token && token !== 'null' && token !== 'undefined' ? token : null;
   const imageUrl = cleanedToken
     ? `${baseUrl}/assets/${actualImageId}?access_token=${cleanedToken}`
     : `${baseUrl}/assets/${actualImageId}`;

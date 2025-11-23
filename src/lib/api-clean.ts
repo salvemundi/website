@@ -285,7 +285,7 @@ export function getImageUrl(imageId: string | undefined): string {
   
   // Directus v10+ uses /assets/ for serving files
   // If we don't have a token, return the asset URL without a query param so public files load correctly.
-  const cleanedToken = token && token !== 'null' ? token : null;
+  const cleanedToken = token && token !== 'null' && token !== 'undefined' ? token : null;
   const imageUrl = cleanedToken
     ? `${directusUrl}/assets/${imageId}?access_token=${cleanedToken}`
     : `${directusUrl}/assets/${imageId}`;
