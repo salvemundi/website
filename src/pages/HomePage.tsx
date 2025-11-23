@@ -106,7 +106,7 @@ export default function Home() {
             <div className="min-w-[260px] max-w-[320px] snap-start md:min-w-0 md:max-w-none">
               <SamuCard
                 description="Word lid van Salve Mundi en ontdek de wereld van ICT. Pak exclusieve events, borrels en trips mee."
-                image="/img/backgrounds/Kroto2025.jpg"
+                image="/img/placeholder.svg"
                 button="WORD LID"
                 link="/inschrijven"
               />
@@ -184,7 +184,7 @@ export default function Home() {
                 {["Borrel", "Trip", "Workshop"].map((alt, idx) => (
                   <SwiperSlide key={idx}>
                     <img
-                      src="/img/backgrounds/Kroto2025.jpg"
+                      src="/img/placeholder.svg"
                       alt={alt}
                       width={700}
                       height={700}
@@ -275,8 +275,8 @@ export default function Home() {
                   )}
                   {sponsors.map((sponsor) => (
                     <a
-                      key={sponsor.sponsor_id}
-                      href={sponsor.website_url || "#"}
+                      key={sponsor.id}
+                      href={sponsor.website}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex min-w-[160px] max-w-[220px] snap-start items-center justify-center rounded-2xl border border-samu/5 bg-beige/60 px-4 py-3 transition hover:-translate-y-1 hover:shadow-md sm:min-w-0 sm:max-w-[240px]"
@@ -285,6 +285,10 @@ export default function Home() {
                         src={getImageUrl(sponsor.image)}
                         alt="Sponsor logo"
                         className="max-h-16 w-full object-contain"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/img/placeholder.svg';
+                        }}
                       />
                     </a>
                   ))}

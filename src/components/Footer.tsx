@@ -195,22 +195,49 @@ export default function Footer() {
           <ul className="space-y-2 text-sm">
             <li>
               <a 
-                href="https://www.instagram.com/salvemundi/"
+                href="https://www.instagram.com/sv.salvemundi/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-geel transition-colors"
+                className="hover:text-geel transition-colors flex items-center gap-2"
               >
+                <span className="inline-block w-4 h-4" aria-hidden>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+                    <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                    <line x1="17.5" y1="6.5" x2="17.5" y2="6.5"></line>
+                  </svg>
+                </span>
                 Instagram
               </a>
             </li>
             <li>
               <a 
-                href="https://www.facebook.com/salvemundi/"
+                href="https://www.facebook.com/sv.salvemundi/?locale=nl_NL"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-geel transition-colors"
+                className="hover:text-geel transition-colors flex items-center gap-2"
               >
+                <span className="inline-block w-4 h-4" aria-hidden>
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                    <path d="M22 12a10 10 0 1 0-11.5 9.9v-7h-2.2v-2.9h2.2V9.3c0-2.2 1.3-3.4 3.3-3.4.9 0 1.8.1 1.8.1v2h-1c-1 0-1.3.6-1.3 1.2v1.5h2.3l-.4 2.9h-1.9v7A10 10 0 0 0 22 12z"></path>
+                  </svg>
+                </span>
                 Facebook
+              </a>
+            </li>
+            <li>
+              <a 
+                href="https://nl.linkedin.com/company/salve-mundi"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-geel transition-colors flex items-center gap-2"
+              >
+                <span className="inline-block w-4 h-4" aria-hidden>
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                    <path d="M4.98 3.5C4.98 4.88 3.88 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM0 8h5v16H0V8zm7.5 0h4.8v2.2h.1c.7-1.3 2.4-2.6 5-2.6 5.3 0 6.3 3.5 6.3 8.1V24h-5V15.4c0-2.1 0-4.8-2.9-4.8-2.9 0-3.3 2.2-3.3 4.6V24h-5V8z"></path>
+                  </svg>
+                </span>
+                LinkedIn
               </a>
             </li>
           </ul>
@@ -220,7 +247,7 @@ export default function Footer() {
       {/* Copyright */}
       <div className="mt-12 pt-8 border-t border-beige/30 text-center text-sm">
         <p>
-          Copyright © 2022 Salve Mundi alle rechten voorbehouden.{" "}
+          Copyright © 2025 Salve Mundi alle rechten voorbehouden.{" "}
           <a 
             href="https://github.com/salvemundi/website"
             target="_blank"

@@ -172,6 +172,10 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
                   src={getImageUrl(user.avatar)} 
                   alt="Profile" 
                   className="w-6 h-6 rounded-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/img/avatar-placeholder.svg';
+                  }}
                 />
               ) : (
                 <span className="w-6 h-6 rounded-full bg-geel text-oranje flex items-center justify-center text-xs font-bold">

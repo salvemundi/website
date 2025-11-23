@@ -24,7 +24,7 @@ export default function ClubsPagina() {
   return (
     <>
       <div className="flex flex-col w-full">
-        <Header title="CLUBS" backgroundImage="/img/backgrounds/Kroto2025.jpg" />
+        <Header title="CLUBS" backgroundImage="/img/placeholder.svg" />
       </div>
 
       <main className="bg-beige min-h-screen">
