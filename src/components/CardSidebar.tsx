@@ -109,7 +109,6 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
           event_id: eventId,
           email: item.email,
           name: item.name || '',
-          student_number: item.studentNumber || undefined,
           user_id: user?.id // Pass the logged-in user's ID
         });
       });
@@ -143,7 +142,6 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
             eventName: eventName,
             eventDate: eventDate,
             eventPrice: item.activity.price || 0,
-            studentNumber: item.studentNumber || undefined,
             userName: userName || 'Onbekend',
             qrCodeDataUrl: qrCodeDataUrl,
           });

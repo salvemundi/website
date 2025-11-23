@@ -1,11 +1,13 @@
 const express = require('express');
 const cors = require('cors');
+const morgan = require('morgan');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
+app.use(morgan('combined'));
 app.use(cors({
   origin: [
     'http://localhost:5173',
@@ -21,7 +23,8 @@ app.get('/health', (req, res) => {
 });
 
 // Send email endpoint
-app.post('/send-email', async (req, res) => {
+// Extracted handler so we can reuse for both /send-email and a compatibility /email route
+const handleSendEmail = async (req, res) => {
   try {
     const { to, subject, html, from, fromName, attachments } = req.body;
 
@@ -149,7 +152,13 @@ app.post('/send-email', async (req, res) => {
       message: error.message,
     });
   }
-});
+};
+
+// Primary route
+app.post('/send-email', handleSendEmail);
+
+// Compatibility alias: accept POST /email as an alias for /send-email
+app.post('/email', handleSendEmail);
 
 // Calendar feed endpoint
 app.get('/calendar', async (req, res) => {
