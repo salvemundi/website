@@ -20,6 +20,12 @@ export default defineConfig({
           });
         }
       },
+      // Email API proxy
+      '/send-email': {
+        target: 'https://api.salvemundi.nl',
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
   preview: {
@@ -37,6 +43,12 @@ export default defineConfig({
             // Do not overwrite Authorization header
           });
         }
+      },
+      // Email API proxy
+      '/send-email': {
+        target: 'https://api.salvemundi.nl',
+        changeOrigin: true,
+        secure: false,
       },
     },
   },
