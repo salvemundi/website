@@ -399,7 +399,7 @@ export const introSignupsApi = {
 export function getImageUrl(imageId: string | undefined | any): string {
   // Handle null/undefined - silently return default
   if (!imageId) {
-    return '/img/backgrounds/Kroto2025.jpg';
+    return '/img/placeholder.svg';
   }
 
   // Handle if imageId is an object (sometimes Directus returns file objects)
@@ -409,7 +409,7 @@ export function getImageUrl(imageId: string | undefined | any): string {
     if (!actualImageId) {
       // Only log errors, not info messages
       console.error('[getImageUrl] Could not extract image ID from object:', imageId);
-      return '/img/backgrounds/Kroto2025.jpg';
+      return '/img/placeholder.svg';
     }
   } else {
     actualImageId = String(imageId);

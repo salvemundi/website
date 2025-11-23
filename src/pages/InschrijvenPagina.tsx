@@ -62,7 +62,7 @@ export default function SignUp() {
       <div className="flex flex-col w-full">
         <Header
           title="WORD LID!"
-          backgroundImage="/img/backgrounds/Kroto2025.jpg"
+          backgroundImage="/img/placeholder.svg"
         />
       </div>
 

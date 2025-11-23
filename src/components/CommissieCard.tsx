@@ -46,7 +46,15 @@ const CommissieCard: React.FC<CommissieCardProps> = ({
               : "border-beige/40"
             } ${isBestuur ? "w-16 h-16" : "w-14 h-14"}`}
         >
-          <img src={member.image} alt={member.firstName || "Commissielid"} className="w-full h-full object-cover" />
+          <img 
+            src={member.image} 
+            alt={member.firstName || "Commissielid"} 
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = '/img/avatar-placeholder.svg';
+            }}
+          />
         </div>
         {member.isLeader && (
           <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-paars text-geel text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide">
@@ -90,12 +98,12 @@ const CommissieCard: React.FC<CommissieCardProps> = ({
           <div className={`${isBestuur ? "lg:w-1/2" : ""} flex flex-col gap-4`}>
             <div className="w-full">
               <img
-                src={image || '/img/group-jump.gif'}
+                src={image || '/img/placeholder.svg'}
                 alt={title}
                 className={`w-full ${imageHeightClass} object-cover rounded-2xl`}
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
-                  target.src = '/img/group-jump.gif';
+                  target.src = '/img/placeholder.svg';
                 }}
               />
             </div>
@@ -129,14 +137,22 @@ const CommissieCard: React.FC<CommissieCardProps> = ({
                     {members.map((member, index) => (
                       <div key={`${member.image}-${index}`} className="flex items-center gap-4 bg-paars/60 rounded-2xl p-3">
                         <div className="relative">
-                          <div
-                            className={`rounded-full overflow-hidden border-2 ${member.isLeader
+                        <div
+                          className={`rounded-full overflow-hidden border-2 ${member.isLeader
                                 ? "border-geel ring-4 ring-geel/30"
                                 : "border-beige/40"
                               } w-16 h-16`}
-                          >
-                            <img src={member.image} alt={member.firstName || "Bestuurslid"} className="w-full h-full object-cover" />
-                          </div>
+                        >
+                          <img 
+                            src={member.image} 
+                            alt={member.firstName || "Bestuurslid"} 
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = '/img/avatar-placeholder.svg';
+                            }}
+                          />
+                        </div>
                         </div>
                         <div className="flex flex-col">
                           <span className="text-base font-semibold text-geel">{member.firstName}</span>

@@ -233,9 +233,13 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
           {/* Image - always show */}
           <div className="relative mb-6">
             <img
-              src={activity.image || '/img/backgrounds/Kroto2025.jpg'}
+              src={activity.image || '/img/placeholder.svg'}
               alt={activity.title}
               className="w-full h-64 object-cover rounded-xl"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/img/placeholder.svg';
+              }}
             />
           </div>
 

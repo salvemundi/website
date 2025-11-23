@@ -167,7 +167,7 @@ export default function CommissieDetailPagina() {
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.src = getDefaultCommitteeImage(resolvedCommitteeId ?? 0);
+                      target.src = '/img/placeholder.svg';
                     }}
                   />
                 </div>
@@ -209,12 +209,7 @@ export default function CommissieDetailPagina() {
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          target.parentElement!.innerHTML = `
-                            <svg class="w-full h-full text-gray-400 p-6" fill="currentColor" viewBox="0 0 20 20">
-                              <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                            </svg>
-                          `;
+                          target.src = '/img/avatar-placeholder.svg';
                         }}
                       />
                     </div>
