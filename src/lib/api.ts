@@ -39,12 +39,13 @@ export const eventsApi = {
           try {
             const leaderQuery = buildQueryString({
               filter: { committee_id: { _eq: event.committee_id }, is_leader: { _eq: true } },
-              fields: ['user_id.phone_number', 'user_id.first_name', 'user_id.last_name'],
+              fields: ['user_id.first_name', 'user_id.last_name'],
               limit: 1
             });
             const leaders = await directusFetch<any[]>(`/items/committee_members?${leaderQuery}`);
-            if (leaders && leaders.length > 0 && leaders[0].user_id?.phone_number) {
-              event.contact_phone = leaders[0].user_id.phone_number;
+            if (leaders && leaders.length > 0) {
+              // Do NOT expose committee leader phone numbers fetched from Directus users.
+              // Only use the leader's name so UI can show who to contact without leaking phone numbers.
               event.contact_name = `${leaders[0].user_id.first_name || ''} ${leaders[0].user_id.last_name || ''}`.trim();
             }
           } catch (error) {
@@ -83,12 +84,13 @@ export const eventsApi = {
       try {
         const leaderQuery = buildQueryString({
           filter: { committee_id: { _eq: event.committee_id }, is_leader: { _eq: true } },
-          fields: ['user_id.phone_number', 'user_id.first_name', 'user_id.last_name'],
+          fields: ['user_id.first_name', 'user_id.last_name'],
           limit: 1
         });
         const leaders = await directusFetch<any[]>(`/items/committee_members?${leaderQuery}`);
-        if (leaders && leaders.length > 0 && leaders[0].user_id?.phone_number) {
-          event.contact_phone = leaders[0].user_id.phone_number;
+        if (leaders && leaders.length > 0) {
+          // Do NOT expose committee leader phone numbers fetched from Directus users.
+          // Only set the contact name; the phone number should not be copied from user profiles.
           event.contact_name = `${leaders[0].user_id.first_name || ''} ${leaders[0].user_id.last_name || ''}`.trim();
         }
       } catch (error) {

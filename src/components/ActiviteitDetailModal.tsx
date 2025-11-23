@@ -214,7 +214,7 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
 
           {/* Attendance Button for Committee Members */}
           <div className="space-y-3">
-            {activity.id && !isPast && (
+            {activity.id && (
               <AttendanceButton
                 eventId={activity.id}
                 eventName={activity.title}
@@ -267,9 +267,9 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
             </div>
 
             {/* Contact quick info */}
-            {(activity.contact_phone || activity.contact_name || committeeEmail) && (
+            {(activity.contact_name || committeeEmail) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {activity.contact_phone && (
+                {activity.contact_name && (
                   <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3">
                     <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-geel/20 text-geel">
                       <Phone className="h-5 w-5" />
@@ -277,10 +277,7 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                     <div>
                       <p className="text-xs uppercase tracking-wide text-white/70">Contact</p>
                       <p className="text-base font-semibold text-white">
-                        {activity.contact_name ? `${activity.contact_name} – ` : ''}
-                        <a href={`tel:${activity.contact_phone}`} className="underline hover:text-geel">
-                          {activity.contact_phone}
-                        </a>
+                        {activity.contact_name}
                       </p>
                     </div>
                   </div>
@@ -407,7 +404,7 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                   )}
                 </form>
 
-                {(activity.committee_name || activity.contact_name || activity.contact_phone || committeeEmail) && (
+                {(activity.committee_name || activity.contact_name || committeeEmail) && (
                   <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-white w-full lg:max-w-sm">
                     <h4 className="text-xl font-semibold text-geel mb-3">Contact commissie</h4>
                     <p className="text-sm text-white/80 mb-4">
@@ -426,14 +423,7 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                           <span className="text-base">{activity.contact_name}</span>
                         </p>
                       )}
-                      {activity.contact_phone && (
-                        <p>
-                          <span className="font-semibold text-geel block text-sm uppercase tracking-wide">Telefoon</span>
-                          <a href={`tel:${activity.contact_phone}`} className="text-base underline hover:text-geel transition">
-                            {activity.contact_phone}
-                          </a>
-                        </p>
-                      )}
+                      {/* Phone number removed from activity contact info */}
                       {committeeEmail && (
                         <p>
                           <span className="font-semibold text-geel block text-sm uppercase tracking-wide">E-mail</span>
