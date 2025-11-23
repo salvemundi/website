@@ -118,6 +118,10 @@ export default function AccountPagina() {
                     src={getImageUrl(user.avatar)}
                     alt={`${user.first_name} ${user.last_name}`}
                     className="w-24 h-24 rounded-full object-cover border-4 border-oranje self-center sm:self-auto"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/img/avatar-placeholder.svg';
+                    }}
                   />
                 ) : (
                   <div className="w-24 h-24 rounded-full bg-geel flex items-center justify-center border-4 border-oranje self-center sm:self-auto">
@@ -338,6 +342,10 @@ export default function AccountPagina() {
                         src={getImageUrl(signup.event_id.image)}
                         alt={signup.event_id.name}
                         className="w-24 h-24 rounded-xl object-cover border-2 border-oranje"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/img/placeholder.svg';
+                        }}
                       />
                     ) : (
                       <div className="w-24 h-24 rounded-xl bg-geel flex items-center justify-center border-2 border-oranje">

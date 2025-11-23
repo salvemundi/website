@@ -199,7 +199,7 @@ export default function ActiviteitenPagina() {
       <div className="flex flex-col w-full">
         <Header
           title="ACTIVITEITEN"
-          backgroundImage="/img/backgrounds/Kroto2025.jpg"
+          backgroundImage="/img/placeholder.svg"
         />
       </div>
 
@@ -411,6 +411,7 @@ export default function ActiviteitenPagina() {
           activity={selectedActivity}
           isPast={selectedActivity.event_date ? new Date(selectedActivity.event_date) <= new Date() : false}
           onSignup={handleModalSignup}
+          isSignedUp={userSignups.includes(selectedActivity.id)}
         />
       )}
     </>

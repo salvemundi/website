@@ -44,7 +44,7 @@ export default function CommissiesPagina() {
       <div className="flex flex-col w-full">
         <Header
           title="COMMISSIES"
-          backgroundImage="/img/backgrounds/Kroto2025.jpg"
+          backgroundImage="/img/placeholder.svg"
         />
       </div>
 
