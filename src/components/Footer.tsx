@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { documentsApi } from "../lib/api-clean";
 import { committeesApi } from "../lib/api";
+import { slugify } from "../lib/slug";
 import { Committee } from "../types";
 
 interface Document {
@@ -137,7 +138,7 @@ export default function Footer() {
               committees.map((committee) => (
                 <li key={committee.id}>
                   <Link 
-                    to={`/commissies/${committee.id}`}
+                    to={`/commissies/${slugify(cleanCommitteeName(committee.name))}`}
                     className="hover:text-geel transition-colors"
                   >
                     {cleanCommitteeName(committee.name)}
