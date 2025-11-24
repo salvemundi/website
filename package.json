@@ -19,6 +19,7 @@
     "@giphy/js-fetch-api": "^5.7.0",
     "@giphy/react-components": "^10.1.0",
     "@headlessui/react": "^2.2.7",
+    "@microsoft/clarity": "^1.0.0",
     "@mui/material": "^6.5.0",
     "@mui/x-date-pickers": "^8.11.1",
     "@tailwindcss/vite": "^4.1.13",
