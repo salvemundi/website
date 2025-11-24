@@ -209,7 +209,17 @@ export default function WhatsAppGroupsPagina() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-geel mt-1">•</span>
-                <span>Volg de gedragscode van Salve Mundi</span>
+                <span>
+                  Volg de{' '}
+                  <a
+                    href="https://salvemundi.nl/gedragscode"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-oranje underline hover:text-paars transition-colors font-semibold"
+                  >
+                    gedragscode van Salve Mundi
+                  </a>
+                </span>
               </li>
             </ul>
           </div>

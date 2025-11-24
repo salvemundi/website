@@ -39,12 +39,13 @@ export const eventsApi = {
           try {
             const leaderQuery = buildQueryString({
               filter: { committee_id: { _eq: event.committee_id }, is_leader: { _eq: true } },
-              fields: ['user_id.phone_number', 'user_id.first_name', 'user_id.last_name'],
+              fields: ['user_id.first_name', 'user_id.last_name'],
               limit: 1
             });
             const leaders = await directusFetch<any[]>(`/items/committee_members?${leaderQuery}`);
-            if (leaders && leaders.length > 0 && leaders[0].user_id?.phone_number) {
-              event.contact_phone = leaders[0].user_id.phone_number;
+            if (leaders && leaders.length > 0) {
+              // Do NOT expose committee leader phone numbers fetched from Directus users.
+              // Only use the leader's name so UI can show who to contact without leaking phone numbers.
               event.contact_name = `${leaders[0].user_id.first_name || ''} ${leaders[0].user_id.last_name || ''}`.trim();
             }
           } catch (error) {
@@ -83,12 +84,13 @@ export const eventsApi = {
       try {
         const leaderQuery = buildQueryString({
           filter: { committee_id: { _eq: event.committee_id }, is_leader: { _eq: true } },
-          fields: ['user_id.phone_number', 'user_id.first_name', 'user_id.last_name'],
+          fields: ['user_id.first_name', 'user_id.last_name'],
           limit: 1
         });
         const leaders = await directusFetch<any[]>(`/items/committee_members?${leaderQuery}`);
-        if (leaders && leaders.length > 0 && leaders[0].user_id?.phone_number) {
-          event.contact_phone = leaders[0].user_id.phone_number;
+        if (leaders && leaders.length > 0) {
+          // Do NOT expose committee leader phone numbers fetched from Directus users.
+          // Only set the contact name; the phone number should not be copied from user profiles.
           event.contact_name = `${leaders[0].user_id.first_name || ''} ${leaders[0].user_id.last_name || ''}`.trim();
         }
       } catch (error) {
@@ -397,7 +399,7 @@ export const introSignupsApi = {
 export function getImageUrl(imageId: string | undefined | any): string {
   // Handle null/undefined - silently return default
   if (!imageId) {
-    return '/img/backgrounds/Kroto2025.jpg';
+    return '/img/placeholder.svg';
   }
 
   // Handle if imageId is an object (sometimes Directus returns file objects)
@@ -407,7 +409,7 @@ export function getImageUrl(imageId: string | undefined | any): string {
     if (!actualImageId) {
       // Only log errors, not info messages
       console.error('[getImageUrl] Could not extract image ID from object:', imageId);
-      return '/img/backgrounds/Kroto2025.jpg';
+      return '/img/placeholder.svg';
     }
   } else {
     actualImageId = String(imageId);
@@ -433,8 +435,11 @@ export function getImageUrl(imageId: string | undefined | any): string {
   const baseUrl = isLocalhost
     ? '/api'  // Uses /api proxy
     : (import.meta.env.VITE_DIRECTUS_URL || '/api');
+  // If token is falsy (missing or 'null'), omit the access_token query parameter so public files load.
+  const cleanedToken = token && token !== 'null' && token !== 'undefined' ? token : null;
+  const imageUrl = cleanedToken
+    ? `${baseUrl}/assets/${actualImageId}?access_token=${cleanedToken}`
+    : `${baseUrl}/assets/${actualImageId}`;
 
-  // Add access_token as query parameter for authentication
-  const imageUrl = `${baseUrl}/assets/${actualImageId}?access_token=${token}`;
   return imageUrl;
 }

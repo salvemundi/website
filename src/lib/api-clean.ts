@@ -261,7 +261,7 @@ export const documentsApi = {
 
 // Helper to construct image URL
 export function getImageUrl(imageId: string | undefined): string {
-  if (!imageId) return '/img/backgrounds/Kroto2025.jpg';
+  if (!imageId) return '/img/placeholder.svg';
   
   // If imageId looks like a full URL, return as-is
   if (typeof imageId === 'string' && (imageId.startsWith('http://') || imageId.startsWith('https://'))) {
@@ -284,8 +284,11 @@ export function getImageUrl(imageId: string | undefined): string {
   }
   
   // Directus v10+ uses /assets/ for serving files
-  // Add access_token as query parameter for authentication
-  const imageUrl = `${directusUrl}/assets/${imageId}?access_token=${token}`;
+  // If we don't have a token, return the asset URL without a query param so public files load correctly.
+  const cleanedToken = token && token !== 'null' && token !== 'undefined' ? token : null;
+  const imageUrl = cleanedToken
+    ? `${directusUrl}/assets/${imageId}?access_token=${cleanedToken}`
+    : `${directusUrl}/assets/${imageId}`;
   
   return imageUrl;
 }
