@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  website:
+    image: ghcr.io/salvemundi/website:dev
+    container_name: website-dev
+    restart: unless-stopped
+    networks:
+      - proxy-network
+
+  payment-api:
+    image: ghcr.io/salvemundi/payment-api:latest
+    container_name: payment-api
+    restart: unless-stopped
+    networks:
+      - proxy-network
+    environment:
+      - PORT=3002
+      - MOLLIE_API_KEY=${MOLLIE_API_KEY}
+      - MOLLIE_WEBHOOK_URL=${MOLLIE_WEBHOOK_URL}
+      - DIRECTUS_URL=${DIRECTUS_URL}
+      - DIRECTUS_API_TOKEN=${DIRECTUS_API_TOKEN}
+
+networks:
+  proxy-network:
+    external: true
