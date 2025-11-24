@@ -142,21 +142,21 @@ export const clubsApi = {
 export const pubCrawlEventsApi = {
   getAll: async () => {
     const query = buildQueryString({
-      fields: ['id', 'name', 'email', 'association', 'amount_tickets', 'name_initials', 'created_at'],
+      fields: ['id', 'name', 'email', 'association', 'amount_tickets', 'date', 'description', 'image', 'created_at', 'updated_at'],
       sort: ['-created_at']
     });
     return directusFetch<any[]>(`/items/pub_crawl_events?${query}`);
   }
 };
 
-// Pub Crawl Groups API
-export const pubCrawlGroupsApi = {
+// Pub Crawl Signups API
+export const pubCrawlSignupsApi = {
   getAll: async () => {
     const query = buildQueryString({
-      fields: ['group_id', 'name', 'initials', 'pub_crawl_events_id'],
-      sort: ['name']
+      fields: ['id', 'pub_crawl_event_id', 'name', 'email', 'association', 'amount_tickets', 'name_initials', 'created_at', 'updated_at'],
+      sort: ['-created_at']
     });
-    return directusFetch<any[]>(`/items/pub_crawl_groups?${query}`);
+    return directusFetch<any[]>(`/items/pub_crawl_signups?${query}`);
   }
 };
 
@@ -193,7 +193,7 @@ export const jobsApi = {
 export const safeHavensApi = {
   getAll: async () => {
     const query = buildQueryString({
-      fields: ['id', 'member_id.first_name', 'member_id.last_name', 'contact_name', 'phone_number', 'image', 'created_at'],
+      fields: ['id', 'member_id.first_name', 'member_id.last_name', 'contact_name', 'email', 'phone_number', 'image', 'created_at'],
       sort: ['contact_name']
     });
     return directusFetch<any[]>(`/items/safe_havens?${query}`);
@@ -211,9 +211,84 @@ export const stickersApi = {
   }
 };
 
+// Contacts API
+export const contactsApi = {
+  getAll: async () => {
+    const query = buildQueryString({
+      fields: ['id', 'title', 'name', 'email', 'phone_number', 'description', 'image', 'display_order'],
+      filter: { is_active: { _eq: true } },
+      sort: ['display_order', 'name']
+    });
+    
+    // Try to use auth token if available, otherwise use public API key
+    const authToken = localStorage.getItem('auth_token');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (authToken) {
+      headers['Authorization'] = `Bearer ${authToken}`;
+    } else {
+      // Fallback to API key for public access
+      const apiKey = import.meta.env.VITE_DIRECTUS_API_KEY;
+      headers['Authorization'] = `Bearer ${apiKey}`;
+    }
+    
+    const response = await fetch(`${import.meta.env.VITE_DIRECTUS_URL || 'https://admin.salvemundi.nl'}/items/contacts?${query}`, {
+      headers
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch contacts: ${response.status}`);
+    }
+    
+    const json = await response.json();
+    return json.data as any[];
+  }
+};
+
+// Documents API
+export const documentsApi = {
+  getAll: async () => {
+    const query = buildQueryString({
+      fields: ['id', 'title', 'description', 'file', 'category', 'display_order'],
+      filter: { is_active: { _eq: true } },
+      sort: ['display_order', 'title']
+    });
+    return directusFetch<any[]>(`/items/documents?${query}`);
+  }
+};
+
 // Helper to construct image URL
 export function getImageUrl(imageId: string | undefined): string {
-  if (!imageId) return '/img/backgrounds/Kroto2025.jpg';
-  return `${directusUrl}/assets/${imageId}`;
+  if (!imageId) return '/img/placeholder.svg';
+  
+  // If imageId looks like a full URL, return as-is
+  if (typeof imageId === 'string' && (imageId.startsWith('http://') || imageId.startsWith('https://'))) {
+    return imageId;
+  }
+  
+  // Get the access token from localStorage for authenticated requests
+  let token: string | null = null;
+  try {
+    // The token is stored as 'auth_token' not 'access_token'
+    token = localStorage.getItem('auth_token');
+  } catch (e) {
+    console.warn('getImageUrl: Could not access localStorage', e);
+  }
+  
+  // If no user token, try to use API key for public access
+  if (!token) {
+    const apiKey = import.meta.env.VITE_DIRECTUS_API_KEY;
+    token = apiKey;
+  }
+  
+  // Directus v10+ uses /assets/ for serving files
+  // If we don't have a token, return the asset URL without a query param so public files load correctly.
+  const cleanedToken = token && token !== 'null' && token !== 'undefined' ? token : null;
+  const imageUrl = cleanedToken
+    ? `${directusUrl}/assets/${imageId}?access_token=${cleanedToken}`
+    : `${directusUrl}/assets/${imageId}`;
+  
+  return imageUrl;
 }
-

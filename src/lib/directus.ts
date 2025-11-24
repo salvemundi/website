@@ -1,24 +1,68 @@
 // Directus REST API configuration
-// Always use proxy when running locally (dev or preview) to avoid CORS issues
-// In production deployment, set VITE_DIRECTUS_URL or it will also use /api proxy
-const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
-export const directusUrl = isLocalhost
-  ? '/api'  // Use proxy for localhost (both dev and preview)
-  : (import.meta.env.VITE_DIRECTUS_URL || '/api');
+// Use the environment variable directly - CORS should be configured on Directus server
+// Use the proxied `/api` path during local development so Vite dev server proxy
+// forwards requests to the real Directus host and avoids CORS issues.
+export const directusUrl = (
+  import.meta.env.DEV
+    ? '/api'
+    : (import.meta.env.VITE_DIRECTUS_URL || 'https://admin.salvemundi.nl')
+);
 
-const apiKey = import.meta.env.VITE_DIRECTUS_API_KEY || 'Dp8exZFEp1l9Whq2o2-5FYeiGoKFwZ2m';
+const apiKey = import.meta.env.VITE_DIRECTUS_API_KEY || '';
 
 // Create a simple fetch wrapper for Directus REST API
 export async function directusFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${directusUrl}${endpoint}`;
 
+  // Resolve Authorization header order:
+  // 1) explicit Authorization in options.headers
+  // 2) session token stored as 'auth_token' in localStorage (user is logged in)
+  // 3) VITE API key (if configured)
+  let authHeader: string | undefined;
+  let authSource = 'none';
+  if (options?.headers && (options.headers as any).Authorization) {
+    authHeader = (options.headers as any).Authorization as string;
+    authSource = 'explicit';
+  } else {
+    try {
+      const sessionToken = localStorage.getItem('auth_token');
+      if (sessionToken) {
+        authHeader = `Bearer ${sessionToken}`;
+        authSource = 'session';
+      }
+    } catch (e) {
+      // localStorage may be unavailable in some environments; ignore
+    }
+
+    if (!authHeader && apiKey) {
+      authHeader = `Bearer ${apiKey}`;
+      authSource = 'apiKey';
+    }
+  }
+
+  // Mask token for safe logging (do not log full secret). Only log in dev.
+  if (import.meta.env.DEV) {
+    try {
+      const tokenToMask = authHeader?.replace(/^Bearer\s+/i, '') || '';
+      const masked = tokenToMask
+        ? `${tokenToMask.slice(0,6)}...${tokenToMask.slice(-4)}`
+        : '(none)';
+      // Use console.log for local dev weblogs; don't expose full tokens in any logs.
+      console.log(`[directusFetch] ${endpoint} authSource=${authSource} token=${masked}`);
+    } catch (e) {
+      // ignore logging issues
+    }
+  }
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(authHeader ? { Authorization: authHeader } : {}),
+    ...(options?.headers as Record<string, string>),
+  };
+
   const response = await fetch(url, {
     ...options,
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
+    headers,
   });
 
   if (!response.ok) {

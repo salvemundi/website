@@ -11,13 +11,18 @@ export interface Event {
   only_members: boolean;
   image?: string;
   committee_id?: number;
+  committee_name?: string;
+  committee_email?: string;
   signups?: EventSignup[];
 }
 
 export interface EventSignup {
   id: number;
   event_id: number;
-  member_id: number;
+  member_id?: number;
+  email: string;
+  name: string;
+  student_number?: string;
   submission_file_url?: string;
   created_at: string;
 }
@@ -27,6 +32,9 @@ export interface Committee {
   id: number;
   name: string;
   image?: string;
+  is_visible?: boolean; // Whether committee should be visible on website
+  short_description?: string; // Short description for cards/list view
+  description?: string; // Full description for detail page
   created_at: string;
   updated_at?: string;
   committee_members?: CommitteeMember[];
@@ -103,15 +111,23 @@ export interface PubCrawlEvent {
   email: string;
   association?: string;
   amount_tickets: number;
-  name_initials?: string;
+  date?: string;
+  description?: string;
+  image?: string;
   created_at: string;
+  updated_at?: string;
 }
 
-export interface PubCrawlGroup {
-  group_id: number;
+export interface PubCrawlSignup {
+  id: number;
+  pub_crawl_event_id: number;
   name: string;
-  initials?: string;
-  pub_crawl_events_id?: number;
+  email: string;
+  association?: string;
+  amount_tickets: number;
+  name_initials?: string;
+  created_at: string;
+  updated_at?: string;
 }
 
 // Sponsors
@@ -146,5 +162,45 @@ export interface SafeHaven {
 // Stickers
 export interface Sticker {
   id: number;
+  user_created?: string;
   date_created: string;
+  date_updated?: string;
+  location_name?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  description?: string;
+  image?: string;
+  country?: string;
+  city?: string;
+}
+
+// Transactions
+export interface Transaction {
+  id: number;
+  user_id: string;
+  amount: number;
+  description: string;
+  transaction_type: 'payment' | 'membership' | 'event' | 'other';
+  status: 'pending' | 'completed' | 'failed';
+  created_at: string;
+  updated_at?: string;
+}
+
+// WhatsApp Groups
+export interface WhatsAppGroup {
+  id: number;
+  name: string;
+  description?: string;
+  invite_link: string;
+  is_active: boolean;
+  requires_membership: boolean;
+  created_at: string;
+}
+
+// Site Settings (singleton)
+export interface SiteSettings {
+  id?: number;
+  show_intro?: boolean;
+  intro_disabled_message?: string;
 }

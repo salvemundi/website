@@ -1,91 +1,105 @@
 import React from "react";
-import Navbar from "../components/NavBar";
 import Header from "../components/header";
 import BackToTopButton from "../components/backtotop";
 import CommissieCard from "../components/CommissieCard";
-import Footer from "../components/Footer";
 import { getImageUrl } from "../lib/api";
+import { slugify } from "../lib/slug";
 import { committeesApi } from "../lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { Committee } from "../types";
 
+// Helper function to clean committee names
+function cleanCommitteeName(name: string): string {
+  return name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim();
+}
+
+// Helper function to get a default committee image with variety
+function getDefaultCommitteeImage(committeeId: number): string {
+  // Use committee ID to consistently assign one of two group gifs
+  return committeeId % 2 === 0 ? '/img/group-jump.gif' : '/img/groupgif.gif';
+}
+
 export default function CommissiesPagina() {
   // Fetch committees with member details
-  const { data: committeesWithMembers = [], isLoading, error } = useQuery<Committee[]>({
+  const { data: committeesData = [], isLoading, error } = useQuery<Committee[]>({
     queryKey: ['committees-with-members'],
     queryFn: () => committeesApi.getAllWithMembers(),
     staleTime: 5 * 60 * 1000
   });
 
-  // Debug logging
-  React.useEffect(() => {
-    console.log('=== CommissiesPagina Debug ===');
-    console.log('committees count:', committeesWithMembers.length);
-    console.log('committees:', committeesWithMembers);
-    console.log('loading:', isLoading);
-    console.log('error:', error);
-    if (committeesWithMembers.length > 0) {
-      console.log('First committee:', committeesWithMembers[0]);
-      console.log('First committee_members:', committeesWithMembers[0].committee_members);
-    }
-    console.log('============================');
-  }, [committeesWithMembers, isLoading, error]);
+  // Sort committees so Bestuur is first
+  const committeesWithMembers = React.useMemo(() => {
+    return [...committeesData].sort((a, b) => {
+      const aIsBestuur = cleanCommitteeName(a.name).toLowerCase().includes('bestuur');
+      const bIsBestuur = cleanCommitteeName(b.name).toLowerCase().includes('bestuur');
+
+      if (aIsBestuur && !bIsBestuur) return -1;
+      if (!aIsBestuur && bIsBestuur) return 1;
+      return 0;
+    });
+  }, [committeesData]);
 
   return (
     <>
-      <div className="flex h-screen flex-col w-full">
-        <Navbar activePage="Commissies" />
+      <div className="flex flex-col w-full">
         <Header
           title="COMMISSIES"
-          backgroundImage="/img/backgrounds/Kroto2025.jpg"
+          backgroundImage="/img/placeholder.svg"
         />
       </div>
 
       <main className="bg-beige min-h-screen">
-        {/* Commissies Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-10 py-16 bg-beige">
+        {/* Bento Grid Layout */}
+        <div className="px-4 sm:px-6 lg:px-10 py-10 sm:py-16">
           {isLoading ? (
-            <div className="col-span-full text-center py-10">
+            <div className="text-center py-10">
               <p className="text-lg text-gray-600">Commissies laden...</p>
             </div>
           ) : error ? (
-            <div className="col-span-full text-center py-10">
-              <p className="text-lg text-red-600">Fout bij laden van commissies</p>
+            <div className="text-center py-10">
+              <p className="text-lg text-red-600 mb-2">Fout bij laden van commissies</p>
+              <p className="text-sm text-gray-600">{String(error)}</p>
             </div>
           ) : committeesWithMembers.length === 0 ? (
-            <div className="col-span-full text-center py-10">
+            <div className="text-center py-10">
               <p className="text-lg text-gray-600">Geen commissies gevonden</p>
             </div>
           ) : (
-            committeesWithMembers.map((committee) => {
-              // Get member images from committee_members
-              const memberImages = committee.committee_members
-                ?.filter((member: any) => member.is_visible && member.user_id?.avatar)
-                .map((member: any) => getImageUrl(member.user_id.avatar)) || [];
-              
-              console.log(`Committee ${committee.name}:`, {
-                hasMembers: !!committee.committee_members,
-                membersCount: committee.committee_members?.length || 0,
-                visibleCount: committee.committee_members?.filter((m: any) => m.is_visible).length || 0,
-                memberImages: memberImages
-              });
-              
-              return (
-                <CommissieCard
-                  key={committee.id}
-                  title={committee.name}
-                  description=""
-                  buttonText="Meer Lezen"
-                  buttonLink={`/commissies/${committee.id}`}
-                  image={getImageUrl(committee.image)}
-                  memberImages={memberImages}
-                />
-              );
-            })
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-auto">
+              {committeesWithMembers.map((committee) => {
+                const isBestuur = cleanCommitteeName(committee.name).toLowerCase().includes('bestuur');
+
+                const members = committee.committee_members
+                  ?.filter((member: any) => member.is_visible && member.user_id?.avatar)
+                  .map((member: any) => ({
+                    image: getImageUrl(member.user_id.avatar),
+                    firstName: member.user_id.first_name || '',
+                    isLeader: Boolean(member.is_leader),
+                  })) || [];
+
+                return (
+                  <div
+                    key={committee.id}
+                    className={`${isBestuur ? 'md:col-span-2 lg:col-span-2' : ''}`}
+                  >
+                    <div className={`h-full ${isBestuur ? 'ring-4 ring-geel rounded-3xl' : ''}`}>
+                          <CommissieCard
+                            title={cleanCommitteeName(committee.name)}
+                            description={committee.short_description || ""}
+                            buttonText="Meer Lezen"
+                            buttonLink={`/commissies/${slugify(cleanCommitteeName(committee.name))}`}
+                            image={committee.image ? getImageUrl(committee.image) : getDefaultCommitteeImage(committee.id)}
+                            members={members}
+                            isBestuur={isBestuur}
+                          />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
 
-        <Footer />
       </main>
       <BackToTopButton />
     </>

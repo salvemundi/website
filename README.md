@@ -44,6 +44,14 @@ npm run dev
 Then open: [http://localhost:3000](http://localhost:3000)
 
 ---
+## 🔄 CI/CD Deployment Pipeline
+
+De automatische deployment wordt beheerd door de GitHub Action (`deploy.yml`). Dit proces garandeert dat een push naar de `Development` of `main` branch direct een update op de Linux VPS uitvoert.
+
+**Proces:** De workflow voert een multi-stage build uit:
+1.  Het bouwt de Vite/React SPA als een Docker image.
+2.  Het injecteert de **Entra ID (MSAL) configuratie** en de **Directus URL** via GitHub Secrets als build-arguments.
+3.  Vervolgens maakt het via SSH verbinding met de VPS, trekt de nieuwe image uit de GitHub Container Registry (GHCR), en herstart de Docker Compose stack in de juiste omgeving (`dev` of `prod`).
 
 ## 🧠 Contributing
 
@@ -58,11 +66,14 @@ We follow a consistent Way of Working across the team:
 
 ---
 
-## 📚 Wiki Index
+## 📚 Documentation
 
 **Page & Description**  
 ⚙️ Setup Instructions: How to get the app running  
 🛠️ Way of Working: Git workflow, commits, tasks, branches  
+🔐 [Authentication Setup](readme/AUTH_SETUP.md): Microsoft Entra ID integration  
+📧 [Email Setup](readme/EMAIL_SETUP.md): Email notification configuration  
+📨 [Directus Email Flow](readme/DIRECTUS_EMAIL_FLOW.md): Setup Directus for email sending  
 🧑‍💻 Contributors: Thanks to these awesome people
 
 [![Contributors](https://contrib.rocks/image?repo=salvemundi/website)](https://github.com/salvemundi/website/graphs/contributors)
