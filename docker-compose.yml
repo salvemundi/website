@@ -9,7 +9,7 @@ services:
       - proxy-network
 
   payment-api:
-    image: ghcr.io/salvemundi/payment-api:latest
+    image: ghcr.io/salvemundi/payment-api:${TAG}
     container_name: payment-api
     restart: unless-stopped
     networks:
