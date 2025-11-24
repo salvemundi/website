@@ -5,6 +5,7 @@ import { documentsApi } from "../lib/api-clean";
 import { committeesApi } from "../lib/api";
 import { slugify } from "../lib/slug";
 import { Committee } from "../types";
+import { useAuth } from "../contexts/AuthContext";
 
 interface Document {
   id: number;
@@ -21,6 +22,7 @@ function cleanCommitteeName(name: string): string {
 }
 
 export default function Footer() {
+  const { isAuthenticated } = useAuth();
   // Fetch documents
   const { data: documents } = useQuery({
     queryKey: ['documents'],
@@ -171,16 +173,18 @@ export default function Footer() {
                 +31 6 24827777
               </a>
             </li>
-            <li>
-              <a 
-                href="https://wa.me/31624827777"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-geel transition-colors"
-              >
-                WhatsApp
-              </a>
-            </li>
+            {isAuthenticated && (
+              <li>
+                <a 
+                  href="https://wa.me/31624827777"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-geel transition-colors"
+                >
+                  WhatsApp
+                </a>
+              </li>
+            )}
             <li>
               <Link 
                 to="/safe-havens"
