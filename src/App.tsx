@@ -1,12 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import Home from "./pages/HomePage";
-import InschrijvenPagina from "./pages/InschrijvenPagina";
-import IntroPagina from "./pages/IntroPagina";
-import ActiviteitenPagina from "./pages/ActiviteitenPagina";
-import CommissiesPagina from "./pages/CommissiesPagina";
-import CommissieDetailPagina from "./pages/CommissieDetailPagina";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Suspense, lazy } from "react";
