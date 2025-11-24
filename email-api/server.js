@@ -6,12 +6,32 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
+// Configure CORS with a flexible origin check. In production, prefer
+// explicitly listing allowed origins. For quick debugging set
+// CORS_ALLOW_ALL=true in the env to allow requests from any origin.
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://salvemundi.nl',
+  'https://www.salvemundi.nl',
+  'https://dev.salvemundi.nl'
+];
+
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://salvemundi.nl',
-    'https://preview.salvemundi.nl'
-  ]
+  origin: function (origin, callback) {
+    // If no origin (e.g. curl or server-side) allow it
+    if (!origin) return callback(null, true);
+
+    // Allow everything when CORS_ALLOW_ALL is set (debugging only)
+    if (process.env.CORS_ALLOW_ALL === 'true') return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.warn('Blocked CORS origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
 }));
 app.use(express.json());
 
@@ -20,10 +40,39 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+// Debug endpoint: echo request headers, useful to call from a browser
+// to verify the request reaches this process and which Origin header is sent.
+app.get('/debug-headers', (req, res) => {
+  console.log('🔍 /debug-headers called', { origin: req.headers.origin, host: req.headers.host });
+  res.json({
+    ok: true,
+    method: req.method,
+    path: req.path,
+    origin: req.headers.origin || null,
+    headers: req.headers,
+  });
+});
+
+// Ensure preflight requests to /send-email are handled and logged
+app.options('/send-email', (req, res) => {
+  console.log('📨 OPTIONS preflight for /send-email', { origin: req.headers.origin, acao: req.headers['access-control-request-method'] });
+  // Let cors middleware set proper headers; just reply with 204 No Content
+  res.sendStatus(204);
+});
+
 // Send email endpoint
 app.post('/send-email', async (req, res) => {
   try {
-    const { to, subject, html, from, fromName, attachments } = req.body;
+    // Log some request metadata to help diagnose 404s coming from browsers
+    console.log('Incoming /send-email request', {
+      origin: req.headers.origin,
+      host: req.headers.host,
+      method: req.method,
+      path: req.path,
+      contentLength: req.headers['content-length'],
+    });
+
+    const { to, subject, html, from, fromName, attachments } = req.body || {};
 
     // Validate required fields
     if (!to || !subject || !html) {
@@ -61,8 +110,13 @@ app.post('/send-email', async (req, res) => {
     console.log('✅ Got access token');
 
     // Step 2: Send email via Graph API
-    const senderEmail = from || process.env.MS_GRAPH_SENDER_UPN || 'noreply@salvemundi.nl';
-    const senderName = fromName || 'Salve Mundi';
+    // Use the configured service account (MS_GRAPH_SENDER_UPN) as the mailbox
+    // used for sending. Do NOT rely on client-provided `from` to select the
+    // Graph user because that will cause ErrorInvalidUser if the user does
+    // not exist or the app has no rights to send as that user.
+    const senderEmail = process.env.MS_GRAPH_SENDER_UPN || from || 'noreply@salvemundi.nl';
+    const senderName = process.env.MS_GRAPH_SENDER_NAME || fromName || 'Salve Mundi';
+    console.log('Using sender for Graph API:', { senderEmail, senderName });
 
     const emailPayload = {
       message: {
@@ -78,9 +132,29 @@ app.post('/send-email', async (req, res) => {
             },
           },
         ],
+        // Explicitly set the 'from' in the message body to the configured sender
+        from: {
+          emailAddress: {
+            address: senderEmail,
+            name: senderName,
+          },
+        },
       },
       saveToSentItems: false,
     };
+
+    // If the client supplied a different `from` address, add it as replyTo
+    // so replies go to the client-specified mailbox while the Graph send is
+    // performed by the configured sender account.
+    if (from && from !== senderEmail) {
+      emailPayload.message.replyTo = [
+        {
+          emailAddress: {
+            address: from,
+          },
+        },
+      ];
+    }
 
     // Add attachments if provided
     if (Array.isArray(attachments) && attachments.length > 0) {

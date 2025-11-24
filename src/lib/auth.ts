@@ -97,7 +97,8 @@ async function mapDirectusUserToUser(rawUser: any): Promise<User> {
     entra_id: rawUser.entra_id,
     fontys_email: rawUser.fontys_email,
     phone_number: rawUser.phone_number,
-    avatar: rawUser.avatar,
+    // Normalize avatar to a file id string when Directus returns an object
+    avatar: rawUser?.avatar && typeof rawUser.avatar === 'object' && 'id' in rawUser.avatar ? rawUser.avatar.id : rawUser.avatar,
     is_member: isMember,
     member_id: undefined,
     membership_status: membershipStatus,
@@ -387,13 +388,14 @@ export async function getUserEventSignups(userId: string) {
           const leaderQuery = new URLSearchParams({
             'filter[committee_id][_eq]': signup.event_id.committee_id.toString(),
             'filter[is_leader][_eq]': 'true',
-            'fields': 'user_id.phone_number,user_id.first_name,user_id.last_name',
+            'fields': 'user_id.first_name,user_id.last_name',
             'limit': '1'
           }).toString();
           
           const leaders = await directusFetch<any[]>(`/items/committee_members?${leaderQuery}`);
-          if (leaders && leaders.length > 0 && leaders[0].user_id?.phone_number) {
-            signup.event_id.contact_phone = leaders[0].user_id.phone_number;
+          if (leaders && leaders.length > 0) {
+            // Do NOT copy phone numbers from Directus user profiles into the event data.
+            // Only set the contact name so the UI can show who to contact without exposing phone numbers.
             signup.event_id.contact_name = `${leaders[0].user_id.first_name || ''} ${leaders[0].user_id.last_name || ''}`.trim();
           }
         } catch (error) {

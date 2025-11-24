@@ -164,9 +164,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         // Authenticate with backend using Entra ID token
         const response = await authApi.loginWithEntraId(idToken, userEmail);
+        // Store tokens first so helper functions (getImageUrl) can build
+        // authenticated asset URLs immediately.
         localStorage.setItem('auth_token', response.access_token);
         localStorage.setItem('refresh_token', response.refresh_token);
+
+        // Set the user from the response payload immediately to update UI,
+        // but then try to fetch an up-to-date user record from Directus
+        // using the stored token. This helps ensure fields like `avatar`
+        // (which may be omitted from the initial response) are available
+        // without requiring a full page refresh.
         setUser(response.user);
+
+        try {
+          const refreshed = await authApi.fetchUserDetails(response.access_token);
+          if (refreshed) {
+            setUser(refreshed);
+          }
+        } catch (e) {
+          // Non-fatal: keep the initial user payload if fetching fails.
+          console.warn('Could not fetch fresh user details right after login:', e);
+        }
       }
     } catch (error) {
       console.error('Microsoft login error:', error);

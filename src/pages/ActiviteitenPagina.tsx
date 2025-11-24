@@ -199,7 +199,7 @@ export default function ActiviteitenPagina() {
       <div className="flex flex-col w-full">
         <Header
           title="ACTIVITEITEN"
-          backgroundImage="/img/backgrounds/Kroto2025.jpg"
+          backgroundImage="/img/placeholder.svg"
         />
       </div>
 
@@ -220,7 +220,30 @@ export default function ActiviteitenPagina() {
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   onClick={() => {
-                    const calendarUrl = `${import.meta.env.VITE_EMAIL_API_ENDPOINT || 'http://localhost:3001'}/calendar`;
+                    // Derive a base URL for the email/calendar API. Some deployments set
+                    // `VITE_EMAIL_API_ENDPOINT` to a full path like
+                    // `https://api.salvemundi.nl/send-email`. In that case we want the
+                    // origin only (https://api.salvemundi.nl) so we can call `/calendar`.
+                    const raw = import.meta.env.VITE_EMAIL_API_ENDPOINT || '';
+                    let base = '';
+
+                    try {
+                      // If the env var contains a URL, use its origin
+                      const url = new URL(raw);
+                      base = `${url.protocol}//${url.hostname}${url.port ? `:${url.port}` : ''}`;
+                    } catch (e) {
+                      // Not a full URL — attempt to strip known paths, otherwise fallback
+                      if (raw.includes('/send-email')) {
+                        base = raw.split('/send-email')[0];
+                      } else if (raw) {
+                        base = raw.replace(/\/+$/, '');
+                      }
+                    }
+
+                    // Default to the production API host when nothing is configured
+                    if (!base) base = 'https://api.salvemundi.nl';
+
+                    const calendarUrl = `${base}/calendar`;
                     const webcalUrl = calendarUrl.replace(/^https?:/, 'webcal:');
 
                     // Try to open webcal URL for automatic subscription
@@ -388,6 +411,7 @@ export default function ActiviteitenPagina() {
           activity={selectedActivity}
           isPast={selectedActivity.event_date ? new Date(selectedActivity.event_date) <= new Date() : false}
           onSignup={handleModalSignup}
+          isSignedUp={userSignups.includes(selectedActivity.id)}
         />
       )}
     </>

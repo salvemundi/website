@@ -80,15 +80,15 @@ const ClubCard: React.FC<ClubCardProps> = ({
 
   return (
     <article className="h-full bg-paars text-beige rounded-3xl shadow-lg hover:shadow-2xl transition-shadow duration-300 flex flex-col">
-      {image ? (
-        <img
-          src={image}
-          alt={title}
-          className="w-full h-48 object-cover rounded-t-3xl"
-        />
-      ) : (
-        <div className="w-full h-48 rounded-t-3xl bg-gradient-to-br from-paars to-oranje" />
-      )}
+      <img
+        src={image || '/img/placeholder.svg'}
+        alt={title}
+        className="w-full h-48 object-cover rounded-t-3xl"
+        onError={(e) => {
+          const target = e.target as HTMLImageElement;
+          target.src = '/img/placeholder.svg';
+        }}
+      />
 
       <div className="flex flex-col gap-4 p-6 flex-1">
         <header>

@@ -118,6 +118,10 @@ export default function AccountPagina() {
                     src={getImageUrl(user.avatar)}
                     alt={`${user.first_name} ${user.last_name}`}
                     className="w-24 h-24 rounded-full object-cover border-4 border-oranje self-center sm:self-auto"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/img/avatar-placeholder.svg';
+                    }}
                   />
                 ) : (
                   <div className="w-24 h-24 rounded-full bg-geel flex items-center justify-center border-4 border-oranje self-center sm:self-auto">
@@ -338,6 +342,10 @@ export default function AccountPagina() {
                         src={getImageUrl(signup.event_id.image)}
                         alt={signup.event_id.name}
                         className="w-24 h-24 rounded-xl object-cover border-2 border-oranje"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/img/placeholder.svg';
+                        }}
                       />
                     ) : (
                       <div className="w-24 h-24 rounded-xl bg-geel flex items-center justify-center border-2 border-oranje">
@@ -352,12 +360,9 @@ export default function AccountPagina() {
                       <p className="text-sm text-paars/70 mb-1">
                         Evenement Datum: {format(new Date(signup.event_id.event_date), 'd MMMM yyyy')}
                       </p>
-                      {signup.event_id.contact_phone && (
+                      {signup.event_id.contact_name && (
                         <p className="text-sm text-paars/70 mb-1">
-                          📞 Contact: {signup.event_id.contact_name && `${signup.event_id.contact_name} - `}
-                          <a href={`tel:${signup.event_id.contact_phone}`} className="underline hover:text-oranje">
-                            {signup.event_id.contact_phone}
-                          </a>
+                          Contact: {signup.event_id.contact_name}
                         </p>
                       )}
                       <p className="text-xs text-paars/50">

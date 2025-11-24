@@ -129,9 +129,13 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
       {/* Image with rounded corners at the top - always show */}
         <div className="relative z-10">
         <img
-          src={image || '/img/backgrounds/Kroto2025.jpg'}
+          src={image || '/img/placeholder.svg'}
           alt={title}
           className="w-full h-40 sm:h-44 md:h-48 object-cover rounded-xl mb-4"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = '/img/placeholder.svg';
+          }}
         />
       </div>
 
