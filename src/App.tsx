@@ -3,12 +3,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import PageTransition from "./components/PageTransition";
 import Layout from "./components/Layout";
 import Loading from "./components/Loading";
 import ScrollToTop from "./components/ScrollToTop";
+import Clarity from '@microsoft/clarity';
+
 
 // Lazy load pages
 const Home = lazy(() => import("./pages/HomePage"));
@@ -113,6 +115,10 @@ function AnimatedRoutes() {
 }
 
 export default function App() {
+  useEffect(() => {
+    Clarity.init("ub6sxoccku");
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
