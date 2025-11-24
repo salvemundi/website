@@ -35,6 +35,28 @@ export default function AttendancePagina() {
   const [isExporting, setIsExporting] = useState(false);
   const [exportMessage, setExportMessage] = useState<string | null>(null);
 
+  // Helper to derive a friendly display name/email for a signup
+  const getSignupDisplayName = (signup: any) => {
+    if (!signup) return 'Onbekende deelnemer';
+
+    // Prefer Directus user relation if available
+    if (signup.directus_relations) {
+      const first = signup.directus_relations.first_name || signup.directus_relations.firstName || '';
+      const last = signup.directus_relations.last_name || signup.directus_relations.lastName || '';
+      const full = `${first} ${last}`.trim();
+      if (full) return full;
+      if (signup.directus_relations.email) return signup.directus_relations.email;
+    }
+
+    // Fall back to participant fields (older/newer schema variations)
+    if (signup.participant_name) return signup.participant_name;
+    if (signup.name) return signup.name;
+    if (signup.participant_email) return signup.participant_email;
+    if (signup.email) return signup.email;
+
+    return 'Onbekende deelnemer';
+  };
+
   useEffect(() => {
     if (!user) {
       navigate('/login');
@@ -93,9 +115,7 @@ export default function AttendancePagina() {
       const result = await checkInParticipant(qrToken);
 
       if (result.success && result.signup) {
-        const userName = result.signup.directus_relations
-          ? `${result.signup.directus_relations.first_name || ''} ${result.signup.directus_relations.last_name || ''}`.trim()
-          : 'Deelnemer';
+        const userName = getSignupDisplayName(result.signup);
 
         setCheckInResult({
           success: true,
@@ -178,9 +198,7 @@ export default function AttendancePagina() {
       await loadEventAndSignups();
 
       // Show success message
-      const userName = signup.directus_relations
-        ? `${signup.directus_relations.first_name || ''} ${signup.directus_relations.last_name || ''}`.trim()
-        : 'Deelnemer';
+      const userName = getSignupDisplayName(signup);
 
       setCheckInResult({
         success: true,
@@ -408,9 +426,7 @@ export default function AttendancePagina() {
               ) : (
                 <div className="space-y-3">
                   {signups.map((signup) => {
-                    const userName = signup.directus_relations
-                      ? `${signup.directus_relations.first_name || ''} ${signup.directus_relations.last_name || ''}`.trim()
-                      : 'Onbekende deelnemer';
+                    const userName = getSignupDisplayName(signup);
 
                     return (
                       <div
@@ -423,9 +439,9 @@ export default function AttendancePagina() {
                         <div className="flex items-center justify-between gap-4">
                           <div className="flex-1">
                             <p className="font-semibold text-paars">{userName}</p>
-                            {signup.directus_relations?.email && (
+                            {(signup.directus_relations?.email || signup.participant_email || signup.email) && (
                               <p className="text-sm text-gray-600">
-                                {signup.directus_relations.email}
+                                {signup.directus_relations?.email || signup.participant_email || signup.email}
                               </p>
                             )}
                             {signup.checked_in && signup.checked_in_at && (
