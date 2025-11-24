@@ -15,14 +15,6 @@ import PageTransition from "./components/PageTransition";
 import Layout from "./components/Layout";
 import Loading from "./components/Loading";
 import ScrollToTop from "./components/ScrollToTop";
-import formbricks from "@formbricks/js";
-
-if (typeof window !== "undefined") {
-  formbricks.setup({
-    environmentId: "cmid7nvsb0009p701bpx6urd1",
-    appUrl: "https://uxform.salvemundi.nl",
-  });
-}
 
 // Lazy load pages
 const Home = lazy(() => import("./pages/HomePage"));
