@@ -65,7 +65,7 @@ export async function checkInParticipant(qrToken: string): Promise<{
   try {
     // Find signup by QR token
     const signups = await directusFetch<any[]>(
-      `/items/event_signups?filter[qr_token][_eq]=${qrToken}&fields=id,event_id.*,directus_relations.*,checked_in,checked_in_at,qr_token`
+      `/items/event_signups?filter[qr_token][_eq]=${qrToken}&fields=id,event_id.*,directus_relations.*,checked_in,checked_in_at,qr_token,participant_name,participant_email,participant_phone`
     );
 
     if (!signups || signups.length === 0) {
@@ -97,7 +97,7 @@ export async function checkInParticipant(qrToken: string): Promise<{
 
     // Fetch updated signup
     const updatedSignup = await directusFetch<any>(
-      `/items/event_signups/${signup.id}?fields=id,event_id.*,directus_relations.*,checked_in,checked_in_at`
+      `/items/event_signups/${signup.id}?fields=id,event_id.*,directus_relations.*,checked_in,checked_in_at,participant_name,participant_email,participant_phone`
     );
 
     return {
@@ -120,7 +120,7 @@ export async function checkInParticipant(qrToken: string): Promise<{
 export async function getSignupByQRToken(qrToken: string): Promise<any | null> {
   try {
     const signups = await directusFetch<any[]>(
-      `/items/event_signups?filter[qr_token][_eq]=${qrToken}&fields=id,event_id.*,directus_relations.*,checked_in,checked_in_at,qr_token`
+      `/items/event_signups?filter[qr_token][_eq]=${qrToken}&fields=id,event_id.*,directus_relations.*,checked_in,checked_in_at,qr_token,participant_name,participant_email,participant_phone`
     );
 
     if (!signups || signups.length === 0) {
@@ -140,7 +140,7 @@ export async function getSignupByQRToken(qrToken: string): Promise<any | null> {
 export async function getEventSignupsWithCheckIn(eventId: number): Promise<any[]> {
   try {
     const signups = await directusFetch<any[]>(
-      `/items/event_signups?filter[event_id][_eq]=${eventId}&fields=id,event_id,directus_relations.*,checked_in,checked_in_at,created_at,name,email,phone_number,qr_token&sort=checked_in_at,-created_at`
+      `/items/event_signups?filter[event_id][_eq]=${eventId}&fields=id,event_id,directus_relations.*,checked_in,checked_in_at,created_at,participant_name,participant_email,participant_phone,qr_token&sort=checked_in_at,-created_at`
     );
     return signups || [];
   } catch (error) {
