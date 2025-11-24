@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { documentsApi } from '../lib/api-clean';
 
@@ -13,6 +14,7 @@ interface Document {
 
 export default function ContactPagina() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   const { data: documents, isLoading: documentsLoading } = useQuery({
     queryKey: ['documents'],
@@ -153,22 +155,24 @@ export default function ContactPagina() {
                   </div>
                 </div>
 
-                {/* WhatsApp */}
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-geel flex items-center justify-center flex-shrink-0">
-                    <span className="text-2xl">💬</span>
+                {/* WhatsApp (only for authenticated users) */}
+                {isAuthenticated && (
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-full bg-geel flex items-center justify-center flex-shrink-0">
+                      <span className="text-2xl">💬</span>
+                    </div>
+                    <div>
+                      <a
+                        href="https://wa.me/31624827777"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-paars font-medium hover:text-oranje transition-colors"
+                      >
+                        WhatsApp
+                      </a>
+                    </div>
                   </div>
-                  <div>
-                    <a
-                      href="https://wa.me/31624827777"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-paars font-medium hover:text-oranje transition-colors"
-                    >
-                      WhatsApp
-                    </a>
-                  </div>
-                </div>
+                )}
 
                 {/* Safe Havens Button */}
                 <div className="border-t-2 border-geel/20 pt-6">
