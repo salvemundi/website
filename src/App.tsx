@@ -8,6 +8,14 @@ import IntroPagina from "./pages/IntroPagina";
 import ActiviteitenPagina from "./pages/ActiviteitenPagina";
 import CommissiesPagina from "./pages/CommissiesPagina";
 import CommissieDetailPagina from "./pages/CommissieDetailPagina";
+import formbricks from "@formbricks/js";
+
+if (typeof window !== "undefined") {
+  formbricks.setup({
+    environmentId: "cmid7nvsb0009p701bpx6urd1",
+    appUrl: "https://uxform.salvemundi.nl",
+  });
+}
 
 // Create a client
 const queryClient = new QueryClient({
