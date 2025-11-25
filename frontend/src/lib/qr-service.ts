@@ -149,7 +149,6 @@ export async function getEventSignupsWithCheckIn(eventId: number): Promise<any[]
 /**
  * Check if user is authorized for attendance tracking for a specific event.
  * Authorization is granted if the user is a committee member OR a delegated officer.
- * (Vervangt de oude isUserCommitteeMember functie)
  */
 export async function isUserAuthorizedForAttendance(userId: string, eventId: number): Promise<boolean> {
   try {
