@@ -69,7 +69,8 @@ app.post('/api/payments/create', async (req, res) => {
             product_name: description,
             payment_status: 'open',
             email: email || null,
-            registration: registrationId || null
+            registration: registrationId || null,
+            user_id: userId || null 
         };
 
         if (userId) {
