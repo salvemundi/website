@@ -12,7 +12,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: salvemundi/payment-api
-  DEPLOY_PATH: /opt/salvemundi
+  DEPLOY_PATH: /opt/payment-api
 
 jobs:
   build-and-deploy:
@@ -53,9 +53,9 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "docker-compose.yml"
+          source: "payment-api/docker-compose.yml"
           target: ${{ env.DEPLOY_PATH }}
-          strip_components: 0
+          strip_components: 1
 
       - name: Deploy on Server
         uses: appleboy/ssh-action@v1.0.3
@@ -64,26 +64,24 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            # Zorg dat de map bestaat
+            mkdir -p ${{ env.DEPLOY_PATH }}
             cd ${{ env.DEPLOY_PATH }}
 
             echo "TAG=${{ env.TAG }}" > .env
             
             if [ "${{ github.ref_name }}" == "main" ]; then
+              # PROD Secrets
               echo "MOLLIE_API_KEY=${{ secrets.PROD_MOLLIE_API_KEY }}" >> .env
               echo "MOLLIE_WEBHOOK_URL=${{ secrets.PROD_MOLLIE_WEBHOOK_URL }}" >> .env
               echo "DIRECTUS_URL=${{ secrets.PROD_DIRECTUS_URL }}" >> .env
               echo "DIRECTUS_API_TOKEN=${{ secrets.PROD_DIRECTUS_API_TOKEN }}" >> .env
-              echo "MS_GRAPH_TENANT_ID=${{ secrets.PROD_MS_GRAPH_TENANT_ID }}" >> .env
-              echo "MS_GRAPH_CLIENT_ID=${{ secrets.PROD_MS_GRAPH_CLIENT_ID }}" >> .env
-              echo "MS_GRAPH_CLIENT_SECRET=${{ secrets.PROD_MS_GRAPH_CLIENT_SECRET }}" >> .env
             else
+              # DEV Secrets
               echo "MOLLIE_API_KEY=${{ secrets.DEV_MOLLIE_API_KEY }}" >> .env
               echo "MOLLIE_WEBHOOK_URL=${{ secrets.DEV_MOLLIE_WEBHOOK_URL }}" >> .env
               echo "DIRECTUS_URL=${{ secrets.DEV_DIRECTUS_URL }}" >> .env
               echo "DIRECTUS_API_TOKEN=${{ secrets.DEV_DIRECTUS_API_TOKEN }}" >> .env
-              echo "MS_GRAPH_TENANT_ID=${{ secrets.DEV_MS_GRAPH_TENANT_ID }}" >> .env
-              echo "MS_GRAPH_CLIENT_ID=${{ secrets.DEV_MS_GRAPH_CLIENT_ID }}" >> .env
-              echo "MS_GRAPH_CLIENT_SECRET=${{ secrets.DEV_MS_GRAPH_CLIENT_SECRET }}" >> .env
             fi
 
             docker compose pull payment-api
