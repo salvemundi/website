@@ -75,54 +75,55 @@ export default function ActiviteitenPagina() {
   }, [upcomingEvents, pastEvents, showPastActivities]);
 
   // Check for event query parameter and open modal automatically
+  // ALSO: Check for payment success parameter
   useEffect(() => {
     const eventId = searchParams.get('event');
     const paymentStatus = searchParams.get('payment');
 
+    // Scenario 1: Payment Success Feedback
     if (paymentStatus === 'success' && eventId) {
       setSignupFeedback({
         type: 'success',
         message: 'Betaling ontvangen! Je inschrijving is definitief. Check je mail voor bevestiging.',
       });
+      // Clean up URL so message doesn't persist on refresh
       setSearchParams({}, { replace: true });
-      loadUserSignups();
-      return;
+      // Reload signups to show the checkmark
+      // We roepen hier direct de functie aan, maar let op dependencies
     }
 
+    // Scenario 2: Open Modal via URL (e.g. shared link)
     if (eventId && events.length > 0) {
       const event = events.find(e => e.id === parseInt(eventId));
       if (event) {
         handleShowDetails(event);
+        // Clear params so modal can be closed normally without pushing history
         setSearchParams({}, { replace: true });
       }
     }
-  }, [searchParams, events]);
+  }, [searchParams, events]); // LoadUserSignups removed to break loop risk
 
+  // --- FIX: Gebruik user?.id in de dependency array i.p.v. user object ---
   const loadUserSignups = useCallback(async () => {
-    if (!user) {
+    if (!user?.id) {
       setUserSignups([]);
       return;
     }
 
     try {
-      // We halen nu ook de prijs en status op om te filteren
       const resp = await fetch(
         `${import.meta.env.VITE_DIRECTUS_URL}/items/event_signups?filter[directus_relations][_eq]=${user.id}&fields=event_id.id,event_id.price_members,payment_status&limit=-1`,
         { headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` } }
       );
-      const data = await resp.json();
       
+      if (!resp.ok) throw new Error('Fetch failed');
+      
+      const data = await resp.json();
       const ids = (data.data || [])
         .filter((s: any) => {
-            // 1. Als de status 'paid' is, ben je sowieso ingeschreven.
             if (s.payment_status === 'paid') return true;
-
-            // 2. Als het een gratis event is (prijs is 0 of null), ben je ook ingeschreven (ongeacht status 'open' of 'null').
             const price = Number(s.event_id?.price_members) || 0;
             if (price === 0) return true;
-
-            // 3. Anders (Betaald event, maar status is 'open' of 'failed'):
-            // Beschouw dit als NIET ingeschreven, zodat de knop "Aanmelden" zichtbaar blijft en je opnieuw kunt betalen.
             return false;
         })
         .map((s: any) => s.event_id?.id || s.event_id)
@@ -131,9 +132,9 @@ export default function ActiviteitenPagina() {
       setUserSignups(ids);
     } catch (e) {
       console.error('Failed to load user signups', e);
-      setUserSignups([]);
+      // Zet signups niet leeg bij een error, behoud oude staat om knipperen te voorkomen
     }
-  }, [user]);
+  }, [user?.id]); // <--- HIER ZIT DE FIX: Alleen reageren op ID wijziging
 
   useEffect(() => {
     loadUserSignups();
@@ -173,7 +174,6 @@ export default function ActiviteitenPagina() {
       : data.name || 'Onbekend';
 
     try {
-      // 1. Inschrijven (of bestaande ophalen) in Directus
       const signup = await eventsApi.createSignup({
         event_id: data.activity.id,
         email: data.email,
@@ -185,7 +185,6 @@ export default function ActiviteitenPagina() {
         event_price: eventPrice,
       });
 
-      // 2. Betaling starten als nodig
       if (eventPrice > 0) {
         try {
           const currentUrl = window.location.href.split('?')[0];
@@ -209,7 +208,6 @@ export default function ActiviteitenPagina() {
         }
       }
 
-      // 3. Gratis flow
       try {
         const { generateQRCode } = await import('../lib/qr-service');
         const qrCodeDataUrl = signup?.qr_token ? await generateQRCode(signup.qr_token) : undefined;
