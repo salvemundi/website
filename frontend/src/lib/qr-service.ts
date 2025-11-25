@@ -1,29 +1,26 @@
-// QR Code Service for attendance tracking
+// src/lib/qr-service.ts
 import QRCode from 'qrcode';
 import { directusFetch } from './directus';
 
 /**
- * Generate a unique token for a signup
+ * Generate a unique token for a signup based on event and signup IDs.
  */
 export function generateQRToken(signupId: number, eventId: number): string {
-  // Create a unique token using signup ID, event ID, and a random component
   const random = Math.random().toString(36).substring(2, 15);
   const timestamp = Date.now().toString(36);
   return `${eventId}-${signupId}-${timestamp}-${random}`;
 }
 
 /**
- * Generate QR code as data URL
+ * Generate QR code as data URL (Base64 encoded image).
  */
 export async function generateQRCode(token: string): Promise<string> {
   try {
-    // Generate QR code as data URL (base64)
-    // Using smaller size to ensure email compatibility
     const qrDataUrl = await QRCode.toDataURL(token, {
-      errorCorrectionLevel: 'M', // Changed from H to M for smaller size
+      errorCorrectionLevel: 'M',
       type: 'image/png' as const,
       margin: 1,
-      width: 250, // Reduced from 300 to 250 for smaller file size
+      width: 250,
       color: {
         dark: '#7B2CBF', // Purple
         light: '#F5F5DC', // Beige
@@ -38,7 +35,7 @@ export async function generateQRCode(token: string): Promise<string> {
 }
 
 /**
- * Update signup with QR token
+ * Update signup with QR token in Directus.
  */
 export async function updateSignupWithQRToken(signupId: number, qrToken: string): Promise<void> {
   try {
@@ -55,7 +52,7 @@ export async function updateSignupWithQRToken(signupId: number, qrToken: string)
 }
 
 /**
- * Check in a participant using QR token
+ * Check in a participant using QR token.
  */
 export async function checkInParticipant(qrToken: string): Promise<{
   success: boolean;
@@ -115,7 +112,7 @@ export async function checkInParticipant(qrToken: string): Promise<{
 }
 
 /**
- * Get signup details by QR token (without checking in)
+ * Get signup details by QR token (without checking in).
  */
 export async function getSignupByQRToken(qrToken: string): Promise<any | null> {
   try {
@@ -135,7 +132,7 @@ export async function getSignupByQRToken(qrToken: string): Promise<any | null> {
 }
 
 /**
- * Get all signups for an event with check-in status
+ * Get all signups for an event with check-in status.
  */
 export async function getEventSignupsWithCheckIn(eventId: number): Promise<any[]> {
   try {
@@ -150,25 +147,45 @@ export async function getEventSignupsWithCheckIn(eventId: number): Promise<any[]
 }
 
 /**
- * Check if user is committee member of the event's committee
+ * Check if user is authorized for attendance tracking for a specific event.
+ * Authorization is granted if the user is a committee member OR a delegated officer.
+ * (Vervangt de oude isUserCommitteeMember functie)
  */
-export async function isUserCommitteeMember(userId: string, eventId: number): Promise<boolean> {
+export async function isUserAuthorizedForAttendance(userId: string, eventId: number): Promise<boolean> {
   try {
-    // First get the event's committee
-    const event = await directusFetch<any>(`/items/events/${eventId}?fields=committee_id`);
+    // 1. Fetch event committee ID and delegated officer IDs
+    const event = await directusFetch<any>(
+      `/items/events/${eventId}?fields=committee_id,attendance_officers.directus_users_id`
+    );
     
-    if (!event || !event.committee_id) {
+    if (!event) {
       return false;
     }
 
-    // Check if user is a member of this committee
-    const members = await directusFetch<any[]>(
-      `/items/committee_members?filter[committee_id][_eq]=${event.committee_id}&filter[user_id][_eq]=${userId}&fields=id`
-    );
+    // 2. Check for delegated officers (new M2M field)
+    let isDelegatedOfficer = false;
+    if (event.attendance_officers && Array.isArray(event.attendance_officers)) {
+      isDelegatedOfficer = event.attendance_officers.some((officer: any) => 
+        // Compare user ID from context with user IDs in the Directus relation
+        officer.directus_users_id === userId 
+      );
+      if (isDelegatedOfficer) return true;
+    }
 
-    return members && members.length > 0;
+    // 3. Check for committee membership (old logic)
+    if (event.committee_id) {
+      const members = await directusFetch<any[]>(
+        `/items/committee_members?filter[committee_id][_eq]=${event.committee_id}&filter[user_id][_eq]=${userId}&fields=id`
+      );
+
+      return (members && members.length > 0) || isDelegatedOfficer;
+    }
+    
+    // If no committee and no delegated officer, access is denied.
+    return isDelegatedOfficer;
+
   } catch (error) {
-    console.error('Error checking committee membership:', error);
+    console.error('Error checking attendance authorization:', error);
     return false;
   }
 }
