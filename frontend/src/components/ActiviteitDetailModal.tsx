@@ -3,6 +3,7 @@ import { useAuth } from "../contexts/AuthContext";
 import AttendanceButton from "./AttendanceButton";
 import { isUserCommitteeMember, getEventSignupsWithCheckIn } from "../lib/qr-service";
 import exportEventSignups from "../lib/exportSignups";
+import QRDisplay from "./QRDisplay";
 import {
   CalendarClock,
   Clock3,
@@ -12,7 +13,7 @@ import {
   Mail,
   Phone,
   Info,
-  CheckCircle, // Toegevoegd voor succes status
+  CheckCircle,
 } from "lucide-react";
 
 interface ActiviteitDetailModalProps {
@@ -36,10 +37,15 @@ interface ActiviteitDetailModalProps {
     committee_email?: string;
   };
   isPast?: boolean;
-  isSignedUp?: boolean; // Nieuwe prop voor inschrijfstatus
+  isSignedUp?: boolean;
+  signupPaymentStatus?: 'paid' | 'open' | 'failed' | 'canceled';
+  signupQrToken?: string;
   onSignup: (data: { activity: any; email: string; name: string; phoneNumber: string }) => Promise<void>;
 }
 
+/**
+ * Attempts to build a standard committee email based on the committee name.
+ */
 const buildCommitteeEmail = (name?: string | null) => {
   if (!name) return undefined;
   const normalized = name.toLowerCase();
@@ -63,12 +69,15 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
   onClose,
   activity,
   isPast = false,
-  isSignedUp = false, // Default false
+  isSignedUp = false,
+  signupPaymentStatus,
+  signupQrToken,
   onSignup,
 }) => {
   const { user } = useAuth();
   const committeeEmail = activity?.committee_email || buildCommitteeEmail(activity?.committee_name);
   const rawDate = activity.date || (activity as any)?.event_date;
+  
   const formattedDate = useMemo(() => {
     if (!rawDate) return null;
     const date = new Date(rawDate);
@@ -80,6 +89,7 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
       year: 'numeric',
     }).format(date);
   }, [rawDate]);
+  
   const formattedTime = activity.time || null;
   const formattedPrice = `€${(Number(activity.price) || 0).toFixed(2)}`;
 
@@ -91,6 +101,15 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  /**
+   * Check if the signup is paid and has a valid QR token.
+   * This determines whether to display the digital ticket.
+   */
+  const isPaidAndHasQR = useMemo(() => {
+    return isSignedUp && signupPaymentStatus === 'paid' && !!signupQrToken;
+  }, [isSignedUp, signupPaymentStatus, signupQrToken]);
+
 
   // Pre-fill form with user data when modal opens
   useEffect(() => {
@@ -161,9 +180,7 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
         name: formData.name,
         phoneNumber: formData.phoneNumber,
       });
-      // Formulier resetten en errors wissen
-      setErrors({});
-      // Modal wordt gesloten door de parent na succes, of we tonen feedback
+      // Errors cleared by parent component after success
     } catch (error: any) {
       setSubmitError(error?.message || 'Er is iets misgegaan tijdens het inschrijven.');
     } finally {
@@ -298,126 +315,156 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
 
           {/* Registration Section */}
           <div className="mt-8 border-t border-geel/20 pt-6">
-            {isSignedUp ? (
-              // --- CASE 1: REEDS INGESCHREVEN ---
-              <div className="bg-green-500/20 border border-green-500/50 p-6 rounded-xl text-center">
-                <div className="flex justify-center mb-3">
-                  <CheckCircle className="h-12 w-12 text-green-400" />
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-2">Je bent ingeschreven!</h3>
-                <p className="text-green-100">
-                  We zien je graag op {formattedDate}.
-                </p>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="mt-4 bg-white text-green-700 font-bold py-2 px-6 rounded-full hover:bg-green-50 transition-colors"
-                >
-                  Sluiten
-                </button>
-              </div>
-            ) : isPast ? (
-              // --- CASE 2: VERLOPEN ---
-              <div className="bg-gray-700 bg-opacity-50 p-6 rounded-xl text-center">
-                <h3 className="text-2xl font-bold text-gray-400 mb-2">Inschrijving Gesloten</h3>
-                <p className="text-gray-300">Deze activiteit is al geweest. Inschrijven is niet meer mogelijk.</p>
-              </div>
-            ) : (
-              // --- CASE 3: INSCHRIJVEN MOGELIJK ---
-              <div>
-                <h3 className="text-2xl font-bold text-geel mb-4">Inschrijven</h3>
-                <div className="flex flex-col lg:flex-row gap-6">
-                  <form onSubmit={handleSubmit} className="space-y-4 flex-1">
-                    {/* Name */}
-                    <div>
-                      <label htmlFor="name" className="block text-white font-semibold mb-2">Naam *</label>
-                      <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        className={`w-full px-3 py-3 rounded-lg bg-white text-paars placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-geel ${errors.name ? "border-2 border-red-500" : ""}`}
-                        placeholder="Jouw naam"
-                      />
-                      {errors.name && <p className="text-red-400 text-sm mt-1">{errors.name}</p>}
+            {isPaidAndHasQR ? (
+                // Digital ticket display case: Paid and QR token is present.
+                <div className="space-y-6 text-white">
+                    <h3 className="text-3xl font-extrabold text-geel text-center">🎉 Inschrijving Definitief!</h3>
+                    <p className="text-center text-lg text-white/90">
+                        Je bent succesvol ingeschreven en betaald voor {activity.title}.
+                    </p>
+                    
+                    <div className="flex justify-center">
+                        <QRDisplay qrToken={signupQrToken!} /> 
                     </div>
 
-                    {/* Email */}
-                    <div>
-                      <label htmlFor="email" className="block text-white font-semibold mb-2">Email *</label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        className={`w-full px-3 py-3 rounded-lg bg-white text-paars placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-geel ${errors.email ? "border-2 border-red-500" : ""}`}
-                        placeholder="jouw.email@student.avans.nl"
-                      />
-                      {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email}</p>}
-                    </div>
-
-                    {/* Phone */}
-                    <div>
-                      <label htmlFor="phoneNumber" className="block text-white font-semibold mb-2">Telefoonnummer *</label>
-                      <input
-                        type="tel"
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        value={formData.phoneNumber}
-                        onChange={handleInputChange}
-                        className={`w-full px-3 py-3 rounded-lg bg-white text-paars placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-geel ${errors.phoneNumber ? "border-2 border-red-500" : ""}`}
-                        placeholder="0612345678"
-                      />
-                      {errors.phoneNumber && <p className="text-red-400 text-sm mt-1">{errors.phoneNumber}</p>}
-                    </div>
-
-                    {/* Buttons */}
-                    <div className="flex gap-4 pt-4">
-                      <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="flex-1 bg-geel text-white font-bold py-3 px-6 rounded-full hover:scale-105 transition-transform duration-300 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
-                      >
-                        {isSubmitting ? 'BEZIG...' : 'AANMELDEN'}
-                      </button>
-                      <button
+                    <p className="text-center text-sm text-white/70 mt-4">
+                        Dit ticket is ook per e-mail naar je verzonden. Laat de QR-code scannen bij de ingang.
+                    </p>
+                    <button
                         type="button"
                         onClick={onClose}
-                        className="flex-1 bg-white text-paars font-bold py-3 px-6 rounded-full hover:scale-105 transition-transform duration-300 shadow-lg"
-                      >
-                        ANNULEREN
-                      </button>
-                    </div>
-                    {submitError && <p className="text-red-400 font-semibold text-center mt-3">{submitError}</p>}
-                  </form>
-
-                  {/* Contact Card */}
-                  {(activity.committee_name || activity.contact_name || committeeEmail) && (
-                    <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-white w-full lg:max-w-sm h-fit">
-                      <h4 className="text-xl font-semibold text-geel mb-3">Contact commissie</h4>
-                      <p className="text-sm text-white/80 mb-4">Vragen over deze activiteit? Neem direct contact op.</p>
-                      <div className="space-y-3 text-white">
-                        {activity.committee_name && (
-                          <p>
-                            <span className="font-semibold text-geel block text-sm uppercase tracking-wide">Commissie</span>
-                            <span className="text-base">{activity.committee_name}</span>
-                          </p>
-                        )}
-                        {committeeEmail && (
-                          <a
-                            href={`mailto:${committeeEmail}`}
-                            className="mt-4 inline-flex items-center justify-center w-full rounded-full bg-geel text-paars font-semibold py-3 px-4 hover:bg-opacity-90 transition"
-                          >
-                            ✉️ Mail de commissie
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  )}
+                        className="mt-4 bg-geel text-paars font-bold py-2 px-6 rounded-full hover:scale-105 transition-transform w-full"
+                    >
+                        Sluiten
+                    </button>
                 </div>
-              </div>
+            ) : isSignedUp ? (
+                // Already signed up, checking status (Open/Failed)
+                <div className="bg-green-500/20 border border-green-500/50 p-6 rounded-xl text-center">
+                    <div className="flex justify-center mb-3">
+                        <CheckCircle className="h-12 w-12 text-green-400" /> 
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-2">Je bent ingeschreven!</h3>
+                    {signupPaymentStatus === 'open' ? (
+                        <p className="text-white/80">
+                            Je inschrijving is in afwachting van betaling. Controleer je e-mail voor de betaallink of probeer opnieuw.
+                        </p>
+                    ) : (
+                        <p className="text-green-100">
+                            We zien je graag op {formattedDate}.
+                        </p>
+                    )}
+                    
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="mt-4 bg-white text-green-700 font-bold py-2 px-6 rounded-full hover:bg-green-50 transition-colors"
+                    >
+                        Sluiten
+                    </button>
+                </div>
+            ) : isPast ? (
+                // Past event case
+                <div className="bg-gray-700 bg-opacity-50 p-6 rounded-xl text-center">
+                    <h3 className="text-2xl font-bold text-gray-400 mb-2">Inschrijving Gesloten</h3>
+                    <p className="text-gray-300">Deze activiteit is al geweest. Inschrijven is niet meer mogelijk.</p>
+                </div>
+            ) : (
+                // Default: Form for new signup
+                <div>
+                    <h3 className="text-2xl font-bold text-geel mb-4">Inschrijven</h3>
+                    <div className="flex flex-col lg:flex-row gap-6">
+                        <form onSubmit={handleSubmit} className="space-y-4 flex-1">
+                            {/* Name */}
+                            <div>
+                                <label htmlFor="name" className="block text-white font-semibold mb-2">Naam *</label>
+                                <input
+                                    type="text"
+                                    id="name"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-3 py-3 rounded-lg bg-white text-paars placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-geel ${errors.name ? "border-2 border-red-500" : ""}`}
+                                    placeholder="Jouw naam"
+                                />
+                                {errors.name && <p className="text-red-400 text-sm mt-1">{errors.name}</p>}
+                            </div>
+
+                            {/* Email */}
+                            <div>
+                                <label htmlFor="email" className="block text-white font-semibold mb-2">Email *</label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-3 py-3 rounded-lg bg-white text-paars placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-geel ${errors.email ? "border-2 border-red-500" : ""}`}
+                                    placeholder="jouw.email@student.avans.nl"
+                                />
+                                {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email}</p>}
+                            </div>
+
+                            {/* Phone */}
+                            <div>
+                                <label htmlFor="phoneNumber" className="block text-white font-semibold mb-2">Telefoonnummer *</label>
+                                <input
+                                    type="tel"
+                                    id="phoneNumber"
+                                    name="phoneNumber"
+                                    value={formData.phoneNumber}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-3 py-3 rounded-lg bg-white text-paars placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-geel ${errors.phoneNumber ? "border-2 border-red-500" : ""}`}
+                                    placeholder="0612345678"
+                                />
+                                {errors.phoneNumber && <p className="text-red-400 text-sm mt-1">{errors.phoneNumber}</p>}
+                            </div>
+
+                            {/* Buttons */}
+                            <div className="flex gap-4 pt-4">
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="flex-1 bg-geel text-white font-bold py-3 px-6 rounded-full hover:scale-105 transition-transform duration-300 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
+                                >
+                                    {isSubmitting ? 'BEZIG...' : 'AANMELDEN'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={onClose}
+                                    className="flex-1 bg-white text-paars font-bold py-3 px-6 rounded-full hover:scale-105 transition-transform duration-300 shadow-lg"
+                                >
+                                    ANNULEREN
+                                </button>
+                            </div>
+                            {submitError && <p className="text-red-400 font-semibold text-center mt-3">{submitError}</p>}
+                        </form>
+
+                        {/* Contact Card */}
+                        {(activity.committee_name || activity.contact_name || committeeEmail) && (
+                          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-white w-full lg:max-w-sm h-fit">
+                            <h4 className="text-xl font-semibold text-geel mb-3">Contact commissie</h4>
+                            <p className="text-sm text-white/80 mb-4">Vragen over deze activiteit? Neem direct contact op.</p>
+                            <div className="space-y-3 text-white">
+                              {activity.committee_name && (
+                                <p>
+                                  <span className="font-semibold text-geel block text-sm uppercase tracking-wide">Commissie</span>
+                                  <span className="text-base">{activity.committee_name}</span>
+                                </p>
+                              )}
+                              {committeeEmail && (
+                                <a
+                                  href={`mailto:${committeeEmail}`}
+                                  className="mt-4 inline-flex items-center justify-center w-full rounded-full bg-geel text-paars font-semibold py-3 px-4 hover:bg-opacity-90 transition"
+                                >
+                                  ✉️ Mail de commissie
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                    </div>
+                  </div>
             )}
           </div>
         </div>
@@ -428,6 +475,10 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
 
 export default ActiviteitDetailModal;
 
+/**
+ * Component to display the button for exporting event signups.
+ * Checks user permissions against committee membership or organizer status.
+ */
 function ExportSignupsButton({ activity }: { activity: any }) {
   const { user } = useAuth();
   const [allowed, setAllowed] = useState(false);
