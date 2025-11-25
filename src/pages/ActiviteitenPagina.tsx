@@ -75,35 +75,29 @@ export default function ActiviteitenPagina() {
   }, [upcomingEvents, pastEvents, showPastActivities]);
 
   // Check for event query parameter and open modal automatically
-  // ALSO: Check for payment success parameter
   useEffect(() => {
     const eventId = searchParams.get('event');
     const paymentStatus = searchParams.get('payment');
 
-    // Scenario 1: Payment Success Feedback
     if (paymentStatus === 'success' && eventId) {
       setSignupFeedback({
         type: 'success',
         message: 'Betaling ontvangen! Je inschrijving is definitief. Check je mail voor bevestiging.',
       });
-      // Clean up URL so message doesn't persist on refresh
       setSearchParams({}, { replace: true });
-      // Reload signups to show the checkmark
-      // We roepen hier direct de functie aan, maar let op dependencies
+      loadUserSignups();
+      return;
     }
 
-    // Scenario 2: Open Modal via URL (e.g. shared link)
     if (eventId && events.length > 0) {
       const event = events.find(e => e.id === parseInt(eventId));
       if (event) {
         handleShowDetails(event);
-        // Clear params so modal can be closed normally without pushing history
         setSearchParams({}, { replace: true });
       }
     }
-  }, [searchParams, events]); // LoadUserSignups removed to break loop risk
+  }, [searchParams, events]);
 
-  // --- FIX: Gebruik user?.id in de dependency array i.p.v. user object ---
   const loadUserSignups = useCallback(async () => {
     if (!user?.id) {
       setUserSignups([]);
@@ -132,9 +126,8 @@ export default function ActiviteitenPagina() {
       setUserSignups(ids);
     } catch (e) {
       console.error('Failed to load user signups', e);
-      // Zet signups niet leeg bij een error, behoud oude staat om knipperen te voorkomen
     }
-  }, [user?.id]); // <--- HIER ZIT DE FIX: Alleen reageren op ID wijziging
+  }, [user?.id]);
 
   useEffect(() => {
     loadUserSignups();
@@ -204,7 +197,8 @@ export default function ActiviteitenPagina() {
 
         } catch (paymentError: any) {
           console.error('Betaling initialisatie mislukt:', paymentError);
-          throw new Error('Inschrijving aangemaakt, maar doorsturen naar betaling mislukt. Neem contact op.');
+          // AANGEPAST: Vriendelijkere error melding die uitnodigt om het opnieuw te proberen
+          throw new Error('Het opstarten van de betaling is mislukt. Probeer het nogmaals.');
         }
       }
 
