@@ -102,7 +102,7 @@ export default function ActiviteitenPagina() {
         setSearchParams({}, { replace: true });
       }
     }
-  }, [searchParams, events]); // Removed loadUserSignups from dep array to avoid loops, it's stable via useCallback
+  }, [searchParams, events]);
 
   const loadUserSignups = useCallback(async () => {
     if (!user) {
@@ -197,7 +197,6 @@ export default function ActiviteitenPagina() {
 
         } catch (paymentError: any) {
           console.error('Betaling initialisatie mislukt:', paymentError);
-          // Note: The signup exists in Directus as 'open', which is good for support debugging
           throw new Error('Inschrijving aangemaakt, maar doorsturen naar betaling mislukt. Neem contact op.');
         }
       }
@@ -443,10 +442,7 @@ export default function ActiviteitenPagina() {
           activity={selectedActivity}
           isPast={selectedActivity.event_date ? new Date(selectedActivity.event_date) <= new Date() : false}
           onSignup={handleModalSignup}
-          // Let op: isSignedUp is niet in de props van ActiviteitDetailModal gedefinieerd in het origineel,
-          // maar stond wel in jouw vorige snippet. Voor de zekerheid laat ik hem erin staan.
-          // Als je TypeScript error krijgt, verwijder deze regel dan.
-          // isSignedUp={userSignups.includes(selectedActivity.id)} 
+          isSignedUp={userSignups.includes(selectedActivity.id)}
         />
       )}
     </>
