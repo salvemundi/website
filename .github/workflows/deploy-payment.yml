@@ -6,7 +6,7 @@ on:
       - 'Development'
       - 'main'
     paths:
-      - 'website/payment-api/**'
+      - 'payment-api/**'
       - '.github/workflows/deploy-payment.yml'
 
 env:
@@ -43,7 +43,7 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
-          context: ./website/payment-api
+          context: ./payment-api
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
 
@@ -53,9 +53,9 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "website/docker-compose.yml"
+          source: "docker-compose.yml"
           target: ${{ env.DEPLOY_PATH }}
-          strip_components: 1
+          strip_components: 0
 
       - name: Deploy on Server
         uses: appleboy/ssh-action@v1.0.3
@@ -68,7 +68,6 @@ jobs:
 
             echo "TAG=${{ env.TAG }}" > .env
             
-            # Logic switch DEV vs PROD
             if [ "${{ github.ref_name }}" == "main" ]; then
               echo "MOLLIE_API_KEY=${{ secrets.PROD_MOLLIE_API_KEY }}" >> .env
               echo "MOLLIE_WEBHOOK_URL=${{ secrets.PROD_MOLLIE_WEBHOOK_URL }}" >> .env

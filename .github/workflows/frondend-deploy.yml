@@ -6,9 +6,9 @@ on:
       - 'Development'
       - 'main'
     paths:
-      - 'website/**'
-      - '!website/email-api/**'
-      - '!website/payment-api/**'
+      - '**'
+      - '!email-api/**'
+      - '!payment-api/**'
       - '.github/workflows/frondend-deploy.yml'
 
 env:
@@ -39,7 +39,6 @@ jobs:
         run: |
           if [[ "${{ github.ref_name }}" == "Development" ]]; then
             echo "TAG=dev" >> $GITHUB_ENV
-            # Hier zetten we de ENV vars die we in de volgende stap gebruiken
             echo "VITE_DIRECTUS_URL=${{ secrets.VITE_DIRECTUS_URL }}" >> $GITHUB_ENV
             echo "VITE_AUTH_REDIRECT_URI=${{ secrets.VITE_AUTH_REDIRECT_URI }}" >> $GITHUB_ENV
             echo "VITE_ENTRA_CLIENT_ID=${{ secrets.VITE_ENTRA_CLIENT_ID }}" >> $GITHUB_ENV
@@ -47,8 +46,6 @@ jobs:
             echo "VITE_EMAIL_API_ENDPOINT=${{ secrets.VITE_EMAIL_API_ENDPOINT }}" >> $GITHUB_ENV
           else
             echo "TAG=prod" >> $GITHUB_ENV
-            # Voor MAIN gebruiken we PROD secrets (indien je die hebt aangemaakt)
-            # Als je die nog niet hebt, val terug op de standaard secrets of maak bijv PROD_VITE_... aan
             echo "VITE_DIRECTUS_URL=${{ secrets.VITE_DIRECTUS_URL }}" >> $GITHUB_ENV
             echo "VITE_AUTH_REDIRECT_URI=${{ secrets.VITE_AUTH_REDIRECT_URI }}" >> $GITHUB_ENV
             echo "VITE_ENTRA_CLIENT_ID=${{ secrets.VITE_ENTRA_CLIENT_ID }}" >> $GITHUB_ENV
@@ -59,11 +56,10 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
-          context: ./website
-          file: ./website/Dockerfile
+          context: .
+          file: ./Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
-          # Hier gebruiken we de environment variabelen die we hierboven hebben ingesteld
           build-args: |
             VITE_DIRECTUS_URL=${{ env.VITE_DIRECTUS_URL }}
             VITE_AUTH_REDIRECT_URI=${{ env.VITE_AUTH_REDIRECT_URI }}
@@ -77,9 +73,9 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "website/docker-compose.yml"
+          source: "docker-compose.yml"
           target: ${{ env.DEPLOY_PATH }}
-          strip_components: 1
+          strip_components: 0
 
       - name: Deploy on Server
         uses: appleboy/ssh-action@v1.0.3
@@ -92,7 +88,6 @@ jobs:
             
             echo "TAG=${{ env.TAG }}" > .env
 
-            # Ook hier updaten we de backend secrets (voor de andere containers in de stack)
             if [ "${{ github.ref_name }}" == "main" ]; then
               echo "MOLLIE_API_KEY=${{ secrets.PROD_MOLLIE_API_KEY }}" >> .env
               echo "MOLLIE_WEBHOOK_URL=${{ secrets.PROD_MOLLIE_WEBHOOK_URL }}" >> .env

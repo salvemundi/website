@@ -6,7 +6,7 @@ on:
       - 'Development'
       - 'main'
     paths:
-      - 'website/email-api/**'
+      - 'email-api/**'
       - '.github/workflows/deploy-email.yml'
 
 env:
@@ -43,7 +43,7 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
-          context: ./website/email-api
+          context: ./email-api
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
 
@@ -53,9 +53,9 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "website/docker-compose.yml"
+          source: "docker-compose.yml"
           target: ${{ env.DEPLOY_PATH }}
-          strip_components: 1
+          strip_components: 0
 
       - name: Deploy on Server
         uses: appleboy/ssh-action@v1.0.3
@@ -66,12 +66,9 @@ jobs:
           script: |
             cd ${{ env.DEPLOY_PATH }}
 
-            # 1. Genereer basis .env
             echo "TAG=${{ env.TAG }}" > .env
             
-            # 2. Kies de juiste secrets op basis van de branch (Main = PROD, anders DEV)
             if [ "${{ github.ref_name }}" == "main" ]; then
-              echo "Deploying PRODUCTION configuration..."
               echo "MOLLIE_API_KEY=${{ secrets.PROD_MOLLIE_API_KEY }}" >> .env
               echo "MOLLIE_WEBHOOK_URL=${{ secrets.PROD_MOLLIE_WEBHOOK_URL }}" >> .env
               echo "DIRECTUS_URL=${{ secrets.PROD_DIRECTUS_URL }}" >> .env
@@ -80,7 +77,6 @@ jobs:
               echo "MS_GRAPH_CLIENT_ID=${{ secrets.PROD_MS_GRAPH_CLIENT_ID }}" >> .env
               echo "MS_GRAPH_CLIENT_SECRET=${{ secrets.PROD_MS_GRAPH_CLIENT_SECRET }}" >> .env
             else
-              echo "Deploying DEVELOPMENT configuration..."
               echo "MOLLIE_API_KEY=${{ secrets.DEV_MOLLIE_API_KEY }}" >> .env
               echo "MOLLIE_WEBHOOK_URL=${{ secrets.DEV_MOLLIE_WEBHOOK_URL }}" >> .env
               echo "DIRECTUS_URL=${{ secrets.DEV_DIRECTUS_URL }}" >> .env
@@ -90,6 +86,5 @@ jobs:
               echo "MS_GRAPH_CLIENT_SECRET=${{ secrets.DEV_MS_GRAPH_CLIENT_SECRET }}" >> .env
             fi
 
-            # 3. Herstart container
             docker compose pull email-api
             docker compose up -d email-api --remove-orphans
