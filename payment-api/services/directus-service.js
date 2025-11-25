@@ -48,12 +48,10 @@ async function updateDirectusRegistration(directusUrl, directusToken, id, data) 
     }
 }
 
-/**
- * Haalt een registratie op (nodig om de qr_token te lezen).
- */
+// Functie om een registratie op te halen (nodig om de qr_token en de naam te lezen).
 async function getDirectusRegistration(directusUrl, directusToken, id) {
     try {
-        const response = await axios.get(`${directusUrl}/items/event_signups/${id}?fields=qr_token`, getAuthConfig(directusToken));
+        const response = await axios.get(`${directusUrl}/items/event_signups/${id}?fields=qr_token,participant_name`, getAuthConfig(directusToken));
         return response.data.data;
     } catch (error) {
         console.error(`Failed to fetch registration ${id}:`, error.message);
