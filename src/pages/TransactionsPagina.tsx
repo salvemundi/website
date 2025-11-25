@@ -74,9 +74,11 @@ export default function TransactionsPagina() {
     }
   };
 
-  const formatAmount = (amount: number | string): string => {
-    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-    return isNaN(numAmount) ? '0.00' : numAmount.toFixed(2);
+  const formatAmount = (amount: number | string | null | undefined): string => {
+    const numAmount = amount == null
+      ? 0
+      : (typeof amount === 'string' ? parseFloat(amount) || 0 : amount);
+    return isNaN(Number(numAmount)) ? '0.00' : Number(numAmount).toFixed(2);
   };
 
   if (authLoading || !user) {
