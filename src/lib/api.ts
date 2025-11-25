@@ -148,28 +148,41 @@ export const eventsApi = {
   },
 
   createSignup: async (signupData: { event_id: number; email: string; name: string; phone_number?: string; user_id?: string; event_name?: string; event_date?: string; event_price?: number }) => {
+    // 1. Check bestaande inschrijving (Alleen voor ingelogde leden)
     if (signupData.user_id) {
       const existingQuery = buildQueryString({
         filter: {
           event_id: { _eq: signupData.event_id },
           directus_relations: { _eq: signupData.user_id }
         },
-        fields: ['id']
+        fields: ['id', 'payment_status', 'qr_token'] // We halen de status op
       });
 
       const existingSignups = await directusFetch<any[]>(`/items/event_signups?${existingQuery}`);
 
       if (existingSignups && existingSignups.length > 0) {
-        throw new Error('Je bent al ingeschreven voor deze activiteit');
+        const existing = existingSignups[0];
+        
+        // Check de betalingsstatus
+        if (existing.payment_status === 'paid') {
+            // Echt al ingeschreven en betaald -> Blokkeren
+            throw new Error('Je bent al ingeschreven (en betaald) voor deze activiteit');
+        }
+
+        // Als status 'open' (of null) is, recyclen we de inschrijving
+        // Dit zorgt ervoor dat de gebruiker opnieuw kan proberen te betalen
+        return existing; 
       }
     }
 
+    // 2. Nieuwe inschrijving maken
     const payload: any = {
       event_id: signupData.event_id,
       directus_relations: signupData.user_id || null,
       participant_name: signupData.name || null,
       participant_email: signupData.email || null,
       participant_phone: signupData.phone_number ?? null,
+      payment_status: 'open' // Zet expliciet op open
     };
 
     const signup = await directusFetch<any>(`/items/event_signups`, {
@@ -191,6 +204,12 @@ export const eventsApi = {
     return signup;
   }
 };
+
+// ... (rest van de exports: committeesApi, membersApi, etc. blijven hetzelfde) ...
+// Zorg dat je de rest van het bestand hieronder laat staan (committeesApi, etc.)
+// Omdat ik niet het hele bestand opnieuw wil plakken als het enorm is, 
+// hieronder de rest van de functies die je al had.
+// Als je copy-paste, zorg dat je createSignup vervangt of het hele bestand pakt als je vorige versie 'clean' was.
 
 export const committeesApi = {
   getAll: async () => {
