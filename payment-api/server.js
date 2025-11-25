@@ -12,11 +12,14 @@ const DIRECTUS_URL = process.env.DIRECTUS_URL;
 const WEBHOOK_URL = process.env.MOLLIE_WEBHOOK_URL;
 const MOLLIE_API_KEY = process.env.MOLLIE_API_KEY;
 const DIRECTUS_API_TOKEN = process.env.DIRECTUS_API_TOKEN;
+// Interne URL naar je email container (pas aan als je container anders heet)
+const EMAIL_SERVICE_URL = process.env.EMAIL_SERVICE_URL || 'http://email-api:3001';
 
 console.log("--- STARTUP CONFIG CHECK ---");
 console.log(`PORT: ${PORT}`);
 console.log(`DIRECTUS_URL: ${DIRECTUS_URL}`);
 console.log(`WEBHOOK_URL: ${WEBHOOK_URL}`);
+console.log(`EMAIL_SERVICE_URL: ${EMAIL_SERVICE_URL}`);
 console.log(`MOLLIE_API_KEY: ${MOLLIE_API_KEY ? '***SET***' : 'MISSING'}`);
 console.log(`DIRECTUS_API_TOKEN: ${DIRECTUS_API_TOKEN ? '***SET***' : 'MISSING'}`);
 
@@ -38,7 +41,7 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: function (origin, callback) {
-        console.log(`Incoming request from origin: ${origin}`);
+        // console.log(`Incoming request from origin: ${origin}`);
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
@@ -53,8 +56,7 @@ app.use(cors({
  */
 app.post('/api/payments/create', async (req, res) => {
     console.log(`\n--- NEW PAYMENT REQUEST ---`);
-    console.log(`Body:`, JSON.stringify(req.body, null, 2));
-
+    
     try {
         const { amount, description, redirectUrl, userId, email, registrationId, isContribution } = req.body;
 
@@ -70,6 +72,7 @@ app.post('/api/payments/create', async (req, res) => {
             payment_status: 'open',
             email: email || null,
             registration: registrationId || null
+            // user_id laten we weg, tenzij we hem hieronder expliciet hebben
         };
 
         if (userId) {
@@ -85,7 +88,8 @@ app.post('/api/payments/create', async (req, res) => {
         const metadata = {
             transactionRecordId: transactionRecordId,
             registrationId: registrationId,
-            notContribution: isContribution ? "false" : "true"
+            notContribution: isContribution ? "false" : "true",
+            email: email // We slaan email op in metadata voor de bevestiging
         };
 
         console.log("2. Requesting Payment from Mollie...");
@@ -126,20 +130,13 @@ app.post('/api/payments/create', async (req, res) => {
  * Endpoint: POST /api/payments/webhook
  */
 app.post('/api/payments/webhook', async (req, res) => {
-    console.log(`\n--- WEBHOOK RECEIVED ---`);
-    // Mollie stuurt ID in body (x-www-form-urlencoded)
-    console.log("Headers:", JSON.stringify(req.headers));
-    console.log("Body:", JSON.stringify(req.body));
-
     try {
         const paymentId = req.body.id;
 
         if (!paymentId) {
-            console.error("❌ No payment ID in webhook body");
             return res.status(400).send('Missing payment ID.');
         }
 
-        console.log(`Fetching status for payment: ${paymentId}`);
         const payment = await mollieClient.payments.get(paymentId);
         const { transactionRecordId, registrationId } = payment.metadata;
 
@@ -152,12 +149,9 @@ app.post('/api/payments/webhook', async (req, res) => {
         console.log(`Mollie Status: ${payment.status} -> Internal: ${internalStatus}`);
 
         if (transactionRecordId) {
-            console.log(`Updating Transaction ${transactionRecordId} -> ${internalStatus}`);
             await updateDirectusTransaction(transactionRecordId, {
                 payment_status: internalStatus
             });
-        } else {
-            console.warn("⚠️ No transactionRecordId in metadata");
         }
 
         if (payment.isPaid() && registrationId) {
@@ -165,6 +159,9 @@ app.post('/api/payments/webhook', async (req, res) => {
             await updateDirectusRegistration(registrationId, {
                 payment_status: 'paid'
             });
+
+            // --- HIER VERSTUREN WE DE MAIL ---
+            await sendConfirmationEmail(payment.metadata, payment.description);
         }
 
         res.status(200).send('OK');
@@ -179,12 +176,9 @@ app.post('/api/payments/webhook', async (req, res) => {
 
 async function createDirectusTransaction(data) {
     try {
-        console.log("POSTing to Directus:", JSON.stringify(data));
         const response = await axios.post(`${DIRECTUS_URL}/items/transactions`, data, getAuthConfig());
         return response.data.data.id;
     } catch (error) {
-        console.error("Directus Create FAILED:", error.message);
-        if(error.response) console.error("Response data:", error.response.data);
         throw new Error(`Directus Create Failed: ${error.response?.data?.errors?.[0]?.message || error.message}`);
     }
 }
@@ -194,7 +188,6 @@ async function updateDirectusTransaction(id, data) {
         await axios.patch(`${DIRECTUS_URL}/items/transactions/${id}`, data, getAuthConfig());
     } catch (error) {
         console.error(`Failed to update transaction ${id}:`, error.message);
-        if(error.response) console.error("Response data:", error.response.data);
     }
 }
 
@@ -203,7 +196,39 @@ async function updateDirectusRegistration(id, data) {
         await axios.patch(`${DIRECTUS_URL}/items/event_signups/${id}`, data, getAuthConfig());
     } catch (error) {
         console.error(`Failed to update registration ${id}:`, error.message);
-        if(error.response) console.error("Response data:", error.response.data);
+    }
+}
+
+async function sendConfirmationEmail(metadata, description) {
+    // Alleen sturen als we een emailadres hebben
+    if (!metadata || !metadata.email || metadata.email === 'null') {
+        console.log("⚠️ No email found in metadata, skipping confirmation email.");
+        return;
+    }
+
+    try {
+        console.log(`📧 Sending confirmation email to ${metadata.email}...`);
+        
+        await axios.post(`${EMAIL_SERVICE_URL}/send-email`, {
+            to: metadata.email,
+            subject: `Betaling geslaagd: ${description}`,
+            html: `
+                <div style="font-family: sans-serif; color: #333;">
+                    <h2 style="color: #663399;">Bedankt voor je betaling!</h2>
+                    <p>Beste lid,</p>
+                    <p>Je betaling voor <strong>${description}</strong> is succesvol ontvangen.</p>
+                    <p>Je inschrijving is nu definitief.</p>
+                    <br/>
+                    <p>Met vriendelijke groet,</p>
+                    <p><strong>S.A. Salve Mundi</strong></p>
+                </div>
+            `
+        });
+        
+        console.log("✅ Confirmation email sent.");
+    } catch (error) {
+        console.error("❌ Failed to send confirmation email:", error.message);
+        // We gooien geen error, want de betaling zelf is wel gelukt.
     }
 }
 
