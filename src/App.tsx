@@ -50,6 +50,19 @@ const sendClarityConsent = (ad: ClarityConsentState, analytics: ClarityConsentSt
     console.warn("Kon Clarity consentv2 niet doorgeven", error);
   }
 };
+type ClarityConsentState = "granted" | "denied";
+
+const sendClarityConsent = (ad: ClarityConsentState, analytics: ClarityConsentState) => {
+  if (typeof window === "undefined") return;
+  const clarityFn = (window as typeof window & { clarity?: (...args: unknown[]) => void }).clarity;
+  if (!clarityFn) return;
+
+  try {
+    clarityFn("consentv2", { ad_Storage: ad, analytics_Storage: analytics });
+  } catch (error) {
+    console.warn("Kon Clarity consentv2 niet doorgeven", error);
+  }
+};
 
 // Create a client
 const queryClient = new QueryClient({
