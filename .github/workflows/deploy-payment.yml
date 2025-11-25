@@ -45,44 +45,4 @@ jobs:
         with:
           context: ./payment-api
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
-
-      - name: Copy docker-compose.yml to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "payment-api/docker-compose.yml"
-          target: ${{ env.DEPLOY_PATH }}
-          strip_components: 1
-
-      - name: Deploy on Server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            # Zorg dat de map bestaat
-            mkdir -p ${{ env.DEPLOY_PATH }}
-            cd ${{ env.DEPLOY_PATH }}
-
-            echo "TAG=${{ env.TAG }}" > .env
-            
-            if [ "${{ github.ref_name }}" == "main" ]; then
-              # PROD Secrets
-              echo "MOLLIE_API_KEY=${{ secrets.PROD_MOLLIE_API_KEY }}" >> .env
-              echo "MOLLIE_WEBHOOK_URL=${{ secrets.PROD_MOLLIE_WEBHOOK_URL }}" >> .env
-              echo "DIRECTUS_URL=${{ secrets.PROD_DIRECTUS_URL }}" >> .env
-              echo "DIRECTUS_API_TOKEN=${{ secrets.PROD_DIRECTUS_API_TOKEN }}" >> .env
-            else
-              # DEV Secrets
-              echo "MOLLIE_API_KEY=${{ secrets.DEV_MOLLIE_API_KEY }}" >> .env
-              echo "MOLLIE_WEBHOOK_URL=${{ secrets.DEV_MOLLIE_WEBHOOK_URL }}" >> .env
-              echo "DIRECTUS_URL=${{ secrets.DEV_DIRECTUS_URL }}" >> .env
-              echo "DIRECTUS_API_TOKEN=${{ secrets.DEV_DIRECTUS_API_TOKEN }}" >> .env
-            fi
-
-            docker compose pull payment-api
-            docker compose up -d payment-api --remove-orphans
+          tags: ${{ env.REGISTRY }}/${{
