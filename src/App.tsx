@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Suspense, lazy, useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence } from "framer-motion";
@@ -55,6 +55,55 @@ const LazyPage = ({ children }: { children: ReactNode }) => (
     </Suspense>
   </PageTransition>
 );
+
+const ClarityUserSync = ({ enabled }: { enabled: boolean }) => {
+  const { user, isAuthenticated } = useAuth();
+  const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(" ").trim();
+  const membershipStatus = user?.membership_status ?? (user?.is_member ? "active" : "none");
+  const authProvider = user ? (user.entra_id ? "entra" : "email_password") : "none";
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    try {
+      Clarity.identify(
+        user ? user.id : "anonymous",
+        undefined,
+        undefined,
+        user ? fullName || undefined : "Guest"
+      );
+
+      const tags: Record<string, string> = {
+        auth_state: isAuthenticated ? "authenticated" : "anonymous",
+        user_email: user?.email ?? "anonymous",
+        user_name: fullName || "anonymous",
+        membership_status: membershipStatus,
+        membership_expires_at: user?.membership_expiry ?? "not_set",
+        member_id: user?.member_id ? String(user.member_id) : "none",
+        membership_flag: user?.is_member ? "member" : "not_member",
+        auth_provider: authProvider,
+      };
+
+      if (user?.fontys_email) {
+        tags.fontys_email = user.fontys_email;
+      }
+      if (user?.entra_id) {
+        tags.entra_id = user.entra_id;
+      }
+      if (user?.minecraft_username) {
+        tags.minecraft_username = user.minecraft_username;
+      }
+
+      Object.entries(tags).forEach(([key, value]) => {
+        Clarity.setTag(key, value);
+      });
+    } catch (error) {
+      console.warn("Kon Microsoft Clarity niet bijwerken met gebruikersinformatie", error);
+    }
+  }, [authProvider, enabled, fullName, isAuthenticated, membershipStatus, user]);
+
+  return null;
+};
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -147,6 +196,34 @@ const persistPreferences = (prefs: TrackingPreferences) => {
 export default function App() {
   const [trackingPrefs, setTrackingPrefs] = useState<TrackingPreferences | null>(() => readStoredPreferences());
   const clarityInitialized = useRef(false);
+  const [clarityReady, setClarityReady] = useState(false);
+
+  useEffect(() => {
+    const clarityAllowed = trackingPrefs?.clarity === true;
+
+    if (!clarityAllowed) {
+      if (clarityInitialized.current) {
+        try {
+          Clarity.consent(false);
+        } catch (error) {
+          console.warn("Kon Clarity toestemming niet intrekken", error);
+        }
+      }
+      setClarityReady(false);
+      return;
+    }
+
+    try {
+      Clarity.consent(true);
+    } catch (error) {
+      console.warn("Kon Clarity toestemming niet doorgeven", error);
+    }
+
+    if (!clarityInitialized.current) {
+      Clarity.init(CLARITY_PROJECT_ID);
+      clarityInitialized.current = true;
+    }
+    setClarityReady(true);
 
   useEffect(() => {
     if (trackingPrefs?.clarity && !clarityInitialized.current) {
@@ -164,6 +241,7 @@ export default function App() {
   const handleRejectAll = () => handleSavePreferences({ clarity: false });
 
   const shouldShowCookieBanner = trackingPrefs === null;
+  const clarityAllowed = trackingPrefs?.clarity === true && clarityReady;
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -181,6 +259,7 @@ export default function App() {
               onSave={handleSavePreferences}
             />
           )}
+          <ClarityUserSync enabled={clarityAllowed} />
         </Router>
         <ReactQueryDevtools initialIsOpen={false} />
       </AuthProvider>
