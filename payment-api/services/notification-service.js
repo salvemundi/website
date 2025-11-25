@@ -81,7 +81,7 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
                     <h2 style="color: #7B2CBF;">Bedankt voor je inschrijving!</h2>
                     <p>Beste ${greetingName},</p>
                     <p>Je betaling voor <strong>${activityName}</strong> is succesvol ontvangen.</p>
-                    <p>Hieronder vind je je persoonlijke QR-code. Laat deze scannen bij de ingang.</p>
+                    <p>Hieronder vind je je persoonlijke QR-code. Laat deze scannen bij de commissieleden.</p>
                     
                     ${qrHtml}
                     
