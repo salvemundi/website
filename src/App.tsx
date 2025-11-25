@@ -36,6 +36,19 @@ const CLARITY_CONSENT_KEY = "clarity-consent";
 type TrackingPreferences = {
   clarity: boolean;
 };
+type ClarityConsentState = "granted" | "denied";
+
+const sendClarityConsent = (ad: ClarityConsentState, analytics: ClarityConsentState) => {
+  if (typeof window === "undefined") return;
+  const clarityFn = (window as typeof window & { clarity?: (...args: unknown[]) => void }).clarity;
+  if (!clarityFn) return;
+
+  try {
+    clarityFn("consentv2", { ad_Storage: ad, analytics_Storage: analytics });
+  } catch (error) {
+    console.warn("Kon Clarity consentv2 niet doorgeven", error);
+  }
+};
 
 // Create a client
 const queryClient = new QueryClient({
@@ -43,7 +56,7 @@ const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
-      staleTime: 1 * 60 * 1000, // 5 minutes
+      staleTime: 1 * 60 * 1000, // 1 minute
     },
   },
 });
@@ -199,37 +212,23 @@ export default function App() {
   const [clarityReady, setClarityReady] = useState(false);
 
   useEffect(() => {
-    const clarityAllowed = trackingPrefs?.clarity === true;
+    const clarityConsented = trackingPrefs?.clarity === true;
 
-    if (!clarityAllowed) {
+    if (!clarityConsented) {
       if (clarityInitialized.current) {
-        try {
-          Clarity.consent(false);
-        } catch (error) {
-          console.warn("Kon Clarity toestemming niet intrekken", error);
-        }
+        sendClarityConsent("denied", "denied");
       }
       setClarityReady(false);
       return;
-    }
-
-    try {
-      Clarity.consent(true);
-    } catch (error) {
-      console.warn("Kon Clarity toestemming niet doorgeven", error);
     }
 
     if (!clarityInitialized.current) {
       Clarity.init(CLARITY_PROJECT_ID);
       clarityInitialized.current = true;
     }
-    setClarityReady(true);
 
-  useEffect(() => {
-    if (trackingPrefs?.clarity && !clarityInitialized.current) {
-      Clarity.init(CLARITY_PROJECT_ID);
-      clarityInitialized.current = true;
-    }
+    sendClarityConsent("granted", "granted");
+    setClarityReady(true);
   }, [trackingPrefs]);
 
   const handleSavePreferences = (prefs: TrackingPreferences) => {
