@@ -79,12 +79,14 @@ const ClarityUserSync = ({ enabled }: { enabled: boolean }) => {
     if (!enabled) return;
 
     try {
-      Clarity.identify(
-        user ? user.id : "anonymous",
-        undefined,
-        undefined,
-        user ? fullName || undefined : "Guest"
-      );
+        const clarityId = user ? user.id : "anonymous";
+        console.log("Clarity.identify called with:", clarityId);
+        Clarity.identify(
+          clarityId,
+          undefined,
+          undefined,
+          user ? fullName || undefined : "Guest"
+        );
 
       const tags: Record<string, string> = {
         auth_state: isAuthenticated ? "authenticated" : "anonymous",
@@ -108,6 +110,7 @@ const ClarityUserSync = ({ enabled }: { enabled: boolean }) => {
       }
 
       Object.entries(tags).forEach(([key, value]) => {
+          console.log("Clarity.setTag", key, value);
         Clarity.setTag(key, value);
       });
     } catch (error) {
