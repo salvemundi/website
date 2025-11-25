@@ -155,24 +155,32 @@ export async function loginWithEntraId(entraIdToken: string, userEmail: string):
       throw new Error(error.error || error.errors?.[0]?.message || 'Microsoft login failed');
     }
 
-    const data = await response.json();
+    const raw = await response.json();
+
+    // Support multiple shapes: { access_token, ... } OR { data: { access_token, ... } } OR { data: { data: { ... } } }
+    const payload = raw?.data?.data || raw?.data || raw;
+
+    // Validate we actually received an access token
+    if (!payload || !payload.access_token) {
+      console.error('Entra login returned unexpected payload:', raw);
+      throw new Error('Microsoft login failed: no access token returned from backend');
+    }
 
     let enrichedUser: User | null = null;
     try {
-      enrichedUser = await fetchUserDetails(data.access_token);
+      enrichedUser = await fetchUserDetails(payload.access_token);
     } catch (error) {
       console.warn('Failed to refresh user details after Entra login. Falling back to response payload.', error);
     }
 
-    const userDetails = enrichedUser 
-      ? enrichedUser 
-      : await mapDirectusUserToUser(data.user);
-    
-    // The backend returns the data directly, not nested in data.data
+    const userDetails = enrichedUser
+      ? enrichedUser
+      : await mapDirectusUserToUser(payload.user || payload);
+
     return {
-      access_token: data.access_token,
-      refresh_token: data.refresh_token,
-      expires: data.expires,
+      access_token: payload.access_token,
+      refresh_token: payload.refresh_token,
+      expires: payload.expires,
       user: userDetails,
     };
   } catch (error) {
@@ -242,8 +250,17 @@ export async function fetchUserDetails(token: string): Promise<User | null> {
 
       console.error('❌ Failed to fetch user details:', payload);
 
-      // If Directus indicates token expired, clear stored tokens and signal app
-      if (payload && payload.errors && payload.errors[0]?.extensions?.code === 'TOKEN_EXPIRED') {
+      // Treat common invalid/expired token indicators as an expired session.
+      const errorCode = payload?.errors?.[0]?.extensions?.code || payload?.errors?.[0]?.extensions?.code || payload?.code;
+      const status = response.status;
+
+      if (
+        status === 401 ||
+        status === 403 ||
+        errorCode === 'TOKEN_EXPIRED' ||
+        errorCode === 'INVALID_TOKEN' ||
+        (typeof payload === 'string' && /invalid token/i.test(payload))
+      ) {
         try {
           localStorage.removeItem('auth_token');
           localStorage.removeItem('refresh_token');
@@ -251,14 +268,12 @@ export async function fetchUserDetails(token: string): Promise<User | null> {
           // ignore
         }
 
-        // Notify application that auth expired
         try {
           window.dispatchEvent(new CustomEvent('auth:expired'));
         } catch (e) {
           // ignore
         }
 
-        // Return null to indicate no valid user
         return null;
       }
 
@@ -266,7 +281,8 @@ export async function fetchUserDetails(token: string): Promise<User | null> {
     }
 
     const userData = await response.json();
-    const user = userData.data;
+    // Directus usually wraps payload in { data: { ... } }
+    const user = userData?.data || userData;
 
     return await mapDirectusUserToUser(user);
   } catch (error) {
