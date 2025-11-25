@@ -74,7 +74,7 @@ app.post('/api/payments/create', async (req, res) => {
 
         if (userId) {
             console.log(`Linking transaction to user ID: ${userId}`);
-            transactionPayload.user = userId; 
+            transactionPayload.user_id = userId; 
         }
 
         console.log("1. Creating Directus Transaction...");
