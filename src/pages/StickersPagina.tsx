@@ -274,6 +274,13 @@ export default function StickersPagina() {
                         <p className="text-xs text-gray-400 mt-2">
                           Added: {new Date(sticker.date_created).toLocaleDateString()}
                         </p>
+                        {sticker.user_created && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            Added by: {typeof sticker.user_created === 'string'
+                              ? sticker.user_created
+                              : `${sticker.user_created.first_name || ''} ${sticker.user_created.last_name || ''}`.trim() || sticker.user_created.email || 'Unknown'}
+                          </p>
+                        )}
                       </div>
                     </Popup>
                   </Marker>
@@ -306,6 +313,13 @@ export default function StickersPagina() {
                     <p className="text-xs text-gray-400 mt-2">
                       {new Date(sticker.date_created).toLocaleDateString()}
                     </p>
+                    {sticker.user_created && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Added by: {typeof sticker.user_created === 'string'
+                          ? sticker.user_created
+                          : `${sticker.user_created.first_name || ''} ${sticker.user_created.last_name || ''}`.trim() || sticker.user_created.email || 'Unknown'}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
