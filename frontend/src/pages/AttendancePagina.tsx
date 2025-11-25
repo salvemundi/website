@@ -1,5 +1,4 @@
-// Attendance Check-in Page for Committee Members
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/header';
@@ -7,7 +6,8 @@ import BackToTopButton from '../components/backtotop';
 import QRScanner from '../components/QRScanner';
 import {
   checkInParticipant,
-  isUserCommitteeMember,
+  // Using the updated authorization function
+  isUserAuthorizedForAttendance, 
   getEventSignupsWithCheckIn
 } from '../lib/qr-service';
 import exportEventSignups from '../lib/exportSignups';
@@ -35,11 +35,12 @@ export default function AttendancePagina() {
   const [isExporting, setIsExporting] = useState(false);
   const [exportMessage, setExportMessage] = useState<string | null>(null);
 
-  // Helper to derive a friendly display name/email for a signup
+  /**
+   * Derives a clear display name/email for a signup entry.
+   */
   const getSignupDisplayName = (signup: any) => {
     if (!signup) return 'Onbekende deelnemer';
 
-    // Prefer Directus user relation if available
     if (signup.directus_relations) {
       const first = signup.directus_relations.first_name || signup.directus_relations.firstName || '';
       const last = signup.directus_relations.last_name || signup.directus_relations.lastName || '';
@@ -48,7 +49,6 @@ export default function AttendancePagina() {
       if (signup.directus_relations.email) return signup.directus_relations.email;
     }
 
-    // Fall back to participant fields (older/newer schema variations)
     if (signup.participant_name) return signup.participant_name;
     if (signup.name) return signup.name;
     if (signup.participant_email) return signup.participant_email;
@@ -72,14 +72,19 @@ export default function AttendancePagina() {
     loadEventAndSignups();
   }, [user, eventId]);
 
+  /**
+   * Checks if the current user is authorized to perform attendance checks for this event.
+   */
   const checkAuthorization = async () => {
     if (!user || !eventId) return;
 
     try {
-      const authorized = await isUserCommitteeMember(user.id, parseInt(eventId));
+      // Use the comprehensive authorization check
+      const authorized = await isUserAuthorizedForAttendance(user.id, parseInt(eventId));
       setIsAuthorized(authorized);
 
       if (!authorized) {
+        // Redirect if unauthorized
         setTimeout(() => navigate('/activiteiten'), 3000);
       }
     } catch (error) {
@@ -88,17 +93,18 @@ export default function AttendancePagina() {
     }
   };
 
+  /**
+   * Loads event details and the current signups list.
+   */
   const loadEventAndSignups = async () => {
     if (!eventId) return;
 
     try {
       setLoading(true);
 
-      // Load event details
       const eventData = await eventsApi.getById(eventId);
       setEvent(eventData);
 
-      // Load signups with check-in status
       const signupData = await getEventSignupsWithCheckIn(parseInt(eventId));
       setSignups(signupData);
     } catch (error) {
@@ -108,6 +114,9 @@ export default function AttendancePagina() {
     }
   };
 
+  /**
+   * Handles successful scan from the QR scanner.
+   */
   const handleScanSuccess = async (qrToken: string) => {
     try {
       setIsScanning(false);
@@ -124,7 +133,6 @@ export default function AttendancePagina() {
           timestamp: new Date().toLocaleString('nl-NL'),
         });
 
-        // Refresh signups list
         await loadEventAndSignups();
       } else {
         setCheckInResult({
@@ -133,9 +141,9 @@ export default function AttendancePagina() {
         });
       }
 
-      // Clear result after 5 seconds
       setTimeout(() => {
         setCheckInResult(null);
+        setIsScanning(true);
       }, 5000);
     } catch (error) {
       console.error('Error during check-in:', error);
@@ -147,9 +155,15 @@ export default function AttendancePagina() {
   };
 
   const handleScanError = (error: string) => {
-    console.error('Scan error:', error);
+    // Only log severe errors, ignore typical camera not found exceptions
+    if (!error.includes('NotFoundException')) {
+        console.error('Scan error:', error);
+    }
   };
 
+  /**
+   * Handles the export of the signups list to an Excel file.
+   */
   const handleExportSignups = async () => {
     if (signups.length === 0) {
       setExportMessage('Er zijn nog geen inschrijvingen om te exporteren.');
@@ -177,6 +191,9 @@ export default function AttendancePagina() {
     }
   };
 
+  /**
+   * Handles manual toggle of attendance status for a participant.
+   */
   const handleToggleAttendance = async (signup: any) => {
     try {
       const newCheckedInStatus = !signup.checked_in;
@@ -194,10 +211,8 @@ export default function AttendancePagina() {
         }),
       });
 
-      // Refresh the list
       await loadEventAndSignups();
 
-      // Show success message
       const userName = getSignupDisplayName(signup);
 
       setCheckInResult({
@@ -209,7 +224,6 @@ export default function AttendancePagina() {
         timestamp: new Date().toLocaleString('nl-NL'),
       });
 
-      // Clear result after 3 seconds
       setTimeout(() => {
         setCheckInResult(null);
       }, 3000);
@@ -249,7 +263,7 @@ export default function AttendancePagina() {
               Je hebt geen toestemming om aanwezigheid te controleren voor deze activiteit.
             </p>
             <p className="text-sm text-paars/70">
-              Alleen commissieleden van deze activiteit kunnen aanwezigheid controleren.
+              Alleen commissieleden of aangewezen officieren kunnen dit paneel gebruiken.
             </p>
           </div>
         </div>
