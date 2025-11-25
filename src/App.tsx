@@ -5,12 +5,14 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Suspense, lazy, useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence } from "framer-motion";
+import posthog from "posthog-js";
 import PageTransition from "./components/PageTransition";
 import Layout from "./components/Layout";
 import Loading from "./components/Loading";
 import ScrollToTop from "./components/ScrollToTop";
 import CookieBanner from "./components/CookieBanner";
 import Clarity from "@microsoft/clarity";
+import { TrackingPreferences } from "./types/tracking";
 
 
 // Lazy load pages
@@ -32,10 +34,9 @@ const KroegentochtPagina = lazy(() => import("./pages/KroegentochtPagina"));
 const AttendancePagina = lazy(() => import("./pages/AttendancePagina"));
 const ClubsPagina = lazy(() => import("./pages/ClubsPagina"));
 const CLARITY_PROJECT_ID = "ub6sxoccku";
-const CLARITY_CONSENT_KEY = "clarity-consent";
-type TrackingPreferences = {
-  clarity: boolean;
-};
+const TRACKING_PREFERENCES_KEY = "clarity-consent";
+const POSTHOG_API_KEY = import.meta.env.VITE_POSTHOG_KEY ?? "phc_mOX7smJqqHtzKGB1kTuVZFLqgRFIHW0cPEFehanAh6D";
+const POSTHOG_API_HOST = import.meta.env.VITE_POSTHOG_HOST ?? "https://eu.i.posthog.com";
 type ClarityConsentState = "granted" | "denied";
 
 const sendClarityConsent = (ad: ClarityConsentState, analytics: ClarityConsentState) => {
@@ -121,6 +122,65 @@ const ClarityUserSync = ({ enabled }: { enabled: boolean }) => {
   return null;
 };
 
+const PosthogUserSync = ({ enabled }: { enabled: boolean }) => {
+  const { user, isAuthenticated } = useAuth();
+  const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(" ").trim();
+  const membershipStatus = user?.membership_status ?? (user?.is_member ? "active" : "none");
+  const authProvider = user ? (user.entra_id ? "entra" : "email_password") : "none";
+  const lastIdentifiedUser = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    const baseProps = {
+      auth_state: isAuthenticated ? "authenticated" : "anonymous",
+      membership_status: membershipStatus,
+      membership_flag: user?.is_member ? "member" : "not_member",
+      membership_expires_at: user?.membership_expiry ?? "not_set",
+      auth_provider: authProvider,
+    };
+
+    if (user) {
+      posthog.register(baseProps);
+      posthog.identify(user.id, {
+        email: user.email,
+        name: fullName || undefined,
+        first_name: user.first_name || undefined,
+        last_name: user.last_name || undefined,
+        member_id: user.member_id ?? undefined,
+        fontys_email: user.fontys_email ?? undefined,
+        entra_id: user.entra_id ?? undefined,
+        minecraft_username: user.minecraft_username ?? undefined,
+        ...baseProps,
+      });
+      lastIdentifiedUser.current = user.id;
+    } else {
+      if (lastIdentifiedUser.current) {
+        posthog.reset();
+        lastIdentifiedUser.current = null;
+      }
+      posthog.register(baseProps);
+    }
+  }, [authProvider, enabled, fullName, isAuthenticated, membershipStatus, user]);
+
+  return null;
+};
+
+const PosthogRouteTracker = ({ enabled }: { enabled: boolean }) => {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    posthog.capture("$pageview", {
+      $current_url: window.location.href,
+      $pathname: location.pathname,
+    });
+  }, [enabled, location.pathname, location.search]);
+
+  return null;
+};
+
 function AnimatedRoutes() {
   const location = useLocation();
 
@@ -187,15 +247,17 @@ function AnimatedRoutes() {
 
 const readStoredPreferences = (): TrackingPreferences | null => {
   if (typeof window === "undefined") return null;
-  const stored = window.localStorage.getItem(CLARITY_CONSENT_KEY);
+  const stored = window.localStorage.getItem(TRACKING_PREFERENCES_KEY);
   if (!stored) return null;
-  if (stored === "accepted") return { clarity: true };
-  if (stored === "rejected") return { clarity: false };
+  if (stored === "accepted") return { clarity: true, posthog: true };
+  if (stored === "rejected") return { clarity: false, posthog: false };
 
   try {
     const parsed = JSON.parse(stored);
-    if (typeof parsed?.clarity === "boolean") {
-      return { clarity: parsed.clarity };
+    if (typeof parsed?.clarity === "boolean" || typeof parsed?.posthog === "boolean") {
+      const clarity = typeof parsed.clarity === "boolean" ? parsed.clarity : false;
+      const posthogConsent = typeof parsed.posthog === "boolean" ? parsed.posthog : clarity;
+      return { clarity, posthog: posthogConsent };
     }
   } catch (error) {
     console.warn("Kon cookie voorkeuren niet lezen", error);
@@ -205,7 +267,7 @@ const readStoredPreferences = (): TrackingPreferences | null => {
 
 const persistPreferences = (prefs: TrackingPreferences) => {
   if (typeof window !== "undefined") {
-    window.localStorage.setItem(CLARITY_CONSENT_KEY, JSON.stringify(prefs));
+    window.localStorage.setItem(TRACKING_PREFERENCES_KEY, JSON.stringify(prefs));
   }
 };
 
@@ -213,6 +275,8 @@ export default function App() {
   const [trackingPrefs, setTrackingPrefs] = useState<TrackingPreferences | null>(() => readStoredPreferences());
   const clarityInitialized = useRef(false);
   const [clarityReady, setClarityReady] = useState(false);
+  const posthogInitialized = useRef(false);
+  const [posthogReady, setPosthogReady] = useState(false);
 
   useEffect(() => {
     const clarityConsented = trackingPrefs?.clarity === true;
@@ -234,16 +298,49 @@ export default function App() {
     setClarityReady(true);
   }, [trackingPrefs]);
 
+  useEffect(() => {
+    const posthogConsented = trackingPrefs?.posthog === true;
+
+    if (!posthogConsented) {
+      if (posthogInitialized.current) {
+        posthog.opt_out_capturing();
+        posthog.reset();
+      }
+      setPosthogReady(false);
+      return;
+    }
+
+    if (!POSTHOG_API_KEY) {
+      console.warn("PostHog API key ontbreekt, analytics is uitgeschakeld.");
+      setPosthogReady(false);
+      return;
+    }
+
+    if (!posthogInitialized.current) {
+      posthog.init(POSTHOG_API_KEY, {
+        api_host: POSTHOG_API_HOST,
+        capture_pageview: false,
+        person_profiles: "identified_only",
+      });
+      posthogInitialized.current = true;
+    } else {
+      posthog.opt_in_capturing();
+    }
+
+    setPosthogReady(true);
+  }, [trackingPrefs]);
+
   const handleSavePreferences = (prefs: TrackingPreferences) => {
     persistPreferences(prefs);
     setTrackingPrefs(prefs);
   };
 
-  const handleAcceptAll = () => handleSavePreferences({ clarity: true });
-  const handleRejectAll = () => handleSavePreferences({ clarity: false });
+  const handleAcceptAll = () => handleSavePreferences({ clarity: true, posthog: true });
+  const handleRejectAll = () => handleSavePreferences({ clarity: false, posthog: false });
 
   const shouldShowCookieBanner = trackingPrefs === null;
   const clarityAllowed = trackingPrefs?.clarity === true && clarityReady;
+  const posthogAllowed = trackingPrefs?.posthog === true && posthogReady;
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -255,13 +352,15 @@ export default function App() {
           </Layout>
           {shouldShowCookieBanner && (
             <CookieBanner
-              initialPreferences={trackingPrefs ?? { clarity: false }}
+              initialPreferences={trackingPrefs ?? { clarity: false, posthog: false }}
               onAcceptAll={handleAcceptAll}
               onRejectAll={handleRejectAll}
               onSave={handleSavePreferences}
             />
           )}
+          <PosthogRouteTracker enabled={posthogAllowed} />
           <ClarityUserSync enabled={clarityAllowed} />
+          <PosthogUserSync enabled={posthogAllowed} />
         </Router>
         <ReactQueryDevtools initialIsOpen={false} />
       </AuthProvider>
