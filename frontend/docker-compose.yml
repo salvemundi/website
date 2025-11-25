@@ -1,7 +1,7 @@
 services:
-  website:
-    image: ghcr.io/salvemundi/website:${TAG}
-    container_name: website-${TAG}
+  frontend:
+    image: ghcr.io/salvemundi/frontend:${TAG}
+    container_name: frontend-${TAG}
     restart: unless-stopped
     networks:
       - proxy-network
