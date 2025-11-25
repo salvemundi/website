@@ -33,7 +33,7 @@ services:
       - MS_GRAPH_CLIENT_SECRET=${MS_GRAPH_CLIENT_SECRET}
       - MS_GRAPH_SENDER_UPN=bestuur@salvemundi.nl
       - DIRECTUS_URL=${DIRECTUS_URL}
-      - DIRECTUS_API_KEY=${DIRECTUS_API_TOKEN}
+      - DIRECTUS_API_TOKEN=${DIRECTUS_API_TOKEN}
 
 networks:
   proxy-network:
