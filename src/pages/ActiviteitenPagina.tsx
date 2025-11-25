@@ -75,30 +75,24 @@ export default function ActiviteitenPagina() {
   }, [upcomingEvents, pastEvents, showPastActivities]);
 
   // Check for event query parameter and open modal automatically
-  // ALSO: Check for payment success parameter
   useEffect(() => {
     const eventId = searchParams.get('event');
     const paymentStatus = searchParams.get('payment');
 
-    // Scenario 1: Payment Success Feedback
     if (paymentStatus === 'success' && eventId) {
       setSignupFeedback({
         type: 'success',
         message: 'Betaling ontvangen! Je inschrijving is definitief. Check je mail voor bevestiging.',
       });
-      // Clean up URL so message doesn't persist on refresh
       setSearchParams({}, { replace: true });
-      // Reload signups to show the checkmark
       loadUserSignups();
-      return; // Stop here, don't open modal
+      return;
     }
 
-    // Scenario 2: Open Modal via URL (e.g. shared link)
     if (eventId && events.length > 0) {
       const event = events.find(e => e.id === parseInt(eventId));
       if (event) {
         handleShowDetails(event);
-        // Clear params so modal can be closed normally without pushing history
         setSearchParams({}, { replace: true });
       }
     }
@@ -111,14 +105,29 @@ export default function ActiviteitenPagina() {
     }
 
     try {
+      // We halen nu ook de prijs en status op om te filteren
       const resp = await fetch(
-        `${import.meta.env.VITE_DIRECTUS_URL}/items/event_signups?filter[directus_relations][_eq]=${user.id}&fields=event_id.id&limit=-1`,
+        `${import.meta.env.VITE_DIRECTUS_URL}/items/event_signups?filter[directus_relations][_eq]=${user.id}&fields=event_id.id,event_id.price_members,payment_status&limit=-1`,
         { headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` } }
       );
       const data = await resp.json();
+      
       const ids = (data.data || [])
+        .filter((s: any) => {
+            // 1. Als de status 'paid' is, ben je sowieso ingeschreven.
+            if (s.payment_status === 'paid') return true;
+
+            // 2. Als het een gratis event is (prijs is 0 of null), ben je ook ingeschreven (ongeacht status 'open' of 'null').
+            const price = Number(s.event_id?.price_members) || 0;
+            if (price === 0) return true;
+
+            // 3. Anders (Betaald event, maar status is 'open' of 'failed'):
+            // Beschouw dit als NIET ingeschreven, zodat de knop "Aanmelden" zichtbaar blijft en je opnieuw kunt betalen.
+            return false;
+        })
         .map((s: any) => s.event_id?.id || s.event_id)
         .filter(Boolean);
+
       setUserSignups(ids);
     } catch (e) {
       console.error('Failed to load user signups', e);
@@ -164,7 +173,7 @@ export default function ActiviteitenPagina() {
       : data.name || 'Onbekend';
 
     try {
-      // 1. Create initial signup in Directus (Status: open)
+      // 1. Inschrijven (of bestaande ophalen) in Directus
       const signup = await eventsApi.createSignup({
         event_id: data.activity.id,
         email: data.email,
@@ -176,7 +185,7 @@ export default function ActiviteitenPagina() {
         event_price: eventPrice,
       });
 
-      // 2. Payment Flow: If price > 0, create payment and redirect
+      // 2. Betaling starten als nodig
       if (eventPrice > 0) {
         try {
           const currentUrl = window.location.href.split('?')[0];
@@ -191,9 +200,8 @@ export default function ActiviteitenPagina() {
             isContribution: false
           });
 
-          // Redirect user to Mollie
           window.location.href = paymentResponse.checkoutUrl;
-          return; // Stop execution here; browser will navigate away
+          return;
 
         } catch (paymentError: any) {
           console.error('Betaling initialisatie mislukt:', paymentError);
@@ -201,7 +209,7 @@ export default function ActiviteitenPagina() {
         }
       }
 
-      // 3. Free Flow: Send email and show success immediately
+      // 3. Gratis flow
       try {
         const { generateQRCode } = await import('../lib/qr-service');
         const qrCodeDataUrl = signup?.qr_token ? await generateQRCode(signup.qr_token) : undefined;
@@ -442,7 +450,7 @@ export default function ActiviteitenPagina() {
           activity={selectedActivity}
           isPast={selectedActivity.event_date ? new Date(selectedActivity.event_date) <= new Date() : false}
           onSignup={handleModalSignup}
-          isSignedUp={userSignups.includes(selectedActivity.id)}
+          isSignedUp={userSignups.includes(selectedActivity.id)} 
         />
       )}
     </>
