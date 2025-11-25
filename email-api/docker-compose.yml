@@ -1,9 +1,40 @@
 services:
-   email-api:
-      image: salvemundi/email-api:local
-      build: .
-      env_file:
-         - .env
-      ports:
-         - '3001:3001'
-      restart: unless-stopped
+  website:
+    image: ghcr.io/salvemundi/website:dev
+    container_name: website-dev
+    restart: unless-stopped
+    networks:
+      - proxy-network
+
+  payment-api:
+    image: ghcr.io/salvemundi/payment-api:dev
+    container_name: payment-api
+    restart: unless-stopped
+    networks:
+      - proxy-network
+    environment:
+      - PORT=3002
+      - MOLLIE_API_KEY=${MOLLIE_API_KEY}
+      - MOLLIE_WEBHOOK_URL=${MOLLIE_WEBHOOK_URL}
+      - DIRECTUS_URL=${DIRECTUS_URL}
+      - DIRECTUS_API_TOKEN=${DIRECTUS_API_TOKEN}
+      - EMAIL_SERVICE_URL=http://email-api:3001
+
+  email-api:
+    image: ghcr.io/salvemundi/email-api:dev
+    container_name: email-api
+    restart: unless-stopped
+    networks:
+      - proxy-network
+    environment:
+      - PORT=3001
+      - MS_GRAPH_TENANT_ID=${MS_GRAPH_TENANT_ID}
+      - MS_GRAPH_CLIENT_ID=${MS_GRAPH_CLIENT_ID}
+      - MS_GRAPH_CLIENT_SECRET=${MS_GRAPH_CLIENT_SECRET}
+      - MS_GRAPH_SENDER_UPN=bestuur@salvemundi.nl
+      - DIRECTUS_URL=${DIRECTUS_URL}
+      - DIRECTUS_API_KEY=${DIRECTUS_API_TOKEN}
+
+networks:
+  proxy-network:
+    external: true
