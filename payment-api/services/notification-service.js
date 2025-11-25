@@ -20,7 +20,14 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
         let qrHtml = '';
         let participantName = null;
 
-        // 1. Probeer de QR token en de naam op te halen
+        // 1. De beschrijving opschonen en hernoemen naar activityName
+        let activityName = description;
+        if (activityName.startsWith('Inschrijving ')) {
+            // Verwijder 'Inschrijving ' + spatie
+            activityName = activityName.substring('Inschrijving '.length);
+        }
+
+        // 2. Probeer de QR token en de naam op te halen
         if (metadata.registrationId) {
             const registration = await directusService.getDirectusRegistration(
                 directusUrl, 
@@ -40,10 +47,8 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
                         width: 300
                     });
 
-                    // Strip de header om de raw bytes te krijgen
                     const base64Data = qrDataUrl.split(',')[1];
 
-                    // Voeg toe als 'inline' attachment
                     attachments.push({
                         name: 'ticket-qr.png',
                         contentType: 'image/png',
@@ -63,18 +68,19 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
             }
         }
 
-        // Bepaal dynamische aanhef (Fix voor "Beste lid")
+        // Bepaal dynamische aanhef
         const greetingName = participantName || 'deelnemer';
         
-        // 2. Verstuur de email via de email-api service
+        // 3. Verstuur de email via de email-api service
         await axios.post(`${emailServiceUrl}/send-email`, {
             to: metadata.email,
-            subject: `Ticket: ${description}`,
+            // Onderwerp blijft de volledige beschrijving
+            subject: `Ticket: ${description}`, 
             html: `
                 <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
                     <h2 style="color: #7B2CBF;">Bedankt voor je inschrijving!</h2>
                     <p>Beste ${greetingName},</p>
-                    <p>Je betaling voor <strong>${description}</strong> is succesvol ontvangen.</p>
+                    <p>Je betaling voor <strong>${activityName}</strong> is succesvol ontvangen.</p>
                     <p>Hieronder vind je je persoonlijke QR-code. Laat deze scannen bij de ingang.</p>
                     
                     ${qrHtml}
