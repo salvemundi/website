@@ -1,0 +1,11 @@
+services:
+  website:
+    image: ghcr.io/salvemundi/website:${TAG}
+    container_name: website-${TAG}
+    restart: unless-stopped
+    networks:
+      - proxy-network
+
+networks:
+  proxy-network:
+    external: true
