@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import AttendanceButton from "./AttendanceButton";
-import { isUserCommitteeMember, getEventSignupsWithCheckIn } from "../lib/qr-service";
+import { isUserAuthorizedForAttendance, getEventSignupsWithCheckIn } from "../lib/qr-service";
 import exportEventSignups from "../lib/exportSignups";
 import QRDisplay from "./QRDisplay";
 import {
@@ -492,7 +492,7 @@ function ExportSignupsButton({ activity }: { activity: any }) {
         return;
       }
       try {
-        const member = await isUserCommitteeMember(user.id, activity.id);
+        const member = await isUserAuthorizedForAttendance(user.id, activity.id);
         const isOrganizer = activity.organizer && user.email && activity.organizer.includes(user.email);
         if (mounted) setAllowed(!!member || !!isOrganizer);
       } catch (e) {
