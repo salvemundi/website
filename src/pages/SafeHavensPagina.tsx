@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { safeHavensApi, getImageUrl } from '../lib/api-clean';
+import { Shield, Lock, AlertTriangle, UserX, Users, MessageSquare, Mail, Phone, MapPin } from 'lucide-react';
 
 interface SafeHaven {
   id: number;
@@ -20,12 +21,12 @@ export default function SafeHavensPagina() {
   });
 
   const topics = [
-    { icon: '🚫', text: 'Aggressie / geweld' },
-    { icon: '⚠️', text: '(Seksuele) Intimidatie' },
-    { icon: '😔', text: 'Pesten' },
-    { icon: '🤝', text: 'Discriminatie' },
-    { icon: '🛑', text: '(Seksueel) Grensoverschrijdend gedrag' },
-    { icon: '💬', text: 'Persoonlijke situaties' },
+    { icon: <AlertTriangle className="w-6 h-6 text-paars" />, text: 'Aggressie / geweld' },
+    { icon: <AlertTriangle className="w-6 h-6 text-paars" />, text: '(Seksuele) Intimidatie' },
+    { icon: <UserX className="w-6 h-6 text-paars" />, text: 'Pesten' },
+    { icon: <Users className="w-6 h-6 text-paars" />, text: 'Discriminatie' },
+    { icon: <Shield className="w-6 h-6 text-paars" />, text: '(Seksueel) Grensoverschrijdend gedrag' },
+    { icon: <MessageSquare className="w-6 h-6 text-paars" />, text: 'Persoonlijke situaties' },
   ];
 
   return (
@@ -48,7 +49,7 @@ export default function SafeHavensPagina() {
             <div className="max-w-4xl mx-auto">
               <div className="flex flex-col md:flex-row items-start gap-4 mb-6">
                 <div className="w-16 h-16 rounded-full bg-oranje flex items-center justify-center flex-shrink-0">
-                  <span className="text-3xl">🛡️</span>
+                  <Shield className="w-8 h-8 text-beige" />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-paars mb-4 text-center md:text-left">
@@ -61,7 +62,7 @@ export default function SafeHavensPagina() {
                   </p>
                   <div className="bg-geel/20 border-2 border-geel rounded-xl p-4">
                     <p className="text-paars font-semibold flex items-center gap-2">
-                      <span className="text-2xl">🔒</span>
+                      <Lock className="w-5 h-5" />
                       Een Safe Haven heeft een <strong>geheimhoudingsplicht</strong>
                     </p>
                     <p className="text-paars/80 text-sm mt-2">
@@ -88,7 +89,9 @@ export default function SafeHavensPagina() {
                   key={index}
                   className="flex items-center gap-3 p-4 bg-oranje/10 rounded-xl border-2 border-oranje/20 hover:border-oranje transition-all"
                 >
-                  <span className="text-3xl">{topic.icon}</span>
+                  <div className="w-10 h-10 flex items-center justify-center rounded-md bg-oranje/20">
+                    {topic.icon}
+                  </div>
                   <span className="text-paars font-medium">{topic.text}</span>
                 </div>
               ))}
@@ -169,7 +172,7 @@ export default function SafeHavensPagina() {
                             className="flex items-center justify-center gap-3 text-paars hover:text-oranje transition-colors group"
                           >
                             <div className="w-10 h-10 rounded-full bg-geel flex items-center justify-center flex-shrink-0 group-hover:bg-oranje transition-colors">
-                              <span className="text-lg">✉️</span>
+                              <Mail className="w-5 h-5" />
                             </div>
                             <span className="text-sm font-medium break-all">{safeHaven.email}</span>
                           </a>
@@ -182,7 +185,7 @@ export default function SafeHavensPagina() {
                             className="flex items-center justify-center gap-3 text-paars hover:text-oranje transition-colors group"
                           >
                             <div className="w-10 h-10 rounded-full bg-geel flex items-center justify-center flex-shrink-0 group-hover:bg-oranje transition-colors">
-                              <span className="text-lg">📞</span>
+                              <Phone className="w-5 h-5" />
                             </div>
                             <span className="text-sm font-medium">{safeHaven.phone_number}</span>
                           </a>
@@ -197,7 +200,7 @@ export default function SafeHavensPagina() {
 
           {safeHavens && safeHavens.length === 0 && !isLoading && (
             <div className="text-center py-12 bg-white rounded-3xl shadow-xl p-8 border-4 border-oranje">
-              <div className="text-6xl mb-4">🛡️</div>
+              <div className="text-6xl mb-4"><Shield className="w-16 h-16 text-paars mx-auto" /></div>
               <p className="text-xl text-paars mb-4">Safe Havens worden binnenkort toegevoegd</p>
               <p className="text-paars/70">Check deze pagina later opnieuw.</p>
             </div>
@@ -207,13 +210,13 @@ export default function SafeHavensPagina() {
           <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8 border-4 border-paars">
             <div className="max-w-3xl mx-auto text-center">
               <div className="w-16 h-16 rounded-full bg-paars flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">🏫</span>
+                <MapPin className="w-8 h-8 text-beige" />
               </div>
               <h2 className="text-2xl font-bold text-paars mb-4">
                 Voel Je Je Niet Veilig Genoeg?
               </h2>
               <p className="text-paars/80 mb-6">
-                Als je je niet veilig genoeg voelt om bij onze Safe Havens terecht te komen,
+                Wil je liever met iemand buiten Salve Mundi praten?,
                 ben vooral niet bang om rechtstreeks naar Fontys zelf te stappen.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
