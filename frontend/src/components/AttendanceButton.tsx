@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { isUserCommitteeMember } from '../lib/qr-service';
+import { isUserAuthorizedForAttendance } from '../lib/qr-service';
 
 interface AttendanceButtonProps {
   eventId: number;
