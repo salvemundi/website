@@ -27,7 +27,7 @@ const AttendanceButton: React.FC<AttendanceButtonProps> = ({ eventId }) => {
     }
 
     try {
-      const hasPermission = await isUserCommitteeMember(user.id, eventId);
+      const hasPermission = await isUserAuthorizedForAttendance(user.id, eventId);
       setCanCheckAttendance(hasPermission);
     } catch (error) {
       console.error('Error checking attendance permission:', error);

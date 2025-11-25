@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { isUserCommitteeMember } from '../lib/qr-service';
+import { isUserAuthorizedForAttendance } from '../lib/qr-service';
 
 interface AttendanceButtonProps {
   eventId: number;
@@ -27,7 +27,7 @@ const AttendanceButton: React.FC<AttendanceButtonProps> = ({ eventId }) => {
     }
 
     try {
-      const hasPermission = await isUserCommitteeMember(user.id, eventId);
+      const hasPermission = await isUserAuthorizedForAttendance(user.id, eventId);
       setCanCheckAttendance(hasPermission);
     } catch (error) {
       console.error('Error checking attendance permission:', error);
