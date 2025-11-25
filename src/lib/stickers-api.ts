@@ -15,7 +15,8 @@ export interface CreateStickerData {
 // Get all stickers
 export async function getAllStickers(): Promise<Sticker[]> {
   try {
-    const stickers = await directusFetch<Sticker[]>('/items/Stickers?fields=*&sort=-date_created');
+    // Expand the user_created relation so the frontend can show who added each sticker
+    const stickers = await directusFetch<Sticker[]>('/items/Stickers?fields=*,user_created.*&sort=-date_created');
     
     if (Array.isArray(stickers)) {
       return stickers;
@@ -31,7 +32,7 @@ export async function getAllStickers(): Promise<Sticker[]> {
 // Get single sticker by ID
 export async function getStickerById(id: number): Promise<Sticker> {
   try {
-    const sticker = await directusFetch<Sticker>(`/items/Stickers/${id}?fields=*`);
+  const sticker = await directusFetch<Sticker>(`/items/Stickers/${id}?fields=*,user_created.*`);
     return sticker;
   } catch (error) {
     console.error('Error fetching sticker:', error);
