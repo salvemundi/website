@@ -8,81 +8,40 @@ export interface LoginResponse {
   user: User;
 }
 
-const MEMBERSHIP_COMMITTEE_NAME = 'Actief Lidmaatschap';
-let membershipCommitteeIdPromise: Promise<string | number | null> | null = null;
-
-async function getMembershipCommitteeId() {
-  if (!membershipCommitteeIdPromise) {
-    membershipCommitteeIdPromise = (async () => {
-      try {
-        const params = new URLSearchParams({
-          filter: JSON.stringify({ name: { _eq: MEMBERSHIP_COMMITTEE_NAME } }),
-          fields: 'id',
-          limit: '1',
-        }).toString();
-        const committees = await directusFetch<any[]>(`/items/committees?${params}`);
-        const committee = committees?.[0];
-        if (!committee) {
-          console.warn(`Membership committee "${MEMBERSHIP_COMMITTEE_NAME}" not found in Directus.`);
-          return null;
-        }
-        return committee.id;
-      } catch (error) {
-        console.error('Failed to fetch membership committee id:', error);
-        return null;
-      }
-    })();
-  }
-  const committeeId = await membershipCommitteeIdPromise;
-  if (!committeeId) {
-    membershipCommitteeIdPromise = null;
-  }
-  return committeeId;
-}
-
-async function hasActiveCommitteeMembership(userId: string): Promise<boolean | null> {
-  if (!userId) return null;
-  const committeeId = await getMembershipCommitteeId();
-  if (!committeeId) {
-    return null;
-  }
-
-  const params = new URLSearchParams({
-    filter: JSON.stringify({
-      user_id: { _eq: userId },
-      committee_id: { _eq: committeeId },
-    }),
-    fields: 'id',
-    limit: '1',
-  }).toString();
-
-  try {
-    const memberships = await directusFetch<any[]>(`/items/committee_members?${params}`);
-    return Array.isArray(memberships) && memberships.length > 0;
-  } catch (error) {
-    console.error('Failed to check membership via committee_members:', error);
-    return null;
-  }
-}
-
 async function mapDirectusUserToUser(rawUser: any): Promise<User> {
   if (!rawUser || !rawUser.id) {
     throw new Error('Invalid user data received from Directus');
   }
 
+  // Determine membership exclusively from the user record in Directus.
+  // Priority:
+  // 1. Use explicit `membership_status` if present ('active'|'expired'|'none')
+  // 2. If not present, use `membership_expiry` to infer active/expired
+  // 3. Fallback to heuristics (entra_id or fontys_email) to consider user active
   let membershipStatus: 'active' | 'expired' | 'none' = 'none';
   let isMember = false;
 
-  const committeeMembership = await hasActiveCommitteeMembership(rawUser.id);
-  if (committeeMembership === true) {
-    isMember = true;
-    membershipStatus = 'active';
-  } else if (committeeMembership === false) {
-    isMember = false;
-    membershipStatus = 'none';
-  } else if (rawUser.membership_status === 'active' || rawUser.membership_status === 'expired' || rawUser.membership_status === 'none') {
+  if (
+    rawUser.membership_status === 'active' ||
+    rawUser.membership_status === 'expired' ||
+    rawUser.membership_status === 'none'
+  ) {
     membershipStatus = rawUser.membership_status;
-    isMember = rawUser.membership_status === 'active';
+    isMember = membershipStatus === 'active';
+  } else if (rawUser.membership_expiry) {
+    try {
+      const expiry = new Date(rawUser.membership_expiry);
+      if (!isNaN(expiry.getTime()) && expiry > new Date()) {
+        membershipStatus = 'active';
+        isMember = true;
+      } else {
+        membershipStatus = 'expired';
+        isMember = false;
+      }
+    } catch (e) {
+      membershipStatus = 'none';
+      isMember = false;
+    }
   } else {
     const fallbackMember = !!(rawUser.entra_id || rawUser.fontys_email);
     isMember = fallbackMember;
@@ -434,6 +393,7 @@ export async function createEventSignup(eventId: number, userId: string, submiss
       submission_file_url: submissionFileUrl,
     }),
   });
+
 }
 
 // Update minecraft username
