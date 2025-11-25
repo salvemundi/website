@@ -1,4 +1,4 @@
-name: Deploy Email API
+name: Deploy Website
 
 on:
   push:
@@ -6,12 +6,14 @@ on:
       - 'Development'
       - 'main'
     paths:
-      - 'website/email-api/**'
-      - '.github/workflows/deploy-email.yml'
+      - 'website/**'
+      - '!website/email-api/**'
+      - '!website/payment-api/**'
+      - '.github/workflows/frondend-deploy.yml'
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: salvemundi/email-api
+  IMAGE_NAME: salvemundi/website
   DEPLOY_PATH: /opt/salvemundi
 
 jobs:
@@ -32,20 +34,42 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set Environment Variables
+      - name: Set Environment Variables & Select Secrets
+        id: selection
         run: |
           if [[ "${{ github.ref_name }}" == "Development" ]]; then
             echo "TAG=dev" >> $GITHUB_ENV
+            # Hier zetten we de ENV vars die we in de volgende stap gebruiken
+            echo "VITE_DIRECTUS_URL=${{ secrets.VITE_DIRECTUS_URL }}" >> $GITHUB_ENV
+            echo "VITE_AUTH_REDIRECT_URI=${{ secrets.VITE_AUTH_REDIRECT_URI }}" >> $GITHUB_ENV
+            echo "VITE_ENTRA_CLIENT_ID=${{ secrets.VITE_ENTRA_CLIENT_ID }}" >> $GITHUB_ENV
+            echo "VITE_ENTRA_TENANT_ID=${{ secrets.VITE_ENTRA_TENANT_ID }}" >> $GITHUB_ENV
+            echo "VITE_EMAIL_API_ENDPOINT=${{ secrets.VITE_EMAIL_API_ENDPOINT }}" >> $GITHUB_ENV
           else
-            echo "TAG=latest" >> $GITHUB_ENV
+            echo "TAG=prod" >> $GITHUB_ENV
+            # Voor MAIN gebruiken we PROD secrets (indien je die hebt aangemaakt)
+            # Als je die nog niet hebt, val terug op de standaard secrets of maak bijv PROD_VITE_... aan
+            echo "VITE_DIRECTUS_URL=${{ secrets.VITE_DIRECTUS_URL }}" >> $GITHUB_ENV
+            echo "VITE_AUTH_REDIRECT_URI=${{ secrets.VITE_AUTH_REDIRECT_URI }}" >> $GITHUB_ENV
+            echo "VITE_ENTRA_CLIENT_ID=${{ secrets.VITE_ENTRA_CLIENT_ID }}" >> $GITHUB_ENV
+            echo "VITE_ENTRA_TENANT_ID=${{ secrets.VITE_ENTRA_TENANT_ID }}" >> $GITHUB_ENV
+            echo "VITE_EMAIL_API_ENDPOINT=${{ secrets.VITE_EMAIL_API_ENDPOINT }}" >> $GITHUB_ENV
           fi
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
-          context: ./website/email-api
+          context: ./website
+          file: ./website/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
+          # Hier gebruiken we de environment variabelen die we hierboven hebben ingesteld
+          build-args: |
+            VITE_DIRECTUS_URL=${{ env.VITE_DIRECTUS_URL }}
+            VITE_AUTH_REDIRECT_URI=${{ env.VITE_AUTH_REDIRECT_URI }}
+            VITE_ENTRA_CLIENT_ID=${{ env.VITE_ENTRA_CLIENT_ID }}
+            VITE_ENTRA_TENANT_ID=${{ env.VITE_ENTRA_TENANT_ID }}
+            VITE_EMAIL_API_ENDPOINT=${{ env.VITE_EMAIL_API_ENDPOINT }}
 
       - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.7
@@ -65,13 +89,11 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ${{ env.DEPLOY_PATH }}
-
-            # 1. Genereer basis .env
-            echo "TAG=${{ env.TAG }}" > .env
             
-            # 2. Kies de juiste secrets op basis van de branch (Main = PROD, anders DEV)
+            echo "TAG=${{ env.TAG }}" > .env
+
+            # Ook hier updaten we de backend secrets (voor de andere containers in de stack)
             if [ "${{ github.ref_name }}" == "main" ]; then
-              echo "Deploying PRODUCTION configuration..."
               echo "MOLLIE_API_KEY=${{ secrets.PROD_MOLLIE_API_KEY }}" >> .env
               echo "MOLLIE_WEBHOOK_URL=${{ secrets.PROD_MOLLIE_WEBHOOK_URL }}" >> .env
               echo "DIRECTUS_URL=${{ secrets.PROD_DIRECTUS_URL }}" >> .env
@@ -80,7 +102,6 @@ jobs:
               echo "MS_GRAPH_CLIENT_ID=${{ secrets.PROD_MS_GRAPH_CLIENT_ID }}" >> .env
               echo "MS_GRAPH_CLIENT_SECRET=${{ secrets.PROD_MS_GRAPH_CLIENT_SECRET }}" >> .env
             else
-              echo "Deploying DEVELOPMENT configuration..."
               echo "MOLLIE_API_KEY=${{ secrets.DEV_MOLLIE_API_KEY }}" >> .env
               echo "MOLLIE_WEBHOOK_URL=${{ secrets.DEV_MOLLIE_WEBHOOK_URL }}" >> .env
               echo "DIRECTUS_URL=${{ secrets.DEV_DIRECTUS_URL }}" >> .env
@@ -90,6 +111,5 @@ jobs:
               echo "MS_GRAPH_CLIENT_SECRET=${{ secrets.DEV_MS_GRAPH_CLIENT_SECRET }}" >> .env
             fi
 
-            # 3. Herstart container
-            docker compose pull email-api
-            docker compose up -d email-api --remove-orphans
+            docker compose pull website
+            docker compose up -d website --remove-orphans
