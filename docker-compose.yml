@@ -18,7 +18,21 @@ services:
       - MOLLIE_WEBHOOK_URL=${MOLLIE_WEBHOOK_URL}
       - DIRECTUS_URL=${DIRECTUS_URL}
       - DIRECTUS_API_TOKEN=${DIRECTUS_API_TOKEN}
-
+  
+  email-api:
+    image: ghcr.io/salvemundi/email-api:${TAG}
+    container_name: email-api
+    restart: unless-stopped
+    networks:
+      - proxy-network
+    environment:
+      - PORT=3001
+      - MS_GRAPH_TENANT_ID=${MS_GRAPH_TENANT_ID}
+      - MS_GRAPH_CLIENT_ID=${MS_GRAPH_CLIENT_ID}
+      - MS_GRAPH_CLIENT_SECRET=${MS_GRAPH_CLIENT_SECRET}
+      - DIRECTUS_URL=${DIRECTUS_URL}
+      - DIRECTUS_API_KEY=${DIRECTUS_API_KEY}
+  
 networks:
   proxy-network:
     external: true
