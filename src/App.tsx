@@ -224,6 +224,12 @@ export default function App() {
       clarityInitialized.current = true;
     }
     setClarityReady(true);
+
+  useEffect(() => {
+    if (trackingPrefs?.clarity && !clarityInitialized.current) {
+      Clarity.init(CLARITY_PROJECT_ID);
+      clarityInitialized.current = true;
+    }
   }, [trackingPrefs]);
 
   const handleSavePreferences = (prefs: TrackingPreferences) => {
