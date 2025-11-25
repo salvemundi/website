@@ -40,8 +40,9 @@ export default function CookieBanner({
             <div className="flex-1">
               <p className="text-base font-semibold text-samu">Cookies voor Microsoft Clarity</p>
               <p className="mt-1 text-sm text-samu/80">
-                We gebruiken Microsoft Clarity om te begrijpen hoe bezoekers de site gebruiken. Kies welke cookies we mogen plaatsen.
-                Noodzakelijke cookies staan altijd aan.
+                We gebruiken Microsoft Clarity om te begrijpen hoe bezoekers de site gebruiken. Als je bent ingelogd delen we je naam,
+                e-mailadres, lidmaatschapsstatus en inlogmethode zodat we sneller problemen kunnen oplossen. Noodzakelijke cookies staan
+                altijd aan.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3 self-start sm:self-auto">
@@ -68,7 +69,8 @@ export default function CookieBanner({
                 <div>
                   <p className="text-sm font-semibold text-samu">Analytics (Microsoft Clarity)</p>
                   <p className="text-xs text-samu/75">
-                    Helpt ons de site te verbeteren door anonieme gebruiksstatistieken te verzamelen.
+                    Helpt ons de site te verbeteren door gebruiksstatistieken te verzamelen. Bij ingelogde gebruikers koppelen we sessies aan
+                    je account-ID, lidmaatschapsstatus en contactgegevens voor betere ondersteuning.
                   </p>
                 </div>
                 <label className="relative inline-flex cursor-pointer items-center">
