@@ -79,12 +79,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Make media elements responsive but let components control explicit heights (e.g., Tailwind h- classes).
+   Keep max-width so media don't overflow, but avoid forcing height:auto which overrides fixed heights like h-72. */
 img,
 video,
 canvas,
 iframe {
   max-width: 100%;
-  height: auto;
+  /* height is intentionally unset to allow component-level classes (h-72, sm:h-96, etc.) to take effect */
 }
 
 /* Leaflet map styles */

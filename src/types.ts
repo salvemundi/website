@@ -162,7 +162,9 @@ export interface SafeHaven {
 // Stickers
 export interface Sticker {
   id: number;
-  user_created?: string;
+  // Directus stores relations to users; when expanded this will be a DirectusUser object.
+  // Keep string option for older entries where only id/string may be present.
+  user_created?: string | DirectusUser;
   date_created: string;
   date_updated?: string;
   location_name?: string;

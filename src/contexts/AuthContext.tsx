@@ -164,27 +164,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         // Authenticate with backend using Entra ID token
         const response = await authApi.loginWithEntraId(idToken, userEmail);
-        // Store tokens first so helper functions (getImageUrl) can build
-        // authenticated asset URLs immediately.
+
+        // Validate the returned access token before persisting it. If the
+        // token is invalid, do not store it (prevents other components from
+        // making requests with a bad token immediately after login).
+        let validatedUser = null;
+        try {
+          validatedUser = await authApi.fetchUserDetails(response.access_token);
+        } catch (e) {
+          console.warn('Could not validate access token returned from Entra login:', e);
+        }
+
+        if (!validatedUser) {
+          // Attempt to refresh using provided refresh token once as a fallback
+          if (response.refresh_token) {
+            try {
+              const refreshed = await authApi.refreshAccessToken(response.refresh_token);
+              // Persist refreshed tokens and user
+              localStorage.setItem('auth_token', refreshed.access_token);
+              localStorage.setItem('refresh_token', refreshed.refresh_token);
+              setUser(refreshed.user);
+              return;
+            } catch (refreshErr) {
+              console.error('Refresh after failed validation also failed:', refreshErr);
+            }
+          }
+
+          throw new Error('Login failed: received an invalid access token from the backend.');
+        }
+
+        // Persist tokens and set user after successful validation
         localStorage.setItem('auth_token', response.access_token);
         localStorage.setItem('refresh_token', response.refresh_token);
-
-        // Set the user from the response payload immediately to update UI,
-        // but then try to fetch an up-to-date user record from Directus
-        // using the stored token. This helps ensure fields like `avatar`
-        // (which may be omitted from the initial response) are available
-        // without requiring a full page refresh.
-        setUser(response.user);
-
-        try {
-          const refreshed = await authApi.fetchUserDetails(response.access_token);
-          if (refreshed) {
-            setUser(refreshed);
-          }
-        } catch (e) {
-          // Non-fatal: keep the initial user payload if fetching fails.
-          console.warn('Could not fetch fresh user details right after login:', e);
-        }
+        setUser(validatedUser);
       }
     } catch (error) {
       console.error('Microsoft login error:', error);
