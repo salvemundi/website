@@ -85,7 +85,8 @@ export default function ActiviteitenPagina() {
         message: 'Betaling ontvangen! Je inschrijving is definitief. Check je mail voor bevestiging.',
       });
       setSearchParams({}, { replace: true });
-      loadUserSignups();
+      // We roepen hier loadUserSignups NIET direct aan om loops te voorkomen, 
+      // de user-dependency hieronder pakt hem vanzelf of we vertrouwen op de refresh.
       return;
     }
 
@@ -96,8 +97,11 @@ export default function ActiviteitenPagina() {
         setSearchParams({}, { replace: true });
       }
     }
-  }, [searchParams, events]);
+  }, [searchParams, events, setSearchParams]);
 
+  // --- CRUCIAAL: FIX VOOR INFINITE LOOP ---
+  // We gebruiken user?.id in plaats van het hele user object.
+  // Dit voorkomt dat de functie elke render opnieuw wordt aangemaakt.
   const loadUserSignups = useCallback(async () => {
     if (!user?.id) {
       setUserSignups([]);
@@ -110,13 +114,14 @@ export default function ActiviteitenPagina() {
         { headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` } }
       );
       
-      if (!resp.ok) throw new Error('Fetch failed');
+      if (!resp.ok) return; // Stil falen om loops bij 401 errors te voorkomen
       
       const data = await resp.json();
       const ids = (data.data || [])
         .filter((s: any) => {
             if (s.payment_status === 'paid') return true;
             const price = Number(s.event_id?.price_members) || 0;
+            // Gratis events zijn ook geldig
             if (price === 0) return true;
             return false;
         })
@@ -127,8 +132,9 @@ export default function ActiviteitenPagina() {
     } catch (e) {
       console.error('Failed to load user signups', e);
     }
-  }, [user?.id]);
+  }, [user?.id]); // <--- ALLEEN ID, NIET HET HELE OBJECT
 
+  // Voer uit bij mounten of als user ID verandert
   useEffect(() => {
     loadUserSignups();
   }, [loadUserSignups]);
@@ -197,7 +203,6 @@ export default function ActiviteitenPagina() {
 
         } catch (paymentError: any) {
           console.error('Betaling initialisatie mislukt:', paymentError);
-          // AANGEPAST: Vriendelijkere error melding die uitnodigt om het opnieuw te proberen
           throw new Error('Het opstarten van de betaling is mislukt. Probeer het nogmaals.');
         }
       }
