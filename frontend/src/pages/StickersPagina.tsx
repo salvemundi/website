@@ -34,6 +34,9 @@ export default function StickersPagina() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [searchAddress, setSearchAddress] = useState('');
+  const [filterCountry, setFilterCountry] = useState('');
+  const [filterCity, setFilterCity] = useState('');
+  const [filterUser, setFilterUser] = useState('');
   const [isGeocoding, setIsGeocoding] = useState(false);
 
   // Form state
@@ -73,6 +76,22 @@ export default function StickersPagina() {
   });
 
   const stats = calculateStickerStats(stickers);
+
+  // Compute stickers per user (use created_by first, then user_created)
+  const stickersPerUser = stickers.reduce<Record<string, { name: string; count: number }>>((acc, s) => {
+    const user = (s.created_by && typeof s.created_by !== 'string') ? s.created_by :
+                 (s.user_created && typeof s.user_created !== 'string') ? s.user_created : null;
+    const uid = user ? (user.id || (user as any).email || 'unknown') : 'unknown';
+    const display = user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || uid : 'Unknown';
+    if (!acc[uid]) acc[uid] = { name: display, count: 0 };
+    acc[uid].count += 1;
+    return acc;
+  }, {});
+
+  const topContributors = Object.entries(stickersPerUser)
+    .map(([id, v]) => ({ id, ...v }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 8);
 
   const resetForm = () => {
     setFormData({
@@ -208,7 +227,7 @@ export default function StickersPagina() {
           </div>
         </div>
 
-        {/* Add Sticker Button */}
+        {/* Filters and Add Sticker Button */}
         {user && (
           <div className="mb-6 flex justify-end">
             <button
@@ -220,6 +239,37 @@ export default function StickersPagina() {
             </button>
           </div>
         )}
+
+        {/* Filters */}
+        <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-3">
+          <input
+            type="text"
+            placeholder="Filter by country"
+            value={filterCountry}
+            onChange={(e) => setFilterCountry(e.target.value)}
+            className="px-3 py-2 border rounded"
+          />
+          <input
+            type="text"
+            placeholder="Filter by city"
+            value={filterCity}
+            onChange={(e) => setFilterCity(e.target.value)}
+            className="px-3 py-2 border rounded"
+          />
+          <input
+            type="text"
+            placeholder="Filter by user (name or email)"
+            value={filterUser}
+            onChange={(e) => setFilterUser(e.target.value)}
+            className="px-3 py-2 border rounded"
+          />
+          <button
+            onClick={() => { setFilterCountry(''); setFilterCity(''); setFilterUser(''); }}
+            className="px-3 py-2 border rounded bg-gray-100"
+          >
+            Clear filters
+          </button>
+        </div>
 
         {/* Map */}
         <div className="bg-white rounded-lg shadow-xl overflow-hidden mb-8">
@@ -255,6 +305,20 @@ export default function StickersPagina() {
               />
               {stickers
                 .filter(sticker => sticker.latitude != null && sticker.longitude != null)
+                .filter(sticker => {
+                  // country filter
+                  if (filterCountry && !(sticker.country || '').toLowerCase().includes(filterCountry.toLowerCase())) return false;
+                  // city filter
+                  if (filterCity && !(sticker.city || '').toLowerCase().includes(filterCity.toLowerCase())) return false;
+                  // user filter (match created_by or user_created name/email)
+                  if (filterUser) {
+                    const user = (sticker.created_by && typeof sticker.created_by !== 'string') ? sticker.created_by :
+                      (sticker.user_created && typeof sticker.user_created !== 'string') ? sticker.user_created : null;
+                    const hay = `${user ? `${user.first_name || ''} ${user.last_name || ''} ${user.email || ''}` : ''}`.toLowerCase();
+                    if (!hay.includes(filterUser.toLowerCase())) return false;
+                  }
+                  return true;
+                })
                 .map((sticker) => (
                   <Marker
                     key={sticker.id}
@@ -289,6 +353,28 @@ export default function StickersPagina() {
             </MapContainer>
           )}
         </div>
+
+          {/* Contributors / Stats Panel */}
+          <div className="bg-white rounded-lg shadow-lg p-6 mt-6">
+            <h2 className="text-2xl font-bold mb-4">Top Contributors</h2>
+            {topContributors.length === 0 ? (
+              <p className="text-sm text-gray-600">No contributors yet</p>
+            ) : (
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {topContributors.map(c => (
+                  <li key={c.id} className="flex justify-between border p-2 rounded">
+                    <div>
+                      <p className="font-semibold">{c.name}</p>
+                      <p className="text-xs text-gray-500">{c.id}</p>
+                    </div>
+                    <div className="flex items-center">
+                      <p className="text-xl font-bold text-gray-800">{c.count}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
         {/* Recent Stickers */}
         <div className="bg-white rounded-lg shadow-lg p-6">
