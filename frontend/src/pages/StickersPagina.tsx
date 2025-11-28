@@ -18,6 +18,16 @@ const customIcon = new Icon({
   shadowSize: [41, 41]
 });
 
+// Icon for current logged-in user's pins (blue)
+const currentUserIcon = new Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
 // Component to handle map clicks
 function MapClickHandler({ onLocationSelect }: { onLocationSelect: (lat: number, lng: number) => void }) {
   useMapEvents({
@@ -36,7 +46,9 @@ export default function StickersPagina() {
   const [searchAddress, setSearchAddress] = useState('');
   const [filterCountry, setFilterCountry] = useState('');
   const [filterCity, setFilterCity] = useState('');
+  // filter by free-text (name/email) or by selecting a specific user id
   const [filterUser, setFilterUser] = useState('');
+  const [filterUserId, setFilterUserId] = useState('');
   const [isGeocoding, setIsGeocoding] = useState(false);
 
   // Form state
@@ -88,10 +100,10 @@ export default function StickersPagina() {
     return acc;
   }, {});
 
-  const topContributors = Object.entries(stickersPerUser)
+  // Leaderboard (all contributors sorted)
+  const leaderboard = Object.entries(stickersPerUser)
     .map(([id, v]) => ({ id, ...v }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 8);
+    .sort((a, b) => b.count - a.count);
 
   const resetForm = () => {
     setFormData({
@@ -256,9 +268,22 @@ export default function StickersPagina() {
             onChange={(e) => setFilterCity(e.target.value)}
             className="px-3 py-2 border rounded"
           />
+          {/* User filter: select to filter by specific user, fallback free-text search still supported */}
+          <div className="flex">
+            <select
+              value={filterUserId}
+              onChange={(e) => setFilterUserId(e.target.value)}
+              className="px-3 py-2 border rounded w-full"
+            >
+              <option value="">All users</option>
+              {Object.entries(stickersPerUser).map(([id, info]) => (
+                <option key={id} value={id}>{info.name || id} ({info.count})</option>
+              ))}
+            </select>
+          </div>
           <input
             type="text"
-            placeholder="Filter by user (name or email)"
+            placeholder="(optional) Search user by name or email"
             value={filterUser}
             onChange={(e) => setFilterUser(e.target.value)}
             className="px-3 py-2 border rounded"
@@ -311,6 +336,14 @@ export default function StickersPagina() {
                   // city filter
                   if (filterCity && !(sticker.city || '').toLowerCase().includes(filterCity.toLowerCase())) return false;
                   // user filter (match created_by or user_created name/email)
+                  // if a specific user id is selected, filter by that id
+                  if (filterUserId) {
+                    const userObj = (sticker.created_by && typeof sticker.created_by !== 'string') ? sticker.created_by :
+                      (sticker.user_created && typeof sticker.user_created !== 'string') ? sticker.user_created : null;
+                    const ownerId = userObj ? (userObj.id || (userObj as any).email || '') : (typeof sticker.user_created === 'string' ? sticker.user_created : (typeof sticker.created_by === 'string' ? sticker.created_by : ''));
+                    if (ownerId !== filterUserId) return false;
+                  }
+                  // fallback free-text user search
                   if (filterUser) {
                     const user = (sticker.created_by && typeof sticker.created_by !== 'string') ? sticker.created_by :
                       (sticker.user_created && typeof sticker.user_created !== 'string') ? sticker.user_created : null;
@@ -319,36 +352,42 @@ export default function StickersPagina() {
                   }
                   return true;
                 })
-                .map((sticker) => (
-                  <Marker
-                    key={sticker.id}
-                    position={[sticker.latitude!, sticker.longitude!]}
-                    icon={customIcon}
-                  >
-                    <Popup>
-                      <div className="p-2">
-                        <h3 className="font-bold text-lg mb-1">
-                          {sticker.location_name || 'Sticker Location'}
-                        </h3>
-                        {sticker.city && <p className="text-sm text-gray-600">📍 {sticker.city}</p>}
-                        {sticker.country && <p className="text-sm text-gray-600">🌍 {sticker.country}</p>}
-                        {sticker.description && (
-                          <p className="text-sm mt-2">{sticker.description}</p>
-                        )}
-                        <p className="text-xs text-gray-400 mt-2">
-                          Added: {new Date(sticker.date_created).toLocaleDateString()}
-                        </p>
-                        {sticker.user_created && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            Added by: {typeof sticker.user_created === 'string'
-                              ? sticker.user_created
-                              : `${sticker.user_created.first_name || ''} ${sticker.user_created.last_name || ''}`.trim() || sticker.user_created.email || 'Unknown'}
+                .map((sticker) => {
+                  const userObj = (sticker.created_by && typeof sticker.created_by !== 'string') ? sticker.created_by :
+                    (sticker.user_created && typeof sticker.user_created !== 'string') ? sticker.user_created : null;
+                  const ownerId = userObj ? (userObj.id || (userObj as any).email || '') : (typeof sticker.user_created === 'string' ? sticker.user_created : (typeof sticker.created_by === 'string' ? sticker.created_by : ''));
+                  const isMine = user && ownerId && user.id === ownerId;
+                  return (
+                    <Marker
+                      key={sticker.id}
+                      position={[sticker.latitude!, sticker.longitude!]}
+                      icon={isMine ? currentUserIcon : customIcon}
+                    >
+                      <Popup>
+                        <div className="p-2">
+                          <h3 className="font-bold text-lg mb-1">
+                            {sticker.location_name || 'Sticker Location'}
+                          </h3>
+                          {sticker.city && <p className="text-sm text-gray-600">📍 {sticker.city}</p>}
+                          {sticker.country && <p className="text-sm text-gray-600">🌍 {sticker.country}</p>}
+                          {sticker.description && (
+                            <p className="text-sm mt-2">{sticker.description}</p>
+                          )}
+                          <p className="text-xs text-gray-400 mt-2">
+                            Added: {new Date(sticker.date_created).toLocaleDateString()}
                           </p>
-                        )}
-                      </div>
-                    </Popup>
-                  </Marker>
-                ))
+                          {sticker.user_created && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              Added by: {typeof sticker.user_created === 'string'
+                                ? sticker.user_created
+                                : `${sticker.user_created.first_name || ''} ${sticker.user_created.last_name || ''}`.trim() || sticker.user_created.email || 'Unknown'}
+                            </p>
+                          )}
+                        </div>
+                      </Popup>
+                    </Marker>
+                  );
+                })
               }
             </MapContainer>
           )}
@@ -356,23 +395,27 @@ export default function StickersPagina() {
 
           {/* Contributors / Stats Panel */}
           <div className="bg-white rounded-lg shadow-lg p-6 mt-6">
-            <h2 className="text-2xl font-bold mb-4">Top Contributors</h2>
-            {topContributors.length === 0 ? (
+            <h2 className="text-2xl font-bold mb-4">Leaderboard</h2>
+            {leaderboard.length === 0 ? (
               <p className="text-sm text-gray-600">No contributors yet</p>
             ) : (
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {topContributors.map(c => (
-                  <li key={c.id} className="flex justify-between border p-2 rounded">
-                    <div>
-                      <p className="font-semibold">{c.name}</p>
-                      <p className="text-xs text-gray-500">{c.id}</p>
-                    </div>
-                    <div className="flex items-center">
-                      <p className="text-xl font-bold text-gray-800">{c.count}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+              <ol className="space-y-2">
+                {leaderboard.slice(0, 50).map((c, idx) => {
+                  const isMe = user && c.id === user.id;
+                  return (
+                    <li key={c.id} className={`flex items-center justify-between p-3 rounded border ${isMe ? 'bg-yellow-50 border-yellow-200' : ''}`}>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 text-center font-semibold">#{idx + 1}</div>
+                        <div>
+                          <div className="font-semibold">{c.name}</div>
+                          <div className="text-xs text-gray-500">{c.id}</div>
+                        </div>
+                      </div>
+                      <div className="text-xl font-bold text-gray-800">{c.count}</div>
+                    </li>
+                  );
+                })}
+              </ol>
             )}
           </div>
 
@@ -383,7 +426,14 @@ export default function StickersPagina() {
             {stickers.slice(0, 6).map((sticker) => (
               <div key={sticker.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                 <div className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-red-500 flex-shrink-0 mt-1" />
+                  {/* small pin: blue if current user's sticker */}
+                  {(() => {
+                    const userObj = (sticker.created_by && typeof sticker.created_by !== 'string') ? sticker.created_by :
+                      (sticker.user_created && typeof sticker.user_created !== 'string') ? sticker.user_created : null;
+                    const ownerId = userObj ? (userObj.id || (userObj as any).email || '') : (typeof sticker.user_created === 'string' ? sticker.user_created : (typeof sticker.created_by === 'string' ? sticker.created_by : ''));
+                    const isMine = user && ownerId && user.id === ownerId;
+                    return <MapPin className={`w-5 h-5 ${isMine ? 'text-blue-500' : 'text-red-500'} flex-shrink-0 mt-1`} />;
+                  })()}
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-900">
                       {sticker.location_name || 'Unknown Location'}
