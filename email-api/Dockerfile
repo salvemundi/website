@@ -1,12 +1,17 @@
-FROM node:18-alpine
+FROM node:24-alpine
 
-# Create app directory
+# Security update (Best Practice: update OS packages immediately)
+RUN apk update && \ 
+    apk upgrade && \
+    rm -rf /var/cache/apk/*
+
+# Create app directory and install dependencies
 WORKDIR /usr/src/app
 
-# Install dependencies first using package manifests for better caching
+# Gebruik package.json voor caching en installeer dependencies
 COPY package.json package-lock.json* ./
-
-RUN npm ci --only=production || npm install --production
+# Gebruik npm ci voor clean installs in CI/CD
+RUN npm ci --only-production || npm install --production
 
 # Bundle app source
 COPY . .
@@ -18,7 +23,6 @@ RUN chown -R appuser:appgroup /usr/src/app
 USER appuser
 
 ENV PORT=3001
-
 EXPOSE 3001
 
 CMD ["node", "server.js"]
