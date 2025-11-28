@@ -128,6 +128,9 @@ export default function Footer() {
               <Link to="/kroegentocht" className="hover:text-geel transition-colors">
                 Kroegentocht
               </Link>
+              <Link to="/stickers" className="hover:text-geel transition-colors">
+                Stickers
+              </Link>
             </li>
           </ul>
         </div>
