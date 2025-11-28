@@ -91,7 +91,7 @@ export default function AccountPagina() {
       return { text: 'Geen Actief Lidmaatschap', color: 'bg-gray-400', textColor: 'text-white' };
     }
     if (user.membership_status === 'active') {
-      return { text: 'Ja een Active Uitslover', color: 'bg-geel', textColor: 'text-paars' };
+      return { text: 'Ja een Actieve Uitsloever', color: 'bg-geel', textColor: 'text-paars' };
     }
     return { text: 'Lidmaatschap Verlopen', color: 'bg-oranje/50', textColor: 'text-paars' };
   };
