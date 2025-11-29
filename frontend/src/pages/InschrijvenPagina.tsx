@@ -19,7 +19,8 @@ export default function SignUp() {
     geboortedatum: null as Date | null,
     telefoon: user?.phone_number || '',
   });
-  const [submitted, setSubmitted] = useState(false);
+  
+  // State voor laad-indicator tijdens aanmaken betaling
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,15 +49,16 @@ export default function SignUp() {
       const data = await response.json();
 
       if (response.ok && data.checkoutUrl) {
+        // Redirect naar Mollie
         window.location.href = data.checkoutUrl;
       } else {
         console.error('Payment creation failed:', data.error);
-        alert('Er ging iets mis bij het aanmaken van de betaling.');
+        alert('Er ging iets mis bij het aanmaken van de betaling. Probeer het later opnieuw.');
         setIsProcessing(false);
       }
     } catch (error) {
       console.error('Error initiating payment:', error);
-      alert('Er ging iets mis bij de betaling.');
+      alert('Er ging iets mis bij de verbinding voor de betaling.');
       setIsProcessing(false);
     }
   };
@@ -65,14 +67,18 @@ export default function SignUp() {
     e.preventDefault();
     setIsProcessing(true);
 
+    // 1. Stuur informatieve mail (niet wachten op resultaat)
     sendMembershipSignupEmail({
       recipientEmail: form.email,
       firstName: form.voornaam,
       lastName: form.achternaam,
       phoneNumber: form.telefoon,
       dateOfBirth: form.geboortedatum ? form.geboortedatum.toLocaleDateString('nl-NL') : undefined,
-    }).catch(console.warn);
+    }).catch((err) => {
+      console.warn('Failed to send membership signup email:', err);
+    });
 
+    // 2. Start betaalproces
     await initiateContributionPayment();
   };
 
@@ -114,10 +120,6 @@ export default function SignUp() {
                   </a>{' '}
                   om je in te schrijven voor evenementen.
                 </p>
-              </div>
-            ) : submitted ? (
-              <div className="text-geel text-xl font-semibold">
-                Bedankt voor je inschrijving! We nemen snel contact met je op.
               </div>
             ) : (
               <form
@@ -230,4 +232,4 @@ export default function SignUp() {
       <BackToTopButton />
     </>
   );
-}s
+}
