@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { Suspense, lazy, useEffect, useRef, useState, type ReactNode } from "react";
+import { Suspense, lazy, useEffect, useRef, useState, type ReactNode, type ComponentType } from "react";
 import { AnimatePresence } from "framer-motion";
 import posthog from "posthog-js";
 import PageTransition from "./components/PageTransition";
@@ -14,29 +14,59 @@ import CookieBanner from "./components/CookieBanner";
 import Clarity from "@microsoft/clarity";
 import { TrackingPreferences } from "./types/tracking";
 
+// --- Utility for handling Deployment Updates ---
+// If a lazy load fails (because the file was deleted in a new deployment),
+// this wrapper catches the error and forces a page reload to get the new version.
+const lazyRetry = (componentImport: () => Promise<{ default: ComponentType<any> }>) => {
+  return lazy(async () => {
+    try {
+      return await componentImport();
+    } catch (error: any) {
+      // Check for version mismatch errors
+      const isChunkError = error?.message?.includes('Failed to fetch dynamically imported module') ||
+                           error?.message?.includes('Importing a module script failed');
+      
+      if (isChunkError) {
+        console.warn('New version detected (Chunk Load Error). Reloading...');
+        // Prevent infinite loops using session storage
+        const storageKey = `retry-chunk-${window.location.pathname}`;
+        if (!sessionStorage.getItem(storageKey)) {
+          sessionStorage.setItem(storageKey, 'true');
+          window.location.reload();
+          // Return a dummy component while reloading
+          return { default: () => <Loading /> }; 
+        }
+      }
+      // If it's another error (or we already retried), throw it.
+      throw error;
+    }
+  });
+};
 
-// Lazy load pages
-const Home = lazy(() => import("./pages/HomePage"));
-const InschrijvenPagina = lazy(() => import("./pages/InschrijvenPagina"));
-const IntroPagina = lazy(() => import("./pages/IntroPagina"));
-const ActiviteitenPagina = lazy(() => import("./pages/ActiviteitenPagina"));
-const CommissiesPagina = lazy(() => import("./pages/CommissiesPagina"));
-const CommissieDetailPagina = lazy(() => import("./pages/CommissieDetailPagina"));
-const LoginPagina = lazy(() => import("./pages/LoginPagina"));
-const SignupPagina = lazy(() => import("./pages/SignupPagina"));
-const AccountPagina = lazy(() => import("./pages/AccountPagina"));
-const TransactionsPagina = lazy(() => import("./pages/TransactionsPagina"));
-const WhatsAppGroupsPagina = lazy(() => import("./pages/WhatsAppGroupsPagina"));
-const StickersPagina = lazy(() => import("./pages/StickersPagina"));
-const ContactPagina = lazy(() => import("./pages/ContactPagina"));
-const SafeHavensPagina = lazy(() => import("./pages/SafeHavensPagina"));
-const KroegentochtPagina = lazy(() => import("./pages/KroegentochtPagina"));
-const AttendancePagina = lazy(() => import("./pages/AttendancePagina"));
-const ClubsPagina = lazy(() => import("./pages/ClubsPagina"));
+// Lazy load pages using the retry mechanism
+const Home = lazyRetry(() => import("./pages/HomePage"));
+const InschrijvenPagina = lazyRetry(() => import("./pages/InschrijvenPagina"));
+const IntroPagina = lazyRetry(() => import("./pages/IntroPagina"));
+const ActiviteitenPagina = lazyRetry(() => import("./pages/ActiviteitenPagina"));
+const CommissiesPagina = lazyRetry(() => import("./pages/CommissiesPagina"));
+const CommissieDetailPagina = lazyRetry(() => import("./pages/CommissieDetailPagina"));
+const LoginPagina = lazyRetry(() => import("./pages/LoginPagina"));
+const SignupPagina = lazyRetry(() => import("./pages/SignupPagina"));
+const AccountPagina = lazyRetry(() => import("./pages/AccountPagina"));
+const TransactionsPagina = lazyRetry(() => import("./pages/TransactionsPagina"));
+const WhatsAppGroupsPagina = lazyRetry(() => import("./pages/WhatsAppGroupsPagina"));
+const StickersPagina = lazyRetry(() => import("./pages/StickersPagina"));
+const ContactPagina = lazyRetry(() => import("./pages/ContactPagina"));
+const SafeHavensPagina = lazyRetry(() => import("./pages/SafeHavensPagina"));
+const KroegentochtPagina = lazyRetry(() => import("./pages/KroegentochtPagina"));
+const AttendancePagina = lazyRetry(() => import("./pages/AttendancePagina"));
+const ClubsPagina = lazyRetry(() => import("./pages/ClubsPagina"));
+
 const CLARITY_PROJECT_ID = "ub6sxoccku";
 const TRACKING_PREFERENCES_KEY = "clarity-consent";
 const POSTHOG_API_KEY = import.meta.env.VITE_POSTHOG_KEY ?? "phc_mOX7smJqqHtzKGB1kTuVZFLqgRFIHW0cPEFehanAh6D";
 const POSTHOG_API_HOST = import.meta.env.VITE_POSTHOG_HOST ?? "https://eu.i.posthog.com";
+
 type ClarityConsentState = "granted" | "denied";
 
 const sendClarityConsent = (ad: ClarityConsentState, analytics: ClarityConsentState) => {
@@ -81,7 +111,6 @@ const ClarityUserSync = ({ enabled }: { enabled: boolean }) => {
 
     try {
         const clarityId = user ? user.id : "anonymous";
-        console.log("Clarity.identify called with:", clarityId);
         Clarity.identify(
           clarityId,
           undefined,
@@ -111,7 +140,6 @@ const ClarityUserSync = ({ enabled }: { enabled: boolean }) => {
       }
 
       Object.entries(tags).forEach(([key, value]) => {
-          console.log("Clarity.setTag", key, value);
         Clarity.setTag(key, value);
       });
     } catch (error) {
@@ -171,6 +199,12 @@ const PosthogRouteTracker = ({ enabled }: { enabled: boolean }) => {
 
   useEffect(() => {
     if (!enabled) return;
+    
+    // Clear chunk retry keys on successful navigation
+    const storageKey = `retry-chunk-${location.pathname}`;
+    if (sessionStorage.getItem(storageKey)) {
+        sessionStorage.removeItem(storageKey);
+    }
 
     posthog.capture("$pageview", {
       $current_url: window.location.href,
