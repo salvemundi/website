@@ -1,6 +1,6 @@
 // src/pages/HomePage.tsx
 import React, { useRef } from "react";
-import { Link } from "react-router-dom"; // <--- Import Link
+import { Link } from "react-router-dom";
 import Header from "../components/header";
 import BackToTopButton from "../components/backtotop";
 import SamuCard from "../components/JoinCard";
@@ -15,7 +15,7 @@ import { ArrowRight, CalendarRange, MapPin, Users } from "lucide-react";
 import { useSiteSettings, useSponsors } from "../hooks/useApi";
 import { getImageUrl } from "../lib/api";
 import useHomeScrollAnimations from "../hooks/useHomeScrollAnimations";
-import { ROUTES } from "../routes"; // <--- Import ROUTES
+import { ROUTES } from "../routes";
 
 // Swiper styles
 import "swiper/css";
@@ -30,7 +30,7 @@ export default function Home() {
   } = useSponsors();
   const { data: siteSettings } = useSiteSettings();
   const introEnabled = siteSettings?.show_intro ?? true;
-  const pageRef = useRef<HTMLElement | null>(null);
+  const pageRef = useRef<HTMLElement | null>(pageRef);
 
   useHomeScrollAnimations(pageRef);
 
@@ -53,7 +53,6 @@ export default function Home() {
                     Dé studievereniging voor Fontys ICT. Samen ontdekken we nieuwe technologie, bouwen we community en maken we impact op én buiten de campus.
                   </p>
                   <div className="mt-6 flex w-full flex-col items-center gap-3 sm:flex-row sm:justify-center">
-                    {/* GEBRUIK ROUTES EN LINK */}
                     <Link
                       to={ROUTES.MEMBERSHIP}
                       className="flex w-full items-center justify-center gap-2 rounded-2xl bg-geel px-5 py-3 text-lg font-bold text-samu transition hover:-translate-y-0.5 hover:bg-yellow-400 sm:w-auto"
@@ -111,7 +110,7 @@ export default function Home() {
                 description="Word lid van Salve Mundi en ontdek de wereld van ICT. Pak exclusieve events, borrels en trips mee."
                 image="/img/placeholder.svg"
                 button="WORD LID"
-                link={ROUTES.MEMBERSHIP} // <--- ROUTES.MEMBERSHIP
+                link={ROUTES.MEMBERSHIP}
               />
             </div>
             {introEnabled && (
@@ -120,7 +119,7 @@ export default function Home() {
                   description="Doe mee aan de introweek: de snelste manier om nieuwe mensen, de stad en de vereniging te leren kennen."
                   image="/img/backgrounds/intro-banner.jpg"
                   button="INTRO WEEK"
-                  link={ROUTES.INTRO} // <--- ROUTES.INTRO
+                  link={ROUTES.INTRO}
                 />
               </div>
             )}
@@ -129,7 +128,7 @@ export default function Home() {
                 description="Plan je week met onze agenda. Meld je aan voor de volgende activiteit en blijf op de hoogte."
                 image="/img/lasergame.jpg"
                 button="ACTIVITEITEN"
-                link={ROUTES.ACTIVITIES} // <--- ROUTES.ACTIVITIES
+                link={ROUTES.ACTIVITIES}
               />
             </div>
           </div>

@@ -14,5 +14,5 @@ export const ROUTES = {
   CONTACT: '/contact',
   SAFE_HAVENS: '/safe-havens',
   PUB_CRAWL: '/kroegentocht',
-  ATTENDANCE: '/attendance', // Dynamische delen (/:id) handelen we in de component af
+  ATTENDANCE: '/attendance',
 } as const;

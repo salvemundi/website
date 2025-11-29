@@ -6,6 +6,7 @@ import { committeesApi } from "../lib/api";
 import { slugify } from "../lib/slug";
 import { Committee } from "../types";
 import { useAuth } from "../contexts/AuthContext";
+import { ROUTES } from "../routes";
 
 interface Document {
   id: number;
@@ -79,52 +80,52 @@ export default function Footer() {
           <h3 className="font-bold text-lg mb-4">PAGINA'S</h3>
           <ul className="space-y-2 text-sm">
             <li>
-              <Link to="/" className="hover:text-geel transition-colors">
+              <Link to={ROUTES.HOME} className="hover:text-geel transition-colors">
                 Home
               </Link>
             </li>
             <li>
-              <Link to="/intro" className="hover:text-geel transition-colors">
+              <Link to={ROUTES.INTRO} className="hover:text-geel transition-colors">
                 Intro
               </Link>
             </li>
             <li>
-              <Link to="/activiteiten" className="hover:text-geel transition-colors">
+              <Link to={ROUTES.ACTIVITIES} className="hover:text-geel transition-colors">
                 Activiteiten
               </Link>
             </li>
             <li>
-              <Link to="/commissies" className="hover:text-geel transition-colors">
+              <Link to={ROUTES.COMMITTEES} className="hover:text-geel transition-colors">
                 Commissies
               </Link>
             </li>
             <li>
-              <Link to="/clubs" className="hover:text-geel transition-colors">
+              <Link to={ROUTES.CLUBS} className="hover:text-geel transition-colors">
                 Clubs
               </Link>
             </li>
             <li>
-              <Link to="/contact" className="hover:text-geel transition-colors">
+              <Link to={ROUTES.CONTACT} className="hover:text-geel transition-colors">
                 Contact
               </Link>
             </li>
             <li>
-              <Link to="/safe-havens" className="hover:text-geel transition-colors">
+              <Link to={ROUTES.SAFE_HAVENS} className="hover:text-geel transition-colors">
                 Safe Havens
               </Link>
             </li>
             <li>
-              <Link to="/lidmaatschap" className="hover:text-geel transition-colors">
+              <Link to={ROUTES.MEMBERSHIP} className="hover:text-geel transition-colors">
                 Lidmaatschap
               </Link>
             </li>
             <li>
-              <Link to="/kroegentocht" className="hover:text-geel transition-colors">
+              <Link to={ROUTES.PUB_CRAWL} className="hover:text-geel transition-colors">
                 Kroegentocht
               </Link>
             </li>
             <li>
-              <Link to="/stickers" className="hover:text-geel transition-colors">
+              <Link to={ROUTES.STICKERS} className="hover:text-geel transition-colors">
                 Stickers
               </Link>
             </li>
@@ -138,7 +139,7 @@ export default function Footer() {
               committees.map((committee) => (
                 <li key={committee.id}>
                   <Link 
-                    to={`/commissies/${slugify(cleanCommitteeName(committee.name))}`}
+                    to={`${ROUTES.COMMITTEES}/${slugify(cleanCommitteeName(committee.name))}`}
                     className="hover:text-geel transition-colors"
                   >
                     {cleanCommitteeName(committee.name)}
@@ -184,7 +185,7 @@ export default function Footer() {
             )}
             <li>
               <Link 
-                to="/safe-havens"
+                to={ROUTES.SAFE_HAVENS}
                 className="hover:text-geel transition-colors"
               >
                 Safe Havens

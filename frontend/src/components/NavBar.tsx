@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { useAuth } from "../contexts/AuthContext";
 import { getImageUrl } from "../lib/api-clean";
 import { useSiteSettings } from "../hooks/useApi";
+import { ROUTES } from "../routes";
 
 const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
   const navigate = useNavigate();
@@ -102,14 +103,13 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
     };
   }, [updateNavHeight]);
 
-  // UPDATED LINK: Inschrijven -> Lidmaatschap
   const navItems = [
-    { name: "Home", href: "/" },
-    ...(introEnabled ? [{ name: "Intro", href: "/intro" }] : []),
-    { name: "Lidmaatschap", href: "/lidmaatschap" },
-    { name: "Activiteiten", href: "/activiteiten" },
-    { name: "Commissies", href: "/commissies" },
-    { name: "Contact", href: "/contact" },
+    { name: "Home", href: ROUTES.HOME },
+    ...(introEnabled ? [{ name: "Intro", href: ROUTES.INTRO }] : []),
+    { name: "Lidmaatschap", href: ROUTES.MEMBERSHIP },
+    { name: "Activiteiten", href: ROUTES.ACTIVITIES },
+    { name: "Commissies", href: ROUTES.COMMITTEES },
+    { name: "Contact", href: ROUTES.CONTACT },
   ];
 
   const navbarBg = isScrolled
@@ -158,7 +158,7 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
           {isAuthenticated ? (
             <button
               type="button"
-              onClick={() => navigate('/account')}
+              onClick={() => navigate(ROUTES.ACCOUNT)}
               className="bg-oranje text-beige rounded-full font-semibold text-sm px-5 py-3 transition duration-300 hover:scale-105 flex items-center gap-2"
             >
               {user?.avatar ? (
@@ -181,7 +181,7 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
           ) : (
             <button
               type="button"
-              onClick={() => navigate('/login')}
+              onClick={() => navigate(ROUTES.LOGIN)}
               className="bg-oranje text-beige rounded-full font-semibold text-sm px-5 py-3 transition duration-300 hover:scale-105"
             >
               Login
@@ -262,7 +262,7 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
             <li className="pt-4 border-t border-beige/30 w-full text-center">
               {isAuthenticated ? (
                 <a
-                  href="/account"
+                  href={ROUTES.ACCOUNT}
                   className="block font-semibold text-beige hover:text-geel transition duration-300"
                   onClick={() => setMenuOpen(false)}
                 >
@@ -270,7 +270,7 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
                 </a>
               ) : (
                 <a
-                  href="/login"
+                  href={ROUTES.LOGIN}
                   className="block font-semibold text-beige hover:text-geel transition duration-300"
                   onClick={() => setMenuOpen(false)}
                 >

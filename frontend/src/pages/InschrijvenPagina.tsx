@@ -8,14 +8,12 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { nl } from 'date-fns/locale';
 import { sendMembershipSignupEmail } from '../lib/email-service';
 
-// Helper component voor de AVG Timer
 const DeletionTimer = ({ expiryDateStr }: { expiryDateStr: string }) => {
   const [timeLeft, setTimeLeft] = useState<{days: number, hours: number, minutes: number} | null>(null);
 
   useEffect(() => {
     if (!expiryDateStr) return;
 
-    // AVG Regel: Gegevens verwijderen 2 jaar na verloop lidmaatschap
     const expiryDate = new Date(expiryDateStr);
     const deletionDate = new Date(expiryDate);
     deletionDate.setFullYear(deletionDate.getFullYear() + 2);
@@ -33,12 +31,12 @@ const DeletionTimer = ({ expiryDateStr }: { expiryDateStr: string }) => {
         const minutes = Math.floor((difference / 1000 / 60) % 60);
         setTimeLeft({ days, hours, minutes });
       }
-    }, 60000); // Update elke minuut
+    }, 60000);
 
     return () => clearInterval(timer);
   }, [expiryDateStr]);
 
-  if (!timeLeft) return null;
+  if (!timeLeft || (timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0)) return null;
 
   return (
     <div className="bg-red-500/10 border border-red-500 rounded-lg p-4 mb-6 text-center">
@@ -67,12 +65,10 @@ export default function SignUp() {
   
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Bepaal de status van de gebruiker
   const isGuest = !user;
   const isValidMember = user && user.is_member;
   const isExpired = user && !user.is_member;
 
-  // Dynamische titels
   let pageTitle = "WORD LID!";
   let formTitle = "Inschrijfformulier";
 
@@ -103,7 +99,9 @@ export default function SignUp() {
 
       const response = await fetch('/api/payments/create', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(payload),
       });
 
@@ -170,7 +168,6 @@ export default function SignUp() {
               {formTitle}
             </h1>
 
-            {/* --- STATUS 1: GELDIG LID --- */}
             {isValidMember && (
               <div className="text-beige">
                 <div className="bg-green-500/20 border border-green-500 p-4 rounded-lg mb-6">
@@ -179,7 +176,7 @@ export default function SignUp() {
                 </div>
                 
                 <p className="mb-4 text-lg">
-                  Welkom, <span className="font-bold text-geel">{user.first_name}</span>!
+                  Welkom terug, <span className="font-bold text-geel">{user.first_name}</span>!
                 </p>
                 
                 <div className="bg-white/10 p-4 rounded-lg mb-6 border border-geel/30">
@@ -199,10 +196,8 @@ export default function SignUp() {
               </div>
             )}
 
-            {/* --- STATUS 2: VERLOPEN LID (VERLENGEN) --- */}
             {isExpired && (
               <div className="text-beige">
-                {/* De AVG Countdown Timer */}
                 {user.membership_expiry && <DeletionTimer expiryDateStr={user.membership_expiry} />}
 
                 <p className="mb-4 text-lg">
@@ -222,7 +217,6 @@ export default function SignUp() {
               </div>
             )}
 
-            {/* --- STATUS 3: GAST (WORD LID) --- */}
             {isGuest && (
               <form className="flex text-start flex-col gap-4" onSubmit={handleSubmit}>
                 <p className="text-beige mb-2">Vul je gegevens in om een account aan te maken en lid te worden.</p>
@@ -244,7 +238,10 @@ export default function SignUp() {
                 </label>
 
                 <label className="font-semibold text-geel">Geboortedatum</label>
-                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={nl}>
+                <LocalizationProvider
+                  dateAdapter={AdapterDateFns}
+                  adapterLocale={nl}
+                >
                   <DatePicker value={form.geboortedatum} onChange={(newDate) => setForm({ ...form, geboortedatum: newDate })} slotProps={{ textField: { className: 'mt-1 p-2 rounded w-full bg-beige text-paars' } }} />
                 </LocalizationProvider>
 
@@ -260,17 +257,21 @@ export default function SignUp() {
             )}
           </section>
 
-          {/* Side Section (Static) */}
           <div className="w-full sm:w-1/2 flex flex-col gap-6">
             <div className="w-full text-center bg-paars rounded-3xl p-6">
-              <h2 className="text-2xl font-bold text-geel mb-2">Waarom lid worden?</h2>
+              <h2 className="text-2xl font-bold text-geel mb-2">
+                Waarom lid worden?
+              </h2>
               <p className="text-lg mb-4 text-beige">
-                Als lid van Salve Mundi krijg je toegang tot exclusieve activiteiten, workshops, borrels en nog veel meer!
+                Als lid van Salve Mundi krijg je toegang tot exclusieve
+                activiteiten, workshops, borrels en nog veel meer! Word vandaag
+                nog lid en ontdek de wereld van ICT samen met ons.
               </p>
             </div>
           </div>
         </div>
       </main>
+
       <BackToTopButton />
     </>
   );
