@@ -1,10 +1,12 @@
 // src/pages/IntroPagina.tsx
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Header from '../components/header';
 import BackToTopButton from '../components/backtotop';
 import { introSignupsApi } from '../lib/api';
 import { sendIntroSignupEmail } from '../lib/email-service';
 import { useSiteSettings } from '../hooks/useApi';
+import { ROUTES } from '../routes';
 
 export default function IntroPagina() {
   const [form, setForm] = useState({
@@ -86,20 +88,18 @@ export default function IntroPagina() {
               {isSettingsLoading && (
                 <p className="text-sm text-paars/60 mb-6">Bezig met controleren van status...</p>
               )}
-              <a
-                href="/"
+              <Link
+                to={ROUTES.HOME}
                 className="inline-flex items-center justify-center px-6 py-3 bg-oranje text-beige font-semibold rounded-full hover:bg-geel hover:text-paars transition-all duration-300"
               >
                 Terug naar Home
-              </a>
+              </Link>
             </div>
           </section>
         ) : (
           <>
-            {/* Intro Info Section */}
             <section className="px-6 sm:px-10 py-10">
               <div className="flex flex-col md:flex-row gap-10">
-                {/* Left side - Info text */}
                 <div className="flex-1">
                   <p className="text-xl leading-relaxed">
                     Word jij <span className="font-bold text-paars">student 🎓</span> bij{' '}
@@ -110,7 +110,6 @@ export default function IntroPagina() {
                     Sluit je aan bij de <span className="font-bold text-paars">SalveMundi</span>, waar je kunt genieten van een gezellige sfeer en nieuwe vrienden kunt maken. Of doe mee aan een potje <span className="font-bold text-paars">weerwolven van wakkerdam</span>, een spel vol strategie en plezier. Iedereen is welkom, en we beloven dat het niet een <span className="font-bold">geweldige ervaring</span> wordt waar je nog lang over zult napraten!
                   </p>
 
-                  {/* YouTube Video */}
                   <div className="mt-6">
                     <iframe
                       className="w-full rounded-lg shadow-lg"
@@ -124,7 +123,6 @@ export default function IntroPagina() {
                   </div>
                 </div>
 
-                {/* Right side - Form */}
                 <div className="flex-1">
                   {submitted ? (
                     <div className="bg-paars rounded-3xl p-8 text-center">
@@ -137,7 +135,6 @@ export default function IntroPagina() {
                     <form onSubmit={handleSubmit} className="bg-paars rounded-3xl p-8 shadow-lg space-y-4">
                       {error && <div className="bg-red-500 text-white p-3 rounded-lg">{error}</div>}
 
-                      {/* Voornaam */}
                       <div>
                         <label className="block font-semibold text-beige mb-2">Voornaam</label>
                         <input
@@ -150,7 +147,6 @@ export default function IntroPagina() {
                         />
                       </div>
 
-                      {/* Tussenvoegsel */}
                       <div>
                         <label className="block font-semibold text-beige mb-2">Tussenvoegsel</label>
                         <input
@@ -162,7 +158,6 @@ export default function IntroPagina() {
                         />
                       </div>
 
-                      {/* Achternaam */}
                       <div>
                         <label className="block font-semibold text-beige mb-2">Achternaam</label>
                         <input
@@ -175,7 +170,6 @@ export default function IntroPagina() {
                         />
                       </div>
 
-                      {/* Geboortedatum */}
                       <div>
                         <label className="block font-semibold text-beige mb-2">Geboortedatum</label>
                         <input
@@ -188,7 +182,6 @@ export default function IntroPagina() {
                         />
                       </div>
 
-                      {/* Email */}
                       <div>
                         <label className="block font-semibold text-beige mb-2">Email</label>
                         <input
@@ -201,7 +194,6 @@ export default function IntroPagina() {
                         />
                       </div>
 
-                      {/* Telefoonnummer */}
                       <div>
                         <label className="block font-semibold text-beige mb-2">Telefoonnummer</label>
                         <input
@@ -213,8 +205,7 @@ export default function IntroPagina() {
                           className="w-full p-3 bg-beige text-paars rounded-lg focus:outline-none focus:ring-2 focus:ring-oranje"
                         />
                       </div>
-
-                      {/* Submit Button */}
+                      
                       <button
                         type="submit"
                         disabled={isSubmitting}
@@ -229,9 +220,7 @@ export default function IntroPagina() {
             </section>
           </>
         )}
-
       </main>
-
       <BackToTopButton />
     </>
   );

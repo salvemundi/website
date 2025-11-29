@@ -1,5 +1,6 @@
-// src/pages/Home.tsx
+// src/pages/HomePage.tsx
 import React, { useRef } from "react";
+import { Link } from "react-router-dom"; // <--- Import Link
 import Header from "../components/header";
 import BackToTopButton from "../components/backtotop";
 import SamuCard from "../components/JoinCard";
@@ -14,6 +15,7 @@ import { ArrowRight, CalendarRange, MapPin, Users } from "lucide-react";
 import { useSiteSettings, useSponsors } from "../hooks/useApi";
 import { getImageUrl } from "../lib/api";
 import useHomeScrollAnimations from "../hooks/useHomeScrollAnimations";
+import { ROUTES } from "../routes"; // <--- Import ROUTES
 
 // Swiper styles
 import "swiper/css";
@@ -51,19 +53,20 @@ export default function Home() {
                     Dé studievereniging voor Fontys ICT. Samen ontdekken we nieuwe technologie, bouwen we community en maken we impact op én buiten de campus.
                   </p>
                   <div className="mt-6 flex w-full flex-col items-center gap-3 sm:flex-row sm:justify-center">
-                    <a
-                      href="/inschrijven"
+                    {/* GEBRUIK ROUTES EN LINK */}
+                    <Link
+                      to={ROUTES.MEMBERSHIP}
                       className="flex w-full items-center justify-center gap-2 rounded-2xl bg-geel px-5 py-3 text-lg font-bold text-samu transition hover:-translate-y-0.5 hover:bg-yellow-400 sm:w-auto"
                     >
                       Word lid
                       <ArrowRight className="h-5 w-5" />
-                    </a>
-                    <a
-                      href="/activiteiten"
+                    </Link>
+                    <Link
+                      to={ROUTES.ACTIVITIES}
                       className="flex w-full items-center justify-center gap-2 rounded-2xl border border-beige/30 bg-beige/10 px-5 py-3 text-base font-semibold text-beige transition hover:-translate-y-0.5 hover:border-beige/50 sm:w-auto"
                     >
                       Bekijk activiteiten
-                    </a>
+                    </Link>
                   </div>
                   <div className="mt-6 grid w-full max-w-3xl grid-cols-2 gap-3 sm:grid-cols-3">
                     <div className="flex items-center gap-2 rounded-2xl border border-beige/25 bg-beige/10 px-3 py-3 backdrop-blur">
@@ -108,7 +111,7 @@ export default function Home() {
                 description="Word lid van Salve Mundi en ontdek de wereld van ICT. Pak exclusieve events, borrels en trips mee."
                 image="/img/placeholder.svg"
                 button="WORD LID"
-                link="/inschrijven"
+                link={ROUTES.MEMBERSHIP} // <--- ROUTES.MEMBERSHIP
               />
             </div>
             {introEnabled && (
@@ -117,7 +120,7 @@ export default function Home() {
                   description="Doe mee aan de introweek: de snelste manier om nieuwe mensen, de stad en de vereniging te leren kennen."
                   image="/img/backgrounds/intro-banner.jpg"
                   button="INTRO WEEK"
-                  link="/intro"
+                  link={ROUTES.INTRO} // <--- ROUTES.INTRO
                 />
               </div>
             )}
@@ -126,7 +129,7 @@ export default function Home() {
                 description="Plan je week met onze agenda. Meld je aan voor de volgende activiteit en blijf op de hoogte."
                 image="/img/lasergame.jpg"
                 button="ACTIVITEITEN"
-                link="/activiteiten"
+                link={ROUTES.ACTIVITIES} // <--- ROUTES.ACTIVITIES
               />
             </div>
           </div>
@@ -150,7 +153,7 @@ export default function Home() {
                     Eindhoven
                   </a>
                 </span>
-                , opgericht in 2017. De naam, Latijn voor &quot;Hello World&quot;,
+                , opgericht in 2017. De naam, Latijn voor "Hello World",
                 is een welbekende code die elke programmeur in zijn hart draagt.
               </p>
               <p className="text-base leading-relaxed sm:text-lg">
