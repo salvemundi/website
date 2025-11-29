@@ -14,7 +14,7 @@ export default function Layout({ children }: LayoutProps) {
     let activePage = '';
     if (pathname === '/') activePage = 'Home';
     else if (pathname.startsWith('/intro')) activePage = 'Intro';
-    else if (pathname.startsWith('/inschrijven')) activePage = 'Inschrijven';
+    else if (pathname.startsWith('/lidmaatschap')) activePage = 'Lidmaatschap';
     else if (pathname.startsWith('/activiteiten')) activePage = 'Activiteiten';
     else if (pathname.startsWith('/commissies')) activePage = 'Commissies';
     else if (pathname.startsWith('/contact')) activePage = 'Contact';
