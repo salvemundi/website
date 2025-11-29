@@ -6,7 +6,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
 
     router.post('/create', async (req, res) => {
         try {
-            const { amount, description, redirectUrl, userId, email, registrationId, isContribution } = req.body;
+            const { amount, description, redirectUrl, userId, email, registrationId, isContribution, firstName, lastName } = req.body;
 
             if (!amount || !description || !redirectUrl) {
                 return res.status(400).json({ error: 'Missing required parameters' });
@@ -35,7 +35,9 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 registrationId: registrationId,
                 notContribution: isContribution ? "false" : "true",
                 email: email,
-                userId: userId
+                userId: userId || null,
+                firstName: firstName || null,
+                lastName: lastName || null
             };
 
             const payment = await mollieClient.payments.create({
@@ -76,7 +78,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
             }
 
             const payment = await mollieClient.payments.get(paymentId);
-            const { transactionRecordId, registrationId, notContribution, userId } = payment.metadata;
+            const { transactionRecordId, registrationId, notContribution, userId, firstName, lastName, email } = payment.metadata;
 
             let internalStatus = 'open';
             if (payment.isPaid()) internalStatus = 'paid';
@@ -104,17 +106,39 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 }
 
                 if (notContribution === "false") {
-                    await membershipService.provisionMember(MEMBERSHIP_API_URL, userId);
-                }
+                    if (userId) {
+                        await membershipService.provisionMember(MEMBERSHIP_API_URL, userId);
+                        
+                        if (registrationId) {
+                            await notificationService.sendConfirmationEmail(
+                                DIRECTUS_URL, 
+                                DIRECTUS_API_TOKEN, 
+                                EMAIL_SERVICE_URL,
+                                payment.metadata, 
+                                payment.description
+                            );
+                        }
+                    } else if (firstName && lastName && email) {
+                        const credentials = await membershipService.createMember(
+                            MEMBERSHIP_API_URL, firstName, lastName, email
+                        );
 
-                if (registrationId) {
-                    await notificationService.sendConfirmationEmail(
-                        DIRECTUS_URL, 
-                        DIRECTUS_API_TOKEN, 
-                        EMAIL_SERVICE_URL,
-                        payment.metadata, 
-                        payment.description
-                    );
+                        if (credentials) {
+                            await notificationService.sendWelcomeEmail(
+                                EMAIL_SERVICE_URL, email, firstName, credentials
+                            );
+                        }
+                    }
+                } else {
+                    if (registrationId) {
+                        await notificationService.sendConfirmationEmail(
+                            DIRECTUS_URL, 
+                            DIRECTUS_API_TOKEN, 
+                            EMAIL_SERVICE_URL,
+                            payment.metadata, 
+                            payment.description
+                        );
+                    }
                 }
             }
 
