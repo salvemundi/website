@@ -36,9 +36,23 @@ async def get_graph_token():
     }
     async with httpx.AsyncClient() as client:
         response = await client.post(url, data=data)
+        
         if response.status_code != 200:
-            print(f"Token Error: {response.text}")
-            raise HTTPException(status_code=500, detail="Graph Auth Failed")
+            error_response = response.json()
+            error_message = error_response.get("error_description", "Unknown Authentication Error")
+
+            if "client_secret" in error_message or "expired" in error_message.lower() or "invalid_client" in error_message.lower():
+                raise HTTPException(
+                    status_code=500, 
+                    detail=f"CRITICAL AUTH ERROR: Azure Client Secret is invalid or expired. Update MS_GRAPH_CLIENT_SECRET in GitHub Secrets. (Details: {error_message})"
+                )
+            
+            # Voor alle andere fouten
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Graph Authentication Failed. Check Configuration. (Azure Error: {error_message})"
+            )
+        
         return response.json().get("access_token")
 
 def generate_password(length=12):
