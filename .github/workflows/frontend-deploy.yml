@@ -45,6 +45,8 @@ jobs:
             echo "VITE_ENTRA_CLIENT_ID=${{ secrets.VITE_ENTRA_CLIENT_ID }}" >> $GITHUB_ENV
             echo "VITE_ENTRA_TENANT_ID=${{ secrets.VITE_ENTRA_TENANT_ID }}" >> $GITHUB_ENV
             echo "VITE_EMAIL_API_ENDPOINT=${{ secrets.VITE_EMAIL_API_ENDPOINT }}" >> $GITHUB_ENV
+            # HIER IS DE BELANGRIJKE WIJZIGING: Mapping van DEV token naar VITE key
+            echo "VITE_DIRECTUS_API_KEY=${{ secrets.DEV_DIRECTUS_API_TOKEN }}" >> $GITHUB_ENV
           else
             echo "TAG=latest" >> $GITHUB_ENV
             echo "VITE_DIRECTUS_URL=${{ secrets.PROD_VITE_DIRECTUS_URL }}" >> $GITHUB_ENV
@@ -52,6 +54,8 @@ jobs:
             echo "VITE_ENTRA_CLIENT_ID=${{ secrets.PROD_VITE_ENTRA_CLIENT_ID }}" >> $GITHUB_ENV
             echo "VITE_ENTRA_TENANT_ID=${{ secrets.PROD_VITE_ENTRA_TENANT_ID }}" >> $GITHUB_ENV
             echo "VITE_EMAIL_API_ENDPOINT=${{ secrets.PROD_VITE_EMAIL_API_ENDPOINT }}" >> $GITHUB_ENV
+            # HIER IS DE BELANGRIJKE WIJZIGING: Mapping van PROD token naar VITE key
+            echo "VITE_DIRECTUS_API_KEY=${{ secrets.PROD_DIRECTUS_API_TOKEN }}" >> $GITHUB_ENV
           fi
 
       - name: Build and Push Docker Image
@@ -67,6 +71,7 @@ jobs:
             VITE_ENTRA_CLIENT_ID=${{ env.VITE_ENTRA_CLIENT_ID }}
             VITE_ENTRA_TENANT_ID=${{ env.VITE_ENTRA_TENANT_ID }}
             VITE_EMAIL_API_ENDPOINT=${{ env.VITE_EMAIL_API_ENDPOINT }}
+            VITE_DIRECTUS_API_KEY=${{ env.VITE_DIRECTUS_API_KEY }}
 
       - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.7
@@ -86,7 +91,6 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             # Nieuwe map aanmaken (want we gebruiken nu /opt/frontend)
-            # Let op: De eerste keer moet je de rechten van deze map handmatig goed zetten of sudo gebruiken
             mkdir -p ${{ env.DEPLOY_PATH }}
             cd ${{ env.DEPLOY_PATH }}
 
