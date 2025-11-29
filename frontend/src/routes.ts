@@ -1,0 +1,18 @@
+export const ROUTES = {
+  HOME: '/',
+  INTRO: '/intro',
+  MEMBERSHIP: '/lidmaatschap',
+  ACTIVITIES: '/activiteiten',
+  COMMITTEES: '/commissies',
+  CLUBS: '/clubs',
+  LOGIN: '/login',
+  SIGNUP: '/signup',
+  ACCOUNT: '/account',
+  TRANSACTIONS: '/account/transactions',
+  WHATSAPP: '/account/whatsapp-groups',
+  STICKERS: '/stickers',
+  CONTACT: '/contact',
+  SAFE_HAVENS: '/safe-havens',
+  PUB_CRAWL: '/kroegentocht',
+  ATTENDANCE: '/attendance', // Dynamische delen (/:id) handelen we in de component af
+} as const;
