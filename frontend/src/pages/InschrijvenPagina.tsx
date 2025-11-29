@@ -1,5 +1,4 @@
-// src/pages/InschrijvenPagina.tsx
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/header';
 import BackToTopButton from '../components/backtotop';
@@ -21,30 +20,62 @@ export default function SignUp() {
     telefoon: user?.phone_number || '',
   });
   const [submitted, setSubmitted] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const initiateContributionPayment = async () => {
+    if (!user) return;
+
+    try {
+      const response = await fetch('/api/payments/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: '20.00',
+          description: 'Contributie Salve Mundi',
+          redirectUrl: window.location.origin + '/account',
+          userId: user.id,
+          email: form.email,
+          isContribution: true
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        console.error('Payment creation failed:', data.error);
+        alert('Er ging iets mis bij het aanmaken van de betaling.');
+        setIsProcessing(false);
+      }
+    } catch (error) {
+      console.error('Error initiating payment:', error);
+      alert('Er ging iets mis bij de betaling.');
+      setIsProcessing(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsProcessing(true);
 
-    // Send email notification (don't wait for it to complete)
     sendMembershipSignupEmail({
       recipientEmail: form.email,
       firstName: form.voornaam,
       lastName: form.achternaam,
       phoneNumber: form.telefoon,
       dateOfBirth: form.geboortedatum ? form.geboortedatum.toLocaleDateString('nl-NL') : undefined,
-    }).catch(err => {
-      // Log but don't fail the signup
-      console.warn('Failed to send membership signup email:', err);
-    });
+    }).catch(console.warn);
 
-    setSubmitted(true);
+    await initiateContributionPayment();
   };
 
-  // Pre-fill form with user data when user loads
   useEffect(() => {
     if (user) {
       setForm(prev => ({
@@ -68,7 +99,6 @@ export default function SignUp() {
 
       <main className="bg-beige">
         <div className="flex flex-col sm:flex-row gap-6 p-6 sm:p-10">
-          {/* Form Section */}
           <section className="w-full sm:w-1/2 bg-paars rounded-3xl shadow-lg p-6 sm:p-8">
             <h1 className="text-3xl font-bold text-geel mb-6">
               Inschrijfformulier
@@ -94,7 +124,6 @@ export default function SignUp() {
                 className="flex text-start flex-col gap-4"
                 onSubmit={handleSubmit}
               >
-                {/* Voornaam */}
                 <label className="font-semibold text-geel">
                   Voornaam
                   <input
@@ -107,7 +136,6 @@ export default function SignUp() {
                   />
                 </label>
 
-                {/* Tussenvoegsel */}
                 <label className="font-semibold text-geel">
                   Tussenvoegsel
                   <input
@@ -119,7 +147,6 @@ export default function SignUp() {
                   />
                 </label>
 
-                {/* Achternaam */}
                 <label className="font-semibold text-geel">
                   Achternaam
                   <input
@@ -132,7 +159,6 @@ export default function SignUp() {
                   />
                 </label>
 
-                {/* Email */}
                 <label className="font-semibold text-geel">
                   E-mail
                   <input
@@ -145,7 +171,6 @@ export default function SignUp() {
                   />
                 </label>
 
-                {/* Geboortedatum */}
                 <label className="font-semibold text-geel">Geboortedatum</label>
                 <LocalizationProvider
                   dateAdapter={AdapterDateFns}
@@ -164,7 +189,6 @@ export default function SignUp() {
                   />
                 </LocalizationProvider>
 
-                {/* Telefoonnummer */}
                 <label className="font-semibold text-geel">
                   Telefoonnummer
                   <input
@@ -179,17 +203,16 @@ export default function SignUp() {
 
                 <button
                   type="submit"
-                  className="bg-oranje text-white font-bold py-2 px-4 rounded hover:bg-geel hover:text-paars transition mt-4"
+                  disabled={isProcessing}
+                  className="bg-oranje text-white font-bold py-2 px-4 rounded hover:bg-geel hover:text-paars transition mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Verstuur inschrijving
+                  {isProcessing ? 'Verwerken...' : 'Betalen en Inschrijven (€20,00)'}
                 </button>
               </form>
             )}
           </section>
 
-          {/* Side Section */}
           <div className="w-full sm:w-1/2 flex flex-col gap-6">
-            {/* Why join section */}
             <div className="w-full text-center bg-paars rounded-3xl p-6">
               <h2 className="text-2xl font-bold text-geel mb-2">
                 Waarom lid worden?
@@ -200,13 +223,11 @@ export default function SignUp() {
                 nog lid en ontdek de wereld van ICT samen met ons.
               </p>
             </div>
-
           </div>
         </div>
-
       </main>
 
       <BackToTopButton />
     </>
   );
-}
+}s
