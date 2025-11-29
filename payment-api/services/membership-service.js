@@ -1,9 +1,7 @@
 const axios = require('axios');
 
 async function provisionMember(membershipApiUrl, userId) {
-    if (!userId) {
-        return;
-    }
+    if (!userId) return;
 
     try {
         await axios.post(`${membershipApiUrl}/register`, {
@@ -14,6 +12,21 @@ async function provisionMember(membershipApiUrl, userId) {
     }
 }
 
+async function createMember(membershipApiUrl, firstName, lastName, email) {
+    try {
+        const response = await axios.post(`${membershipApiUrl}/create-user`, {
+            first_name: firstName,
+            last_name: lastName,
+            personal_email: email
+        });
+        return response.data;
+    } catch (error) {
+        console.error(`[MembershipService] User creation failed: ${error.message}`);
+        return null;
+    }
+}
+
 module.exports = {
-    provisionMember
+    provisionMember,
+    createMember
 };

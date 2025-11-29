@@ -1,4 +1,3 @@
-// Navbar.tsx
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
@@ -7,11 +6,6 @@ import { useAuth } from "../contexts/AuthContext";
 import { getImageUrl } from "../lib/api-clean";
 import { useSiteSettings } from "../hooks/useApi";
 
-interface navProps {
-  activePage?: string;
-}
-
-// Responsive NavBar with scroll animation and GSAP mobile menu
 const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
@@ -29,11 +23,10 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
       setIsScrolled(window.scrollY > 10);
     };
 
-  window.addEventListener("scroll", handleScroll); 
+    window.addEventListener("scroll", handleScroll); 
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Animate mobile menu open/close
   useEffect(() => {
     if (!menuRef.current) return;
 
@@ -109,10 +102,11 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
     };
   }, [updateNavHeight]);
 
+  // UPDATED LINK: Inschrijven -> Lidmaatschap
   const navItems = [
     { name: "Home", href: "/" },
     ...(introEnabled ? [{ name: "Intro", href: "/intro" }] : []),
-    { name: "Inschrijven", href: "/inschrijven" },
+    { name: "Lidmaatschap", href: "/lidmaatschap" },
     { name: "Activiteiten", href: "/activiteiten" },
     { name: "Commissies", href: "/commissies" },
     { name: "Contact", href: "/contact" },
@@ -227,7 +221,7 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
         </div>
         </div>
 
-        {/* Mobile menu (GSAP animated, full-page overlay) */}
+        {/* Mobile menu */}
         <div
           ref={menuRef}
           style={{
@@ -239,7 +233,6 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
           }}
           className="fixed inset-0 z-40 md:hidden bg-oranje flex flex-col items-center justify-center px-5 pb-5"
         >
-          {/* Close button */}
           <button
             aria-label="Close menu"
             onClick={() => setMenuOpen(false)}
@@ -266,7 +259,6 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
               </li>
             ))}
             
-            {/* Auth links in mobile menu */}
             <li className="pt-4 border-t border-beige/30 w-full text-center">
               {isAuthenticated ? (
                 <a
