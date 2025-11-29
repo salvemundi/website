@@ -8,7 +8,7 @@ on:
     paths:
       - 'frontend/**'
       # Let op: als je de bestandsnaam van de workflow zelf aanpast, pas dit pad dan ook aan!
-      - '.github/workflows/frondend-deploy.yml'
+      - '.github/workflows/frontend-deploy.yml'
 
 env:
   REGISTRY: ghcr.io
