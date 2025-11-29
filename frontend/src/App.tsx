@@ -13,37 +13,30 @@ import ScrollToTop from "./components/ScrollToTop";
 import CookieBanner from "./components/CookieBanner";
 import Clarity from "@microsoft/clarity";
 import { TrackingPreferences } from "./types/tracking";
+import { ROUTES } from "./routes";
 
-// --- Utility for handling Deployment Updates ---
-// If a lazy load fails (because the file was deleted in a new deployment),
-// this wrapper catches the error and forces a page reload to get the new version.
 const lazyRetry = (componentImport: () => Promise<{ default: ComponentType<any> }>) => {
   return lazy(async () => {
     try {
       return await componentImport();
     } catch (error: any) {
-      // Check for version mismatch errors
       const isChunkError = error?.message?.includes('Failed to fetch dynamically imported module') ||
                            error?.message?.includes('Importing a module script failed');
       
       if (isChunkError) {
         console.warn('New version detected (Chunk Load Error). Reloading...');
-        // Prevent infinite loops using session storage
         const storageKey = `retry-chunk-${window.location.pathname}`;
         if (!sessionStorage.getItem(storageKey)) {
           sessionStorage.setItem(storageKey, 'true');
           window.location.reload();
-          // Return a dummy component while reloading
           return { default: () => <Loading /> }; 
         }
       }
-      // If it's another error (or we already retried), throw it.
       throw error;
     }
   });
 };
 
-// Lazy load pages using the retry mechanism
 const Home = lazyRetry(() => import("./pages/HomePage"));
 const InschrijvenPagina = lazyRetry(() => import("./pages/InschrijvenPagina"));
 const IntroPagina = lazyRetry(() => import("./pages/IntroPagina"));
@@ -81,13 +74,12 @@ const sendClarityConsent = (ad: ClarityConsentState, analytics: ClarityConsentSt
   }
 };
 
-// Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
-      staleTime: 1 * 60 * 1000, // 1 minute
+      staleTime: 1 * 60 * 1000,
     },
   },
 });
@@ -200,7 +192,6 @@ const PosthogRouteTracker = ({ enabled }: { enabled: boolean }) => {
   useEffect(() => {
     if (!enabled) return;
     
-    // Clear chunk retry keys on successful navigation
     const storageKey = `retry-chunk-${location.pathname}`;
     if (sessionStorage.getItem(storageKey)) {
         sessionStorage.removeItem(storageKey);
@@ -221,16 +212,16 @@ function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<LazyPage><Home /></LazyPage>} />
-        <Route path="/intro" element={<LazyPage><IntroPagina /></LazyPage>} />
-        <Route path="/activiteiten" element={<LazyPage><ActiviteitenPagina /></LazyPage>} />
-        <Route path="/commissies" element={<LazyPage><CommissiesPagina /></LazyPage>} />
-        <Route path="/commissies/:slug" element={<LazyPage><CommissieDetailPagina /></LazyPage>} />
-        <Route path="/clubs" element={<LazyPage><ClubsPagina /></LazyPage>} />
-        <Route path="/login" element={<LazyPage><LoginPagina /></LazyPage>} />
-        <Route path="/signup" element={<LazyPage><SignupPagina /></LazyPage>} />
+        <Route path={ROUTES.HOME} element={<LazyPage><Home /></LazyPage>} />
+        <Route path={ROUTES.INTRO} element={<LazyPage><IntroPagina /></LazyPage>} />
+        <Route path={ROUTES.ACTIVITIES} element={<LazyPage><ActiviteitenPagina /></LazyPage>} />
+        <Route path={ROUTES.COMMITTEES} element={<LazyPage><CommissiesPagina /></LazyPage>} />
+        <Route path={`${ROUTES.COMMITTEES}/:slug`} element={<LazyPage><CommissieDetailPagina /></LazyPage>} />
+        <Route path={ROUTES.CLUBS} element={<LazyPage><ClubsPagina /></LazyPage>} />
+        <Route path={ROUTES.LOGIN} element={<LazyPage><LoginPagina /></LazyPage>} />
+        <Route path={ROUTES.SIGNUP} element={<LazyPage><SignupPagina /></LazyPage>} />
         <Route
-          path="/account"
+          path={ROUTES.ACCOUNT}
           element={
             <LazyPage>
               <ProtectedRoute>
@@ -240,7 +231,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/account/transactions"
+          path={ROUTES.TRANSACTIONS}
           element={
             <LazyPage>
               <ProtectedRoute>
@@ -250,7 +241,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/account/whatsapp-groups"
+          path={ROUTES.WHATSAPP}
           element={
             <LazyPage>
               <ProtectedRoute>
@@ -259,13 +250,13 @@ function AnimatedRoutes() {
             </LazyPage>
           }
         />
-        <Route path="/inschrijven" element={<LazyPage><InschrijvenPagina /></LazyPage>} />
-        <Route path="/stickers" element={<LazyPage><StickersPagina /></LazyPage>} />
-        <Route path="/contact" element={<LazyPage><ContactPagina /></LazyPage>} />
-        <Route path="/safe-havens" element={<LazyPage><SafeHavensPagina /></LazyPage>} />
-        <Route path="/kroegentocht" element={<LazyPage><KroegentochtPagina /></LazyPage>} />
+        <Route path={ROUTES.MEMBERSHIP} element={<LazyPage><InschrijvenPagina /></LazyPage>} />
+        <Route path={ROUTES.STICKERS} element={<LazyPage><StickersPagina /></LazyPage>} />
+        <Route path={ROUTES.CONTACT} element={<LazyPage><ContactPagina /></LazyPage>} />
+        <Route path={ROUTES.SAFE_HAVENS} element={<LazyPage><SafeHavensPagina /></LazyPage>} />
+        <Route path={ROUTES.PUB_CRAWL} element={<LazyPage><KroegentochtPagina /></LazyPage>} />
         <Route
-          path="/attendance/:eventId"
+          path={`${ROUTES.ATTENDANCE}/:eventId`}
           element={
             <LazyPage>
               <ProtectedRoute>
