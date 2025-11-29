@@ -30,7 +30,8 @@ export default function Home() {
   } = useSponsors();
   const { data: siteSettings } = useSiteSettings();
   const introEnabled = siteSettings?.show_intro ?? true;
-  const pageRef = useRef<HTMLElement | null>(pageRef);
+  
+  const pageRef = useRef<HTMLElement | null>(null);
 
   useHomeScrollAnimations(pageRef);
 
