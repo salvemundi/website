@@ -12,6 +12,8 @@ services:
       - DIRECTUS_URL=${DIRECTUS_URL}
       - DIRECTUS_API_TOKEN=${DIRECTUS_API_TOKEN}
       - EMAIL_SERVICE_URL=http://email-api:3001
+      # Deze regel vertelt Payment API waar de nieuwe Membership API te vinden is
+      - MEMBERSHIP_API_URL=http://membership-api:8000/api/membership
 
 networks:
   proxy-network:
