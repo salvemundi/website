@@ -21,7 +21,9 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
 
         if (metadata.registrationId) {
             const registration = await directusService.getDirectusRegistration(
-                directusUrl, directusToken, metadata.registrationId
+                directusUrl, 
+                directusToken, 
+                metadata.registrationId
             );
             
             if (registration) {

@@ -205,7 +205,7 @@ export default function IntroPagina() {
                           className="w-full p-3 bg-beige text-paars rounded-lg focus:outline-none focus:ring-2 focus:ring-oranje"
                         />
                       </div>
-                      
+
                       <button
                         type="submit"
                         disabled={isSubmitting}
@@ -221,6 +221,7 @@ export default function IntroPagina() {
           </>
         )}
       </main>
+
       <BackToTopButton />
     </>
   );
