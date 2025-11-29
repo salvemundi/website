@@ -16,27 +16,24 @@ interface Document {
   display_order: number;
 }
 
-// Helper function to clean committee names
 function cleanCommitteeName(name: string): string {
   return name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim();
 }
 
 export default function Footer() {
   const { isAuthenticated } = useAuth();
-  // Fetch documents
+  
   const { data: documents } = useQuery({
     queryKey: ['documents'],
     queryFn: documentsApi.getAll,
   });
 
-  // Fetch committees
   const { data: committeesData = [] } = useQuery<Committee[]>({
     queryKey: ['committees-with-members'],
     queryFn: () => committeesApi.getAllWithMembers(),
     staleTime: 5 * 60 * 1000
   });
 
-  // Sort committees so Bestuur is first, same as CommissiesPagina
   const committees = React.useMemo(() => {
     return [...committeesData].sort((a, b) => {
       const aIsBestuur = cleanCommitteeName(a.name).toLowerCase().includes('bestuur');
@@ -51,14 +48,12 @@ export default function Footer() {
   return (
     <footer className="bg-paars text-beige py-12 px-4 sm:px-8 lg:px-10">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-        {/* Information */}
         <div>
           <h3 className="font-bold text-lg mb-4">INFORMATIE</h3>
           <ul className="space-y-2 text-sm">
             <li>Rachelsmolen 1</li>
             <li>5612 MA Eindhoven</li>
             <li>KvK nr. 70280606</li>
-            {/* Documents from API */}
             {documents && documents.length > 0 ? (
               documents.map((doc: Document) => {
                 const fileUrl = `${import.meta.env.VITE_DIRECTUS_URL || 'https://admin.salvemundi.nl'}/assets/${doc.file}`;
@@ -80,7 +75,6 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Pages */}
         <div>
           <h3 className="font-bold text-lg mb-4">PAGINA'S</h3>
           <ul className="space-y-2 text-sm">
@@ -120,8 +114,8 @@ export default function Footer() {
               </Link>
             </li>
             <li>
-              <Link to="/inschrijven" className="hover:text-geel transition-colors">
-                Inschrijven
+              <Link to="/lidmaatschap" className="hover:text-geel transition-colors">
+                Lidmaatschap
               </Link>
             </li>
             <li>
@@ -137,7 +131,6 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Commissies */}
         <div>
           <h3 className="font-bold text-lg mb-4">COMMISSIES</h3>
           <ul className="space-y-2 text-sm">
@@ -158,7 +151,6 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Contact & Social Media */}
         <div>
           <h3 className="font-bold text-lg mb-4">CONTACT</h3>
           <ul className="space-y-2 text-sm mb-6">
@@ -253,7 +245,6 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Copyright */}
       <div className="mt-12 pt-8 border-t border-beige/30 text-center text-sm">
         <p>
           Copyright © 2025 Salve Mundi alle rechten voorbehouden.{" "}
