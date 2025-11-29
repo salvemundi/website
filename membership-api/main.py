@@ -1,6 +1,6 @@
 import os
 import datetime
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, APIRouter
 from pydantic import BaseModel
 import httpx
 
@@ -11,6 +11,10 @@ TENANT_ID = os.getenv("MS_GRAPH_TENANT_ID")
 CLIENT_ID = os.getenv("MS_GRAPH_CLIENT_ID")
 CLIENT_SECRET = os.getenv("MS_GRAPH_CLIENT_SECRET")
 ATTRIBUTE_SET_NAME = "SalveMundiLidmaatschap"
+
+# --- ROUTER SETUP (Prefix methode) ---
+# Dit zorgt dat de URL /api/membership/register wordt
+router = APIRouter(prefix="/api/membership")
 
 class MembershipRequest(BaseModel):
     user_id: str
@@ -35,10 +39,9 @@ async def update_user_attributes(user_id: str):
         token = await get_graph_token()
         
         vandaag = datetime.date.today()
-        # +1 Jaar geldig
         volgend_jaar = vandaag.replace(year=vandaag.year + 1)
         
-        # CORRECTIE: Formaat YYYYMMDD (Compact, zoals in PowerShell script)
+        # CORRECTIE: Formaat YYYYMMDD (Zonder streepjes, zoals legacy script verwacht)
         betaal_datum = vandaag.strftime("%Y%m%d")
         verloop_datum = volgend_jaar.strftime("%Y%m%d")
         
@@ -69,15 +72,18 @@ async def update_user_attributes(user_id: str):
     except Exception as e:
         print(f"Error in background task: {e}")
 
-@app.post("/register")
+# --- ROUTES ---
+@router.post("/register")
 async def register_member(request: MembershipRequest, background_tasks: BackgroundTasks):
     if not request.user_id:
         raise HTTPException(status_code=400, detail="Missing user_id")
 
-    # Update uitvoeren in achtergrond voor snelheid
     background_tasks.add_task(update_user_attributes, request.user_id)
     return {"status": "processing", "message": "Membership provisioning started"}
 
-@app.get("/health")
+@router.get("/health")
 def health_check():
     return {"status": "ok"}
+
+# Router koppelen
+app.include_router(router)
