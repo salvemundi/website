@@ -7,14 +7,11 @@ on:
       - 'main'
     paths:
       - 'frontend/**'
-      # Let op: als je de bestandsnaam van de workflow zelf aanpast, pas dit pad dan ook aan!
       - '.github/workflows/frontend-deploy.yml'
 
 env:
   REGISTRY: ghcr.io
-  # Image naam wordt nu 'frontend'
   IMAGE_NAME: salvemundi/frontend
-  # Server pad wordt nu '/opt/frontend'
   DEPLOY_PATH: /opt/frontend
 
 jobs:
@@ -35,9 +32,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set Environment Variables & Select Secrets
+      - name: Map Secrets to Environment
         id: selection
         run: |
+          # Map branch-specific secrets to build arguments
           if [[ "${{ github.ref_name }}" == "Development" ]]; then
             echo "TAG=dev" >> $GITHUB_ENV
             echo "VITE_DIRECTUS_URL=${{ secrets.VITE_DIRECTUS_URL }}" >> $GITHUB_ENV
@@ -45,7 +43,6 @@ jobs:
             echo "VITE_ENTRA_CLIENT_ID=${{ secrets.VITE_ENTRA_CLIENT_ID }}" >> $GITHUB_ENV
             echo "VITE_ENTRA_TENANT_ID=${{ secrets.VITE_ENTRA_TENANT_ID }}" >> $GITHUB_ENV
             echo "VITE_EMAIL_API_ENDPOINT=${{ secrets.VITE_EMAIL_API_ENDPOINT }}" >> $GITHUB_ENV
-            # HIER IS DE BELANGRIJKE WIJZIGING: Mapping van DEV token naar VITE key
             echo "VITE_DIRECTUS_API_KEY=${{ secrets.DEV_DIRECTUS_API_TOKEN }}" >> $GITHUB_ENV
           else
             echo "TAG=latest" >> $GITHUB_ENV
@@ -54,7 +51,6 @@ jobs:
             echo "VITE_ENTRA_CLIENT_ID=${{ secrets.PROD_VITE_ENTRA_CLIENT_ID }}" >> $GITHUB_ENV
             echo "VITE_ENTRA_TENANT_ID=${{ secrets.PROD_VITE_ENTRA_TENANT_ID }}" >> $GITHUB_ENV
             echo "VITE_EMAIL_API_ENDPOINT=${{ secrets.PROD_VITE_EMAIL_API_ENDPOINT }}" >> $GITHUB_ENV
-            # HIER IS DE BELANGRIJKE WIJZIGING: Mapping van PROD token naar VITE key
             echo "VITE_DIRECTUS_API_KEY=${{ secrets.PROD_DIRECTUS_API_TOKEN }}" >> $GITHUB_ENV
           fi
 
@@ -85,17 +81,25 @@ jobs:
 
       - name: Deploy on Server
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          GH_REGISTRY: ${{ env.REGISTRY }}
+          GH_USERNAME: ${{ github.actor }}
+          GH_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOY_PATH: ${{ env.DEPLOY_PATH }}
+          TAG: ${{ env.TAG }}
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,DEPLOY_PATH,TAG
           script: |
-            # Nieuwe map aanmaken (want we gebruiken nu /opt/frontend)
-            mkdir -p ${{ env.DEPLOY_PATH }}
-            cd ${{ env.DEPLOY_PATH }}
+            # Authenticate with registry to allow image pull
+            echo $GH_PASSWORD | docker login $GH_REGISTRY -u $GH_USERNAME --password-stdin
 
-            echo "TAG=${{ env.TAG }}" > .env
-
-            # Pull de 'frontend' service (nieuwe naam)
+            # Update deployment
+            mkdir -p $DEPLOY_PATH
+            cd $DEPLOY_PATH
+            echo "TAG=$TAG" > .env
+            
             docker compose pull frontend
             docker compose up -d frontend --remove-orphans
