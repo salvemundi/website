@@ -1,0 +1,83 @@
+name: Directus CMS Deployment
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  SERVICE_NAME: directus
+  
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: Production
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build image including bundled extensions/
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+      
+      - name: Deploy via SSH and Docker Compose
+        uses: appleboy/ssh-action@v1.0.1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # WAAROM: Alle microservices en de database draaien in één compose-netwerk.
+            # We navigeren naar de servermap die het hoofd docker-compose.yml bevat.
+            cd /pad/naar/uw/docker-compose/map # PAS DIT PAD AAN!
+
+            # Trek de nieuwste image
+            docker-compose pull ${{ env.SERVICE_NAME }}
+
+            # Start de Directus service opnieuw met gecorrigeerde environment variables.
+            # WAAROM: Overrides de lokale .env file op de server om te garanderen
+            # dat AUTH_MICROSOFT_DEFAULT_ROLE_ID correct wordt geladen, wat de 
+            # eerdere HTTP 500-crash in de SSO-extensie oplost.
+            docker-compose up -d ${{ env.SERVICE_NAME }} \
+              --no-deps \
+              --force-recreate \
+              --remove-orphans \
+              -e KEY="${{ secrets.DIRECTUS_KEY }}" \
+              -e SECRET="${{ secrets.DIRECTUS_SECRET }}" \
+              -e PUBLIC_URL="${{ secrets.PUBLIC_URL }}" \
+              -e PORT=8055 \
+              -e CORS_ORIGIN="${{ secrets.CORS_ORIGIN }}" \
+              -e CORS_ALLOW_CREDENTIALS="${{ secrets.CORS_ALLOW_CREDENTIALS }}" \
+              -e ADMIN_EMAIL="${{ secrets.ADMIN_EMAIL }}" \
+              -e ADMIN_PASSWORD="${{ secrets.ADMIN_PASSWORD }}" \
+              -e DB_CLIENT=postgres \
+              -e DB_HOST="${{ secrets.DB_HOST }}" \
+              -e DB_PORT="${{ secrets.DB_PORT }}" \
+              -e DB_DATABASE="${{ secrets.DB_DATABASE }}" \
+              -e DB_USER="${{ secrets.DB_USER }}" \
+              -e DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
+              -e AUTH_PROVIDERS=microsoft \
+              -e AUTH_MICROSOFT_DRIVER=openid \
+              -e AUTH_MICROSOFT_CLIENT_ID="${{ secrets.AUTH_MICROSOFT_CLIENT_ID }}" \
+              -e AUTH_MICROSOFT_CLIENT_SECRET="${{ secrets.AUTH_MICROSOFT_CLIENT_SECRET }}" \
+              -e AUTH_MICROSOFT_ISSUER_URL="${{ secrets.AUTH_MICROSOFT_ISSUER_URL }}" \
+              -e AUTH_MICROSOFT_SCOPE="openid profile email" \
+              -e AUTH_MICROSOFT_IDENTIFIER_KEY="sub" \
+              -e AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION="false" \
+              -e AUTH_MICROSOFT_DEFAULT_ROLE_ID="${{ secrets.AUTH_MEMBER_ROLE_ID }}" \
+              --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
