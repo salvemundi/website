@@ -31,7 +31,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # STAP 1: Bepaal de omgeving (Dev of Prod) en map de juiste secrets
       - name: Map Secrets to Environment
         id: selection
         run: |
@@ -43,7 +42,9 @@ jobs:
             echo "SECRET=${{ secrets.DIRECTUS_SECRET }}" >> $GITHUB_ENV
             echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}" >> $GITHUB_ENV
             echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> $GITHUB_ENV
-            echo "PUBLIC_URL=${{ secrets.PUBLIC_URL }}" >> $GITHUB_ENV
+            
+            # FIX: Map PUBLIC_URL naar uw bestaande DEV_DIRECTUS_URL secret
+            echo "PUBLIC_URL=${{ secrets.DEV_DIRECTUS_URL }}" >> $GITHUB_ENV
             
             # Database
             echo "DB_HOST=${{ secrets.DB_HOST }}" >> $GITHUB_ENV
@@ -51,23 +52,21 @@ jobs:
             echo "DB_USER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
             echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
             
-            # Azure / Entra ID
-            echo "AUTH_MICROSOFT_CLIENT_ID=${{ secrets.AUTH_MICROSOFT_CLIENT_ID }}" >> $GITHUB_ENV
-            echo "AUTH_MICROSOFT_CLIENT_SECRET=${{ secrets.AUTH_MICROSOFT_CLIENT_SECRET }}" >> $GITHUB_ENV
+            # Azure / Entra ID (Gemapt naar uw DEV_ secrets)
+            echo "AUTH_MICROSOFT_CLIENT_ID=${{ secrets.DEV_MS_GRAPH_CLIENT_ID }}" >> $GITHUB_ENV
+            echo "AUTH_MICROSOFT_CLIENT_SECRET=${{ secrets.DEV_MS_GRAPH_CLIENT_SECRET }}" >> $GITHUB_ENV
             echo "AUTH_MICROSOFT_ISSUER_URL=${{ secrets.AUTH_MICROSOFT_ISSUER_URL }}" >> $GITHUB_ENV
-            echo "AUTH_MEMBER_ROLE_ID=${{ secrets.AUTH_MEMBER_ROLE_ID }}" >> $GITHUB_ENV
+            echo "AUTH_MEMBER_ROLE_ID=${{ secrets.DIRECTUS_MEMBER_ROLE_ID }}" >> $GITHUB_ENV
             
             # CORS
             echo "CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}" >> $GITHUB_ENV
             echo "CORS_ALLOW_CREDENTIALS=${{ secrets.CORS_ALLOW_CREDENTIALS }}" >> $GITHUB_ENV
             
           else
-            # Hier komen later de PROD secrets (bijv. PROD_DB_PASSWORD)
+            # Productie mappings (Later in te vullen)
             echo "TAG=latest" >> $GITHUB_ENV
-            # echo "KEY=${{ secrets.PROD_DIRECTUS_KEY }}" >> $GITHUB_ENV
           fi
 
-      # STAP 2: Build de image (Geen build-args nodig, config is runtime)
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
@@ -76,7 +75,6 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
 
-      # STAP 3: Kopieer de compose file
       - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -87,7 +85,6 @@ jobs:
           target: ${{ env.DEPLOY_PATH }}
           strip_components: 1
 
-      # STAP 4: Deploy op de server en maak de .env aan
       - name: Deploy on Server
         uses: appleboy/ssh-action@v1.0.3
         env:
@@ -96,6 +93,7 @@ jobs:
           GH_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
           DEPLOY_PATH: ${{ env.DEPLOY_PATH }}
           TAG: ${{ env.TAG }}
+          # Pass alle gemapte vars
           KEY: ${{ env.KEY }}
           SECRET: ${{ env.SECRET }}
           ADMIN_EMAIL: ${{ env.ADMIN_EMAIL }}
@@ -115,19 +113,15 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # Lijst van vars die beschikbaar moeten zijn in het script:
           envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,DEPLOY_PATH,TAG,KEY,SECRET,ADMIN_EMAIL,ADMIN_PASSWORD,PUBLIC_URL,DB_HOST,DB_DATABASE,DB_USER,DB_PASSWORD,AUTH_CLIENT_ID,AUTH_CLIENT_SECRET,AUTH_ISSUER_URL,AUTH_ROLE_ID,CORS_ORIGIN,CORS_ALLOW_CREDENTIALS
           script: |
-            # Inloggen voor image pull
             echo $GH_PASSWORD | docker login $GH_REGISTRY -u $GH_USERNAME --password-stdin
-
+            
             mkdir -p $DEPLOY_PATH
             cd $DEPLOY_PATH
 
-            # Genereer .env bestand met ALLE runtime variabelen
+            # Generate .env with explicit mappings
             echo "TAG=$TAG" > .env
-            
-            # Directus Core
             echo "KEY=$KEY" >> .env
             echo "SECRET=$SECRET" >> .env
             echo "ADMIN_EMAIL=$ADMIN_EMAIL" >> .env
@@ -135,7 +129,6 @@ jobs:
             echo "PUBLIC_URL=$PUBLIC_URL" >> .env
             echo "PORT=8055" >> .env
             
-            # Database
             echo "DB_CLIENT=postgres" >> .env
             echo "DB_HOST=$DB_HOST" >> .env
             echo "DB_PORT=5432" >> .env
@@ -143,7 +136,6 @@ jobs:
             echo "DB_USER=$DB_USER" >> .env
             echo "DB_PASSWORD=$DB_PASSWORD" >> .env
             
-            # Azure / SSO
             echo "AUTH_PROVIDERS=microsoft" >> .env
             echo "AUTH_MICROSOFT_DRIVER=openid" >> .env
             echo "AUTH_MICROSOFT_CLIENT_ID=$AUTH_CLIENT_ID" >> .env
@@ -155,10 +147,8 @@ jobs:
             echo "AUTH_MICROSOFT_DEFAULT_ROLE_ID=$AUTH_ROLE_ID" >> .env
             echo "AUTH_ENTRA_FIELDS_MAPPING={\"email\": \"userPrincipalName\", \"first_name\": \"givenName\", \"last_name\": \"surname\"}" >> .env
             
-            # CORS
             echo "CORS_ORIGIN=$CORS_ORIGIN" >> .env
             echo "CORS_ALLOW_CREDENTIALS=$CORS_ALLOW_CREDENTIALS" >> .env
 
-            # Herstarten
             docker compose pull directus
             docker compose up -d directus --remove-orphans
