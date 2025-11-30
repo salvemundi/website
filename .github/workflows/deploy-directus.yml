@@ -37,6 +37,17 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
+      - name: Copy Config Files via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "directus/docker-compose.yml"
+          target: "/opt/directus"
+          # Why: Remove 'directus/' prefix so file lands directly in /opt/directus
+          strip_components: 1
+
       - name: Deploy via SSH and Docker Compose
         uses: appleboy/ssh-action@v1.0.1
         with:
@@ -44,19 +55,14 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Navigate to the cleaned setup directory
             cd /opt/directus
 
-            # Why: Dynamically update the image source in docker-compose.yml to use the GitHub Registry build
-            # instead of the default local/hub image, ensuring the latest code and extensions are used.
+            # Why: Update image reference to use the newly built GHCR image
             sed -i 's|image: directus/directus:latest|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest|g' docker-compose.yml
 
-            # Why: Pull the latest image from GHCR before restarting
             docker-compose pull ${{ env.SERVICE_NAME }}
 
-            # Why: Export secrets as shell environment variables. Docker Compose automatically 
-            # substitutes these into the configuration, avoiding "unknown flag" errors 
-            # associated with passing -e to the up command.
+            # Why: Export secrets as shell environment variables for substitution in docker-compose
             export KEY="${{ secrets.DIRECTUS_KEY }}"
             export SECRET="${{ secrets.DIRECTUS_SECRET }}"
             export PUBLIC_URL="${{ secrets.PUBLIC_URL }}"
@@ -82,5 +88,4 @@ jobs:
             export AUTH_MICROSOFT_DEFAULT_ROLE_ID="${{ secrets.AUTH_MEMBER_ROLE_ID }}"
             export AUTH_ENTRA_FIELDS_MAPPING='{"email": "userPrincipalName", "first_name": "givenName", "last_name": "surname"}'
 
-            # Restart service with new config and image
             docker-compose up -d --no-deps --force-recreate --remove-orphans ${{ env.SERVICE_NAME }}
