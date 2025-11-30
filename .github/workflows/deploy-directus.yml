@@ -3,7 +3,10 @@ name: Directus CMS Deployment
 on:
   push:
     branches:
-      - main
+      - Development 
+    paths:
+      - 'directus/**' 
+      - '.github/workflows/deploy-directus.yml'
   workflow_dispatch:
 
 env:
@@ -27,11 +30,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Build image including bundled extensions/
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          # WAAROM: De Dockerfile en extensies staan in de 'directus' submap.
+          context: directus 
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
       
@@ -42,17 +45,15 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # WAAROM: Alle microservices en de database draaien in één compose-netwerk.
-            # We navigeren naar de servermap die het hoofd docker-compose.yml bevat.
+            # WAAROM: Alle microservices draaien in één compose-netwerk.
             cd /pad/naar/uw/docker-compose/map # PAS DIT PAD AAN!
 
-            # Trek de nieuwste image
             docker-compose pull ${{ env.SERVICE_NAME }}
 
             # Start de Directus service opnieuw met gecorrigeerde environment variables.
             # WAAROM: Overrides de lokale .env file op de server om te garanderen
-            # dat AUTH_MICROSOFT_DEFAULT_ROLE_ID correct wordt geladen, wat de 
-            # eerdere HTTP 500-crash in de SSO-extensie oplost.
+            # dat de kritieke AUTH_MICROSOFT_DEFAULT_ROLE_ID correct wordt geladen, 
+            # wat de eerdere HTTP 500-crash in de SSO-extensie oplost.
             docker-compose up -d ${{ env.SERVICE_NAME }} \
               --no-deps \
               --force-recreate \
