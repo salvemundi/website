@@ -1,91 +1,164 @@
-name: Directus CMS Deployment
+name: Deploy Directus
 
 on:
   push:
     branches:
-      - Development
+      - 'Development'
     paths:
       - 'directus/**'
       - '.github/workflows/deploy-directus.yml'
-  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-  SERVICE_NAME: directus
+  IMAGE_NAME: salvemundi/directus
+  DEPLOY_PATH: /opt/directus
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    environment: Production
+    permissions:
+      contents: read
+      packages: write
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Log in to GitHub Container Registry
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # STAP 1: Bepaal de omgeving (Dev of Prod) en map de juiste secrets
+      - name: Map Secrets to Environment
+        id: selection
+        run: |
+          if [[ "${{ github.ref_name }}" == "Development" ]]; then
+            echo "TAG=dev" >> $GITHUB_ENV
+            
+            # Directus Core
+            echo "KEY=${{ secrets.DIRECTUS_KEY }}" >> $GITHUB_ENV
+            echo "SECRET=${{ secrets.DIRECTUS_SECRET }}" >> $GITHUB_ENV
+            echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}" >> $GITHUB_ENV
+            echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> $GITHUB_ENV
+            echo "PUBLIC_URL=${{ secrets.PUBLIC_URL }}" >> $GITHUB_ENV
+            
+            # Database
+            echo "DB_HOST=${{ secrets.DB_HOST }}" >> $GITHUB_ENV
+            echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> $GITHUB_ENV
+            echo "DB_USER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
+            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
+            
+            # Azure / Entra ID
+            echo "AUTH_MICROSOFT_CLIENT_ID=${{ secrets.AUTH_MICROSOFT_CLIENT_ID }}" >> $GITHUB_ENV
+            echo "AUTH_MICROSOFT_CLIENT_SECRET=${{ secrets.AUTH_MICROSOFT_CLIENT_SECRET }}" >> $GITHUB_ENV
+            echo "AUTH_MICROSOFT_ISSUER_URL=${{ secrets.AUTH_MICROSOFT_ISSUER_URL }}" >> $GITHUB_ENV
+            echo "AUTH_MEMBER_ROLE_ID=${{ secrets.AUTH_MEMBER_ROLE_ID }}" >> $GITHUB_ENV
+            
+            # CORS
+            echo "CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}" >> $GITHUB_ENV
+            echo "CORS_ALLOW_CREDENTIALS=${{ secrets.CORS_ALLOW_CREDENTIALS }}" >> $GITHUB_ENV
+            
+          else
+            # Hier komen later de PROD secrets (bijv. PROD_DB_PASSWORD)
+            echo "TAG=latest" >> $GITHUB_ENV
+            # echo "KEY=${{ secrets.PROD_DIRECTUS_KEY }}" >> $GITHUB_ENV
+          fi
+
+      # STAP 2: Build de image (Geen build-args nodig, config is runtime)
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
-          context: directus
+          context: ./directus
+          file: ./directus/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
 
-      - name: Copy Config Files via SCP
+      # STAP 3: Kopieer de compose file
+      - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "directus/docker-compose.yml"
-          target: "/opt/directus"
-          # Why: Remove 'directus/' prefix so file lands directly in /opt/directus
+          target: ${{ env.DEPLOY_PATH }}
           strip_components: 1
 
-      - name: Deploy via SSH and Docker Compose
-        uses: appleboy/ssh-action@v1.0.1
+      # STAP 4: Deploy op de server en maak de .env aan
+      - name: Deploy on Server
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          GH_REGISTRY: ${{ env.REGISTRY }}
+          GH_USERNAME: ${{ github.actor }}
+          GH_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOY_PATH: ${{ env.DEPLOY_PATH }}
+          TAG: ${{ env.TAG }}
+          KEY: ${{ env.KEY }}
+          SECRET: ${{ env.SECRET }}
+          ADMIN_EMAIL: ${{ env.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
+          PUBLIC_URL: ${{ env.PUBLIC_URL }}
+          DB_HOST: ${{ env.DB_HOST }}
+          DB_DATABASE: ${{ env.DB_DATABASE }}
+          DB_USER: ${{ env.DB_USER }}
+          DB_PASSWORD: ${{ env.DB_PASSWORD }}
+          AUTH_CLIENT_ID: ${{ env.AUTH_MICROSOFT_CLIENT_ID }}
+          AUTH_CLIENT_SECRET: ${{ env.AUTH_MICROSOFT_CLIENT_SECRET }}
+          AUTH_ISSUER_URL: ${{ env.AUTH_MICROSOFT_ISSUER_URL }}
+          AUTH_ROLE_ID: ${{ env.AUTH_MEMBER_ROLE_ID }}
+          CORS_ORIGIN: ${{ env.CORS_ORIGIN }}
+          CORS_ALLOW_CREDENTIALS: ${{ env.CORS_ALLOW_CREDENTIALS }}
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # Lijst van vars die beschikbaar moeten zijn in het script:
+          envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,DEPLOY_PATH,TAG,KEY,SECRET,ADMIN_EMAIL,ADMIN_PASSWORD,PUBLIC_URL,DB_HOST,DB_DATABASE,DB_USER,DB_PASSWORD,AUTH_CLIENT_ID,AUTH_CLIENT_SECRET,AUTH_ISSUER_URL,AUTH_ROLE_ID,CORS_ORIGIN,CORS_ALLOW_CREDENTIALS
           script: |
-            cd /opt/directus
+            # Inloggen voor image pull
+            echo $GH_PASSWORD | docker login $GH_REGISTRY -u $GH_USERNAME --password-stdin
 
-            # Why: Update image reference to use the newly built GHCR image
-            sed -i 's|image: directus/directus:latest|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest|g' docker-compose.yml
+            mkdir -p $DEPLOY_PATH
+            cd $DEPLOY_PATH
 
-            docker-compose pull ${{ env.SERVICE_NAME }}
+            # Genereer .env bestand met ALLE runtime variabelen
+            echo "TAG=$TAG" > .env
+            
+            # Directus Core
+            echo "KEY=$KEY" >> .env
+            echo "SECRET=$SECRET" >> .env
+            echo "ADMIN_EMAIL=$ADMIN_EMAIL" >> .env
+            echo "ADMIN_PASSWORD=$ADMIN_PASSWORD" >> .env
+            echo "PUBLIC_URL=$PUBLIC_URL" >> .env
+            echo "PORT=8055" >> .env
+            
+            # Database
+            echo "DB_CLIENT=postgres" >> .env
+            echo "DB_HOST=$DB_HOST" >> .env
+            echo "DB_PORT=5432" >> .env
+            echo "DB_DATABASE=$DB_DATABASE" >> .env
+            echo "DB_USER=$DB_USER" >> .env
+            echo "DB_PASSWORD=$DB_PASSWORD" >> .env
+            
+            # Azure / SSO
+            echo "AUTH_PROVIDERS=microsoft" >> .env
+            echo "AUTH_MICROSOFT_DRIVER=openid" >> .env
+            echo "AUTH_MICROSOFT_CLIENT_ID=$AUTH_CLIENT_ID" >> .env
+            echo "AUTH_MICROSOFT_CLIENT_SECRET=$AUTH_CLIENT_SECRET" >> .env
+            echo "AUTH_MICROSOFT_ISSUER_URL=$AUTH_ISSUER_URL" >> .env
+            echo "AUTH_MICROSOFT_SCOPE=openid profile email" >> .env
+            echo "AUTH_MICROSOFT_IDENTIFIER_KEY=sub" >> .env
+            echo "AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION=false" >> .env
+            echo "AUTH_MICROSOFT_DEFAULT_ROLE_ID=$AUTH_ROLE_ID" >> .env
+            echo "AUTH_ENTRA_FIELDS_MAPPING={\"email\": \"userPrincipalName\", \"first_name\": \"givenName\", \"last_name\": \"surname\"}" >> .env
+            
+            # CORS
+            echo "CORS_ORIGIN=$CORS_ORIGIN" >> .env
+            echo "CORS_ALLOW_CREDENTIALS=$CORS_ALLOW_CREDENTIALS" >> .env
 
-            # Why: Export secrets as shell environment variables for substitution in docker-compose
-            export KEY="${{ secrets.DIRECTUS_KEY }}"
-            export SECRET="${{ secrets.DIRECTUS_SECRET }}"
-            export PUBLIC_URL="${{ secrets.PUBLIC_URL }}"
-            export PORT=8055
-            export CORS_ORIGIN="${{ secrets.CORS_ORIGIN }}"
-            export CORS_ALLOW_CREDENTIALS="${{ secrets.CORS_ALLOW_CREDENTIALS }}"
-            export ADMIN_EMAIL="${{ secrets.ADMIN_EMAIL }}"
-            export ADMIN_PASSWORD="${{ secrets.ADMIN_PASSWORD }}"
-            export DB_CLIENT=postgres
-            export DB_HOST="${{ secrets.DB_HOST }}"
-            export DB_PORT="${{ secrets.DB_PORT }}"
-            export DB_DATABASE="${{ secrets.DB_DATABASE }}"
-            export DB_USER="${{ secrets.DB_USER }}"
-            export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
-            export AUTH_PROVIDERS=microsoft
-            export AUTH_MICROSOFT_DRIVER=openid
-            export AUTH_MICROSOFT_CLIENT_ID="${{ secrets.AUTH_MICROSOFT_CLIENT_ID }}"
-            export AUTH_MICROSOFT_CLIENT_SECRET="${{ secrets.AUTH_MICROSOFT_CLIENT_SECRET }}"
-            export AUTH_MICROSOFT_ISSUER_URL="${{ secrets.AUTH_MICROSOFT_ISSUER_URL }}"
-            export AUTH_MICROSOFT_SCOPE="openid profile email"
-            export AUTH_MICROSOFT_IDENTIFIER_KEY="sub"
-            export AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION="false"
-            export AUTH_MICROSOFT_DEFAULT_ROLE_ID="${{ secrets.AUTH_MEMBER_ROLE_ID }}"
-            export AUTH_ENTRA_FIELDS_MAPPING='{"email": "userPrincipalName", "first_name": "givenName", "last_name": "surname"}'
-
-            docker-compose up -d --no-deps --force-recreate --remove-orphans ${{ env.SERVICE_NAME }}
+            # Herstarten
+            docker compose pull directus
+            docker compose up -d directus --remove-orphans

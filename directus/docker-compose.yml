@@ -14,7 +14,7 @@ services:
 
   directus:
     # Image wordt tijdens deployment dynamisch overschreven naar de GHCR build
-    image: directus/directus:latest
+    image: ghcr.io/salvemundi/directus:${TAG}
     container_name: directus
     restart: unless-stopped
     ports:
