@@ -3,9 +3,9 @@ name: Directus CMS Deployment
 on:
   push:
     branches:
-      - Development 
+      - Development
     paths:
-      - 'directus/**' 
+      - 'directus/**'
       - '.github/workflows/deploy-directus.yml'
   workflow_dispatch:
 
@@ -13,12 +13,12 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   SERVICE_NAME: directus
-  
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: Production
-    
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -33,11 +33,10 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
-          # WAAROM: De Dockerfile en extensies staan in de 'directus' submap.
-          context: directus 
+          context: directus
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-      
+
       - name: Deploy via SSH and Docker Compose
         uses: appleboy/ssh-action@v1.0.1
         with:
@@ -45,40 +44,43 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # WAAROM: Alle microservices draaien in één compose-netwerk.
-            cd /pad/naar/uw/docker-compose/map # PAS DIT PAD AAN!
+            # Navigate to the cleaned setup directory
+            cd /opt/directus
 
+            # Why: Dynamically update the image source in docker-compose.yml to use the GitHub Registry build
+            # instead of the default local/hub image, ensuring the latest code and extensions are used.
+            sed -i 's|image: directus/directus:latest|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest|g' docker-compose.yml
+
+            # Why: Pull the latest image from GHCR before restarting
             docker-compose pull ${{ env.SERVICE_NAME }}
 
-            # Start de Directus service opnieuw met gecorrigeerde environment variables.
-            # WAAROM: Overrides de lokale .env file op de server om te garanderen
-            # dat de kritieke AUTH_MICROSOFT_DEFAULT_ROLE_ID correct wordt geladen, 
-            # wat de eerdere HTTP 500-crash in de SSO-extensie oplost.
-            docker-compose up -d ${{ env.SERVICE_NAME }} \
-              --no-deps \
-              --force-recreate \
-              --remove-orphans \
-              -e KEY="${{ secrets.DIRECTUS_KEY }}" \
-              -e SECRET="${{ secrets.DIRECTUS_SECRET }}" \
-              -e PUBLIC_URL="${{ secrets.PUBLIC_URL }}" \
-              -e PORT=8055 \
-              -e CORS_ORIGIN="${{ secrets.CORS_ORIGIN }}" \
-              -e CORS_ALLOW_CREDENTIALS="${{ secrets.CORS_ALLOW_CREDENTIALS }}" \
-              -e ADMIN_EMAIL="${{ secrets.ADMIN_EMAIL }}" \
-              -e ADMIN_PASSWORD="${{ secrets.ADMIN_PASSWORD }}" \
-              -e DB_CLIENT=postgres \
-              -e DB_HOST="${{ secrets.DB_HOST }}" \
-              -e DB_PORT="${{ secrets.DB_PORT }}" \
-              -e DB_DATABASE="${{ secrets.DB_DATABASE }}" \
-              -e DB_USER="${{ secrets.DB_USER }}" \
-              -e DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
-              -e AUTH_PROVIDERS=microsoft \
-              -e AUTH_MICROSOFT_DRIVER=openid \
-              -e AUTH_MICROSOFT_CLIENT_ID="${{ secrets.AUTH_MICROSOFT_CLIENT_ID }}" \
-              -e AUTH_MICROSOFT_CLIENT_SECRET="${{ secrets.AUTH_MICROSOFT_CLIENT_SECRET }}" \
-              -e AUTH_MICROSOFT_ISSUER_URL="${{ secrets.AUTH_MICROSOFT_ISSUER_URL }}" \
-              -e AUTH_MICROSOFT_SCOPE="openid profile email" \
-              -e AUTH_MICROSOFT_IDENTIFIER_KEY="sub" \
-              -e AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION="false" \
-              -e AUTH_MICROSOFT_DEFAULT_ROLE_ID="${{ secrets.AUTH_MEMBER_ROLE_ID }}" \
-              --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            # Why: Export secrets as shell environment variables. Docker Compose automatically 
+            # substitutes these into the configuration, avoiding "unknown flag" errors 
+            # associated with passing -e to the up command.
+            export KEY="${{ secrets.DIRECTUS_KEY }}"
+            export SECRET="${{ secrets.DIRECTUS_SECRET }}"
+            export PUBLIC_URL="${{ secrets.PUBLIC_URL }}"
+            export PORT=8055
+            export CORS_ORIGIN="${{ secrets.CORS_ORIGIN }}"
+            export CORS_ALLOW_CREDENTIALS="${{ secrets.CORS_ALLOW_CREDENTIALS }}"
+            export ADMIN_EMAIL="${{ secrets.ADMIN_EMAIL }}"
+            export ADMIN_PASSWORD="${{ secrets.ADMIN_PASSWORD }}"
+            export DB_CLIENT=postgres
+            export DB_HOST="${{ secrets.DB_HOST }}"
+            export DB_PORT="${{ secrets.DB_PORT }}"
+            export DB_DATABASE="${{ secrets.DB_DATABASE }}"
+            export DB_USER="${{ secrets.DB_USER }}"
+            export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+            export AUTH_PROVIDERS=microsoft
+            export AUTH_MICROSOFT_DRIVER=openid
+            export AUTH_MICROSOFT_CLIENT_ID="${{ secrets.AUTH_MICROSOFT_CLIENT_ID }}"
+            export AUTH_MICROSOFT_CLIENT_SECRET="${{ secrets.AUTH_MICROSOFT_CLIENT_SECRET }}"
+            export AUTH_MICROSOFT_ISSUER_URL="${{ secrets.AUTH_MICROSOFT_ISSUER_URL }}"
+            export AUTH_MICROSOFT_SCOPE="openid profile email"
+            export AUTH_MICROSOFT_IDENTIFIER_KEY="sub"
+            export AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION="false"
+            export AUTH_MICROSOFT_DEFAULT_ROLE_ID="${{ secrets.AUTH_MEMBER_ROLE_ID }}"
+            export AUTH_ENTRA_FIELDS_MAPPING='{"email": "userPrincipalName", "first_name": "givenName", "last_name": "surname"}'
+
+            # Restart service with new config and image
+            docker-compose up -d --no-deps --force-recreate --remove-orphans ${{ env.SERVICE_NAME }}
