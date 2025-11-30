@@ -4,17 +4,24 @@ import secrets
 import string
 import re
 import unidecode
+import json
 from fastapi import FastAPI, HTTPException, BackgroundTasks, APIRouter
 from pydantic import BaseModel
 import httpx
 
 app = FastAPI()
 
+# Microsoft Graph Secrets
 TENANT_ID = os.getenv("MS_GRAPH_TENANT_ID")
 CLIENT_ID = os.getenv("MS_GRAPH_CLIENT_ID")
 CLIENT_SECRET = os.getenv("MS_GRAPH_CLIENT_SECRET")
 DOMAIN = os.getenv("MS_GRAPH_DOMAIN", "salvemundi.nl")
 ATTRIBUTE_SET_NAME = "SalveMundiLidmaatschap"
+
+# Directus Provisioning Secrets
+DIRECTUS_API_URL = os.getenv("DEV_DIRECTUS_URL")
+DIRECTUS_SYSTEM_TOKEN = os.getenv("DEV_DIRECTUS_API_TOKEN")
+DIRECTUS_MEMBER_ROLE_ID = os.getenv("DIRECTUS_MEMBER_ROLE_ID")
 
 router = APIRouter(prefix="/api/membership")
 
@@ -47,7 +54,6 @@ async def get_graph_token():
                     detail=f"CRITICAL AUTH ERROR: Azure Client Secret is invalid or expired. Update MS_GRAPH_CLIENT_SECRET in GitHub Secrets. (Details: {error_message})"
                 )
             
-            # Voor alle andere fouten
             raise HTTPException(
                 status_code=500, 
                 detail=f"Graph Authentication Failed. Check Configuration. (Azure Error: {error_message})"
@@ -157,19 +163,71 @@ async def update_user_attributes(user_id: str):
     except Exception as e:
         print(f"Attribute update error: {e}")
 
+async def provision_directus_user(user_data: dict):
+    # Waarom: Nieuw lid moet direct na aanmaak in Entra ID ook lokaal in Directus bestaan 
+    # om onmiddellijke SSO inlog/herkenning door andere flows te garanderen.
+    if not DIRECTUS_API_URL or not DIRECTUS_SYSTEM_TOKEN or not DIRECTUS_MEMBER_ROLE_ID:
+        print("CRITICAL: Essential Directus provisioning secrets/role ID are not configured. Skipping.")
+        return
+
+    directus_api_url = f"{DIRECTUS_API_URL}/users"
+
+    directus_payload = {
+        "first_name": user_data["first_name"],
+        "last_name": user_data["last_name"],
+        "email": user_data["upn"],
+        "provider": "microsoft",
+        "role": DIRECTUS_MEMBER_ROLE_ID, 
+        "status": "active",
+        "external_identifier": user_data["id"] 
+    }
+    
+    headers = {
+        "Authorization": f"Bearer {DIRECTUS_SYSTEM_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(directus_api_url, json=directus_payload, headers=headers)
+            
+            if response.status_code == 200:
+                print(f"Directus user provisioned successfully: {user_data['upn']}")
+            else:
+                # Directus geeft 400 als de gebruiker al bestaat, wat kan gebeuren als de webhook 
+                # dubbel wordt aangeroepen. Dit mag de flow niet stoppen.
+                if response.status_code == 400 and "ALREADY_EXISTS" in response.text:
+                    print(f"Directus provisioning warning: User already exists ({user_data['upn']}).")
+                else:
+                    print(f"Directus provisioning failed for {user_data['upn']} (Status: {response.status_code}, Response: {response.text})")
+        except Exception as e:
+            print(f"CRITICAL Directus API connection error: {e}")
+
+
 @router.post("/create-user")
 async def create_user_endpoint(request: CreateMemberRequest, background_tasks: BackgroundTasks):
     token = await get_graph_token()
     
-    new_user = await create_azure_user(request, token)
+    new_user_data = await create_azure_user(request, token)
     
-    background_tasks.add_task(update_user_attributes, new_user["id"])
+    user_provisioning_data = {
+        "id": new_user_data["id"],
+        "upn": new_user_data["upn"],
+        "first_name": request.first_name,
+        "last_name": request.last_name
+    }
+    
+    # Patch de Entra ID attributes (lidmaatschapsdatum)
+    background_tasks.add_task(update_user_attributes, user_provisioning_data["id"])
+    
+    # Provision de Directus gebruiker (cruciale fix voor het inlogprobleem)
+    background_tasks.add_task(provision_directus_user, user_provisioning_data)
     
     return {
         "status": "created",
-        "user_id": new_user["id"],
-        "upn": new_user["upn"],
-        "password": new_user["password"]
+        "user_id": new_user_data["id"],
+        "upn": new_user_data["upn"],
+        "password": new_user_data["password"]
     }
 
 @router.post("/register")
