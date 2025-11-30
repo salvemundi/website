@@ -1,0 +1,60 @@
+services:
+  db:
+    image: postgres:15
+    container_name: directus_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+    volumes:
+      - postgres_app_data:/var/lib/postgresql/data
+    networks:
+      - internal_backend
+
+  directus:
+    # Image wordt tijdens deployment dynamisch overschreven naar de GHCR build
+    image: directus/directus:latest
+    container_name: directus
+    restart: unless-stopped
+    ports:
+      - 8055:8055
+    environment:
+      KEY: ${KEY}
+      SECRET: ${SECRET}
+      PUBLIC_URL: ${PUBLIC_URL}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      CORS_ALLOW_CREDENTIALS: ${CORS_ALLOW_CREDENTIALS}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      DB_CLIENT: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      AUTH_PROVIDERS: ${AUTH_PROVIDERS}
+      AUTH_MICROSOFT_DRIVER: ${AUTH_MICROSOFT_DRIVER}
+      AUTH_MICROSOFT_CLIENT_ID: ${AUTH_MICROSOFT_CLIENT_ID}
+      AUTH_MICROSOFT_CLIENT_SECRET: ${AUTH_MICROSOFT_CLIENT_SECRET}
+      AUTH_MICROSOFT_ISSUER_URL: ${AUTH_MICROSOFT_ISSUER_URL}
+      AUTH_MICROSOFT_SCOPE: ${AUTH_MICROSOFT_SCOPE}
+      AUTH_MICROSOFT_IDENTIFIER_KEY: ${AUTH_MICROSOFT_IDENTIFIER_KEY}
+      AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION: ${AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION}
+      AUTH_MICROSOFT_DEFAULT_ROLE_ID: ${AUTH_MICROSOFT_DEFAULT_ROLE_ID}
+      AUTH_ENTRA_FIELDS_MAPPING: ${AUTH_ENTRA_FIELDS_MAPPING}
+    networks:
+      - proxy-network
+      - internal_backend
+    depends_on:
+      - db
+
+volumes:
+  postgres_app_data:
+  directus_uploads:
+
+networks:
+  proxy-network:
+    external: true
+  internal_backend:
+    driver: bridge
