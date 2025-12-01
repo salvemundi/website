@@ -1,183 +1,180 @@
-export default (router, { services, exceptions, database, logger }) => {
-  const { ItemsService, UsersService } = services;
-  const { ServiceUnavailableException } = exceptions;
+const jwt = require('jsonwebtoken');
+const jwksClient = require('jwks-rsa');
 
-  router.post('/auth/login/entra', async (req, res) => {
-    try {
-      const { token, email } = req.body;
+export default {
+  id: 'entra-auth',
+  handler: (router, { services, exceptions, database, logger, env }) => {
+    const { UsersService, AuthenticationService } = services;
+    const { InvalidPayloadException, InvalidCredentialsException } = exceptions;
 
-      if (!token || !email) {
-        logger.error('Missing token or email in request');
-        return res.status(400).json({ 
-          error: 'Missing required fields: token and email' 
-        });
-      }
+    // Microsoft JWKS client for token verification
+    const client = jwksClient({
+      jwksUri: `https://login.microsoftonline.com/${env.MICROSOFT_TENANT_ID || 'common'}/discovery/v2.0/keys`,
+      cache: true,
+      rateLimit: true,
+      jwksRequestsPerMinute: 10
+    });
 
-      logger.info('🔐 Entra ID login attempt for:', email);
+    /**
+     * Entra ID Authentication Endpoint
+     * POST /entra-auth/login/entra
+     */
+    router.post('/login/entra', async (req, res, next) => {
+      try {
+        const { token, email } = req.body;
 
-      // Verify Microsoft token
-      const microsoftUser = await verifyMicrosoftToken(token);
-      logger.info('✅ Microsoft token verified for:', microsoftUser.email);
-
-      // Check if user exists
-      const usersService = new UsersService({ schema: req.schema, accountability: req.accountability });
-      
-      let user = null;
-      
-      // Try to find user by entra_id first
-      if (microsoftUser.oid) {
-        const usersByEntraId = await database('directus_users')
-          .where('entra_id', microsoftUser.oid)
-          .first();
-        
-        if (usersByEntraId) {
-          user = usersByEntraId;
-          logger.info('✅ Found user by entra_id:', user.id);
+        if (!token || !email) {
+          throw new InvalidPayloadException('Token and email are required');
         }
-      }
-      
-      // If not found by entra_id, try by email
-      if (!user) {
-        const usersByEmail = await database('directus_users')
-          .where('email', email.toLowerCase())
-          .first();
-        
-        if (usersByEmail) {
-          user = usersByEmail;
-          logger.info('✅ Found user by email:', user.id);
-        }
-      }
 
-      const isFontysMember = email.toLowerCase().endsWith('@student.fontys.nl') || 
-                            email.toLowerCase().endsWith('@fontys.nl');
-      
-      if (!user) {
-        // Create new user
-        logger.info('📝 Creating new user for:', email);
-        
-        const newUser = {
-          email: email.toLowerCase(),
-          first_name: microsoftUser.given_name || '',
-          last_name: microsoftUser.family_name || '',
-          entra_id: microsoftUser.oid,
-          fontys_email: isFontysMember ? email.toLowerCase() : null,
-          status: 'active',
-          role: process.env.DEFAULT_USER_ROLE_ID || null,
-          password: Math.random().toString(36).substring(2, 15), // Random password (won't be used)
+        logger.info(`Entra ID login attempt for: ${email}`);
+
+        // Verify Microsoft token
+        let microsoftUser;
+        try {
+          microsoftUser = await verifyMicrosoftToken(token, env);
+        } catch (error) {
+          logger.error('Token verification failed:', error);
+          throw new InvalidCredentialsException('Invalid or expired Microsoft token');
+        }
+
+        // Validate email matches token
+        const tokenEmail = microsoftUser.email || microsoftUser.preferred_username;
+        if (tokenEmail.toLowerCase() !== email.toLowerCase()) {
+          logger.warn(`Email mismatch: token=${tokenEmail}, requested=${email}`);
+          throw new InvalidCredentialsException('Email does not match Microsoft account');
+        }
+
+        // Setup Accountability
+        const accountability = {
+          admin: true,
+          role: null,
+          user: null
         };
 
-        user = await usersService.createOne(newUser);
-        logger.info('✅ User created:', user.id);
-      } else {
-        // Update existing user with Entra ID and sync data from Microsoft
-        logger.info('🔄 Updating existing user:', user.id);
-        
-        const updates = {};
-        
-        // Always update entra_id if not set
-        if (!user.entra_id && microsoftUser.oid) {
-          updates.entra_id = microsoftUser.oid;
-        }
-        
-        // Update fontys_email if user is a Fontys member
-        if (isFontysMember && !user.fontys_email) {
-          updates.fontys_email = email.toLowerCase();
+        const usersService = new UsersService({ 
+          schema: req.schema, 
+          accountability 
+        });
+
+        // Find user by entra_id OR email
+        let user = await database('directus_users')
+          .where({ entra_id: microsoftUser.oid })
+          .first();
+
+        if (!user) {
+          user = await database('directus_users')
+            .where({ email: email.toLowerCase() })
+            .first();
         }
 
-        // Sync name from Microsoft if it changed
-        if (microsoftUser.given_name && user.first_name !== microsoftUser.given_name) {
-          updates.first_name = microsoftUser.given_name;
-        }
-        if (microsoftUser.family_name && user.last_name !== microsoftUser.family_name) {
-          updates.last_name = microsoftUser.family_name;
-        }
-        
-        // Sync email if it changed
-        if (email.toLowerCase() !== user.email) {
-          updates.email = email.toLowerCase();
+        // Create or Update Logic
+        if (!user) {
+          logger.info(`User not found, creating new user for: ${email}`);
+          
+          const newUserId = await usersService.createOne({
+            email: email.toLowerCase(),
+            entra_id: microsoftUser.oid,
+            first_name: microsoftUser.given_name || 'Unknown',
+            last_name: microsoftUser.family_name || 'User',
+            fontys_email: email.toLowerCase().includes('fontys') ? email.toLowerCase() : null,
+            role: env.AUTH_MICROSOFT_DEFAULT_ROLE_ID || null, // Gebruik de juiste ENV variabele naam!
+            status: 'active',
+            provider: 'entra',
+            external_identifier: microsoftUser.oid
+          });
+
+          // Fetch fresh user
+          user = await usersService.readOne(newUserId);
+          logger.info(`Created new user with ID: ${user.id}`);
+        } else {
+          // Update existing user logic
+          const updates = {};
+          if (!user.entra_id) updates.entra_id = microsoftUser.oid;
+          if (!user.external_identifier) updates.external_identifier = microsoftUser.oid;
+          
+          if (Object.keys(updates).length > 0) {
+            await usersService.updateOne(user.id, updates);
+            logger.info(`Updated user ${user.id} with Entra ID info`);
+          }
         }
 
-        if (Object.keys(updates).length > 0) {
-          await usersService.updateOne(user.id, updates);
-          logger.info('✅ User updated with:', updates);
+        if (user.status !== 'active') {
+          throw new InvalidCredentialsException('Your account is not active.');
         }
+
+        // Generate Tokens
+        const authService = new AuthenticationService({
+          schema: req.schema,
+          accountability: {
+            admin: false,
+            role: user.role,
+            user: user.id
+          }
+        });
+
+        const refreshToken = await authService.refresh(user.id);
+        const accessToken = jwt.sign(
+          {
+            id: user.id,
+            role: user.role,
+            app_access: true,
+            admin_access: false
+          },
+          env.SECRET,
+          {
+            expiresIn: env.ACCESS_TOKEN_TTL || '15m',
+            issuer: 'directus'
+          }
+        );
+
+        logger.info(`Successfully authenticated user: ${user.email}`);
+
+        res.json({
+          data: {
+            access_token: accessToken,
+            refresh_token: refreshToken,
+            expires: 15 * 60 * 1000
+          }
+        });
+
+      } catch (error) {
+        logger.error('Entra authentication error:', error);
+        next(error);
       }
+    });
 
-      // Generate Directus access token
-      logger.info('🎫 Generating Directus tokens for user:', user.id);
-      const authService = new services.AuthenticationService({ schema: req.schema });
-      const { accessToken, refreshToken } = await authService.login('', {
-        session: true,
-        user: user.id,
-      }, {
-        session: true,
+    async function verifyMicrosoftToken(idToken, env) {
+      return new Promise((resolve, reject) => {
+        const getKey = (header, callback) => {
+          client.getSigningKey(header.kid, (err, key) => {
+            if (err) return callback(err);
+            const signingKey = key.getPublicKey();
+            callback(null, signingKey);
+          });
+        };
+
+        jwt.verify(
+          idToken,
+          getKey,
+          {
+            audience: env.AUTH_MICROSOFT_CLIENT_ID, // Let op: juiste env naam gebruiken
+            issuer: `https://login.microsoftonline.com/${env.AUTH_MICROSOFT_TENANT_ID || 'common'}/v2.0`,
+            algorithms: ['RS256']
+          },
+          (err, decoded) => {
+            if (err) {
+               // Dev mode bypass
+               if (process.env.NODE_ENV !== 'production') {
+                 const decodedUnsafe = jwt.decode(idToken);
+                 if (decodedUnsafe) return resolve(decodedUnsafe);
+               }
+               return reject(err);
+            }
+            resolve(decoded);
+          }
+        );
       });
-
-      // Fetch full user details
-      const fullUser = await usersService.readOne(user.id, {
-        fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'fontys_email', 'phone_number', 'avatar']
-      });
-
-      // Add is_member flag based on entra_id or fontys_email presence
-      const userData = {
-        ...fullUser,
-        is_member: !!(fullUser.entra_id || fullUser.fontys_email),
-      };
-
-      logger.info('✅ Login successful for:', email);
-      
-      return res.json({
-        access_token: accessToken,
-        refresh_token: refreshToken,
-        user: userData,
-      });
-
-    } catch (error) {
-      logger.error('❌ Entra ID login error:', error);
-      return res.status(500).json({ 
-        error: 'Authentication failed',
-        details: error.message 
-      });
-    }
-  });
-
-  // Verify Microsoft JWT token
-  async function verifyMicrosoftToken(token) {
-    const jwt = require('jsonwebtoken');
-    const jwksClient = require('jwks-rsa');
-
-    try {
-      // Decode without verification first to get the header
-      const decoded = jwt.decode(token, { complete: true });
-      
-      if (!decoded || !decoded.header || !decoded.header.kid) {
-        throw new Error('Invalid token format');
-      }
-
-      // Get the tenant ID from the decoded token
-      const tenantId = decoded.payload.tid || 'common';
-      
-      // Create JWKS client
-      const client = jwksClient({
-        jwksUri: `https://login.microsoftonline.com/${tenantId}/discovery/v2.0/keys`,
-        cache: true,
-        rateLimit: true,
-      });
-
-      // Get the signing key
-      const key = await client.getSigningKey(decoded.header.kid);
-      const signingKey = key.getPublicKey();
-
-      // Verify the token
-      const verified = jwt.verify(token, signingKey, {
-        algorithms: ['RS256'],
-        // Don't verify audience or issuer for now - can be added if needed
-      });
-
-      return verified;
-    } catch (error) {
-      logger.error('Token verification failed:', error);
-      throw new Error('Invalid Microsoft token: ' + error.message);
     }
   }
 };
