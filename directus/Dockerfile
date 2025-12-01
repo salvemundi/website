@@ -4,19 +4,18 @@ USER root
 
 COPY ./extensions /directus/extensions
 
-# Work from root for global operations
 WORKDIR /directus
 
-# 1. Install dependencies INSIDE the extension directory
-# This ensures node_modules are exactly where npm run build expects them
+# 1. Install dependencies recursively for all extensions
+# Using 'sh' for Alpine compatibility
 RUN find extensions -name package.json -exec sh -c 'cd $(dirname {}) && npm install --include=dev' \;
 
-# 2. Build the extension by CHANGING DIRECTORY first
-# This definitively solves "Invalid package.json" because CWD is correct.
-# We use npm run build to utilize the local binaries automatically.
+# 2. Build the extension explicitly from its own directory
+# This utilizes the local 'npm run build' script defined in package.json,
+# resolving binary paths and configuration contexts automatically.
 RUN cd extensions/endpoints/entra-auth && npm run build
 
-# 3. Cleanup dependencies
+# 3. Cleanup dev dependencies to reduce image size
 RUN find extensions -name package.json -exec sh -c 'cd $(dirname {}) && npm prune --production' \;
 
 # Restore permissions
