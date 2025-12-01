@@ -20,7 +20,6 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
     
     logger.info(`[ENTRA-AUTH] JWKS Client configured for Tenant: ${env.AUTH_MICROSOFT_TENANT_ID || 'common'}`);
 
-    // Herstelde route naar /auth/login/entra (conform de oude werkende code)
     router.post('/auth/login/entra', async (req, res, next) => {
         logger.info('[ENTRA-AUTH] POST /auth/login/entra route hit.');
         try {
@@ -45,11 +44,14 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
 
             const tokenEmail = microsoftUser.email || microsoftUser.preferred_username;
             const requestedEmail = email.toLowerCase();
+            
             if (tokenEmail.toLowerCase() !== requestedEmail) {
                 logger.error(`[ENTRA-AUTH] Email mismatch. Token email: ${tokenEmail}, Request email: ${requestedEmail}`);
                 throw new InvalidCredentialsException('Email does not match Microsoft account');
             }
             
+            // We use admin accountability to perform user lookups and updates without permission restrictions,
+            // as this is a system-level authentication process.
             const accountability = { admin: true, role: null, user: null };
             const usersService = new UsersService({ schema: req.schema, accountability });
             
@@ -174,5 +176,4 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
     }
 };
 
-// Finale CJS Export
 module.exports = entraAuthEndpoint;

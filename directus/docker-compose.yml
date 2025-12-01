@@ -1,37 +1,83 @@
 services:
+  # -------------------------------------------------------------------------
+  # DATABASE SERVICE (PostgreSQL)
+  # -------------------------------------------------------------------------
   db:
     image: postgres:15
     container_name: directus_db
     restart: unless-stopped
+    env_file: .env
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_DATABASE}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - postgres_app_data:/var/lib/postgresql/data
     networks:
       - internal_backend
 
+  # -------------------------------------------------------------------------
+  # APP SERVICE (Directus)
+  # -------------------------------------------------------------------------
   directus:
-    # Image wordt dynamisch bepaald door de CI/CD pipeline (dev vs latest)
-    image: ghcr.io/salvemundi/directus:${TAG}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ghcr.io/salvemundi/directus:dev
     container_name: directus
     restart: unless-stopped
-    ports:
-      - 8055:8055
-    # Laadt alle variabelen uit de gegenereerde .env file op de server
-    env_file:
-      - .env
+    env_file: .env
+    environment:
+      # Core Settings
+      - KEY=${DIRECTUS_KEY}
+      - SECRET=${DIRECTUS_SECRET}
+      - PUBLIC_URL=${PUBLIC_URL}
+      - PORT=8055
+      - CORS_ORIGIN=${CORS_ORIGIN}
+      - CORS_ALLOW_CREDENTIALS=${CORS_ALLOW_CREDENTIALS}
+      
+      # Admin Initialization
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+
+      # Database Connection
+      - DB_CLIENT=postgres
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=${POSTGRES_DB}
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+
+      # Microsoft Entra ID (Azure AD) SSO Configuration
+      - AUTH_PROVIDERS=microsoft
+      - AUTH_MICROSOFT_DRIVER=openid
+      - AUTH_MICROSOFT_CLIENT_ID=${AUTH_MICROSOFT_CLIENT_ID}
+      - AUTH_MICROSOFT_CLIENT_SECRET=${AUTH_MICROSOFT_CLIENT_SECRET}
+      - AUTH_MICROSOFT_ISSUER_URL=${AUTH_MICROSOFT_ISSUER_URL}
+      - AUTH_MICROSOFT_SCOPE=${AUTH_MICROSOFT_SCOPE}
+      - AUTH_MICROSOFT_IDENTIFIER_KEY=${AUTH_MICROSOFT_IDENTIFIER_KEY}
+      - AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION=${AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION}
+      - AUTH_MICROSOFT_DEFAULT_ROLE_ID=${AUTH_MICROSOFT_DEFAULT_ROLE_ID}
+
+    volumes:
+      - directus_uploads:/directus/uploads
+      - ./extensions:/directus/extensions
     networks:
       - proxy-network
       - internal_backend
     depends_on:
       - db
 
+# -------------------------------------------------------------------------
+# VOLUMES
+# -------------------------------------------------------------------------
 volumes:
   postgres_app_data:
   directus_uploads:
 
+# -------------------------------------------------------------------------
+# NETWORKS
+# -------------------------------------------------------------------------
 networks:
   proxy-network:
     external: true
