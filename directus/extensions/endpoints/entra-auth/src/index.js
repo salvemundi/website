@@ -1,7 +1,12 @@
+// IMMEDIATE DEBUG LOG: Dit moet verschijnen zodra Directus start.
+// Als je dit niet ziet, negeert Directus de dist/index.js volledig.
+console.log('[ENTRA-AUTH-DEBUG] Loading extension module into memory...');
+
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
 
 const entraAuthEndpoint = (router, { services, exceptions, database, logger, env }) => {
+    // Runtime initialization log
     logger.info('[ENTRA-AUTH] Extension initializing. Checking environment configuration...');
 
     const { UsersService, AuthenticationService } = services;
@@ -50,8 +55,6 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
                 throw new InvalidCredentialsException('Email does not match Microsoft account');
             }
             
-            // We use admin accountability to perform user lookups and updates without permission restrictions,
-            // as this is a system-level authentication process.
             const accountability = { admin: true, role: null, user: null };
             const usersService = new UsersService({ schema: req.schema, accountability });
             
