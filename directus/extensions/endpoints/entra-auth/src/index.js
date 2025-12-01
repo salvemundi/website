@@ -1,8 +1,8 @@
-// IMMEDIATE DEBUG LOG: Validates that Directus has successfully loaded the file into memory.
+// IMMEDIATE DEBUG LOG
 console.log('[ENTRA-AUTH-DEBUG] Loading extension module into memory...');
 
-import jwt from 'jsonwebtoken';
-import jwksClient from 'jwks-rsa';
+const jwt = require('jsonwebtoken');
+const jwksClient = require('jwks-rsa');
 
 const entraAuthEndpoint = (router, { services, exceptions, database, logger, env }) => {
     logger.info('[ENTRA-AUTH] Extension initializing. Checking environment configuration...');
@@ -177,4 +177,4 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
     }
 };
 
-export default entraAuthEndpoint;
+module.exports = entraAuthEndpoint;
