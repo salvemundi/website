@@ -4,21 +4,21 @@ USER root
 
 COPY ./extensions /directus/extensions
 
-# Set working directory to root to allow correct extension build context resolution
+# We blijven in de root werken voor globale operaties
 WORKDIR /directus
 
-# Install dependencies for all extensions found in the directory tree
-# This installs the @directus/extensions-sdk into the extension's own node_modules
+# 1. Installeer dependencies IN de extensie map
+# Dit zorgt dat node_modules precies daar staan waar npm run build ze verwacht
 RUN find extensions -name package.json -exec sh -c 'cd $(dirname {}) && npm install --include=dev' \;
 
-# Build the Entra Auth extension using the LOCALLY installed binary inside the extension folder
-# We point to the specific binary inside the extension's node_modules to resolve the "not found" error
-RUN ./extensions/endpoints/entra-auth/node_modules/.bin/directus-extension build ./extensions/endpoints/entra-auth
+# 2. Build de extensie door DE MAP IN TE GAAN
+# Dit lost de "Invalid package.json" fout definitief op omdat de CWD (Current Working Directory) correct is.
+RUN cd extensions/endpoints/entra-auth && npm run build
 
-# Remove devDependencies to keep the production image clean
+# 3. Cleanup dependencies
 RUN find extensions -name package.json -exec sh -c 'cd $(dirname {}) && npm prune --production' \;
 
-# Ensure correct permissions for the node user
+# Rechten herstellen
 RUN chown -R node:node /directus/extensions
 
 WORKDIR /directus
