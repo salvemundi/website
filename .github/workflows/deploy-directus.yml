@@ -42,8 +42,6 @@ jobs:
             echo "SECRET=${{ secrets.DIRECTUS_SECRET }}" >> $GITHUB_ENV
             echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}" >> $GITHUB_ENV
             echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> $GITHUB_ENV
-            
-            # FIX: Map PUBLIC_URL naar uw bestaande DEV_DIRECTUS_URL secret
             echo "PUBLIC_URL=${{ secrets.DEV_DIRECTUS_URL }}" >> $GITHUB_ENV
             
             # Database
@@ -52,18 +50,17 @@ jobs:
             echo "DB_USER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
             echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
             
-            # Azure / Entra ID (Gemapt naar uw DEV_ secrets)
+            # Azure / Entra ID
             echo "AUTH_MICROSOFT_CLIENT_ID=${{ secrets.DEV_MS_GRAPH_CLIENT_ID }}" >> $GITHUB_ENV
             echo "AUTH_MICROSOFT_CLIENT_SECRET=${{ secrets.DEV_MS_GRAPH_CLIENT_SECRET }}" >> $GITHUB_ENV
             echo "AUTH_MICROSOFT_ISSUER_URL=${{ secrets.AUTH_MICROSOFT_ISSUER_URL }}" >> $GITHUB_ENV
             echo "AUTH_MEMBER_ROLE_ID=${{ secrets.DIRECTUS_MEMBER_ROLE_ID }}" >> $GITHUB_ENV
             
-            # CORS
+            # CORS (De secrets CORS_ORIGIN en CORS_ALLOW_CREDENTIALS)
             echo "CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}" >> $GITHUB_ENV
             echo "CORS_ALLOW_CREDENTIALS=${{ secrets.CORS_ALLOW_CREDENTIALS }}" >> $GITHUB_ENV
             
           else
-            # Productie mappings (Later in te vullen)
             echo "TAG=latest" >> $GITHUB_ENV
           fi
 
@@ -93,7 +90,6 @@ jobs:
           GH_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
           DEPLOY_PATH: ${{ env.DEPLOY_PATH }}
           TAG: ${{ env.TAG }}
-          # Pass alle gemapte vars
           KEY: ${{ env.KEY }}
           SECRET: ${{ env.SECRET }}
           ADMIN_EMAIL: ${{ env.ADMIN_EMAIL }}
@@ -120,8 +116,10 @@ jobs:
             mkdir -p $DEPLOY_PATH
             cd $DEPLOY_PATH
 
-            # Generate .env with explicit mappings
+            # Generate .env
             echo "TAG=$TAG" > .env
+            
+            # Core
             echo "KEY=$KEY" >> .env
             echo "SECRET=$SECRET" >> .env
             echo "ADMIN_EMAIL=$ADMIN_EMAIL" >> .env
@@ -129,6 +127,7 @@ jobs:
             echo "PUBLIC_URL=$PUBLIC_URL" >> .env
             echo "PORT=8055" >> .env
             
+            # Database
             echo "DB_CLIENT=postgres" >> .env
             echo "DB_HOST=$DB_HOST" >> .env
             echo "DB_PORT=5432" >> .env
@@ -136,6 +135,7 @@ jobs:
             echo "DB_USER=$DB_USER" >> .env
             echo "DB_PASSWORD=$DB_PASSWORD" >> .env
             
+            # Auth
             echo "AUTH_PROVIDERS=microsoft" >> .env
             echo "AUTH_MICROSOFT_DRIVER=openid" >> .env
             echo "AUTH_MICROSOFT_CLIENT_ID=$AUTH_CLIENT_ID" >> .env
@@ -147,6 +147,8 @@ jobs:
             echo "AUTH_MICROSOFT_DEFAULT_ROLE_ID=$AUTH_ROLE_ID" >> .env
             echo "AUTH_ENTRA_FIELDS_MAPPING={\"email\": \"userPrincipalName\", \"first_name\": \"givenName\", \"last_name\": \"surname\"}" >> .env
             
+            # CORS FIX: Forceer enable
+            echo "CORS_ENABLED=true" >> .env
             echo "CORS_ORIGIN=$CORS_ORIGIN" >> .env
             echo "CORS_ALLOW_CREDENTIALS=$CORS_ALLOW_CREDENTIALS" >> .env
 
