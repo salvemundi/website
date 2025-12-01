@@ -1,5 +1,4 @@
-// IMMEDIATE DEBUG LOG: Must appear on startup.
-// If missing, Directus is ignoring the file completely.
+// IMMEDIATE DEBUG LOG: Validates that Directus has successfully loaded the file into memory.
 console.log('[ENTRA-AUTH-DEBUG] Loading extension module into memory...');
 
 const jwt = require('jsonwebtoken');

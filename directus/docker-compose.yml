@@ -1,7 +1,4 @@
 services:
-  # -------------------------------------------------------------------------
-  # DATABASE SERVICE (PostgreSQL)
-  # -------------------------------------------------------------------------
   db:
     image: postgres:15
     container_name: directus_db
@@ -16,9 +13,6 @@ services:
     networks:
       - internal_backend
 
-  # -------------------------------------------------------------------------
-  # APP SERVICE (Directus)
-  # -------------------------------------------------------------------------
   directus:
     build:
       context: .
@@ -28,7 +22,6 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      # Core Settings
       - KEY=${DIRECTUS_KEY}
       - SECRET=${DIRECTUS_SECRET}
       - PUBLIC_URL=${PUBLIC_URL}
@@ -36,11 +29,9 @@ services:
       - CORS_ORIGIN=${CORS_ORIGIN}
       - CORS_ALLOW_CREDENTIALS=${CORS_ALLOW_CREDENTIALS}
       
-      # Admin Initialization
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
 
-      # Database Connection
       - DB_CLIENT=postgres
       - DB_HOST=db
       - DB_PORT=5432
@@ -48,7 +39,6 @@ services:
       - DB_USER=${POSTGRES_USER}
       - DB_PASSWORD=${POSTGRES_PASSWORD}
 
-      # Microsoft Entra ID (Azure AD) SSO Configuration
       - AUTH_PROVIDERS=microsoft
       - AUTH_MICROSOFT_DRIVER=openid
       - AUTH_MICROSOFT_CLIENT_ID=${AUTH_MICROSOFT_CLIENT_ID}
@@ -68,16 +58,10 @@ services:
     depends_on:
       - db
 
-# -------------------------------------------------------------------------
-# VOLUMES
-# -------------------------------------------------------------------------
 volumes:
   postgres_app_data:
   directus_uploads:
 
-# -------------------------------------------------------------------------
-# NETWORKS
-# -------------------------------------------------------------------------
 networks:
   proxy-network:
     external: true
