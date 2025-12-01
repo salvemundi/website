@@ -5,7 +5,6 @@ export default (router, { services, exceptions, database, logger, env }) => {
   const { UsersService, AuthenticationService } = services;
   const { InvalidPayloadException, InvalidCredentialsException } = exceptions;
 
-  // Microsoft JWKS client for token verification
   const client = jwksClient({
     jwksUri: `https://login.microsoftonline.com/${env.AUTH_MICROSOFT_TENANT_ID || 'common'}/discovery/v2.0/keys`,
     cache: true,
@@ -13,10 +12,6 @@ export default (router, { services, exceptions, database, logger, env }) => {
     jwksRequestsPerMinute: 10
   });
 
-  /**
-   * Entra ID Authentication Endpoint
-   * URL: /entra-auth/login/entra
-   */
   router.post('/login/entra', async (req, res, next) => {
     try {
       const { token, email } = req.body;
@@ -25,9 +20,9 @@ export default (router, { services, exceptions, database, logger, env }) => {
         throw new InvalidPayloadException('Token and email are required');
       }
 
-      logger.info(`🔐 Entra ID login attempt for: ${email}`);
+      logger.info(`Entra ID login attempt for: ${email}`);
 
-      // Verify Microsoft token
+      // Verify Microsoft Token
       let microsoftUser;
       try {
         microsoftUser = await verifyMicrosoftToken(token, env);
@@ -36,26 +31,16 @@ export default (router, { services, exceptions, database, logger, env }) => {
         throw new InvalidCredentialsException('Invalid or expired Microsoft token');
       }
 
-      // Validate email matches token
+      // Email Validation
       const tokenEmail = microsoftUser.email || microsoftUser.preferred_username;
       if (tokenEmail.toLowerCase() !== email.toLowerCase()) {
-        logger.warn(`Email mismatch: token=${tokenEmail}, requested=${email}`);
         throw new InvalidCredentialsException('Email does not match Microsoft account');
       }
 
-      // Accountability setup
-      const accountability = {
-        admin: true,
-        role: null,
-        user: null
-      };
+      // Directus User Lookup & Sync
+      const accountability = { admin: true, role: null, user: null };
+      const usersService = new UsersService({ schema: req.schema, accountability });
 
-      const usersService = new UsersService({ 
-        schema: req.schema, 
-        accountability 
-      });
-
-      // Find user logic
       let user = await database('directus_users')
         .where({ entra_id: microsoftUser.oid })
         .first();
@@ -66,10 +51,8 @@ export default (router, { services, exceptions, database, logger, env }) => {
           .first();
       }
 
-      // Create new user if needed
       if (!user) {
-        logger.info(`User not found, creating new user for: ${email}`);
-        
+        // Create new user
         const newUserId = await usersService.createOne({
           email: email.toLowerCase(),
           entra_id: microsoftUser.oid,
@@ -81,32 +64,27 @@ export default (router, { services, exceptions, database, logger, env }) => {
           provider: 'entra',
           external_identifier: microsoftUser.oid
         });
-
         user = await usersService.readOne(newUserId);
-        logger.info(`Created new user with ID: ${user.id}`);
+        logger.info(`Created new user: ${user.id}`);
       } else {
+        // Sync user data
         const updates = {};
         if (!user.entra_id) updates.entra_id = microsoftUser.oid;
         if (!user.external_identifier) updates.external_identifier = microsoftUser.oid;
         
         if (Object.keys(updates).length > 0) {
           await usersService.updateOne(user.id, updates);
-          logger.info(`Updated user ${user.id} with Entra ID info`);
         }
       }
 
       if (user.status !== 'active') {
-        throw new InvalidCredentialsException('Your account is not active.');
+        throw new InvalidCredentialsException('Account is not active.');
       }
 
-      // Generate Tokens
+      // Generate Directus Session Tokens
       const authService = new AuthenticationService({
         schema: req.schema,
-        accountability: {
-          admin: false,
-          role: user.role,
-          user: user.id
-        }
+        accountability: { admin: false, role: user.role, user: user.id }
       });
 
       const refreshToken = await authService.refresh(user.id);
@@ -124,8 +102,6 @@ export default (router, { services, exceptions, database, logger, env }) => {
         }
       );
 
-      logger.info(`✅ Successfully authenticated user: ${user.email}`);
-
       res.json({
         data: {
           access_token: accessToken,
@@ -135,11 +111,7 @@ export default (router, { services, exceptions, database, logger, env }) => {
       });
 
     } catch (error) {
-      logger.error('❌ Entra authentication error:', error);
-      // Return 401/403 for expected errors to be cleaner
-      if (error instanceof InvalidCredentialsException) {
-         return res.status(401).json({ errors: [{ message: error.message, code: 'INVALID_CREDENTIALS' }] });
-      }
+      logger.error('Entra authentication error:', error);
       next(error);
     }
   });
@@ -149,8 +121,7 @@ export default (router, { services, exceptions, database, logger, env }) => {
       const getKey = (header, callback) => {
         client.getSigningKey(header.kid, (err, key) => {
           if (err) return callback(err);
-          const signingKey = key.getPublicKey();
-          callback(null, signingKey);
+          callback(null, key.getPublicKey());
         });
       };
 
@@ -163,13 +134,7 @@ export default (router, { services, exceptions, database, logger, env }) => {
           algorithms: ['RS256']
         },
         (err, decoded) => {
-          if (err) {
-             if (process.env.NODE_ENV !== 'production') {
-               const decodedUnsafe = jwt.decode(idToken);
-               if (decodedUnsafe) return resolve(decodedUnsafe);
-             }
-             return reject(err);
-          }
+          if (err) return reject(err);
           resolve(decoded);
         }
       );

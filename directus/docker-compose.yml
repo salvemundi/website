@@ -13,11 +13,13 @@ services:
       - internal_backend
 
   directus:
+    # Image wordt dynamisch bepaald door de CI/CD pipeline (dev vs latest)
     image: ghcr.io/salvemundi/directus:${TAG}
     container_name: directus
     restart: unless-stopped
     ports:
       - 8055:8055
+    # Laadt alle variabelen uit de gegenereerde .env file op de server
     env_file:
       - .env
     networks:
