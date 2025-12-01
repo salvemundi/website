@@ -1,5 +1,5 @@
-const jwt = require('jsonwebtoken');
-const jwksClient = require('jwks-rsa');
+import jwt from 'jsonwebtoken';
+import jwksClient from 'jwks-rsa';
 
 const entraAuthEndpoint = (router, { services, exceptions, database, logger, env }) => {
     // ESSENTIEEL: Logging om te bevestigen dat de extensie-entry point wordt uitgevoerd door Directus.
@@ -9,39 +9,27 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
     const { InvalidPayloadException, InvalidCredentialsException } = exceptions;
 
     if (!env.AUTH_MICROSOFT_TENANT_ID) {
-        // Waarschuwing als kritieke omgevingsvariabele ontbreekt (kan silent fail veroorzaken)
         logger.warn('[ENTRA-AUTH] AUTH_MICROSOFT_TENANT_ID is not set in environment variables.');
     }
 
-    const client = jwksClient({
-        // Gebruik 'common' als fallback, maar log de gebruikte URI
-        jwksUri: `https://login.microsoftonline.com/${env.AUTH_MICROSOFT_TENANT_ID || 'common'}/discovery/v2.0/keys`,
-        cache: true,
-        rateLimit: true,
-        jwksRequestsPerMinute: 10
-    });
-    
-    logger.info(`[ENTRA-AUTH] JWKS Client configured for Tenant: ${env.AUTH_MICROSOFT_TENANT_ID || 'common'}`);
-
-
-    router.post('/login/entra', async (req, res, next) => {
+    // Herstel naar de oorspronkelijke, werkende route. De base path is mogelijk /auth/ in Directus.
+    router.post('/auth/login/entra', async (req, res, next) => {
         // Debugging voor route-bereikbaarheid (dit wordt alleen gezien als de extensie laadt)
-        logger.info('[ENTRA-AUTH] POST /login/entra route hit.');
+        logger.info('[ENTRA-AUTH] POST /auth/login/entra route hit.');
         try {
             const { token, email } = req.body;
             
-            // Log de ingevoerde data (zonder gevoelige token)
             logger.info(`[ENTRA-AUTH] Attempting login for email: ${email}`);
 
             if (!token || !email) {
                 logger.warn('[ENTRA-AUTH] Missing token or email in payload.');
-                throw new InvalidPayloadException('Token and email are required');
+                // Teruggezet naar next(error) voor Directus error handling
+                throw new InvalidPayloadException('Token and email are required'); 
             }
 
             // Verify Microsoft Token
             let microsoftUser;
             try {
-                // Hier zullen we de daadwerkelijke tokenverificatie-start loggen
                 logger.info('[ENTRA-AUTH] Starting Microsoft token verification...');
                 microsoftUser = await verifyMicrosoftToken(token, env, logger);
                 logger.info(`[ENTRA-AUTH] Token verified. Microsoft OID: ${microsoftUser.oid}`);
@@ -52,16 +40,18 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
 
             // Email Validation
             const tokenEmail = microsoftUser.email || microsoftUser.preferred_username;
-            if (tokenEmail.toLowerCase() !== email.toLowerCase()) {
-                logger.error(`[ENTRA-AUTH] Email mismatch. Token email: ${tokenEmail}, Request email: ${email}`);
+            const requestedEmail = email.toLowerCase();
+            if (tokenEmail.toLowerCase() !== requestedEmail) {
+                logger.error(`[ENTRA-AUTH] Email mismatch. Token email: ${tokenEmail}, Request email: ${requestedEmail}`);
                 throw new InvalidCredentialsException('Email does not match Microsoft account');
             }
             
             // Directus User Lookup & Sync
+            // Gebruik admin accountability voor user lookups/updates
             const accountability = { admin: true, role: null, user: null };
             const usersService = new UsersService({ schema: req.schema, accountability });
             
-            logger.info(`[ENTRA-AUTH] Searching for user with OID: ${microsoftUser.oid} or email: ${email}`);
+            logger.info(`[ENTRA-AUTH] Searching for user with OID: ${microsoftUser.oid} or email: ${requestedEmail}`);
             
             let user = await database('directus_users')
                 .where({ entra_id: microsoftUser.oid })
@@ -69,19 +59,22 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
 
             if (!user) {
                 user = await database('directus_users')
-                    .where({ email: email.toLowerCase() })
+                    .where({ email: requestedEmail })
                     .first();
             }
+            
+            const isFontysMember = requestedEmail.endsWith('@student.fontys.nl') || requestedEmail.endsWith('@fontys.nl');
+
 
             if (!user) {
                 // Create new user
                 logger.info('[ENTRA-AUTH] User not found. Creating new user...');
                 const newUserId = await usersService.createOne({
-                    email: email.toLowerCase(),
+                    email: requestedEmail,
                     entra_id: microsoftUser.oid,
                     first_name: microsoftUser.given_name || 'Unknown',
                     last_name: microsoftUser.family_name || 'User',
-                    fontys_email: email.toLowerCase().includes('fontys') ? email.toLowerCase() : null,
+                    fontys_email: isFontysMember ? requestedEmail : null,
                     role: env.AUTH_MICROSOFT_DEFAULT_ROLE_ID || null,
                     status: 'active',
                     provider: 'entra',
@@ -94,6 +87,7 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
                 const updates = {};
                 if (!user.entra_id) updates.entra_id = microsoftUser.oid;
                 if (!user.external_identifier) updates.external_identifier = microsoftUser.oid;
+                if (isFontysMember && !user.fontys_email) updates.fontys_email = requestedEmail;
                 
                 if (Object.keys(updates).length > 0) {
                     logger.info(`[ENTRA-AUTH] Syncing user ${user.id} data: ${Object.keys(updates).join(', ')}`);
@@ -114,6 +108,7 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
                 accountability: { admin: false, role: user.role, user: user.id }
             });
 
+            // Gebruik authService.refresh, wat een veilige manier is om tokens te genereren
             const refreshToken = await authService.refresh(user.id);
             const accessToken = jwt.sign(
                 {
@@ -145,7 +140,15 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
         }
     });
 
+    // Client/Verify functie behoudt de jwksClient instelling van de huidige code
     async function verifyMicrosoftToken(idToken, env, logger) {
+        const client = jwksClient({
+            jwksUri: `https://login.microsoftonline.com/${env.AUTH_MICROSOFT_TENANT_ID || 'common'}/discovery/v2.0/keys`,
+            cache: true,
+            rateLimit: true,
+            jwksRequestsPerMinute: 10
+        });
+
         return new Promise((resolve, reject) => {
             const getKey = (header, callback) => {
                 logger.info(`[ENTRA-AUTH] Retrieving JWKS key with KID: ${header.kid}`);
@@ -182,5 +185,4 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
     }
 };
 
-// Vaste module-export voor Directus compatibiliteit (CJS-stijl)
-module.exports = entraAuthEndpoint;
+export default entraAuthEndpoint;
