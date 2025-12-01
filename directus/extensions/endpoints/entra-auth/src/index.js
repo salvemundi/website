@@ -182,5 +182,5 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
     }
 };
 
-// Gebruik standaard ESM export om compilatie te laten slagen.
-export default entraAuthEndpoint;
+// Vaste module-export voor Directus compatibiliteit (CJS-stijl)
+module.exports = entraAuthEndpoint;
