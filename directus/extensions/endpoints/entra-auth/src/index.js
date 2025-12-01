@@ -1,14 +1,13 @@
-const jwt = require('jsonwebtoken');
-const jwksClient = require('jwks-rsa');
+import jwt from 'jsonwebtoken';
+import jwksClient from 'jwks-rsa';
 
-// FIX: Exporteer de functie direct, niet verpakt in een object
 export default (router, { services, exceptions, database, logger, env }) => {
   const { UsersService, AuthenticationService } = services;
   const { InvalidPayloadException, InvalidCredentialsException } = exceptions;
 
   // Microsoft JWKS client for token verification
   const client = jwksClient({
-    jwksUri: `https://login.microsoftonline.com/${env.MICROSOFT_TENANT_ID || 'common'}/discovery/v2.0/keys`,
+    jwksUri: `https://login.microsoftonline.com/${env.AUTH_MICROSOFT_TENANT_ID || 'common'}/discovery/v2.0/keys`,
     cache: true,
     rateLimit: true,
     jwksRequestsPerMinute: 10
@@ -26,7 +25,7 @@ export default (router, { services, exceptions, database, logger, env }) => {
         throw new InvalidPayloadException('Token and email are required');
       }
 
-      logger.info(`Entra ID login attempt for: ${email}`);
+      logger.info(`🔐 Entra ID login attempt for: ${email}`);
 
       // Verify Microsoft token
       let microsoftUser;
@@ -44,7 +43,7 @@ export default (router, { services, exceptions, database, logger, env }) => {
         throw new InvalidCredentialsException('Email does not match Microsoft account');
       }
 
-      // Find or create user logic
+      // Accountability setup
       const accountability = {
         admin: true,
         role: null,
@@ -56,7 +55,7 @@ export default (router, { services, exceptions, database, logger, env }) => {
         accountability 
       });
 
-      // Try to find user by entra_id first, then email
+      // Find user logic
       let user = await database('directus_users')
         .where({ entra_id: microsoftUser.oid })
         .first();
@@ -67,7 +66,7 @@ export default (router, { services, exceptions, database, logger, env }) => {
           .first();
       }
 
-      // Create new user if not found
+      // Create new user if needed
       if (!user) {
         logger.info(`User not found, creating new user for: ${email}`);
         
@@ -86,7 +85,6 @@ export default (router, { services, exceptions, database, logger, env }) => {
         user = await usersService.readOne(newUserId);
         logger.info(`Created new user with ID: ${user.id}`);
       } else {
-        // Update existing user
         const updates = {};
         if (!user.entra_id) updates.entra_id = microsoftUser.oid;
         if (!user.external_identifier) updates.external_identifier = microsoftUser.oid;
@@ -126,7 +124,7 @@ export default (router, { services, exceptions, database, logger, env }) => {
         }
       );
 
-      logger.info(`Successfully authenticated user: ${user.email}`);
+      logger.info(`✅ Successfully authenticated user: ${user.email}`);
 
       res.json({
         data: {
@@ -137,7 +135,11 @@ export default (router, { services, exceptions, database, logger, env }) => {
       });
 
     } catch (error) {
-      logger.error('Entra authentication error:', error);
+      logger.error('❌ Entra authentication error:', error);
+      // Return 401/403 for expected errors to be cleaner
+      if (error instanceof InvalidCredentialsException) {
+         return res.status(401).json({ errors: [{ message: error.message, code: 'INVALID_CREDENTIALS' }] });
+      }
       next(error);
     }
   });
