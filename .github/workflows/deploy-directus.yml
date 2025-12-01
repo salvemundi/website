@@ -7,6 +7,7 @@ on:
     paths:
       - 'directus/**'
       - '.github/workflows/deploy-directus.yml'
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
@@ -21,10 +22,10 @@ jobs:
       packages: write
 
     steps:
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Login to GitHub Container Registry
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -37,31 +38,31 @@ jobs:
           if [[ "${{ github.ref_name }}" == "Development" ]]; then
             echo "TAG=dev" >> $GITHUB_ENV
             
-            # Directus Core
+            # Core & DB
             echo "KEY=${{ secrets.DIRECTUS_KEY }}" >> $GITHUB_ENV
             echo "SECRET=${{ secrets.DIRECTUS_SECRET }}" >> $GITHUB_ENV
             echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}" >> $GITHUB_ENV
             echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> $GITHUB_ENV
             echo "PUBLIC_URL=${{ secrets.DEV_DIRECTUS_URL }}" >> $GITHUB_ENV
             
-            # Database
             echo "DB_HOST=${{ secrets.DB_HOST }}" >> $GITHUB_ENV
             echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> $GITHUB_ENV
             echo "DB_USER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
             echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
             
-            # Azure / Entra ID
+            # SSO / Entra ID
             echo "AUTH_MICROSOFT_CLIENT_ID=${{ secrets.DEV_MS_GRAPH_CLIENT_ID }}" >> $GITHUB_ENV
             echo "AUTH_MICROSOFT_CLIENT_SECRET=${{ secrets.DEV_MS_GRAPH_CLIENT_SECRET }}" >> $GITHUB_ENV
             echo "AUTH_MICROSOFT_ISSUER_URL=${{ secrets.AUTH_MICROSOFT_ISSUER_URL }}" >> $GITHUB_ENV
             echo "AUTH_MEMBER_ROLE_ID=${{ secrets.DIRECTUS_MEMBER_ROLE_ID }}" >> $GITHUB_ENV
             
-            # CORS (De secrets CORS_ORIGIN en CORS_ALLOW_CREDENTIALS)
+            # CORS Configuration
             echo "CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}" >> $GITHUB_ENV
             echo "CORS_ALLOW_CREDENTIALS=${{ secrets.CORS_ALLOW_CREDENTIALS }}" >> $GITHUB_ENV
             
           else
             echo "TAG=latest" >> $GITHUB_ENV
+            # Production secrets mapping would go here
           fi
 
       - name: Build and Push Docker Image
@@ -72,7 +73,7 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
 
-      - name: Copy docker-compose.yml to server
+      - name: Copy Config Files via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -82,41 +83,43 @@ jobs:
           target: ${{ env.DEPLOY_PATH }}
           strip_components: 1
 
-      - name: Deploy on Server
-        uses: appleboy/ssh-action@v1.0.3
-        env:
-          GH_REGISTRY: ${{ env.REGISTRY }}
-          GH_USERNAME: ${{ github.actor }}
-          GH_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-          DEPLOY_PATH: ${{ env.DEPLOY_PATH }}
-          TAG: ${{ env.TAG }}
-          KEY: ${{ env.KEY }}
-          SECRET: ${{ env.SECRET }}
-          ADMIN_EMAIL: ${{ env.ADMIN_EMAIL }}
-          ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
-          PUBLIC_URL: ${{ env.PUBLIC_URL }}
-          DB_HOST: ${{ env.DB_HOST }}
-          DB_DATABASE: ${{ env.DB_DATABASE }}
-          DB_USER: ${{ env.DB_USER }}
-          DB_PASSWORD: ${{ env.DB_PASSWORD }}
-          AUTH_CLIENT_ID: ${{ env.AUTH_MICROSOFT_CLIENT_ID }}
-          AUTH_CLIENT_SECRET: ${{ env.AUTH_MICROSOFT_CLIENT_SECRET }}
-          AUTH_ISSUER_URL: ${{ env.AUTH_MICROSOFT_ISSUER_URL }}
-          AUTH_ROLE_ID: ${{ env.AUTH_MEMBER_ROLE_ID }}
-          CORS_ORIGIN: ${{ env.CORS_ORIGIN }}
-          CORS_ALLOW_CREDENTIALS: ${{ env.CORS_ALLOW_CREDENTIALS }}
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.1
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # Pass required secrets to the SSH environment
           envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,DEPLOY_PATH,TAG,KEY,SECRET,ADMIN_EMAIL,ADMIN_PASSWORD,PUBLIC_URL,DB_HOST,DB_DATABASE,DB_USER,DB_PASSWORD,AUTH_CLIENT_ID,AUTH_CLIENT_SECRET,AUTH_ISSUER_URL,AUTH_ROLE_ID,CORS_ORIGIN,CORS_ALLOW_CREDENTIALS
+          env:
+            GH_REGISTRY: ${{ env.REGISTRY }}
+            GH_USERNAME: ${{ github.actor }}
+            GH_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+            DEPLOY_PATH: ${{ env.DEPLOY_PATH }}
+            TAG: ${{ env.TAG }}
+            # Mapped Environment Variables
+            KEY: ${{ env.KEY }}
+            SECRET: ${{ env.SECRET }}
+            ADMIN_EMAIL: ${{ env.ADMIN_EMAIL }}
+            ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
+            PUBLIC_URL: ${{ env.PUBLIC_URL }}
+            DB_HOST: ${{ env.DB_HOST }}
+            DB_DATABASE: ${{ env.DB_DATABASE }}
+            DB_USER: ${{ env.DB_USER }}
+            DB_PASSWORD: ${{ env.DB_PASSWORD }}
+            AUTH_CLIENT_ID: ${{ env.AUTH_MICROSOFT_CLIENT_ID }}
+            AUTH_CLIENT_SECRET: ${{ env.AUTH_MICROSOFT_CLIENT_SECRET }}
+            AUTH_ISSUER_URL: ${{ env.AUTH_MICROSOFT_ISSUER_URL }}
+            AUTH_ROLE_ID: ${{ env.AUTH_MEMBER_ROLE_ID }}
+            CORS_ORIGIN: ${{ env.CORS_ORIGIN }}
+            CORS_ALLOW_CREDENTIALS: ${{ env.CORS_ALLOW_CREDENTIALS }}
           script: |
+            # Authenticate Docker
             echo $GH_PASSWORD | docker login $GH_REGISTRY -u $GH_USERNAME --password-stdin
-            
-            mkdir -p $DEPLOY_PATH
+
             cd $DEPLOY_PATH
 
-            # Generate .env
+            # Generate Production .env file
             echo "TAG=$TAG" > .env
             
             # Core
@@ -135,7 +138,7 @@ jobs:
             echo "DB_USER=$DB_USER" >> .env
             echo "DB_PASSWORD=$DB_PASSWORD" >> .env
             
-            # Auth
+            # Auth / SSO Configuration
             echo "AUTH_PROVIDERS=microsoft" >> .env
             echo "AUTH_MICROSOFT_DRIVER=openid" >> .env
             echo "AUTH_MICROSOFT_CLIENT_ID=$AUTH_CLIENT_ID" >> .env
@@ -147,10 +150,11 @@ jobs:
             echo "AUTH_MICROSOFT_DEFAULT_ROLE_ID=$AUTH_ROLE_ID" >> .env
             echo "AUTH_ENTRA_FIELDS_MAPPING={\"email\": \"userPrincipalName\", \"first_name\": \"givenName\", \"last_name\": \"surname\"}" >> .env
             
-            # CORS FIX: Forceer enable
+            # CORS Configuration
             echo "CORS_ENABLED=true" >> .env
             echo "CORS_ORIGIN=$CORS_ORIGIN" >> .env
             echo "CORS_ALLOW_CREDENTIALS=$CORS_ALLOW_CREDENTIALS" >> .env
 
-            docker compose pull directus
-            docker compose up -d directus --remove-orphans
+            # Restart Service
+            docker-compose pull directus
+            docker-compose up -d --no-deps --force-recreate --remove-orphans directus
