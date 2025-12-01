@@ -8,7 +8,6 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      # Map .env variables (DB_*) to Postgres required variables (POSTGRES_*)
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_DATABASE}
@@ -41,7 +40,7 @@ services:
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
 
-      # Database Connection (Directly mapping .env variables)
+      # Database Connection
       - DB_CLIENT=postgres
       - DB_HOST=db
       - DB_PORT=5432
@@ -50,7 +49,6 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
 
       # Microsoft Entra ID (Azure AD) SSO Configuration
-      # These are already correct in .env from the CI/CD pipeline
       - AUTH_PROVIDERS=microsoft
       - AUTH_MICROSOFT_DRIVER=openid
       - AUTH_MICROSOFT_CLIENT_ID=${AUTH_MICROSOFT_CLIENT_ID}
@@ -63,7 +61,7 @@ services:
 
     volumes:
       - directus_uploads:/directus/uploads
-      - ./extensions:/directus/extensions
+      # - ./extensions:/directus/extensions
     networks:
       - proxy-network
       - internal_backend
