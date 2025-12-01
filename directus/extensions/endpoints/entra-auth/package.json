@@ -7,8 +7,7 @@
     "directus-extension",
     "directus-custom-endpoint"
   ],
-  "main": "dist/index.mjs",
-  "type": "module",
+  "main": "dist/index.js",
   "scripts": {
     "build": "directus-extension build",
     "dev": "directus-extension build -w --no-minify",
