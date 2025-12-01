@@ -2,19 +2,20 @@ FROM directus/directus:latest
 
 USER root
 
-# 1. Kopieer alle extensies naar de container
+# 1. Kopieer extensies
 COPY ./extensions /directus/extensions
 
 # 2. Build de 'entra-auth' extensie
 WORKDIR /directus/extensions/endpoints/entra-auth
 
-# WAAROM: De Directus image staat standaard op 'production', waardoor devDependencies
-# (zoals de builder) worden overgeslagen. We forceren hier de installatie van dev-tools.
+# Installeer dev-dependencies (nodig voor de build tool)
 RUN npm install --include=dev
+# Build de code (maakt dist/ map aan)
 RUN npm run build
+# Schoonmaak
+RUN npm prune --production
 
-# 3. Herstel de permissies en werkmap
-# WAAROM: Zorg dat de node gebruiker eigenaar blijft van de gebouwde bestanden
+# 3. Herstel rechten
 RUN chown -R node:node /directus/extensions
 
 WORKDIR /directus

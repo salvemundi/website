@@ -18,11 +18,8 @@ services:
     restart: unless-stopped
     ports:
       - 8055:8055
-    # FIX: Laad alle variabelen direct uit de .env file (dus ook CORS_ENABLED)
     env_file:
       - .env
-    # We houden 'environment' alleen voor specifieke overrides als dat nodig is
-    # Maar voor nu vertrouwen we volledig op de gegenereerde .env
     networks:
       - proxy-network
       - internal_backend
