@@ -1,9 +1,8 @@
 // IMMEDIATE DEBUG LOG: Validates that Directus has successfully loaded the file into memory.
-// If this does not appear in docker logs, the file is not being read.
 console.log('[ENTRA-AUTH-DEBUG] Loading extension module into memory...');
 
-const jwt = require('jsonwebtoken');
-const jwksClient = require('jwks-rsa');
+import jwt from 'jsonwebtoken';
+import jwksClient from 'jwks-rsa';
 
 const entraAuthEndpoint = (router, { services, exceptions, database, logger, env }) => {
     logger.info('[ENTRA-AUTH] Extension initializing. Checking environment configuration...');
@@ -178,4 +177,4 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
     }
 };
 
-module.exports = entraAuthEndpoint;
+export default entraAuthEndpoint;
