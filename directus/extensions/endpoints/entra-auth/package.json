@@ -9,7 +9,7 @@
   ],
   "main": "dist/index.js",
   "scripts": {
-    "build": "directus-extension build --source src/index.js --output dist/index.js",
+    "build": "directus-extension build src/index.js --output dist/index.js",
     "dev": "directus-extension build -w --no-minify",
     "link": "directus-extension link"
   },

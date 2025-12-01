@@ -1,12 +1,11 @@
-// IMMEDIATE DEBUG LOG: Dit moet verschijnen zodra Directus start.
-// Als je dit niet ziet, negeert Directus de dist/index.js volledig.
+// IMMEDIATE DEBUG LOG: Must appear on startup.
+// If missing, Directus is ignoring the file completely.
 console.log('[ENTRA-AUTH-DEBUG] Loading extension module into memory...');
 
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
 
 const entraAuthEndpoint = (router, { services, exceptions, database, logger, env }) => {
-    // Runtime initialization log
     logger.info('[ENTRA-AUTH] Extension initializing. Checking environment configuration...');
 
     const { UsersService, AuthenticationService } = services;
