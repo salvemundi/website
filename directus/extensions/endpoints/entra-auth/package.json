@@ -7,7 +7,6 @@
     "directus-extension",
     "directus-custom-endpoint"
   ],
-  "type": "module",
   "directus:extension": {
     "type": "endpoint",
     "path": "dist/index.js",
