@@ -1,5 +1,5 @@
-import jwt from 'jsonwebtoken';
-import jwksClient from 'jwks-rsa';
+const jwt = require('jsonwebtoken');
+const jwksClient = require('jwks-rsa');
 
 const entraAuthEndpoint = (router, { services, exceptions, database, logger, env }) => {
     // ESSENTIEEL: Logging om te bevestigen dat de extensie-entry point wordt uitgevoerd door Directus.
