@@ -7,13 +7,7 @@
     "directus-extension",
     "directus-custom-endpoint"
   ],
-  "type": "module",
-  "directus:extension": {
-    "type": "endpoint",
-    "path": "dist/index.js",
-    "source": "src/index.js",
-    "host": "*"
-  },
+  "main": "dist/index.js",
   "scripts": {
     "build": "directus-extension build",
     "dev": "directus-extension build -w --no-minify",
