@@ -1,4 +1,5 @@
 // IMMEDIATE DEBUG LOG: Validates that Directus has successfully loaded the file into memory.
+// If this does not appear in docker logs, the file is not being read.
 console.log('[ENTRA-AUTH-DEBUG] Loading extension module into memory...');
 
 const jwt = require('jsonwebtoken');
