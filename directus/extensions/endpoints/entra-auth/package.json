@@ -15,7 +15,7 @@
     "host": "*"
   },
   "scripts": {
-    "build": "echo 'Skipping build - running raw source'",
+    "build": "echo 'No build required for Raw Source'",
     "dev": "directus-extension build -w --no-minify",
     "link": "directus-extension link"
   },
