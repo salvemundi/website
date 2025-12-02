@@ -1,4 +1,4 @@
-// IMMEDIATE DEBUG LOG
+// IMMEDIATE DEBUG LOG: Validates loading
 console.log('[ENTRA-AUTH-DEBUG] Loading extension module into memory...');
 
 const jwt = require('jsonwebtoken');
@@ -38,6 +38,7 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
             let microsoftUser;
             try {
                 logger.info('[ENTRA-AUTH] Starting Microsoft token verification...');
+                // Pass client explicitly to helper
                 microsoftUser = await verifyMicrosoftToken(token, env, logger, client);
                 logger.info(`[ENTRA-AUTH] Token verified. Microsoft OID: ${microsoftUser.oid}`);
             } catch (error) {
@@ -53,6 +54,7 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
                 throw new InvalidCredentialsException('Email does not match Microsoft account');
             }
             
+            // Admin context for user lookup
             const accountability = { admin: true, role: null, user: null };
             const usersService = new UsersService({ schema: req.schema, accountability });
             
