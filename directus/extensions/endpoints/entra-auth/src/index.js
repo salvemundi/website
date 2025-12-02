@@ -1,19 +1,11 @@
-// IMMEDIATE DEBUG LOG
 console.log('[ENTRA-AUTH-DEBUG] Loading extension module into memory...');
 
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
 
 const entraAuthEndpoint = (router, { services, exceptions, database, logger, env }) => {
-    logger.info('[ENTRA-AUTH] Extension initializing. Checking environment configuration...');
+    logger.info('[ENTRA-AUTH] Extension initializing...');
 
-    // 1. Router Spy (Bestaand)
-    router.use((req, res, next) => {
-        logger.info(`[ENTRA-AUTH-ROUTER] Hit! Method: ${req.method}, Url: ${req.url}, Path: ${req.path}`);
-        next();
-    });
-
-    // 2. Health Check (Bestaand)
     router.get('/', (req, res) => {
         res.send('Entra Auth Extension is ACTIVE');
     });
@@ -21,43 +13,27 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
     const { UsersService, AuthenticationService } = services;
     const { InvalidPayloadException, InvalidCredentialsException } = exceptions;
 
-    if (!env.AUTH_MICROSOFT_TENANT_ID) {
-        logger.warn('[ENTRA-AUTH] AUTH_MICROSOFT_TENANT_ID is not set in environment variables.');
-    }
-
     const client = jwksClient({
         jwksUri: `https://login.microsoftonline.com/${env.AUTH_MICROSOFT_TENANT_ID || 'common'}/discovery/v2.0/keys`,
         cache: true,
         rateLimit: true,
         jwksRequestsPerMinute: 10
     });
-    
-    logger.info(`[ENTRA-AUTH] JWKS Client configured for Tenant: ${env.AUTH_MICROSOFT_TENANT_ID || 'common'}`);
 
-    // === FIX: ROUTE VERSIMPELD NAAR /login ===
-    // Oude route: /auth/login/entra (gaf 404 mismatch)
-    // Nieuwe URL wordt: /directus-extension-entra-auth/login
-    router.post('/login', async (req, res, next) => {
-        // === CRUCIAAL: BEWIJS DAT HANDLER WORDT AANGERAAKT ===
-        console.log('[ENTRA-AUTH-DEBUG] >>> INSIDE /login ROUTE HANDLER <<<');
-        logger.info('[ENTRA-AUTH] POST /login route execution started.');
+    router.post('/', async (req, res, next) => {
+        logger.info('[ENTRA-AUTH] POST / (ROOT) route hit.');
         
         try {
             const { token, email } = req.body;
             
-            logger.info(`[ENTRA-AUTH] Attempting login for email: ${email}`);
-
             if (!token || !email) {
-                logger.warn('[ENTRA-AUTH] Missing token or email in payload.');
-                // We sturen direct een response om te zien of exceptions het probleem zijn
+                logger.warn('[ENTRA-AUTH] Missing token or email.');
                 return res.status(400).json({ error: 'Token and email are required', code: 'INVALID_PAYLOAD' });
             }
 
             let microsoftUser;
             try {
-                logger.info('[ENTRA-AUTH] Starting Microsoft token verification...');
                 microsoftUser = await verifyMicrosoftToken(token, env, logger, client);
-                logger.info(`[ENTRA-AUTH] Token verified. Microsoft OID: ${microsoftUser.oid}`);
             } catch (error) {
                 logger.error('[ENTRA-AUTH] Token verification failed:', error);
                 throw new InvalidCredentialsException('Invalid or expired Microsoft token');
@@ -67,14 +43,11 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
             const requestedEmail = email.toLowerCase();
             
             if (tokenEmail.toLowerCase() !== requestedEmail) {
-                logger.error(`[ENTRA-AUTH] Email mismatch. Token email: ${tokenEmail}, Request email: ${requestedEmail}`);
                 throw new InvalidCredentialsException('Email does not match Microsoft account');
             }
             
             const accountability = { admin: true, role: null, user: null };
             const usersService = new UsersService({ schema: req.schema, accountability });
-            
-            logger.info(`[ENTRA-AUTH] Searching for user with OID: ${microsoftUser.oid} or email: ${requestedEmail}`);
             
             let user = await database('directus_users')
                 .where({ entra_id: microsoftUser.oid })
@@ -89,7 +62,7 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
             const isFontysMember = requestedEmail.endsWith('@student.fontys.nl') || requestedEmail.endsWith('@fontys.nl');
 
             if (!user) {
-                logger.info('[ENTRA-AUTH] User not found. Creating new user...');
+                logger.info('[ENTRA-AUTH] Creating new user...');
                 const newUserId = await usersService.createOne({
                     email: requestedEmail,
                     entra_id: microsoftUser.oid,
@@ -102,7 +75,6 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
                     external_identifier: microsoftUser.oid
                 });
                 user = await usersService.readOne(newUserId);
-                logger.info(`[ENTRA-AUTH] Created new user: ${user.id}`);
             } else {
                 const updates = {};
                 if (!user.entra_id) updates.entra_id = microsoftUser.oid;
@@ -110,15 +82,11 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
                 if (isFontysMember && !user.fontys_email) updates.fontys_email = requestedEmail;
                 
                 if (Object.keys(updates).length > 0) {
-                    logger.info(`[ENTRA-AUTH] Syncing user ${user.id} data: ${Object.keys(updates).join(', ')}`);
                     await usersService.updateOne(user.id, updates);
-                } else {
-                    logger.info(`[ENTRA-AUTH] User ${user.id} found. No data sync needed.`);
                 }
             }
 
             if (user.status !== 'active') {
-                logger.warn(`[ENTRA-AUTH] User ${user.id} is inactive.`);
                 throw new InvalidCredentialsException('Account is not active.');
             }
 
@@ -142,7 +110,7 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
                 }
             );
             
-            logger.info(`[ENTRA-AUTH] Successfully issued tokens for user ${user.id}.`);
+            logger.info(`[ENTRA-AUTH] Login successful for user ${user.id}.`);
 
             res.json({
                 data: {
@@ -153,7 +121,7 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
             });
 
         } catch (error) {
-            logger.error('[ENTRA-AUTH] Critical Entra authentication error:', error);
+            logger.error('[ENTRA-AUTH] Error:', error);
             next(error);
         }
     });
@@ -161,18 +129,13 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
     async function verifyMicrosoftToken(idToken, env, logger, client) {
         return new Promise((resolve, reject) => {
             const getKey = (header, callback) => {
-                logger.info(`[ENTRA-AUTH] Retrieving JWKS key with KID: ${header.kid}`);
                 client.getSigningKey(header.kid, (err, key) => {
-                    if (err) {
-                        logger.error('[ENTRA-AUTH] Error retrieving signing key:', err.message);
-                        return callback(err);
-                    }
+                    if (err) return callback(err);
                     callback(null, key.getPublicKey());
                 });
             };
 
             const expectedIssuer = `https://login.microsoftonline.com/${env.AUTH_MICROSOFT_TENANT_ID || 'common'}/v2.0`;
-            logger.info(`[ENTRA-AUTH] JWT Verification parameters: Audience=${env.AUTH_MICROSOFT_CLIENT_ID}, Issuer=${expectedIssuer}`);
 
             jwt.verify(
                 idToken,
@@ -183,11 +146,7 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
                     algorithms: ['RS256']
                 },
                 (err, decoded) => {
-                    if (err) {
-                        logger.error('[ENTRA-AUTH] JWT Verification failed:', err.message);
-                        return reject(err);
-                    }
-                    logger.info('[ENTRA-AUTH] JWT successfully decoded.');
+                    if (err) return reject(err);
                     resolve(decoded);
                 }
             );
