@@ -7,15 +7,15 @@
     "directus-extension",
     "directus-custom-endpoint"
   ],
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "directus:extension": {
     "type": "endpoint",
-    "path": "dist/index.js",
+    "path": "src/index.js",
     "source": "src/index.js",
     "host": "*"
   },
   "scripts": {
-    "build": "directus-extension build --input src/index.js --output dist/index.js --type endpoint",
+    "build": "echo 'Skipping build - running raw source'",
     "dev": "directus-extension build -w --no-minify",
     "link": "directus-extension link"
   },
