@@ -1,11 +1,26 @@
-// IMMEDIATE DEBUG LOG: Validates loading
-console.log('[ENTRA-AUTH-DEBUG] Loading RAW source module into memory...');
+// IMMEDIATE DEBUG LOG
+console.log('[ENTRA-AUTH-DEBUG] Loading extension module into memory...');
 
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
 
 const entraAuthEndpoint = (router, { services, exceptions, database, logger, env }) => {
     logger.info('[ENTRA-AUTH] Extension initializing. Checking environment configuration...');
+
+    // --- NIEUW: ROUTER SPY MIDDLEWARE ---
+    // Dit logt elk request dat bij deze extensie aankomt.
+    // Hiermee zien we exact op welke base-URL Directus deze extensie heeft gemount.
+    router.use((req, res, next) => {
+        logger.info(`[ENTRA-AUTH-ROUTER] Hit! Method: ${req.method}, BaseURL: ${req.baseUrl}, Path: ${req.path}`);
+        next();
+    });
+
+    // --- NIEUW: SIMPLE HEALTH CHECK ---
+    // Een simpele GET route op de root van de extensie om te testen of hij bereikbaar is.
+    router.get('/', (req, res) => {
+        res.send('Entra Auth Extension is ACTIVE');
+    });
+    // ------------------------------------
 
     const { UsersService, AuthenticationService } = services;
     const { InvalidPayloadException, InvalidCredentialsException } = exceptions;
