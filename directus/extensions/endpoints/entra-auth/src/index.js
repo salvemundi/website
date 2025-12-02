@@ -7,20 +7,16 @@ const jwksClient = require('jwks-rsa');
 const entraAuthEndpoint = (router, { services, exceptions, database, logger, env }) => {
     logger.info('[ENTRA-AUTH] Extension initializing. Checking environment configuration...');
 
-    // --- NIEUW: ROUTER SPY MIDDLEWARE ---
-    // Dit logt elk request dat bij deze extensie aankomt.
-    // Hiermee zien we exact op welke base-URL Directus deze extensie heeft gemount.
+    // 1. Router Spy (Bestaand)
     router.use((req, res, next) => {
-        logger.info(`[ENTRA-AUTH-ROUTER] Hit! Method: ${req.method}, BaseURL: ${req.baseUrl}, Path: ${req.path}`);
+        logger.info(`[ENTRA-AUTH-ROUTER] Hit! Method: ${req.method}, Url: ${req.url}, Path: ${req.path}`);
         next();
     });
 
-    // --- NIEUW: SIMPLE HEALTH CHECK ---
-    // Een simpele GET route op de root van de extensie om te testen of hij bereikbaar is.
+    // 2. Health Check (Bestaand)
     router.get('/', (req, res) => {
         res.send('Entra Auth Extension is ACTIVE');
     });
-    // ------------------------------------
 
     const { UsersService, AuthenticationService } = services;
     const { InvalidPayloadException, InvalidCredentialsException } = exceptions;
@@ -38,8 +34,14 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
     
     logger.info(`[ENTRA-AUTH] JWKS Client configured for Tenant: ${env.AUTH_MICROSOFT_TENANT_ID || 'common'}`);
 
-    router.post('/auth/login/entra', async (req, res, next) => {
-        logger.info('[ENTRA-AUTH] POST /auth/login/entra route hit.');
+    // === FIX: ROUTE VERSIMPELD NAAR /login ===
+    // Oude route: /auth/login/entra (gaf 404 mismatch)
+    // Nieuwe URL wordt: /directus-extension-entra-auth/login
+    router.post('/login', async (req, res, next) => {
+        // === CRUCIAAL: BEWIJS DAT HANDLER WORDT AANGERAAKT ===
+        console.log('[ENTRA-AUTH-DEBUG] >>> INSIDE /login ROUTE HANDLER <<<');
+        logger.info('[ENTRA-AUTH] POST /login route execution started.');
+        
         try {
             const { token, email } = req.body;
             
@@ -47,7 +49,8 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
 
             if (!token || !email) {
                 logger.warn('[ENTRA-AUTH] Missing token or email in payload.');
-                throw new InvalidPayloadException('Token and email are required'); 
+                // We sturen direct een response om te zien of exceptions het probleem zijn
+                return res.status(400).json({ error: 'Token and email are required', code: 'INVALID_PAYLOAD' });
             }
 
             let microsoftUser;
