@@ -82,15 +82,15 @@ export default function IntroPage() {
             <main className="">
                 {!isIntroEnabled ? (
                     <section className="px-6 sm:px-10 py-16">
-                        <div className="max-w-4xl mx-auto bg-white rounded-3xl p-8 text-center shadow-2xl">
-                            <h2 className="text-3xl font-bold text-paars mb-4">Intro momenteel niet beschikbaar</h2>
-                            <p className="text-lg text-paars/80 mb-6">{introDisabledMessage}</p>
+                        <div className="max-w-4xl mx-auto bg-[var(--bg-card)] rounded-3xl p-8 text-center shadow-2xl">
+                            <h2 className="text-3xl font-bold text-gradient mb-4">Intro momenteel niet beschikbaar</h2>
+                            <p className="text-lg text-theme-muted mb-6">{introDisabledMessage}</p>
                             {isSettingsLoading && (
-                                <p className="text-sm text-paars/60 mb-6">Bezig met controleren van status...</p>
+                                <p className="text-sm text-theme-muted mb-6">Bezig met controleren van status...</p>
                             )}
                             <Link
                                 href="/"
-                                className="inline-flex items-center justify-center px-6 py-3 bg-oranje text-beige font-semibold rounded-full hover:bg-geel hover:text-paars transition-all duration-300"
+                                className="inline-flex items-center justify-center px-6 py-3 bg-gradient-theme text-theme-white font-semibold rounded-full hover:scale-105 transition-all duration-300"
                             >
                                 Terug naar Home
                             </Link>
@@ -101,13 +101,13 @@ export default function IntroPage() {
                         <section className="px-6 sm:px-10 py-10">
                             <div className="flex flex-col md:flex-row gap-10">
                                 <div className="flex-1">
-                                    <p className="text-xl leading-relaxed">
-                                        Word jij <span className="font-bold text-paars">student 🎓</span> bij{' '}
-                                        <span className="font-bold text-oranje">Fontys ICT</span>
-                                        <sup className="text-oranje">®</sup> en kijk je uit naar de{' '}
+                                    <p className="text-xl leading-relaxed text-theme">
+                                        Word jij <span className="font-bold text-theme-purple">🎓 student</span> bij{' '}
+                                        <span className="font-bold text-theme-purple">Fontys ICT</span>
+                                        <sup className="text-theme-purple">®</sup> en kijk je uit naar de{' '}
                                         <span className="font-bold">introweek</span>? Meld je dan nu aan voor een{' '}
                                         <span className="font-bold">onvergetelijke week</span> vol spannende activiteiten die je met ons en je nieuwe klasgenoten kunt beleven.
-                                        Sluit je aan bij de <span className="font-bold text-paars">SalveMundi</span>, waar je kunt genieten van een gezellige sfeer en nieuwe vrienden kunt maken. Of doe mee aan een potje <span className="font-bold text-paars">weerwolven van wakkerdam</span>, een spel vol strategie en plezier. Iedereen is welkom, en we beloven dat het niet een <span className="font-bold">geweldige ervaring</span> wordt waar je nog lang over zult napraten!
+                                        Sluit je aan bij de <span className="font-bold text-theme-purple">SalveMundi</span>, waar je kunt genieten van een gezellige sfeer en nieuwe vrienden kunt maken. Of doe mee aan een potje <span className="font-bold text-theme-purple">weerwolven van wakkerdam</span>, een spel vol strategie en plezier. Iedereen is welkom, en we beloven dat het niet een <span className="font-bold">geweldige ervaring</span> wordt waar je nog lang over zult napraten!
                                     </p>
 
                                     <div className="mt-6">

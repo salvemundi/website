@@ -40,7 +40,7 @@ const Header: React.FC = () => {
         const isActive = pathname === href || (href !== '/' && pathname?.startsWith(href));
         return [
             "group relative inline-flex items-center gap-2 text-sm font-semibold transition-all duration-200",
-            isActive ? "text-oranje" : "text-p hover:text-oranje",
+            isActive ? "text-theme-purple" : "text-theme hover:text-theme-purple",
         ].join(" ");
     };
 
@@ -54,20 +54,20 @@ const Header: React.FC = () => {
         <header className="sticky top-0 z-50 w-full">
             <div className="relative">
                 <div
-                    className={`pointer-events-none absolute inset-0 -z-10 backdrop-blur-xl bg-gradient-to-r from-oranje/10 via-white/80 to-geel/10 dark:from-ink-dark-primary/10 dark:via-background-darker/90 dark:to-ink-dark-secondary/10 transition-opacity duration-300 ${isScrolled ? "opacity-100" : "opacity-0"
+                    className={`pointer-events-none absolute inset-0 -z-10 backdrop-blur-xl bg-[var(--bg-main)]/90 transition-opacity duration-300 ${isScrolled ? "opacity-100" : "opacity-0"
                         }`}
                 />
                 <div className="mx-auto flex items-center max-w-app justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8 z-10 relative">
                     <Link
                         href="/"
-                        className="flex items-center gap-3 rounded-full bg-white/80 dark:bg-surface-dark/80 px-4 py-2 shadow-sm hover:shadow-md transition"
+                        className="flex items-center gap-3 rounded-full bg-[var(--bg-card)]/80 px-4 py-2 shadow-sm hover:shadow-md transition"
                     >
                         <img className="h-9" src="/img/Logo.png" alt="Salve Mundi" />
                         <div className="hidden text-left sm:block">
-                            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-oranje">
+                            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-theme-purple">
                                 Salve Mundi
                             </p>
-                            <p className="text-sm font-semibold text-p">
+                            <p className="text-sm font-semibold text-theme">
                                 Fontys ICT
                             </p>
                         </div>
@@ -82,7 +82,7 @@ const Header: React.FC = () => {
                             >
                                 <span>{link.name}</span>
                                 <span
-                                    className={`absolute -bottom-2 left-0 h-0.5 w-full origin-left rounded-full bg-oranje transition-transform duration-200 ease-out ${pathname === link.href ||
+                                    className={`absolute -bottom-2 left-0 h-0.5 w-full origin-left rounded-full bg-theme-purple transition-transform duration-200 ease-out ${pathname === link.href ||
                                         (link.href !== '/' && pathname?.startsWith(link.href))
                                         ? "scale-x-100"
                                         : "scale-x-0 group-hover:scale-x-100"
@@ -96,7 +96,7 @@ const Header: React.FC = () => {
                         {isAuthenticated ? (
                             <Link
                                 href={ROUTES.ACCOUNT}
-                                className="flex items-center gap-2 rounded-full bg-white/70 dark:bg-surface-dark/70 px-3 py-1.5 text-sm font-medium text-p shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+                                className="flex items-center gap-2 rounded-full bg-[var(--bg-card)]/70 px-3 py-1.5 text-sm font-medium text-theme shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                             >
                                 <img
                                     src={user?.avatar ? getImageUrl(user.avatar) : "/img/Logo.png"}
@@ -108,7 +108,7 @@ const Header: React.FC = () => {
                         ) : (
                             <Link
                                 href={ROUTES.LOGIN}
-                                className="hidden items-center gap-2 rounded-full bg-white dark:bg-surface-dark px-4 py-2 text-sm font-semibold text-oranje shadow-sm transition hover:bg-oranje/5 dark:hover:bg-white/5 sm:inline-flex"
+                                className="hidden items-center gap-2 rounded-full bg-[var(--bg-card)] px-4 py-2 text-sm font-semibold text-theme-purple shadow-sm transition hover:bg-theme-purple/5 sm:inline-flex"
                             >
                                 Inloggen
                             </Link>
@@ -117,7 +117,7 @@ const Header: React.FC = () => {
                         {!isAuthenticated && (
                             <Link
                                 href={ROUTES.MEMBERSHIP}
-                                className="hidden items-center gap-2 rounded-full bg-gradient-primary px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-oranje/30 transition hover:-translate-y-0.5 hover:shadow-xl md:inline-flex"
+                                className="hidden items-center gap-2 rounded-full bg-gradient-theme px-4 py-2 text-sm font-semibold text-theme-white shadow-lg shadow-theme-purple/30 transition hover:-translate-y-0.5 hover:shadow-xl md:inline-flex"
                             >
                                 <Sparkles className="h-4 w-4" />
                                 Word lid
@@ -128,7 +128,7 @@ const Header: React.FC = () => {
 
                         <button
                             type="button"
-                            className="inline-flex items-center justify-center rounded-full bg-white/80 dark:bg-surface-dark/80 p-2 text-p shadow-sm transition hover:bg-oranje/5 dark:hover:bg-white/5 md:hidden"
+                            className="inline-flex items-center justify-center rounded-full bg-[var(--bg-card)]/80 p-2 text-theme shadow-sm transition hover:bg-theme-purple/5 md:hidden"
                             onClick={() => setMenuOpen(!menuOpen)}
                             aria-expanded={menuOpen}
                             aria-label="Open navigatie"
@@ -151,12 +151,12 @@ const Header: React.FC = () => {
                     } transition-opacity duration-200`}
             >
                 <div
-                    className="fixed inset-0 z-40 bg-samu/40 backdrop-blur-sm"
+                    className="fixed inset-0 z-40 bg-theme-purple-darker/40 backdrop-blur-sm"
                     onClick={() => setMenuOpen(false)}
                     aria-hidden={!menuOpen}
                 />
                 <nav
-                    className={`fixed top-0 right-0 z-50 flex h-full w-full max-w-xs flex-col gap-6 bg-beige dark:bg-background-darker px-6 py-8 shadow-xl transition-transform duration-300 ${menuOpen ? "translate-x-0" : "translate-x-full"
+                    className={`fixed top-0 right-0 z-50 flex h-full w-full max-w-xs flex-col gap-6 bg-[var(--bg-main)] px-6 py-8 shadow-xl transition-transform duration-300 ${menuOpen ? "translate-x-0" : "translate-x-full"
                         }`}
                 >
                     <div className="flex items-center justify-between">
@@ -165,7 +165,7 @@ const Header: React.FC = () => {
                             onClick={() => setMenuOpen(false)}
                             className="flex items-center gap-3"
                         >
-                            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white dark:bg-surface-dark shadow-sm overflow-hidden">
+                            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-card)] shadow-sm overflow-hidden">
                                 {user?.avatar ? (
                                     <img
                                         src={getImageUrl(user.avatar)}
@@ -176,14 +176,14 @@ const Header: React.FC = () => {
                                     <img className="h-7 w-7" src="/img/Logo.png" alt="" />
                                 )}
                             </span>
-                            <span className="text-sm font-semibold text-p">
+                            <span className="text-sm font-semibold text-theme">
                                 Salve Mundi
                             </span>
                         </Link>
                         <button
                             type="button"
                             onClick={() => setMenuOpen(false)}
-                            className="rounded-full bg-white dark:bg-surface-dark p-2 text-p shadow-sm transition hover:bg-oranje/5 dark:hover:bg-white/5"
+                            className="rounded-full bg-[var(--bg-card)] p-2 text-theme shadow-sm transition hover:bg-theme-purple/5"
                             aria-label="Sluit navigatie"
                         >
                             <X className="h-5 w-5" />
@@ -196,10 +196,10 @@ const Header: React.FC = () => {
                                 key={link.href}
                                 href={link.href}
                                 onClick={() => setMenuOpen(false)}
-                                className="flex items-center justify-between rounded-2xl bg-white/70 dark:bg-surface-dark/70 px-4 py-3 text-sm font-semibold text-p shadow-sm"
+                                className="flex items-center justify-between rounded-2xl bg-[var(--bg-card)]/70 px-4 py-3 text-sm font-semibold text-theme shadow-sm"
                             >
                                 <span>{link.name}</span>
-                                <span className="text-xs font-semibold uppercase tracking-[0.25em] text-oranje">
+                                <span className="text-xs font-semibold uppercase tracking-[0.25em] text-theme-purple">
                                     Ga
                                 </span>
                             </Link>
@@ -210,7 +210,7 @@ const Header: React.FC = () => {
                         <Link
                             href={ROUTES.MEMBERSHIP}
                             onClick={() => setMenuOpen(false)}
-                            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-oranje/40"
+                            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-theme px-4 py-3 text-sm font-semibold text-theme-white shadow-lg shadow-theme-purple/40"
                         >
                             <Sparkles className="h-4 w-4" />
                             Word lid
