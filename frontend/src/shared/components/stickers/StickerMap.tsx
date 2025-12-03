@@ -1,57 +1,8 @@
 'use client';
 
-import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
-import { Icon } from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import React, { useEffect, useState } from 'react';
 import { Sticker } from '@/lib/api/salvemundi';
-
-
-// Fix for Leaflet default icon not showing
-import L from 'leaflet';
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-
-// @ts-ignore
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-    iconUrl: markerIcon.src,
-    iconRetinaUrl: markerIcon2x.src,
-    shadowUrl: markerShadow.src,
-});
-
-// Custom marker icon
-const customIcon = new Icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41]
-});
-
-// Icon for current logged-in user's pins (blue)
-const currentUserIcon = new Icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41]
-});
-
-// Component to handle map clicks
-function MapClickHandler({ onLocationSelect }: { onLocationSelect?: (lat: number, lng: number) => void }) {
-    useMapEvents({
-        click: (e) => {
-            if (onLocationSelect) {
-                onLocationSelect(e.latlng.lat, e.latlng.lng);
-            }
-        },
-    });
-    return null;
-}
+import 'leaflet/dist/leaflet.css';
 
 interface StickerMapProps {
     stickers?: Sticker[];
@@ -67,6 +18,9 @@ interface StickerMapProps {
     center?: [number, number];
 }
 
+// Counter for unique map IDs (outside component to persist across renders)
+let mapIdCounter = 0;
+
 const StickerMap: React.FC<StickerMapProps> = ({
     stickers = [],
     user,
@@ -80,13 +34,101 @@ const StickerMap: React.FC<StickerMapProps> = ({
     zoom = 2,
     center = [51.5074, 0.1278]
 }) => {
+    const [mounted, setMounted] = useState(false);
+    const [MapComponents, setMapComponents] = useState<any>(null);
+    const [leafletIcons, setLeafletIcons] = useState<any>(null);
+    const [mapId] = useState(() => `map-${++mapIdCounter}`);
+    
+    useEffect(() => {
+        let isMounted = true;
+        
+        // Only load Leaflet on the client side
+        if (typeof window !== 'undefined') {
+            // Dynamically import all Leaflet dependencies
+            Promise.all([
+                import('react-leaflet'),
+                import('leaflet'),
+                import('leaflet/dist/images/marker-icon-2x.png'),
+                import('leaflet/dist/images/marker-icon.png'),
+                import('leaflet/dist/images/marker-shadow.png'),
+            ]).then(([reactLeaflet, L, markerIcon2x, markerIcon, markerShadow]) => {
+                if (!isMounted) return;
+                
+                // Fix Leaflet default icon
+                // @ts-ignore
+                if (L.default.Icon.Default.prototype._getIconUrl) {
+                    // @ts-ignore
+                    delete L.default.Icon.Default.prototype._getIconUrl;
+                    L.default.Icon.Default.mergeOptions({
+                        iconUrl: markerIcon.default.src,
+                        iconRetinaUrl: markerIcon2x.default.src,
+                        shadowUrl: markerShadow.default.src,
+                    });
+                }
+
+                // Create custom icons
+                const customIcon = new L.default.Icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                });
+
+                const currentUserIcon = new L.default.Icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                });
+
+                setLeafletIcons({ customIcon, currentUserIcon });
+                setMapComponents(reactLeaflet);
+                setMounted(true);
+            });
+        }
+        
+        // Cleanup function
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    if (!mounted || !MapComponents || !leafletIcons) {
+        return (
+            <div style={{ height, width: '100%' }} className="z-0 flex items-center justify-center bg-gray-100 rounded-lg">
+                <div className="text-gray-500">Loading map...</div>
+            </div>
+        );
+    }
+
+    const { MapContainer, TileLayer, Marker, Popup, useMapEvents } = MapComponents;
+    const { customIcon, currentUserIcon } = leafletIcons;
+
+    // Component to handle map clicks
+    function MapClickHandler({ onLocationSelect }: { onLocationSelect?: (lat: number, lng: number) => void }) {
+        useMapEvents({
+            click: (e: any) => {
+                if (onLocationSelect) {
+                    onLocationSelect(e.latlng.lat, e.latlng.lng);
+                }
+            },
+        });
+        return null;
+    }
     return (
-        <MapContainer
-            center={center}
-            zoom={zoom}
-            style={{ height, width: '100%' }}
-            className="z-0"
-        >
+        <div style={{ height, width: '100%' }}>
+            <MapContainer
+                key={mapId}
+                center={center}
+                zoom={zoom}
+                scrollWheelZoom={true}
+                style={{ height: '100%', width: '100%' }}
+                className="z-0"
+            >
             <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -161,7 +203,8 @@ const StickerMap: React.FC<StickerMapProps> = ({
             {selectedLocation && (
                 <Marker position={[selectedLocation.lat, selectedLocation.lng]} icon={customIcon} />
             )}
-        </MapContainer>
+            </MapContainer>
+        </div>
     );
 };
 
