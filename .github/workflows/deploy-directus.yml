@@ -105,7 +105,7 @@ jobs:
           DB_PASSWORD: ${{ env.DB_PASSWORD }}
           AUTH_CLIENT_ID: ${{ env.AUTH_MICROSOFT_CLIENT_ID }}
           AUTH_CLIENT_SECRET: ${{ env.AUTH_MICROSOFT_CLIENT_SECRET }}
-          AUTH_MICROSOFT_TENANT_ID: ${{ env.AUTH_MICROSOFT_TENANT_ID}}
+          AUTH_MICROSOFT_TENANT: ${{ env.AUTH_MICROSOFT_TENANT }} # <-- Correctie: Gebruik AUTH_MICROSOFT_TENANT
           AUTH_ISSUER_URL: ${{ env.AUTH_MICROSOFT_ISSUER_URL }}
           AUTH_ROLE_ID: ${{ env.AUTH_MEMBER_ROLE_ID }}
           CORS_ORIGIN: ${{ env.CORS_ORIGIN }}
@@ -144,7 +144,7 @@ jobs:
             echo "AUTH_PROVIDERS=microsoft" >> .env
             echo "AUTH_MICROSOFT_DRIVER=openid" >> .env
             echo "AUTH_MICROSOFT_CLIENT_ID=$AUTH_CLIENT_ID" >> .env
-            echo "AUTH_MICROSOFT_TENANT=$AUTH_MICROSOFT_TENANT_ID" >> .env
+            echo "AUTH_MICROSOFT_TENANT=$AUTH_MICROSOFT_TENANT" >> .env # <-- Gebruikt de nu correct ingevulde variabele
             echo "AUTH_MICROSOFT_CLIENT_SECRET=$AUTH_CLIENT_SECRET" >> .env
             echo "AUTH_MICROSOFT_ISSUER_URL=$AUTH_ISSUER_URL" >> .env
             echo "AUTH_MICROSOFT_SCOPE=openid profile email" >> .env
