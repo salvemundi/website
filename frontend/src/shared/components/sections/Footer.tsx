@@ -57,7 +57,7 @@ export default function Footer() {
             <div className="relative mx-auto max-w-screen-xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
                     <div>
-                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-geel mb-4">Informatie</h3>
+                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-beige mb-4">Informatie</h3>
                         <ul className="space-y-2 text-sm text-beige/90">
                             <li>Rachelsmolen 1</li>
                             <li>5612 MA Eindhoven</li>
@@ -84,7 +84,7 @@ export default function Footer() {
                     </div>
 
                     <div>
-                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-geel mb-4">Pagina's</h3>
+                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-beige mb-4">Pagina's</h3>
                         <ul className="space-y-2 text-sm">
                             {[
                                 { label: "Home", href: ROUTES.HOME },
@@ -111,7 +111,7 @@ export default function Footer() {
                     </div>
 
                     <div>
-                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-geel mb-4">Commissies</h3>
+                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-beige mb-4">Commissies</h3>
                         <ul className="space-y-2 text-sm">
                             {committees.length > 0 ? (
                                 committees.map((committee) => (
@@ -131,7 +131,7 @@ export default function Footer() {
                     </div>
 
                     <div>
-                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-geel mb-4">Contact</h3>
+                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-beige mb-4">Contact</h3>
                         <ul className="space-y-2 text-sm mb-6">
                             <li>
                                 <a
@@ -171,7 +171,7 @@ export default function Footer() {
                             </li>
                         </ul>
 
-                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-geel mb-4">Social Media</h3>
+                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-beige mb-4">Social Media</h3>
                         <div className="flex gap-3">
                             <a
                                 href="https://www.instagram.com/sv.salvemundi/"

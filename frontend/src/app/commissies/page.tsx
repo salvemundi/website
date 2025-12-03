@@ -38,7 +38,7 @@ export default function CommitteesPage() {
                     title="COMMISSIES"
                     backgroundImage="/img/backgrounds/commissies-banner.jpg"
                 >
-                    <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-white/90 sm:text-xl">
+                    <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-ink-muted dark:text-white/90 sm:text-xl">
                         Ontdek onze commissies en word deel van het team
                     </p>
                 </PageHeader>
@@ -97,7 +97,7 @@ export default function CommitteesPage() {
                                                 />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 pointer-events-none" />
                                                 {isBestuur && (
-                                                    <div className="absolute right-4 top-4 rounded-full bg-geel px-3 py-1 text-xs font-bold text-samu shadow-lg">
+                                                    <div className="absolute right-4 top-4 rounded-full bg-geel px-3 py-1 text-xs font-bold text-ink dark:text-ink-dark shadow-lg">
                                                         BESTUUR
                                                     </div>
                                                 )}
