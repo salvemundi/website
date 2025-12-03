@@ -1,7 +1,4 @@
 services:
-  # -------------------------------------------------------------------------
-  # DATABASE SERVICE (PostgreSQL)
-  # -------------------------------------------------------------------------
   db:
     image: postgres:15
     container_name: directus_db
@@ -16,9 +13,6 @@ services:
     networks:
       - internal_backend
 
-  # -------------------------------------------------------------------------
-  # APP SERVICE (Directus)
-  # -------------------------------------------------------------------------
   directus:
     build:
       context: .
@@ -28,30 +22,32 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      # Core Settings
       - KEY=${KEY}
       - SECRET=${SECRET}
       - PUBLIC_URL=${PUBLIC_URL}
       - PORT=8055
       - CORS_ORIGIN=${CORS_ORIGIN}
       - CORS_ALLOW_CREDENTIALS=${CORS_ALLOW_CREDENTIALS}
-      
-      # Admin Initialization
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-
-      # Database Connection
       - DB_CLIENT=postgres
       - DB_HOST=db
       - DB_PORT=5432
       - DB_DATABASE=${DB_DATABASE}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
-
-      # Custom Auth Configuration (Variabelen worden geladen via env_file)
-      - AUTH_MICROSOFT_TENANT_ID=${AUTH_MICROSOFT_TENANT_ID}
+      # Volledige set variabelen voor UI-activering en custom endpoint
+      - AUTH_PROVIDERS=microsoft
+      - AUTH_MICROSOFT_DRIVER=openid
       - AUTH_MICROSOFT_CLIENT_ID=${AUTH_MICROSOFT_CLIENT_ID}
+      - AUTH_MICROSOFT_CLIENT_SECRET=${AUTH_MICROSOFT_CLIENT_SECRET}
+      - AUTH_MICROSOFT_ISSUER_URL=${AUTH_MICROSOFT_ISSUER_URL}
+      - AUTH_MICROSOFT_SCOPE=${AUTH_MICROSOFT_SCOPE}
+      - AUTH_MICROSOFT_IDENTIFIER_KEY=${AUTH_MICROSOFT_IDENTIFIER_KEY}
+      - AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION=true
       - AUTH_MICROSOFT_DEFAULT_ROLE_ID=${AUTH_MICROSOFT_DEFAULT_ROLE_ID}
+      - AUTH_MICROSOFT_TENANT_ID=${AUTH_MICROSOFT_TENANT_ID}
+      - AUTH_ENTRA_FIELDS_MAPPING={"email": "userPrincipalName", "first_name": "givenName", "last_name": "surname"}
 
     volumes:
       - directus_uploads:/directus/uploads
@@ -61,16 +57,10 @@ services:
     depends_on:
       - db
 
-# -------------------------------------------------------------------------
-# VOLUMES
-# -------------------------------------------------------------------------
 volumes:
   postgres_app_data:
   directus_uploads:
 
-# -------------------------------------------------------------------------
-# NETWORKS
-# -------------------------------------------------------------------------
 networks:
   proxy-network:
     external: true
