@@ -24,3 +24,4 @@ functional:
   http_checks:
     - name: "Website V6 Prod"
       url: "http://website-prod:3000"
+  # TCP Check verwijderd ivm netwerk isolatie
