@@ -26,7 +26,4 @@ functional:
       url: "http://directus:8055/server/ping"
     - name: "Frontend Dev"
       url: "http://frontend-dev:80"
-  tcp_checks:
-    - name: "Directus DB"
-      host: "directus_db"
-      port: 5432
+  # TCP Check verwijderd ivm netwerk isolatie
