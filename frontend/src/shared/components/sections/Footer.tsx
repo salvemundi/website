@@ -50,15 +50,15 @@ export default function Footer() {
     const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://admin.salvemundi.nl';
 
     return (
-        <footer className="relative overflow-hidden bg-gradient-to-br from-paars via-samu to-paars text-beige">
-            <div className="absolute -left-10 top-10 h-64 w-64 rounded-full bg-oranje/10 blur-3xl" />
-            <div className="absolute -right-10 bottom-10 h-64 w-64 rounded-full bg-geel/10 blur-3xl" />
+        <footer className="relative overflow-hidden bg-gradient-theme text-theme-white">
+            <div className="absolute -left-10 top-10 h-64 w-64 rounded-full bg-theme-purple-light/10 blur-3xl" />
+            <div className="absolute -right-10 bottom-10 h-64 w-64 rounded-full bg-theme-purple-lighter/10 blur-3xl" />
 
             <div className="relative mx-auto max-w-screen-xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
                     <div>
-                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-beige mb-4">Informatie</h3>
-                        <ul className="space-y-2 text-sm text-beige/90">
+                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-theme-white mb-4">Informatie</h3>
+                        <ul className="space-y-2 text-sm text-theme-white/90">
                             <li>Rachelsmolen 1</li>
                             <li>5612 MA Eindhoven</li>
                             <li>KvK nr. 70280606</li>
@@ -71,7 +71,7 @@ export default function Footer() {
                                                 href={fileUrl}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 transition hover:bg-white/20 hover:text-geel"
+                                                className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 transition hover:bg-white/20 hover:text-theme-purple-lighter"
                                                 title={doc.description || doc.title}
                                             >
                                                 {doc.title}
@@ -84,7 +84,7 @@ export default function Footer() {
                     </div>
 
                     <div>
-                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-beige mb-4">Pagina's</h3>
+                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-theme-white mb-4">Pagina's</h3>
                         <ul className="space-y-2 text-sm">
                             {[
                                 { label: "Home", href: ROUTES.HOME },
@@ -101,7 +101,7 @@ export default function Footer() {
                                 <li key={link.href}>
                                     <Link
                                         href={link.href}
-                                        className="inline-flex items-center gap-1 rounded-full px-3 py-1 transition hover:bg-white/10 hover:text-geel"
+                                        className="inline-flex items-center gap-1 rounded-full px-3 py-1 transition hover:bg-white/10 hover:text-theme-purple-lighter"
                                     >
                                         {link.label}
                                     </Link>
@@ -111,32 +111,32 @@ export default function Footer() {
                     </div>
 
                     <div>
-                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-beige mb-4">Commissies</h3>
+                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-theme-white mb-4">Commissies</h3>
                         <ul className="space-y-2 text-sm">
                             {committees.length > 0 ? (
                                 committees.map((committee) => (
                                     <li key={committee.id}>
                                         <Link
                                             href={`${ROUTES.COMMITTEES}/${slugify(cleanCommitteeName(committee.name))}`}
-                                            className="inline-flex items-center gap-1 rounded-full px-3 py-1 transition hover:bg-white/10 hover:text-geel"
+                                            className="inline-flex items-center gap-1 rounded-full px-3 py-1 transition hover:bg-white/10 hover:text-theme-purple-lighter"
                                         >
                                             {cleanCommitteeName(committee.name)}
                                         </Link>
                                     </li>
                                 ))
                             ) : (
-                                <li className="text-beige/60">Laden...</li>
+                                <li className="text-theme-white/60">Laden...</li>
                             )}
                         </ul>
                     </div>
 
                     <div>
-                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-beige mb-4">Contact</h3>
+                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-theme-white mb-4">Contact</h3>
                         <ul className="space-y-2 text-sm mb-6">
                             <li>
                                 <a
                                     href="mailto:info@salvemundi.nl"
-                                    className="inline-flex items-center gap-1 rounded-full px-3 py-1 transition hover:bg-white/10 hover:text-geel"
+                                    className="inline-flex items-center gap-1 rounded-full px-3 py-1 transition hover:bg-white/10 hover:text-theme-purple-lighter"
                                 >
                                     info@salvemundi.nl
                                 </a>
@@ -155,7 +155,7 @@ export default function Footer() {
                                         href="https://wa.me/31624827777"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-1 rounded-full px-3 py-1 transition hover:bg-white/10 hover:text-geel"
+                                        className="inline-flex items-center gap-1 rounded-full px-3 py-1 transition hover:bg-white/10 hover:text-theme-purple-lighter"
                                     >
                                         WhatsApp
                                     </a>
@@ -164,14 +164,14 @@ export default function Footer() {
                             <li>
                                 <Link
                                     href={ROUTES.SAFE_HAVENS}
-                                    className="inline-flex items-center gap-1 rounded-full bg-oranje/20 px-3 py-1 font-semibold transition hover:bg-oranje/30 hover:text-white"
+                                    className="inline-flex items-center gap-1 rounded-full bg-theme-purple-light/20 px-3 py-1 font-semibold transition hover:bg-theme-purple-light/30 hover:text-theme-white"
                                 >
                                     Safe Havens
                                 </Link>
                             </li>
                         </ul>
 
-                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-beige mb-4">Social Media</h3>
+                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-theme-white mb-4">Social Media</h3>
                         <div className="flex gap-3">
                             <a
                                 href="https://www.instagram.com/sv.salvemundi/"
@@ -205,13 +205,13 @@ export default function Footer() {
                 </div>
 
                 <div className="mt-12 pt-8 text-center">
-                    <p className="text-sm text-beige/80">
+                    <p className="text-sm text-theme-white/80">
                         Copyright © 2025 Salve Mundi - alle rechten voorbehouden.{" "}
                         <a
                             href="https://github.com/salvemundi/website"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 transition hover:bg-white/10 hover:text-geel"
+                            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 transition hover:bg-white/10 hover:text-theme-purple-lighter"
                         >
                             Source code
                         </a>

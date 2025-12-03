@@ -24,10 +24,10 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                     filter: 'brightness(0.7)'
                 }}
             />
-            <div className="absolute inset-0 bg-paars/40 z-10" />
+            <div className="absolute inset-0 bg-gradient-theme/40 z-10" />
 
             <div className="relative z-20 text-center py-20 px-4">
-                <h1 className={`text-paars font-bold text-center leading-tight drop-shadow-lg ${titleClassName}`}>
+                <h1 className={`text-theme-white font-bold text-center leading-tight drop-shadow-lg ${titleClassName}`}>
                     {title.split('\n').map((line, index) => (
                         <React.Fragment key={index}>
                             {line}
