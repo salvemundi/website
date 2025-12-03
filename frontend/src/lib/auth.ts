@@ -139,7 +139,7 @@ export async function loginWithEntraId(entraIdToken: string, userEmail: string):
   try {
     // This endpoint should be created on your Directus backend
     // It will verify the Entra ID token and match it with the user's entra_id field
-    const response = await fetch(`${directusUrl}/directus-extension-entra-auth/auth/login/entra`, {
+    const response = await fetch(`${directusUrl}/auth/login/entra`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
