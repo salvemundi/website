@@ -52,6 +52,17 @@ body {
   color: var(--text-main);
 }
 
+/* Ensure elements that explicitly set white text inside light backgrounds remain readable in light mode.
+   This targets common utility classes like `bg-white` / `bg-white/..` with child elements using `text-white`.
+   We scope this to light mode (when `body` does NOT have the `dark` class) so dark mode remains unaffected. */
+body:not(.dark) [class*="bg-white"] [class*="text-white"] {
+  color: inherit !important;
+}
+
+body:not(.dark) [class*="bg-white"][class*="text-white"] {
+  color: inherit !important;
+}
+
 .text-primary {
   color: var(--color-primary);
 }
