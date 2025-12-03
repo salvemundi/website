@@ -54,23 +54,14 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
 
+      # We bereiden de config lokaal voor (injecteren van webhook)
       - name: Prepare Config File
         working-directory: ./server-monitor
         run: |
           cp ${{ env.CONFIG_SOURCE }} config_deploy.yaml
           sed -i "s|__DISCORD_WEBHOOK__|${{ env.WEBHOOK_URL }}|g" config_deploy.yaml
 
-      - name: Create Directory on Server
-        uses: appleboy/ssh-action@v1.0.1
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            sudo mkdir -p ${{ env.DEPLOY_PATH }}
-            sudo chown -R ${{ secrets.SERVER_USER }}:devops ${{ env.DEPLOY_PATH }}
-            sudo chmod -R 770 ${{ env.DEPLOY_PATH }}
-
+      # We kopiëren de files. Omdat de map op de server al bestaat (handmatige actie), gaat dit goed.
       - name: Copy Config Files via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -81,8 +72,8 @@ jobs:
           target: ${{ env.DEPLOY_PATH }}
           strip_components: 1
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.1
+      - name: Deploy on Server
+        uses: appleboy/ssh-action@v1.0.3
         env:
           GH_REGISTRY: ${{ env.REGISTRY }}
           GH_USERNAME: ${{ github.actor }}
@@ -95,12 +86,21 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,DEPLOY_PATH,TAG
           script: |
+            # Inloggen (zonder sudo)
             echo $GH_PASSWORD | docker login $GH_REGISTRY -u $GH_USERNAME --password-stdin
             
+            # Ga naar map (of maak aan als safety check, zonder sudo)
+            mkdir -p $DEPLOY_PATH
             cd $DEPLOY_PATH
+            
+            # Hernoem de ge-uploade config naar de naam die de container verwacht
             mv config_deploy.yaml config.yaml
+            
+            # Maak .env voor de docker-compose variabele
             echo "TAG=$TAG" > .env
             
+            # Starten (zonder sudo, user zit in docker groep)
             docker compose pull
             docker compose up -d --force-recreate --remove-orphans
+            
             docker image prune -f
