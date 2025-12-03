@@ -3,7 +3,7 @@
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { useEffect } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
 // Fix for default marker icon in Leaflet with Next.js
 
@@ -74,6 +74,23 @@ export default function StickerMap({
         window.dispatchEvent(new Event('resize'));
     }, []);
 
+    // Prevent double-initialization in React Strict Mode by only rendering the
+    // MapContainer after the component is mounted on the client.
+    const [mounted, setMounted] = useState(false);
+    
+    // Generate a unique key for this map instance to force React to create a new
+    // DOM element when the component remounts, preventing Leaflet from trying to
+    // initialize on an already-initialized container.
+    const mapKey = useMemo(() => `map-${Math.random().toString(36).substr(2, 9)}`, []);
+    
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) {
+        return <div style={{ height, width: '100%' }} />;
+    }
+
     const filteredStickers = stickers
         .filter(sticker => sticker.latitude != null && sticker.longitude != null)
         .filter(sticker => {
@@ -100,6 +117,7 @@ export default function StickerMap({
 
     return (
         <MapContainer
+            key={mapKey}
             center={center}
             zoom={zoom}
             style={{ height, width: '100%', borderRadius: '1rem', zIndex: 0 }}
