@@ -10,15 +10,16 @@ USER node
 # Stap 2: Custom Extensie - Microsoft Entra ID Endpoint
 # Aanname: De map 'directus-extension-entra-auth' staat naast de Dockerfile.
 
-# Kopieer de custom extensie code. Stel de eigenaar direct in op 'node' om EACCES errors te voorkomen.
+# Kopieer de custom extensie code. Stel de eigenaar direct in op 'node' om permissie-errors te voorkomen.
 COPY --chown=node:node ./directus-extension-entra-auth /tmp/directus-extension-entra-auth
 
 # Ga naar de map van de custom extensie om afhankelijkheden te installeren
 WORKDIR /tmp/directus-extension-entra-auth
 RUN pnpm install
 
-# Verplaats de geïnstalleerde extensiemap naar de definitieve Directus extensie map
-RUN mv . /directus/extensions/endpoints/directus-extension-entra-auth
+# Stap 3: Verplaatsing en Terugkeer naar Standaard Werkmap
+# BELANGRIJK: We moeten de WORKDIR verlaten voordat we de map zelf verplaatsen.
+WORKDIR /directus 
 
-# Stap 3: Terug naar de standaard werkmap
-WORKDIR /directus
+# Verplaats de GEHELE geïnstalleerde extensiemap naar de definitieve Directus extensie map
+RUN mv /tmp/directus-extension-entra-auth /directus/extensions/endpoints/directus-extension-entra-auth
