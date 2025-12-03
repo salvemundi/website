@@ -1,0 +1,11 @@
+services:
+  frontend:
+    image: ghcr.io/salvemundi/frontend:${TAG}
+    container_name: frontend-${TAG}
+    restart: unless-stopped
+    networks:
+      - proxy-network
+
+networks:
+  proxy-network:
+    external: true
