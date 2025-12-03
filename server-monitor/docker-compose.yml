@@ -1,0 +1,19 @@
+﻿services:
+  server-monitor:
+    image: ghcr.io/salvemundi/server-monitor:${TAG:-latest}
+    container_name: server-monitor-${TAG:-latest}
+    restart: always
+    user: root
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/hostfs:ro
+    environment:
+      - TZ=Europe/Amsterdam
+      - CONFIG_PATH=/app/config.yaml
+    networks:
+      - proxy-network
+
+networks:
+  proxy-network:
+    external: true
