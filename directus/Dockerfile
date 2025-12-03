@@ -13,13 +13,16 @@ USER node
 # Kopieer de custom extensie code. Stel de eigenaar direct in op 'node' om permissie-errors te voorkomen.
 COPY --chown=node:node ./directus-extension-entra-auth /tmp/directus-extension-entra-auth
 
-# Ga naar de map van de custom extensie om afhankelijkheden te installeren
 WORKDIR /tmp/directus-extension-entra-auth
 RUN pnpm install
 
-# Stap 3: Verplaatsing en Terugkeer naar Standaard Werkmap
-# BELANGRIJK: We moeten de WORKDIR verlaten voordat we de map zelf verplaatsen.
+# Verlaat de map om conflicten te vermijden
 WORKDIR /directus 
 
-# Verplaats de GEHELE geïnstalleerde extensiemap naar de definitieve Directus extensie map
-RUN mv /tmp/directus-extension-entra-auth /directus/extensions/endpoints/directus-extension-entra-auth
+# Verplaats de inhoud (source code + node_modules) naar de definitieve bestemming.
+# We gebruiken 'cp -r' in plaats van 'mv' om te garanderen dat de bestanden bestaan
+# en gebruiken 'rm -rf' om op te ruimen.
+# We moeten eerst de doelmap creëren om de cp instructie correct te laten werken.
+RUN mkdir -p /directus/extensions/endpoints/directus-extension-entra-auth
+RUN cp -r /tmp/directus-extension-entra-auth/. /directus/extensions/endpoints/directus-extension-entra-auth
+RUN rm -rf /tmp/directus-extension-entra-auth
