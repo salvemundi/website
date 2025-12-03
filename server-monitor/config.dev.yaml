@@ -1,0 +1,32 @@
+﻿general:
+  server_name: "VPS-Website-DEV"
+  check_interval_seconds: 60
+  host_disk_mount_path: "/hostfs"
+
+discord:
+  webhook_url: "__DISCORD_WEBHOOK__"
+  repeat_alert_after_minutes: 60
+
+system:
+  disk_usage_threshold_percent: 90
+  memory_usage_threshold_percent: 90
+  cpu_load_threshold_percent: 95
+
+docker:
+  containers:
+    - "npm"
+    - "directus"
+    - "directus_db"
+    - "frontend-dev"
+    - "payment-api"
+
+functional:
+  http_checks:
+    - name: "Directus API Dev"
+      url: "http://directus:8055/server/ping"
+    - name: "Frontend Dev"
+      url: "http://frontend-dev:80"
+  tcp_checks:
+    - name: "Directus DB"
+      host: "directus_db"
+      port: 5432
