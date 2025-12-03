@@ -149,7 +149,7 @@ jobs:
             echo "AUTH_MICROSOFT_ISSUER_URL=$AUTH_ISSUER_URL" >> .env
             echo "AUTH_MICROSOFT_SCOPE=openid profile email" >> .env
             echo "AUTH_MICROSOFT_IDENTIFIER_KEY=sub" >> .env
-            echo "AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION=false" >> .env
+            echo "AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION=true" >> .env
             echo "AUTH_MICROSOFT_DEFAULT_ROLE_ID=$AUTH_ROLE_ID" >> .env
             echo "AUTH_ENTRA_FIELDS_MAPPING={\"email\": \"userPrincipalName\", \"first_name\": \"givenName\", \"last_name\": \"surname\"}" >> .env
             
