@@ -50,13 +50,10 @@ jobs:
             echo "DB_USER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
             echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
             
-            # SSO / Entra ID
+            # Custom Entra ID (Essentials for index.js)
             echo "AUTH_MICROSOFT_CLIENT_ID=${{ secrets.DEV_MS_GRAPH_CLIENT_ID }}" >> $GITHUB_ENV
-            echo "AUTH_MICROSOFT_CLIENT_SECRET=${{ secrets.DEV_MS_GRAPH_CLIENT_SECRET }}" >> $GITHUB_ENV
-            echo "AUTH_MICROSOFT_TENANT=${{ secrets.AUTH_MICROSOFT_TENANT_ID }}" >> $GITHUB_ENV
-            echo "AUTH_MICROSOFT_ISSUER_URL=${{ secrets.AUTH_MICROSOFT_ISSUER_URL }}" >> $GITHUB_ENV
-            echo "AUTH_MEMBER_ROLE_ID=${{ secrets.DIRECTUS_MEMBER_ROLE_ID }}" >> $GITHUB_ENV
-
+            echo "AUTH_MICROSOFT_TENANT_ID=${{ secrets.AUTH_MICROSOFT_TENANT_ID }}" >> $GITHUB_ENV
+            echo "AUTH_MICROSOFT_DEFAULT_ROLE_ID=${{ secrets.DIRECTUS_MEMBER_ROLE_ID }}" >> $GITHUB_ENV
             
             # CORS Configuration
             echo "CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}" >> $GITHUB_ENV
@@ -102,19 +99,20 @@ jobs:
           DB_HOST: ${{ env.DB_HOST }}
           DB_DATABASE: ${{ env.DB_DATABASE }}
           DB_USER: ${{ env.DB_USER }}
-          DB_PASSWORD: ${{ env.DB_PASSWORD }}
-          AUTH_CLIENT_ID: ${{ env.AUTH_MICROSOFT_CLIENT_ID }}
-          AUTH_CLIENT_SECRET: ${{ env.AUTH_MICROSOFT_CLIENT_SECRET }}
-          AUTH_MICROSOFT_TENANT: ${{ env.AUTH_MICROSOFT_TENANT }} # <-- Correctie: Gebruik AUTH_MICROSOFT_TENANT
-          AUTH_ISSUER_URL: ${{ env.AUTH_MICROSOFT_ISSUER_URL }}
-          AUTH_ROLE_ID: ${{ env.AUTH_MEMBER_ROLE_ID }}
+          DB_PASSWORD: ${{ env.USER }}
+          # Custom Auth Variables (Correcte namen en alleen de essentiële)
+          AUTH_MICROSOFT_CLIENT_ID: ${{ env.AUTH_MICROSOFT_CLIENT_ID }}
+          AUTH_MICROSOFT_TENANT_ID: ${{ env.AUTH_MICROSOFT_TENANT_ID }}
+          AUTH_MICROSOFT_DEFAULT_ROLE_ID: ${{ env.AUTH_MICROSOFT_DEFAULT_ROLE_ID }}
+          # CORS Configuration
           CORS_ORIGIN: ${{ env.CORS_ORIGIN }}
           CORS_ALLOW_CREDENTIALS: ${{ env.CORS_ALLOW_CREDENTIALS }}
+          
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,DEPLOY_PATH,TAG,KEY,SECRET,ADMIN_EMAIL,ADMIN_PASSWORD,PUBLIC_URL,DB_HOST,DB_DATABASE,DB_USER,DB_PASSWORD,AUTH_CLIENT_ID,AUTH_MICROSOFT_TENANT,AUTH_CLIENT_SECRET,AUTH_ISSUER_URL,AUTH_ROLE_ID,CORS_ORIGIN,CORS_ALLOW_CREDENTIALS
+          envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,DEPLOY_PATH,TAG,KEY,SECRET,ADMIN_EMAIL,ADMIN_PASSWORD,PUBLIC_URL,DB_HOST,DB_DATABASE,DB_USER,DB_PASSWORD,AUTH_MICROSOFT_CLIENT_ID,AUTH_MICROSOFT_TENANT_ID,AUTH_MICROSOFT_DEFAULT_ROLE_ID,CORS_ORIGIN,CORS_ALLOW_CREDENTIALS
           script: |
             # Authenticate Docker
             echo $GH_PASSWORD | docker login $GH_REGISTRY -u $GH_USERNAME --password-stdin
@@ -140,18 +138,10 @@ jobs:
             echo "DB_USER=$DB_USER" >> .env
             echo "DB_PASSWORD=$DB_PASSWORD" >> .env
             
-            # Auth / SSO Configuration
-            echo "AUTH_PROVIDERS=microsoft" >> .env
-            echo "AUTH_MICROSOFT_DRIVER=openid" >> .env
-            echo "AUTH_MICROSOFT_CLIENT_ID=$AUTH_CLIENT_ID" >> .env
-            echo "AUTH_MICROSOFT_TENANT=$AUTH_MICROSOFT_TENANT" >> .env
-            echo "AUTH_MICROSOFT_CLIENT_SECRET=$AUTH_CLIENT_SECRET" >> .env
-            echo "AUTH_MICROSOFT_ISSUER_URL=$AUTH_ISSUER_URL" >> .env
-            echo "AUTH_MICROSOFT_SCOPE=openid profile email" >> .env
-            echo "AUTH_MICROSOFT_IDENTIFIER_KEY=sub" >> .env
-            echo "AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION=true" >> .env
-            echo "AUTH_MICROSOFT_DEFAULT_ROLE_ID=$AUTH_ROLE_ID" >> .env
-            echo "AUTH_ENTRA_FIELDS_MAPPING={\"email\": \"userPrincipalName\", \"first_name\": \"givenName\", \"last_name\": \"surname\"}" >> .env
+            # Custom Auth / SSO Configuration (Alleen de 3 essentiële variabelen)
+            echo "AUTH_MICROSOFT_CLIENT_ID=$AUTH_MICROSOFT_CLIENT_ID" >> .env
+            echo "AUTH_MICROSOFT_TENANT_ID=$AUTH_MICROSOFT_TENANT_ID" >> .env
+            echo "AUTH_MICROSOFT_DEFAULT_ROLE_ID=$AUTH_MICROSOFT_DEFAULT_ROLE_ID" >> .env
             
             # CORS Configuration
             echo "CORS_ENABLED=true" >> .env
