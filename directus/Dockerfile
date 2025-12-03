@@ -16,9 +16,18 @@ COPY --chown=node:node ./directus-extension-entra-auth /tmp/directus-extension-e
 WORKDIR /tmp/directus-extension-entra-auth
 RUN pnpm install
 
-# Stap 3: Verplaatsing en Terugkeer naar Standaard Werkmap
-# We veranderen de WORKDIR naar /directus om te garanderen dat de 'mv' niet faalt
+# Stap 3: Kopiëren van Inhoud en Clean-up
+# Werk in de root-directory om permissie voor de /directus/ extensiemap te garanderen
 WORKDIR /directus 
 
-# Verplaats de GEHELE geïnstalleerde extensiemap vanaf de absolute /tmp/ locatie naar de definitieve bestemming.
-RUN mv /tmp/directus-extension-entra-auth /directus/extensions/endpoints/directus-extension-entra-auth
+# Maak de definitieve doelmap
+RUN mkdir -p /directus/extensions/endpoints/directus-extension-entra-auth
+
+# Kopieer alle inhoud (inclusief verborgen mappen zoals .pnpm en node_modules) naar de definitieve bestemming.
+# De '-a' flag zorgt voor archiefmodus, behoudt permissies en kopieert recursief.
+RUN cp -a /tmp/directus-extension-entra-auth/. /directus/extensions/endpoints/directus-extension-entra-auth/
+
+# Ruim de tijdelijke map op om de image klein te houden
+RUN rm -rf /tmp/directus-extension-entra-auth
+
+# De WORKDIR is nu correct ingesteld op /directus.
