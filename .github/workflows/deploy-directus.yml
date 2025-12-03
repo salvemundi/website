@@ -53,8 +53,10 @@ jobs:
             # SSO / Entra ID
             echo "AUTH_MICROSOFT_CLIENT_ID=${{ secrets.DEV_MS_GRAPH_CLIENT_ID }}" >> $GITHUB_ENV
             echo "AUTH_MICROSOFT_CLIENT_SECRET=${{ secrets.DEV_MS_GRAPH_CLIENT_SECRET }}" >> $GITHUB_ENV
+            echo "AUTH_MICROSOFT_TENANT=${{ secrets.AUTH_MICROSOFT_TENANT_ID }}" >> $GITHUB_ENV
             echo "AUTH_MICROSOFT_ISSUER_URL=${{ secrets.AUTH_MICROSOFT_ISSUER_URL }}" >> $GITHUB_ENV
             echo "AUTH_MEMBER_ROLE_ID=${{ secrets.DIRECTUS_MEMBER_ROLE_ID }}" >> $GITHUB_ENV
+
             
             # CORS Configuration
             echo "CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}" >> $GITHUB_ENV
@@ -103,6 +105,7 @@ jobs:
           DB_PASSWORD: ${{ env.DB_PASSWORD }}
           AUTH_CLIENT_ID: ${{ env.AUTH_MICROSOFT_CLIENT_ID }}
           AUTH_CLIENT_SECRET: ${{ env.AUTH_MICROSOFT_CLIENT_SECRET }}
+          AUTH_MICROSOFT_TENANT_ID: ${{ env.AUTH_MICROSOFT_TENANT_ID}}
           AUTH_ISSUER_URL: ${{ env.AUTH_MICROSOFT_ISSUER_URL }}
           AUTH_ROLE_ID: ${{ env.AUTH_MEMBER_ROLE_ID }}
           CORS_ORIGIN: ${{ env.CORS_ORIGIN }}
