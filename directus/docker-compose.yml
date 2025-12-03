@@ -48,20 +48,13 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
 
-      # Microsoft Entra ID (Azure AD) SSO Configuration
-      - AUTH_PROVIDERS=microsoft
-      - AUTH_MICROSOFT_DRIVER=openid
+      # Custom Auth Configuration (Variabelen worden geladen via env_file)
+      - AUTH_MICROSOFT_TENANT_ID=${AUTH_MICROSOFT_TENANT_ID}
       - AUTH_MICROSOFT_CLIENT_ID=${AUTH_MICROSOFT_CLIENT_ID}
-      - AUTH_MICROSOFT_CLIENT_SECRET=${AUTH_MICROSOFT_CLIENT_SECRET}
-      - AUTH_MICROSOFT_ISSUER_URL=${AUTH_MICROSOFT_ISSUER_URL}
-      - AUTH_MICROSOFT_SCOPE=${AUTH_MICROSOFT_SCOPE}
-      - AUTH_MICROSOFT_IDENTIFIER_KEY=${AUTH_MICROSOFT_IDENTIFIER_KEY}
-      - AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION=${AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION}
       - AUTH_MICROSOFT_DEFAULT_ROLE_ID=${AUTH_MICROSOFT_DEFAULT_ROLE_ID}
 
     volumes:
       - directus_uploads:/directus/uploads
-      # - ./extensions:/directus/extensions
     networks:
       - proxy-network
       - internal_backend
