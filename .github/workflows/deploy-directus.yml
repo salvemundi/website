@@ -99,7 +99,7 @@ jobs:
           DB_HOST: ${{ env.DB_HOST }}
           DB_DATABASE: ${{ env.DB_DATABASE }}
           DB_USER: ${{ env.DB_USER }}
-          DB_PASSWORD: ${{ env.USER }}
+          DB_PASSWORD: ${{ env.DB_PASSWORD }}
           # Custom Auth Variables (Correcte namen en alleen de essentiële)
           AUTH_MICROSOFT_CLIENT_ID: ${{ env.AUTH_MICROSOFT_CLIENT_ID }}
           AUTH_MICROSOFT_TENANT_ID: ${{ env.AUTH_MICROSOFT_TENANT_ID }}
