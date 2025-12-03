@@ -1,8 +1,7 @@
-'use client';
+ 'use client';
 
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { Header, Footer } from '@/shared/components/sections';
 import { useSalvemundiCommitteesWithMembers, useSalvemundiEventsByCommittee } from '@/hooks/useSalvemundiApi';
 import { getImageUrl } from '@/lib/api/salvemundi';
 import { slugify } from '@/lib/utils/slug';
@@ -33,7 +32,6 @@ export default function CommitteeDetailPage() {
             <div className="relative min-h-screen bg-[#fef5f3]">
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-oranje/10/80 via-transparent to-oranje/20/60" />
                 <div className="relative z-10">
-                    <Header />
                     <div className="mx-auto max-w-app px-4 py-12">
                         <div className="h-96 animate-pulse rounded-3xl bg-white/60" />
                     </div>
@@ -47,7 +45,6 @@ export default function CommitteeDetailPage() {
             <div className="relative min-h-screen bg-[#fef5f3]">
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-oranje/10/80 via-transparent to-oranje/20/60" />
                 <div className="relative z-10">
-                    <Header />
                     <div className="mx-auto max-w-app px-4 py-12">
                         <div className="rounded-3xl bg-white/80 p-8 text-center shadow-lg">
                             <p className="mb-4 text-lg font-semibold text-paars">Commissie niet gevonden</p>
@@ -71,8 +68,6 @@ export default function CommitteeDetailPage() {
     return (
         <>
             <div className="relative z-10">
-                <Header />
-
                 {/* Hero with Committee Image */}
                 <section className="relative overflow-hidden py-20">
                     <div className="absolute inset-0">
@@ -94,7 +89,7 @@ export default function CommitteeDetailPage() {
                             {cleanName}
                         </h1>
                         {committee.short_description && (
-                            <p className="mt-4 max-w-2xl text-lg text-white/90">
+                            <p className="mt-4 max-w-2xl text-lg text-ink-muted dark:text-white/90">
                                 {committee.short_description}
                             </p>
                         )}
@@ -210,7 +205,6 @@ export default function CommitteeDetailPage() {
                     </div>
                 </main>
 
-                <Footer />
             </div>
         </>
     );
