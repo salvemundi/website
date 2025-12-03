@@ -89,7 +89,7 @@ export default function CommitteeDetailPage() {
                             {cleanName}
                         </h1>
                         {committee.short_description && (
-                            <p className="mt-4 max-w-2xl text-lg text-white/90">
+                            <p className="mt-4 max-w-2xl text-lg text-ink-muted dark:text-white/90">
                                 {committee.short_description}
                             </p>
                         )}
