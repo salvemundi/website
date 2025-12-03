@@ -1,9 +1,6 @@
 // Directus REST API configuration
-export const directusUrl = (
-    process.env.NODE_ENV === 'development'
-        ? '/api'
-        : (process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://admin.salvemundi.nl')
-);
+// Always use the /api proxy to avoid CORS issues
+export const directusUrl = '/api';
 
 const apiKey = process.env.NEXT_PUBLIC_DIRECTUS_API_KEY || '';
 
