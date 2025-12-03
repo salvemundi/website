@@ -3,6 +3,9 @@ const nextConfig = {
     // Enable React strict mode
     reactStrictMode: true,
 
+    // Enable standalone output for Docker
+    output: 'standalone',
+
     // Configure image domains for Next.js Image optimization
     images: {
         remotePatterns: [
