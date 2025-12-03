@@ -141,6 +141,7 @@ jobs:
             echo "AUTH_PROVIDERS=microsoft" >> .env
             echo "AUTH_MICROSOFT_DRIVER=openid" >> .env
             echo "AUTH_MICROSOFT_CLIENT_ID=$AUTH_CLIENT_ID" >> .env
+            echo "AUTH_MICROSOFT_TENANT=$AUTH_MICROSOFT_TENANT_ID" >> .env
             echo "AUTH_MICROSOFT_CLIENT_SECRET=$AUTH_CLIENT_SECRET" >> .env
             echo "AUTH_MICROSOFT_ISSUER_URL=$AUTH_ISSUER_URL" >> .env
             echo "AUTH_MICROSOFT_SCOPE=openid profile email" >> .env
