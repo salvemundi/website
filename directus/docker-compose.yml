@@ -47,7 +47,7 @@ services:
       - AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION=true
       - AUTH_MICROSOFT_DEFAULT_ROLE_ID=${AUTH_MICROSOFT_DEFAULT_ROLE_ID}
       - AUTH_MICROSOFT_TENANT_ID=${AUTH_MICROSOFT_TENANT_ID}
-      - AUTH_ENTRA_FIELDS_MAPPING={"email": "userPrincipalName", "first_name": "givenName", "last_name": "surname"}
+      - 'AUTH_ENTRA_FIELDS_MAPPING={"email": "userPrincipalName", "first_name": "givenName", "last_name": "surname"}'
 
     volumes:
       - directus_uploads:/directus/uploads
