@@ -15,8 +15,9 @@ RUN pnpm install
 
 # Stap 3: Fix module loading path (Oplossen van ROUTE_NOT_FOUND)
 # Verplaats index.js naar de root van de extensiemap en update package.json
+# FIX: We gebruiken # als delimiter in plaats van / om conflicten te voorkomen
 RUN mv src/index.js index.js && \
-    sed -i 's/"src\\/index.js"/"index.js"/g' package.json
+    sed -i 's#"src/index.js"#"index.js"#g' package.json
 
 # Stap 4: Kopiëren van Inhoud en Clean-up (Robuuste Methode)
 WORKDIR /directus 
