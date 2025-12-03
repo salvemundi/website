@@ -16,13 +16,11 @@ COPY --chown=node:node ./directus-extension-entra-auth /tmp/directus-extension-e
 WORKDIR /tmp/directus-extension-entra-auth
 RUN pnpm install
 
-# Verlaat de map om conflicten te vermijden
-WORKDIR /directus 
+# Verlaat de map om "Directory in Use" fouten te vermijden bij mv
+WORKDIR /tmp 
 
-# Verplaats de inhoud (source code + node_modules) naar de definitieve bestemming.
-# We gebruiken 'cp -r' in plaats van 'mv' om te garanderen dat de bestanden bestaan
-# en gebruiken 'rm -rf' om op te ruimen.
-# We moeten eerst de doelmap creëren om de cp instructie correct te laten werken.
-RUN mkdir -p /directus/extensions/endpoints/directus-extension-entra-auth
-RUN cp -r /tmp/directus-extension-entra-auth/. /directus/extensions/endpoints/directus-extension-entra-auth
-RUN rm -rf /tmp/directus-extension-entra-auth
+# Verplaats de GEHELE geïnstalleerde extensiemap naar de definitieve Directus extensie map
+RUN mv directus-extension-entra-auth /directus/extensions/endpoints/directus-extension-entra-auth
+
+# Stap 3: Terug naar de standaard werkmap
+WORKDIR /directus
