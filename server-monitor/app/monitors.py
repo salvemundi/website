@@ -3,12 +3,43 @@ import docker
 import socket
 import requests
 import shutil
+import time
 
 class SystemMonitor:
     def __init__(self, config, alerter):
         self.config = config['system']
         self.host_mount = config['general'].get('host_disk_mount_path', '/')
         self.alerter = alerter
+
+    def get_top_cpu_processes(self, limit=5):
+        """Haalt de processen op die de meeste CPU gebruiken."""
+        procs = []
+        try:
+            # We itereren over alle processen
+            for p in psutil.process_iter(['pid', 'name', 'cpu_percent']):
+                try:
+                    # cpu_percent kan 0 zijn bij de eerste aanroep, 
+                    # maar we pakken wat we kunnen krijgen zonder vertraging.
+                    # 'interval=None' is non-blocking.
+                    p.info['cpu_percent'] = p.cpu_percent(interval=None)
+                    procs.append(p.info)
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    pass
+            
+            # Sorteer op CPU percentage (hoogste eerst)
+            top_procs = sorted(procs, key=lambda p: p['cpu_percent'] or 0, reverse=True)[:limit]
+            
+            # Formatteer als string
+            result = "\n**Top Consumers:**"
+            for i, p in enumerate(top_procs, 1):
+                cpu = p['cpu_percent']
+                # Filter idle processes of zeer laag gebruik
+                if cpu and cpu > 0.1:
+                    result += f"\n{i}. {p['name']} ({cpu}%)"
+            
+            return result
+        except Exception as e:
+            return f"\nCould not fetch process details: {str(e)}"
 
     def check(self):
         # Disk Usage
@@ -38,11 +69,16 @@ class SystemMonitor:
             self.alerter.clear_state("sys_mem")
 
         # CPU
+        # We meten over 1 seconde voor een accuraat gemiddelde
         cpu = psutil.cpu_percent(interval=1)
         if cpu > self.config['cpu_load_threshold_percent']:
+            
+            # DIAGNOSE TOEVOEGEN
+            diagnosis = self.get_top_cpu_processes()
+            
             self.alerter.send_alert(
                 "CPU Load High",
-                f"CPU usage at {cpu}%",
+                f"CPU usage at {cpu}%{diagnosis}",
                 check_id="sys_cpu"
             )
         else:
@@ -111,17 +147,6 @@ class FunctionalMonitor:
                     check_id=c_id
                 )
 
+        # TCP checks zijn verwijderd maar we laten de class intact voor future use
         for check in self.tcp_checks:
-            c_id = f"tcp_{check['name']}"
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(3)
-            try:
-                s.connect((check['host'], check['port']))
-                s.close()
-                self.alerter.clear_state(c_id)
-            except Exception as e:
-                self.alerter.send_alert(
-                    "TCP Check Failed",
-                    f"Cannot connect to {check['name']} ({check['host']}:{check['port']})",
-                    check_id=c_id
-                )
+            pass 
