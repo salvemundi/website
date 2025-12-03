@@ -6,6 +6,7 @@ dist/
 
 # Logs
 *.log
+.next
 
 # OS generated files
 .DS_Store
