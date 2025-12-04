@@ -6,6 +6,21 @@ import { useAuth } from '@/features/auth/providers/auth-provider';
 import { getUserEventSignups, updateMinecraftUsername } from '@/shared/lib/auth';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { format } from 'date-fns';
+import {
+    LogOut,
+    CreditCard,
+    MessageCircle,
+    FileText,
+    User,
+    Mail,
+    Phone,
+    Gamepad2,
+    Calendar,
+    Shield,
+    ExternalLink,
+    ChevronRight,
+    Lock
+} from 'lucide-react';
 
 interface EventSignup {
     id: number;
@@ -78,20 +93,8 @@ export default function AccountPage() {
             if (!token) throw new Error('No auth token');
 
             await updateMinecraftUsername(user.id, minecraftUsername, token);
-            // We need to refresh the user to get the updated minecraft username
-            // Since refreshUser is not exposed from useAuth directly in the old code (it was destructured),
-            // we might need to import it or use the one from useAuth if available.
-            // Checking useAuth hook definition... it seems refreshUser IS exposed in the new AuthProvider.
-            // But wait, I imported refreshUser from '@/shared/lib/auth' in the imports above.
-            // Let's check if useAuth exposes it. The old code destructured it from useAuth.
-            // I will assume useAuth exposes it, or I will use the standalone function if needed.
-            // Actually, looking at the old code: `const { ..., refreshUser } = useAuth();`
-            // So I should try to get it from useAuth.
-
-            // For now, I'll assume the standalone function works if I pass the token, 
-            // but to update the context state, I really should call the context's refresh method.
-            // I'll check if I can get it from useAuth.
             await refreshUser();
+            setIsEditingMinecraft(false);
         } catch (error) {
             console.error('Failed to update minecraft username:', error);
             alert('Kon Minecraft gebruikersnaam niet bijwerken. Probeer het opnieuw.');
@@ -102,7 +105,7 @@ export default function AccountPage() {
 
     const getMembershipStatusDisplay = () => {
         if (!user?.membership_status || user.membership_status === 'none') {
-            return { text: 'Geen Actief Lidmaatschap', color: 'bg-gray-400', textColor: 'text-theme-white' };
+            return { text: 'Geen Actief Lidmaatschap', color: 'bg-gray-400', textColor: 'text-white' };
         }
         if (user.membership_status === 'active') {
             return { text: 'Actief Lid', color: 'bg-theme-purple-lighter', textColor: 'text-theme-purple-darker' };
@@ -118,279 +121,284 @@ export default function AccountPage() {
         );
     }
 
+    const membershipStatus = getMembershipStatusDisplay();
+
     return (
         <div className="min-h-screen bg-[var(--bg-main)]">
+            <div className="mx-auto max-w-app px-4 py-8 sm:px-6 lg:px-8">
 
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 ">
-                <div className="max-w-4xl mx-auto space-y-8">
-                    {/* Profile Section */}
-                    <div className="bg-[var(--bg-card)] rounded-3xl shadow-2xl p-6 sm:p-8">
-                        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between mb-6">
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 w-full">
-                                {user.avatar ? (
-                                    <img
-                                        src={getImageUrl(user.avatar)}
-                                        alt={`${user.first_name} ${user.last_name}`}
-                                        className="w-24 h-24 rounded-full object-cover  self-center sm:self-auto"
-                                        onError={(e) => {
-                                            const target = e.target as HTMLImageElement;
-                                            target.src = '/img/avatar-placeholder.svg';
-                                        }}
-                                    />
-                                ) : (
-                                    <div className="w-24 h-24 rounded-full bg-theme-purple-lighter flex items-center justify-center  self-center sm:self-auto">
-                                        <span className="text-3xl font-bold text-theme-purple-darker">
-                                            {user.first_name?.[0]}{user.last_name?.[0]}
-                                        </span>
-                                    </div>
-                                )}
+                <h1 className="text-3xl font-bold text-theme-purple mb-8">Mijn Account</h1>
 
-                                <div className="text-center sm:text-left w-full">
-                                    <h1 className="text-2xl sm:text-3xl font-bold text-theme-purple mb-2">
-                                        {user.first_name && user.last_name
-                                            ? `${user.first_name} ${user.last_name}`
-                                            : user.email || 'User'}
-                                    </h1>
-                                    {(!user.first_name || !user.last_name) && (
-                                        <p className="text-sm text-theme-purple/70 mb-2">
-                                            (Naam niet ingesteld)
-                                        </p>
-                                    )}
-                                    <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
-                                        {user.is_member ? (
-                                            <span className="px-3 py-1 bg-theme-purple-lighter text-theme-purple-darker text-sm font-semibold rounded-full">
-                                                Fontys Student
-                                            </span>
-                                        ) : (
-                                            <span className="px-3 py-1 bg-theme-purple/20 text-theme-purple text-sm font-semibold rounded-full">
-                                                Geregistreerde Gebruiker
-                                            </span>
-                                        )}
-                                        <span className={`px-3 py-1 ${getMembershipStatusDisplay().color} ${getMembershipStatusDisplay().textColor} text-sm font-semibold rounded-full`}>
-                                            {getMembershipStatusDisplay().text}
-                                        </span>
-                                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-min">
+
+                    {/* Profile Tile - Large */}
+                    <div className="md:col-span-2 rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg flex flex-col sm:flex-row items-center sm:items-start gap-6 relative overflow-hidden">
+                        {/* Background decoration */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
+
+                        <div className="relative">
+                            {user.avatar ? (
+                                <img
+                                    src={getImageUrl(user.avatar)}
+                                    alt={`${user.first_name} ${user.last_name}`}
+                                    className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-white/20 shadow-xl"
+                                    onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.src = '/img/avatar-placeholder.svg';
+                                    }}
+                                />
+                            ) : (
+                                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-theme-purple-lighter flex items-center justify-center border-4 border-white/20 shadow-xl">
+                                    <span className="text-3xl sm:text-4xl font-bold text-theme-purple-darker">
+                                        {user.first_name?.[0]}{user.last_name?.[0]}
+                                    </span>
                                 </div>
+                            )}
+                        </div>
+
+                        <div className="flex-1 text-center sm:text-left z-10">
+                            <h2 className="text-2xl sm:text-3xl font-bold text-theme-purple mb-2">
+                                {user.first_name && user.last_name
+                                    ? `${user.first_name} ${user.last_name}`
+                                    : user.email || 'User'}
+                            </h2>
+
+                            <div className="flex flex-wrap justify-center sm:justify-start gap-2 mb-4">
+                                {user.is_member ? (
+                                    <span className="px-3 py-1 bg-theme-purple-lighter text-theme-purple-darker text-xs font-bold uppercase tracking-wider rounded-full">
+                                        Fontys Student
+                                    </span>
+                                ) : (
+                                    <span className="px-3 py-1 bg-theme-purple/10 text-theme-purple text-xs font-bold uppercase tracking-wider rounded-full">
+                                        Geregistreerde Gebruiker
+                                    </span>
+                                )}
+                                <span className={`px-3 py-1 ${membershipStatus.color} ${membershipStatus.textColor} text-xs font-bold uppercase tracking-wider rounded-full`}>
+                                    {membershipStatus.text}
+                                </span>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row lg:flex-col gap-2 w-full lg:w-auto">
-                                {/* Admin Panel Button - Only for Microsoft users */}
+                            <div className="flex flex-wrap justify-center sm:justify-start gap-3">
                                 {user.entra_id && (
                                     <a
                                         href="https://admin.salvemundi.nl"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="px-6 py-2 bg-theme-purple-lighter text-theme-purple-darker rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md text-center w-full"
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-theme-purple font-semibold rounded-xl transition-all text-sm"
                                     >
-                                        Admin Panel
+                                        <Shield className="w-4 h-4" />
+                                        Admin
                                     </a>
                                 )}
-
                                 <button
                                     onClick={handleLogout}
-                                    className="px-6 py-2 bg-gradient-theme text-theme-white rounded-full font-semibold shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl w-full"
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-600 font-semibold rounded-xl transition-all text-sm"
                                 >
+                                    <LogOut className="w-4 h-4" />
                                     Uitloggen
                                 </button>
                             </div>
                         </div>
+                    </div>
 
-                        <div className="pt-6">
-                            <h2 className="text-lg font-semibold text-theme-purple mb-4">Account Informatie</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <p className="text-sm text-theme-purple/70 font-semibold">E-mail</p>
-                                    <p className="font-medium text-theme-purple">{user.email}</p>
-                                </div>
-
-                                {user.fontys_email && (
-                                    <div>
-                                        <p className="text-sm text-theme-purple/70 font-semibold">Fontys E-mail</p>
-                                        <p className="font-medium text-theme-purple">{user.fontys_email}</p>
-                                    </div>
-                                )}
-
-                                {user.phone_number && (
-                                    <div>
-                                        <p className="text-sm text-theme-purple/70 font-semibold">Telefoonnummer</p>
-                                        <p className="font-medium text-theme-purple">{user.phone_number}</p>
-                                    </div>
-                                )}
-
-                                <div>
-                                    <p className="text-sm text-theme-purple/70 font-semibold mb-1">Minecraft Gebruikersnaam</p>
-                                    {isEditingMinecraft ? (
-                                        <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
-                                            <input
-                                                type="text"
-                                                value={minecraftUsername}
-                                                onChange={(e) => setMinecraftUsername(e.target.value)}
-                                                className="flex-1 px-3 py-1 text-sm  rounded-lg focus:outline-none"
-                                                placeholder="Minecraft gebruikersnaam"
-                                            />
-                                            <button
-                                                onClick={handleSaveMinecraftUsername}
-                                                disabled={isSavingMinecraft}
-                                                className="px-3 py-1 text-sm bg-theme-purple-lighter text-theme-purple-darker rounded-lg font-semibold hover:bg-opacity-90 transition-all disabled:opacity-50"
-                                            >
-                                                {isSavingMinecraft ? '...' : '✓'}
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    setIsEditingMinecraft(false);
-                                                    setMinecraftUsername(user.minecraft_username || '');
-                                                }}
-                                                className="px-3 py-1 text-sm bg-gray-200 text-theme-purple rounded-lg font-semibold hover:bg-gray-300 transition-all"
-                                            >
-                                                ✕
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
-                                            <p className="font-medium text-theme-purple text-sm flex-1">
-                                                {user.minecraft_username || 'Niet ingesteld'}
-                                            </p>
-                                            <button
-                                                onClick={() => setIsEditingMinecraft(true)}
-                                                className="px-3 py-1 text-xs bg-theme-purple/20 text-theme-purple rounded-lg font-semibold hover:bg-theme-purple/30 transition-all"
-                                            >
-                                                {user.minecraft_username ? 'Bewerken' : 'Toevoegen'}
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {user.membership_expiry && (
-                                    <div>
-                                        <p className="text-sm text-theme-purple/70 font-semibold">Lidmaatschap Geldig Tot</p>
-                                        <p className="font-medium text-theme-purple">
-                                            {format(new Date(user.membership_expiry), 'd MMMM yyyy')}
-                                        </p>
-                                    </div>
-                                )}
+                    {/* Contact Info Tile */}
+                    <div className="md:col-span-1 rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg flex flex-col justify-center gap-4">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-theme-purple/10 rounded-lg text-theme-purple">
+                                <Mail className="w-5 h-5" />
+                            </div>
+                            <div className="overflow-hidden">
+                                <p className="text-xs text-theme-purple/60 font-bold uppercase">E-mailadres</p>
+                                <p className="text-theme-purple font-medium truncate" title={user.email}>{user.email}</p>
                             </div>
                         </div>
 
-                        {/* Quick Links Section */}
-                        <div className="20 pt-6 mt-6">
-                            <h2 className="text-lg font-semibold text-theme-purple mb-4">Snelle Links</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
-                                <button
-                                    onClick={() => router.push('/account/transacties')}
-                                    className="p-4 rounded-xl hover:bg-theme-purple/10 transition-all text-left w-full"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-3xl">💳</span>
-                                        <div>
-                                            <h3 className="font-semibold text-theme-purple">Transacties</h3>
-                                            <p className="text-sm text-theme-purple/70">Bekijk je betalingsgeschiedenis</p>
-                                        </div>
-                                    </div>
-                                </button>
-
-                                <button
-                                    onClick={() => router.push('/account/whatsapp-groepen')}
-                                    className="p-4  rounded-xl hover:bg-theme-purple/10 transition-all text-left relative w-full"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-3xl">💬</span>
-                                        <div>
-                                            <h3 className="font-semibold text-theme-purple flex items-center gap-2">
-                                                WhatsApp Groepen
-                                                {user.membership_status !== 'active' && (
-                                                    <span className="text-xs px-2 py-0.5 bg-theme-purple/20 rounded-full">🔒</span>
-                                                )}
-                                            </h3>
-                                            <p className="text-sm text-theme-purple/70">
-                                                {user.membership_status === 'active' ? 'Word lid van groepen' : 'Vereist actief lidmaatschap'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </button>
-
-                                <a
-                                    href="https://salvemundi.sharepoint.com"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="p-4  rounded-xl hover:bg-theme-purple/10 transition-all text-left w-full"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-3xl">📁</span>
-                                        <div>
-                                            <h3 className="font-semibold text-theme-purple">SharePoint</h3>
-                                            <p className="text-sm text-theme-purple/70">Open het Salve Mundi archief in een nieuw tabblad</p>
-                                        </div>
-                                    </div>
-                                </a>
+                        {user.fontys_email && (
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-theme-purple/10 rounded-lg text-theme-purple">
+                                    <Mail className="w-5 h-5" />
+                                </div>
+                                <div className="overflow-hidden">
+                                    <p className="text-xs text-theme-purple/60 font-bold uppercase">Fontys E-mail</p>
+                                    <p className="text-theme-purple font-medium truncate" title={user.fontys_email}>{user.fontys_email}</p>
+                                </div>
                             </div>
+                        )}
+
+                        {user.phone_number && (
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-theme-purple/10 rounded-lg text-theme-purple">
+                                    <Phone className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <p className="text-xs text-theme-purple/60 font-bold uppercase">Telefoonnummer</p>
+                                    <p className="text-theme-purple font-medium">{user.phone_number}</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Minecraft Tile */}
+                    <div className="md:col-span-1 rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg">
+                        <div className="flex items-center gap-2 mb-4">
+                            <Gamepad2 className="w-6 h-6 text-theme-purple" />
+                            <h3 className="text-lg font-bold text-theme-purple">Minecraft</h3>
+                        </div>
+
+                        <div className="bg-white/40 rounded-xl p-4">
+                            <p className="text-xs text-theme-purple/60 font-bold uppercase mb-2">Gebruikersnaam</p>
+                            {isEditingMinecraft ? (
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={minecraftUsername}
+                                        onChange={(e) => setMinecraftUsername(e.target.value)}
+                                        className="flex-1 px-3 py-2 text-sm rounded-lg bg-white/80 border-0 focus:ring-2 focus:ring-theme-purple outline-none text-theme-purple"
+                                        placeholder="Username"
+                                    />
+                                    <button
+                                        onClick={handleSaveMinecraftUsername}
+                                        disabled={isSavingMinecraft}
+                                        className="p-2 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition-colors disabled:opacity-50"
+                                    >
+                                        {isSavingMinecraft ? '...' : '✓'}
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="flex justify-between items-center">
+                                    <span className="text-theme-purple font-medium">
+                                        {user.minecraft_username || 'Niet ingesteld'}
+                                    </span>
+                                    <button
+                                        onClick={() => setIsEditingMinecraft(true)}
+                                        className="text-xs px-3 py-1 bg-theme-purple/10 hover:bg-theme-purple/20 text-theme-purple rounded-lg font-semibold transition-colors"
+                                    >
+                                        {user.minecraft_username ? 'Wijzig' : 'Instellen'}
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    {/* Event Signups Section */}
-                    <div className="bg-[var(--bg-card)] rounded-3xl shadow-2xl p-6 sm:p-8 ">
-                        <h2 className="text-2xl font-bold text-theme-purple mb-6">Mijn Evenement Inschrijvingen</h2>
+                    {/* Quick Links Tile */}
+                    <div className="md:col-span-2 rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg">
+                        <h3 className="text-lg font-bold text-theme-purple mb-4">Snelle Links</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <button
+                                onClick={() => router.push('/account/transacties')}
+                                className="group flex flex-col items-center justify-center p-4 bg-white/40 hover:bg-white/60 rounded-xl transition-all text-center gap-2"
+                            >
+                                <div className="p-3 bg-theme-purple/10 rounded-full text-theme-purple group-hover:scale-110 transition-transform">
+                                    <CreditCard className="w-6 h-6" />
+                                </div>
+                                <span className="font-semibold text-theme-purple text-sm">Transacties</span>
+                            </button>
+
+                            <button
+                                onClick={() => router.push('/account/whatsapp-groepen')}
+                                className="group flex flex-col items-center justify-center p-4 bg-white/40 hover:bg-white/60 rounded-xl transition-all text-center gap-2 relative"
+                            >
+                                <div className="p-3 bg-theme-purple/10 rounded-full text-theme-purple group-hover:scale-110 transition-transform">
+                                    <MessageCircle className="w-6 h-6" />
+                                </div>
+                                <span className="font-semibold text-theme-purple text-sm flex items-center gap-1">
+                                    WhatsApp
+                                    {user.membership_status !== 'active' && <Lock className="w-3 h-3 text-theme-purple/50" />}
+                                </span>
+                            </button>
+
+                            <a
+                                href="https://salvemundi.sharepoint.com"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="group flex flex-col items-center justify-center p-4 bg-white/40 hover:bg-white/60 rounded-xl transition-all text-center gap-2"
+                            >
+                                <div className="p-3 bg-theme-purple/10 rounded-full text-theme-purple group-hover:scale-110 transition-transform">
+                                    <FileText className="w-6 h-6" />
+                                </div>
+                                <span className="font-semibold text-theme-purple text-sm flex items-center gap-1">
+                                    SharePoint
+                                    <ExternalLink className="w-3 h-3 text-theme-purple/50" />
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+
+                    {/* Event Signups Tile - Full Width */}
+                    <div className="md:col-span-3 rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 sm:p-8 shadow-lg">
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-theme-purple/10 rounded-xl text-theme-purple">
+                                    <Calendar className="w-6 h-6" />
+                                </div>
+                                <h2 className="text-xl font-bold text-theme-purple">Mijn Inschrijvingen</h2>
+                            </div>
+                            <button
+                                onClick={() => router.push('/activiteiten')}
+                                className="text-sm font-semibold text-theme-purple hover:text-theme-purple-dark transition-colors flex items-center gap-1"
+                            >
+                                Bekijk agenda <ChevronRight className="w-4 h-4" />
+                            </button>
+                        </div>
 
                         {isLoading ? (
                             <div className="text-center py-12">
-                                <div className="text-theme-purple">Je inschrijvingen worden geladen...</div>
+                                <div className="animate-spin w-8 h-8 border-4 border-theme-purple/20 border-t-theme-purple rounded-full mx-auto mb-4" />
+                                <div className="text-theme-purple/60">Inschrijvingen laden...</div>
                             </div>
                         ) : eventSignups.length === 0 ? (
-                            <div className="text-center py-12">
-                                <div className="text-theme-purple mb-4">Je hebt je nog niet ingeschreven voor evenementen.</div>
+                            <div className="text-center py-12 bg-white/30 rounded-2xl border-2 border-dashed border-theme-purple/10">
+                                <p className="text-theme-purple font-medium mb-2">Je hebt je nog niet ingeschreven voor evenementen.</p>
                                 <button
                                     onClick={() => router.push('/activiteiten')}
-                                    className="px-6 py-3 bg-gradient-theme text-theme-white rounded-full font-semibold shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl"
+                                    className="px-6 py-2 bg-theme-purple text-white rounded-full font-semibold shadow-lg shadow-theme-purple/20 transition-transform hover:-translate-y-0.5 hover:shadow-xl text-sm"
                                 >
-                                    Bekijk Evenementen
+                                    Naar evenementen
                                 </button>
                             </div>
                         ) : (
-                            <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {eventSignups.map((signup) => (
                                     <div
                                         key={signup.id}
-                                        className="flex flex-col sm:flex-row sm:items-center gap-4 p-4  rounded-xl transition-all hover:shadow-md"
+                                        onClick={() => router.push('/activiteiten')}
+                                        className="group flex gap-4 p-4 bg-white/40 hover:bg-white/60 rounded-2xl transition-all cursor-pointer border border-transparent hover:border-theme-purple/10"
                                     >
-                                        {signup.event_id.image ? (
-                                            <img
-                                                src={getImageUrl(signup.event_id.image)}
-                                                alt={signup.event_id.name}
-                                                className="w-24 h-24 rounded-xl object-cover "
-                                                onError={(e) => {
-                                                    const target = e.target as HTMLImageElement;
-                                                    target.src = '/img/placeholder.svg';
-                                                }}
-                                            />
-                                        ) : (
-                                            <div className="w-24 h-24 rounded-xl bg-theme-purple-lighter flex items-center justify-center ">
-                                                <span className="text-theme-purple-darker text-2xl">📅</span>
-                                            </div>
-                                        )}
-
-                                        <div className="flex-1 w-full">
-                                            <h3 className="text-lg font-semibold text-theme-purple mb-1">
-                                                {signup.event_id.name}
-                                            </h3>
-                                            <p className="text-sm text-theme-purple/70 mb-1">
-                                                Evenement Datum: {format(new Date(signup.event_id.event_date), 'd MMMM yyyy')}
-                                            </p>
-                                            {signup.event_id.contact_name && (
-                                                <p className="text-sm text-theme-purple/70 mb-1">
-                                                    Contact: {signup.event_id.contact_name}
-                                                </p>
+                                        <div className="shrink-0">
+                                            {signup.event_id.image ? (
+                                                <img
+                                                    src={getImageUrl(signup.event_id.image)}
+                                                    alt={signup.event_id.name}
+                                                    className="w-20 h-20 rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform duration-300"
+                                                    onError={(e) => {
+                                                        const target = e.target as HTMLImageElement;
+                                                        target.src = '/img/placeholder.svg';
+                                                    }}
+                                                />
+                                            ) : (
+                                                <div className="w-20 h-20 rounded-xl bg-theme-purple/10 flex items-center justify-center text-theme-purple group-hover:scale-105 transition-transform duration-300">
+                                                    <Calendar className="w-8 h-8" />
+                                                </div>
                                             )}
-                                            <p className="text-xs text-theme-purple/50">
-                                                Ingeschreven op: {format(new Date(signup.created_at), 'd MMMM yyyy')}
-                                            </p>
                                         </div>
 
-                                        <div className="w-full sm:w-auto">
-                                            <button
-                                                onClick={() => router.push('/activiteiten')}
-                                                className="w-full px-4 py-2 text-theme-purple  rounded-full font-semibold hover:bg-gradient-theme hover:text-theme-white transition-all"
-                                            >
-                                                Bekijk Details
-                                            </button>
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="text-lg font-bold text-theme-purple truncate group-hover:text-theme-purple-dark transition-colors">
+                                                {signup.event_id.name}
+                                            </h3>
+                                            <div className="space-y-1 mt-1">
+                                                <p className="text-sm text-theme-purple/70 flex items-center gap-2">
+                                                    <Calendar className="w-3 h-3" />
+                                                    {format(new Date(signup.event_id.event_date), 'd MMMM yyyy')}
+                                                </p>
+                                                <p className="text-xs text-theme-purple/50">
+                                                    Ingeschreven op: {format(new Date(signup.created_at), 'd MMM yyyy')}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-center text-theme-purple/30 group-hover:translate-x-1 transition-transform">
+                                            <ChevronRight className="w-5 h-5" />
                                         </div>
                                     </div>
                                 ))}
@@ -399,7 +407,6 @@ export default function AccountPage() {
                     </div>
                 </div>
             </div>
-
         </div>
     );
 }
