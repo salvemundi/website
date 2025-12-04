@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import PageHeader from '@/shared/components/ui/PageHeader';
+import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { nl } from 'date-fns/locale';
-import { sendMembershipSignupEmail } from '@/lib/services/email-service';
+import { sendMembershipSignupEmail } from '@/shared/lib/services/email-service';
 
 const DeletionTimer = ({ expiryDateStr }: { expiryDateStr: string }) => {
     const [timeLeft, setTimeLeft] = useState<{ days: number, hours: number, minutes: number } | null>(null);
@@ -39,12 +39,12 @@ const DeletionTimer = ({ expiryDateStr }: { expiryDateStr: string }) => {
     if (!timeLeft || (timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0)) return null;
 
     return (
-        <div className="bg-paars/10 rounded-lg p-4 mb-6 text-center">
-            <p className="text-paars font-bold uppercase text-sm mb-1">⚠️ Account Verwijdering (AVG)</p>
-            <p className="text-beige text-sm mb-2">
+        <div className="bg-theme-purple/10 rounded-lg p-4 mb-6 text-center">
+            <p className="text-theme-purple font-bold uppercase text-sm mb-1">⚠️ Account Verwijdering (AVG)</p>
+            <p className="text-theme-white text-sm mb-2">
                 Je lidmaatschap is verlopen. Als je niet verlengt, worden je gegevens permanent verwijderd over:
             </p>
-            <div className="text-2xl font-mono font-bold text-oranje">
+            <div className="text-2xl font-mono font-bold text-theme-purple-lighter">
                 {timeLeft.days}d {timeLeft.hours}u {timeLeft.minutes}m
             </div>
         </div>
@@ -163,54 +163,54 @@ export default function SignUp() {
 
             <main className="">
                 <div className="flex flex-col sm:flex-row gap-6 p-6 sm:p-10">
-                    <section className="w-full sm:w-1/2 bg-paars rounded-3xl shadow-lg p-6 sm:p-8">
-                        <h1 className="text-3xl font-bold text-geel mb-6">
+                    <section className="w-full sm:w-1/2 bg-gradient-theme rounded-3xl shadow-lg p-6 sm:p-8">
+                        <h1 className="text-3xl font-bold text-theme-white mb-6">
                             {formTitle}
                         </h1>
 
                         {isValidMember && (
-                            <div className="text-beige">
+                            <div className="text-theme-white">
                                 <div className="bg-green-500/20 p-4 rounded-lg mb-6">
                                     <p className="font-bold text-green-400 text-lg mb-1">✓ Actief Lid</p>
-                                    <p className="text-sm">Je bent een volwaardig lid van Salve Mundi.</p>
+                                    <p className="text-sm text-theme-white/90">Je bent een volwaardig lid van Salve Mundi.</p>
                                 </div>
 
                                 <p className="mb-4 text-lg">
-                                    Welkom terug, <span className="font-bold text-geel">{user.first_name}</span>!
+                                    Welkom terug, <span className="font-bold text-theme-purple-lighter">{user.first_name}</span>!
                                 </p>
 
-                                <div className="bg-white/10 p-4 rounded-lg mb-6">
-                                    <p className="text-sm text-geel font-semibold uppercase tracking-wide">Jouw gegevens</p>
-                                    <p className="text-white font-medium">{user.first_name} {user.last_name}</p>
-                                    <p className="text-white/80 text-sm">{user.email}</p>
+                                <div className="bg-theme-white/10 p-4 rounded-lg mb-6">
+                                    <p className="text-sm text-theme-purple-lighter font-semibold uppercase tracking-wide">Jouw gegevens</p>
+                                    <p className="text-theme-white font-medium">{user.first_name} {user.last_name}</p>
+                                    <p className="text-theme-white/80 text-sm">{user.email}</p>
                                     {user.membership_expiry && (
-                                        <p className="text-white/60 text-xs mt-2">
+                                        <p className="text-theme-white/60 text-xs mt-2">
                                             Geldig tot: {new Date(user.membership_expiry).toLocaleDateString('nl-NL')}
                                         </p>
                                     )}
                                 </div>
 
-                                <p className="text-sm text-beige/60 italic">
+                                <p className="text-sm text-theme-white/60 italic">
                                     Je hoeft op dit moment geen actie te ondernemen.
                                 </p>
                             </div>
                         )}
 
                         {isExpired && (
-                            <div className="text-beige">
+                            <div className="text-theme-white">
                                 {user.membership_expiry && <DeletionTimer expiryDateStr={user.membership_expiry} />}
 
                                 <p className="mb-4 text-lg">
-                                    Welkom terug, <span className="font-bold text-geel">{user.first_name}</span>.
+                                    Welkom terug, <span className="font-bold text-theme-purple-lighter">{user.first_name}</span>.
                                 </p>
-                                <p className="mb-6">
+                                <p className="mb-6 text-theme-white/90">
                                     Je lidmaatschap is verlopen. Om weer toegang te krijgen tot alle activiteiten en je account te behouden, vragen we je de jaarlijkse contributie te voldoen.
                                 </p>
 
                                 <button
                                     onClick={() => { setIsProcessing(true); initiateContributionPayment(); }}
                                     disabled={isProcessing}
-                                    className="w-full bg-gradient-to-r from-oranje to-paars text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-oranje/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="w-full bg-theme-purple-lighter text-theme-purple-darker font-bold py-3 px-6 rounded-xl shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isProcessing ? 'Verwerken...' : 'Nu Verlengen (€20,00)'}
                                 </button>
@@ -219,32 +219,32 @@ export default function SignUp() {
 
                         {isGuest && (
                             <form className="flex text-start flex-col gap-4" onSubmit={handleSubmit}>
-                                <p className="text-beige mb-2">Vul je gegevens in om een account aan te maken en lid te worden.</p>
+                                <p className="text-theme-white mb-2">Vul je gegevens in om een account aan te maken en lid te worden.</p>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <label className="font-semibold text-geel">
+                                    <label className="font-semibold text-theme-white">
                                         Voornaam
-                                        <input type="text" name="voornaam" value={form.voornaam} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-beige text-paars" />
+                                        <input type="text" name="voornaam" value={form.voornaam} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple" />
                                     </label>
-                                    <label className="font-semibold text-geel">
+                                    <label className="font-semibold text-theme-white">
                                         Achternaam
-                                        <input type="text" name="achternaam" value={form.achternaam} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-beige text-paars" />
+                                        <input type="text" name="achternaam" value={form.achternaam} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple" />
                                     </label>
                                 </div>
 
-                                <label className="font-semibold text-geel">
+                                <label className="font-semibold text-theme-white">
                                     E-mail
-                                    <input type="email" name="email" value={form.email} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-beige text-paars" />
+                                    <input type="email" name="email" value={form.email} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple" />
                                 </label>
 
-                                <label className="font-semibold text-geel">Geboortedatum</label>
+                                <label className="font-semibold text-theme-white">Geboortedatum</label>
                                 <div className="w-full">
                                     <DatePicker
                                         selected={form.geboortedatum}
                                         onChange={(date) => setForm({ ...form, geboortedatum: date })}
                                         dateFormat="dd-MM-yyyy"
                                         locale={nl}
-                                        className="mt-1 p-2 rounded w-full bg-beige text-paars"
+                                        className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple"
                                         placeholderText="Selecteer datum"
                                         showYearDropdown
                                         scrollableYearDropdown
@@ -252,12 +252,12 @@ export default function SignUp() {
                                     />
                                 </div>
 
-                                <label className="font-semibold text-geel">
+                                <label className="font-semibold text-theme-purple-lighter">
                                     Telefoonnummer
-                                    <input type="tel" name="telefoon" value={form.telefoon} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-beige text-paars" />
+                                    <input type="tel" name="telefoon" value={form.telefoon} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple" />
                                 </label>
 
-                                <button type="submit" disabled={isProcessing} className="bg-gradient-to-r from-oranje to-paars text-white font-bold py-2 px-4 rounded shadow-lg shadow-oranje/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl mt-4 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <button type="submit" disabled={isProcessing} className="bg-theme-white text-theme-purple-darker font-bold py-2 px-4 rounded shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl mt-4 disabled:opacity-50 disabled:cursor-not-allowed">
                                     {isProcessing ? 'Verwerken...' : 'Betalen en Inschrijven (€20,00)'}
                                 </button>
                             </form>
@@ -265,11 +265,11 @@ export default function SignUp() {
                     </section>
 
                     <div className="w-full sm:w-1/2 flex flex-col gap-6">
-                        <div className="w-full text-center bg-paars rounded-3xl p-6">
-                            <h2 className="text-2xl font-bold text-geel mb-2">
+                        <div className="w-full text-center bg-gradient-theme rounded-3xl p-6">
+                            <h2 className="text-2xl font-bold text-theme-white mb-2">
                                 Waarom lid worden?
                             </h2>
-                            <p className="text-lg mb-4 text-beige">
+                            <p className="text-lg mb-4 text-theme-white">
                                 Als lid van Salve Mundi krijg je toegang tot exclusieve
                                 activiteiten, workshops, borrels en nog veel meer! Word vandaag
                                 nog lid en ontdek de wereld van ICT samen met ons.

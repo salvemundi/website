@@ -1,12 +1,12 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import PageHeader from '@/shared/components/ui/PageHeader';
-import BackToTopButton from '@/shared/components/ui/BackToTopButton';
-import { pubCrawlSignupsApi, getImageUrl } from '@/lib/api/salvemundi';
-import { useSalvemundiPubCrawlEvents } from '@/hooks/useSalvemundiApi';
+import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import BackToTopButton from '@/shared/ui/BackToTopButton';
+import { pubCrawlSignupsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
+import { useSalvemundiPubCrawlEvents } from '@/shared/lib/hooks/useSalvemundiApi';
 import { format } from 'date-fns';
-import { sendEventSignupEmail } from '@/lib/services/email-service';
+import { sendEventSignupEmail } from '@/shared/lib/services/email-service';
 
 const ASSOCIATIONS = [
     'Salve Mundi',
@@ -161,21 +161,21 @@ export default function KroegentochtPage() {
                 />
             </div>
 
-            <main className="">
+            <main className="relative overflow-hidden bg-white dark:bg-gray-900">
                 <div className="flex flex-col lg:flex-row gap-6 p-6 sm:p-10">
                     {/* Form Section */}
-                    <section className="w-full lg:w-1/2 bg-paars rounded-3xl shadow-lg p-6 sm:p-8">
-                        <h1 className="text-3xl font-bold text-geel mb-6">
+                    <section className="w-full lg:w-1/2 bg-gradient-theme rounded-3xl shadow-lg p-6 sm:p-8">
+                        <h1 className="text-3xl font-bold text-white mb-6">
                             Inschrijven voor de Kroegentocht
                         </h1>
 
                         {submitted ? (
-                            <div className="text-geel">
+                            <div className="text-white">
                                 <h2 className="text-2xl font-semibold mb-4">✅ Inschrijving Voltooid!</h2>
                                 <p className="text-lg mb-4">
                                     Bedankt voor je inschrijving voor de Kroegentocht!
                                 </p>
-                                <p className="text-beige">
+                                <p className="text-white/90">
                                     Je ontvangt binnenkort een bevestigingsmail met alle details op <strong>{form.email}</strong>.
                                 </p>
                                 <button
@@ -189,7 +189,7 @@ export default function KroegentochtPage() {
                                             amount_tickets: 1,
                                         });
                                     }}
-                                    className="mt-6 bg-oranje text-white font-bold py-2 px-4 rounded hover:bg-geel hover:text-paars transition"
+                                    className="mt-6 bg-white text-theme-purple font-bold py-2 px-4 rounded hover:bg-white/90 transition"
                                 >
                                     Nieuwe inschrijving
                                 </button>
@@ -197,19 +197,19 @@ export default function KroegentochtPage() {
                         ) : (
                             <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
                                 {error && (
-                                    <div className="bg-paars/10 text-paars px-4 py-3 rounded">
+                                    <div className="bg-white/20 text-white px-4 py-3 rounded">
                                         {error}
                                     </div>
                                 )}
 
                                 {!eventsLoading && !canSignUp && (
-                                    <div className="bg-oranje/10 text-beige px-4 py-3 rounded">
+                                    <div className="bg-white/20 text-white px-4 py-3 rounded">
                                         Momenteel is er geen kroegentocht gepland. Houd deze pagina in de gaten voor nieuwe data!
                                     </div>
                                 )}
 
                                 {/* Name */}
-                                <label className="font-semibold text-geel">
+                                <label className="font-semibold text-white">
                                     Naam
                                     <input
                                         type="text"
@@ -218,12 +218,12 @@ export default function KroegentochtPage() {
                                         onChange={handleChange}
                                         required
                                         placeholder="Voor- en achternaam"
-                                        className="mt-1 p-2 rounded w-full bg-beige text-paars"
+                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple"
                                     />
                                 </label>
 
                                 {/* Email */}
-                                <label className="font-semibold text-geel">
+                                <label className="font-semibold text-white">
                                     E-mailadres
                                     <input
                                         type="email"
@@ -232,19 +232,19 @@ export default function KroegentochtPage() {
                                         onChange={handleChange}
                                         required
                                         placeholder="jouw@email.nl"
-                                        className="mt-1 p-2 rounded w-full bg-beige text-paars"
+                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple"
                                     />
                                 </label>
 
                                 {/* Association */}
-                                <label className="font-semibold text-geel">
+                                <label className="font-semibold text-white">
                                     Vereniging
                                     <select
                                         name="association"
                                         value={form.association}
                                         onChange={handleChange}
                                         required
-                                        className="mt-1 p-2 rounded w-full bg-beige text-paars"
+                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple"
                                     >
                                         <option value="">Selecteer een vereniging</option>
                                         {ASSOCIATIONS.map((assoc) => (
@@ -257,7 +257,7 @@ export default function KroegentochtPage() {
 
                                 {/* Custom Association */}
                                 {form.association === 'Anders' && (
-                                    <label className="font-semibold text-geel">
+                                    <label className="font-semibold text-white">
                                         Andere vereniging
                                         <input
                                             type="text"
@@ -266,13 +266,13 @@ export default function KroegentochtPage() {
                                             onChange={handleChange}
                                             required
                                             placeholder="Naam van je vereniging"
-                                            className="mt-1 p-2 rounded w-full bg-beige text-paars"
+                                            className="mt-1 p-2 rounded w-full bg-white text-theme-purple"
                                         />
                                     </label>
                                 )}
 
                                 {/* Amount of Tickets */}
-                                <label className="font-semibold text-geel">
+                                <label className="font-semibold text-white">
                                     Aantal tickets
                                     <input
                                         type="number"
@@ -282,9 +282,9 @@ export default function KroegentochtPage() {
                                         required
                                         min="1"
                                         max="10"
-                                        className="mt-1 p-2 rounded w-full bg-beige text-paars"
+                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple"
                                     />
-                                    <span className="text-sm text-beige mt-1 block">
+                                    <span className="text-sm text-white/80 mt-1 block">
                                         Maximum 10 tickets per inschrijving
                                     </span>
                                 </label>
@@ -292,7 +292,7 @@ export default function KroegentochtPage() {
                                 <button
                                     type="submit"
                                     disabled={loading || !canSignUp}
-                                    className="bg-gradient-to-r from-oranje to-paars text-white font-bold py-3 px-6 rounded shadow-lg shadow-oranje/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="bg-white text-theme-purple font-bold py-3 px-6 rounded shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {loading
                                         ? 'Bezig met inschrijven...'
@@ -307,11 +307,11 @@ export default function KroegentochtPage() {
                     {/* Info Section */}
                     <div className="w-full lg:w-1/2 flex flex-col gap-6">
                         {/* Event Info */}
-                        <div className="bg-paars rounded-3xl p-6 shadow-lg">
-                            <h2 className="text-2xl font-bold text-geel mb-4">
+                        <div className="bg-gradient-theme rounded-3xl p-6 shadow-lg">
+                            <h2 className="text-2xl font-bold text-white mb-4">
                                 🍻 Over de Kroegentocht
                             </h2>
-                            <div className="text-beige space-y-3">
+                            <div className="text-white space-y-3">
                                 {eventsLoading ? (
                                     <p>Evenementomschrijving wordt geladen...</p>
                                 ) : nextEvent?.description ? (
@@ -333,14 +333,14 @@ export default function KroegentochtPage() {
                         </div>
 
                         {/* Details */}
-                        <div className="bg-paars rounded-3xl p-6 shadow-lg">
-                            <h2 className="text-2xl font-bold text-geel mb-4">
+                        <div className="bg-gradient-theme rounded-3xl p-6 shadow-lg">
+                            <h2 className="text-2xl font-bold text-white mb-4">
                                 📅 Evenement Details
                             </h2>
                             {eventsLoading ? (
-                                <div className="text-beige">Evenementgegevens worden geladen...</div>
+                                <div className="text-white">Evenementgegevens worden geladen...</div>
                             ) : nextEvent ? (
-                                <div className="text-beige space-y-4">
+                                <div className="text-white space-y-4">
                                     {nextEvent.image && (
                                         <img
                                             src={getImageUrl(nextEvent.image)}
@@ -355,61 +355,61 @@ export default function KroegentochtPage() {
 
                                     <div className="space-y-2">
                                         <div className="flex items-start gap-2">
-                                            <span className="font-semibold text-geel">Evenement:</span>
+                                            <span className="font-semibold text-white/80">Evenement:</span>
                                             <span>{nextEvent.name}</span>
                                         </div>
                                         <div className="flex items-start gap-2">
-                                            <span className="font-semibold text-geel">Datum:</span>
+                                            <span className="font-semibold text-white/80">Datum:</span>
                                             <span>{formattedNextEventDate ?? 'Nog te bepalen'}</span>
                                         </div>
                                         <div className="flex items-start gap-2">
-                                            <span className="font-semibold text-geel">Organisatie:</span>
+                                            <span className="font-semibold text-white/80">Organisatie:</span>
                                             <span>{nextEvent.association || 'Salve Mundi'}</span>
                                         </div>
                                         <div className="flex items-start gap-2">
-                                            <span className="font-semibold text-geel">Contact:</span>
-                                            <a href={`mailto:${nextEvent.email}`} className="underline text-geel break-all">
+                                            <span className="font-semibold text-white/80">Contact:</span>
+                                            <a href={`mailto:${nextEvent.email}`} className="underline text-white break-all">
                                                 {nextEvent.email}
                                             </a>
                                         </div>
                                         <div className="flex items-start gap-2">
-                                            <span className="font-semibold text-geel">Locatie:</span>
+                                            <span className="font-semibold text-white/80">Locatie:</span>
                                             <span>Verschillende locaties in Eindhoven</span>
                                         </div>
                                     </div>
                                 </div>
                             ) : (
-                                <div className="text-beige">
+                                <div className="text-white">
                                     Er is momenteel geen kroegentocht gepland. Houd onze website in de gaten voor toekomstige aankondigingen!
                                 </div>
                             )}
                         </div>
 
                         {/* Important Info */}
-                        <div className="bg-paars rounded-3xl p-6 shadow-lg">
-                            <h2 className="text-2xl font-bold text-geel mb-4">
+                        <div className="bg-gradient-theme rounded-3xl p-6 shadow-lg">
+                            <h2 className="text-2xl font-bold text-white mb-4">
                                 ℹ️ Belangrijke Informatie
                             </h2>
-                            <div className="text-beige space-y-2">
+                            <div className="text-white space-y-2">
                                 <p className="flex items-start gap-2">
-                                    <span className="text-geel">•</span>
+                                    <span className="text-white/80">•</span>
                                     <span>Je hoeft <strong>geen lid</strong> te zijn om deel te nemen</span>
                                 </p>
                                 <p className="flex items-start gap-2">
-                                    <span className="text-geel">•</span>
+                                    <span className="text-white/80">•</span>
                                     <span>Je ontvangt een bevestigingsmail na inschrijving</span>
                                 </p>
                                 <p className="flex items-start gap-2">
-                                    <span className="text-geel">•</span>
+                                    <span className="text-white/80">•</span>
                                     <span>Minimumleeftijd: 18 jaar</span>
                                 </p>
                                 <p className="flex items-start gap-2">
-                                    <span className="text-geel">•</span>
+                                    <span className="text-white/80">•</span>
                                     <span>Tickets zijn overdraagbaar</span>
                                 </p>
                                 <p className="flex items-start gap-2">
-                                    <span className="text-geel">•</span>
-                                    <span>Bij vragen? Neem contact op via <a href="/contact" className="text-geel underline">onze contactpagina</a></span>
+                                    <span className="text-white/80">•</span>
+                                    <span>Bij vragen? Neem contact op via <a href="/contact" className="text-white underline">onze contactpagina</a></span>
                                 </p>
                             </div>
                         </div>

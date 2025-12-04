@@ -3,8 +3,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 import { AuthProvider } from '@/features/auth/providers/auth-provider';
-import { PWAProvider } from '@/shared/contexts/PWAContext';
-import { MainLayout } from '@/shared/components/layout/MainLayout';
+import { PWAProvider } from '@/features/pwa/lib/PWAContext';
+import { MainLayout } from '@/shared/ui/MainLayout';
 
 import { ThemeProvider } from 'next-themes';
 

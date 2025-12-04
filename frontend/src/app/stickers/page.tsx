@@ -3,13 +3,13 @@
 import React, { useState, useMemo, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { stickersApi, calculateStickerStats, geocodeAddress, reverseGeocode, CreateStickerData, Sticker } from '@/lib/api/salvemundi';
+import { stickersApi, calculateStickerStats, geocodeAddress, reverseGeocode, CreateStickerData, Sticker } from '@/shared/lib/api/salvemundi';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { MapPin, Globe, Award, TrendingUp, Plus, X, Search, Loader2 } from 'lucide-react';
-import PageHeader from '@/shared/components/ui/PageHeader';
+import PageHeader from '@/widgets/page-header/ui/PageHeader';
 
 // Dynamically import StickerMap with ssr: false
-const StickerMap = dynamic(() => import('@/shared/components/stickers/StickerMap'), {
+const StickerMap = dynamic(() => import('@/entities/sticker/ui/StickerMap'), {
     ssr: false,
     loading: () => (
         <div className="h-[600px] flex items-center justify-center bg-gray-100 rounded-lg">
@@ -412,7 +412,7 @@ function StickersContent() {
                                         value={searchAddress}
                                         onChange={(e) => setSearchAddress(e.target.value)}
                                         placeholder="Enter an address, city, or landmark..."
-                                        className="flex-1 px-4 py-2 rounded-lg focus:ring-2 focus:ring-paars focus:border-transparent"
+                                        className="flex-1 px-4 py-2 rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                         onKeyPress={(e) => {
                                             if (e.key === 'Enter') {
                                                 e.preventDefault();
@@ -424,7 +424,7 @@ function StickersContent() {
                                         type="button"
                                         onClick={handleSearchAddress}
                                         disabled={isGeocoding}
-                                        className="bg-paars hover:bg-paars/90 text-white px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
+                                        className="bg-gradient-theme hover:opacity-90 text-theme-white px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
                                     >
                                         {isGeocoding ? (
                                             <Loader2 className="w-5 h-5 animate-spin" />

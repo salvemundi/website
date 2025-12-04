@@ -23,21 +23,21 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-beige">
+        <div className="min-h-screen bg-[var(--bg-main)]">
 
             <div className="container mx-auto px-4 py-16">
                 <div className="max-w-md mx-auto">
-                    <div className="bg-white rounded-3xl shadow-2xl p-8">
-                        <h1 className="text-3xl font-bold text-paars mb-2 text-center">
+                    <div className="bg-[var(--bg-card)] rounded-3xl shadow-2xl p-8">
+                        <h1 className="text-3xl font-bold text-gradient mb-2 text-center">
                             Welcome Back
                         </h1>
-                        <p className="text-gray-600 text-center mb-8">
+                        <p className="text-theme-muted text-center mb-8">
                             Login to your account
                         </p>
 
                         {error && (
-                            <div className="mb-6 p-4 bg-paars/5 rounded-lg">
-                                <p className="text-paars text-sm">{error}</p>
+                            <div className="mb-6 p-4 bg-theme-purple/5 rounded-lg">
+                                <p className="text-theme-purple text-sm">{error}</p>
                             </div>
                         )}
 
@@ -45,7 +45,7 @@ export default function LoginPage() {
                         <button
                             onClick={handleMicrosoftLogin}
                             disabled={isLoading}
-                            className="w-full mb-6 flex items-center justify-center gap-3 px-6 py-3 bg-gradient-to-r from-oranje to-paars text-white rounded-full shadow-lg shadow-oranje/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                            className="w-full mb-6 flex items-center justify-center gap-3 px-6 py-3 bg-gradient-theme text-theme-white rounded-full shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
                         >
                             <svg className="w-5 h-5" viewBox="0 0 23 23" fill="none">
                                 <path fill="#f25022" d="M0 0h11v11H0z" />
