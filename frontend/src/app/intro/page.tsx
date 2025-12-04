@@ -2,11 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import PageHeader from '@/shared/components/ui/PageHeader';
-import BackToTopButton from '@/shared/components/ui/BackToTopButton';
-import { introSignupsApi } from '@/lib/api/salvemundi';
-import { sendIntroSignupEmail } from '@/lib/services/email-service';
-import { useSalvemundiSiteSettings } from '@/hooks/useSalvemundiApi';
+import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import BackToTopButton from '@/shared/ui/BackToTopButton';
+import { introSignupsApi } from '@/shared/lib/api/salvemundi';
+import { sendIntroSignupEmail } from '@/shared/lib/services/email-service';
+import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 
 export default function IntroPage() {
     const [form, setForm] = useState({

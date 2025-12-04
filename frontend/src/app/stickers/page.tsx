@@ -3,13 +3,13 @@
 import React, { useState, useMemo, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { stickersApi, calculateStickerStats, geocodeAddress, reverseGeocode, CreateStickerData, Sticker } from '@/lib/api/salvemundi';
+import { stickersApi, calculateStickerStats, geocodeAddress, reverseGeocode, CreateStickerData, Sticker } from '@/shared/lib/api/salvemundi';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { MapPin, Globe, Award, TrendingUp, Plus, X, Search, Loader2 } from 'lucide-react';
-import PageHeader from '@/shared/components/ui/PageHeader';
+import PageHeader from '@/widgets/page-header/ui/PageHeader';
 
 // Dynamically import StickerMap with ssr: false
-const StickerMap = dynamic(() => import('@/shared/components/stickers/StickerMap'), {
+const StickerMap = dynamic(() => import('@/entities/sticker/ui/StickerMap'), {
     ssr: false,
     loading: () => (
         <div className="h-[600px] flex items-center justify-center bg-gray-100 rounded-lg">

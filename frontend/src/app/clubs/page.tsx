@@ -1,9 +1,9 @@
 'use client';
 
 
-import PageHeader from '@/shared/components/ui/PageHeader';
-import { useSalvemundiClubs } from '@/hooks/useSalvemundiApi';
-import { getImageUrl } from '@/lib/api/salvemundi';
+import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import { useSalvemundiClubs } from '@/shared/lib/hooks/useSalvemundiApi';
+import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { MessageSquare, Globe, Users } from 'lucide-react';
 
 export default function ClubsPage() {

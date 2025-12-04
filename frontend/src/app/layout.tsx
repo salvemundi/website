@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { RootProviders } from './providers';
-import Header from '@/shared/components/sections/Header';
-import Footer from '@/shared/components/sections/Footer';
+import Header from '@/widgets/header/ui/Header';
+import Footer from '@/widgets/footer/ui/Footer';
 
 export const metadata: Metadata = {
     title: 'Salve Mundi - Studievereniging Fontys ICT Eindhoven',

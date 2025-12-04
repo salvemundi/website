@@ -3,9 +3,9 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import { useSalvemundiWhatsAppGroups } from '@/hooks/useSalvemundiApi';
-import PageHeader from '@/shared/components/ui/PageHeader';
-import { WhatsAppGroup } from '@/lib/api/salvemundi';
+import { useSalvemundiWhatsAppGroups } from '@/shared/lib/hooks/useSalvemundiApi';
+import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import { WhatsAppGroup } from '@/shared/lib/api/salvemundi';
 
 export default function WhatsAppGroupsPage() {
     const router = useRouter();

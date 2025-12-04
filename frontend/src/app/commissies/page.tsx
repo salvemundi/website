@@ -1,12 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import PageHeader from '@/shared/components/ui/PageHeader';
-import { useSalvemundiCommitteesWithMembers } from '@/hooks/useSalvemundiApi';
-import { getImageUrl } from '@/lib/api/salvemundi';
-import { slugify } from '@/lib/utils/slug';
+import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import { useSalvemundiCommitteesWithMembers } from '@/shared/lib/hooks/useSalvemundiApi';
+import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { slugify } from '@/shared/lib/utils/slug';
 import { Users } from 'lucide-react';
-import CommitteeImage from '@/shared/components/ui/CommitteeImage';
+import CommitteeImage from '@/shared/ui/CommitteeImage';
 
 // Helper function to clean committee names
 function cleanCommitteeName(name: string): string {
