@@ -251,13 +251,13 @@ export default function EventDetailPage() {
             </PageHeader>
 
             <main className="mx-auto max-w-app px-4 py-8 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-fr">
+                {/* Two equal columns on md+: form (left) and compact info card (right); mobile stays stacked */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
 
-
-                    {/* Signup Form - Tall Tile (Right column) */}
-                    <div className="md:col-span-1 md:row-span-3 rounded-3xl bg-white/90 dark:bg-surface-dark/90 p-6 shadow-lg flex flex-col h-full">
+                    {/* Signup Form / Status - left column */}
+                    <div className="rounded-3xl bg-white/90 dark:bg-surface-dark/90 p-6 shadow-lg flex flex-col md:h-full">
                         <div className="flex-grow">
-                            {isPaidAndHasQR ? (
+                                {isPaidAndHasQR ? (
                                 // Digital ticket display case
                                 <div className="space-y-6 text-slate-900 dark:text-white h-full flex flex-col justify-center">
                                     <h3 className="text-2xl font-extrabold text-paars text-center">🎉 Inschrijving Definitief!</h3>
@@ -299,12 +299,12 @@ export default function EventDetailPage() {
                                 </div>
                             ) : (
                                 // Signup Form
-                                <div className="h-full flex flex-col">
+                                <div className="flex flex-col">
                                     <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                                         <Users className="h-6 w-6 text-paars" />
                                         Inschrijven
                                     </h3>
-                                    <form onSubmit={handleSubmit} className="space-y-4 flex-grow flex flex-col justify-center">
+                                    <form onSubmit={handleSubmit} className="space-y-4 flex flex-col">
                                         {/* Name */}
                                         <div>
                                             <label htmlFor="name" className="block text-slate-700 dark:text-white font-semibold mb-2">Naam *</label>
@@ -351,7 +351,7 @@ export default function EventDetailPage() {
                                         </div>
 
                                         {/* Submit Button */}
-                                        <div className="pt-6 mt-auto">
+                                        <div className="pt-6">
                                             <button
                                                 type="submit"
                                                 disabled={isSubmitting}
@@ -374,79 +374,69 @@ export default function EventDetailPage() {
                         </div>
                     </div>
 
-                    {/* Date & Time - Small Tile */}
-                    <div className="rounded-3xl bg-white/90 dark:bg-surface-dark/90 p-6 shadow-lg flex flex-col items-center justify-center text-center gap-3 hover:scale-[1.02] transition-transform">
-                        <div className="h-12 w-12 rounded-2xl bg-paars/10 flex items-center justify-center text-paars">
-                            <CalendarClock className="h-6 w-6" />
+                    {/* Right column: compact info card + description stacked */}
+                    <div className="flex flex-col gap-6 md:col-span-1">
+                        <div className="rounded-3xl bg-white/90 dark:bg-surface-dark/90 p-6 shadow-lg hover:scale-[1.01] transition-transform md:h-full md:self-stretch flex flex-col justify-center">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                                <div className="flex items-start gap-4">
+                                    <div className="h-10 w-10 rounded-xl bg-paars/10 flex items-center justify-center text-paars mt-1">
+                                        <CalendarClock className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/70 font-bold">Datum</p>
+                                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{formattedDate}</p>
+                                        {formattedTime && <p className="text-xs text-slate-600 dark:text-white/80">{formattedTime}</p>}
+                                    </div>
+                                </div>
+
+                                <div className="flex items-start gap-4">
+                                    <div className="h-10 w-10 rounded-xl bg-paars/10 flex items-center justify-center text-paars mt-1">
+                                        <Euro className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/70 font-bold">Prijs</p>
+                                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{displayPrice}</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-start gap-4">
+                                    <div className="h-10 w-10 rounded-xl bg-paars/10 flex items-center justify-center text-paars mt-1">
+                                        <UsersIcon className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/70 font-bold">Organisatie</p>
+                                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{event.committee_name ? event.committee_name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim() : '—'}</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-start gap-4">
+                                    <div className="h-10 w-10 rounded-xl bg-paars/10 flex items-center justify-center text-paars mt-1">
+                                        <Mail className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/70 font-bold">Contact</p>
+                                        {event.contact_name && <p className="text-sm font-semibold text-slate-900 dark:text-white">{event.contact_name}</p>}
+                                        {committeeEmail && <a href={`mailto:${committeeEmail}`} className="text-sm text-paars hover:underline break-all">{committeeEmail}</a>}
+                                        {!event.contact_name && !committeeEmail && <p className="text-sm text-slate-500">—</p>}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/70 font-bold">Datum & Tijd</p>
-                            <p className="text-lg font-bold text-slate-900 dark:text-white">{formattedDate}</p>
-                            <p className="text-sm text-slate-600 dark:text-white/80">{formattedTime}</p>
-                        </div>
+
+                        {/* Description under details */}
+                        {event.description && (
+                            <div className="rounded-3xl bg-white/90 dark:bg-surface-dark/90 p-6 shadow-lg flex flex-col">
+                                <h2 className="mb-4 text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <Info className="h-6 w-6 text-paars" />
+                                    Over dit evenement
+                                </h2>
+                                <div
+                                    className="prose dark:prose-invert max-w-none text-slate-700 dark:text-ink-muted"
+                                    dangerouslySetInnerHTML={{ __html: event.description }}
+                                />
+                            </div>
+                        )}
                     </div>
-
-                    {/* Price - Small Tile */}
-                    <div className="rounded-3xl bg-white/90 dark:bg-surface-dark/90 p-6 shadow-lg flex flex-col items-center justify-center text-center gap-3 hover:scale-[1.02] transition-transform">
-                        <div className="h-12 w-12 rounded-2xl bg-paars/10 flex items-center justify-center text-paars">
-                            <Euro className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/70 font-bold">Prijs</p>
-                            <p className="text-lg font-bold text-slate-900 dark:text-white">{displayPrice}</p>
-                        </div>
-                    </div>
-
-                    {/* Committee - Small Tile */}
-                    {event.committee_name && (
-                        <div className="rounded-3xl bg-white/90 dark:bg-surface-dark/90 p-6 shadow-lg flex flex-col items-center justify-center text-center gap-3 hover:scale-[1.02] transition-transform">
-                            <div className="h-12 w-12 rounded-2xl bg-paars/10 flex items-center justify-center text-paars">
-                                <UsersIcon className="h-6 w-6" />
-                            </div>
-                            <div>
-                                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/70 font-bold">Organisatie</p>
-                                <p className="text-lg font-bold text-slate-900 dark:text-white">
-                                    {event.committee_name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim()}
-                                </p>
-                            </div>
-                        </div>
-                    )}
-
-
-
-                    {/* Contact - Small Tile */}
-                    {(event.contact_name || committeeEmail) && (
-                        <div className="rounded-3xl bg-white/90 dark:bg-surface-dark/90 p-6 shadow-lg flex flex-col items-center justify-center text-center gap-3 hover:scale-[1.02] transition-transform">
-                            <div className="h-12 w-12 rounded-2xl bg-paars/10 flex items-center justify-center text-paars">
-                                <Mail className="h-6 w-6" />
-                            </div>
-                            <div>
-                                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/70 font-bold">Contact</p>
-                                {event.contact_name && (
-                                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{event.contact_name}</p>
-                                )}
-                                {committeeEmail && (
-                                    <a href={`mailto:${committeeEmail}`} className="text-sm text-paars hover:underline break-all">
-                                        {committeeEmail}
-                                    </a>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Description - Large Tile (2x2 on desktop) */}
-                    {event.description && (
-                        <div className="md:col-span-2 md:row-span-2 rounded-3xl bg-white/90 dark:bg-surface-dark/90 p-8 shadow-lg flex flex-col">
-                            <h2 className="mb-4 text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                <Info className="h-6 w-6 text-paars" />
-                                Over dit evenement
-                            </h2>
-                            <div
-                                className="prose dark:prose-invert max-w-none text-slate-700 dark:text-ink-muted flex-grow"
-                                dangerouslySetInnerHTML={{ __html: event.description }}
-                            />
-                        </div>
-                    )}
 
 
                 </div>
