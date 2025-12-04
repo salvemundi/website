@@ -51,24 +51,24 @@ export default function FeaturedEvent({ event, onEventClick }: FeaturedEventProp
                 </div>
 
                 <div>
-                    <h2 className="text-2xl font-bold text-paars transition group-hover:text-oranje">
+                    <h2 className="text-2xl font-bold text-theme-purple transition group-hover:text-theme-purple-light">
                         {event.name}
                     </h2>
-                    <div className="mt-3 space-y-2 text-sm text-slate-600">
+                    <div className="mt-3 space-y-2 text-sm text-theme-muted">
                         <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-oranje" />
+                            <Clock className="h-4 w-4 text-theme-purple" />
                             <span>{formattedDate} om {formattedTime}</span>
                         </div>
                         {event.location && (
                             <div className="flex items-center gap-2">
-                                <MapPin className="h-4 w-4 text-oranje" />
+                                <MapPin className="h-4 w-4 text-theme-purple" />
                                 <span>{event.location}</span>
                             </div>
                         )}
                     </div>
                 </div>
 
-                <button className="w-full rounded-xl bg-paars py-3 font-semibold text-white transition hover:bg-paars/90">
+                <button className="w-full rounded-xl bg-gradient-theme py-3 font-semibold text-theme-white transition hover:opacity-90">
                     Bekijk details
                 </button>
             </div>

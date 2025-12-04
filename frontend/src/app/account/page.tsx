@@ -102,29 +102,29 @@ export default function AccountPage() {
 
     const getMembershipStatusDisplay = () => {
         if (!user?.membership_status || user.membership_status === 'none') {
-            return { text: 'Geen Actief Lidmaatschap', color: 'bg-gray-400', textColor: 'text-white' };
+            return { text: 'Geen Actief Lidmaatschap', color: 'bg-gray-400', textColor: 'text-theme-white' };
         }
         if (user.membership_status === 'active') {
-            return { text: 'Actief Lid', color: 'bg-geel', textColor: 'text-paars' };
+            return { text: 'Actief Lid', color: 'bg-theme-purple-lighter', textColor: 'text-theme-purple-darker' };
         }
-        return { text: 'Lidmaatschap Verlopen', color: 'bg-oranje/50', textColor: 'text-paars' };
+        return { text: 'Lidmaatschap Verlopen', color: 'bg-theme-purple/50', textColor: 'text-theme-purple-darker' };
     };
 
     if (authLoading || !user) {
         return (
-            <div className="min-h-screen bg-beige flex items-center justify-center">
-                <div className="text-paars text-xl font-semibold">Laden...</div>
+            <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
+                <div className="text-theme-purple text-xl font-semibold">Laden...</div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-beige">
+        <div className="min-h-screen bg-[var(--bg-main)]">
 
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 ">
                 <div className="max-w-4xl mx-auto space-y-8">
                     {/* Profile Section */}
-                    <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8">
+                    <div className="bg-[var(--bg-card)] rounded-3xl shadow-2xl p-6 sm:p-8">
                         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between mb-6">
                             <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 w-full">
                                 {user.avatar ? (
@@ -138,31 +138,31 @@ export default function AccountPage() {
                                         }}
                                     />
                                 ) : (
-                                    <div className="w-24 h-24 rounded-full bg-geel flex items-center justify-center  self-center sm:self-auto">
-                                        <span className="text-3xl font-bold text-paars">
+                                    <div className="w-24 h-24 rounded-full bg-theme-purple-lighter flex items-center justify-center  self-center sm:self-auto">
+                                        <span className="text-3xl font-bold text-theme-purple-darker">
                                             {user.first_name?.[0]}{user.last_name?.[0]}
                                         </span>
                                     </div>
                                 )}
 
                                 <div className="text-center sm:text-left w-full">
-                                    <h1 className="text-2xl sm:text-3xl font-bold text-paars mb-2">
+                                    <h1 className="text-2xl sm:text-3xl font-bold text-theme-purple mb-2">
                                         {user.first_name && user.last_name
                                             ? `${user.first_name} ${user.last_name}`
                                             : user.email || 'User'}
                                     </h1>
                                     {(!user.first_name || !user.last_name) && (
-                                        <p className="text-sm text-paars/70 mb-2">
+                                        <p className="text-sm text-theme-purple/70 mb-2">
                                             (Naam niet ingesteld)
                                         </p>
                                     )}
                                     <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
                                         {user.is_member ? (
-                                            <span className="px-3 py-1 bg-geel text-paars text-sm font-semibold rounded-full">
+                                            <span className="px-3 py-1 bg-theme-purple-lighter text-theme-purple-darker text-sm font-semibold rounded-full">
                                                 Fontys Student
                                             </span>
                                         ) : (
-                                            <span className="px-3 py-1 bg-oranje/20 text-paars text-sm font-semibold rounded-full">
+                                            <span className="px-3 py-1 bg-theme-purple/20 text-theme-purple text-sm font-semibold rounded-full">
                                                 Geregistreerde Gebruiker
                                             </span>
                                         )}
@@ -180,7 +180,7 @@ export default function AccountPage() {
                                         href="https://admin.salvemundi.nl"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="px-6 py-2 bg-geel text-paars rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md text-center w-full"
+                                        className="px-6 py-2 bg-theme-purple-lighter text-theme-purple-darker rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md text-center w-full"
                                     >
                                         Admin Panel
                                     </a>
@@ -188,7 +188,7 @@ export default function AccountPage() {
 
                                 <button
                                     onClick={handleLogout}
-                                    className="px-6 py-2 bg-gradient-to-r from-oranje to-paars text-white rounded-full font-semibold shadow-lg shadow-oranje/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl w-full"
+                                    className="px-6 py-2 bg-gradient-theme text-theme-white rounded-full font-semibold shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl w-full"
                                 >
                                     Uitloggen
                                 </button>
@@ -196,29 +196,29 @@ export default function AccountPage() {
                         </div>
 
                         <div className="pt-6">
-                            <h2 className="text-lg font-semibold text-paars mb-4">Account Informatie</h2>
+                            <h2 className="text-lg font-semibold text-theme-purple mb-4">Account Informatie</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <p className="text-sm text-paars/70 font-semibold">E-mail</p>
-                                    <p className="font-medium text-paars">{user.email}</p>
+                                    <p className="text-sm text-theme-purple/70 font-semibold">E-mail</p>
+                                    <p className="font-medium text-theme-purple">{user.email}</p>
                                 </div>
 
                                 {user.fontys_email && (
                                     <div>
-                                        <p className="text-sm text-paars/70 font-semibold">Fontys E-mail</p>
-                                        <p className="font-medium text-paars">{user.fontys_email}</p>
+                                        <p className="text-sm text-theme-purple/70 font-semibold">Fontys E-mail</p>
+                                        <p className="font-medium text-theme-purple">{user.fontys_email}</p>
                                     </div>
                                 )}
 
                                 {user.phone_number && (
                                     <div>
-                                        <p className="text-sm text-paars/70 font-semibold">Telefoonnummer</p>
-                                        <p className="font-medium text-paars">{user.phone_number}</p>
+                                        <p className="text-sm text-theme-purple/70 font-semibold">Telefoonnummer</p>
+                                        <p className="font-medium text-theme-purple">{user.phone_number}</p>
                                     </div>
                                 )}
 
                                 <div>
-                                    <p className="text-sm text-paars/70 font-semibold mb-1">Minecraft Gebruikersnaam</p>
+                                    <p className="text-sm text-theme-purple/70 font-semibold mb-1">Minecraft Gebruikersnaam</p>
                                     {isEditingMinecraft ? (
                                         <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
                                             <input
@@ -231,7 +231,7 @@ export default function AccountPage() {
                                             <button
                                                 onClick={handleSaveMinecraftUsername}
                                                 disabled={isSavingMinecraft}
-                                                className="px-3 py-1 text-sm bg-geel text-paars rounded-lg font-semibold hover:bg-opacity-90 transition-all disabled:opacity-50"
+                                                className="px-3 py-1 text-sm bg-theme-purple-lighter text-theme-purple-darker rounded-lg font-semibold hover:bg-opacity-90 transition-all disabled:opacity-50"
                                             >
                                                 {isSavingMinecraft ? '...' : '✓'}
                                             </button>
@@ -240,19 +240,19 @@ export default function AccountPage() {
                                                     setIsEditingMinecraft(false);
                                                     setMinecraftUsername(user.minecraft_username || '');
                                                 }}
-                                                className="px-3 py-1 text-sm bg-gray-200 text-paars rounded-lg font-semibold hover:bg-gray-300 transition-all"
+                                                className="px-3 py-1 text-sm bg-gray-200 text-theme-purple rounded-lg font-semibold hover:bg-gray-300 transition-all"
                                             >
                                                 ✕
                                             </button>
                                         </div>
                                     ) : (
                                         <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
-                                            <p className="font-medium text-paars text-sm flex-1">
+                                            <p className="font-medium text-theme-purple text-sm flex-1">
                                                 {user.minecraft_username || 'Niet ingesteld'}
                                             </p>
                                             <button
                                                 onClick={() => setIsEditingMinecraft(true)}
-                                                className="px-3 py-1 text-xs bg-oranje/20 text-paars rounded-lg font-semibold hover:bg-oranje/30 transition-all"
+                                                className="px-3 py-1 text-xs bg-theme-purple/20 text-theme-purple rounded-lg font-semibold hover:bg-theme-purple/30 transition-all"
                                             >
                                                 {user.minecraft_username ? 'Bewerken' : 'Toevoegen'}
                                             </button>
@@ -262,8 +262,8 @@ export default function AccountPage() {
 
                                 {user.membership_expiry && (
                                     <div>
-                                        <p className="text-sm text-paars/70 font-semibold">Lidmaatschap Geldig Tot</p>
-                                        <p className="font-medium text-paars">
+                                        <p className="text-sm text-theme-purple/70 font-semibold">Lidmaatschap Geldig Tot</p>
+                                        <p className="font-medium text-theme-purple">
                                             {format(new Date(user.membership_expiry), 'd MMMM yyyy')}
                                         </p>
                                     </div>
@@ -273,35 +273,35 @@ export default function AccountPage() {
 
                         {/* Quick Links Section */}
                         <div className="20 pt-6 mt-6">
-                            <h2 className="text-lg font-semibold text-paars mb-4">Snelle Links</h2>
+                            <h2 className="text-lg font-semibold text-theme-purple mb-4">Snelle Links</h2>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                                 <button
                                     onClick={() => router.push('/account/transacties')}
-                                    className="p-4 rounded-xl hover:bg-oranje/10 transition-all text-left w-full"
+                                    className="p-4 rounded-xl hover:bg-theme-purple/10 transition-all text-left w-full"
                                 >
                                     <div className="flex items-center gap-3">
                                         <span className="text-3xl">💳</span>
                                         <div>
-                                            <h3 className="font-semibold text-paars">Transacties</h3>
-                                            <p className="text-sm text-paars/70">Bekijk je betalingsgeschiedenis</p>
+                                            <h3 className="font-semibold text-theme-purple">Transacties</h3>
+                                            <p className="text-sm text-theme-purple/70">Bekijk je betalingsgeschiedenis</p>
                                         </div>
                                     </div>
                                 </button>
 
                                 <button
                                     onClick={() => router.push('/account/whatsapp-groepen')}
-                                    className="p-4  rounded-xl hover:bg-oranje/10 transition-all text-left relative w-full"
+                                    className="p-4  rounded-xl hover:bg-theme-purple/10 transition-all text-left relative w-full"
                                 >
                                     <div className="flex items-center gap-3">
                                         <span className="text-3xl">💬</span>
                                         <div>
-                                            <h3 className="font-semibold text-paars flex items-center gap-2">
+                                            <h3 className="font-semibold text-theme-purple flex items-center gap-2">
                                                 WhatsApp Groepen
                                                 {user.membership_status !== 'active' && (
-                                                    <span className="text-xs px-2 py-0.5 bg-oranje/20 rounded-full">🔒</span>
+                                                    <span className="text-xs px-2 py-0.5 bg-theme-purple/20 rounded-full">🔒</span>
                                                 )}
                                             </h3>
-                                            <p className="text-sm text-paars/70">
+                                            <p className="text-sm text-theme-purple/70">
                                                 {user.membership_status === 'active' ? 'Word lid van groepen' : 'Vereist actief lidmaatschap'}
                                             </p>
                                         </div>
@@ -312,13 +312,13 @@ export default function AccountPage() {
                                     href="https://salvemundi.sharepoint.com"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="p-4  rounded-xl hover:bg-oranje/10 transition-all text-left w-full"
+                                    className="p-4  rounded-xl hover:bg-theme-purple/10 transition-all text-left w-full"
                                 >
                                     <div className="flex items-center gap-3">
                                         <span className="text-3xl">📁</span>
                                         <div>
-                                            <h3 className="font-semibold text-paars">SharePoint</h3>
-                                            <p className="text-sm text-paars/70">Open het Salve Mundi archief in een nieuw tabblad</p>
+                                            <h3 className="font-semibold text-theme-purple">SharePoint</h3>
+                                            <p className="text-sm text-theme-purple/70">Open het Salve Mundi archief in een nieuw tabblad</p>
                                         </div>
                                     </div>
                                 </a>
@@ -327,19 +327,19 @@ export default function AccountPage() {
                     </div>
 
                     {/* Event Signups Section */}
-                    <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 ">
-                        <h2 className="text-2xl font-bold text-paars mb-6">Mijn Evenement Inschrijvingen</h2>
+                    <div className="bg-[var(--bg-card)] rounded-3xl shadow-2xl p-6 sm:p-8 ">
+                        <h2 className="text-2xl font-bold text-theme-purple mb-6">Mijn Evenement Inschrijvingen</h2>
 
                         {isLoading ? (
                             <div className="text-center py-12">
-                                <div className="text-paars">Je inschrijvingen worden geladen...</div>
+                                <div className="text-theme-purple">Je inschrijvingen worden geladen...</div>
                             </div>
                         ) : eventSignups.length === 0 ? (
                             <div className="text-center py-12">
-                                <div className="text-paars mb-4">Je hebt je nog niet ingeschreven voor evenementen.</div>
+                                <div className="text-theme-purple mb-4">Je hebt je nog niet ingeschreven voor evenementen.</div>
                                 <button
                                     onClick={() => router.push('/activiteiten')}
-                                    className="px-6 py-3 bg-gradient-to-r from-oranje to-paars text-white rounded-full font-semibold shadow-lg shadow-oranje/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl"
+                                    className="px-6 py-3 bg-gradient-theme text-theme-white rounded-full font-semibold shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl"
                                 >
                                     Bekijk Evenementen
                                 </button>
@@ -362,24 +362,24 @@ export default function AccountPage() {
                                                 }}
                                             />
                                         ) : (
-                                            <div className="w-24 h-24 rounded-xl bg-geel flex items-center justify-center ">
-                                                <span className="text-paars text-2xl">📅</span>
+                                            <div className="w-24 h-24 rounded-xl bg-theme-purple-lighter flex items-center justify-center ">
+                                                <span className="text-theme-purple-darker text-2xl">📅</span>
                                             </div>
                                         )}
 
                                         <div className="flex-1 w-full">
-                                            <h3 className="text-lg font-semibold text-paars mb-1">
+                                            <h3 className="text-lg font-semibold text-theme-purple mb-1">
                                                 {signup.event_id.name}
                                             </h3>
-                                            <p className="text-sm text-paars/70 mb-1">
+                                            <p className="text-sm text-theme-purple/70 mb-1">
                                                 Evenement Datum: {format(new Date(signup.event_id.event_date), 'd MMMM yyyy')}
                                             </p>
                                             {signup.event_id.contact_name && (
-                                                <p className="text-sm text-paars/70 mb-1">
+                                                <p className="text-sm text-theme-purple/70 mb-1">
                                                     Contact: {signup.event_id.contact_name}
                                                 </p>
                                             )}
-                                            <p className="text-xs text-paars/50">
+                                            <p className="text-xs text-theme-purple/50">
                                                 Ingeschreven op: {format(new Date(signup.created_at), 'd MMMM yyyy')}
                                             </p>
                                         </div>
@@ -387,7 +387,7 @@ export default function AccountPage() {
                                         <div className="w-full sm:w-auto">
                                             <button
                                                 onClick={() => router.push('/activiteiten')}
-                                                className="w-full px-4 py-2 text-oranje  rounded-full font-semibold hover:bg-oranje hover:text-beige transition-all"
+                                                className="w-full px-4 py-2 text-theme-purple  rounded-full font-semibold hover:bg-gradient-theme hover:text-theme-white transition-all"
                                             >
                                                 Bekijk Details
                                             </button>

@@ -17,7 +17,7 @@ const SamuCard: React.FC<SamuCardProps> = ({
     const isExternal = link.startsWith("http");
 
     return (
-        <div className="bg-paars text-beige rounded-3xl p-6 flex h-full flex-col items-center gap-5 shadow-lg">
+        <div className="bg-gradient-theme text-theme-white rounded-3xl p-6 flex h-full flex-col items-center gap-5 shadow-lg">
             {image && (
                 <img
                     src={image}
@@ -25,7 +25,7 @@ const SamuCard: React.FC<SamuCardProps> = ({
                     className="w-full h-auto rounded-2xl object-contain"
                 />
             )}
-            <p className="text-center text-base leading-relaxed sm:text-lg flex-1">
+            <p className="text-center text-base leading-relaxed sm:text-lg flex-1 text-theme-white/90">
                 {description}
             </p>
 
@@ -34,14 +34,14 @@ const SamuCard: React.FC<SamuCardProps> = ({
                     href={link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-auto w-full rounded-2xl bg-geel px-6 py-4 text-center text-xl font-bold text-samu transition hover:-translate-y-0.5 hover:bg-yellow-400 sm:text-2xl"
+                    className="mt-auto w-full rounded-2xl bg-theme-purple-lighter px-6 py-4 text-center text-xl font-bold text-theme-purple-darker transition hover:-translate-y-0.5 hover:bg-theme-purple-light sm:text-2xl"
                 >
                     {button}
                 </a>
             ) : (
                 <Link
                     href={link}
-                    className="mt-auto w-full rounded-2xl bg-geel px-6 py-4 text-center text-xl font-bold text-samu transition hover:-translate-y-0.5 hover:bg-yellow-400 sm:text-2xl"
+                    className="mt-auto w-full rounded-2xl bg-theme-purple-lighter px-6 py-4 text-center text-xl font-bold text-theme-purple-darker transition hover:-translate-y-0.5 hover:bg-theme-purple-light sm:text-2xl"
                 >
                     {button}
                 </Link>

@@ -412,7 +412,7 @@ function StickersContent() {
                                         value={searchAddress}
                                         onChange={(e) => setSearchAddress(e.target.value)}
                                         placeholder="Enter an address, city, or landmark..."
-                                        className="flex-1 px-4 py-2 rounded-lg focus:ring-2 focus:ring-paars focus:border-transparent"
+                                        className="flex-1 px-4 py-2 rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                         onKeyPress={(e) => {
                                             if (e.key === 'Enter') {
                                                 e.preventDefault();
@@ -424,7 +424,7 @@ function StickersContent() {
                                         type="button"
                                         onClick={handleSearchAddress}
                                         disabled={isGeocoding}
-                                        className="bg-paars hover:bg-paars/90 text-white px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
+                                        className="bg-gradient-theme hover:opacity-90 text-theme-white px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
                                     >
                                         {isGeocoding ? (
                                             <Loader2 className="w-5 h-5 animate-spin" />

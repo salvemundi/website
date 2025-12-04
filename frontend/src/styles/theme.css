@@ -58,12 +58,56 @@
   --theme-white-muted: #e8e0e8;
 
   /* Gradient colors for dark mode */
-  --theme-gradient-start: #d9a3d6;
-  --theme-gradient-end: #e8c4e6;
-  --theme-gradient-light-start: #b471ad;
-  --theme-gradient-light-end: #d9a3d6;
-  --theme-gradient-dark-start: #8c4682;
-  --theme-gradient-dark-end: #b471ad;
+  --theme-gradient-start: #663265;
+  --theme-gradient-end: #a4539b;
+  --theme-gradient-light-start: #a4539b;
+  --theme-gradient-light-end: #d4add0;
+  --theme-gradient-dark-start: #471e3b;
+  --theme-gradient-dark-end: #663265;
+}
+
+/* ==============================================
+   GLOBAL TEXT COLOR APPLICATION
+   ============================================== */
+
+/* Apply theme colors globally to all elements */
+*, *::before, *::after {
+  color: inherit;
+}
+
+/* Base text color for all elements */
+html, body {
+  color: var(--theme-text);
+}
+
+/* Ensure all common text elements use theme colors */
+h1, h2, h3, h4, h5, h6,
+p, span, a, li, label,
+div, section, article, aside,
+header, footer, nav, main,
+button, input, textarea, select,
+td, th, caption,
+blockquote, cite, figcaption {
+  color: inherit;
+}
+
+/* Links - slightly different for visibility */
+a {
+  color: var(--theme-purple);
+}
+
+a:hover {
+  color: var(--theme-purple-light);
+}
+
+/* Form elements */
+input, textarea, select {
+  color: var(--theme-text);
+  background-color: inherit;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--theme-text-muted);
 }
 
 /* ==============================================
@@ -72,15 +116,15 @@
 
 /* Adaptive text (changes with theme) */
 .text-theme {
-  color: var(--theme-text);
+  color: var(--theme-text) !important;
 }
 
 .text-theme-muted {
-  color: var(--theme-text-muted);
+  color: var(--theme-text-muted) !important;
 }
 
 .text-theme-light {
-  color: var(--theme-text-light);
+  color: var(--theme-text-light) !important;
 }
 
 /* White text (always white) */
@@ -90,23 +134,23 @@
 
 /* Purple text variations */
 .text-theme-purple {
-  color: var(--theme-purple);
+  color: var(--theme-purple) !important;
 }
 
 .text-theme-purple-light {
-  color: var(--theme-purple-light);
+  color: var(--theme-purple-light) !important;
 }
 
 .text-theme-purple-lighter {
-  color: var(--theme-purple-lighter);
+  color: var(--theme-purple-lighter) !important;
 }
 
 .text-theme-purple-dark {
-  color: var(--theme-purple-dark);
+  color: var(--theme-purple-dark) !important;
 }
 
 .text-theme-purple-darker {
-  color: var(--theme-purple-darker);
+  color: var(--theme-purple-darker) !important;
 }
 
 /* ==============================================
@@ -249,6 +293,26 @@
     180deg,
     var(--theme-gradient-start),
     var(--theme-gradient-end)
+  );
+}
+
+/* Full page gradient (purple to dark purple to purple) */
+.bg-gradient-theme-page {
+  background: linear-gradient(
+    to bottom right,
+    var(--theme-purple),
+    var(--theme-purple-dark),
+    var(--theme-purple)
+  );
+}
+
+/* Alternative page gradient with more contrast */
+.bg-gradient-theme-page-alt {
+  background: linear-gradient(
+    to bottom right,
+    var(--theme-purple),
+    var(--theme-purple-darker),
+    var(--theme-purple-dark)
   );
 }
 

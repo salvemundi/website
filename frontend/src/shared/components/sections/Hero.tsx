@@ -103,7 +103,7 @@ export default function Hero() {
                             </a>
                             <a
                                 href="/activiteiten"
-                                className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--bg-card)] px-5 py-2.5 text-sm font-semibold text-theme-purple shadow-sm transition hover:bg-theme-purple/5 sm:px-6 sm:py-3"
+                                className="inline-flex items-center text-theme-purple-darker justify-center gap-2 rounded-full bg-primary-100 px-5 py-2.5 text-sm font-semibold text-theme-purple shadow-sm transition hover:bg-theme-purple/5 sm:px-6 hover:scale-105 hover:shadow-xl sm:py-3"
                             >
                                 Bekijk activiteiten
                             </a>
@@ -117,7 +117,7 @@ export default function Hero() {
                                 >
                                     <div className="absolute inset-0 bg-gradient-theme opacity-90" />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-                                    <span className="absolute -top-12 -right-12 h-24 w-24 rounded-full bg-theme-purple-light/70 transition duration-500 group-hover:scale-125 z-0" />
+                                    <span className="absolute -top-12 -right-12 h-24 w-24 rounded-full bg-theme-purple transition duration-500 group-hover:scale-125 z-0" />
                                     <div className="relative flex items-start gap-2 sm:gap-3 z-10">
                                         <span className="inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl sm:rounded-2xl bg-white/20 text-theme-white">
                                             <stat.icon className=" h-4 w-4 sm:h-5 sm:w-5" />
@@ -140,8 +140,8 @@ export default function Hero() {
                                 alt="Salve Mundi evenement"
                                 className="w-full h-[240px] sm:h-[300px] md:h-[380px] lg:h-[480px] xl:h-[540px] object-cover"
                             />
-                            <div className="absolute inset-x-4 bottom-4 sm:inset-x-6 sm:bottom-6 rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/90 p-4 sm:p-6 shadow-lg backdrop-blur">
-                                <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-purple">
+                            <div className="absolute inset-x-4 bottom-4 sm:inset-x-6 sm:bottom-6 rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur">
+                                <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-white">
                                     Volgende evenement
                                 </p>
                                 {eventsLoading ? (
@@ -151,10 +151,10 @@ export default function Hero() {
                                     </div>
                                 ) : nextEvent ? (
                                     <>
-                                        <p className="mt-2 text-base sm:text-lg font-bold text-theme">
+                                        <p className="mt-2 text-base sm:text-lg font-bold text-theme-white">
                                             {nextEvent.name} • {formatEventDate(nextEvent.event_date)}
                                         </p>
-                                        <p className="mt-1 text-xs sm:text-sm text-theme-muted line-clamp-2">
+                                        <p className="mt-1 text-xs sm:text-sm text-theme-white line-clamp-2">
                                             {nextEvent.description || "Kom gezellig langs bij ons volgende evenement!"}
                                         </p>
                                     </>

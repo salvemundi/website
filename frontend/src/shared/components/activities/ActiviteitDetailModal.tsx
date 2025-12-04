@@ -192,14 +192,14 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
             style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
             onClick={handleBackdropClick}
         >
-            <div className="bg-paars rounded-3xl shadow-2xl max-w-4xl w-full sm:w-[92%] md:w-3/4 lg:max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-gradient-theme rounded-3xl shadow-2xl max-w-4xl w-full sm:w-[92%] md:w-3/4 lg:max-w-3xl max-h-[90vh] overflow-y-auto">
                 {/* Header */}
-                <div className="sticky top-0 bg-paars z-10 p-6">
+                <div className="sticky top-0 bg-gradient-theme z-10 p-6">
                     <div className="flex justify-between items-start mb-3">
-                        <h2 className="text-3xl font-bold text-geel pr-8">{activity.title}</h2>
+                        <h2 className="text-3xl font-bold text-theme-purple-lighter pr-8">{activity.title}</h2>
                         <button
                             onClick={onClose}
-                            className="text-white hover:text-geel transition-colors text-3xl font-bold leading-none"
+                            className="text-theme-white hover:text-theme-purple-lighter transition-colors text-3xl font-bold leading-none"
                             aria-label="Sluiten"
                         >
                             ×
@@ -244,12 +244,12 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                                         key={`${item.label}-${idx}`}
                                         className="flex items-center gap-3 rounded-2xl   bg-white/5 p-3"
                                     >
-                                        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-geel/20 text-geel">
+                                        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-theme-purple-lighter/20 text-theme-purple-lighter">
                                             <item.icon className="h-5 w-5" />
                                         </span>
                                         <div className="leading-tight">
-                                            <p className="text-xs uppercase tracking-wide text-white/70">{item.label}</p>
-                                            <p className="text-base font-semibold text-white">{item.value}</p>
+                                            <p className="text-xs uppercase tracking-wide text-theme-white/70">{item.label}</p>
+                                            <p className="text-base font-semibold text-theme-white">{item.value}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -260,12 +260,12 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {activity.contact_name && (
                                     <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-3">
-                                        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-geel/20 text-geel">
+                                        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-theme-purple-lighter/20 text-theme-purple-lighter">
                                             <Phone className="h-5 w-5" />
                                         </span>
                                         <div>
-                                            <p className="text-xs uppercase tracking-wide text-white/70">Contact</p>
-                                            <p className="text-base font-semibold text-white">
+                                            <p className="text-xs uppercase tracking-wide text-theme-white/70">Contact</p>
+                                            <p className="text-base font-semibold text-theme-white">
                                                 {activity.contact_name}
                                             </p>
                                         </div>
@@ -273,14 +273,14 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                                 )}
                                 {committeeEmail && (
                                     <div className="flex items-center gap-3 rounded-2xl  bg-white/5 p-3">
-                                        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-geel/20 text-geel">
+                                        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-theme-purple-lighter/20 text-theme-purple-lighter">
                                             <Mail className="h-5 w-5" />
                                         </span>
                                         <div>
-                                            <p className="text-xs uppercase tracking-wide text-white/70">E-mail commissie</p>
+                                            <p className="text-xs uppercase tracking-wide text-theme-white/70">E-mail commissie</p>
                                             <a
                                                 href={`mailto:${committeeEmail}`}
-                                                className="text-base font-semibold text-white underline hover:text-geel break-all"
+                                                className="text-base font-semibold text-theme-white underline hover:text-theme-purple-lighter break-all"
                                             >
                                                 {committeeEmail}
                                             </a>
@@ -292,8 +292,8 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
 
                         {/* Description */}
                         <div className="rounded-2xl  bg-white/5 p-4 sm:p-5">
-                            <h3 className="text-xl font-semibold text-geel mb-2">Over deze activiteit</h3>
-                            <p className="text-white leading-relaxed">{activity.description}</p>
+                            <h3 className="text-xl font-semibold text-theme-purple-lighter mb-2">Over deze activiteit</h3>
+                            <p className="text-theme-white leading-relaxed">{activity.description}</p>
                         </div>
                     </div>
 
@@ -301,24 +301,24 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                     <div className="mt-8 pt-6">
                         {isPaidAndHasQR ? (
                             // Digital ticket display case: Paid and QR token is present.
-                            <div className="space-y-6 text-white">
-                                <h3 className="text-3xl font-extrabold text-geel text-center">🎉 Inschrijving Definitief!</h3>
-                                <p className="text-center text-lg text-white/90">
+                            <div className="space-y-6 text-theme-white">
+                                <h3 className="text-3xl font-extrabold text-theme-purple-lighter text-center">🎉 Inschrijving Definitief!</h3>
+                                <p className="text-center text-lg text-theme-white/90">
                                     Je bent succesvol ingeschreven en betaald voor {activity.title}.
                                 </p>
 
                                 <div className="flex justify-center">
                                     {/* <QRDisplay qrToken={signupQrToken!} /> TODO: Port QRDisplay */}
-                                    <div className="text-center text-white/70">QR Code Display Placeholder</div>
+                                    <div className="text-center text-theme-white/70">QR Code Display Placeholder</div>
                                 </div>
 
-                                <p className="text-center text-sm text-white/70 mt-4">
+                                <p className="text-center text-sm text-theme-white/70 mt-4">
                                     Dit ticket is ook per e-mail naar je verzonden. Laat de QR-code scannen bij de ingang.
                                 </p>
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="mt-4 bg-geel text-paars font-bold py-2 px-6 rounded-full hover:scale-105 transition-transform w-full"
+                                    className="mt-4 bg-theme-purple-lighter text-theme-purple-darker font-bold py-2 px-6 rounded-full hover:scale-105 transition-transform w-full"
                                 >
                                     Sluiten
                                 </button>
@@ -329,9 +329,9 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                                 <div className="flex justify-center mb-3">
                                     <CheckCircle className="h-12 w-12 text-green-400" />
                                 </div>
-                                <h3 className="text-2xl font-bold text-white mb-2">Je bent ingeschreven!</h3>
+                                <h3 className="text-2xl font-bold text-theme-white mb-2">Je bent ingeschreven!</h3>
                                 {signupPaymentStatus === 'open' ? (
-                                    <p className="text-white/80">
+                                    <p className="text-theme-white/80">
                                         Je inschrijving is in afwachting van betaling. Controleer je e-mail voor de betaallink of probeer opnieuw.
                                     </p>
                                 ) : (
@@ -357,19 +357,19 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                         ) : (
                             // Default: Form for new signup
                             <div>
-                                <h3 className="text-2xl font-bold text-geel mb-4">Inschrijven</h3>
+                                <h3 className="text-2xl font-bold text-theme-purple-lighter mb-4">Inschrijven</h3>
                                 <div className="flex flex-col lg:flex-row gap-6">
                                     <form onSubmit={handleSubmit} className="space-y-4 flex-1">
                                         {/* Name */}
                                         <div>
-                                            <label htmlFor="name" className="block text-white font-semibold mb-2">Naam *</label>
+                                            <label htmlFor="name" className="block text-theme-white font-semibold mb-2">Naam *</label>
                                             <input
                                                 type="text"
                                                 id="name"
                                                 name="name"
                                                 value={formData.name}
                                                 onChange={handleInputChange}
-                                                className={`w-full px-3 py-3 rounded-lg bg-white text-paars placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-geel ${errors.name ? "ring-2 ring-red-500" : ""}`}
+                                                className={`w-full px-3 py-3 rounded-lg bg-theme-white text-theme-purple placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-theme-purple-lighter ${errors.name ? "ring-2 ring-red-500" : ""}`}
                                                 placeholder="Jouw naam"
                                             />
                                             {errors.name && <p className="text-red-400 text-sm mt-1">{errors.name}</p>}
@@ -377,14 +377,14 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
 
                                         {/* Email */}
                                         <div>
-                                            <label htmlFor="email" className="block text-white font-semibold mb-2">Email *</label>
+                                            <label htmlFor="email" className="block text-theme-white font-semibold mb-2">Email *</label>
                                             <input
                                                 type="email"
                                                 id="email"
                                                 name="email"
                                                 value={formData.email}
                                                 onChange={handleInputChange}
-                                                className={`w-full px-3 py-3 rounded-lg bg-white text-paars placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-geel ${errors.email ? "ring-2 ring-red-500" : ""}`}
+                                                className={`w-full px-3 py-3 rounded-lg bg-theme-white text-theme-purple placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-theme-purple-lighter ${errors.email ? "ring-2 ring-red-500" : ""}`}
                                                 placeholder="jouw.email@student.avans.nl"
                                             />
                                             {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email}</p>}
@@ -392,14 +392,14 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
 
                                         {/* Phone */}
                                         <div>
-                                            <label htmlFor="phoneNumber" className="block text-white font-semibold mb-2">Telefoonnummer *</label>
+                                            <label htmlFor="phoneNumber" className="block text-theme-white font-semibold mb-2">Telefoonnummer *</label>
                                             <input
                                                 type="tel"
                                                 id="phoneNumber"
                                                 name="phoneNumber"
                                                 value={formData.phoneNumber}
                                                 onChange={handleInputChange}
-                                                className={`w-full px-3 py-3 rounded-lg bg-white text-paars placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-geel ${errors.phoneNumber ? "ring-2 ring-red-500" : ""}`}
+                                                className={`w-full px-3 py-3 rounded-lg bg-theme-white text-theme-purple placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-theme-purple-lighter ${errors.phoneNumber ? "ring-2 ring-red-500" : ""}`}
                                                 placeholder="0612345678"
                                             />
                                             {errors.phoneNumber && <p className="text-red-400 text-sm mt-1">{errors.phoneNumber}</p>}
@@ -410,14 +410,14 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                                             <button
                                                 type="submit"
                                                 disabled={isSubmitting}
-                                                className="flex-1 bg-geel text-white font-bold py-3 px-6 rounded-full hover:scale-105 transition-transform duration-300 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
+                                                className="flex-1 bg-theme-purple-lighter text-theme-purple-darker font-bold py-3 px-6 rounded-full hover:scale-105 transition-transform duration-300 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
                                             >
                                                 {isSubmitting ? 'BEZIG...' : 'AANMELDEN'}
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={onClose}
-                                                className="flex-1 bg-white text-paars font-bold py-3 px-6 rounded-full hover:scale-105 transition-transform duration-300 shadow-lg"
+                                                className="flex-1 bg-theme-white text-theme-purple font-bold py-3 px-6 rounded-full hover:scale-105 transition-transform duration-300 shadow-lg"
                                             >
                                                 ANNULEREN
                                             </button>
@@ -427,20 +427,20 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
 
                                     {/* Contact Card */}
                                     {(activity.committee_name || activity.contact_name || committeeEmail) && (
-                                        <div className="bg-white/5  rounded-2xl p-5 text-white w-full lg:max-w-sm h-fit">
-                                            <h4 className="text-xl font-semibold text-geel mb-3">Contact commissie</h4>
-                                            <p className="text-sm text-white/80 mb-4">Vragen over deze activiteit? Neem direct contact op.</p>
-                                            <div className="space-y-3 text-white">
+                                        <div className="bg-white/5  rounded-2xl p-5 text-theme-white w-full lg:max-w-sm h-fit">
+                                            <h4 className="text-xl font-semibold text-theme-purple-lighter mb-3">Contact commissie</h4>
+                                            <p className="text-sm text-theme-white/80 mb-4">Vragen over deze activiteit? Neem direct contact op.</p>
+                                            <div className="space-y-3 text-theme-white">
                                                 {activity.committee_name && (
                                                     <p>
-                                                        <span className="font-semibold text-geel block text-sm uppercase tracking-wide">Commissie</span>
+                                                        <span className="font-semibold text-theme-purple-lighter block text-sm uppercase tracking-wide">Commissie</span>
                                                         <span className="text-base">{activity.committee_name}</span>
                                                     </p>
                                                 )}
                                                 {committeeEmail && (
                                                     <a
                                                         href={`mailto:${committeeEmail}`}
-                                                        className="mt-4 inline-flex items-center justify-center w-full rounded-full bg-geel text-paars font-semibold py-3 px-4 hover:bg-opacity-90 transition"
+                                                        className="mt-4 inline-flex items-center justify-center w-full rounded-full bg-theme-purple-lighter text-theme-purple-darker font-semibold py-3 px-4 hover:bg-opacity-90 transition"
                                                     >
                                                         ✉️ Mail de commissie
                                                     </a>
