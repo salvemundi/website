@@ -2,54 +2,30 @@
 
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuth } from "@/features/auth/providers/auth-provider";
 import PageHeader from "@/widgets/page-header/ui/PageHeader";
-import ActiviteitDetailModal from "@/entities/activity/ui/ActiviteitDetailModal";
 import CalendarView from "@/entities/activity/ui/CalendarView";
 import FeaturedEvent from "@/entities/activity/ui/FeaturedEvent";
 import DayDetails from "@/entities/activity/ui/DayDetails";
 import EventList from "@/entities/activity/ui/EventList";
 import { useSalvemundiEvents } from "@/shared/lib/hooks/useSalvemundiApi";
-import { eventsApi, getImageUrl } from "@/shared/lib/api/salvemundi";
-import { sendEventSignupEmail } from "@/shared/lib/services/email-service";
+import { getImageUrl } from "@/shared/lib/api/salvemundi";
 import { addMonths, subMonths } from 'date-fns';
 import ActiviteitCard from "@/entities/activity/ui/ActiviteitCard";
-
-const buildCommitteeEmail = (name?: string | null) => {
-    if (!name) return undefined;
-    const normalized = name.toLowerCase();
-    if (normalized.includes('feest')) return 'feest@salvemundi.nl';
-    if (normalized.includes('activiteit')) return 'activiteiten@salvemundi.nl';
-    if (normalized.includes('studie')) return 'studie@salvemundi.nl';
-
-    const slug = name
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase()
-        .replace(/commissie|committee/g, '')
-        .replace(/[^a-z0-9]+/g, '')
-        .trim();
-    if (!slug) return undefined;
-    return `${slug}@salvemundi.nl`;
-};
 
 import { Suspense } from 'react';
 
 function ActivitiesContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { user } = useAuth();
-    const { data: events = [], isLoading, error, refetch } = useSalvemundiEvents();
+    const { data: events = [], isLoading, error } = useSalvemundiEvents();
 
     // State
     const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('calendar');
     const [showPastActivities, setShowPastActivities] = useState(false);
-    const [selectedActivity, setSelectedActivity] = useState<any>(null);
-    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+    const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
     // Calendar Navigation State
     const [currentDate, setCurrentDate] = useState(new Date());
-    const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
     // Filter events
     const filteredEvents = useMemo(() => {
@@ -71,86 +47,8 @@ function ActivitiesContent() {
 
     // Handlers
     const handleShowDetails = useCallback((activity: any) => {
-        setSelectedActivity(activity);
-        setIsDetailModalOpen(true);
-    }, []);
-
-    const handleCloseModal = useCallback(() => {
-        setIsDetailModalOpen(false);
-        setSelectedActivity(null);
-    }, []);
-
-    const handleSignup = async (data: { activity: any; email: string; name: string; phoneNumber: string }) => {
-        // ... (Existing signup logic preserved)
-        const { activity, email, name, phoneNumber } = data;
-        const price = Number(activity.price) || 0;
-
-        try {
-            if (price > 0) {
-                // Paid event flow
-                const payload = {
-                    amount: price,
-                    description: `Ticket: ${activity.title}`,
-                    redirectUrl: `${window.location.origin}/activiteiten?payment_status=success&event_id=${activity.id}`,
-                    metadata: {
-                        eventId: activity.id,
-                        userId: user?.id,
-                        email,
-                        name,
-                        phoneNumber,
-                        type: 'event_signup'
-                    }
-                };
-
-                const response = await fetch('/api/payments/create', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                });
-
-                const result = await response.json();
-                if (response.ok && result.checkoutUrl) {
-                    window.location.href = result.checkoutUrl;
-                } else {
-                    throw new Error(result.error || 'Betaling starten mislukt');
-                }
-            } else {
-                // Free event flow
-                await eventsApi.createSignup({
-                    event_id: activity.id,
-                    email,
-                    name,
-                    phone_number: phoneNumber,
-                });
-
-                // Send confirmation email
-                try {
-                    await sendEventSignupEmail({
-                        recipientEmail: email,
-                        recipientName: name,
-                        eventName: activity.title,
-                        eventDate: activity.date || activity.event_date,
-                        eventPrice: 0,
-                        phoneNumber: phoneNumber,
-                        userName: name,
-                        committeeName: activity.committee_name || 'Salve Mundi',
-                        committeeEmail: activity.committee_email || buildCommitteeEmail(activity.committee_name),
-                        contactName: activity.contact_name,
-                        contactPhone: activity.contact_phone,
-                    });
-                } catch (emailErr) {
-                    console.error('Failed to send confirmation email:', emailErr);
-                }
-
-                alert('Je bent succesvol ingeschreven! Controleer je e-mail voor de bevestiging.');
-                handleCloseModal();
-                refetch();
-            }
-        } catch (err: any) {
-            console.error('Signup error:', err);
-            throw new Error(err.message || 'Er is een fout opgetreden bij het inschrijven.');
-        }
-    };
+        router.push(`/activiteiten/${activity.id}`);
+    }, [router]);
 
     // Handle Payment Status from URL
     useEffect(() => {
@@ -158,19 +56,10 @@ function ActivitiesContent() {
         const eventId = searchParams.get('event_id');
 
         if (status === 'success' && eventId) {
-            const event = events.find(e => e.id === Number(eventId));
-            if (event) {
-                setSelectedActivity(event);
-                setIsDetailModalOpen(true);
-                // Ideally we would show a success message here or pass a prop to the modal
-                // For now, the modal will show "Je bent ingeschreven" if the backend updated correctly
-                // or we can rely on the user seeing the modal open.
-                // To be more robust, we could pass a "justSignedUp" flag.
-            }
-            // Clean URL
-            router.replace('/activiteiten');
+            // Redirect to the detail page for success message
+            router.replace(`/activiteiten/${eventId}`);
         }
-    }, [searchParams, events, router]);
+    }, [searchParams, router]);
 
     return (
         <div className="">
@@ -346,21 +235,6 @@ function ActivitiesContent() {
                     </div>
                 </div>
             </main>
-
-            {/* Detail Modal */}
-            {selectedActivity && (
-                <ActiviteitDetailModal
-                    isOpen={isDetailModalOpen}
-                    onClose={handleCloseModal}
-                    activity={{
-                        ...selectedActivity,
-                        title: selectedActivity.name,
-                        date: selectedActivity.event_date,
-                    }}
-                    isPast={new Date(selectedActivity.event_date) < new Date()}
-                    onSignup={handleSignup}
-                />
-            )}
         </div>
     );
 }
