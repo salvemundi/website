@@ -11,6 +11,7 @@ import { useSalvemundiEvents } from "@/shared/lib/hooks/useSalvemundiApi";
 import { getImageUrl } from "@/shared/lib/api/salvemundi";
 import { addMonths, subMonths } from 'date-fns';
 import ActiviteitCard from "@/entities/activity/ui/ActiviteitCard";
+import FlipClock from "@/shared/ui/FlipClock";
 
 import { Suspense } from 'react';
 
@@ -65,12 +66,27 @@ function ActivitiesContent() {
         <div className="">
             <PageHeader
                 title="ACTIVITEITEN"
-                backgroundImage="/img/backgrounds/Kroto2025.jpg"
+                backgroundImage="/img/backgrounds/homepage-banner.jpg"
+                variant="split"
+                description={
+                    <p className="text-lg sm:text-xl text-beige/90 max-w-3xl mt-4">
+                        Bekijk alle evenementen, trainingen en feesten van Salve Mundi.
+                    </p>
+                }
             >
-                <p className="text-lg sm:text-xl text-beige/90 max-w-3xl mx-auto mt-4">
-                    Bekijk alle evenementen, trainingen en feesten van Salve Mundi.
-                </p>
+                {upcomingEvent && (
+                    <div className="rounded-3xl shadow-xl px-8 pb-4 bg-gradient-to-br 
+                        from-theme-gradient-light-start 
+                        via-theme-gradient-light-start 
+                        to-theme-gradient-light-end 
+                        dark:from-theme-gradient-dark-start 
+                        dark:via-theme-gradient-dark-start 
+                        dark:to-theme-gradient-dark-end">
+                        <FlipClock targetDate={upcomingEvent.event_date} />
+                    </div>
+                )}
             </PageHeader>
+
 
             <main className="relative flex flex-col items-center overflow-hidden pb-24">
                 <div className="relative flex w-full max-w-app flex-col px-4 pt-12 sm:px-6 lg:px-8 lg:pt-16">

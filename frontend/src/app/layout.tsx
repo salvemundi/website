@@ -27,11 +27,13 @@ export const metadata: Metadata = {
         siteName: 'Salve Mundi',
         locale: 'nl_NL',
         type: 'website',
+        images: ['/logo_purple.svg'],
     },
     twitter: {
         card: 'summary_large_image',
         title: 'Salve Mundi - Studievereniging Fontys ICT Eindhoven',
         description: 'De studievereniging voor HBO-studenten in Eindhoven. Activiteiten, commissies, en meer voor een onvergetelijke studententijd.',
+        images: ['/logo_purple.svg'],
     },
     icons: {
         icon: [

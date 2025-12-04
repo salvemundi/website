@@ -1,36 +1,25 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
-import { Users, Calendar, PartyPopper } from 'lucide-react';
+import React, { useEffect, useMemo } from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay } from 'swiper/modules';
+import 'swiper/css';
 import { useDirectusStore } from '@/shared/lib/store/directusStore';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
-
-const STATS = [
-    {
-        title: '500+',
-        description: 'Actieve studenten',
-        icon: Users,
-    },
-    {
-        title: '50+',
-        description: 'Evenementen per jaar',
-        icon: Calendar,
-    },
-    {
-        title: '15+',
-        description: 'Actieve commissies',
-        icon: PartyPopper,
-    },
-];
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 
 export default function Hero() {
     const events = useDirectusStore((state) => state.events);
     const eventsLoading = useDirectusStore((state) => state.eventsLoading);
     const loadEvents = useDirectusStore((state) => state.loadEvents);
+    const heroBanners = useDirectusStore((state) => state.heroBanners);
+    const loadHeroBanners = useDirectusStore((state) => state.loadHeroBanners);
 
     useEffect(() => {
         loadEvents?.();
-    }, [loadEvents]);
+        loadHeroBanners?.();
+    }, [loadEvents, loadHeroBanners]);
 
     const nextEvent = useMemo(() => {
         if (!events?.length) return null;
@@ -51,12 +40,7 @@ export default function Hero() {
         );
     }, [events]);
 
-    const heroImage = useMemo(() => {
-        if (nextEvent?.image) {
-            return getImageUrl(nextEvent.image);
-        }
-        return '/img/backgrounds/homepage-banner.jpg';
-    }, [nextEvent]);
+
 
     const formatEventDate = (dateString: string) => {
         try {
@@ -72,6 +56,16 @@ export default function Hero() {
             return 'Datum volgt';
         }
     };
+
+    const defaultBanners = [
+        getImageUrl('banner_1.jpg'),
+        getImageUrl('banner_2.jpg'),
+        getImageUrl('banner_3.jpg'),
+    ];
+
+    const slides = heroBanners?.length > 0
+        ? heroBanners.map(b => getImageUrl(b.image))
+        : defaultBanners;
 
     return (
         <section id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full h-screen max-w-app py-8 sm:py-12 md:py-16 lg:py-20 transition-colors duration-300">
@@ -91,6 +85,54 @@ export default function Hero() {
                             </p>
                         </div>
 
+
+
+                        <div className="flex flex-wrap gap-3 sm:gap-4">
+                            {nextEvent ? (
+                                <Link
+                                    href={`/activiteiten/${nextEvent.id}`}
+                                    className="block w-full transition-transform hover:scale-[1.02]"
+                                >
+                                    <div className="inset-x-4 bottom-4 w-full sm:inset-x-6 sm:bottom-6 rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4">
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-white">
+                                                Volgende evenement
+                                            </p>
+                                            <p className="mt-2 text-base sm:text-lg font-bold text-theme-white truncate">
+                                                {nextEvent.name} • {formatEventDate(nextEvent.event_date)}
+                                            </p>
+                                            <p className="mt-1 text-xs sm:text-sm text-theme-white line-clamp-2">
+                                                {nextEvent.description || "Kom gezellig langs bij ons volgende evenement!"}
+                                            </p>
+                                        </div>
+                                        <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white text-theme-purple flex items-center justify-center shadow-md transition-transform group-hover:scale-110">
+                                            <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6" />
+                                        </div>
+                                    </div>
+                                </Link>
+                            ) : (
+                                <div className="inset-x-4 bottom-4 w-full sm:inset-x-6 sm:bottom-6 rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur">
+                                    <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-white">
+                                        Volgende evenement
+                                    </p>
+                                    {eventsLoading ? (
+                                        <div className="mt-2 space-y-2">
+                                            <div className="h-5 sm:h-6 w-3/4 animate-pulse rounded bg-theme-purple/20"></div>
+                                            <div className="h-3 sm:h-4 w-full animate-pulse rounded bg-theme-purple/20"></div>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <p className="mt-2 text-base sm:text-lg font-bold text-theme">
+                                                Binnenkort meer activiteiten
+                                            </p>
+                                            <p className="mt-1 text-xs sm:text-sm text-theme-muted line-clamp-2">
+                                                Check regelmatig onze agenda voor nieuwe evenementen en activiteiten.
+                                            </p>
+                                        </>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                         <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                             <a
                                 href="/lidmaatschap"
@@ -108,67 +150,37 @@ export default function Hero() {
                                 Bekijk activiteiten
                             </a>
                         </div>
-
-                        <div className="flex flex-wrap gap-3 sm:gap-4">
-                            {STATS.map((stat) => (
-                                <article
-                                    key={stat.title}
-                                    className="group relative overflow-hidden flex-1 min-w-full sm:min-w-[calc(50%-0.5rem)] lg:min-w-[280px] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm backdrop-blur-sm transition duration-300 hover:-translate-y-1 sm:hover:-translate-y-2 hover:shadow-xl sm:hover:shadow-2xl"
-                                >
-                                    <div className="absolute inset-0 bg-gradient-theme opacity-90" />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-                                    <span className="absolute -top-12 -right-12 h-24 w-24 rounded-full bg-theme-purple transition duration-500 group-hover:scale-125 z-0" />
-                                    <div className="relative flex items-start gap-2 sm:gap-3 z-10">
-                                        <span className="inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl sm:rounded-2xl bg-white/20 text-theme-white">
-                                            <stat.icon className=" h-4 w-4 sm:h-5 sm:w-5" />
-                                        </span>
-                                        <div className="space-y-1 sm:space-y-2">
-                                            <h3 className="text-base sm:text-lg font-semibold text-theme-white">{stat.title}</h3>
-                                            <p className="text-xs sm:text-sm text-theme-white">{stat.description}</p>
-                                        </div>
-                                    </div>
-                                </article>
-                            ))}
-                        </div>
                     </div>
 
-                    <div className="relative flex justify-center lg:justify-end">
-                        <div className="absolute -left-10 top-6 h-24 w-24 rounded-full bg-gradient-to-br from-theme-purple-lighter to-theme-purple-light blur-2xl lg:block opacity-50" />
-                        <div className="relative w-full max-w-md lg:max-w-none rounded-2xl sm:rounded-[3.5rem] bg-[var(--bg-card)]/80 shadow-2xl backdrop-blur-xl overflow-hidden">
-                            <img
-                                src={heroImage}
-                                alt="Salve Mundi evenement"
-                                className="w-full h-[240px] sm:h-[300px] md:h-[380px] lg:h-[480px] xl:h-[540px] object-cover"
-                            />
-                            <div className="absolute inset-x-4 bottom-4 sm:inset-x-6 sm:bottom-6 rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur">
-                                <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-white">
-                                    Volgende evenement
-                                </p>
-                                {eventsLoading ? (
-                                    <div className="mt-2 space-y-2">
-                                        <div className="h-5 sm:h-6 w-3/4 animate-pulse rounded bg-theme-purple/20"></div>
-                                        <div className="h-3 sm:h-4 w-full animate-pulse rounded bg-theme-purple/20"></div>
-                                    </div>
-                                ) : nextEvent ? (
-                                    <>
-                                        <p className="mt-2 text-base sm:text-lg font-bold text-theme-white">
-                                            {nextEvent.name} • {formatEventDate(nextEvent.event_date)}
-                                        </p>
-                                        <p className="mt-1 text-xs sm:text-sm text-theme-white line-clamp-2">
-                                            {nextEvent.description || "Kom gezellig langs bij ons volgende evenement!"}
-                                        </p>
-                                    </>
-                                ) : (
-                                    <>
-                                        <p className="mt-2 text-base sm:text-lg font-bold text-theme">
-                                            Binnenkort meer activiteiten
-                                        </p>
-                                        <p className="mt-1 text-xs sm:text-sm text-theme-muted line-clamp-2">
-                                            Check regelmatig onze agenda voor nieuwe evenementen en activiteiten.
-                                        </p>
-                                    </>
-                                )}
+
+
+
+                    <div className="flex flex-wrap gap-3 sm:gap-4">
+                        <div className="relative w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/80 shadow-2xl backdrop-blur-xl overflow-hidden">
+                            <div className="h-[240px] sm:h-[300px] md:h-[380px] lg:h-[480px] xl:h-[540px]">
+                                <Swiper
+                                    modules={[Autoplay]}
+                                    autoplay={{
+                                        delay: 5000,
+                                        disableOnInteraction: false,
+                                    }}
+                                    loop={true}
+                                    allowTouchMove={false}
+                                    className="h-full w-full"
+                                >
+                                    {slides.map((src, index) => (
+                                        <SwiperSlide key={index}>
+                                            <img
+                                                src={src}
+                                                alt="Salve Mundi sfeerimpressie"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </SwiperSlide>
+                                    ))}
+                                </Swiper>
                             </div>
+
+
                         </div>
                     </div>
                 </div>
@@ -176,3 +188,4 @@ export default function Hero() {
         </section>
     );
 }
+

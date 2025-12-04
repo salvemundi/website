@@ -72,6 +72,12 @@ interface DirectusStore {
     sponsorsLoading: boolean;
     sponsorsError: string | null;
     loadSponsors: () => Promise<void>;
+
+    // Hero Banners
+    heroBanners: any[]; // Using any to avoid circular dependency issues for now, or import type if possible
+    heroBannersLoading: boolean;
+    heroBannersError: string | null;
+    loadHeroBanners: () => Promise<void>;
 }
 
 export const useDirectusStore = create<DirectusStore>((set) => ({
@@ -144,6 +150,25 @@ export const useDirectusStore = create<DirectusStore>((set) => ({
             set({
                 sponsorsError: error instanceof Error ? error.message : 'Failed to load sponsors',
                 sponsorsLoading: false,
+            });
+        }
+    },
+
+    // Hero Banners
+    heroBanners: [],
+    heroBannersLoading: false,
+    heroBannersError: null,
+    loadHeroBanners: async () => {
+        set({ heroBannersLoading: true, heroBannersError: null });
+        try {
+            const { heroBannersApi } = await import('../api/salvemundi');
+            const data = await heroBannersApi.getAll();
+            set({ heroBanners: data, heroBannersLoading: false });
+        } catch (error) {
+            console.error('Failed to load hero banners:', error);
+            set({
+                heroBannersError: error instanceof Error ? error.message : 'Failed to load hero banners',
+                heroBannersLoading: false,
             });
         }
     },
