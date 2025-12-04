@@ -16,7 +16,10 @@ const allowedOrigins = [
   'https://dev.salvemundi.nl'
 ];
 
-app.use(cors({
+// Reusable CORS options so we can apply the same policy to preflight
+// responses handled by express. This ensures OPTIONS responses include
+// the Access-Control-* headers the browser expects.
+const corsOptions = {
   origin: function (origin, callback) {
     // If no origin (e.g. curl or server-side) allow it
     if (!origin) return callback(null, true);
@@ -32,7 +35,16 @@ app.use(cors({
     }
   },
   methods: ['GET', 'POST', 'OPTIONS'],
-}));
+  // Allow common headers that clients send (Authorization for example)
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  // Ensure browsers get a 204 for successful preflight
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+// Explicitly respond to all preflight requests using the same cors policy
+// so that Access-Control-Allow-* headers are always present on OPTIONS.
+app.options('*', cors(corsOptions));
 app.use(express.json());
 
 // Health check
