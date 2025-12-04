@@ -7,7 +7,11 @@ import Footer from '@/widgets/footer/ui/Footer';
 export const metadata: Metadata = {
     title: 'Salve Mundi - Studievereniging Fontys ICT Eindhoven',
     description: 'De studievereniging voor HBO-studenten in Eindhoven. Activiteiten, commissies, en meer voor een onvergetelijke studententijd.',
-    metadataBase: new URL('https://salvemundi.nl'),
+    metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL
+        ? (process.env.NEXT_PUBLIC_APP_URL.startsWith('http') ? process.env.NEXT_PUBLIC_APP_URL : `https://${process.env.NEXT_PUBLIC_APP_URL}`)
+        : process.env.VERCEL_URL
+            ? `https://${process.env.VERCEL_URL}`
+            : 'https://salvemundi.nl'),
     openGraph: {
         title: 'Salve Mundi - Studievereniging Fontys ICT Eindhoven',
         description: 'De studievereniging voor HBO-studenten in Eindhoven. Activiteiten, commissies, en meer voor een onvergetelijke studententijd.',
