@@ -164,7 +164,7 @@ export default function SignUp() {
             <main className="">
                 <div className="flex flex-col sm:flex-row gap-6 p-6 sm:p-10">
                     <section className="w-full sm:w-1/2 bg-gradient-theme rounded-3xl shadow-lg p-6 sm:p-8">
-                        <h1 className="text-3xl font-bold text-theme-purple-lighter mb-6">
+                        <h1 className="text-3xl font-bold text-theme-white mb-6">
                             {formTitle}
                         </h1>
 
@@ -219,25 +219,25 @@ export default function SignUp() {
 
                         {isGuest && (
                             <form className="flex text-start flex-col gap-4" onSubmit={handleSubmit}>
-                                <p className="text-theme-white/90 mb-2">Vul je gegevens in om een account aan te maken en lid te worden.</p>
+                                <p className="text-theme-white mb-2">Vul je gegevens in om een account aan te maken en lid te worden.</p>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <label className="font-semibold text-theme-purple-lighter">
+                                    <label className="font-semibold text-theme-white">
                                         Voornaam
                                         <input type="text" name="voornaam" value={form.voornaam} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple" />
                                     </label>
-                                    <label className="font-semibold text-theme-purple-lighter">
+                                    <label className="font-semibold text-theme-white">
                                         Achternaam
                                         <input type="text" name="achternaam" value={form.achternaam} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple" />
                                     </label>
                                 </div>
 
-                                <label className="font-semibold text-theme-purple-lighter">
+                                <label className="font-semibold text-theme-white">
                                     E-mail
                                     <input type="email" name="email" value={form.email} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple" />
                                 </label>
 
-                                <label className="font-semibold text-theme-purple-lighter">Geboortedatum</label>
+                                <label className="font-semibold text-theme-white">Geboortedatum</label>
                                 <div className="w-full">
                                     <DatePicker
                                         selected={form.geboortedatum}
@@ -257,7 +257,7 @@ export default function SignUp() {
                                     <input type="tel" name="telefoon" value={form.telefoon} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple" />
                                 </label>
 
-                                <button type="submit" disabled={isProcessing} className="bg-theme-purple-lighter text-theme-purple-darker font-bold py-2 px-4 rounded shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl mt-4 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <button type="submit" disabled={isProcessing} className="bg-theme-white text-theme-purple-darker font-bold py-2 px-4 rounded shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl mt-4 disabled:opacity-50 disabled:cursor-not-allowed">
                                     {isProcessing ? 'Verwerken...' : 'Betalen en Inschrijven (€20,00)'}
                                 </button>
                             </form>
@@ -266,10 +266,10 @@ export default function SignUp() {
 
                     <div className="w-full sm:w-1/2 flex flex-col gap-6">
                         <div className="w-full text-center bg-gradient-theme rounded-3xl p-6">
-                            <h2 className="text-2xl font-bold text-theme-purple-lighter mb-2">
+                            <h2 className="text-2xl font-bold text-theme-white mb-2">
                                 Waarom lid worden?
                             </h2>
-                            <p className="text-lg mb-4 text-theme-white/90">
+                            <p className="text-lg mb-4 text-theme-white">
                                 Als lid van Salve Mundi krijg je toegang tot exclusieve
                                 activiteiten, workshops, borrels en nog veel meer! Word vandaag
                                 nog lid en ontdek de wereld van ICT samen met ons.

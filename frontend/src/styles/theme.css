@@ -17,7 +17,7 @@
   --theme-purple-light: #a4539b;
   --theme-purple-lighter: #d4add0;
   --theme-purple-dark: #471e3b;
-  --theme-purple-darker: #2d1228;
+  --theme-purple-darker: #ca70be;
 
   /* White/Light colors */
   --theme-white: #ffffff;
@@ -50,7 +50,7 @@
   --theme-purple-light: #e8c4e6;
   --theme-purple-lighter: #f4e2f3;
   --theme-purple-dark: #b471ad;
-  --theme-purple-darker: #8c4682;
+  --theme-purple-darker: #663265;
 
   /* White stays white in dark mode */
   --theme-white: #ffffff;
