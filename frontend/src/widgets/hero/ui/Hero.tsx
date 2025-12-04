@@ -162,8 +162,8 @@ export default function Hero() {
                                         delay: 5000,
                                         disableOnInteraction: false,
                                     }}
-                                    loop={true}
-                                    allowTouchMove={false}
+                                    loop={slides.length > 1}
+                                    allowTouchMove={slides.length > 1}
                                     className="h-full w-full"
                                 >
                                     {slides.map((src, index) => (
