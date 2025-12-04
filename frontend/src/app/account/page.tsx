@@ -11,7 +11,7 @@ import {
     CreditCard,
     MessageCircle,
     FileText,
-    User,
+
     Mail,
     Phone,
     Gamepad2,
