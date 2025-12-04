@@ -259,13 +259,14 @@ export default function EventDetailPage() {
             </PageHeader>
 
             <main className="mx-auto max-w-app px-4 py-8 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-fr">
+                {/* Two equal columns on md+: form (left) and compact info card (right); mobile stays stacked */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
 
 
                     {/* Signup Form - Tall Tile (Right column) */}
                     <div className="md:col-span-1 md:row-span-3 rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg flex flex-col h-full">
                         <div className="flex-grow">
-                            {isPaidAndHasQR ? (
+                                {isPaidAndHasQR ? (
                                 // Digital ticket display case
                                 <div className="space-y-6 text-slate-900 dark:text-white h-full flex flex-col justify-center">
                                     <h3 className="text-2xl font-extrabold text-theme-purple-dark text-center">🎉 Inschrijving Definitief!</h3>
@@ -312,7 +313,7 @@ export default function EventDetailPage() {
                                         <Users className="h-6 w-6 text-theme-purple" />
                                         Inschrijven
                                     </h3>
-                                    <form onSubmit={handleSubmit} className="space-y-4 flex-grow flex flex-col justify-center">
+                                    <form onSubmit={handleSubmit} className="space-y-4 flex flex-col">
                                         {/* Name */}
                                         <div>
                                             <label htmlFor="name" className="block text-theme-purple font-semibold mb-2">Naam *</label>
@@ -359,7 +360,7 @@ export default function EventDetailPage() {
                                         </div>
 
                                         {/* Submit Button */}
-                                        <div className="pt-6 mt-auto">
+                                        <div className="pt-6">
                                             <button
                                                 type="submit"
                                                 disabled={isSubmitting}
@@ -418,7 +419,6 @@ export default function EventDetailPage() {
                                 </p>
                             </div>
                         </div>
-                    )}
 
 
 
