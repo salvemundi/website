@@ -64,7 +64,7 @@ export default {
 
           // DARK MODE
           dark: {
-            DEFAULT: "#1e293b",
+            DEFAULT: "var(--bg-card-dark)",
             subtle: "#0f172a",
           },
         },

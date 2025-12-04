@@ -14,8 +14,8 @@
 :root {
   /* Purple palette */
   --theme-purple: #663265;
-  --theme-purple-light: #a4539b;
-  --theme-purple-lighter: #d4add0;
+  --theme-purple-light: #e079d4;
+  --theme-purple-lighter: #f7e5f5;
   --theme-purple-dark: #471e3b;
   --theme-purple-darker: #ca70be;
 
@@ -30,8 +30,8 @@
   --theme-text-light: #8a7a8c;
 
   /* Gradient colors */
-  --theme-gradient-start: #663265;
-  --theme-gradient-end: #a4539b;
+  --theme-gradient-start: #a16ca1;
+  --theme-gradient-end: #c47bbb;
   --theme-gradient-light-start: #a4539b;
   --theme-gradient-light-end: #d4add0;
   --theme-gradient-dark-start: #471e3b;
