@@ -266,7 +266,7 @@ export default function EventDetailPage() {
                     {/* Signup Form - Tall Tile (Right column) */}
                     <div className="md:col-span-1 md:row-span-3 rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg flex flex-col h-full">
                         <div className="flex-grow">
-                                {isPaidAndHasQR ? (
+                            {isPaidAndHasQR ? (
                                 // Digital ticket display case
                                 <div className="space-y-6 text-slate-900 dark:text-white h-full flex flex-col justify-center">
                                     <h3 className="text-2xl font-extrabold text-theme-purple-dark text-center">🎉 Inschrijving Definitief!</h3>
@@ -422,6 +422,7 @@ export default function EventDetailPage() {
 
 
 
+                    )}
                     {/* Contact - Small Tile */}
                     {(event.contact_name || committeeEmail) && (
                         <div className="rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg flex flex-col items-center justify-center text-center gap-3 hover:scale-[1.02] transition-transform">

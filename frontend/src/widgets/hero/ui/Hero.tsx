@@ -58,9 +58,7 @@ export default function Hero() {
     };
 
     const defaultBanners = [
-        getImageUrl('banner_1.jpg'),
-        getImageUrl('banner_2.jpg'),
-        getImageUrl('banner_3.jpg'),
+        "/logo_purple.svg",
     ];
 
     const slides = heroBanners?.length > 0
