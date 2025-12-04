@@ -3,17 +3,17 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/features/auth/providers/auth-provider";
-import PageHeader from "@/shared/components/ui/PageHeader";
-import ActiviteitDetailModal from "@/shared/components/activities/ActiviteitDetailModal";
-import CalendarView from "@/shared/components/activities/CalendarView";
-import FeaturedEvent from "@/shared/components/activities/FeaturedEvent";
-import DayDetails from "@/shared/components/activities/DayDetails";
-import EventList from "@/shared/components/activities/EventList";
-import { useSalvemundiEvents } from "@/hooks/useSalvemundiApi";
-import { eventsApi, getImageUrl } from "@/lib/api/salvemundi";
-import { sendEventSignupEmail } from "@/lib/services/email-service";
+import PageHeader from "@/widgets/page-header/ui/PageHeader";
+import ActiviteitDetailModal from "@/entities/activity/ui/ActiviteitDetailModal";
+import CalendarView from "@/entities/activity/ui/CalendarView";
+import FeaturedEvent from "@/entities/activity/ui/FeaturedEvent";
+import DayDetails from "@/entities/activity/ui/DayDetails";
+import EventList from "@/entities/activity/ui/EventList";
+import { useSalvemundiEvents } from "@/shared/lib/hooks/useSalvemundiApi";
+import { eventsApi, getImageUrl } from "@/shared/lib/api/salvemundi";
+import { sendEventSignupEmail } from "@/shared/lib/services/email-service";
 import { addMonths, subMonths } from 'date-fns';
-import ActiviteitCard from "@/shared/components/activities/ActiviteitCard";
+import ActiviteitCard from "@/entities/activity/ui/ActiviteitCard";
 
 const buildCommitteeEmail = (name?: string | null) => {
     if (!name) return undefined;

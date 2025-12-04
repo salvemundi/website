@@ -3,9 +3,9 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { documentsApi } from '@/lib/api/salvemundi';
+import { documentsApi } from '@/shared/lib/api/salvemundi';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import PageHeader from '@/shared/components/ui/PageHeader';
+import PageHeader from '@/widgets/page-header/ui/PageHeader';
 
 interface Document {
     id: number;

@@ -1,12 +1,12 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import PageHeader from '@/shared/components/ui/PageHeader';
-import BackToTopButton from '@/shared/components/ui/BackToTopButton';
-import { pubCrawlSignupsApi, getImageUrl } from '@/lib/api/salvemundi';
-import { useSalvemundiPubCrawlEvents } from '@/hooks/useSalvemundiApi';
+import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import BackToTopButton from '@/shared/ui/BackToTopButton';
+import { pubCrawlSignupsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
+import { useSalvemundiPubCrawlEvents } from '@/shared/lib/hooks/useSalvemundiApi';
 import { format } from 'date-fns';
-import { sendEventSignupEmail } from '@/lib/services/email-service';
+import { sendEventSignupEmail } from '@/shared/lib/services/email-service';
 
 const ASSOCIATIONS = [
     'Salve Mundi',

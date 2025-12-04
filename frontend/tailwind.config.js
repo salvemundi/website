@@ -110,7 +110,7 @@ export default {
       },
 
       maxWidth: {
-        app: "9xl",
+        app: "7xl",
       },
 
       backgroundImage: {

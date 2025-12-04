@@ -3,10 +3,10 @@
 import { useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import { useSalvemundiTransactions } from '@/hooks/useSalvemundiApi';
+import { useSalvemundiTransactions } from '@/shared/lib/hooks/useSalvemundiApi';
 import { format } from 'date-fns';
-import PageHeader from '@/shared/components/ui/PageHeader';
-import { Transaction } from '@/lib/api/salvemundi';
+import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import { Transaction } from '@/shared/lib/api/salvemundi';
 
 function TransactionsContent() {
     const router = useRouter();

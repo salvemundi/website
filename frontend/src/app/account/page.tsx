@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import { getUserEventSignups, updateMinecraftUsername } from '@/lib/auth';
-import { getImageUrl } from '@/lib/api/salvemundi';
+import { getUserEventSignups, updateMinecraftUsername } from '@/shared/lib/auth';
+import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { format } from 'date-fns';
 
 interface EventSignup {
@@ -82,7 +82,7 @@ export default function AccountPage() {
             // Since refreshUser is not exposed from useAuth directly in the old code (it was destructured),
             // we might need to import it or use the one from useAuth if available.
             // Checking useAuth hook definition... it seems refreshUser IS exposed in the new AuthProvider.
-            // But wait, I imported refreshUser from '@/lib/auth' in the imports above.
+            // But wait, I imported refreshUser from '@/shared/lib/auth' in the imports above.
             // Let's check if useAuth exposes it. The old code destructured it from useAuth.
             // I will assume useAuth exposes it, or I will use the standalone function if needed.
             // Actually, looking at the old code: `const { ..., refreshUser } = useAuth();`

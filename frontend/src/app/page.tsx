@@ -1,5 +1,5 @@
-import Hero from '@/shared/components/sections/Hero';
-import EventsSection from '@/shared/components/sections/EventsSection';
+import Hero from '@/widgets/hero/ui/Hero';
+import EventsSection from '@/widgets/events-section/ui/EventsSection';
 
 export default function HomePage() {
     return (

@@ -2,9 +2,9 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { PublicClientApplication } from '@azure/msal-browser';
-import { msalConfig, loginRequest } from '@/config/msalConfig';
-import * as authApi from '@/lib/auth';
-import { User, SignupData } from '@/types/auth';
+import { msalConfig, loginRequest } from '@/shared/config/msalConfig';
+import * as authApi from '@/shared/lib/auth';
+import { User, SignupData } from '@/shared/model/types/auth';
 
 // Initialize MSAL instance with error handling
 let msalInstance: PublicClientApplication | null = null;

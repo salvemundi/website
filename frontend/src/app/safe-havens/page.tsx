@@ -1,9 +1,9 @@
 'use client';
 
 import React from 'react';
-import PageHeader from '@/shared/components/ui/PageHeader';
-import SafeHavenCard from '@/shared/components/safe-havens/SafeHavenCard';
-import { useSalvemundiSafeHavens } from '@/hooks/useSalvemundiApi';
+import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import SafeHavenCard from '@/entities/safe-haven/ui/SafeHavenCard';
+import { useSalvemundiSafeHavens } from '@/shared/lib/hooks/useSalvemundiApi';
 import { Shield, Lock, AlertTriangle, UserX, Users, MessageSquare, MapPin } from 'lucide-react';
 
 export default function SafeHavensPage() {
