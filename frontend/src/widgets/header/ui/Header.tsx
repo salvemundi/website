@@ -62,7 +62,7 @@ const Header: React.FC = () => {
                         href="/"
                         className="flex items-center gap-3 rounded-full bg-[var(--bg-card)]/80 px-4 py-2 shadow-sm hover:shadow-md transition"
                     >
-                        <img className="h-9" src="/img/Logo.png" alt="Salve Mundi" />
+                        <img className="h-9" src="/logo_purple.svg" alt="Salve Mundi" />
                         <div className="hidden text-left sm:block">
                             <p className="text-xs font-semibold uppercase tracking-[0.35em] text-theme-purple">
                                 Salve Mundi
@@ -99,7 +99,7 @@ const Header: React.FC = () => {
                                 className="flex items-center gap-2 rounded-full  px-3 py-1.5 text-sm font-medium text-theme shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                             >
                                 <img
-                                    src={user?.avatar ? getImageUrl(user.avatar) : "/img/Logo.png"}
+                                    src={user?.avatar ? getImageUrl(user.avatar) : "/logo_old.svg"}
                                     alt={user?.email || "profiel"}
                                     className="h-8 w-8 rounded-full object-cover"
                                 />
@@ -173,7 +173,7 @@ const Header: React.FC = () => {
                                         className="h-full w-full object-cover"
                                     />
                                 ) : (
-                                    <img className="h-7 w-7" src="/img/Logo.png" alt="" />
+                                    <img className="h-7 w-7" src="/logo_old.svg" alt="" />
                                 )}
                             </span>
                             <span className="text-sm font-semibold text-theme">

@@ -129,7 +129,15 @@ export default function EventDetailPage() {
         }).format(date);
     }, [rawDate]);
 
-    const formattedTime = event ? new Date(event.event_date).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }) : null;
+    const formattedTime = useMemo(() => {
+        if (!event) return null;
+        if (event.event_time) {
+            // event_time is likely "HH:MM:SS"
+            const [hours, minutes] = event.event_time.split(':');
+            return `${hours}:${minutes}`;
+        }
+        return new Date(event.event_date).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+    }, [event]);
 
     // Calculate price based on membership (if we knew it) or just display both/one
     // The modal used `activity.price`, but our event object has `price_members` and `price_non_members`
@@ -222,7 +230,7 @@ export default function EventDetailPage() {
                 />
                 <div className="mx-auto max-w-app px-4 py-12">
                     <div className="rounded-3xl bg-white/80 p-8 text-center shadow-lg">
-                        <p className="mb-4 text-lg font-semibold text-paars">
+                        <p className="mb-4 text-lg font-semibold text-theme-purple-dark">
                             De gevraagde activiteit kon niet worden gevonden
                         </p>
                         <button
@@ -254,13 +262,14 @@ export default function EventDetailPage() {
                 {/* Two equal columns on md+: form (left) and compact info card (right); mobile stays stacked */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
 
-                    {/* Signup Form / Status - left column */}
-                    <div className="rounded-3xl bg-white/90 dark:bg-surface-dark/90 p-6 shadow-lg flex flex-col md:h-full">
+
+                    {/* Signup Form - Tall Tile (Right column) */}
+                    <div className="md:col-span-1 md:row-span-3 rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg flex flex-col h-full">
                         <div className="flex-grow">
                                 {isPaidAndHasQR ? (
                                 // Digital ticket display case
                                 <div className="space-y-6 text-slate-900 dark:text-white h-full flex flex-col justify-center">
-                                    <h3 className="text-2xl font-extrabold text-paars text-center">🎉 Inschrijving Definitief!</h3>
+                                    <h3 className="text-2xl font-extrabold text-theme-purple-dark text-center">🎉 Inschrijving Definitief!</h3>
                                     <p className="text-center text-lg text-slate-600 dark:text-white/90">
                                         Je bent succesvol ingeschreven en betaald voor {event.name}.
                                     </p>
@@ -299,15 +308,15 @@ export default function EventDetailPage() {
                                 </div>
                             ) : (
                                 // Signup Form
-                                <div className="flex flex-col">
-                                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-                                        <Users className="h-6 w-6 text-paars" />
+                                <div className="h-full flex flex-col">
+                                    <h3 className="text-2xl font-bold text-theme-purple mb-6 flex items-center gap-2">
+                                        <Users className="h-6 w-6 text-theme-purple" />
                                         Inschrijven
                                     </h3>
                                     <form onSubmit={handleSubmit} className="space-y-4 flex flex-col">
                                         {/* Name */}
                                         <div>
-                                            <label htmlFor="name" className="block text-slate-700 dark:text-white font-semibold mb-2">Naam *</label>
+                                            <label htmlFor="name" className="block text-theme-purple font-semibold mb-2">Naam *</label>
                                             <input
                                                 type="text"
                                                 id="name"
@@ -322,7 +331,7 @@ export default function EventDetailPage() {
 
                                         {/* Email */}
                                         <div>
-                                            <label htmlFor="email" className="block text-slate-700 dark:text-white font-semibold mb-2">Email *</label>
+                                            <label htmlFor="email" className="block text-theme-purple font-semibold mb-2">Email *</label>
                                             <input
                                                 type="email"
                                                 id="email"
@@ -330,14 +339,14 @@ export default function EventDetailPage() {
                                                 value={formData.email}
                                                 onChange={handleInputChange}
                                                 className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-paars transition-all ${errors.email ? "ring-2 ring-red-500" : ""}`}
-                                                placeholder="student@avans.nl"
+                                                placeholder="naam.achternaam@salvemundi.nl"
                                             />
                                             {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                                         </div>
 
                                         {/* Phone */}
                                         <div>
-                                            <label htmlFor="phoneNumber" className="block text-slate-700 dark:text-white font-semibold mb-2">Telefoonnummer *</label>
+                                            <label htmlFor="phoneNumber" className="block text-theme-purple font-semibold mb-2">Telefoonnummer *</label>
                                             <input
                                                 type="tel"
                                                 id="phoneNumber"
@@ -355,7 +364,7 @@ export default function EventDetailPage() {
                                             <button
                                                 type="submit"
                                                 disabled={isSubmitting}
-                                                className="w-full bg-gradient-to-r from-oranje to-red-600 text-white font-bold py-4 px-6 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                                className="w-full bg-theme-purple text-theme-purple-darker font-bold py-4 px-6 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                             >
                                                 {isSubmitting ? (
                                                     <>
@@ -374,69 +383,78 @@ export default function EventDetailPage() {
                         </div>
                     </div>
 
-                    {/* Right column: compact info card + description stacked */}
-                    <div className="flex flex-col gap-6 md:col-span-1">
-                        <div className="rounded-3xl bg-white/90 dark:bg-surface-dark/90 p-6 shadow-lg hover:scale-[1.01] transition-transform md:h-full md:self-stretch flex flex-col justify-center">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
-                                <div className="flex items-start gap-4">
-                                    <div className="h-10 w-10 rounded-xl bg-paars/10 flex items-center justify-center text-paars mt-1">
-                                        <CalendarClock className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/70 font-bold">Datum</p>
-                                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{formattedDate}</p>
-                                        {formattedTime && <p className="text-xs text-slate-600 dark:text-white/80">{formattedTime}</p>}
-                                    </div>
-                                </div>
+                    {/* Date & Time - Small Tile */}
+                    <div className="rounded-3xl  bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg flex flex-col items-center justify-center text-center gap-3 hover:scale-[1.02] transition-transform">
+                        <div className="h-12 w-12 rounded-2xl bg-paars/10 flex items-center justify-center text-theme-purple-dark">
+                            <CalendarClock className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <p className="text-xs uppercase tracking-wide text-theme-purple-dark dark:text-white/70 font-bold">Datum & Tijd</p>
+                            <p className="text-lg font-bold text-theme-purple dark:text-white">{formattedDate}</p>
+                            <p className="text-sm text-theme-purple-dark dark:text-white/80">{formattedTime}</p>
+                        </div>
+                    </div>
 
-                                <div className="flex items-start gap-4">
-                                    <div className="h-10 w-10 rounded-xl bg-paars/10 flex items-center justify-center text-paars mt-1">
-                                        <Euro className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/70 font-bold">Prijs</p>
-                                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{displayPrice}</p>
-                                    </div>
-                                </div>
+                    {/* Price - Small Tile */}
+                    <div className="rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg flex flex-col items-center justify-center text-center gap-3 hover:scale-[1.02] transition-transform">
+                        <div className="h-12 w-12 rounded-2xl bg-paars/10 flex items-center justify-center text-theme-purple-dark">
+                            <Euro className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <p className="text-xs uppercase tracking-wide text-theme-purple-dark dark:text-white/70 font-bold">Prijs</p>
+                            <p className="text-lg font-bold text-theme-purple dark:text-white">{displayPrice}</p>
+                        </div>
+                    </div>
 
-                                <div className="flex items-start gap-4">
-                                    <div className="h-10 w-10 rounded-xl bg-paars/10 flex items-center justify-center text-paars mt-1">
-                                        <UsersIcon className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/70 font-bold">Organisatie</p>
-                                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{event.committee_name ? event.committee_name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim() : '—'}</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-start gap-4">
-                                    <div className="h-10 w-10 rounded-xl bg-paars/10 flex items-center justify-center text-paars mt-1">
-                                        <Mail className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/70 font-bold">Contact</p>
-                                        {event.contact_name && <p className="text-sm font-semibold text-slate-900 dark:text-white">{event.contact_name}</p>}
-                                        {committeeEmail && <a href={`mailto:${committeeEmail}`} className="text-sm text-paars hover:underline break-all">{committeeEmail}</a>}
-                                        {!event.contact_name && !committeeEmail && <p className="text-sm text-slate-500">—</p>}
-                                    </div>
-                                </div>
+                    {/* Committee - Small Tile */}
+                    {event.committee_name && (
+                        <div className="rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg flex flex-col items-center justify-center text-center gap-3 hover:scale-[1.02] transition-transform">
+                            <div className="h-12 w-12 rounded-2xl bg-paars/10 flex items-center justify-center text-theme-purple-dark">
+                                <UsersIcon className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <p className="text-xs uppercase tracking-wide text-theme-purple-dark dark:text-white/70 font-bold">Organisatie</p>
+                                <p className="text-lg font-bold text-theme-purple dark:text-white">
+                                    {event.committee_name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim()}
+                                </p>
                             </div>
                         </div>
 
-                        {/* Description under details */}
-                        {event.description && (
-                            <div className="rounded-3xl bg-white/90 dark:bg-surface-dark/90 p-6 shadow-lg flex flex-col">
-                                <h2 className="mb-4 text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                    <Info className="h-6 w-6 text-paars" />
-                                    Over dit evenement
-                                </h2>
-                                <div
-                                    className="prose dark:prose-invert max-w-none text-slate-700 dark:text-ink-muted"
-                                    dangerouslySetInnerHTML={{ __html: event.description }}
-                                />
+
+
+                    {/* Contact - Small Tile */}
+                    {(event.contact_name || committeeEmail) && (
+                        <div className="rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg flex flex-col items-center justify-center text-center gap-3 hover:scale-[1.02] transition-transform">
+                            <div className="h-12 w-12 rounded-2xl bg-paars/10 flex items-center justify-center text-theme-purple-dark">
+                                <Mail className="h-6 w-6" />
                             </div>
-                        )}
-                    </div>
+                            <div>
+                                <p className="text-xs uppercase tracking-wide text-theme-purple-dark dark:text-white/70 font-bold">Contact</p>
+                                {event.contact_name && (
+                                    <p className="text-sm font-semibold text-theme-purple dark:text-white">{event.contact_name}</p>
+                                )}
+                                {committeeEmail && (
+                                    <a href={`mailto:${committeeEmail}`} className="text-sm text-theme-purple hover:underline break-all">
+                                        {committeeEmail}
+                                    </a>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Description - Large Tile (2x2 on desktop) */}
+                    {event.description && (
+                        <div className="md:col-span-2 md:row-span-2 rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-8 shadow-lg flex flex-col">
+                            <h2 className="mb-4 text-2xl font-bold text-theme-purple dark:text-white flex items-center gap-2">
+                                <Info className="h-6 w-6 text-theme-purple-dark" />
+                                Over dit evenement
+                            </h2>
+                            <div
+                                className="prose dark:prose-invert max-w-none text-theme-purple dark:text-ink-muted flex-grow"
+                                dangerouslySetInnerHTML={{ __html: event.description }}
+                            />
+                        </div>
+                    )}
 
 
                 </div>

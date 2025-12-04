@@ -33,7 +33,7 @@
   --text-muted: var(--text-muted-light);
 
   /* Backgrounds - explicit light and dark variants */
-  --bg-main-light: #ffffff;
+  --bg-main-light: #f8f9fa;
   --bg-main-dark: #1a141b;
   --bg-main: var(--bg-main-light);
 
