@@ -2,10 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@import "../styles/theme.css";
+
 /* Root color system */
 :root {
-  /* Main brand color */
-  --color-primary-50:  #f4e9f3;
+  /* Main brand color - Light mode variants */
+  --color-primary-50: #f4e9f3;
   --color-primary-100: #e4cbe2;
   --color-primary-200: #d4add0;
   --color-primary-300: #c48fbe;
@@ -16,52 +18,72 @@
   --color-primary-800: #5e2b52;
   --color-primary-900: #471e3b;
 
-  /* Main brand (your exact color) */
-  --color-primary: #663265;
+  /* Main brand - explicit light and dark variants */
+  --color-primary-light: #663265;
+  --color-primary-dark: #d9a3d6;
+  --color-primary: var(--color-primary-light);
 
-  /* Text */
-  --text-main: #663265;
-  --text-muted: #6f5772;
+  /* Text - explicit light and dark variants */
+  --text-main-light: #663265;
+  --text-main-dark: #ffffff;
+  --text-main: var(--text-main-light);
 
-  /* Backgrounds */
-  --bg-main: #ffffff;
-  --bg-soft: #faf7fb;
-  --bg-card: #ffffff;
+  --text-muted-light: #6f5772;
+  --text-muted-dark: #c9b2cc;
+  --text-muted: var(--text-muted-light);
 
-  /* Borders */
-  --border-color: #d9c7db;
+  /* Backgrounds - explicit light and dark variants */
+  --bg-main-light: #ffffff;
+  --bg-main-dark: #1a141b;
+  --bg-main: var(--bg-main-light);
+
+  --bg-soft-light: #faf7fb;
+  --bg-soft-dark: #241d25;
+  --bg-soft: var(--bg-soft-light);
+
+  --bg-card-light: #ffffff;
+  --bg-card-dark: #2c2430;
+  --bg-card: var(--bg-card-light);
+
+  /* Borders - explicit light and dark variants */
+  --border-color-light: #d9c7db;
+  --border-color-dark: #4b3a4d;
+  --border-color: var(--border-color-light);
 }
 
-/* 🌙 Dark mode */
+/* 🌙 Dark mode - switch to dark variants */
 .dark {
-  --color-primary: #d9a3d6;
-
-  --text-main: #ffffff;
-  --text-muted: #c9b2cc;
-
-  --bg-main: #1a141b;
-  --bg-soft: #241d25;
-  --bg-card: #2c2430;
-
-  --border-color: #4b3a4d;
+  --color-primary: var(--color-primary-dark);
+  --text-main: var(--text-main-dark);
+  --text-muted: var(--text-muted-dark);
+  --bg-main: var(--bg-main-dark);
+  --bg-soft: var(--bg-soft-dark);
+  --bg-card: var(--bg-card-dark);
+  --border-color: var(--border-color-dark);
 }
 
 /* Apply them globally */
-body {
+html, body {
   background-color: var(--bg-main);
   color: var(--text-main);
+}
+
+/* Apply theme text color to all elements */
+* {
+  color: inherit;
+}
+
+/* Ensure text elements inherit properly */
+h1, h2, h3, h4, h5, h6,
+p, span, div, section, article,
+li, label, button, a,
+td, th, blockquote, figcaption {
+  color: inherit;
 }
 
 /* Ensure elements that explicitly set white text inside light backgrounds remain readable in light mode.
    This targets common utility classes like `bg-white` / `bg-white/..` with child elements using `text-white`.
    We scope this to light mode (when `body` does NOT have the `dark` class) so dark mode remains unaffected. */
-body:not(.dark) [class*="bg-white"] [class*="text-white"] {
-  color: inherit !important;
-}
-
-body:not(.dark) [class*="bg-white"][class*="text-white"] {
-  color: inherit !important;
-}
 
 .text-primary {
   color: var(--color-primary);
@@ -76,27 +98,67 @@ body:not(.dark) [class*="bg-white"][class*="text-white"] {
 }
 
 /* Shade utilities */
-.text-primary-50 { color: var(--color-primary-50); }
-.text-primary-100 { color: var(--color-primary-100); }
-.text-primary-200 { color: var(--color-primary-200); }
-.text-primary-300 { color: var(--color-primary-300); }
-.text-primary-400 { color: var(--color-primary-400); }
-.text-primary-500 { color: var(--color-primary-500); }
-.text-primary-600 { color: var(--color-primary-600); }
-.text-primary-700 { color: var(--color-primary-700); }
-.text-primary-800 { color: var(--color-primary-800); }
-.text-primary-900 { color: var(--color-primary-900); }
+.text-primary-50 {
+  color: var(--color-primary-50);
+}
+.text-primary-100 {
+  color: var(--color-primary-100);
+}
+.text-primary-200 {
+  color: var(--color-primary-200);
+}
+.text-primary-300 {
+  color: var(--color-primary-300);
+}
+.text-primary-400 {
+  color: var(--color-primary-400);
+}
+.text-primary-500 {
+  color: var(--color-primary-500);
+}
+.text-primary-600 {
+  color: var(--color-primary-600);
+}
+.text-primary-700 {
+  color: var(--color-primary-700);
+}
+.text-primary-800 {
+  color: var(--color-primary-800);
+}
+.text-primary-900 {
+  color: var(--color-primary-900);
+}
 
-.bg-primary-50 { background-color: var(--color-primary-50); }
-.bg-primary-100 { background-color: var(--color-primary-100); }
-.bg-primary-200 { background-color: var(--color-primary-200); }
-.bg-primary-300 { background-color: var(--color-primary-300); }
-.bg-primary-400 { background-color: var(--color-primary-400); }
-.bg-primary-500 { background-color: var(--color-primary-500); }
-.bg-primary-600 { background-color: var(--color-primary-600); }
-.bg-primary-700 { background-color: var(--color-primary-700); }
-.bg-primary-800 { background-color: var(--color-primary-800); }
-.bg-primary-900 { background-color: var(--color-primary-900); }
+.bg-primary-50 {
+  background-color: var(--color-primary-50);
+}
+.bg-primary-100 {
+  background-color: var(--color-primary-100);
+}
+.bg-primary-200 {
+  background-color: var(--color-primary-200);
+}
+.bg-primary-300 {
+  background-color: var(--color-primary-300);
+}
+.bg-primary-400 {
+  background-color: var(--color-primary-400);
+}
+.bg-primary-500 {
+  background-color: var(--color-primary-500);
+}
+.bg-primary-600 {
+  background-color: var(--color-primary-600);
+}
+.bg-primary-700 {
+  background-color: var(--color-primary-700);
+}
+.bg-primary-800 {
+  background-color: var(--color-primary-800);
+}
+.bg-primary-900 {
+  background-color: var(--color-primary-900);
+}
 
 /* ==============================================
    LEGACY COMPATIBILITY VARIABLES
@@ -108,9 +170,9 @@ body:not(.dark) [class*="bg-white"][class*="text-white"] {
   --color-geel: var(--color-primary-200);
   --color-samu: var(--text-main);
   --color-beige: var(--bg-soft);
-  
+
   --color-text-oranje: var(--color-primary);
-  
+
   /* Legacy semantic mappings */
   --color-background: var(--bg-main);
   --color-surface: var(--bg-card);
@@ -118,39 +180,49 @@ body:not(.dark) [class*="bg-white"][class*="text-white"] {
   --color-ink-muted: var(--text-muted);
   --color-ink-subtle: var(--text-muted);
   --color-ink-dim: var(--text-muted);
-  
+
   --color-ui-border: transparent;
   --color-ui-borderSoft: transparent;
   --color-ui-input: var(--bg-soft);
-  
+
   /* Additional semantic variables */
   --color-primary-light: var(--color-primary);
   --color-secondary-light: var(--color-primary-400);
   --color-tertiary-light: var(--color-primary-200);
   --color-neutral-light: var(--text-muted);
   --color-base-light: var(--bg-main);
-  
+
   /* Shadows & Radius */
-  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.1);
-  --shadow-card-dark: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.06),
+    0 1px 3px rgba(16, 24, 40, 0.1);
+  --shadow-card-dark: 0 4px 6px -1px rgba(0, 0, 0, 0.5),
+    0 2px 4px -1px rgba(0, 0, 0, 0.3);
   --shadow-glow: 0 0 15px rgba(102, 50, 101, 0.3);
-  
+
   --radius-xl: 0.75rem;
   --radius-2xl: 1rem;
 
-  /* Gradients - Darker for better text contrast */
+  /* Gradients - Lighter for light mode */
   --bg-gradient-primary: linear-gradient(to right, #471e3b, #5e2b52);
-  --bg-gradient-card: linear-gradient(to bottom right, var(--bg-main), var(--bg-soft));
+  --bg-gradient-card: linear-gradient(
+    to bottom right,
+    var(--bg-main),
+    var(--bg-soft)
+  );
 }
 
 .dark {
   --color-text-oranje: #ffffff;
   --color-samu: #ffffff;
   --color-beige: var(--bg-main);
-  
+
   --shadow-card: var(--shadow-card-dark);
-  --bg-gradient-card: linear-gradient(to bottom right, var(--bg-soft), var(--bg-main));
   /* Darker gradient for dark mode */
+  --bg-gradient-card: linear-gradient(
+    to bottom right,
+    var(--bg-soft),
+    var(--bg-main)
+  );
   --bg-gradient-primary: linear-gradient(to right, #3d1a3a, #5e2b52);
 }
 
@@ -158,32 +230,32 @@ body:not(.dark) [class*="bg-white"][class*="text-white"] {
    FONT DECLARATIONS
    ============================================== */
 @font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/poppins/Poppins-Regular.ttf') format('truetype');
+  font-family: "Poppins";
+  src: url("/fonts/poppins/Poppins-Regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/poppins/Poppins-Bold.ttf') format('truetype');
+  font-family: "Poppins";
+  src: url("/fonts/poppins/Poppins-Bold.ttf") format("truetype");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/poppins/Poppins-Italic.ttf') format('truetype');
+  font-family: "Poppins";
+  src: url("/fonts/poppins/Poppins-Italic.ttf") format("truetype");
   font-weight: 400;
   font-style: italic;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/poppins/Poppins-BoldItalic.ttf') format('truetype');
+  font-family: "Poppins";
+  src: url("/fonts/poppins/Poppins-BoldItalic.ttf") format("truetype");
   font-weight: 700;
   font-style: italic;
   font-display: swap;
@@ -193,7 +265,7 @@ body:not(.dark) [class*="bg-white"][class*="text-white"] {
    BASE STYLES
    ============================================== */
 :root {
-  font-family: 'Poppins', Arial, Helvetica, sans-serif;
+  font-family: "Poppins", Arial, Helvetica, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color-scheme: light dark;
@@ -215,7 +287,7 @@ iframe {
    LEAFLET MAP STYLES
    ============================================== */
 .leaflet-container {
-  font-family: 'Poppins', Arial, Helvetica, sans-serif;
+  font-family: "Poppins", Arial, Helvetica, sans-serif;
 }
 
 .leaflet-popup-content-wrapper {
@@ -231,10 +303,21 @@ iframe {
    ============================================== */
 @media (max-width: 768px) {
   body.mobile-home-theme {
-    background:
-      radial-gradient(circle at 15% 20%, rgba(102, 50, 101, 0.25), transparent 45%),
-      radial-gradient(circle at 85% 25%, rgba(185, 154, 217, 0.18), transparent 40%),
-      radial-gradient(circle at 20% 80%, rgba(102, 50, 101, 0.15), transparent 45%),
+    background: radial-gradient(
+        circle at 15% 20%,
+        rgba(102, 50, 101, 0.25),
+        transparent 45%
+      ),
+      radial-gradient(
+        circle at 85% 25%,
+        rgba(185, 154, 217, 0.18),
+        transparent 40%
+      ),
+      radial-gradient(
+        circle at 20% 80%,
+        rgba(102, 50, 101, 0.15),
+        transparent 45%
+      ),
       var(--bg-main);
     color: var(--text-main);
     overflow-x: hidden;
@@ -242,7 +325,7 @@ iframe {
 
   body.mobile-home-theme::before,
   body.mobile-home-theme::after {
-    content: '';
+    content: "";
     position: fixed;
     inset: 0;
     pointer-events: none;
@@ -250,15 +333,28 @@ iframe {
   }
 
   body.mobile-home-theme::before {
-    background:
-      radial-gradient(circle at 10% 30%, rgba(102, 50, 101, 0.22), transparent 35%) 0 0/100% 100% no-repeat,
-      radial-gradient(circle at 90% 10%, rgba(185, 154, 217, 0.18), transparent 40%) 0 0/100% 100% no-repeat;
+    background: radial-gradient(
+          circle at 10% 30%,
+          rgba(102, 50, 101, 0.22),
+          transparent 35%
+        )
+        0 0/100% 100% no-repeat,
+      radial-gradient(
+          circle at 90% 10%,
+          rgba(185, 154, 217, 0.18),
+          transparent 40%
+        )
+        0 0/100% 100% no-repeat;
     filter: blur(50px);
   }
 
   body.mobile-home-theme::after {
-    background:
-      radial-gradient(circle at 25% 85%, rgba(102, 50, 101, 0.16), transparent 45%) 0 0/100% 100% no-repeat;
+    background: radial-gradient(
+        circle at 25% 85%,
+        rgba(102, 50, 101, 0.16),
+        transparent 45%
+      )
+      0 0/100% 100% no-repeat;
     filter: blur(60px);
   }
 
@@ -312,29 +408,27 @@ iframe {
 /* ==============================================
    CUSTOM SCROLLBAR
    ============================================== */
-@layer utilities {
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
 
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
 
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: var(--color-primary-400);
-    border-radius: 4px;
-  }
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: var(--color-primary-400);
+  border-radius: 4px;
+}
 
-  .scrollbar-thin:hover::-webkit-scrollbar-thumb {
-    background-color: var(--color-primary-600);
-  }
+.scrollbar-thin:hover::-webkit-scrollbar-thumb {
+  background-color: var(--color-primary-600);
+}
 
-  .scrollbar-thin {
-    scrollbar-width: thin;
-    scrollbar-color: var(--color-primary-400) transparent;
-  }
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary-400) transparent;
 }
 
 /* ==============================================
@@ -344,7 +438,8 @@ iframe {
   z-index: 9999 !important;
   border-radius: 0.5rem;
   border: 1px solid var(--border-color);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
   margin-top: 4px;
   font-family: inherit;
 }
@@ -385,7 +480,8 @@ iframe {
   font-family: inherit;
   border: 1px solid var(--border-color);
   border-radius: 0.5rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 .react-datepicker__header {

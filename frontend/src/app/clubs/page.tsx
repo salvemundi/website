@@ -1,9 +1,9 @@
 'use client';
 
 
-import PageHeader from '@/shared/components/ui/PageHeader';
-import { useSalvemundiClubs } from '@/hooks/useSalvemundiApi';
-import { getImageUrl } from '@/lib/api/salvemundi';
+import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import { useSalvemundiClubs } from '@/shared/lib/hooks/useSalvemundiApi';
+import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { MessageSquare, Globe, Users } from 'lucide-react';
 
 export default function ClubsPage() {
@@ -26,26 +26,26 @@ export default function ClubsPage() {
                 {isLoading ? (
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {[1, 2, 3, 4, 5, 6].map((i) => (
-                            <div key={i} className="h-96 animate-pulse rounded-3xl bg-white/60 dark:bg-surface-dark/60" />
+                            <div key={i} className="h-96 animate-pulse rounded-3xl bg-[var(--bg-card)]/60" />
                         ))}
                     </div>
                 ) : error ? (
-                    <div className="rounded-3xl bg-white/80 dark:bg-surface-dark/80 p-8 text-center shadow-lg">
-                        <p className="mb-2 text-lg font-semibold text-paars dark:text-oranje">Fout bij laden van clubs</p>
-                        <p className="text-sm text-slate-600 dark:text-ink-muted">{String(error)}</p>
+                    <div className="rounded-3xl bg-[var(--bg-card)]/80 p-8 text-center shadow-lg">
+                        <p className="mb-2 text-lg font-semibold text-theme-purple">Fout bij laden van clubs</p>
+                        <p className="text-sm text-theme-muted">{String(error)}</p>
                     </div>
                 ) : sortedClubs.length === 0 ? (
-                    <div className="rounded-3xl bg-white/80 dark:bg-surface-dark/80 p-8 text-center shadow-lg">
-                        <p className="text-lg text-slate-600 dark:text-ink-muted">Geen clubs gevonden</p>
+                    <div className="rounded-3xl bg-[var(--bg-card)]/80 p-8 text-center shadow-lg">
+                        <p className="text-lg text-theme-muted">Geen clubs gevonden</p>
                     </div>
                 ) : (
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {sortedClubs.map((club) => (
                             <article
                                 key={club.id}
-                                className="group flex flex-col overflow-hidden rounded-3xl bg-white/90 dark:bg-surface-dark/90 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl"
+                                className="group flex flex-col overflow-hidden rounded-3xl bg-[var(--bg-card)]/90 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl"
                             >
-                                <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-oranje/10 to-oranje/20">
+                                <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-theme-purple/10 to-theme-purple/20">
                                     <img
                                         src={getImageUrl(club.image)}
                                         alt={club.name || 'Club'}
@@ -55,14 +55,14 @@ export default function ClubsPage() {
                                             target.src = '/img/placeholder.svg';
                                         }}
                                     />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-black/0" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-black/0 dark:from-white/20 dark:via-white/0 dark:to-white/0" />
                                 </div>
 
                                 <div className="flex flex-1 flex-col p-6">
-                                    <h3 className="mb-3 text-2xl font-bold text-ink dark:text-ink-dark">
+                                    <h3 className="mb-3 text-2xl font-bold text-theme">
                                         {club.name}
                                     </h3>
-                                    <p className="mb-4 flex-1 text-sm leading-relaxed text-ink-muted dark:text-ink-muted/80 line-clamp-3">
+                                    <p className="mb-4 flex-1 text-sm leading-relaxed text-theme-muted line-clamp-3">
                                         {club.description || 'Geen beschrijving beschikbaar'}
                                     </p>
 
@@ -72,7 +72,7 @@ export default function ClubsPage() {
                                                 href={club.whatsapp_link}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-2 rounded-full   paars/30 bg-white dark:bg-surface-dark px-4 py-2 text-sm font-semibold text-paars dark:text-oranje shadow-sm transition hover:bg-paars/5 dark:hover:bg-white/5"
+                                                className="inline-flex items-center gap-2 rounded-full bg-[var(--bg-card)] px-4 py-2 text-sm font-semibold text-theme-purple shadow-sm transition hover:bg-theme-purple/5"
                                             >
                                                 <MessageSquare className="h-4 w-4" />
                                                 WhatsApp
@@ -83,7 +83,7 @@ export default function ClubsPage() {
                                                 href={club.discord_link}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-2 rounded-full bg-white dark:bg-surface-dark px-4 py-2 text-sm font-semibold text-paars dark:text-oranje shadow-sm transition hover:bg-paars/5 dark:hover:bg-white/5"
+                                                className="inline-flex items-center gap-2 rounded-full bg-[var(--bg-card)] px-4 py-2 text-sm font-semibold text-theme-purple shadow-sm transition hover:bg-theme-purple/5"
                                             >
                                                 <Users className="h-4 w-4" />
                                                 Discord
@@ -94,7 +94,7 @@ export default function ClubsPage() {
                                                 href={club.website_link}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-2 rounded-full bg-white dark:bg-surface-dark px-4 py-2 text-sm font-semibold text-paars dark:text-oranje shadow-sm transition hover:bg-paars/5 dark:hover:bg-white/5"
+                                                className="inline-flex items-center gap-2 rounded-full bg-[var(--bg-card)] px-4 py-2 text-sm font-semibold text-theme-purple shadow-sm transition hover:bg-theme-purple/5"
                                             >
                                                 <Globe className="h-4 w-4" />
                                                 Website

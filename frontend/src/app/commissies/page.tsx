@@ -1,12 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import PageHeader from '@/shared/components/ui/PageHeader';
-import { useSalvemundiCommitteesWithMembers } from '@/hooks/useSalvemundiApi';
-import { getImageUrl } from '@/lib/api/salvemundi';
-import { slugify } from '@/lib/utils/slug';
+import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import { useSalvemundiCommitteesWithMembers } from '@/shared/lib/hooks/useSalvemundiApi';
+import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { slugify } from '@/shared/lib/utils/slug';
 import { Users } from 'lucide-react';
-import CommitteeImage from '@/shared/components/ui/CommitteeImage';
+import CommitteeImage from '@/shared/ui/CommitteeImage';
 
 // Helper function to clean committee names
 function cleanCommitteeName(name: string): string {
@@ -49,18 +49,18 @@ export default function CommitteesPage() {
                             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                                 <div
                                     key={i}
-                                    className={`h-96 animate-pulse rounded-3xl bg-white/60 dark:bg-surface-dark/60 ${i === 1 ? 'md:col-span-2' : ''}`}
+                                    className={`h-96 animate-pulse rounded-3xl bg-[var(--bg-card)]/60 ${i === 1 ? 'md:col-span-2' : ''}`}
                                 />
                             ))}
                         </div>
                     ) : error ? (
-                        <div className="rounded-3xl bg-white/80 dark:bg-surface-dark/80 p-8 text-center shadow-lg">
-                            <p className="mb-2 text-lg font-semibold text-paars dark:text-oranje">Fout bij laden van commissies</p>
-                            <p className="text-sm text-slate-600 dark:text-ink-muted">{String(error)}</p>
+                        <div className="rounded-3xl bg-[var(--bg-card)]/80 p-8 text-center shadow-lg">
+                            <p className="mb-2 text-lg font-semibold text-theme-purple">Fout bij laden van commissies</p>
+                            <p className="text-sm text-theme-muted">{String(error)}</p>
                         </div>
                     ) : committeesWithMembers.length === 0 ? (
-                        <div className="rounded-3xl bg-white/80 dark:bg-surface-dark/80 p-8 text-center shadow-lg">
-                            <p className="text-lg text-slate-600 dark:text-ink-muted">Geen commissies gevonden</p>
+                        <div className="rounded-3xl bg-[var(--bg-card)]/80 p-8 text-center shadow-lg">
+                            <p className="text-lg text-theme-muted">Geen commissies gevonden</p>
                         </div>
                     ) : (
                         <div className="grid auto-rows-auto gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -82,10 +82,10 @@ export default function CommitteesPage() {
                                     >
                                         <Link
                                             href={`/commissies/${slugify(cleanCommitteeName(committee.name))}`}
-                                            className={`group flex h-full flex-col overflow-hidden rounded-3xl bg-white/90 dark:bg-surface-dark/90 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl ${isBestuur ? 'ring-4 ring-geel/30' : ''
+                                            className={`group flex h-full flex-col overflow-hidden rounded-3xl bg-[var(--bg-card)]/90 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl ${isBestuur ? 'ring-4 ring-theme-purple-lighter/30' : ''
                                                 }`}
                                         >
-                                            <div className="relative h-56 w-full overflow-hidden bg-gradient-to-br from-oranje/20 to-paars/20">
+                                            <div className="relative h-56 w-full overflow-hidden bg-gradient-to-br from-theme-purple/20 to-theme-purple-dark/20">
                                                 <CommitteeImage
                                                     src={committee.image ? getImageUrl(committee.image) : getDefaultCommitteeImage(committee.id)}
                                                     alt={cleanCommitteeName(committee.name)}
@@ -95,25 +95,25 @@ export default function CommitteesPage() {
                                                         target.src = getDefaultCommitteeImage(committee.id);
                                                     }}
                                                 />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 pointer-events-none" />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 dark:from-white/30 dark:via-white/0 dark:to-white/0 pointer-events-none" />
                                                 {isBestuur && (
-                                                    <div className="absolute right-4 top-4 rounded-full bg-geel px-3 py-1 text-xs font-bold text-ink dark:text-ink-dark shadow-lg">
+                                                    <div className="absolute right-4 top-4 rounded-full bg-theme-purple-lighter px-3 py-1 text-xs font-bold text-theme-purple-darker shadow-lg">
                                                         BESTUUR
                                                     </div>
                                                 )}
                                             </div>
 
                                             <div className="flex flex-1 flex-col p-6">
-                                                <h3 className="mb-2 text-2xl font-bold text-ink dark:text-ink-dark">
+                                                <h3 className="mb-2 text-2xl font-bold text-theme">
                                                     {cleanCommitteeName(committee.name)}
                                                 </h3>
-                                                <p className="mb-4 flex-1 text-sm leading-relaxed text-ink-muted dark:text-ink-muted/80 line-clamp-3">
+                                                <p className="mb-4 flex-1 text-sm leading-relaxed text-theme-muted line-clamp-3">
                                                     {committee.short_description || 'Geen beschrijving beschikbaar'}
                                                 </p>
 
                                                 {members.length > 0 && (
                                                     <div className="flex items-center gap-2 pt-4">
-                                                        <Users className="h-4 w-4 text-oranje" />
+                                                        <Users className="h-4 w-4 text-theme-purple" />
                                                         <div className="flex -space-x-2">
                                                             {members.slice(0, 5).map((member: any, idx: number) => (
                                                                 <img
@@ -128,7 +128,7 @@ export default function CommitteesPage() {
                                                                 />
                                                             ))}
                                                             {members.length > 5 && (
-                                                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-oranje/20 text-xs font-semibold text-oranje">
+                                                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-theme-purple/20 text-xs font-semibold text-theme-purple">
                                                                     +{members.length - 5}
                                                                 </div>
                                                             )}
@@ -136,7 +136,7 @@ export default function CommitteesPage() {
                                                     </div>
                                                 )}
 
-                                                <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-oranje">
+                                                <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-theme-purple">
                                                     Meer lezen
                                                     <span className="transition group-hover:translate-x-1">→</span>
                                                 </div>

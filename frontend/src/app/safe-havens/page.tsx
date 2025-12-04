@@ -1,9 +1,9 @@
 'use client';
 
 import React from 'react';
-import PageHeader from '@/shared/components/ui/PageHeader';
-import SafeHavenCard from '@/shared/components/safe-havens/SafeHavenCard';
-import { useSalvemundiSafeHavens } from '@/hooks/useSalvemundiApi';
+import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import SafeHavenCard from '@/entities/safe-haven/ui/SafeHavenCard';
+import { useSalvemundiSafeHavens } from '@/shared/lib/hooks/useSalvemundiApi';
 import { Shield, Lock, AlertTriangle, UserX, Users, MessageSquare, MapPin } from 'lucide-react';
 
 export default function SafeHavensPage() {
@@ -68,24 +68,24 @@ export default function SafeHavensPage() {
                         <h2 className="text-2xl font-bold text-paars mb-6 text-center px-2">
                             Waar Kun Je Bij Ons Terecht?
                         </h2>
-                        <p className="text-paars/70 text-center mb-6 px-2">
+                        <p className="text-theme-purple/70 text-center mb-6 px-2">
                             Onze Safe Havens zijn er voor (maar niet gelimiteerd tot):
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
                             {topics.map((topic, index) => (
                                 <div
                                     key={index}
-                                    className="flex items-center gap-3 p-4 bg-oranje/10 rounded-xl transition-all"
+                                    className="flex items-center gap-3 p-4 bg-theme-purple/10 rounded-xl transition-all"
                                 >
-                                    <div className="w-10 h-10 flex items-center justify-center rounded-md bg-oranje/20">
+                                    <div className="w-10 h-10 flex items-center justify-center rounded-md bg-theme-purple/20">
                                         {topic.icon}
                                     </div>
-                                    <span className="text-paars font-medium">{topic.text}</span>
+                                    <span className="text-theme-purple font-medium">{topic.text}</span>
                                 </div>
                             ))}
                         </div>
-                        <div className="mt-8 p-6 bg-paars/5 rounded-xl">
-                            <p className="text-paars/80 text-center">
+                        <div className="mt-8 p-6 bg-theme-purple/5 rounded-xl">
+                            <p className="text-theme-purple/80 text-center">
                                 We streven ernaar dat deze personen verschillen van geslacht en dat wij Safe Havens zowel binnen
                                 als buiten het bestuur hebben. Zo hopen we dat er altijd iemand is waar je je veilig genoeg bij
                                 voelt om je klachten of meldingen mee te delen.
@@ -96,13 +96,13 @@ export default function SafeHavensPage() {
                     {/* Safe Havens Cards Section */}
                     {isLoading && (
                         <div className="text-center py-20">
-                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-oranje border-t-transparent"></div>
-                            <p className="mt-4 text-paars">Safe Havens laden...</p>
+                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-theme-purple border-t-transparent"></div>
+                            <p className="mt-4 text-theme-purple">Safe Havens laden...</p>
                         </div>
                     )}
 
                     {error && (
-                        <div className="bg-paars/10 text-paars px-6 py-4 rounded-xl mb-12">
+                        <div className="bg-theme-purple/10 text-theme-purple px-6 py-4 rounded-xl mb-12">
                             <p className="font-semibold">Er is een fout opgetreden bij het laden van de Safe Havens.</p>
                             <p className="text-sm mt-2">Probeer de pagina opnieuw te laden.</p>
                         </div>
@@ -110,7 +110,7 @@ export default function SafeHavensPage() {
 
                     {safeHavens && safeHavens.length > 0 && (
                         <div>
-                            <h2 className="text-3xl font-bold text-paars mb-8 text-center">
+                            <h2 className="text-3xl font-bold text-theme-purple mb-8 text-center">
                                 Onze Safe Havens
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
@@ -122,23 +122,23 @@ export default function SafeHavensPage() {
                     )}
 
                     {safeHavens && safeHavens.length === 0 && !isLoading && (
-                        <div className="text-center py-12 bg-white rounded-3xl shadow-xl p-8">
-                            <div className="text-6xl mb-4"><Shield className="w-16 h-16 text-paars mx-auto" /></div>
-                            <p className="text-xl text-paars mb-4">Safe Havens worden binnenkort toegevoegd</p>
-                            <p className="text-paars/70">Check deze pagina later opnieuw.</p>
+                        <div className="text-center py-12 bg-[var(--bg-card)] rounded-3xl shadow-xl p-8">
+                            <div className="text-6xl mb-4"><Shield className="w-16 h-16 text-theme-purple mx-auto" /></div>
+                            <p className="text-xl text-theme-purple mb-4">Safe Havens worden binnenkort toegevoegd</p>
+                            <p className="text-theme-purple/70">Check deze pagina later opnieuw.</p>
                         </div>
                     )}
 
                     {/* Alternative Contact Section */}
-                    <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8">
+                    <div className="bg-[var(--bg-card)] rounded-3xl shadow-xl p-6 sm:p-8">
                         <div className="max-w-3xl mx-auto text-center">
-                            <div className="w-16 h-16 rounded-full bg-paars flex items-center justify-center mx-auto mb-4">
-                                <MapPin className="w-8 h-8 text-beige" />
+                            <div className="w-16 h-16 rounded-full bg-gradient-theme flex items-center justify-center mx-auto mb-4">
+                                <MapPin className="w-8 h-8 text-theme-white" />
                             </div>
-                            <h2 className="text-2xl font-bold text-paars mb-4">
+                            <h2 className="text-2xl font-bold text-theme-purple mb-4">
                                 Voel Je Je Niet Veilig Genoeg?
                             </h2>
-                            <p className="text-paars/80 mb-6">
+                            <p className="text-theme-purple/80 mb-6">
                                 Wil je liever met iemand buiten Salve Mundi praten?,
                                 ben vooral niet bang om rechtstreeks naar Fontys zelf te stappen.
                             </p>
@@ -147,13 +147,13 @@ export default function SafeHavensPage() {
                                     href="https://www.fontys.nl/fontyshelpt.htm"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="px-6 py-3 bg-paars text-beige rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md"
+                                    className="px-6 py-3 bg-gradient-theme text-theme-white rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md"
                                 >
                                     Fontys Vertrouwenspersoon
                                 </a>
                                 <a
                                     href="mailto:bestuur@salvemundi.nl"
-                                    className="px-6 py-3 bg-oranje text-beige rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md"
+                                    className="px-6 py-3 bg-theme-purple-lighter text-theme-purple-darker rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md"
                                 >
                                     Contact Bestuur
                                 </a>
