@@ -9,15 +9,11 @@ import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import {
     CalendarClock,
-    Clock3,
-    MapPin,
     Euro,
     Users as UsersIcon,
     Mail,
-    Phone,
     Info,
     CheckCircle,
-    Calendar,
     Users
 } from 'lucide-react';
 
@@ -55,7 +51,7 @@ export default function EventDetailPage() {
         paymentStatus?: 'paid' | 'open' | 'failed' | 'canceled';
         qrToken?: string;
     }>({ isSignedUp: false });
-    const [isLoadingSignupStatus, setIsLoadingSignupStatus] = useState(false);
+
 
     // Form state
     const [formData, setFormData] = useState({
@@ -72,7 +68,8 @@ export default function EventDetailPage() {
         const checkSignupStatus = async () => {
             if (!user || !eventId) return;
 
-            setIsLoadingSignupStatus(true);
+
+
             try {
                 // We need to query event_signups for this user and event
                 // Note: This assumes we have permission to read our own signups
@@ -98,9 +95,7 @@ export default function EventDetailPage() {
                 }
             } catch (err) {
                 console.error('Error checking signup status:', err);
-            } finally {
-                setIsLoadingSignupStatus(false);
-            }
+            };
         };
 
         checkSignupStatus();

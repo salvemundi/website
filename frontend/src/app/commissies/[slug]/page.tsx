@@ -1,10 +1,10 @@
- 'use client';
+'use client';
 
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { useSalvemundiCommitteesWithMembers, useSalvemundiEventsByCommittee } from '@/hooks/useSalvemundiApi';
-import { getImageUrl } from '@/lib/api/salvemundi';
-import { slugify } from '@/lib/utils/slug';
+import { useSalvemundiCommitteesWithMembers, useSalvemundiEventsByCommittee } from '@/shared/lib/hooks/useSalvemundiApi';
+import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { slugify } from '@/shared/lib/utils/slug';
 import { Mail, Calendar, Users2 } from 'lucide-react';
 
 function cleanCommitteeName(name: string): string {
