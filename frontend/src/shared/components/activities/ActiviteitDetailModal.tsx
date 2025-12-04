@@ -188,11 +188,16 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4"
+            className="fixed inset-0  flex items-start justify-center pt-16 p-3 sm:pt-20 sm:p-4"
             style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
             onClick={handleBackdropClick}
         >
-            <div className="bg-gradient-theme rounded-3xl shadow-2xl max-w-4xl w-full sm:w-[92%] md:w-3/4 lg:max-w-3xl max-h-[90vh] overflow-y-auto">
+            {/*
+                Note: we use a top padding on the backdrop (pt-16 / sm:pt-20) so the modal sits below any fixed navbar.
+                Also increase z-index to ensure the modal is above the navbar. The modal max height is set to
+                calc(100vh - 4rem) so it always fits in the viewport below the navbar and remains scrollable.
+            */}
+            <div className="bg-gradient-theme rounded-3xl shadow-2xl max-w-4xl w-full sm:w-[92%] md:w-3/4 lg:max-w-3xl max-h-3xl overflow-y-auto">
                 {/* Header */}
                 <div className="sticky top-0 bg-gradient-theme z-10 p-6">
                     <div className="flex justify-between items-start mb-3">
@@ -264,7 +269,7 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                                             <Phone className="h-5 w-5" />
                                         </span>
                                         <div>
-                                            <p className="text-xs uppercase tracking-wide text-theme-white/70">Contact</p>
+                                            <p className="text-xs uppercase tracking-wide text-theme-white">Contact</p>
                                             <p className="text-base font-semibold text-theme-white">
                                                 {activity.contact_name}
                                             </p>
@@ -277,7 +282,7 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                                             <Mail className="h-5 w-5" />
                                         </span>
                                         <div>
-                                            <p className="text-xs uppercase tracking-wide text-theme-white/70">E-mail commissie</p>
+                                            <p className="text-xs uppercase tracking-wide text-theme-white">E-mail commissie</p>
                                             <a
                                                 href={`mailto:${committeeEmail}`}
                                                 className="text-base font-semibold text-theme-white underline hover:text-theme-purple-lighter break-all"

@@ -16,7 +16,7 @@ export default function DayDetails({ selectedDay, events, onClose, onEventClick 
     const dayEvents = events.filter(event => isSameDay(parseISO(event.event_date), selectedDay));
 
     return (
-        <div className="rounded-3xl bg-white p-6 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div className="rounded-3xl bg-white dark:bg-surface-dark p-6 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-300">
             <div className="mb-4 flex items-center justify-between">
                 <h3 className="text-lg font-bold text-paars">
                     {format(selectedDay, 'd MMMM', { locale: nl })}

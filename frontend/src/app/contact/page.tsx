@@ -41,45 +41,49 @@ export default function ContactPage() {
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Informatie Section */}
-                        <div className="bg-[var(--bg-card)] rounded-3xl shadow-lg p-8">
-                            <h2 className="text-3xl font-bold text-gradient mb-6">
+                        <div className="bg-theme-purple-darker rounded-3xl shadow-lg p-8">
+                            <h2 className="text-3xl font-bold text-purple mb-6">
                                 Informatie
                             </h2>
 
                             <div className="space-y-6">
                                 {/* Address */}
-                                <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 rounded-2xl bg-gradient-theme flex items-center justify-center flex-shrink-0 shadow-sm">
+                                <div className="flex items-start items-center gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-theme-purple-light flex items-center justify-center flex-shrink-0">
                                         <span className="text-2xl">📍</span>
                                     </div>
                                     <div>
-                                        <p className="text-theme font-medium">
+                                        <p
+                                            className="text-theme-purple text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
+                                        >
                                             Rachelsmolen 1, 5612MA Eindhoven
                                         </p>
                                     </div>
                                 </div>
 
                                 {/* KvK */}
-                                <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 rounded-2xl bg-gradient-theme-light flex items-center justify-center flex-shrink-0 shadow-sm">
+                                <div className="flex items-start items-center gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-theme-purple-light flex items-center justify-center flex-shrink-0">
                                         <span className="text-2xl">🏢</span>
                                     </div>
                                     <div>
-                                        <p className="text-theme font-medium">
+                                        <p
+                                            className="text-theme-purple text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
+                                        >
                                             KvK nr. 70280606
                                         </p>
                                     </div>
                                 </div>
 
                                 {/* Kalender */}
-                                <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 rounded-2xl bg-gradient-theme-dark flex items-center justify-center flex-shrink-0 shadow-sm">
+                                <div className="flex items-start items-center gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-theme-purple-light flex items-center justify-center flex-shrink-0">
                                         <span className="text-2xl">📅</span>
                                     </div>
                                     <div>
                                         <a
                                             href="/activiteiten"
-                                            className="text-theme font-medium hover:text-theme-purple transition-colors"
+                                            className="text-theme-purple text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
                                         >
                                             Kalender
                                         </a>
@@ -88,7 +92,7 @@ export default function ContactPage() {
 
                                 {/* Documents Section */}
                                 <div className="pt-6">
-                                    <h3 className="font-semibold text-theme-purple mb-4 flex items-center gap-2">
+                                    <h3 className="font-semibold text-theme-purple mb-4  flex items-center gap-2">
                                         <span className="text-2xl">📄</span>
                                         Documenten
                                     </h3>
@@ -106,7 +110,7 @@ export default function ContactPage() {
                                                         href={fileUrl}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="block text-theme-muted hover:text-theme-purple transition-colors group"
+                                                        className="block text-theme-muted hover:text-theme-white transition-colors group"
                                                         title={doc.description || doc.title}
                                                     >
                                                         <span className="group-hover:translate-x-1 inline-block transition-transform">→</span> {doc.title}
@@ -122,21 +126,21 @@ export default function ContactPage() {
                         </div>
 
                         {/* Contact Section */}
-                        <div className="bg-[var(--bg-card)] rounded-3xl shadow-lg p-8">
-                            <h2 className="text-3xl font-bold text-gradient mb-6">
+                        <div className="bg-theme-purple-darker rounded-3xl shadow-lg p-8">
+                            <h2 className="text-3xl font-bold text-purple mb-6">
                                 Contact
                             </h2>
 
                             <div className="space-y-6">
                                 {/* Email */}
-                                <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-theme-purple-lighter flex items-center justify-center flex-shrink-0">
+                                <div className="flex items-start items-center gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-theme-purple-light flex items-center justify-center flex-shrink-0">
                                         <span className="text-2xl">✉️</span>
                                     </div>
                                     <div>
                                         <a
                                             href="mailto:info@salvemundi.nl"
-                                            className="text-theme-purple font-medium hover:text-theme-purple-dark transition-colors"
+                                            className="text-theme-purple text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
                                         >
                                             info@salvemundi.nl
                                         </a>
@@ -144,14 +148,14 @@ export default function ContactPage() {
                                 </div>
 
                                 {/* Phone */}
-                                <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-theme-purple-lighter flex items-center justify-center flex-shrink-0">
+                                <div className="flex items-start items-center gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-theme-purple-light flex items-center justify-center flex-shrink-0">
                                         <span className="text-2xl">📞</span>
                                     </div>
                                     <div>
                                         <a
                                             href="tel:+31624827777"
-                                            className="text-theme-purple font-medium hover:text-theme-purple-dark transition-colors"
+                                            className="text-theme-purple text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
                                         >
                                             +31 6 24827777
                                         </a>
@@ -160,16 +164,16 @@ export default function ContactPage() {
 
                                 {/* WhatsApp (only for authenticated users) */}
                                 {isAuthenticated && (
-                                    <div className="flex items-start gap-4">
-                                        <div className="w-12 h-12 rounded-full bg-theme-purple-lighter flex items-center justify-center flex-shrink-0">
-                                            <span className="text-2xl">💬</span>
+                                    <div className="flex items-start items-center gap-4">
+                                        <div className="w-12 h-12 rounded-full bg-theme-purple-light flex items-center justify-center flex-shrink-0">
+                                        <span className="text-2xl">💬</span>
                                         </div>
                                         <div>
                                             <a
                                                 href="https://wa.me/31624827777"
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="text-theme-purple font-medium hover:text-theme-purple-dark transition-colors"
+                                                className="text-theme-purple text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
                                             >
                                                 WhatsApp
                                             </a>
@@ -200,8 +204,8 @@ export default function ContactPage() {
                     </div>
 
                     {/* Social Media Section */}
-                    <div className="mt-8 bg-[var(--bg-card)] rounded-3xl shadow-lg p-8">
-                        <h2 className="text-2xl font-bold text-gradient mb-6 text-center">
+                    <div className="mt-8 bg-theme-purple-darker rounded-3xl shadow-lg p-8">
+                        <h2 className="text-2xl font-bold text-purple mb-6 text-center">
                             Volg Ons Op Social Media
                         </h2>
                         <div className="flex flex-wrap justify-center gap-4">
