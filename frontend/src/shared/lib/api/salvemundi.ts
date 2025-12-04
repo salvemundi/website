@@ -118,7 +118,7 @@ export const paymentApi = {
 export const eventsApi = {
     getAll: async () => {
         const query = buildQueryString({
-            fields: ['id', 'name', 'event_date', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact'],
+            fields: ['id', 'name', 'event_date', 'event_time', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact'],
             sort: ['-event_date']
         });
         const events = await directusFetch<any[]>(`/items/events?${query}`);
@@ -162,7 +162,7 @@ export const eventsApi = {
 
     getById: async (id: string) => {
         const query = buildQueryString({
-            fields: ['id', 'name', 'event_date', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact']
+            fields: ['id', 'name', 'event_date', 'event_time', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact']
         });
         const event = await directusFetch<any>(`/items/events/${id}?${query}`);
 
@@ -201,7 +201,7 @@ export const eventsApi = {
     getByCommittee: async (committeeId: number) => {
         const query = buildQueryString({
             filter: { committee_id: { _eq: committeeId } },
-            fields: ['id', 'name', 'event_date', 'description', 'price_members', 'price_non_members', 'image'],
+            fields: ['id', 'name', 'event_date', 'event_time', 'description', 'price_members', 'price_non_members', 'image'],
             sort: ['-event_date']
         });
         return directusFetch<any[]>(`/items/events?${query}`);
@@ -645,3 +645,20 @@ export function getImageUrl(imageId: string | undefined | any): string {
 
     return imageUrl;
 }
+
+export interface HeroBanner {
+    id: number;
+    image: string;
+    title?: string;
+    sort?: number;
+}
+
+export const heroBannersApi = {
+    getAll: async () => {
+        const query = buildQueryString({
+            fields: ['id', 'image', 'title', 'sort'],
+            sort: ['sort', '-date_created']
+        });
+        return directusFetch<HeroBanner[]>(`/items/hero_banners?${query}`);
+    }
+};
