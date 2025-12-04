@@ -8,6 +8,29 @@ export const metadata: Metadata = {
     title: 'Salve Mundi - Studievereniging Fontys ICT Eindhoven',
     description: 'De studievereniging voor HBO-studenten in Eindhoven. Activiteiten, commissies, en meer voor een onvergetelijke studententijd.',
     metadataBase: new URL('https://salvemundi.nl'),
+    openGraph: {
+        title: 'Salve Mundi - Studievereniging Fontys ICT Eindhoven',
+        description: 'De studievereniging voor HBO-studenten in Eindhoven. Activiteiten, commissies, en meer voor een onvergetelijke studententijd.',
+        url: 'https://salvemundi.nl',
+        siteName: 'Salve Mundi',
+        locale: 'nl_NL',
+        type: 'website',
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'Salve Mundi - Studievereniging Fontys ICT Eindhoven',
+        description: 'De studievereniging voor HBO-studenten in Eindhoven. Activiteiten, commissies, en meer voor een onvergetelijke studententijd.',
+    },
+    icons: {
+        icon: [
+            { url: '/img/Logo.png', sizes: 'any' },
+            { url: '/img/Logo.png', sizes: '32x32', type: 'image/png' },
+            { url: '/img/Logo.png', sizes: '16x16', type: 'image/png' },
+        ],
+        apple: [
+            { url: '/img/Logo.png', sizes: '180x180', type: 'image/png' },
+        ],
+    },
 };
 
 export const viewport: Viewport = {
