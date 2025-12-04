@@ -6,7 +6,7 @@
 
 /* Root color system */
 :root {
-  /* Main brand color */
+  /* Main brand color - Light mode variants */
   --color-primary-50: #f4e9f3;
   --color-primary-100: #e4cbe2;
   --color-primary-200: #d4add0;
@@ -18,52 +18,72 @@
   --color-primary-800: #5e2b52;
   --color-primary-900: #471e3b;
 
-  /* Main brand (your exact color) */
-  --color-primary: #663265;
+  /* Main brand - explicit light and dark variants */
+  --color-primary-light: #663265;
+  --color-primary-dark: #d9a3d6;
+  --color-primary: var(--color-primary-light);
 
-  /* Text */
-  --text-main: #663265;
-  --text-muted: #6f5772;
+  /* Text - explicit light and dark variants */
+  --text-main-light: #663265;
+  --text-main-dark: #ffffff;
+  --text-main: var(--text-main-light);
 
-  /* Backgrounds */
-  --bg-main: #ffffff;
-  --bg-soft: #faf7fb;
-  --bg-card: #ffffff;
+  --text-muted-light: #6f5772;
+  --text-muted-dark: #c9b2cc;
+  --text-muted: var(--text-muted-light);
 
-  /* Borders */
-  --border-color: #d9c7db;
+  /* Backgrounds - explicit light and dark variants */
+  --bg-main-light: #ffffff;
+  --bg-main-dark: #1a141b;
+  --bg-main: var(--bg-main-light);
+
+  --bg-soft-light: #faf7fb;
+  --bg-soft-dark: #241d25;
+  --bg-soft: var(--bg-soft-light);
+
+  --bg-card-light: #ffffff;
+  --bg-card-dark: #2c2430;
+  --bg-card: var(--bg-card-light);
+
+  /* Borders - explicit light and dark variants */
+  --border-color-light: #d9c7db;
+  --border-color-dark: #4b3a4d;
+  --border-color: var(--border-color-light);
 }
 
-/* 🌙 Dark mode */
+/* 🌙 Dark mode - switch to dark variants */
 .dark {
-  --color-primary: #d9a3d6;
-
-  --text-main: #ffffff;
-  --text-muted: #c9b2cc;
-
-  --bg-main: #1a141b;
-  --bg-soft: #241d25;
-  --bg-card: #2c2430;
-
-  --border-color: #4b3a4d;
+  --color-primary: var(--color-primary-dark);
+  --text-main: var(--text-main-dark);
+  --text-muted: var(--text-muted-dark);
+  --bg-main: var(--bg-main-dark);
+  --bg-soft: var(--bg-soft-dark);
+  --bg-card: var(--bg-card-dark);
+  --border-color: var(--border-color-dark);
 }
 
 /* Apply them globally */
-body {
+html, body {
   background-color: var(--bg-main);
   color: var(--text-main);
+}
+
+/* Apply theme text color to all elements */
+* {
+  color: inherit;
+}
+
+/* Ensure text elements inherit properly */
+h1, h2, h3, h4, h5, h6,
+p, span, div, section, article,
+li, label, button, a,
+td, th, blockquote, figcaption {
+  color: inherit;
 }
 
 /* Ensure elements that explicitly set white text inside light backgrounds remain readable in light mode.
    This targets common utility classes like `bg-white` / `bg-white/..` with child elements using `text-white`.
    We scope this to light mode (when `body` does NOT have the `dark` class) so dark mode remains unaffected. */
-body:not(.dark) [class*="bg-white"] [class*="text-white"] {
-  color: inherit !important;
-}
-
-body:not(.dark) [class*="bg-white"][class*="text-white"] {
-  color: inherit !important;
-}
 
 .text-primary {
   color: var(--color-primary);
@@ -182,7 +202,7 @@ body:not(.dark) [class*="bg-white"][class*="text-white"] {
   --radius-xl: 0.75rem;
   --radius-2xl: 1rem;
 
-  /* Gradients - Darker for better text contrast */
+  /* Gradients - Lighter for light mode */
   --bg-gradient-primary: linear-gradient(to right, #471e3b, #5e2b52);
   --bg-gradient-card: linear-gradient(
     to bottom right,
@@ -197,12 +217,12 @@ body:not(.dark) [class*="bg-white"][class*="text-white"] {
   --color-beige: var(--bg-main);
 
   --shadow-card: var(--shadow-card-dark);
+  /* Darker gradient for dark mode */
   --bg-gradient-card: linear-gradient(
     to bottom right,
     var(--bg-soft),
     var(--bg-main)
   );
-  /* Darker gradient for dark mode */
   --bg-gradient-primary: linear-gradient(to right, #3d1a3a, #5e2b52);
 }
 
@@ -388,29 +408,27 @@ iframe {
 /* ==============================================
    CUSTOM SCROLLBAR
    ============================================== */
-@layer utilities {
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
 
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
 
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: var(--color-primary-400);
-    border-radius: 4px;
-  }
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: var(--color-primary-400);
+  border-radius: 4px;
+}
 
-  .scrollbar-thin:hover::-webkit-scrollbar-thumb {
-    background-color: var(--color-primary-600);
-  }
+.scrollbar-thin:hover::-webkit-scrollbar-thumb {
+  background-color: var(--color-primary-600);
+}
 
-  .scrollbar-thin {
-    scrollbar-width: thin;
-    scrollbar-color: var(--color-primary-400) transparent;
-  }
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary-400) transparent;
 }
 
 /* ==============================================

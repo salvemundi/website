@@ -125,91 +125,91 @@ export default function IntroPage() {
 
                                 <div className="flex-1">
                                     {submitted ? (
-                                        <div className="bg-paars rounded-3xl p-8 text-center">
-                                            <h2 className="text-3xl font-bold text-geel mb-4">Bedankt voor je inschrijving!</h2>
-                                            <p className="text-beige text-lg">
+                                        <div className="bg-gradient-theme rounded-3xl p-8 text-center">
+                                            <h2 className="text-3xl font-bold text-theme-purple-lighter mb-4">Bedankt voor je inschrijving!</h2>
+                                            <p className="text-theme-white text-lg">
                                                 We hebben je inschrijving ontvangen en kijken ernaar uit om je te zien tijdens de introweek!
                                             </p>
                                         </div>
                                     ) : (
-                                        <form onSubmit={handleSubmit} className="bg-paars rounded-3xl p-8 shadow-lg space-y-4">
-                                            {error && <div className="bg-paars text-white p-3 rounded-lg">{error}</div>}
+                                        <form onSubmit={handleSubmit} className="bg-gradient-theme rounded-3xl p-8 shadow-lg space-y-4">
+                                            {error && <div className="bg-theme-purple-dark text-theme-white p-3 rounded-lg">{error}</div>}
 
                                             <div>
-                                                <label className="block font-semibold text-beige mb-2">Voornaam</label>
+                                                <label className="block font-semibold text-theme-white mb-2">Voornaam</label>
                                                 <input
                                                     type="text"
                                                     name="voornaam"
                                                     value={form.voornaam}
                                                     onChange={handleChange}
                                                     required
-                                                    className="w-full p-3 bg-beige text-paars rounded-lg focus:outline-none focus:ring-2 focus:ring-oranje"
+                                                    className="w-full p-3 bg-theme-white text-theme-purple rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-purple-light"
                                                 />
                                             </div>
 
                                             <div>
-                                                <label className="block font-semibold text-beige mb-2">Tussenvoegsel</label>
+                                                <label className="block font-semibold text-theme-white mb-2">Tussenvoegsel</label>
                                                 <input
                                                     type="text"
                                                     name="tussenvoegsel"
                                                     value={form.tussenvoegsel}
                                                     onChange={handleChange}
-                                                    className="w-full p-3 bg-beige text-paars rounded-lg focus:outline-none focus:ring-2 focus:ring-oranje"
+                                                    className="w-full p-3 bg-theme-white text-theme-purple rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-purple-light"
                                                 />
                                             </div>
 
                                             <div>
-                                                <label className="block font-semibold text-beige mb-2">Achternaam</label>
+                                                <label className="block font-semibold text-theme-white mb-2">Achternaam</label>
                                                 <input
                                                     type="text"
                                                     name="achternaam"
                                                     value={form.achternaam}
                                                     onChange={handleChange}
                                                     required
-                                                    className="w-full p-3 bg-beige text-paars rounded-lg focus:outline-none focus:ring-2 focus:ring-oranje"
+                                                    className="w-full p-3 bg-theme-white text-theme-purple rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-purple-light"
                                                 />
                                             </div>
 
                                             <div>
-                                                <label className="block font-semibold text-beige mb-2">Geboortedatum</label>
+                                                <label className="block font-semibold text-theme-white mb-2">Geboortedatum</label>
                                                 <input
                                                     type="date"
                                                     name="geboortedatum"
                                                     value={form.geboortedatum}
                                                     onChange={handleChange}
                                                     required
-                                                    className="w-full p-3 bg-beige text-paars rounded-lg focus:outline-none focus:ring-2 focus:ring-oranje"
+                                                    className="w-full p-3 bg-theme-white text-theme-purple rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-purple-light"
                                                 />
                                             </div>
 
                                             <div>
-                                                <label className="block font-semibold text-beige mb-2">Email</label>
+                                                <label className="block font-semibold text-theme-white mb-2">Email</label>
                                                 <input
                                                     type="email"
                                                     name="email"
                                                     value={form.email}
                                                     onChange={handleChange}
                                                     required
-                                                    className="w-full p-3 bg-beige text-paars rounded-lg focus:outline-none focus:ring-2 focus:ring-oranje"
+                                                    className="w-full p-3 bg-theme-white text-theme-purple rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-purple-light"
                                                 />
                                             </div>
 
                                             <div>
-                                                <label className="block font-semibold text-beige mb-2">Telefoonnummer</label>
+                                                <label className="block font-semibold text-theme-white mb-2">Telefoonnummer</label>
                                                 <input
                                                     type="tel"
                                                     name="telefoonnummer"
                                                     value={form.telefoonnummer}
                                                     onChange={handleChange}
                                                     required
-                                                    className="w-full p-3 bg-beige text-paars rounded-lg focus:outline-none focus:ring-2 focus:ring-oranje"
+                                                    className="w-full p-3 bg-theme-white text-theme-purple rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-purple-light"
                                                 />
                                             </div>
 
                                             <button
                                                 type="submit"
                                                 disabled={isSubmitting}
-                                                className="w-full bg-oranje text-white font-bold py-3 px-6 rounded-lg hover:bg-geel hover:text-paars transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className="w-full bg-theme-purple-lighter text-theme-purple-darker font-bold py-3 px-6 rounded-lg hover:bg-theme-purple-light hover:text-theme-white transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
                                                 {isSubmitting ? 'Bezig met versturen...' : 'Verstuur'}
                                             </button>

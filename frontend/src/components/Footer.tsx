@@ -47,11 +47,11 @@ export default function Footer() {
   const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://admin.salvemundi.nl';
 
   return (
-    <footer className="bg-paars text-beige py-12 px-4 sm:px-8 lg:px-10">
+    <footer className="bg-gradient-theme text-theme-white py-12 px-4 sm:px-8 lg:px-10">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
-          <h3 className="font-bold text-lg mb-4">INFORMATIE</h3>
-          <ul className="space-y-2 text-sm">
+          <h3 className="font-bold text-lg mb-4 text-theme-white">INFORMATIE</h3>
+          <ul className="space-y-2 text-sm text-theme-white/90">
             <li>Rachelsmolen 1</li>
             <li>5612 MA Eindhoven</li>
             <li>KvK nr. 70280606</li>
@@ -64,7 +64,7 @@ export default function Footer() {
                       href={fileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:text-geel transition-colors"
+                      className="hover:text-theme-purple-lighter transition-colors"
                       title={doc.description || doc.title}
                     >
                       {doc.title}
@@ -77,55 +77,55 @@ export default function Footer() {
         </div>
 
         <div>
-          <h3 className="font-bold text-lg mb-4">PAGINA'S</h3>
-          <ul className="space-y-2 text-sm">
+          <h3 className="font-bold text-lg mb-4 text-theme-white">PAGINA'S</h3>
+          <ul className="space-y-2 text-sm text-theme-white/90">
             <li>
-              <Link href={ROUTES.HOME} className="hover:text-geel transition-colors">
+              <Link href={ROUTES.HOME} className="hover:text-theme-purple-lighter transition-colors">
                 Home
               </Link>
             </li>
             <li>
-              <Link href={ROUTES.INTRO} className="hover:text-geel transition-colors">
+              <Link href={ROUTES.INTRO} className="hover:text-theme-purple-lighter transition-colors">
                 Intro
               </Link>
             </li>
             <li>
-              <Link href={ROUTES.ACTIVITIES} className="hover:text-geel transition-colors">
+              <Link href={ROUTES.ACTIVITIES} className="hover:text-theme-purple-lighter transition-colors">
                 Activiteiten
               </Link>
             </li>
             <li>
-              <Link href={ROUTES.COMMITTEES} className="hover:text-geel transition-colors">
+              <Link href={ROUTES.COMMITTEES} className="hover:text-theme-purple-lighter transition-colors">
                 Commissies
               </Link>
             </li>
             <li>
-              <Link href={ROUTES.CLUBS} className="hover:text-geel transition-colors">
+              <Link href={ROUTES.CLUBS} className="hover:text-theme-purple-lighter transition-colors">
                 Clubs
               </Link>
             </li>
             <li>
-              <Link href={ROUTES.CONTACT} className="hover:text-geel transition-colors">
+              <Link href={ROUTES.CONTACT} className="hover:text-theme-purple-lighter transition-colors">
                 Contact
               </Link>
             </li>
             <li>
-              <Link href={ROUTES.SAFE_HAVENS} className="hover:text-geel transition-colors">
+              <Link href={ROUTES.SAFE_HAVENS} className="hover:text-theme-purple-lighter transition-colors">
                 Safe Havens
               </Link>
             </li>
             <li>
-              <Link href={ROUTES.MEMBERSHIP} className="hover:text-geel transition-colors">
+              <Link href={ROUTES.MEMBERSHIP} className="hover:text-theme-purple-lighter transition-colors">
                 Lidmaatschap
               </Link>
             </li>
             <li>
-              <Link href={ROUTES.PUB_CRAWL} className="hover:text-geel transition-colors">
+              <Link href={ROUTES.PUB_CRAWL} className="hover:text-theme-purple-lighter transition-colors">
                 Kroegentocht
               </Link>
             </li>
             <li>
-              <Link href={ROUTES.STICKERS} className="hover:text-geel transition-colors">
+              <Link href={ROUTES.STICKERS} className="hover:text-theme-purple-lighter transition-colors">
                 Stickers
               </Link>
             </li>
@@ -133,32 +133,32 @@ export default function Footer() {
         </div>
 
         <div>
-          <h3 className="font-bold text-lg mb-4">COMMISSIES</h3>
-          <ul className="space-y-2 text-sm">
+          <h3 className="font-bold text-lg mb-4 text-theme-white">COMMISSIES</h3>
+          <ul className="space-y-2 text-sm text-theme-white/90">
             {committees.length > 0 ? (
               committees.map((committee) => (
                 <li key={committee.id}>
                   <Link
                       href={`${ROUTES.COMMITTEES}/${slugify(cleanCommitteeName(committee.name))}`}
-                      className="hover:text-geel transition-colors"
+                      className="hover:text-theme-purple-lighter transition-colors"
                     >
                     {cleanCommitteeName(committee.name)}
                   </Link>
                 </li>
               ))
             ) : (
-              <li className="text-beige/60">Laden...</li>
+              <li className="text-theme-white/60">Laden...</li>
             )}
           </ul>
         </div>
 
         <div>
-          <h3 className="font-bold text-lg mb-4">CONTACT</h3>
-          <ul className="space-y-2 text-sm mb-6">
+          <h3 className="font-bold text-lg mb-4 text-theme-white">CONTACT</h3>
+          <ul className="space-y-2 text-sm mb-6 text-theme-white/90">
             <li>
               <a
                 href="mailto:info@salvemundi.nl"
-                className="hover:text-geel transition-colors"
+                className="hover:text-theme-purple-lighter transition-colors"
               >
                 info@salvemundi.nl
               </a>
@@ -166,7 +166,7 @@ export default function Footer() {
             <li>
               <a
                 href="tel:+31624827777"
-                className="hover:text-geel transition-colors"
+                className="hover:text-theme-purple-lighter transition-colors"
               >
                 +31 6 24827777
               </a>
@@ -177,7 +177,7 @@ export default function Footer() {
                   href="https://wa.me/31624827777"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-geel transition-colors"
+                  className="hover:text-theme-purple-lighter transition-colors"
                 >
                   WhatsApp
                 </a>
@@ -186,21 +186,21 @@ export default function Footer() {
             <li>
                 <Link
                 href={ROUTES.SAFE_HAVENS}
-                className="hover:text-geel transition-colors"
+                className="hover:text-theme-purple-lighter transition-colors"
               >
                 Safe Havens
               </Link>
             </li>
           </ul>
 
-          <h3 className="font-bold text-lg mb-4">SOCIAL MEDIA</h3>
-          <ul className="space-y-2 text-sm">
+          <h3 className="font-bold text-lg mb-4 text-theme-white">SOCIAL MEDIA</h3>
+          <ul className="space-y-2 text-sm text-theme-white/90">
             <li>
               <a 
                 href="https://www.instagram.com/sv.salvemundi/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-geel transition-colors flex items-center gap-2"
+                className="hover:text-theme-purple-lighter transition-colors flex items-center gap-2"
               >
                 <span className="inline-block w-4 h-4" aria-hidden>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
@@ -217,7 +217,7 @@ export default function Footer() {
                 href="https://www.facebook.com/sv.salvemundi/?locale=nl_NL"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-geel transition-colors flex items-center gap-2"
+                className="hover:text-theme-purple-lighter transition-colors flex items-center gap-2"
               >
                 <span className="inline-block w-4 h-4" aria-hidden>
                   <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
@@ -232,7 +232,7 @@ export default function Footer() {
                 href="https://nl.linkedin.com/company/salve-mundi"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-geel transition-colors flex items-center gap-2"
+                className="hover:text-theme-purple-lighter transition-colors flex items-center gap-2"
               >
                 <span className="inline-block w-4 h-4" aria-hidden>
                   <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
@@ -246,14 +246,14 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="mt-12 pt-8 border-t border-beige/30 text-center text-sm">
+      <div className="mt-12 pt-8 border-t border-theme-white/30 text-center text-sm text-theme-white/90">
         <p>
           Copyright © 2025 Salve Mundi alle rechten voorbehouden.{" "}
           <a 
             href="https://github.com/salvemundi/website"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-geel transition-colors"
+            className="hover:text-theme-purple-lighter transition-colors"
           >
             Source code
           </a>

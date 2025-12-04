@@ -96,7 +96,7 @@ const Header: React.FC = () => {
                         {isAuthenticated ? (
                             <Link
                                 href={ROUTES.ACCOUNT}
-                                className="flex items-center gap-2 rounded-full bg-[var(--bg-card)]/70 px-3 py-1.5 text-sm font-medium text-theme shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+                                className="flex items-center gap-2 rounded-full  px-3 py-1.5 text-sm font-medium text-theme shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                             >
                                 <img
                                     src={user?.avatar ? getImageUrl(user.avatar) : "/img/Logo.png"}
@@ -108,7 +108,7 @@ const Header: React.FC = () => {
                         ) : (
                             <Link
                                 href={ROUTES.LOGIN}
-                                className="hidden items-center gap-2 rounded-full bg-[var(--bg-card)] px-4 py-2 text-sm font-semibold text-theme-purple shadow-sm transition hover:bg-theme-purple/5 sm:inline-flex"
+                                className="flex items-center gap-2 rounded-full  bg-primary-100 text-theme-purple-darker font-semibold  px-3 py-1.5 text-sm  text-theme shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                             >
                                 Inloggen
                             </Link>
@@ -117,7 +117,7 @@ const Header: React.FC = () => {
                         {!isAuthenticated && (
                             <Link
                                 href={ROUTES.MEMBERSHIP}
-                                className="hidden items-center gap-2 rounded-full bg-gradient-theme px-4 py-2 text-sm font-semibold text-theme-white shadow-lg shadow-theme-purple/30 transition hover:-translate-y-0.5 hover:shadow-xl md:inline-flex"
+                                className="hidden items-center gap-2 rounded-full bg-gradient-theme px-4 py-2 text-sm font-bold text-theme-white shadow-lg shadow-theme-purple/30 transition hover:-translate-y-0.5 hover:shadow-xl md:inline-flex"
                             >
                                 <Sparkles className="h-4 w-4" />
                                 Word lid

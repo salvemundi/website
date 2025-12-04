@@ -22,26 +22,26 @@ function TransactionsContent() {
     const getTransactionTypeColor = (type: string) => {
         switch (type) {
             case 'membership':
-                return 'bg-geel text-paars';
+                return 'bg-theme-purple-lighter text-theme-purple-darker';
             case 'event':
-                return 'bg-oranje/20 text-paars';
+                return 'bg-theme-purple/20 text-theme-purple';
             case 'payment':
-                return 'bg-paars/20 text-paars';
+                return 'bg-theme-purple/20 text-theme-purple';
             default:
-                return 'bg-gray-200 text-paars';
+                return 'bg-gray-200 text-theme-purple';
         }
     };
 
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'completed':
-                return 'bg-green-500 text-white';
+                return 'bg-green-500 text-theme-white';
             case 'pending':
-                return 'bg-yellow-500 text-white';
+                return 'bg-yellow-500 text-theme-white';
             case 'failed':
-                return 'bg-paars text-white';
+                return 'bg-theme-purple text-theme-white';
             default:
-                return 'bg-gray-400 text-white';
+                return 'bg-gray-400 text-theme-white';
         }
     };
 

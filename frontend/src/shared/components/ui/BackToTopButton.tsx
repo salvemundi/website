@@ -39,7 +39,7 @@ export default function BackToTopButton() {
         >
             <button
                 onClick={scrollToTop}
-                className="fixed bottom-10 right-10 z-50 p-5 bg-gradient-to-r from-oranje to-paars text-white rounded-full shadow-lg shadow-oranje/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl"
+                className="fixed bottom-10 right-10 z-50 p-5 bg-gradient-theme text-theme-white rounded-full shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl"
             >
                 ↑ Top
             </button>

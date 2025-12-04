@@ -55,7 +55,7 @@ export default function ClubsPage() {
                                             target.src = '/img/placeholder.svg';
                                         }}
                                     />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-black/0" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-black/0 dark:from-white/20 dark:via-white/0 dark:to-white/0" />
                                 </div>
 
                                 <div className="flex flex-1 flex-col p-6">

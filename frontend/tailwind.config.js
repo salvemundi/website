@@ -5,6 +5,35 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Theme colors (for IDE preview support)
+        theme: {
+          purple: {
+            DEFAULT: "var(--theme-purple)",
+            light: "var(--theme-purple-light)",
+            lighter: "var(--theme-purple-lighter)",
+            dark: "var(--theme-purple-dark)",
+            darker: "var(--theme-purple-darker)",
+          },
+          white: {
+            DEFAULT: "var(--theme-white)",
+            soft: "var(--theme-white-soft)",
+            muted: "var(--theme-white-muted)",
+          },
+          text: {
+            DEFAULT: "var(--theme-text)",
+            muted: "var(--theme-text-muted)",
+            light: "var(--theme-text-light)",
+          },
+          gradient: {
+            start: "var(--theme-gradient-start)",
+            end: "var(--theme-gradient-end)",
+            "light-start": "var(--theme-gradient-light-start)",
+            "light-end": "var(--theme-gradient-light-end)",
+            "dark-start": "var(--theme-gradient-dark-start)",
+            "dark-end": "var(--theme-gradient-dark-end)",
+          },
+        },
+
         // Salvemundi brand colors
         oranje: "var(--color-primary-light)",
         paars: "var(--color-secondary-light)",

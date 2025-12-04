@@ -36,7 +36,7 @@ export default function HomePage() {
                             <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-theme-purple-dark/10 text-theme-purple-dark group-hover:bg-gradient-theme-dark group-hover:text-theme-white transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
                             </div>
-                            <h3 className="mb-4 text-xl font-bold text-white">Studie</h3>
+                            <h3 className="mb-4 text-xl font-bold text-theme">Studie</h3>
                             <p className="text-theme-muted leading-relaxed">
                                 Samen sta je sterker. We organiseren bijlessen, workshops en bedrijfsbezoeken om jou te helpen excelleren in je studie en carrière.
                             </p>
