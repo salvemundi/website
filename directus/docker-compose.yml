@@ -5,9 +5,9 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_DATABASE}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - postgres_app_data:/var/lib/postgresql/data
     networks:
@@ -22,21 +22,27 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      - KEY=${KEY}
-      - SECRET=${SECRET}
+      # Mapping van lokale .env namen naar container variabelen
+      - KEY=${DIRECTUS_KEY}
+      - SECRET=${DIRECTUS_SECRET}
       - PUBLIC_URL=${PUBLIC_URL}
       - PORT=8055
       - CORS_ORIGIN=${CORS_ORIGIN}
       - CORS_ALLOW_CREDENTIALS=${CORS_ALLOW_CREDENTIALS}
-      - ADMIN_EMAIL=${ADMIN_EMAIL}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      
+      # Database connection (gebruikt de POSTGRES_ variabelen)
       - DB_CLIENT=postgres
       - DB_HOST=db
       - DB_PORT=5432
-      - DB_DATABASE=${DB_DATABASE}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      # Volledige set variabelen voor UI-activering en custom endpoint
+      - DB_DATABASE=${POSTGRES_DB}
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      
+      # Admin Init
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+
+      # Microsoft Entra ID (Exact zoals in werkende env)
       - AUTH_PROVIDERS=microsoft
       - AUTH_MICROSOFT_DRIVER=openid
       - AUTH_MICROSOFT_CLIENT_ID=${AUTH_MICROSOFT_CLIENT_ID}
@@ -44,9 +50,11 @@ services:
       - AUTH_MICROSOFT_ISSUER_URL=${AUTH_MICROSOFT_ISSUER_URL}
       - AUTH_MICROSOFT_SCOPE=${AUTH_MICROSOFT_SCOPE}
       - AUTH_MICROSOFT_IDENTIFIER_KEY=${AUTH_MICROSOFT_IDENTIFIER_KEY}
-      - AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION=true
+      - AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION=${AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION}
       - AUTH_MICROSOFT_DEFAULT_ROLE_ID=${AUTH_MICROSOFT_DEFAULT_ROLE_ID}
+      # Custom Variabele
       - AUTH_MICROSOFT_TENANT_ID=${AUTH_MICROSOFT_TENANT_ID}
+      # JSON Mapping (Let op de quotes!)
       - 'AUTH_ENTRA_FIELDS_MAPPING={"email": "userPrincipalName", "first_name": "givenName", "last_name": "surname"}'
 
     volumes:
@@ -65,4 +73,4 @@ networks:
   proxy-network:
     external: true
   internal_backend:
-    driver: bridge
+    driver: bridges
