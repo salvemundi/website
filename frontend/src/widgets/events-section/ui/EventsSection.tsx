@@ -61,7 +61,7 @@ export default function EventsSection() {
                                 Aankomende evenementen
                             </h2>
                             <p className="max-w-xl text-sm text-white/90">
-                                Van feesten tot studiesessies, van sportactiviteiten tot commissie-evenementen. Kies jouw moment om mee te doen!
+                                Hier vind je een overzicht van al onze evenementen.
                             </p>
                         </div>
                         <a
