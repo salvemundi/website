@@ -18,7 +18,7 @@ export default function IconCard({ icon, children, className = '' }: IconCardPro
       onMouseLeave={() => setActive(false)}
     >
       <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-theme-purple/10 text-theme-purple group-hover:bg-gradient-theme group-hover:text-theme-white transition-colors">
-        {React.isValidElement(icon) ? React.cloneElement(icon, { __active: active }) : icon}
+        {React.isValidElement(icon) ? React.cloneElement(icon, { __active: active } as any) : icon}
       </div>
 
       <div className="text-theme-muted leading-relaxed">{children}</div>
