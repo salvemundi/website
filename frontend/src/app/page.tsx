@@ -1,5 +1,6 @@
 import Hero from '@/widgets/hero/ui/Hero';
 import EventsSection from '@/widgets/events-section/ui/EventsSection';
+import SponsorsSection from '@/widgets/sponsors-section';
 import { Calendar1 } from '@/shared/ui/icons/Calendar1';
 import { BookMarked } from '@/shared/ui/icons/BookMarked';
 import IconCard from '@/shared/ui/IconCard';
@@ -80,6 +81,9 @@ export default function HomePage() {
                     </div>
                 </div>
             </section>
+
+            {/* Sponsors Section */}
+            <SponsorsSection />
         </main>
     );
 }
