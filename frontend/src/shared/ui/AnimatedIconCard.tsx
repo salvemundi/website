@@ -36,7 +36,7 @@ const variantsMap = {
             transition: { duration: 0.9, repeat: Infinity, ease: 'easeInOut' },
         },
     },
-} as const;
+};
 
 export default function AnimatedIconCard({ icon, title, children, iconBgClass = '', variant = 'float', className = '' }: AnimatedIconCardProps) {
     const chosen = variantsMap[variant];
