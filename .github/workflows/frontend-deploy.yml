@@ -43,12 +43,13 @@ jobs:
           exportEnv: true
           tlsSkipVerify: false
           secrets: |
-            secret/data/dev-salvemundi NEXT_PUBLIC_DIRECTUS_URL | NEXT_PUBLIC_DIRECTUS_URL
-            secret/data/dev-salvemundi NEXT_PUBLIC_AUTH_REDIRECT_URI | NEXT_PUBLIC_AUTH_REDIRECT_URI
-            secret/data/dev-salvemundi NEXT_PUBLIC_ENTRA_CLIENT_ID | NEXT_PUBLIC_ENTRA_CLIENT_ID
-            secret/data/dev-salvemundi NEXT_PUBLIC_ENTRA_TENANT_ID | NEXT_PUBLIC_ENTRA_TENANT_ID
-            secret/data/dev-salvemundi NEXT_PUBLIC_EMAIL_API_ENDPOINT | NEXT_PUBLIC_EMAIL_API_ENDPOINT
-            secret/data/dev-salvemundi NEXT_PUBLIC_DIRECTUS_API_KEY | NEXT_PUBLIC_DIRECTUS_API_KEY
+            secret/data/dev-salvemundi:NEXT_PUBLIC_DIRECTUS_URL
+            secret/data/dev-salvemundi:NEXT_PUBLIC_AUTH_REDIRECT_URI
+            secret/data/dev-salvemundi:NEXT_PUBLIC_ENTRA_CLIENT_ID
+            secret/data/dev-salvemundi:NEXT_PUBLIC_ENTRA_TENANT_ID
+            secret/data/dev-salvemundi:NEXT_PUBLIC_EMAIL_API_ENDPOINT
+            secret/data/dev-salvemundi:NEXT_PUBLIC_DIRECTUS_API_KEY
+
 
       # ------------------------------
       # Set Docker image tag based on branch
