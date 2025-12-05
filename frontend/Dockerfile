@@ -1,25 +1,18 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
-
-# Build arguments matching GitHub Actions workflow
 ARG NEXT_PUBLIC_DIRECTUS_URL
 ARG NEXT_PUBLIC_AUTH_REDIRECT_URI
 ARG NEXT_PUBLIC_ENTRA_CLIENT_ID
 ARG NEXT_PUBLIC_ENTRA_TENANT_ID
 ARG NEXT_PUBLIC_EMAIL_API_ENDPOINT
 ARG NEXT_PUBLIC_DIRECTUS_API_KEY
-
-# Convert ARG to ENV so Next.js sees them during npm run build
 ENV NEXT_PUBLIC_DIRECTUS_URL=$NEXT_PUBLIC_DIRECTUS_URL
 ENV NEXT_PUBLIC_AUTH_REDIRECT_URI=$NEXT_PUBLIC_AUTH_REDIRECT_URI
 ENV NEXT_PUBLIC_ENTRA_CLIENT_ID=$NEXT_PUBLIC_ENTRA_CLIENT_ID
 ENV NEXT_PUBLIC_ENTRA_TENANT_ID=$NEXT_PUBLIC_ENTRA_TENANT_ID
 ENV NEXT_PUBLIC_EMAIL_API_ENDPOINT=$NEXT_PUBLIC_EMAIL_API_ENDPOINT
 ENV NEXT_PUBLIC_DIRECTUS_API_KEY=$NEXT_PUBLIC_DIRECTUS_API_KEY
-
-# Disable Next.js telemetry
 ENV NEXT_TELEMETRY_DISABLED=1
-
 COPY package*.json ./
 RUN npm ci
 COPY . .
@@ -27,17 +20,17 @@ RUN npm run build
 
 FROM node:22-alpine AS runner
 WORKDIR /app
-
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-
-# Copy Next.js standalone output
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-
+RUN mkdir .next
+RUN chown nextjs:nodejs .next
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+USER nextjs
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-
 CMD ["node", "server.js"]
