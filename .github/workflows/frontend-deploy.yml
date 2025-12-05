@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write       
+      id-token: write       # Needed for GitHub OIDC
       packages: write
 
     steps:
@@ -29,11 +29,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-
       # ------------------------------
-      # Authenticate to Vault using JWT
+      # Login to Vault using GitHub OIDC JWT
       # ------------------------------
-      - name: Login to Vault using JWT (OIDC)
+      - name: Login to Vault
+        id: vault-login
         uses: hashicorp/vault-action@v3
         with:
           url: https://secrets.salvemundi.nl
@@ -42,6 +42,22 @@ jobs:
           jwtGithubAudience: vault
           exportEnv: true
 
+      # ------------------------------
+      # Read secrets from Vault
+      # ------------------------------
+      - name: Load Vault Secrets
+        id: vault-secrets
+        uses: hashicorp/vault-action@v3
+        with:
+          url: https://secrets.salvemundi.nl
+          token: ${{ steps.vault-login.outputs.token }}
+          secrets: |
+            secret/data/dev-salvemundi NEXT_PUBLIC_DIRECTUS_URL | NEXT_PUBLIC_DIRECTUS_URL
+            secret/data/dev-salvemundi NEXT_PUBLIC_AUTH_REDIRECT_URI | NEXT_PUBLIC_AUTH_REDIRECT_URI
+            secret/data/dev-salvemundi NEXT_PUBLIC_ENTRA_CLIENT_ID | NEXT_PUBLIC_ENTRA_CLIENT_ID
+            secret/data/dev-salvemundi NEXT_PUBLIC_ENTRA_TENANT_ID | NEXT_PUBLIC_ENTRA_TENANT_ID
+            secret/data/dev-salvemundi NEXT_PUBLIC_EMAIL_API_ENDPOINT | NEXT_PUBLIC_EMAIL_API_ENDPOINT
+            secret/data/dev-salvemundi NEXT_PUBLIC_DIRECTUS_API_KEY | NEXT_PUBLIC_DIRECTUS_API_KEY
 
       # ------------------------------
       # Set Docker image tag based on branch
@@ -64,7 +80,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # ------------------------------
-      # Build and Push Docker Image
+      # Build and push Docker image
       # ------------------------------
       - name: Build & Push Docker Image
         uses: docker/build-push-action@v5
@@ -95,7 +111,7 @@ jobs:
           strip_components: 1
 
       # ------------------------------
-      # Deploy on Server
+      # Deploy on server
       # ------------------------------
       - name: Deploy on Server
         uses: appleboy/ssh-action@v1.0.3
