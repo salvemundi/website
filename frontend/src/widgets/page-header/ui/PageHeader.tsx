@@ -33,7 +33,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
             <div className={`relative z-20 w-full max-w-app px-4 py-20 ${variant === 'centered' ? 'text-center' : ''}`}>
                 {variant === 'centered' ? (
                     <>
-                        <h1 className={`text-theme-purple font-bold leading-tight drop-shadow-lg ${titleClassName}`}>
+                        <h1 className={`text-theme-white font-bold leading-tight drop-shadow-lg ${titleClassName}`}>
                             {title.split('\n').map((line, index) => (
                                 <React.Fragment key={index}>
                                     {line}
