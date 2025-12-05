@@ -48,12 +48,6 @@ export const metadata: Metadata = {
 };
 
 
-console.log('MSAL runtime config', {
-    clientId: process.env.NEXT_PUBLIC_ENTRA_CLIENT_ID,
-    tenantId: process.env.NEXT_PUBLIC_ENTRA_TENANT_ID,
-    redirectUri: process.env.NEXT_PUBLIC_AUTH_REDIRECT_URI,
-});
-
 export const viewport: Viewport = {
     themeColor: '#ff6542',
     width: 'device-width',
