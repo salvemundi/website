@@ -30,10 +30,10 @@ jobs:
         uses: actions/checkout@v4
 
       # ------------------------------
-      # Login to Vault using GitHub OIDC JWT
+      # Load Vault Secrets using OIDC JWT
       # ------------------------------
-      - name: Login to Vault
-        id: vault-login
+      - name: Load Vault Secrets
+        id: vault-secrets
         uses: hashicorp/vault-action@v3
         with:
           url: https://secrets.salvemundi.nl
@@ -41,24 +41,14 @@ jobs:
           role: frontend-dev
           jwtGithubAudience: vault
           exportEnv: true
-          exportToken: true       # <--- must export token for the next step
-
-      # ------------------------------
-      # Read secrets from Vault
-      # ------------------------------
-      - name: Load Vault Secrets
-        id: vault-secrets
-        uses: hashicorp/vault-action@v3
-        with:
-          url: https://secrets.salvemundi.nl
-          token: ${{ steps.vault-login.outputs.token }}
+          tlsSkipVerify: false
           secrets: |
-            secret/data/dev-salvemundi:NEXT_PUBLIC_DIRECTUS_URL:NEXT_PUBLIC_DIRECTUS_URL
-            secret/data/dev-salvemundi:NEXT_PUBLIC_AUTH_REDIRECT_URI:NEXT_PUBLIC_AUTH_REDIRECT_URI
-            secret/data/dev-salvemundi:NEXT_PUBLIC_ENTRA_CLIENT_ID:NEXT_PUBLIC_ENTRA_CLIENT_ID
-            secret/data/dev-salvemundi:NEXT_PUBLIC_ENTRA_TENANT_ID:NEXT_PUBLIC_ENTRA_TENANT_ID
-            secret/data/dev-salvemundi:NEXT_PUBLIC_EMAIL_API_ENDPOINT:NEXT_PUBLIC_EMAIL_API_ENDPOINT
-            secret/data/dev-salvemundi:NEXT_PUBLIC_DIRECTUS_API_KEY:NEXT_PUBLIC_DIRECTUS_API_KEY
+            secret/data/dev-salvemundi NEXT_PUBLIC_DIRECTUS_URL | NEXT_PUBLIC_DIRECTUS_URL
+            secret/data/dev-salvemundi NEXT_PUBLIC_AUTH_REDIRECT_URI | NEXT_PUBLIC_AUTH_REDIRECT_URI
+            secret/data/dev-salvemundi NEXT_PUBLIC_ENTRA_CLIENT_ID | NEXT_PUBLIC_ENTRA_CLIENT_ID
+            secret/data/dev-salvemundi NEXT_PUBLIC_ENTRA_TENANT_ID | NEXT_PUBLIC_ENTRA_TENANT_ID
+            secret/data/dev-salvemundi NEXT_PUBLIC_EMAIL_API_ENDPOINT | NEXT_PUBLIC_EMAIL_API_ENDPOINT
+            secret/data/dev-salvemundi NEXT_PUBLIC_DIRECTUS_API_KEY | NEXT_PUBLIC_DIRECTUS_API_KEY
 
       # ------------------------------
       # Set Docker image tag based on branch
