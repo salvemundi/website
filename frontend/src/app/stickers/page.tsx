@@ -236,7 +236,7 @@ function StickersContent() {
                 )}
 
                 {/* Filters */}
-                <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-3 bg-white p-4 rounded-2xl shadow-md">
+                <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-3 bg-white dark:bg-[var(--bg-card-dark)] p-4 rounded-2xl shadow-md">
                     <input
                         type="text"
                         placeholder="Filter by country"
@@ -256,7 +256,7 @@ function StickersContent() {
                         <select
                             value={filterUserId}
                             onChange={(e) => setFilterUserId(e.target.value)}
-                            className="px-3 py-2 rounded-lg w-full focus:ring-2 focus:ring-paars focus:border-transparent"
+                            className="px-3 py-2 rounded-lg w-full bg-white dark:bg-[var(--bg-card-dark)] focus:ring-2 focus:ring-paars focus:border-transparent"
                         >
                             <option value="">All users</option>
                             {Object.entries(stickersPerUser).map(([id, info]) => (
@@ -274,7 +274,7 @@ function StickersContent() {
                         />
                         <button
                             onClick={() => { setFilterCountry(''); setFilterCity(''); setFilterUser(''); setFilterUserId(''); }}
-                            className="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200"
+                            className="px-3 py-2 rounded-lg bg-gray-100 dark:bg-[var(--bg-soft-dark)] hover:bg-gray-200 dark:hover:bg-[var(--bg-card-dark)] text-gray-700 dark:text-theme-white"
                         >
                             Clear
                         </button>
