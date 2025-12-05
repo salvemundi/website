@@ -55,7 +55,7 @@ services:
       # Custom Variabele
       - AUTH_MICROSOFT_TENANT_ID=${AUTH_MICROSOFT_TENANT_ID}
       # JSON Mapping (Let op de quotes!)
-      - 'AUTH_ENTRA_FIELDS_MAPPING={"email": "userPrincipalName", "first_name": "givenName", "last_name": "surname"}'
+      # - 'AUTH_ENTRA_FIELDS_MAPPING={"email": "userPrincipalName", "first_name": "givenName", "last_name": "surname"}'
 
     volumes:
       - directus_uploads:/directus/uploads
