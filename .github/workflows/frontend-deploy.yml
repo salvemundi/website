@@ -1,86 +1,68 @@
-name: Deploy Frontend
+name: Frontend Deploy
 
 on:
   push:
-    branches:
-      - "Development"
-      - "main"
+    branches: [main]
     paths:
-      - "frontend/**"
-      - ".github/workflows/frontend-deploy.yml"
+      - 'frontend/**'
+      - '.github/workflows/frontend-deploy.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-deploy.yml'
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: salvemundi/frontend
-  DEPLOY_PATH: /opt/frontend
 
 jobs:
   build-and-deploy:
+    if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write       # Needed for GitHub OIDC authentication
-      packages: write
+      id-token: write
 
     steps:
-      # ------------------------------
-      # Checkout code
-      # ------------------------------
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      # ------------------------------
-      # Load Vault Secrets using OIDC JWT
-      # ------------------------------
       - name: Load Vault Secrets
-        id: vault-secrets
+        id: vault
         uses: hashicorp/vault-action@v3
         with:
-          url: https://secrets.salvemundi.nl
-          method: jwt
-          role: frontend-dev
-          jwtGithubAudience: vault
-          exportEnv: true
-          tlsSkipVerify: false
+          url: ${{ secrets.VAULT_URL }}
+          token: ${{ secrets.VAULT_TOKEN }}
           secrets: |
-            secret/data/dev-salvemundi NEXT_PUBLIC_DIRECTUS_URL ;
-            secret/data/dev-salvemundi NEXT_PUBLIC_AUTH_REDIRECT_URI ;
-            secret/data/dev-salvemundi NEXT_PUBLIC_ENTRA_CLIENT_ID ;
-            secret/data/dev-salvemundi NEXT_PUBLIC_ENTRA_TENANT_ID ;
-            secret/data/dev-salvemundi NEXT_PUBLIC_EMAIL_API_ENDPOINT ;
-            secret/data/dev-salvemundi NEXT_PUBLIC_DIRECTUS_API_KEY
+            secret/data/dev-salvemundi outputs.NEXT_PUBLIC_DIRECTUS_URL | env.NEXT_PUBLIC_DIRECTUS_URL;
+            secret/data/dev-salvemundi outputs.NEXT_PUBLIC_AUTH_REDIRECT_URI | env.NEXT_PUBLIC_AUTH_REDIRECT_URI;
+            secret/data/dev-salvemundi outputs.NEXT_PUBLIC_ENTRA_CLIENT_ID | env.NEXT_PUBLIC_ENTRA_CLIENT_ID;
+            secret/data/dev-salvemundi outputs.NEXT_PUBLIC_ENTRA_TENANT_ID | env.NEXT_PUBLIC_ENTRA_TENANT_ID;
+            secret/data/dev-salvemundi outputs.NEXT_PUBLIC_EMAIL_API_ENDPOINT | env.NEXT_PUBLIC_EMAIL_API_ENDPOINT;
+            secret/data/dev-salvemundi outputs.NEXT_PUBLIC_DIRECTUS_API_KEY | env.NEXT_PUBLIC_DIRECTUS_API_KEY;
 
-      # ------------------------------
-      # Set Docker image tag based on branch
-      # ------------------------------
-      - name: Set Docker image tag
-        run: |
-          if [[ "${{ github.ref_name }}" == "Development" ]]; then
-            echo "TAG=dev" >> $GITHUB_ENV
-          else
-            echo "TAG=latest" >> $GITHUB_ENV
-          fi
+      - name: Set environment
+        if: github.ref == 'refs/heads/main'
+        run: echo "ENVIRONMENT=Development" >> $GITHUB_ENV
 
-      # ------------------------------
-      # Login to GitHub Container Registry
-      # ------------------------------
-      - name: Login to GitHub Container Registry
+      - name: Login to GHCR
+        if: github.ref == 'refs/heads/main'
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # ------------------------------
-      # Build and push Docker image
-      # ------------------------------
-      - name: Build & Push Docker Image
+      - name: Build and push Docker image
+        if: github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
-          file: ./frontend/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
+          tags: |
+            ghcr.io/salvemundi/frontend:dev
+            ghcr.io/salvemundi/frontend:${{ github.sha }}
           build-args: |
             NEXT_PUBLIC_DIRECTUS_URL=${{ env.NEXT_PUBLIC_DIRECTUS_URL }}
             NEXT_PUBLIC_AUTH_REDIRECT_URI=${{ env.NEXT_PUBLIC_AUTH_REDIRECT_URI }}
@@ -89,35 +71,36 @@ jobs:
             NEXT_PUBLIC_EMAIL_API_ENDPOINT=${{ env.NEXT_PUBLIC_EMAIL_API_ENDPOINT }}
             NEXT_PUBLIC_DIRECTUS_API_KEY=${{ env.NEXT_PUBLIC_DIRECTUS_API_KEY }}
 
-      # ------------------------------
-      # Copy docker-compose.yml to server
-      # ------------------------------
-      - name: Copy docker-compose.yml to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "frontend/docker-compose.yml"
-          target: ${{ env.DEPLOY_PATH }}
-          strip_components: 1
-
-      # ------------------------------
-      # Deploy on server
-      # ------------------------------
-      - name: Deploy on Server
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Deploy to server
+        if: github.ref == 'refs/heads/main'
         env:
-          GH_REGISTRY: ${{ env.REGISTRY }}
+          REGISTRY: ghcr.io
+          IMAGE_NAME: salvemundi/frontend
+          DEPLOY_PATH: /opt/frontend
+          TAG: dev
+          GH_REGISTRY: ghcr.io
           GH_USERNAME: ${{ github.actor }}
-          GH_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-          DEPLOY_PATH: ${{ env.DEPLOY_PATH }}
-          TAG: ${{ env.TAG }}
+          GH_PASSWORD: ${{ secrets.GH_PASSWORD }}
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,DEPLOY_PATH,TAG
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USERNAME }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          port: ${{ secrets.DEPLOY_PORT }}
+          envs: |
+            REGISTRY,
+            IMAGE_NAME,
+            DEPLOY_PATH,
+            TAG,
+            GH_REGISTRY,
+            GH_USERNAME,
+            GH_PASSWORD,
+            NEXT_PUBLIC_DIRECTUS_URL,
+            NEXT_PUBLIC_AUTH_REDIRECT_URI,
+            NEXT_PUBLIC_ENTRA_CLIENT_ID,
+            NEXT_PUBLIC_ENTRA_TENANT_ID,
+            NEXT_PUBLIC_EMAIL_API_ENDPOINT,
+            NEXT_PUBLIC_DIRECTUS_API_KEY
           script: |
             echo $GH_PASSWORD | docker login $GH_REGISTRY -u $GH_USERNAME --password-stdin
             mkdir -p $DEPLOY_PATH
