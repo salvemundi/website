@@ -34,13 +34,12 @@ jobs:
       # Authenticate to Vault using JWT
       # ------------------------------
       - name: Login to Vault using JWT (OIDC)
-        id: vault-login
         uses: hashicorp/vault-action@v3
         with:
           url: https://secrets.salvemundi.nl
           method: jwt
           role: frontend-dev
-          jwtGithubAudience: vault     
+          jwtGithubAudience: vault
           exportEnv: true
 
 
