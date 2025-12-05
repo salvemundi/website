@@ -13,19 +13,61 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: salvemundi/frontend
   DEPLOY_PATH: /opt/frontend
-  VAULT_ADDR: https://secrets.salvemundi.nl
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write       # REQUIRED for GitHub → Vault authentication
       packages: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      ############################################
+      # Authenticate With Vault Using OIDC (JWT)
+      ############################################
+      - name: Login to Vault (OIDC)
+        id: vault-auth
+        uses: hashicorp/vault-action@v3
+        with:
+          url: https://secrets.salvemundi.nl
+          method: jwt
+          role: frontend-dev
+
+      ############################################
+      # Read Secrets From Vault
+      ############################################
+      - name: Load secrets from Vault
+        id: vault-secrets
+        uses: hashicorp/vault-action@v3
+        with:
+          url: https://secrets.salvemundi.nl
+          token: ${{ steps.vault-auth.outputs.token }}
+          secrets: |
+            secret/data/kv/dev-salvemundi NEXT_PUBLIC_DIRECTUS_URL | NEXT_PUBLIC_DIRECTUS_URL
+            secret/data/kv/dev-salvemundi NEXT_PUBLIC_AUTH_REDIRECT_URI | NEXT_PUBLIC_AUTH_REDIRECT_URI
+            secret/data/kv/dev-salvemundi NEXT_PUBLIC_ENTRA_CLIENT_ID | NEXT_PUBLIC_ENTRA_CLIENT_ID
+            secret/data/kv/dev-salvemundi NEXT_PUBLIC_ENTRA_TENANT_ID | NEXT_PUBLIC_ENTRA_TENANT_ID
+            secret/data/kv/dev-salvemundi NEXT_PUBLIC_EMAIL_API_ENDPOINT | NEXT_PUBLIC_EMAIL_API_ENDPOINT
+            secret/data/kv/dev-salvemundi NEXT_PUBLIC_DIRECTUS_API_KEY | NEXT_PUBLIC_DIRECTUS_API_KEY
+
+      ############################################
+      # Branch-specific TAG
+      ############################################
+      - name: Set docker image tag
+        run: |
+          if [[ "${{ github.ref_name }}" == "Development" ]]; then
+            echo "TAG=dev" >> $GITHUB_ENV
+          else
+            echo "TAG=latest" >> $GITHUB_ENV
+          fi
+
+      ############################################
+      # Build and push Docker image
+      ############################################
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -33,32 +75,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set environment tag
-        run: |
-          if [[ "${{ github.ref_name }}" == "Development" ]]; then
-            echo "TAG=dev" >> $GITHUB_ENV
-            echo "VAULT_SECRET_PATH=secret/data/kv/dev-salvemundi" >> $GITHUB_ENV
-          else
-            echo "TAG=latest" >> $GITHUB_ENV
-            echo "VAULT_SECRET_PATH=secret/data/kv/prod-salvemundi" >> $GITHUB_ENV
-          fi
-
-      - name: Import Secrets from Vault
-        uses: hashicorp/vault-action@v3
-        with:
-          url: ${{ env.VAULT_ADDR }}
-          method: approle
-          roleId: ${{ secrets.VAULT_ROLE_ID }}
-          secretId: ${{ secrets.VAULT_SECRET_ID }}
-          secrets: |
-            ${{ env.VAULT_SECRET_PATH }} DIRECTUS_URL | NEXT_PUBLIC_DIRECTUS_URL ;
-            ${{ env.VAULT_SECRET_PATH }} DIRECTUS_API_KEY | NEXT_PUBLIC_DIRECTUS_API_KEY ;
-            ${{ env.VAULT_SECRET_PATH }} ENTRA_CLIENT_ID | NEXT_PUBLIC_ENTRA_CLIENT_ID ;
-            ${{ env.VAULT_SECRET_PATH }} ENTRA_TENANT_ID | NEXT_PUBLIC_ENTRA_TENANT_ID ;
-            ${{ env.VAULT_SECRET_PATH }} AUTH_REDIRECT_URI | NEXT_PUBLIC_AUTH_REDIRECT_URI ;
-            ${{ env.VAULT_SECRET_PATH }} EMAIL_API_ENDPOINT | NEXT_PUBLIC_EMAIL_API_ENDPOINT ;
-
-      - name: Build and Push Docker Image
+      - name: Build & Push Docker Image
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
@@ -73,6 +90,9 @@ jobs:
             NEXT_PUBLIC_EMAIL_API_ENDPOINT=${{ env.NEXT_PUBLIC_EMAIL_API_ENDPOINT }}
             NEXT_PUBLIC_DIRECTUS_API_KEY=${{ env.NEXT_PUBLIC_DIRECTUS_API_KEY }}
 
+      ############################################
+      # Deploy to server
+      ############################################
       - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -97,13 +117,9 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,DEPLOY_PATH,TAG
           script: |
-            # Authenticate with registry to allow image pull
             echo $GH_PASSWORD | docker login $GH_REGISTRY -u $GH_USERNAME --password-stdin
-
-            # Update deployment
             mkdir -p $DEPLOY_PATH
             cd $DEPLOY_PATH
             echo "TAG=$TAG" > .env
-
             docker compose pull frontend
             docker compose up -d frontend --remove-orphans
