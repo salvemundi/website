@@ -3,16 +3,17 @@ name: Deploy Frontend
 on:
   push:
     branches:
-      - 'Development'
-      - 'main'
+      - "Development"
+      - "main"
     paths:
-      - 'frontend/**'
-      - '.github/workflows/frontend-deploy.yml'
+      - "frontend/**"
+      - ".github/workflows/frontend-deploy.yml"
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: salvemundi/frontend
   DEPLOY_PATH: /opt/frontend
+  VAULT_ADDR: https://secrets.salvemundi.nl
 
 jobs:
   build-and-deploy:
@@ -32,27 +33,30 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Map Secrets to Environment
-        id: selection
+      - name: Set environment tag
         run: |
-          # Map branch-specific secrets to build arguments
           if [[ "${{ github.ref_name }}" == "Development" ]]; then
             echo "TAG=dev" >> $GITHUB_ENV
-            echo "VITE_DIRECTUS_URL=${{ secrets.VITE_DIRECTUS_URL }}" >> $GITHUB_ENV
-            echo "VITE_AUTH_REDIRECT_URI=${{ secrets.VITE_AUTH_REDIRECT_URI }}" >> $GITHUB_ENV
-            echo "VITE_ENTRA_CLIENT_ID=${{ secrets.VITE_ENTRA_CLIENT_ID }}" >> $GITHUB_ENV
-            echo "VITE_ENTRA_TENANT_ID=${{ secrets.VITE_ENTRA_TENANT_ID }}" >> $GITHUB_ENV
-            echo "VITE_EMAIL_API_ENDPOINT=${{ secrets.VITE_EMAIL_API_ENDPOINT }}" >> $GITHUB_ENV
-            echo "VITE_DIRECTUS_API_KEY=${{ secrets.DEV_DIRECTUS_API_TOKEN }}" >> $GITHUB_ENV
+            echo "VAULT_SECRET_PATH=secret/data/kv/dev-salvemundi" >> $GITHUB_ENV
           else
             echo "TAG=latest" >> $GITHUB_ENV
-            echo "VITE_DIRECTUS_URL=${{ secrets.PROD_VITE_DIRECTUS_URL }}" >> $GITHUB_ENV
-            echo "VITE_AUTH_REDIRECT_URI=${{ secrets.PROD_VITE_AUTH_REDIRECT_URI }}" >> $GITHUB_ENV
-            echo "VITE_ENTRA_CLIENT_ID=${{ secrets.PROD_VITE_ENTRA_CLIENT_ID }}" >> $GITHUB_ENV
-            echo "VITE_ENTRA_TENANT_ID=${{ secrets.PROD_VITE_ENTRA_TENANT_ID }}" >> $GITHUB_ENV
-            echo "VITE_EMAIL_API_ENDPOINT=${{ secrets.PROD_VITE_EMAIL_API_ENDPOINT }}" >> $GITHUB_ENV
-            echo "VITE_DIRECTUS_API_KEY=${{ secrets.PROD_DIRECTUS_API_TOKEN }}" >> $GITHUB_ENV
+            echo "VAULT_SECRET_PATH=secret/data/kv/prod-salvemundi" >> $GITHUB_ENV
           fi
+
+      - name: Import Secrets from Vault
+        uses: hashicorp/vault-action@v3
+        with:
+          url: ${{ env.VAULT_ADDR }}
+          method: approle
+          roleId: ${{ secrets.VAULT_ROLE_ID }}
+          secretId: ${{ secrets.VAULT_SECRET_ID }}
+          secrets: |
+            ${{ env.VAULT_SECRET_PATH }} DIRECTUS_URL | NEXT_PUBLIC_DIRECTUS_URL ;
+            ${{ env.VAULT_SECRET_PATH }} DIRECTUS_API_KEY | NEXT_PUBLIC_DIRECTUS_API_KEY ;
+            ${{ env.VAULT_SECRET_PATH }} ENTRA_CLIENT_ID | NEXT_PUBLIC_ENTRA_CLIENT_ID ;
+            ${{ env.VAULT_SECRET_PATH }} ENTRA_TENANT_ID | NEXT_PUBLIC_ENTRA_TENANT_ID ;
+            ${{ env.VAULT_SECRET_PATH }} AUTH_REDIRECT_URI | NEXT_PUBLIC_AUTH_REDIRECT_URI ;
+            ${{ env.VAULT_SECRET_PATH }} EMAIL_API_ENDPOINT | NEXT_PUBLIC_EMAIL_API_ENDPOINT ;
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
@@ -62,12 +66,12 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
           build-args: |
-            VITE_DIRECTUS_URL=${{ env.VITE_DIRECTUS_URL }}
-            VITE_AUTH_REDIRECT_URI=${{ env.VITE_AUTH_REDIRECT_URI }}
-            VITE_ENTRA_CLIENT_ID=${{ env.VITE_ENTRA_CLIENT_ID }}
-            VITE_ENTRA_TENANT_ID=${{ env.VITE_ENTRA_TENANT_ID }}
-            VITE_EMAIL_API_ENDPOINT=${{ env.VITE_EMAIL_API_ENDPOINT }}
-            VITE_DIRECTUS_API_KEY=${{ env.VITE_DIRECTUS_API_KEY }}
+            NEXT_PUBLIC_DIRECTUS_URL=${{ env.NEXT_PUBLIC_DIRECTUS_URL }}
+            NEXT_PUBLIC_AUTH_REDIRECT_URI=${{ env.NEXT_PUBLIC_AUTH_REDIRECT_URI }}
+            NEXT_PUBLIC_ENTRA_CLIENT_ID=${{ env.NEXT_PUBLIC_ENTRA_CLIENT_ID }}
+            NEXT_PUBLIC_ENTRA_TENANT_ID=${{ env.NEXT_PUBLIC_ENTRA_TENANT_ID }}
+            NEXT_PUBLIC_EMAIL_API_ENDPOINT=${{ env.NEXT_PUBLIC_EMAIL_API_ENDPOINT }}
+            NEXT_PUBLIC_DIRECTUS_API_KEY=${{ env.NEXT_PUBLIC_DIRECTUS_API_KEY }}
 
       - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.7
@@ -100,6 +104,6 @@ jobs:
             mkdir -p $DEPLOY_PATH
             cd $DEPLOY_PATH
             echo "TAG=$TAG" > .env
-            
+
             docker compose pull frontend
             docker compose up -d frontend --remove-orphans
