@@ -50,7 +50,6 @@ jobs:
             secret/data/dev-salvemundi NEXT_PUBLIC_EMAIL_API_ENDPOINT ;
             secret/data/dev-salvemundi NEXT_PUBLIC_DIRECTUS_API_KEY
 
-
       # ------------------------------
       # Set Docker image tag based on branch
       # ------------------------------
@@ -60,6 +59,7 @@ jobs:
             echo "TAG=dev" >> $GITHUB_ENV
           else
             echo "TAG=latest" >> $GITHUB_ENV
+          fi
 
       # ------------------------------
       # Login to GitHub Container Registry
