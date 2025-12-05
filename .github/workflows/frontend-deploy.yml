@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write       # REQUIRED for GitHub → Vault authentication
+      id-token: write       # REQUIRED for OIDC authentication to Vault
       packages: write
 
     steps:
@@ -32,35 +32,36 @@ jobs:
       # ------------------------------
       # Get GitHub OIDC token
       # ------------------------------
-      - name: Get GitHub OIDC Token
-        id: get_token
-        uses: actions/oidc-token@v1
+      - name: Get OIDC token for Vault
+        id: get_id_token
+        uses: actions/github-script@v7
         with:
-          audience: "vault"
+          script: |
+            const token = await core.getIDToken('vault');
+            core.setOutput('token', token)
 
       # ------------------------------
-      # Authenticate to Vault
+      # Authenticate to Vault using JWT
       # ------------------------------
-      - name: Login to Vault using JWT
+      - name: Login to Vault using OIDC
         id: vault-login
         uses: hashicorp/vault-action@v3
         with:
           url: https://secrets.salvemundi.nl
           method: jwt
           role: frontend-dev
-          jwt: ${{ steps.get_token.outputs.token }}
-          exportEnv: true
+          jwt: ${{ steps.get_id_token.outputs.token }}
+          exportEnv: true   # automatically exports Vault secrets to environment variables
 
       # ------------------------------
-      # Set Docker image tag
+      # Set Docker image tag based on branch
       # ------------------------------
-      - name: Set docker image tag
+      - name: Set Docker image tag
         run: |
           if [[ "${{ github.ref_name }}" == "Development" ]]; then
             echo "TAG=dev" >> $GITHUB_ENV
           else
             echo "TAG=latest" >> $GITHUB_ENV
-          fi
 
       # ------------------------------
       # Login to GitHub Container Registry
