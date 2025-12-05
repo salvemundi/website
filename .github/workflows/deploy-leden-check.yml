@@ -65,7 +65,7 @@ jobs:
 
             # 3. Generate .env
             # We use global Tenant ID but SPECIFIC Client ID/Secret for this high-privilege task
-            echo "ENTRA_TENANT_ID=${{ secrets.PROD_MS_GRAPH_TENANT_ID }}" > .env
+            echo "ENTRA_TENANT_ID=${{ secrets.NACHTWACHT_TENANT_ID }}" > .env
             echo "ENTRA_CLIENT_ID=${{ secrets.NACHTWACHT_CLIENT_ID }}" >> .env
             echo "ENTRA_CLIENT_SECRET=${{ secrets.NACHTWACHT_CLIENT_SECRET }}" >> .env
             
