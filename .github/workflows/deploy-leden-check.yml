@@ -12,7 +12,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: salvemundi/nachtwacht
-  DEPLOY_PATH: /opt/nachtwacht
+  DEPLOY_PATH: /opt/leden-check-script
 
 jobs:
   build-and-deploy:
