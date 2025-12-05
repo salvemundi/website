@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write       # REQUIRED for OIDC authentication to Vault
+      id-token: write       
       packages: write
 
     steps:
@@ -29,29 +29,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ------------------------------
-      # Get GitHub OIDC token
-      # ------------------------------
-      - name: Get OIDC token for Vault
-        id: get_id_token
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const token = await core.getIDToken('vault');
-            core.setOutput('token', token)
 
       # ------------------------------
       # Authenticate to Vault using JWT
       # ------------------------------
-      - name: Login to Vault using OIDC
+      - name: Login to Vault using JWT (OIDC)
         id: vault-login
         uses: hashicorp/vault-action@v3
         with:
           url: https://secrets.salvemundi.nl
           method: jwt
           role: frontend-dev
-          jwt: ${{ steps.get_id_token.outputs.token }}
-          exportEnv: true   # automatically exports Vault secrets to environment variables
+          jwtGithubAudience: vault     
+          exportEnv: true
+
 
       # ------------------------------
       # Set Docker image tag based on branch
