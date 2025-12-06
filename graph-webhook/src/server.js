@@ -37,4 +37,5 @@ app.get('/healthz', (req, res) => res.send('OK'));
 
 app.listen(PORT, () => {
     console.log(`Graph Webhook listening on port ${PORT}, path ${PATH}`);
+    console.log('Server started successfully');
 });
