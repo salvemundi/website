@@ -10,6 +10,7 @@ import EventList from "@/entities/activity/ui/EventList";
 import { useSalvemundiEvents } from "@/shared/lib/hooks/useSalvemundiApi";
 import { getImageUrl } from "@/shared/lib/api/salvemundi";
 import { addMonths, subMonths } from 'date-fns';
+import { isEventPast } from '@/shared/lib/utils/date';
 import ActiviteitCard from "@/entities/activity/ui/ActiviteitCard";
 import FlipClock from "@/shared/ui/FlipClock";
 
@@ -36,7 +37,7 @@ function ActivitiesContent() {
             now.setHours(0, 0, 0, 0);
             filtered = filtered.filter(event => new Date(event.event_date) >= now);
         }
-        return filtered.sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime());
+        return filtered.sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime());
     }, [events, showPastActivities]);
 
     const upcomingEvent = useMemo(() => {
@@ -74,7 +75,7 @@ function ActivitiesContent() {
                     </p>
                 }
             >
-                {upcomingEvent && (
+                {upcomingEvent && viewMode !== 'grid' && (
                     <div className="rounded-3xl shadow-xl px-8 pb-4 bg-gradient-to-br 
                         from-theme-gradient-light-start 
                         via-theme-gradient-light-start 
@@ -82,7 +83,7 @@ function ActivitiesContent() {
                         dark:from-theme-gradient-dark-start 
                         dark:via-theme-gradient-dark-start 
                         dark:to-theme-gradient-dark-end">
-                        <FlipClock targetDate={upcomingEvent.event_date} />
+                        <FlipClock targetDate={upcomingEvent.event_date} title={upcomingEvent.name} href={`/activiteiten/${upcomingEvent.id}`} />
                     </div>
                 )}
             </PageHeader>
@@ -158,21 +159,25 @@ function ActivitiesContent() {
                     <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
 
                         {/* Sidebar (Visible on Desktop) */}
-                        <aside className="lg:w-96 xl:w-[28rem] space-y-6">
-                            <FeaturedEvent
-                                event={upcomingEvent}
-                                onEventClick={handleShowDetails}
-                            />
+                        {(viewMode !== 'grid' || selectedDay) && (
+                            <aside className="lg:w-96 xl:w-[28rem] space-y-6">
+                                {viewMode !== 'grid' && (
+                                    <FeaturedEvent
+                                        event={upcomingEvent}
+                                        onEventClick={handleShowDetails}
+                                    />
+                                )}
 
-                            {selectedDay && (
-                                <DayDetails
-                                    selectedDay={selectedDay}
-                                    events={events}
-                                    onClose={() => setSelectedDay(null)}
-                                    onEventClick={handleShowDetails}
-                                />
-                            )}
-                        </aside>
+                                {selectedDay && (
+                                    <DayDetails
+                                        selectedDay={selectedDay}
+                                        events={events}
+                                        onClose={() => setSelectedDay(null)}
+                                        onEventClick={handleShowDetails}
+                                    />
+                                )}
+                            </aside>
+                        )}
 
                         {/* Main View Area */}
                         <div className="flex-1 space-y-6">
@@ -236,7 +241,7 @@ function ActivitiesContent() {
                                                     date={event.event_date}
                                                     price={event.price}
                                                     image={getImageUrl(event.image)}
-                                                    isPast={new Date(event.event_date) < new Date()}
+                                                    isPast={isEventPast(event.event_date)}
                                                     variant="grid"
                                                     committeeName={event.committee_name}
                                                     onShowDetails={() => handleShowDetails(event)}

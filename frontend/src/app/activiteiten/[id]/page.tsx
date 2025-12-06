@@ -16,6 +16,7 @@ import {
     CheckCircle,
     Users
 } from 'lucide-react';
+import { isEventPast } from '@/shared/lib/utils/date';
 
 // Helper function from the modal code
 const buildCommitteeEmail = (name?: string | null) => {
@@ -149,7 +150,8 @@ export default function EventDetailPage() {
         return `€${Number(event.price_members).toFixed(2)} (leden) / €${Number(event.price_non_members).toFixed(2)}`;
     }, [event]);
 
-    const isPast = event ? new Date(event.event_date) < new Date() : false;
+    // Treat an event as past only after the end of its calendar day (local timezone)
+    const isPast = event ? isEventPast(event.event_date) : false;
     const isPaidAndHasQR = signupStatus.isSignedUp && signupStatus.paymentStatus === 'paid' && !!signupStatus.qrToken;
 
     // Form handlers
@@ -245,17 +247,28 @@ export default function EventDetailPage() {
         );
     }
 
+    const headerFilter = isPast ? 'grayscale(100%) brightness(0.6) contrast(0.95)' : undefined;
+
     return (
         <>
             <PageHeader
                 title={event.name}
                 backgroundImage={event.image ? getImageUrl(event.image) : '/img/backgrounds/Kroto2025.jpg'}
+                imageFilter={headerFilter}
             >
-                {event.committee_name && (
-                    <p className="text-lg sm:text-xl text-beige/90 max-w-3xl mx-auto mt-4">
-                        Georganiseerd door {event.committee_name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim()}
-                    </p>
-                )}
+                <div className="flex flex-col items-center gap-2">
+                    {isPast && (
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-700 font-semibold text-sm">
+                            Afgelopen evenement
+                        </div>
+                    )}
+
+                    {event.committee_name && (
+                        <p className="text-lg sm:text-xl text-beige/90 max-w-3xl mx-auto mt-0">
+                            Georganiseerd door {event.committee_name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim()}
+                        </p>
+                    )}
+                </div>
             </PageHeader>
 
             <main className="mx-auto max-w-app px-4 py-8 sm:px-6 lg:px-8">
