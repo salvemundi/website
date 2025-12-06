@@ -1,9 +1,7 @@
 services:
   nachtwacht:
-    build: 
-      context: .
-      dockerfile: Dockerfile
-    image: salvemundi/nachtwacht:latest
+    image: ghcr.io/salvemundi/nachtwacht:latest
+    # build: .
     container_name: salvemundi-nachtwacht
     # Laad de variabelen uit de .env file
     env_file:

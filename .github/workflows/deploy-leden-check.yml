@@ -39,13 +39,13 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
-      - name: Copy docker-compose.yml to server
+      - name: Copy deployment files to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "leden-check-script/docker-compose.yml"
+          source: "leden-check-script/docker-compose.yml,leden-check-script/install-cron.sh"
           target: ${{ env.DEPLOY_PATH }}
           strip_components: 1
 
@@ -78,3 +78,7 @@ jobs:
             # Docker compose up -d will start it, it runs, then exits.
             docker compose pull nachtwacht
             docker compose up -d nachtwacht --remove-orphans
+
+            # 5. Install Cronjob
+            chmod +x install-cron.sh
+            bash install-cron.sh
