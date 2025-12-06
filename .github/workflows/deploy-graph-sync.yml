@@ -3,6 +3,7 @@ name: Deploy Graph Sync Service
 on:
   push:
     branches:
+      - 'Development'
       - 'main'
     paths:
       - 'graph-sync/**'
@@ -32,12 +33,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set Environment Variables
+        run: |
+          if [[ "${{ github.ref_name }}" == "Development" ]]; then
+            echo "TAG=dev" >> $GITHUB_ENV
+          else
+            echo "TAG=latest" >> $GITHUB_ENV
+          fi
+
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
           context: ./graph-sync
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
 
       - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.7
