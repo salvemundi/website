@@ -5,6 +5,7 @@ import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import SafeHavenCard from '@/entities/safe-haven/ui/SafeHavenCard';
 import { useSalvemundiSafeHavens } from '@/shared/lib/hooks/useSalvemundiApi';
 import { Shield, Lock, AlertTriangle, UserX, Users, MessageSquare, MapPin } from 'lucide-react';
+import { SafeHavenCardSkeleton } from '@/shared/ui/skeletons';
 
 export default function SafeHavensPage() {
     const { data: safeHavens, isLoading, error } = useSalvemundiSafeHavens();
@@ -95,9 +96,15 @@ export default function SafeHavensPage() {
 
                     {/* Safe Havens Cards Section */}
                     {isLoading && (
-                        <div className="text-center py-20">
-                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-theme-purple border-t-transparent"></div>
-                            <p className="mt-4 text-theme-purple">Safe Havens laden...</p>
+                        <div>
+                            <h2 className="text-3xl font-bold text-theme-purple mb-8 text-center">
+                                Onze Safe Havens
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                                {[1, 2, 3, 4, 5, 6].map((i) => (
+                                    <SafeHavenCardSkeleton key={i} />
+                                ))}
+                            </div>
                         </div>
                     )}
 
@@ -109,13 +116,15 @@ export default function SafeHavensPage() {
                     )}
 
                     {safeHavens && safeHavens.length > 0 && (
-                        <div>
+                        <div className="content-loaded">
                             <h2 className="text-3xl font-bold text-theme-purple mb-8 text-center">
                                 Onze Safe Havens
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-                                {safeHavens.map((safeHaven: any) => (
-                                    <SafeHavenCard key={safeHaven.id} safeHaven={safeHaven} />
+                                {safeHavens.map((safeHaven: any, index: number) => (
+                                    <div key={safeHaven.id} className="stagger-item" style={{ animationDelay: `${index * 0.05}s` }}>
+                                        <SafeHavenCard safeHaven={safeHaven} />
+                                    </div>
                                 ))}
                             </div>
                         </div>
