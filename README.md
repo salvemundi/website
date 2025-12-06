@@ -66,6 +66,7 @@ graph TD
 ├── payment-api/          # Payment Processing
 ├── portainer/            # Portainer Config
 ├── samuwiki/             # Wiki.js Config
+├── vaultwarden/          # Bitwarden Backup
 └── README.md             # This file
 ```
 
