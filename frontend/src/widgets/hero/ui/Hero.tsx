@@ -7,6 +7,7 @@ import 'swiper/css';
 import { useDirectusStore } from '@/shared/lib/store/directusStore';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ChevronRight } from '@/shared/ui/icons/ChevronRight';
 
 export default function Hero() {
@@ -63,7 +64,7 @@ export default function Hero() {
 
     const calculatedSlides = useMemo(() => {
         return heroBanners?.length > 0
-            ? heroBanners.map(b => getImageUrl(b.image))
+            ? heroBanners.map(b => getImageUrl(b.image, { quality: 75, width: 1200, format: 'webp' }))
             : defaultBanners;
     }, [heroBanners]);
 
@@ -110,7 +111,7 @@ export default function Hero() {
         const imgs: HTMLImageElement[] = [];
 
         urls.forEach((u) => {
-            const img = new Image();
+            const img = document.createElement('img');
             imgs.push(img);
             img.onload = () => {
                 loaded += 1;
@@ -162,7 +163,7 @@ export default function Hero() {
                 ? `${window.location.origin}${candidate}`
                 : candidate;
             if (normalized === mobileSrc) return true;
-            const img = new Image();
+            const img = document.createElement('img');
             img.onload = () => {
                 if (cancelled) return;
                 setMobileSrc(normalized);
@@ -216,18 +217,6 @@ export default function Hero() {
             setResolvedSlides(localSlides.slice());
         }
     }, [localSlides]);
-
-    // Compute a safe fallback src for mobile and add debug logging.
-    // Important: don't convert relative -> absolute during render because that
-    // causes a hydration mismatch (server renders "/logo_purple.svg" but
-    // client would render an absolute URL). Prefer `resolvedSlides` only when
-    // it has been set (client effect). Otherwise return the original string
-    // (relative) so server/client markup matches on first render.
-    const fallbackSrc = useMemo(() => {
-        if (resolvedSlides && resolvedSlides[0]) return resolvedSlides[0];
-        const s = (localSlides && localSlides[0]) || defaultBanners[0];
-        return s;
-    }, [resolvedSlides, localSlides]);
 
     // (removed development-only debug logging)
 
@@ -347,12 +336,18 @@ export default function Hero() {
                                 {/* Mobile fallback moved to top of section; keep the inner area clean */}
 
                                 {isMobile ? (
-                                    <div className="sm:hidden w-full h-full flex items-center justify-center">
-                                        <img
-                                            src={mobileSrc}
-                                            alt="Salve Mundi"
-                                            className="w-full h-full object-cover object-center block"
-                                        />
+                                    <div className="sm:hidden w-full h-full flex items-center justify-center relative">
+                                        {mobileSrc && (
+                                            <Image
+                                                src={mobileSrc}
+                                                alt="Salve Mundi"
+                                                fill
+                                                priority
+                                                quality={75}
+                                                sizes="(max-width: 640px) 100vw, 0px"
+                                                className="object-cover object-center"
+                                            />
+                                        )}
                                     </div>
                                 ) : (
                                     <Swiper
@@ -367,11 +362,15 @@ export default function Hero() {
                                     >
                                         {(resolvedSlides || localSlides).map((src, index) => (
                                             <SwiperSlide key={index}>
-                                                <div className="w-full h-full flex items-center justify-center bg-[var(--bg-card)]/0">
-                                                    <img
+                                                <div className="w-full h-full flex items-center justify-center bg-[var(--bg-card)]/0 relative">
+                                                    <Image
                                                         src={src}
                                                         alt="Salve Mundi sfeerimpressie"
-                                                        className="max-w-full max-h-full object-contain sm:object-cover object-center block"
+                                                        fill
+                                                        priority={index === 0}
+                                                        quality={75}
+                                                        sizes="(min-width: 640px) 50vw, 0px"
+                                                        className="object-cover object-center"
                                                     />
                                                 </div>
                                             </SwiperSlide>
