@@ -1,0 +1,80 @@
+name: Deploy Graph Webhook
+
+on:
+  push:
+    branches:
+      - 'Development'
+      - 'main'
+    paths:
+      - 'graph-webhook/**'
+      - '.github/workflows/deploy-graph-webhook.yml'
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: salvemundi/graph-webhook
+  DEPLOY_PATH: /opt/graph-webhook
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set Environment Variables
+        run: |
+          if [[ "${{ github.ref_name }}" == "Development" ]]; then
+            echo "TAG=dev" >> $GITHUB_ENV
+          else
+            echo "TAG=latest" >> $GITHUB_ENV
+          fi
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./graph-webhook
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
+
+      - name: Copy docker-compose.yml to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "graph-webhook/docker-compose.yml"
+          target: ${{ env.DEPLOY_PATH }}
+          strip_components: 1
+
+      - name: Deploy on Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # 1. Login with temporary token
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # 2. Prepare directory
+            mkdir -p ${{ env.DEPLOY_PATH }}
+            cd ${{ env.DEPLOY_PATH }}
+
+            # 3. Generate .env
+            echo "WEBHOOK_CLIENT_STATE=${{ secrets.GRAPH_WEBHOOK_CLIENT_STATE }}" > .env
+            
+            # 4. Pull & Up
+            docker compose pull graph-webhook
+            docker compose up -d graph-webhook --remove-orphans
