@@ -1,3 +1,4 @@
+services:
   graph-sync:
     image: ghcr.io/salvemundi/graph-sync:${TAG:-latest}
     # build: .
