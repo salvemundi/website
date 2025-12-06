@@ -1,0 +1,76 @@
+name: Deploy Graph Sync Service
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'graph-sync/**'
+      - '.github/workflows/deploy-graph-sync.yml'
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: salvemundi/graph-sync
+  DEPLOY_PATH: /opt/graph-sync
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./graph-sync
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Copy docker-compose.yml to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "graph-sync/docker-compose.yml"
+          target: ${{ env.DEPLOY_PATH }}
+          strip_components: 1
+
+      - name: Deploy on Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # 1. Login with temporary token
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # 2. Prepare directory
+            mkdir -p ${{ env.DEPLOY_PATH }}
+            cd ${{ env.DEPLOY_PATH }}
+
+            # 3. Generate .env
+            echo "TENANT_ID=${{ secrets.PROD_MS_GRAPH_TENANT_ID }}" > .env
+            echo "CLIENT_ID=${{ secrets.GRAPH_SYNC_CLIENT_ID }}" >> .env
+            echo "CLIENT_SECRET=${{ secrets.GRAPH_SYNC_CLIENT_SECRET }}" >> .env
+            echo "DIRECTUS_URL=${{ secrets.PROD_DIRECTUS_URL }}" >> .env
+            echo "DIRECTUS_STATIC_TOKEN=${{ secrets.GRAPH_SYNC_DIRECTUS_TOKEN }}" >> .env
+            echo "DIRECTUS_DEFAULT_ROLE_ID=${{ secrets.GRAPH_SYNC_DEFAULT_ROLE_ID }}" >> .env
+            
+            # 4. Pull & Up
+            docker compose pull graph-sync
+            docker compose up -d graph-sync --remove-orphans
