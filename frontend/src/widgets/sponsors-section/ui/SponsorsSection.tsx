@@ -64,6 +64,16 @@ export default function SponsorsSection() {
         ...sponsors,
         ...sponsors,
         ...sponsors,
+        ...sponsors,
+        ...sponsors,
+        ...sponsors,
+        ...sponsors,
+        ...sponsors,
+        ...sponsors,
+        ...sponsors,
+        ...sponsors,
+        ...sponsors,
+        ...sponsors,
         ...sponsors
     ];
 
