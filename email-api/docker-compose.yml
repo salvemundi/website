@@ -1,0 +1,19 @@
+services:
+  email-api:
+    image: ghcr.io/salvemundi/email-api:${TAG}
+    container_name: email-api
+    restart: unless-stopped
+    networks:
+      - proxy-network
+    environment:
+      - PORT=3001
+      - MS_GRAPH_TENANT_ID=${MS_GRAPH_TENANT_ID}
+      - MS_GRAPH_CLIENT_ID=${MS_GRAPH_CLIENT_ID}
+      - MS_GRAPH_CLIENT_SECRET=${MS_GRAPH_CLIENT_SECRET}
+      - MS_GRAPH_SENDER_UPN=noreply@salvemundi.nl
+      - DIRECTUS_URL=${DIRECTUS_URL}
+      - DIRECTUS_API_TOKEN=${DIRECTUS_API_TOKEN}
+
+networks:
+  proxy-network:
+    external: true

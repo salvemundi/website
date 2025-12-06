@@ -1,0 +1,12 @@
+services:
+  graph-sync:
+    image: ghcr.io/salvemundi/graph-sync:${TAG:-latest}
+    # build: .
+    container_name: graph-sync
+    env_file: .env
+    networks:
+      - proxy-network
+    restart: unless-stopped
+networks:
+  proxy-network:
+    external: true

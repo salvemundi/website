@@ -1,0 +1,19 @@
+services:
+  payment-api:
+    image: ghcr.io/salvemundi/payment-api:${TAG}
+    container_name: payment-api
+    restart: unless-stopped
+    networks:
+      - proxy-network
+    environment:
+      - PORT=3002
+      - MOLLIE_API_KEY=${MOLLIE_API_KEY}
+      - MOLLIE_WEBHOOK_URL=${MOLLIE_WEBHOOK_URL}
+      - DIRECTUS_URL=${DIRECTUS_URL}
+      - DIRECTUS_API_TOKEN=${DIRECTUS_API_TOKEN}
+      - EMAIL_SERVICE_URL=http://email-api:3001
+      - MEMBERSHIP_API_URL=http://membership-api:8000/api/membership
+
+networks:
+  proxy-network:
+    external: true
