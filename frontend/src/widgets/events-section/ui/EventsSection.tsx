@@ -51,7 +51,7 @@ export default function EventsSection() {
     return (
         <section id="kalender" className="px-6 pb-24">
             <div className="mx-auto max-w-app">
-                <div className="flex flex-col gap-6 rounded-xl bg-gradient-primary px-10 py-12 shadow-xl">
+                <div className="flex flex-col gap-6 rounded-xl bg-gradient-primary px-6 sm:px-10 pt-12 sm:pt-16 lg:pt-24 pb-12 shadow-xl">
                     <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                         <div className="space-y-3">
                             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-white">

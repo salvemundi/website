@@ -37,6 +37,9 @@
   --bg-main-dark: #1a141b;
   --bg-main: var(--bg-main-light);
 
+  /* Header height default (used by Hero for viewport calc). Updated at runtime by Header. */
+  --header-height: 64px;
+
   --bg-soft-light: #faf7fb;
   --bg-soft-dark: #241d25;
   --bg-soft: var(--bg-soft-light);
@@ -559,3 +562,14 @@ iframe {
 .btn-paars:hover {
   background: var(--color-primary-800);
 }
+
+/* Debug helpers (temporary) */
+.debug-outline-red {
+  outline: 3px dashed rgba(255, 60, 60, 0.9);
+  outline-offset: -4px;
+}
+.debug-outline-green {
+  outline: 3px dashed rgba(60, 255, 120, 0.9);
+  outline-offset: -4px;
+}
+
