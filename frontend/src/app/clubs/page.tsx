@@ -5,6 +5,7 @@ import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { useSalvemundiClubs } from '@/shared/lib/hooks/useSalvemundiApi';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { MessageSquare, Globe, Users } from 'lucide-react';
+import { CardSkeleton } from '@/shared/ui/skeletons';
 
 export default function ClubsPage() {
     const { data: clubs = [], isLoading, error } = useSalvemundiClubs();
@@ -26,7 +27,7 @@ export default function ClubsPage() {
                 {isLoading ? (
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {[1, 2, 3, 4, 5, 6].map((i) => (
-                            <div key={i} className="h-96 animate-pulse rounded-3xl bg-[var(--bg-card)]/60" />
+                            <CardSkeleton key={i} />
                         ))}
                     </div>
                 ) : error ? (
@@ -39,11 +40,12 @@ export default function ClubsPage() {
                         <p className="text-lg text-theme-muted">Geen clubs gevonden</p>
                     </div>
                 ) : (
-                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        {sortedClubs.map((club) => (
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 content-loaded">
+                        {sortedClubs.map((club, index) => (
                             <article
                                 key={club.id}
-                                className="group flex flex-col overflow-hidden rounded-3xl bg-[var(--bg-card)]/90 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl"
+                                className="group flex flex-col overflow-hidden rounded-3xl bg-[var(--bg-card)]/90 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl stagger-item"
+                                style={{ animationDelay: `${index * 0.05}s` }}
                             >
                                 <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-theme-purple/10 to-theme-purple/20">
                                     <img

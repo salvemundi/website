@@ -13,6 +13,7 @@ import { addMonths, subMonths } from 'date-fns';
 import { isEventPast } from '@/shared/lib/utils/date';
 import ActiviteitCard from "@/entities/activity/ui/ActiviteitCard";
 import FlipClock from "@/shared/ui/FlipClock";
+import { ActivityCardSkeleton } from '@/shared/ui/skeletons';
 
 import { Suspense } from 'react';
 
@@ -188,13 +189,10 @@ function ActivitiesContent() {
                             )}
 
                             {isLoading ? (
-                                <div className="flex items-center justify-center rounded-3xl  bg-white/70 dark:bg-surface-dark/70 p-16 shadow-sm">
-                                    <div className="text-center">
-                                        <div className="h-12 w-12 animate-spin rounded-full  mx-auto"></div>
-                                        <p className="mt-4 text-sm font-medium text-slate-600 dark:text-ink-muted">
-                                            Activiteiten worden geladen...
-                                        </p>
-                                    </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                                        <ActivityCardSkeleton key={i} />
+                                    ))}
                                 </div>
                             ) : (
                                 <>
@@ -232,10 +230,10 @@ function ActivitiesContent() {
 
                                     {/* Grid View */}
                                     {viewMode === 'grid' && (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            {filteredEvents.map(event => (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 content-loaded">
+                                            {filteredEvents.map((event, index) => (
+                                                <div key={event.id} className="stagger-item" style={{ animationDelay: `${index * 0.05}s` }}>
                                                 <ActiviteitCard
-                                                    key={event.id}
                                                     title={event.name}
                                                     description={event.description}
                                                     date={event.event_date}
@@ -247,6 +245,7 @@ function ActivitiesContent() {
                                                     onShowDetails={() => handleShowDetails(event)}
                                                     onSignup={() => handleShowDetails(event)}
                                                 />
+                                                </div>
                                             ))}
                                         </div>
                                     )}
