@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, Sparkles } from "lucide-react";
@@ -15,6 +15,7 @@ const Header: React.FC = () => {
     const { isAuthenticated, user } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
+    const headerRef = useRef<HTMLElement | null>(null);
     const { data: siteSettings } = useSalvemundiSiteSettings();
     const introEnabled = siteSettings?.show_intro ?? true;
 
@@ -26,6 +27,41 @@ const Header: React.FC = () => {
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
+
+    // Measure header height and expose as CSS variable so other components
+    // (like the Hero) can size themselves relative to the header. Use
+    // ResizeObserver to handle dynamic height changes (menus, toolbars).
+    useEffect(() => {
+        const el = headerRef.current;
+        if (!el || typeof window === 'undefined') return;
+
+        const applyHeight = (h: number) => {
+            document.documentElement.style.setProperty('--header-height', `${h}px`);
+        };
+
+        // initial set
+        applyHeight(el.offsetHeight || 64);
+
+        let ro: ResizeObserver | null = null;
+        try {
+            ro = new ResizeObserver((entries) => {
+                for (const entry of entries) {
+                    const height = entry.contentRect?.height ?? el.offsetHeight ?? 64;
+                    applyHeight(Math.round(height));
+                }
+            });
+            ro.observe(el);
+        } catch (e) {
+            // ResizeObserver might not be available in some environments -> fallback to resize
+            const onResize = () => applyHeight(el.offsetHeight ?? 64);
+            window.addEventListener('resize', onResize);
+            return () => window.removeEventListener('resize', onResize);
+        }
+
+        return () => {
+            if (ro) ro.disconnect();
+        };
+    }, [menuOpen]);
 
     const navItems = [
         { name: "Home", href: ROUTES.HOME },
@@ -51,7 +87,7 @@ const Header: React.FC = () => {
     }, [pathname]);
 
     return (
-        <header className="sticky top-0 z-50 w-full">
+        <header ref={headerRef} className="sticky top-0 z-50 w-full">
             <div className="relative">
                 <div
                     className={`pointer-events-none absolute inset-0 -z-10 backdrop-blur-xl bg-[var(--bg-main)]/90 transition-opacity duration-300 ${isScrolled ? "opacity-100" : "opacity-0"

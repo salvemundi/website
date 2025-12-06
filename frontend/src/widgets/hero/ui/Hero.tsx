@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
 import 'swiper/css';
@@ -61,17 +61,195 @@ export default function Hero() {
         "/logo_purple.svg",
     ];
 
-    const slides = heroBanners?.length > 0
-        ? heroBanners.map(b => getImageUrl(b.image))
-        : defaultBanners;
+    const calculatedSlides = useMemo(() => {
+        return heroBanners?.length > 0
+            ? heroBanners.map(b => getImageUrl(b.image))
+            : defaultBanners;
+    }, [heroBanners]);
+
+    const [localSlides, setLocalSlides] = useState<string[]>(calculatedSlides);
+    const [resolvedSlides, setResolvedSlides] = useState<string[] | null>(null);
+    const heroRef = useRef<HTMLElement | null>(null);
+
+    // Client-only flag for small screens. When true we avoid mounting
+    // heavy DOM-manipulating libs like Swiper so they can't mutate
+    // or remove the hero subtree on mobile devices.
+    const [isMobile, setIsMobile] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const mq = window.matchMedia('(max-width: 639px)');
+        const update = () => setIsMobile(Boolean(mq.matches));
+        update();
+        // add/remove listener in a compatible way
+        if (mq.addEventListener) mq.addEventListener('change', update);
+        else mq.addListener(update as any);
+        return () => {
+            try {
+                if (mq.removeEventListener) mq.removeEventListener('change', update);
+                else mq.removeListener(update as any);
+            } catch (e) {
+                // ignore
+            }
+        };
+    }, []);
+
+    // Preload remote images and only switch to them when at least one loads successfully
+    useEffect(() => {
+        if (!heroBanners || heroBanners.length === 0) {
+            // keep defaults
+            setLocalSlides(defaultBanners);
+            return;
+        }
+
+        let cancelled = false;
+        const urls = calculatedSlides;
+        let loaded = 0;
+        let errored = 0;
+
+        const imgs: HTMLImageElement[] = [];
+
+        urls.forEach((u) => {
+            const img = new Image();
+            imgs.push(img);
+            img.onload = () => {
+                loaded += 1;
+                if (!cancelled && loaded > 0) {
+                    // at least one image loaded, use the remote slides
+                    setLocalSlides(urls);
+                }
+            };
+            img.onerror = () => {
+                errored += 1;
+                // if all errored, keep defaults
+                if (!cancelled && errored === urls.length) {
+                    setLocalSlides(defaultBanners);
+                }
+            };
+            img.src = u;
+        });
+
+        return () => {
+            cancelled = true;
+            imgs.forEach((i) => {
+                i.onload = null;
+                i.onerror = null;
+            });
+        };
+    }, [heroBanners, calculatedSlides]);
+
+    // Capture the initial mobile fallback at first render so we don't
+    // replace it later when slides are updated (prevents a visible flicker
+    // where the mobile image changes after a short moment).
+    const initialMobileFallback = useRef<string>((calculatedSlides && calculatedSlides[0]) || defaultBanners[0]);
+    const [mobileSrc, setMobileSrc] = useState<string | null>(null);
+
+    // Preload the preferred mobile image (prefer resolvedSlides[0], then localSlides[0])
+    // and only set `mobileSrc` after the image has fully loaded. If no image loads
+    // within `fallbackDelayMs`, set the initial fallback so the area isn't blank
+    // forever. This prevents showing the default first and then swapping.
+    useEffect(() => {
+        if (!isMobile) return;
+
+        const fallbackDelayMs = 1000; // show fallback after 1s if nothing loads
+        let cancelled = false;
+        let timeoutHandle: number | undefined;
+
+        const primary = (resolvedSlides && resolvedSlides[0]) || (localSlides && localSlides[0]);
+        const trySet = (candidate?: string | null) => {
+            if (!candidate) return false;
+            const normalized = (typeof window !== 'undefined' && typeof candidate === 'string' && candidate.startsWith('/'))
+                ? `${window.location.origin}${candidate}`
+                : candidate;
+            if (normalized === mobileSrc) return true;
+            const img = new Image();
+            img.onload = () => {
+                if (cancelled) return;
+                setMobileSrc(normalized);
+            };
+            img.onerror = () => {
+                // try next option if available
+            };
+            img.src = normalized;
+            return true;
+        };
+
+        // Start attempting to load the primary candidate
+        if (!trySet(primary)) {
+            // primary missing; set a timeout to fallback
+            timeoutHandle = window.setTimeout(() => {
+                if (cancelled) return;
+                const fb = initialMobileFallback.current;
+                const normalized = (typeof window !== 'undefined' && typeof fb === 'string' && fb.startsWith('/'))
+                    ? `${window.location.origin}${fb}`
+                    : fb;
+                setMobileSrc(normalized);
+            }, fallbackDelayMs);
+        } else {
+            // we did start loading primary; as a safety, still set a fallback
+            // after delay in case it never resolves
+            timeoutHandle = window.setTimeout(() => {
+                if (cancelled) return;
+                if (!mobileSrc) {
+                    const fb = initialMobileFallback.current;
+                    const normalized = (typeof window !== 'undefined' && typeof fb === 'string' && fb.startsWith('/'))
+                        ? `${window.location.origin}${fb}`
+                        : fb;
+                    setMobileSrc(normalized);
+                }
+            }, fallbackDelayMs);
+        }
+
+        return () => {
+            cancelled = true;
+            if (timeoutHandle) clearTimeout(timeoutHandle);
+        };
+    }, [isMobile, resolvedSlides, localSlides]);
+
+    // Resolve absolute URLs only after client mount to avoid SSR hydration mismatch
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        try {
+            const resolved = localSlides.map((s) => (s && s.startsWith('/') ? `${window.location.origin}${s}` : s));
+            setResolvedSlides(resolved);
+        } catch (e) {
+            setResolvedSlides(localSlides.slice());
+        }
+    }, [localSlides]);
+
+    // Compute a safe fallback src for mobile and add debug logging.
+    // Important: don't convert relative -> absolute during render because that
+    // causes a hydration mismatch (server renders "/logo_purple.svg" but
+    // client would render an absolute URL). Prefer `resolvedSlides` only when
+    // it has been set (client effect). Otherwise return the original string
+    // (relative) so server/client markup matches on first render.
+    const fallbackSrc = useMemo(() => {
+        if (resolvedSlides && resolvedSlides[0]) return resolvedSlides[0];
+        const s = (localSlides && localSlides[0]) || defaultBanners[0];
+        return s;
+    }, [resolvedSlides, localSlides]);
+
+    // (removed development-only debug logging)
+
+    // (removed development-only debug body image)
+
+    // (removed development-only floating portal image)
+
+    // (removed development-only MutationObserver/overlay detection)
 
     const [hoverNextEvent, setHoverNextEvent] = useState(false);
     const [hoverWordLid, setHoverWordLid] = useState(false);
 
     return (
-        <section id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full h-screen max-w-app py-8 sm:py-12 md:py-16 lg:py-20 transition-colors duration-300">
+        <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full max-w-app mx-auto py-8 sm:py-12 md:py-16 lg:py-20 transition-colors duration-300">
             <div className="absolute -left-20 top-10 h-72 w-72 rounded-full blur-3xl opacity-20 bg-theme-purple/30" />
             <div className="absolute -right-16 bottom-0 h-64 w-64 rounded-full blur-3xl opacity-20 bg-theme-purple/30" />
+
+            {/* Move mobile fallback to be a direct child of the section so nested
+                inner elements cannot accidentally cover/unmount it. */}
+            {/* Mobile static image: render in-layout (not absolute) so it remains
+                part of the hero content and isn't affected by outside DOM
+                mutations. Hidden on sm+ to preserve desktop Swiper. */}
 
             <div className="relative w-full px-4 sm:px-6 ">
                 <div className="grid gap-8 sm:gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-20 lg:items-center">
@@ -164,26 +342,42 @@ export default function Hero() {
                     <div className="flex flex-wrap gap-3 sm:gap-4">
                         <div className="relative w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/80 shadow-2xl backdrop-blur-xl overflow-hidden">
                             <div className="h-[240px] sm:h-[300px] md:h-[380px] lg:h-[480px] xl:h-[540px]">
-                                <Swiper
-                                    modules={[Autoplay]}
-                                    autoplay={{
-                                        delay: 5000,
-                                        disableOnInteraction: false,
-                                    }}
-                                    loop={slides.length > 1}
-                                    allowTouchMove={slides.length > 1}
-                                    className="h-full w-full"
-                                >
-                                    {slides.map((src, index) => (
-                                        <SwiperSlide key={index}>
-                                            <img
-                                                src={src}
-                                                alt="Salve Mundi sfeerimpressie"
-                                                className="w-full h-full object-cover"
-                                            />
-                                        </SwiperSlide>
-                                    ))}
-                                </Swiper>
+                                {/* Mobile fallback: sometimes Swiper or remote assets misbehave on small devices.
+                                    Show a single static image for mobile (hidden on sm+). */}
+                                {/* Mobile fallback moved to top of section; keep the inner area clean */}
+
+                                {isMobile ? (
+                                    <div className="sm:hidden w-full h-full flex items-center justify-center">
+                                        <img
+                                            src={mobileSrc}
+                                            alt="Salve Mundi"
+                                            className="w-full h-full object-cover object-center block"
+                                        />
+                                    </div>
+                                ) : (
+                                    <Swiper
+                                        modules={[Autoplay]}
+                                        autoplay={{
+                                            delay: 5000,
+                                            disableOnInteraction: false,
+                                        }}
+                                        loop={(resolvedSlides || localSlides).length > 1}
+                                        allowTouchMove={(resolvedSlides || localSlides).length > 1}
+                                        className="hidden sm:block h-full w-full"
+                                    >
+                                        {(resolvedSlides || localSlides).map((src, index) => (
+                                            <SwiperSlide key={index}>
+                                                <div className="w-full h-full flex items-center justify-center bg-[var(--bg-card)]/0">
+                                                    <img
+                                                        src={src}
+                                                        alt="Salve Mundi sfeerimpressie"
+                                                        className="max-w-full max-h-full object-contain sm:object-cover object-center block"
+                                                    />
+                                                </div>
+                                            </SwiperSlide>
+                                        ))}
+                                    </Swiper>
+                                )}
                             </div>
 
 
