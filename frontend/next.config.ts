@@ -17,6 +17,10 @@ const nextConfig = {
                 protocol: 'https',
                 hostname: 'data.imagination.platour.net',
             },
+            {
+                protocol: 'http',
+                hostname: 'localhost',
+            },
         ],
     },
 
