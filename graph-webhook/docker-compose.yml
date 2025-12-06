@@ -1,3 +1,4 @@
+services:
   graph-webhook:
     image: ghcr.io/salvemundi/graph-webhook:${TAG:-latest}
     # build: .
