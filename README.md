@@ -18,7 +18,7 @@ The central repository for Salve Mundi's digital infrastructure. This monorepo h
 graph TD
     User([User / Browser]) -->|HTTPS| Proxy[Nginx Proxy Manager]
     
-    subgraph "Frontend"
+    subgraph "Frontend Layer"
         Proxy -->|frontend| Frontend[Next.js Production]
         Proxy -->|frontend-dev| FrontendDev[Next.js Development]
     end
