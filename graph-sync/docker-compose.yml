@@ -1,6 +1,6 @@
-services:
   graph-sync:
-    build: .
+    image: ghcr.io/salvemundi/graph-sync:${TAG:-latest}
+    # build: .
     container_name: graph-sync
     env_file: .env
     networks:
