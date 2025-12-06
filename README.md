@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="/banner.jpg" alt="SaMuWebsiteV6 Banner" width="100%" />
+  <img src="frontend/public/banner.jpg" alt="SaMuWebsiteV6 Banner" width="100%" />
 </p>
 
 # 🌐 SaMuWebsiteV6
@@ -12,24 +12,40 @@ The central repository for Salve Mundi's digital infrastructure. This monorepo h
 
 ---
 
-## �️ Architecture & Infrastructure
+## 🏛️ Architecture & Infrastructure
 
 ```mermaid
 graph TD
     User([User / Browser]) -->|HTTPS| Proxy[Nginx Proxy Manager]
-    Proxy -->|/| Frontend[Next.js Frontend]
-    Proxy -->|/wiki| Wiki[Wiki.js]
-    Proxy -->|/portainer| Portainer[Portainer]
     
-    subgraph "Backend Services"
-        GraphSync[Graph Sync Service] <-->|Sync| Directus[Directus CMS]
-        GraphSync <-->|Sync| EntraID[Microsoft Entra ID]
-        Webhook[Graph Webhook] <---|Notify| EntraID
+    subgraph "Frontend"
+        Proxy -->|frontend| Frontend[Next.js Production]
+        Proxy -->|frontend-dev| FrontendDev[Next.js Development]
     end
 
-    subgraph "Automation"
-        Nachtwacht[Leden Check Script] -->|Cron| EntraID
+    subgraph "Management & Security"
+        Proxy -->|npm| NPM[Nginx Proxy Manager]
+        Proxy -->|portainer| Portainer[Portainer]
+        Proxy -->|vault| Vault[HashiCorp Vault]
+        Proxy -->|vaultwarden| Vaultwarden[Bitwarden/Vaultwarden]
     end
+
+    subgraph "Data & Content"
+        Proxy -->|samuwiki| Wiki[Wiki.js]
+        Proxy -->|directus| Directus[Directus CMS]
+    end
+
+    subgraph "Backend Services"
+        Proxy -->|email-api| EmailAPI[Email API]
+        Proxy -->|graph-webhook| Webhook[Graph Webhook]
+        GraphSync[Graph Sync Service]
+    end
+    
+    %% Relationships
+    GraphSync <-->|Sync| Directus
+    GraphSync <-->|Sync| EntraID
+    Webhook <---|Notify| EntraID[Microsoft Entra ID]
+    Nachtwacht[Leden Check Script] -->|Cron| EntraID
 ```
 
 ### 📂 Project Structure
@@ -37,28 +53,36 @@ graph TD
 ```text
 /
 ├── .github/workflows/    # CI/CD Pipelines
-├── graph-sync/           # Node.js Sync Service
-├── graph-webhook/        # Node.js Webhook Service
+├── directus/             # Headless MS Configuration
+├── email-api/            # Email Sending Service
+├── frontend/             # Next.js Frontend
+│   ├── src/              # Source Code
+│   └── public/           # Static Assets
+├── graph-sync/           # Sync Service (Entra <-> Directus)
+├── graph-webhook/        # Webhook Service (Entra Listener)
 ├── leden-check-script/   # PowerShell Automation
+├── membership-api/       # Membership Logic
 ├── npm/                  # Nginx Proxy Manager Config
+├── payment-api/          # Payment Processing
 ├── portainer/            # Portainer Config
 ├── samuwiki/             # Wiki.js Config
-├── src/                  # Next.js Frontend Source
-├── public/               # Static Assets
 └── README.md             # This file
 ```
 
 ---
 
-## �🏗️ Services Overview
+## 🏗️ Services Overview
 
-| Service | Path | Type | Description |
-|:---|:---|:---|:---|
-| **Website (Frontend)** | `/` (Root) | Next.js | The main SaMuWebsiteV6 frontend using App Router & Server Actions. |
-| **Graph Sync** | `/graph-sync` | Node.js | Bi-directional sync service between Microsoft Entra ID and Directus. |
-| **Graph Webhook** | `/graph-webhook` | Node.js | Event listener for real-time Entra ID changes (Push Notifications). |
-| **Nachtwacht** | `/leden-check-script` | PowerShell | Automation script for member lifecycle (Active vs Expired groups). |
-| **Infrastructure** | `/npm`, `/portainer`, `/samuwiki` | Docker | Configuration backups for Nginx Proxy Manager, Portainer, and Wiki.js. |
+| Service | Path | Description |
+|:---|:---|:---|
+| **Website (Frontend)** | `/` | Next.js App Router (Production & Dev environments). |
+| **Email API** | `/email-api` | Service for handling transactional emails. |
+| **Directus** | `/directus` | Headless CMS for managing association data. |
+| **Graph Sync** | `/graph-sync` | Bi-directional sync between Entra ID and Directus. |
+| **Graph Webhook** | `/graph-webhook` | Event listener for real-time Entra ID changes. |
+| **Nachtwacht** | `/leden-check-script` | PowerShell automation for member lifecycles. |
+| **Infrastructure** | `/npm`, `/portainer`, `/samuwiki` | Docker configs for critical infra components. |
+| **Security** | `(External)` | Vault and Vaultwarden (Managed via Portainer). |
 
 ---
 
@@ -82,10 +106,9 @@ This repository uses **GitHub Actions** for continuous delivery. Each service ha
 *   **Main Branch**: Deploys to production (`:latest`).
 
 ### 🔹 Workflows
-1.  **Deploy Graph Sync**: Builds Docker image, pushes to GHCR, and redeploys via SSH.
-2.  **Deploy Graph Webhook**: Builds Docker image, pushes to GHCR, and redeploys via SSH.
-3.  **Leden Check Script**: Copies PowerShell script to the server (cronjob execution).
-4.  **Disaster Recovery**: Infra configs (`npm`, `portainer`, `samuwiki`) are version controlled but managed manually on the server.
+1.  **Backend Services**: Deployment pipelines for Graph Sync, Webhook, Email API.
+2.  **Automation**: Scripts like Leden Check are deployed via cron/SSH.
+3.  **Infrastructure**: Managed manually via Portainer or SSH for stability (Disaster Recovery configs in Git).
 
 ---
 
