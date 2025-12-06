@@ -1,6 +1,6 @@
-services:
   graph-webhook:
-    build: .
+    image: ghcr.io/salvemundi/graph-webhook:${TAG:-latest}
+    # build: .
     container_name: graph-webhook
     restart: unless-stopped
     env_file: .env

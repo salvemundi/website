@@ -73,7 +73,8 @@ jobs:
             cd ${{ env.DEPLOY_PATH }}
 
             # 3. Generate .env
-            echo "WEBHOOK_CLIENT_STATE=${{ secrets.GRAPH_WEBHOOK_CLIENT_STATE }}" > .env
+            echo "TAG=${{ env.TAG }}" > .env
+            echo "WEBHOOK_CLIENT_STATE=${{ secrets.GRAPH_WEBHOOK_CLIENT_STATE }}" >> .env
             
             # 4. Pull & Up
             docker compose pull graph-webhook
