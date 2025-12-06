@@ -10,12 +10,12 @@ export default function SafeHavensPage() {
     const { data: safeHavens, isLoading, error } = useSalvemundiSafeHavens();
 
     const topics = [
-        { icon: <AlertTriangle className="w-6 h-6 text-paars" />, text: 'Aggressie / geweld' },
-        { icon: <AlertTriangle className="w-6 h-6 text-paars" />, text: '(Seksuele) Intimidatie' },
-        { icon: <UserX className="w-6 h-6 text-paars" />, text: 'Pesten' },
-        { icon: <Users className="w-6 h-6 text-paars" />, text: 'Discriminatie' },
-        { icon: <Shield className="w-6 h-6 text-paars" />, text: '(Seksueel) Grensoverschrijdend gedrag' },
-        { icon: <MessageSquare className="w-6 h-6 text-paars" />, text: 'Persoonlijke situaties' },
+        { Icon: AlertTriangle, text: 'Aggressie / geweld' },
+        { Icon: AlertTriangle, text: '(Seksuele) Intimidatie' },
+        { Icon: UserX, text: 'Pesten' },
+        { Icon: Users, text: 'Discriminatie' },
+        { Icon: Shield, text: '(Seksueel) Grensoverschrijdend gedrag' },
+        { Icon: MessageSquare, text: 'Persoonlijke situaties' },
     ];
 
     return (
@@ -33,27 +33,27 @@ export default function SafeHavensPage() {
                 <div className="max-w-6xl mx-auto">
 
                     {/* Introduction Section */}
-                    <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8 mb-12">
+                    <div className="bg-[var(--bg-card)] rounded-3xl shadow-xl p-6 sm:p-8 mb-12">
                         <div className="max-w-4xl mx-auto">
                             <div className="flex flex-col md:flex-row items-start gap-4 mb-6">
-                                <div className="w-16 h-16 rounded-full bg-oranje flex items-center justify-center flex-shrink-0">
-                                    <Shield className="w-8 h-8 text-beige" />
+                                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-oranje to-paars flex items-center justify-center flex-shrink-0">
+                                    <Shield className="w-8 h-8 text-theme-white" />
                                 </div>
                                 <div>
-                                    <h2 className="text-2xl font-bold text-paars mb-4 text-center md:text-left">
+                                    <h2 className="text-2xl font-bold text-theme-purple mb-4 text-center md:text-left">
                                         Wat zijn Safe Havens?
                                     </h2>
-                                    <p className="text-paars/80 leading-relaxed mb-4 text-justify md:text-left">
+                                    <p className="text-theme-purple/80 leading-relaxed mb-4 text-justify md:text-left">
                                         Binnen Salve Mundi vinden wij een veilige en comfortable omgeving heel belangrijk voor al onze leden.
                                         Hierom hebben wij Safe Havens aangesteld die een luisterend oor bieden, begrip tonen, en advies geven
                                         voor jouw situatie.
                                     </p>
-                                    <div className="bg-geel/20 rounded-xl p-4">
-                                        <p className="text-paars font-semibold flex items-center gap-2">
-                                            <Lock className="w-5 h-5" />
+                                    <div className="bg-theme-purple-lighter/20 rounded-xl p-4">
+                                        <p className="text-theme-purple font-semibold flex items-center gap-2">
+                                            <Lock className="w-5 h-5 text-theme-purple-dark" />
                                             Een Safe Haven heeft een <strong>geheimhoudingsplicht</strong>
                                         </p>
-                                        <p className="text-paars/80 text-sm mt-2">
+                                        <p className="text-theme-purple/80 text-sm mt-2">
                                             Jouw klachten of meldingen zullen nooit verspreid worden, ook niet naar het bestuur;
                                             Tenzij door jou anders aangegeven.
                                         </p>
@@ -64,8 +64,8 @@ export default function SafeHavensPage() {
                     </div>
 
                     {/* Topics Section */}
-                    <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8 mb-12">
-                        <h2 className="text-2xl font-bold text-paars mb-6 text-center px-2">
+                    <div className="bg-[var(--bg-card)] rounded-3xl shadow-xl p-6 sm:p-8 mb-12">
+                        <h2 className="text-2xl font-bold text-theme-purple mb-6 text-center px-2">
                             Waar Kun Je Bij Ons Terecht?
                         </h2>
                         <p className="text-theme-purple/70 text-center mb-6 px-2">
@@ -77,8 +77,8 @@ export default function SafeHavensPage() {
                                     key={index}
                                     className="flex items-center gap-3 p-4 bg-theme-purple/10 rounded-xl transition-all"
                                 >
-                                    <div className="w-10 h-10 flex items-center justify-center rounded-md bg-theme-purple/20">
-                                        {topic.icon}
+                                    <div className="w-10 h-10 flex items-center justify-center rounded-md bg-gradient-to-br from-oranje to-paars">
+                                        <topic.Icon className="w-5 h-5 text-theme-purple dark:text-theme-white" />
                                     </div>
                                     <span className="text-theme-purple font-medium">{topic.text}</span>
                                 </div>
@@ -153,7 +153,7 @@ export default function SafeHavensPage() {
                                 </a>
                                 <a
                                     href="mailto:bestuur@salvemundi.nl"
-                                    className="px-6 py-3 bg-theme-purple-lighter text-theme-purple-darker rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md"
+                                    className="px-6 py-3 bg-theme-purple text-theme-white rounded-full font-semibold hover:bg-opacity-90 transition-all hover:scale-105 shadow-md"
                                 >
                                     Contact Bestuur
                                 </a>
