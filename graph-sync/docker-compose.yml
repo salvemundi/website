@@ -1,0 +1,11 @@
+services:
+  graph-sync:
+    build: .
+    container_name: graph-sync
+    env_file: .env
+    networks:
+      - proxy-network
+    restart: unless-stopped
+networks:
+  proxy-network:
+    external: true
