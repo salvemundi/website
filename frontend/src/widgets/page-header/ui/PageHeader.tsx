@@ -3,6 +3,7 @@ import React from "react";
 interface PageHeaderProps {
     title: string;
     backgroundImage?: string;
+    imageFilter?: string;
     className?: string;
     titleClassName?: string;
     children?: React.ReactNode;
@@ -13,6 +14,7 @@ interface PageHeaderProps {
 const PageHeader: React.FC<PageHeaderProps> = ({
     title,
     backgroundImage = "",
+    imageFilter,
     className = "",
     titleClassName = "text-4xl md:text-6xl",
     children,
@@ -25,7 +27,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                 className="absolute inset-0 bg-cover bg-center z-0"
                 style={{
                     backgroundImage: `url(${backgroundImage})`,
-                    filter: 'brightness(0.7)'
+                    filter: imageFilter || 'brightness(0.7)'
                 }}
             />
             <div className="absolute inset-0 bg-gradient-theme/40 z-10" />
