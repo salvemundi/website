@@ -18,6 +18,7 @@ export default function SafeHavensPage() {
         { Icon: Shield, text: '(Seksueel) Grensoverschrijdend gedrag' },
         { Icon: MessageSquare, text: 'Persoonlijke situaties' },
     ];
+    
 
     return (
         <div className="">
@@ -26,7 +27,7 @@ export default function SafeHavensPage() {
                 backgroundImage="/img/backgrounds/safe-havens-banner.jpg" // Assuming a banner exists or use a default
             >
                 <p className="text-lg sm:text-xl text-beige/90 max-w-3xl mx-auto mt-4">
-                    Een veilig aanspreekpunt voor jouw zorgen en vragen
+                    Een veilig aanspreekpunt voor jouw zorgen en vragen.
                 </p>
             </PageHeader>
 
