@@ -3,6 +3,7 @@
 import React from 'react';
 import ActiviteitCard from './ActiviteitCard';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { isEventPast } from '@/shared/lib/utils/date';
 
 interface EventListProps {
     events: any[];
@@ -28,7 +29,7 @@ export default function EventList({ events, onEventClick }: EventListProps) {
                     date={event.event_date}
                     price={event.price}
                     image={getImageUrl(event.image)}
-                    isPast={new Date(event.event_date) < new Date()}
+                    isPast={isEventPast(event.event_date)}
                     variant="list"
                     committeeName={event.committee_name}
                     onShowDetails={() => onEventClick(event)}

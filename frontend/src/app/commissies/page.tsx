@@ -7,6 +7,7 @@ import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { slugify } from '@/shared/lib/utils/slug';
 import { Users } from 'lucide-react';
 import CommitteeImage from '@/shared/ui/CommitteeImage';
+import { CardSkeleton } from '@/shared/ui/skeletons';
 
 // Helper function to clean committee names
 function cleanCommitteeName(name: string): string {
@@ -47,10 +48,9 @@ export default function CommitteesPage() {
                     {isLoading ? (
                         <div className="grid auto-rows-auto gap-6 md:grid-cols-2 lg:grid-cols-4">
                             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                                <div
-                                    key={i}
-                                    className={`h-96 animate-pulse rounded-3xl bg-[var(--bg-card)]/60 ${i === 1 ? 'md:col-span-2' : ''}`}
-                                />
+                                <div key={i} className={i === 1 ? 'md:col-span-2' : ''}>
+                                    <CardSkeleton />
+                                </div>
                             ))}
                         </div>
                     ) : error ? (
@@ -63,8 +63,8 @@ export default function CommitteesPage() {
                             <p className="text-lg text-theme-muted">Geen commissies gevonden</p>
                         </div>
                     ) : (
-                        <div className="grid auto-rows-auto gap-6 md:grid-cols-2 lg:grid-cols-4">
-                            {committeesWithMembers.map((committee) => {
+                        <div className="grid auto-rows-auto gap-6 md:grid-cols-2 lg:grid-cols-4 content-loaded">
+                            {committeesWithMembers.map((committee, index) => {
                                 const isBestuur = cleanCommitteeName(committee.name).toLowerCase().includes('bestuur');
 
                                 const members = committee.committee_members
@@ -78,7 +78,8 @@ export default function CommitteesPage() {
                                 return (
                                     <div
                                         key={committee.id}
-                                        className={`${isBestuur ? 'md:col-span-2 lg:col-span-2' : ''}`}
+                                        className={`${isBestuur ? 'md:col-span-2 lg:col-span-2' : ''} stagger-item`}
+                                        style={{ animationDelay: `${index * 0.05}s` }}
                                     >
                                         <Link
                                             href={`/commissies/${slugify(cleanCommitteeName(committee.name))}`}
