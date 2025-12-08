@@ -16,6 +16,7 @@ export default function AttendancePage() {
     const [signups, setSignups] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+    const [eventTitle, setEventTitle] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [showScanner, setShowScanner] = useState(false);
     const [scannerError, setScannerError] = useState<string | null>(null);
@@ -44,6 +45,21 @@ export default function AttendancePage() {
         };
         check();
     }, [user, eventId]);
+
+    // Load event title for header
+    useEffect(() => {
+        const loadTitle = async () => {
+            try {
+                const { directusFetch } = await import('@/shared/lib/directus');
+                const data = await directusFetch(`/items/events/${eventId}?fields=id,title`);
+                const title = (data as any)?.title || (data as any)?.name || null;
+                if (title) setEventTitle(title);
+            } catch (err) {
+                console.warn('Could not load event title', err);
+            }
+        };
+        if (eventId) loadTitle();
+    }, [eventId]);
 
     const showMessage = (text: string, type: 'success' | 'error') => {
         setMessage({ text, type });
@@ -173,7 +189,7 @@ export default function AttendancePage() {
 
     return (
         <div className="min-h-screen bg-beige">
-            <PageHeader title="Aanwezigheid beheren" backgroundImage="/img/backgrounds/Kroto2025.jpg" />
+            <PageHeader title={eventTitle ? `Aanwezigheid: ${eventTitle}` : 'Aanwezigheid beheren'} backgroundImage="/img/backgrounds/Kroto2025.jpg" />
             
             <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 {/* Message Toast */}
@@ -407,17 +423,17 @@ export default function AttendancePage() {
                                         </button>
                                     </div>
                                     <div className="pt-3 border-t border-slate-200">
-                                        {s.checked_in ? (
-                                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700 font-semibold text-xs">
+                                        <div className="flex gap-2">
+                                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${s.checked_in ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
                                                 <CheckCircle className="h-3 w-3" />
                                                 Ingecheckt
                                             </span>
-                                        ) : (
-                                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-orange-100 text-orange-700 font-semibold text-xs">
-                                                <Clock className="h-3 w-3" />
+
+                                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${!s.checked_in ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-600'}`}>
+                                                <XCircle className="h-3 w-3" />
                                                 Niet ingecheckt
                                             </span>
-                                        )}
+                                        </div>
                                     </div>
                                 </div>
                             );
