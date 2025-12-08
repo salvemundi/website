@@ -1,3 +1,8 @@
+"use client";
+
+import React from 'react';
+import { Calendar1 } from '@/shared/ui/icons/Calendar1';
+
 interface EventCardProps {
     title: string;
     category: string;
@@ -13,8 +18,14 @@ const tagStyles = {
 };
 
 export default function EventCard({ title, category, date, tag }: EventCardProps) {
+    const [isHovering, setIsHovering] = React.useState(false);
+
     return (
-        <article className="group relative overflow-hidden rounded-[1.75rem] bg-[var(--bg-card)] p-6 shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-xl">
+        <article
+            onMouseEnter={() => setIsHovering(true)}
+            onMouseLeave={() => setIsHovering(false)}
+            className="group relative overflow-hidden rounded-[1.75rem] bg-[var(--bg-card)] p-6 shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-xl"
+        >
             <span className="absolute -top-12 -right-12 h-24 w-24 rounded-full bg-theme-purple/20 transition duration-500 group-hover:scale-125" />
 
             <div className="relative space-y-3">
@@ -29,9 +40,10 @@ export default function EventCard({ title, category, date, tag }: EventCardProps
                 <p className="text-sm text-theme-muted">{category}</p>
 
                 <div className="flex items-center gap-2 text-sm text-theme-purple">
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
+                    <div className="h-4 w-4 text-theme-purple">
+                        {/* pass external active flag as a special prop so Calendar1 starts when card hovered */}
+                        <Calendar1 width={16} height={16} stroke="currentColor" strokeWidth={1.6} __active={isHovering} />
+                    </div>
                     <span className="font-medium">{date}</span>
                 </div>
             </div>

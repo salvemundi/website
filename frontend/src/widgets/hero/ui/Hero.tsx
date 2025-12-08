@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import { useDirectusStore } from '@/shared/lib/store/directusStore';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ChevronRight } from '@/shared/ui/icons/ChevronRight';
 
 export default function Hero() {
     const events = useDirectusStore((state) => state.events);
@@ -65,6 +65,9 @@ export default function Hero() {
         ? heroBanners.map(b => getImageUrl(b.image))
         : defaultBanners;
 
+    const [hoverNextEvent, setHoverNextEvent] = useState(false);
+    const [hoverWordLid, setHoverWordLid] = useState(false);
+
     return (
         <section id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full h-screen max-w-app py-8 sm:py-12 md:py-16 lg:py-20 transition-colors duration-300">
             <div className="absolute -left-20 top-10 h-72 w-72 rounded-full blur-3xl opacity-20 bg-theme-purple/30" />
@@ -103,9 +106,12 @@ export default function Hero() {
                                                 {nextEvent.description || "Kom gezellig langs bij ons volgende evenement!"}
                                             </p>
                                         </div>
-                                        <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white text-theme-purple flex items-center justify-center shadow-md transition-transform group-hover:scale-110">
-                                            <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6" />
-                                        </div>
+                                                <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white text-theme-purple flex items-center justify-center shadow-md transition-transform group-hover:scale-110"
+                                                    onMouseEnter={() => setHoverNextEvent(true)}
+                                                    onMouseLeave={() => setHoverNextEvent(false)}
+                                                >
+                                                    <ChevronRight width={20} height={20} strokeWidth={2} __active={hoverNextEvent} />
+                                                </div>
                                     </div>
                                 </Link>
                             ) : (
@@ -135,10 +141,12 @@ export default function Hero() {
                             <a
                                 href="/lidmaatschap"
                                 className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-theme px-8 py-4 text-lg font-bold text-theme-white shadow-lg transition-all hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-theme-purple/30"
+                                onMouseEnter={() => setHoverWordLid(true)}
+                                onMouseLeave={() => setHoverWordLid(false)}
                             >
                                 Word lid
                                 <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-xs font-semibold sm:h-6 sm:w-6">
-                                    →
+                                    <ChevronRight width={14} height={14} strokeWidth={2} __active={hoverWordLid} />
                                 </span>
                             </a>
                             <a

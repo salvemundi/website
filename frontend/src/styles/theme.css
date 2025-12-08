@@ -371,3 +371,59 @@ input::placeholder, textarea::placeholder {
 .focus\:border-theme-purple:focus {
   border-color: var(--theme-purple);
 }
+
+/* ==============================================
+   ICON ANIMATIONS
+   ============================================== */
+
+.icon-animated {
+  transform-origin: center center;
+  display: inline-block;
+}
+
+@keyframes icon-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes icon-float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes icon-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* Animate icons continuously */
+.icon-animate-rotate {
+  animation: icon-rotate 2000ms linear infinite;
+}
+
+.icon-animate-float {
+  animation: icon-float 2000ms ease-in-out infinite;
+}
+
+.icon-animate-pulse {
+  animation: icon-pulse 2000ms ease-in-out infinite;
+}
+
+/* Speed up animation slightly on hover */
+.group:hover .icon-animate-rotate {
+  animation-duration: 900ms;
+}
+
+.group:hover .icon-animate-float {
+  animation-duration: 900ms;
+}
+
+.group:hover .icon-animate-pulse {
+  animation-duration: 900ms;
+}
+
+.group:hover .icon-animated { /* subtle smoothness */
+  transition: transform 200ms ease;
+}
