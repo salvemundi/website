@@ -17,7 +17,7 @@ export default function HomePage() {
                             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-theme-purple mb-4">
                                 Waarom Salve Mundi?
                             </p>
-                            <h2 className="text-3xl font-black text-theme sm:text-4xl md:text-5xl">
+                            <h2 className="text-3xl font-black text-gradient sm:text-4xl md:text-5xl">
                                 Meer dan alleen studeren
                             </h2>
                         </div>

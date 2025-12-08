@@ -285,72 +285,15 @@ export default function Hero() {
         };
     }, [heroBanners, calculatedSlides]);
 
-    // Capture the initial mobile fallback at first render so we don't
-    // replace it later when slides are updated (prevents a visible flicker
-    // where the mobile image changes after a short moment).
-    const initialMobileFallback = useRef<string>((calculatedSlides && calculatedSlides[0]) || defaultBanners[0]);
-    const [mobileSrc, setMobileSrc] = useState<string | null>(null);
-
-    // Preload the preferred mobile image (prefer resolvedSlides[0], then localSlides[0])
-    // and only set `mobileSrc` after the image has fully loaded. If no image loads
-    // within `fallbackDelayMs`, set the initial fallback so the area isn't blank
-    // forever. This prevents showing the default first and then swapping.
-    useEffect(() => {
-        if (!isMobile) return;
-
-        const fallbackDelayMs = 1000; // show fallback after 1s if nothing loads
-        let cancelled = false;
-        let timeoutHandle: number | undefined;
-
-        const primary = (resolvedSlides && resolvedSlides[0]) || (localSlides && localSlides[0]);
-        const trySet = (candidate?: string | null) => {
-            if (!candidate) return false;
-            const normalized = (typeof window !== 'undefined' && typeof candidate === 'string' && candidate.startsWith('/'))
-                ? `${window.location.origin}${candidate}`
-                : candidate;
-            if (normalized === mobileSrc) return true;
-            const img = document.createElement('img');
-            img.onload = () => {
-                if (cancelled) return;
-                setMobileSrc(normalized);
-            };
-            img.onerror = () => {
-                // try next option if available
-            };
-            img.src = normalized;
-            return true;
-        };
-
-        // Start attempting to load the primary candidate
-        if (!trySet(primary)) {
-            // primary missing; set a timeout to fallback
-            timeoutHandle = window.setTimeout(() => {
-                if (cancelled) return;
-                const fb = initialMobileFallback.current;
-                const normalized = (typeof window !== 'undefined' && typeof fb === 'string' && fb.startsWith('/'))
-                    ? `${window.location.origin}${fb}`
-                    : fb;
-                setMobileSrc(normalized);
-            }, fallbackDelayMs);
-        } else {
-            // we did start loading primary; as a safety, still set a fallback
-            // after delay in case it never resolves
-            timeoutHandle = window.setTimeout(() => {
-                if (cancelled) return;
-                if (!mobileSrc) {
-                    const fb = initialMobileFallback.current;
-                    const normalized = (typeof window !== 'undefined' && typeof fb === 'string' && fb.startsWith('/'))
-                        ? `${window.location.origin}${fb}`
-                        : fb;
-                    setMobileSrc(normalized);
-                }
-            }, fallbackDelayMs);
+    // Use the first available slide immediately for mobile, with fallback to default
+    const mobileSrc = useMemo(() => {
+        if (!isMobile) return null;
+        const primary = (resolvedSlides && resolvedSlides[0]) || (localSlides && localSlides[0]) || defaultBanners[0];
+        // Normalize to absolute URL if needed for consistency
+        if (typeof window !== 'undefined' && typeof primary === 'string' && primary.startsWith('/')) {
+            return `${window.location.origin}${primary}`;
         }
-
-        return () => {
-            cancelled = true;
-            if (timeoutHandle) clearTimeout(timeoutHandle);
-        };
+        return primary;
     }, [isMobile, resolvedSlides, localSlides]);
 
     // Resolve absolute URLs only after client mount to avoid SSR hydration mismatch
@@ -478,7 +421,7 @@ export default function Hero() {
 
                                 {isMobile ? (
                                     <div className="sm:hidden w-full h-full flex items-center justify-center relative">
-                                        {mobileSrc && (
+                                        {mobileSrc ? (
                                             <Image
                                                 src={mobileSrc}
                                                 alt="Salve Mundi"
@@ -488,6 +431,12 @@ export default function Hero() {
                                                 sizes="(max-width: 640px) 100vw, 0px"
                                                 className="object-cover object-center"
                                             />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center bg-gradient-theme">
+                                                <div className="text-white text-center">
+                                                    <div className="text-4xl font-bold">Salve Mundi</div>
+                                                </div>
+                                            </div>
                                         )}
                                     </div>
                                 ) : (

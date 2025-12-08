@@ -403,6 +403,117 @@ input::placeholder, textarea::placeholder {
   100% { transform: scale(1); }
 }
 
+/* Map popup and control theme overrides for MapLibre/Mapbox popup elements */
+/* Light mode popup */
+.mapboxgl-popup-content {
+  background: #ffffff !important;
+  color: #663265 !important;
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+/* Dark mode popup - when html has dark class */
+html.dark .mapboxgl-popup-content {
+  background: #1f1921 !important;
+  color: #ffffff !important;
+}
+
+.mapboxgl-popup-tip {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+/* Map controls sizing and background */
+.mapboxgl-ctrl, .mapboxgl-ctrl-top-right {
+  background: transparent !important;
+}
+
+/* Ensure popup text inherits parent color */
+.mapboxgl-popup-content * {
+  color: inherit !important;
+}
+
+/* Force high-specificity overrides for popup inner content injected into body */
+html.dark .mapboxgl-popup-content,
+html.dark .mapboxgl-popup-content * {
+  background: #1f1921 !important;
+  color: #ffffff !important;
+}
+
+html:not(.dark) .mapboxgl-popup-content,
+html:not(.dark) .mapboxgl-popup-content * {
+  background: #ffffff !important;
+  color: #663265 !important;
+}
+
+/* Close button styling */
+.mapboxgl-popup-close-button {
+  color: #663265 !important;
+  font-size: 24px;
+  padding: 0 8px;
+}
+
+html.dark .mapboxgl-popup-close-button {
+  color: #ffffff !important;
+}
+
+.mapboxgl-popup-close-button:hover {
+  background-color: rgba(128, 128, 128, 0.2);
+}
+
+/* Marker styling for sticker map */
+.samu-marker {
+  width: 48px;
+  height: 48px;
+  position: relative;
+  border-radius: 9999px;
+  overflow: visible;
+  display: inline-block;
+  transform-origin: center;
+}
+.samu-marker__img {
+  width: 48px;
+  height: 48px;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 3px solid var(--theme-white);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.samu-marker:hover .samu-marker__img { transform: scale(1.12); }
+.samu-marker__dot {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  border: 2px solid var(--theme-white);
+  background: var(--color-primary-200);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.samu-marker__dot--mine { background: var(--theme-purple-light); }
+.samu-marker--mine .samu-marker__img { box-shadow: 0 8px 16px rgba(102,50,101,0.25); }
+.samu-marker--selected { width:48px; height:48px; display:flex; align-items:center; justify-content:center; border-radius:9999px; background:var(--color-primary-500); color:white; border:3px solid var(--theme-white); }
+
+/* Popup content layout */
+.map-popup { display:block; max-width:320px; }
+.map-popup__head { display:flex; gap:0.75rem; align-items:center; margin-bottom:0.5rem; }
+.map-popup__avatar { width:40px; height:40px; border-radius:9999px; object-fit:cover; border:2px solid #ffffff; }
+
+/* Light mode popup text */
+.map-popup__title { font-weight:700; color:#663265; }
+.map-popup__meta { font-size:0.875rem; color:#6f5772; }
+.map-popup__desc { margin-top:0.5rem; color:#663265; }
+.map-popup__footer { margin-top:0.5rem; display:flex; gap:0.75rem; flex-direction:column; }
+.map-popup__footer > div { color:#6f5772; }
+
+/* Dark mode popup text */
+html.dark .map-popup__title { color:#ffffff !important; }
+html.dark .map-popup__meta { color:#c9b2cc !important; }
+html.dark .map-popup__desc { color:#ffffff !important; }
+html.dark .map-popup__footer > div { color:#c9b2cc !important; }
+
+
 /* Animate icons continuously */
 .icon-animate-rotate {
   animation: icon-rotate 2000ms linear infinite;

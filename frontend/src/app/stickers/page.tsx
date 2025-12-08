@@ -179,7 +179,7 @@ function StickersContent() {
 
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div className="bg-white rounded-3xl shadow-lg p-6">
+                    <div className="bg-[var(--bg-card)] rounded-3xl shadow-lg p-6">
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-gray-500 text-sm font-medium">Total Stickers</p>
@@ -189,7 +189,7 @@ function StickersContent() {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-3xl shadow-lg p-6">
+                    <div className="bg-[var(--bg-card)] rounded-3xl shadow-lg p-6">
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-gray-500 text-sm font-medium">Countries</p>
@@ -199,7 +199,7 @@ function StickersContent() {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-3xl shadow-lg p-6">
+                    <div className="bg-[var(--bg-card)] rounded-3xl shadow-lg p-6">
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-gray-500 text-sm font-medium">Cities</p>
@@ -209,7 +209,7 @@ function StickersContent() {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-3xl shadow-lg p-6">
+                    <div className="bg-[var(--bg-card)] rounded-3xl shadow-lg p-6">
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-gray-500 text-sm font-medium">Top Country</p>
@@ -227,7 +227,7 @@ function StickersContent() {
                     <div className="mb-6 flex justify-end">
                         <button
                             onClick={() => setShowAddModal(true)}
-                            className="bg-gradient-to-r from-oranje to-paars text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2 shadow-lg shadow-oranje/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl"
+                            className="bg-gradient-to-r from-oranje to-paars text-theme-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2 shadow-lg shadow-oranje/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl"
                         >
                             <Plus className="w-5 h-5" />
                             Add Sticker Location
@@ -236,7 +236,7 @@ function StickersContent() {
                 )}
 
                 {/* Filters */}
-                <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-3 bg-white dark:bg-[var(--bg-card-dark)] p-4 rounded-2xl shadow-md">
+                <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-3 bg-[var(--bg-card)] p-4 rounded-2xl shadow-md">
                     <input
                         type="text"
                         placeholder="Filter by country"
@@ -253,10 +253,10 @@ function StickersContent() {
                     />
                     {/* User filter: select to filter by specific user, fallback free-text search still supported */}
                     <div className="flex">
-                        <select
+                            <select
                             value={filterUserId}
                             onChange={(e) => setFilterUserId(e.target.value)}
-                            className="px-3 py-2 rounded-lg w-full bg-white dark:bg-[var(--bg-card-dark)] focus:ring-2 focus:ring-paars focus:border-transparent"
+                                className="px-3 py-2 rounded-lg w-full bg-[var(--bg-card)] focus:ring-2 focus:ring-paars focus:border-transparent"
                         >
                             <option value="">All users</option>
                             {Object.entries(stickersPerUser).map(([id, info]) => (
@@ -274,7 +274,7 @@ function StickersContent() {
                         />
                         <button
                             onClick={() => { setFilterCountry(''); setFilterCity(''); setFilterUser(''); setFilterUserId(''); }}
-                            className="px-3 py-2 rounded-lg bg-gray-100 dark:bg-[var(--bg-soft-dark)] hover:bg-gray-200 dark:hover:bg-[var(--bg-card-dark)] text-gray-700 dark:text-theme-white"
+                            className="px-3 py-2 rounded-lg bg-[var(--bg-soft)] hover:bg-[var(--bg-soft-light)] dark:bg-[var(--bg-soft-dark)] dark:hover:bg-[var(--bg-card-dark)] text-theme"
                         >
                             Clear
                         </button>
@@ -282,7 +282,7 @@ function StickersContent() {
                 </div>
 
                 {/* Map */}
-                <div className="bg-white rounded-3xl shadow-xl overflow-hidden mb-8">
+                <div className="bg-[var(--bg-card)] rounded-3xl shadow-xl overflow-hidden mb-8">
                     {isLoading ? (
                         <div className="h-[600px] flex items-center justify-center">
                             <Loader2 className="w-12 h-12 animate-spin text-paars" />
@@ -291,7 +291,7 @@ function StickersContent() {
                         <div className="h-[600px] flex items-center justify-center">
                             <div className="text-center">
                                 <p className="text-paars font-semibold mb-2">Failed to load stickers</p>
-                                <p className="text-gray-600 text-sm">Please try refreshing the page</p>
+                                <p className="text-theme-muted text-sm">Please try refreshing the page</p>
                             </div>
                         </div>
                     ) : (
@@ -309,27 +309,27 @@ function StickersContent() {
                 </div>
 
                 {/* Contributors / Stats Panel */}
-                <div className="bg-white rounded-3xl shadow-lg p-6 mt-6">
+                <div className="bg-[var(--bg-card)] rounded-3xl shadow-lg p-6 mt-6">
                     <h2 className="text-2xl font-bold mb-4 text-paars">Leaderboard</h2>
                     {leaderboard.length === 0 ? (
-                        <p className="text-sm text-gray-600">No contributors yet</p>
+                        <p className="text-sm text-theme-muted">No contributors yet</p>
                     ) : (
                         <div className="max-h-96 overflow-y-auto pr-2">
                             <ol className="space-y-2">
                                 {leaderboard.slice(0, 50).map((c, idx) => {
                                     const isMe = user && c.id === user.id;
-                                    return (
-                                        <li key={c.id} className={`flex items-center justify-between p-3 rounded-xl ${isMe ? 'bg-oranje/10' : ''}`}>
+                    return (
+                    <li key={c.id} className={`flex items-center justify-between p-3 rounded-xl ${isMe ? 'bg-oranje/10' : ''}`}>
                                             <div className="flex items-center gap-3">
-                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${idx < 3 ? 'bg-geel text-paars' : 'bg-gray-200 text-gray-600'}`}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${idx < 3 ? 'bg-geel text-paars' : 'bg-[var(--bg-soft)] text-theme-muted'}`}>
                                                     {idx + 1}
                                                 </div>
                                                 <div>
-                                                    <div className="font-semibold text-paars">{c.name}</div>
+                            <div className="font-semibold text-paars">{c.name}</div>
                                                     {/* <div className="text-xs text-gray-500">{c.id}</div> */}
                                                 </div>
                                             </div>
-                                            <div className="text-xl font-bold text-paars">{c.count}</div>
+                        <div className="text-xl font-bold text-paars">{c.count}</div>
                                         </li>
                                     );
                                 })}
@@ -339,11 +339,11 @@ function StickersContent() {
                 </div>
 
                 {/* Recent Stickers */}
-                <div className="bg-white rounded-3xl shadow-lg p-6 mt-8">
+                <div className="bg-[var(--bg-card)] rounded-3xl shadow-lg p-6 mt-8">
                     <h2 className="text-2xl font-bold mb-4 text-paars">Recent Sticker Locations</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {stickers.slice(0, 6).map((sticker) => (
-                            <div key={sticker.id} className="rounded-xl p-4 hover:shadow-md transition-shadow">
+                            <div key={sticker.id} className="rounded-xl p-4 hover:shadow-md transition-shadow bg-[var(--bg-soft)] dark:bg-[var(--bg-card)]">
                                 <div className="flex items-start gap-3">
                                     {/* small pin: blue if current user's sticker */}
                                     {(() => {
@@ -384,17 +384,17 @@ function StickersContent() {
             </div>
 
             {/* Add Sticker Modal */}
-            {showAddModal && (
+                {showAddModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-                        <div className="sticky top-0 bg-white px-6 py-4 flex items-center justify-between z-10">
+                    <div className="bg-[var(--bg-card)] rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+                        <div className="sticky top-0 bg-[var(--bg-card)] px-6 py-4 flex items-center justify-between z-10">
                             <h2 className="text-2xl font-bold text-paars">Add Sticker Location</h2>
                             <button
                                 onClick={() => {
                                     setShowAddModal(false);
                                     resetForm();
                                 }}
-                                className="text-gray-500 hover:text-paars transition-colors"
+                                className="text-theme-muted hover:text-paars transition-colors"
                             >
                                 <X className="w-6 h-6" />
                             </button>
