@@ -6,6 +6,7 @@ import { useAuth } from '@/features/auth/providers/auth-provider';
 import { useSalvemundiEvent } from '@/shared/lib/hooks/useSalvemundiApi';
 import { eventsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
 import { directusFetch } from '@/shared/lib/directus';
+import AttendanceButton from '@/entities/activity/ui/AttendanceButton';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import {
     CalendarClock,
@@ -267,6 +268,12 @@ export default function EventDetailPage() {
                         <p className="text-lg sm:text-xl text-beige/90 max-w-3xl mx-auto mt-0">
                             Georganiseerd door {event.committee_name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim()}
                         </p>
+                    )}
+                    {user && (
+                        <div>
+                            {/* Show attendance button if authorized */}
+                            <AttendanceButton eventId={event.id} userId={user.id} />
+                        </div>
                     )}
                 </div>
             </PageHeader>
