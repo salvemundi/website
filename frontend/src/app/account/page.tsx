@@ -178,6 +178,16 @@ export default function AccountPage() {
                                 </span>
                             </div>
 
+                            {/* Membership expiry date */}
+                            <div className="text-sm text-theme-purple/70 mt-1">
+                                <p className="text-xs text-theme-purple/60 font-bold uppercase">Lidmaatschap eindigt</p>
+                                <p className="font-medium">
+                                    {user.membership_expiry
+                                        ? format(new Date(user.membership_expiry), 'd MMMM yyyy')
+                                        : 'Niet van toepassing'}
+                                </p>
+                            </div>
+
                             <div className="flex flex-wrap justify-center sm:justify-start gap-3">
                                 {user.entra_id && (
                                     <a
