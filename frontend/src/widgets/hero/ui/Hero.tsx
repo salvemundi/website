@@ -1,14 +1,20 @@
 'use client';
 
-import React, { useEffect, useMemo, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import { useDirectusStore } from '@/shared/lib/store/directusStore';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import Link from 'next/link';
-import Image from 'next/image';
-import { ChevronRight } from '@/shared/ui/icons/ChevronRight';
+import { ArrowRight } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
+
+// Register GSAP plugins
+if (typeof window !== 'undefined') {
+    gsap.registerPlugin(ScrollTrigger);
+}
 
 export default function Hero() {
     const events = useDirectusStore((state) => state.events);
@@ -17,10 +23,150 @@ export default function Hero() {
     const heroBanners = useDirectusStore((state) => state.heroBanners);
     const loadHeroBanners = useDirectusStore((state) => state.loadHeroBanners);
 
+    // Refs for GSAP animations
+    const heroRef = useRef<HTMLElement>(null);
+    const titleRef = useRef<HTMLHeadingElement>(null);
+    const descriptionRef = useRef<HTMLParagraphElement>(null);
+    const eventCardRef = useRef<HTMLDivElement>(null);
+    const buttonsRef = useRef<HTMLDivElement>(null);
+    const imageRef = useRef<HTMLDivElement>(null);
+    const orb1Ref = useRef<HTMLDivElement>(null);
+    const orb2Ref = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
         loadEvents?.();
         loadHeroBanners?.();
     }, [loadEvents, loadHeroBanners]);
+
+    // GSAP Animations
+    useEffect(() => {
+        if (!heroRef.current) return;
+
+        const ctx = gsap.context(() => {
+            // Timeline for hero entrance
+            const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+            // Animate title with character-by-character reveal
+            if (titleRef.current) {
+                // First, apply the gradient background directly to the h1
+                titleRef.current.style.background = 'linear-gradient(135deg, var(--theme-gradient-start), var(--theme-gradient-end), var(--theme-gradient-start))';
+                titleRef.current.style.backgroundSize = '200% 200%';
+                titleRef.current.style.webkitBackgroundClip = 'text';
+                titleRef.current.style.backgroundClip = 'text';
+                titleRef.current.style.webkitTextFillColor = 'transparent';
+
+                const spans = titleRef.current.querySelectorAll('span');
+
+                // Split each span into individual characters
+                spans.forEach((span) => {
+                    const text = span.textContent || '';
+                    span.innerHTML = ''; // Clear the span
+
+                    // Create a character span for each letter
+                    text.split('').forEach((char) => {
+                        const charSpan = document.createElement('span');
+                        charSpan.textContent = char === ' ' ? '\u00A0' : char; // Use non-breaking space
+                        span.appendChild(charSpan);
+                    });
+                });
+
+                // Now animate all character spans with stagger
+                const allChars = titleRef.current.querySelectorAll('span span');
+                tl.from(allChars, {
+                    opacity: 0,
+                    y: 20,
+                    rotationX: -90,
+                    transformOrigin: '50% 50%',
+                    duration: 0.6,
+                    stagger: 0.03,
+                    ease: 'back.out(1.7)',
+                }, 0.2);
+            }
+
+            // Animate description
+            if (descriptionRef.current) {
+                tl.from(descriptionRef.current, {
+                    opacity: 0,
+                    y: 30,
+                    duration: 0.8,
+                }, 0.6);
+            }
+
+            // Animate event card
+            if (eventCardRef.current) {
+                tl.from(eventCardRef.current, {
+                    opacity: 0,
+                    y: 30,
+                    duration: 0.8,
+                }, 0.8);
+            }
+
+            // Animate buttons
+            if (buttonsRef.current) {
+                const buttons = buttonsRef.current.querySelectorAll('a');
+                tl.from(buttons, {
+                    opacity: 0,
+                    y: 20,
+                    duration: 0.6,
+                    stagger: 0.1,
+                }, 1.0);
+            }
+
+            // Animate image container
+            if (imageRef.current) {
+                tl.from(imageRef.current, {
+                    opacity: 0,
+                    scale: 0.95,
+                    duration: 1,
+                }, 0.4);
+            }
+
+            // Floating animation for orbs
+            if (orb1Ref.current) {
+                gsap.to(orb1Ref.current, {
+                    y: '50px',
+                    duration: 3,
+                    repeat: -1,
+                    yoyo: true,
+                    width: '100px',
+                    height: '100px',
+                    ease: 'sine.inOut',
+                });
+                gsap.to(orb1Ref.current, {
+                    x: '70px',
+                    duration: 4,
+                    repeat: -1,
+                    yoyo: true,
+                    width: '170px',
+                    height: '170px',
+                    ease: 'sine.inOut',
+                });
+            }
+
+            if (orb2Ref.current) {
+                gsap.to(orb2Ref.current, {
+                    y: '-15px',
+                    duration: 2.5,
+                    repeat: -1,
+                    yoyo: true,
+                    ease: 'sine.inOut',
+                    width: '100px',
+                    height: '100px',
+                });
+                gsap.to(orb2Ref.current, {
+                    x: '-10px',
+                    duration: 3.5,
+                    repeat: -1,
+                    yoyo: true,
+                    width: '170px',
+                    height: '170px',
+                    ease: 'sine.inOut',
+                });
+            }
+        }, heroRef);
+
+        return () => ctx.revert();
+    }, []);
 
     const nextEvent = useMemo(() => {
         if (!events?.length) return null;
@@ -226,13 +372,12 @@ export default function Hero() {
 
     // (removed development-only MutationObserver/overlay detection)
 
-    const [hoverNextEvent, setHoverNextEvent] = useState(false);
-    const [hoverWordLid, setHoverWordLid] = useState(false);
+
 
     return (
-        <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full max-w-app mx-auto py-8 sm:py-12 md:py-16 lg:py-20 transition-colors duration-300">
-            <div className="absolute -left-20 top-10 h-72 w-72 rounded-full blur-3xl opacity-20 bg-theme-purple/30" />
-            <div className="absolute -right-16 bottom-0 h-64 w-64 rounded-full blur-3xl opacity-20 bg-theme-purple/30" />
+        <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full h-screen max-w-app py-8 sm:py-12 md:py-16 lg:py-20 transition-colors duration-300">
+            <div ref={orb1Ref} className="absolute -left-20 top-60 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-theme-purple to-theme-purple-light" />
+            <div ref={orb2Ref} className="absolute -right-16 bottom-0 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-theme-purple-light to-theme-purple" />
 
             {/* Move mobile fallback to be a direct child of the section so nested
                 inner elements cannot accidentally cover/unmount it. */}
@@ -244,18 +389,18 @@ export default function Hero() {
                 <div className="grid gap-8 sm:gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-20 lg:items-center">
                     <div className="space-y-6 sm:space-y-8 lg:space-y-10">
                         <div className="space-y-4 sm:space-y-6">
-                            <h1 className="text-3xl font-black leading-tight sm:text-4xl  md:text-5xl lg:text-6xl text-gradient-animated pb-1">
-                                <span className="block">Welkom bij</span>
-                                <span className="block">Salve Mundi</span>
+                            <h1 ref={titleRef} className="text-3xl font-black leading-tight sm:text-4xl md:text-5xl lg:text-6xl pb-1">
+                                <span className="inline-block w-full">Welkom bij</span>
+                                <span className="inline-block w-full">Salve Mundi</span>
                             </h1>
-                            <p className="text-sm leading-relaxed text-theme-muted sm:text-base md:text-lg lg:max-w-xl">
+                            <p ref={descriptionRef} className="text-sm leading-relaxed text-theme-muted sm:text-base md:text-lg lg:max-w-xl">
                                 Dé studievereniging voor HBO-studenten in Eindhoven. Ontmoet nieuwe mensen, bouw aan je netwerk en maak het meeste van je studententijd met onze diverse activiteiten en gezellige commissies.
                             </p>
                         </div>
 
 
 
-                        <div className="flex flex-wrap gap-3 sm:gap-4">
+                        <div ref={eventCardRef} className="flex flex-wrap gap-3 sm:gap-4">
                             {nextEvent ? (
                                 <Link
                                     href={`/activiteiten/${nextEvent.id}`}
@@ -273,12 +418,9 @@ export default function Hero() {
                                                 {nextEvent.description || "Kom gezellig langs bij ons volgende evenement!"}
                                             </p>
                                         </div>
-                                                <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white text-theme-purple flex items-center justify-center shadow-md transition-transform group-hover:scale-110"
-                                                    onMouseEnter={() => setHoverNextEvent(true)}
-                                                    onMouseLeave={() => setHoverNextEvent(false)}
-                                                >
-                                                    <ChevronRight width={20} height={20} strokeWidth={2} __active={hoverNextEvent} />
-                                                </div>
+                                        <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white text-theme-purple flex items-center justify-center shadow-md transition-transform group-hover:scale-110">
+                                            <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6" />
+                                        </div>
                                     </div>
                                 </Link>
                             ) : (
@@ -304,16 +446,14 @@ export default function Hero() {
                                 </div>
                             )}
                         </div>
-                        <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+                        <div ref={buttonsRef} className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                             <a
                                 href="/lidmaatschap"
                                 className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-theme px-8 py-4 text-lg font-bold text-theme-white shadow-lg transition-all hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-theme-purple/30"
-                                onMouseEnter={() => setHoverWordLid(true)}
-                                onMouseLeave={() => setHoverWordLid(false)}
                             >
                                 Word lid
                                 <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-xs font-semibold sm:h-6 sm:w-6">
-                                    <ChevronRight width={14} height={14} strokeWidth={2} __active={hoverWordLid} />
+                                    →
                                 </span>
                             </a>
                             <a
@@ -329,7 +469,7 @@ export default function Hero() {
 
 
                     <div className="flex flex-wrap gap-3 sm:gap-4">
-                        <div className="relative w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/80 shadow-2xl backdrop-blur-xl overflow-hidden">
+                        <div ref={imageRef} className="relative w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/80 shadow-2xl backdrop-blur-xl overflow-hidden">
                             <div className="h-[240px] sm:h-[300px] md:h-[380px] lg:h-[480px] xl:h-[540px]">
                                 {/* Mobile fallback: sometimes Swiper or remote assets misbehave on small devices.
                                     Show a single static image for mobile (hidden on sm+). */}
