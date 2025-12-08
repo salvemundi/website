@@ -51,8 +51,8 @@ export default function AttendancePage() {
         const loadTitle = async () => {
             try {
                 const { directusFetch } = await import('@/shared/lib/directus');
-                const data = await directusFetch(`/items/events/${eventId}?fields=id,title`);
-                const title = (data as any)?.title || (data as any)?.name || null;
+                const data = await directusFetch(`/items/events/${eventId}?fields=id,name`);
+                const title = (data as any)?.name || null;
                 if (title) setEventTitle(title);
             } catch (err) {
                 console.warn('Could not load event title', err);
@@ -204,18 +204,6 @@ export default function AttendancePage() {
 
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
-                    <div className="bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end rounded-2xl md:rounded-3xl p-3 md:p-6 shadow-lg">
-                        <div className="flex items-center gap-2 md:gap-3">
-                            <div className="h-8 w-8 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-paars/10 flex items-center justify-center shrink-0">
-                                <Clock className="h-4 w-4 md:h-6 md:w-6 text-theme-purple-dark" />
-                            </div>
-                            <div className="min-w-0">
-                                <p className="text-xs md:text-sm text-theme-purple-dark font-semibold truncate">Totaal inschrijvingen</p>
-                                <p className="text-xl md:text-3xl font-bold text-theme-purple">{stats.total}</p>
-                            </div>
-                        </div>
-                    </div>
-                    
                     <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-2xl md:rounded-3xl p-3 md:p-6 shadow-lg">
                         <div className="flex items-center gap-2 md:gap-3">
                             <div className="h-8 w-8 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
@@ -236,6 +224,18 @@ export default function AttendancePage() {
                             <div className="min-w-0">
                                 <p className="text-xs md:text-sm text-white/90 font-semibold truncate">Niet ingecheckt</p>
                                 <p className="text-xl md:text-3xl font-bold text-white">{stats.notCheckedIn}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end rounded-2xl md:rounded-3xl p-3 md:p-6 shadow-lg">
+                        <div className="flex items-center gap-2 md:gap-3">
+                            <div className="h-8 w-8 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-paars/10 flex items-center justify-center shrink-0">
+                                <Clock className="h-4 w-4 md:h-6 md:w-6 text-theme-purple-dark" />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-xs md:text-sm text-theme-purple-dark font-semibold truncate">Totaal inschrijvingen</p>
+                                <p className="text-xl md:text-3xl font-bold text-theme-purple">{stats.total}</p>
                             </div>
                         </div>
                     </div>
