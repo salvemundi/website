@@ -2,7 +2,6 @@
 
 import React, { useEffect, useRef, ReactNode } from 'react';
 import { scrollTriggerAnimation } from '@/shared/lib/gsap/gsapUtils';
-import gsap from 'gsap';
 
 interface ScrollTriggerWrapperProps {
     children: ReactNode;

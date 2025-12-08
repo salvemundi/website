@@ -1,7 +1,6 @@
 import { useEffect, useRef, MutableRefObject } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
-import { cleanupScrollTriggers } from './gsapUtils';
 
 // Register ScrollTrigger plugin
 if (typeof window !== 'undefined') {
