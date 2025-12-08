@@ -11,12 +11,12 @@ let msalInstance: PublicClientApplication | null = null;
 try {
     if (typeof window !== 'undefined') {
         msalInstance = new PublicClientApplication(msalConfig);
-        console.log('MSAL runtime config', {
-            clientId: process.env.NEXT_PUBLIC_ENTRA_CLIENT_ID,
-            tenantId: process.env.NEXT_PUBLIC_ENTRA_TENANT_ID,
-            redirectUri: process.env.NEXT_PUBLIC_AUTH_REDIRECT_URI,
-            directusAPI: process.env.NEXT_PUBLIC_DIRECTUS_API_KEY,
-        });
+        // console.log('MSAL runtime config', {
+        //     clientId: process.env.NEXT_PUBLIC_ENTRA_CLIENT_ID,
+        //     tenantId: process.env.NEXT_PUBLIC_ENTRA_TENANT_ID,
+        //     redirectUri: process.env.NEXT_PUBLIC_AUTH_REDIRECT_URI,
+        //     directusAPI: process.env.NEXT_PUBLIC_DIRECTUS_API_KEY,
+        // });
     }
 } catch (error) {
     console.warn('⚠️ MSAL initialization failed. Microsoft login will be disabled.');
