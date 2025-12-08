@@ -50,7 +50,6 @@ export default function Hero() {
             if (titleRef.current) {
                 const spans = titleRef.current.querySelectorAll('span');
                 tl.from(spans, {
-                    opacity: 0,
                     y: 50,
                     duration: 0.8,
                     stagger: 0.15,
