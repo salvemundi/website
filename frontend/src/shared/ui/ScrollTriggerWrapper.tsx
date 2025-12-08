@@ -4,6 +4,7 @@ import React, { useEffect, useRef, ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { scrollTriggerAnimation } from '@/shared/lib/gsap/gsapUtils';
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
+import gsap from 'gsap';
 
 interface ScrollTriggerWrapperProps {
     children: ReactNode;
@@ -29,7 +30,7 @@ export const ScrollTriggerWrapper: React.FC<ScrollTriggerWrapperProps> = ({
     stagger = 0,
     className = '',
     triggerStart = 'top 80%',
-    once = false, // Changed default to false to allow replay
+    once = false,
 }) => {
     const ref = useRef<HTMLDivElement>(null);
     const pathname = usePathname();
@@ -67,6 +68,9 @@ export const ScrollTriggerWrapper: React.FC<ScrollTriggerWrapperProps> = ({
 
         const targets = ref.current.children.length > 0 ? ref.current.children : ref.current;
 
+        // Ensure elements are visible by default before animation
+        gsap.set(targets, { clearProps: 'all' });
+
         scrollTriggerAnimation(targets, animationConfig, {
             trigger: ref.current,
             start: triggerStart,
@@ -74,13 +78,23 @@ export const ScrollTriggerWrapper: React.FC<ScrollTriggerWrapperProps> = ({
             toggleActions: once ? 'play none none none' : 'play none none reverse',
         });
 
-        // Refresh ScrollTrigger after a short delay to ensure proper positioning
+        // Refresh ScrollTrigger after a short delay
         const timeout = setTimeout(() => {
             ScrollTrigger.refresh();
         }, 100);
 
         return () => {
             clearTimeout(timeout);
+            // Clear all GSAP properties and kill ScrollTriggers on this element
+            if (ref.current) {
+                const targetsForCleanup = ref.current.children.length > 0 ? ref.current.children : ref.current;
+                gsap.set(targetsForCleanup, { clearProps: 'all' });
+                ScrollTrigger.getAll().forEach(trigger => {
+                    if (trigger.trigger === ref.current) {
+                        trigger.kill();
+                    }
+                });
+            }
         };
     }, [animation, customAnimation, delay, duration, stagger, triggerStart, once, pathname]);
 
