@@ -202,8 +202,8 @@ export default function Hero() {
 
     return (
         <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full h-screen max-w-app py-8 sm:py-12 md:py-16 lg:py-20 transition-colors duration-300">
-            <div ref={orb1Ref} className="absolute -left-20 top-10 h-72 w-72 rounded-full blur-3xl opacity-20 bg-theme-purple/30" />
-            <div ref={orb2Ref} className="absolute -right-16 bottom-0 h-64 w-64 rounded-full blur-3xl opacity-20 bg-theme-purple/30" />
+            <div ref={orb1Ref} className="absolute -left-20 top-10 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-theme-purple to-theme-purple-light" />
+            <div ref={orb2Ref} className="absolute -right-16 bottom-0 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-theme-purple-light to-theme-purple" />
 
             <div className="relative w-full px-4 sm:px-6 ">
                 <div className="grid gap-8 sm:gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-20 lg:items-center">
