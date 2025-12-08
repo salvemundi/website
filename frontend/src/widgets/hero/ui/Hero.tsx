@@ -46,13 +46,34 @@ export default function Hero() {
             // Timeline for hero entrance
             const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
-            // Animate title with stagger effect on words
+            // Animate title with character-by-character reveal
             if (titleRef.current) {
                 const spans = titleRef.current.querySelectorAll('span');
-                tl.from(spans, {
-                    y: 50,
-                    duration: 0.8,
-                    stagger: 0.15,
+
+                // Split each span into individual characters
+                spans.forEach((span, spanIndex) => {
+                    const text = span.textContent || '';
+                    span.innerHTML = ''; // Clear the span
+
+                    // Create a character span for each letter
+                    text.split('').forEach((char) => {
+                        const charSpan = document.createElement('span');
+                        charSpan.textContent = char === ' ' ? '\u00A0' : char; // Use non-breaking space
+                        charSpan.style.display = 'inline-block';
+                        span.appendChild(charSpan);
+                    });
+                });
+
+                // Now animate all character spans with stagger
+                const allChars = titleRef.current.querySelectorAll('span span');
+                tl.from(allChars, {
+                    opacity: 0,
+                    y: 20,
+                    rotationX: -90,
+                    transformOrigin: '50% 50%',
+                    duration: 0.6,
+                    stagger: 0.03,
+                    ease: 'back.out(1.7)',
                 }, 0.2);
             }
 
