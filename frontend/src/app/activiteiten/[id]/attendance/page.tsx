@@ -20,6 +20,7 @@ export default function AttendancePage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [showScanner, setShowScanner] = useState(false);
     const [scannerError, setScannerError] = useState<string | null>(null);
+    const [scanResult, setScanResult] = useState<{ name: string; status: 'success' | 'error'; message: string } | null>(null);
     const scannerRef = useRef<any>(null);
     const videoRef = useRef<HTMLDivElement>(null);
 
@@ -88,12 +89,30 @@ export default function AttendancePage() {
     const handleScan = async (token: string) => {
         if (!token.trim()) return;
         const res = await qrService.checkInParticipant(token);
+        
+        // Extract participant name from response
+        const participantName = res.signup?.participant_name || 
+                               (res.signup?.directus_relations?.first_name 
+                                   ? `${res.signup.directus_relations.first_name} ${res.signup.directus_relations.last_name || ''}`.trim()
+                                   : 'Deelnemer');
+        
         if (res.success) {
-            showMessage('Succesvol ingecheckt!', 'success');
+            setScanResult({
+                name: participantName,
+                status: 'success',
+                message: res.message || 'Succesvol ingecheckt!'
+            });
             await load();
         } else {
-            showMessage(res.message || 'Fout bij inchecken', 'error');
+            setScanResult({
+                name: participantName,
+                status: 'error',
+                message: res.message || 'Fout bij inchecken'
+            });
         }
+        
+        // Auto-hide popup after 3 seconds
+        setTimeout(() => setScanResult(null), 3000);
     };
 
     const startScanner = async () => {
@@ -115,7 +134,7 @@ export default function AttendancePage() {
                     },
                     async (decodedText: string) => {
                         await handleScan(decodedText);
-                        stopScanner();
+                        // Don't stop scanner - keep it open for next scan
                     },
                     (_errorMessage: string) => {
                         // Ignore decode errors (normal when no QR in view)
@@ -203,39 +222,85 @@ export default function AttendancePage() {
                 )}
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
-                    <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-2xl md:rounded-3xl p-3 md:p-6 shadow-lg">
-                        <div className="flex items-center gap-2 md:gap-3">
-                            <div className="h-8 w-8 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
-                                <CheckCircle className="h-4 w-4 md:h-6 md:w-6 text-white" />
+                <div className="mb-6 md:mb-8">
+                    {/* Mobile: Total on top, attendance stats side by side below */}
+                    <div className="md:hidden space-y-3">
+                        {/* Total card - full width */}
+                        <div className="bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end rounded-2xl p-3 shadow-lg">
+                            <div className="flex items-center gap-2">
+                                <div className="h-8 w-8 rounded-xl bg-paars/10 flex items-center justify-center shrink-0">
+                                    <Clock className="h-4 w-4 text-theme-purple-dark" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-xs text-theme-purple-dark font-semibold truncate">Totaal inschrijvingen</p>
+                                    <p className="text-xl font-bold text-theme-purple">{stats.total}</p>
+                                </div>
                             </div>
-                            <div className="min-w-0">
-                                <p className="text-xs md:text-sm text-white/90 font-semibold truncate">Ingecheckt</p>
-                                <p className="text-xl md:text-3xl font-bold text-white">{stats.checkedIn}</p>
+                        </div>
+                        
+                        {/* Attendance stats - side by side */}
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-2xl p-3 shadow-lg">
+                                <div className="flex items-center gap-2">
+                                    <div className="h-8 w-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                                        <CheckCircle className="h-4 w-4 text-white" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-xs text-white/90 font-semibold truncate">Ingecheckt</p>
+                                        <p className="text-xl font-bold text-white">{stats.checkedIn}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl p-3 shadow-lg">
+                                <div className="flex items-center gap-2">
+                                    <div className="h-8 w-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                                        <XCircle className="h-4 w-4 text-white" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-xs text-white/90 font-semibold truncate">Niet ingecheckt</p>
+                                        <p className="text-xl font-bold text-white">{stats.notCheckedIn}</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div className="bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl md:rounded-3xl p-3 md:p-6 shadow-lg">
-                        <div className="flex items-center gap-2 md:gap-3">
-                            <div className="h-8 w-8 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
-                                <XCircle className="h-4 w-4 md:h-6 md:w-6 text-white" />
-                            </div>
-                            <div className="min-w-0">
-                                <p className="text-xs md:text-sm text-white/90 font-semibold truncate">Niet ingecheckt</p>
-                                <p className="text-xl md:text-3xl font-bold text-white">{stats.notCheckedIn}</p>
+                    {/* Desktop: 3 cards in a row */}
+                    <div className="hidden md:grid md:grid-cols-3 gap-4">
+                        <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-3xl p-6 shadow-lg">
+                            <div className="flex items-center gap-3">
+                                <div className="h-12 w-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+                                    <CheckCircle className="h-6 w-6 text-white" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-sm text-white/90 font-semibold truncate">Ingecheckt</p>
+                                    <p className="text-3xl font-bold text-white">{stats.checkedIn}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div className="bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end rounded-2xl md:rounded-3xl p-3 md:p-6 shadow-lg">
-                        <div className="flex items-center gap-2 md:gap-3">
-                            <div className="h-8 w-8 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-paars/10 flex items-center justify-center shrink-0">
-                                <Clock className="h-4 w-4 md:h-6 md:w-6 text-theme-purple-dark" />
+                        
+                        <div className="bg-gradient-to-br from-orange-400 to-red-500 rounded-3xl p-6 shadow-lg">
+                            <div className="flex items-center gap-3">
+                                <div className="h-12 w-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+                                    <XCircle className="h-6 w-6 text-white" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-sm text-white/90 font-semibold truncate">Niet ingecheckt</p>
+                                    <p className="text-3xl font-bold text-white">{stats.notCheckedIn}</p>
+                                </div>
                             </div>
-                            <div className="min-w-0">
-                                <p className="text-xs md:text-sm text-theme-purple-dark font-semibold truncate">Totaal inschrijvingen</p>
-                                <p className="text-xl md:text-3xl font-bold text-theme-purple">{stats.total}</p>
+                        </div>
+                        
+                        <div className="bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end rounded-3xl p-6 shadow-lg">
+                            <div className="flex items-center gap-3">
+                                <div className="h-12 w-12 rounded-2xl bg-paars/10 flex items-center justify-center shrink-0">
+                                    <Clock className="h-6 w-6 text-theme-purple-dark" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-sm text-theme-purple-dark font-semibold truncate">Totaal inschrijvingen</p>
+                                    <p className="text-3xl font-bold text-theme-purple">{stats.total}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -281,9 +346,40 @@ export default function AttendancePage() {
 
                 {/* QR Scanner */}
                 {showScanner && (
-                    <div className="mb-6 bg-white rounded-3xl p-6 shadow-lg">
-                        <h3 className="text-xl font-bold text-theme-purple mb-4">Scan QR Code</h3>
-                        <div id="qr-reader" ref={videoRef} className="rounded-xl overflow-hidden"></div>
+                    <div className="mb-6 bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg relative">
+                        <h3 className="text-lg md:text-xl font-bold text-theme-purple mb-3 md:mb-4">Scan QR Code</h3>
+                        <p className="text-sm text-slate-600 mb-4">Houd de QR code voor de camera. De scanner blijft actief voor meerdere scans.</p>
+                        
+                        <div className="relative">
+                            <div id="qr-reader" ref={videoRef} className="rounded-xl overflow-hidden max-w-md mx-auto"></div>
+                            
+                            {/* Scan Result Popup */}
+                            {scanResult && (
+                                <div className="absolute top-0 left-0 right-0 mx-4 mt-4 z-10 animate-in slide-in-from-top duration-300">
+                                    <div className={`p-4 rounded-xl shadow-2xl backdrop-blur-sm ${
+                                        scanResult.status === 'success' 
+                                            ? 'bg-green-500/95 text-white' 
+                                            : 'bg-red-500/95 text-white'
+                                    }`}>
+                                        <div className="flex items-start gap-3">
+                                            {scanResult.status === 'success' ? (
+                                                <CheckCircle className="h-6 w-6 shrink-0 mt-0.5" />
+                                            ) : (
+                                                <XCircle className="h-6 w-6 shrink-0 mt-0.5" />
+                                            )}
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-bold text-lg mb-1">{scanResult.name}</p>
+                                                <p className="text-sm opacity-90">{scanResult.message}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        
+                        <p className="text-xs text-slate-500 mt-4 text-center">
+                            💡 Tip: Houd je telefoon stabiel en zorg voor goede verlichting
+                        </p>
                     </div>
                 )}
 
