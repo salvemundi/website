@@ -89,6 +89,9 @@ export default function HomePage() {
                     </div>
                 </ScrollTriggerWrapper>
             </section>
+
+            {/* Sponsors Section */}
+            <SponsorsSection />
         </main>
     );
 }

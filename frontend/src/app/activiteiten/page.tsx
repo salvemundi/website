@@ -10,8 +10,10 @@ import EventList from "@/entities/activity/ui/EventList";
 import { useSalvemundiEvents } from "@/shared/lib/hooks/useSalvemundiApi";
 import { getImageUrl } from "@/shared/lib/api/salvemundi";
 import { addMonths, subMonths } from 'date-fns';
+import { isEventPast } from '@/shared/lib/utils/date';
 import ActiviteitCard from "@/entities/activity/ui/ActiviteitCard";
 import FlipClock from "@/shared/ui/FlipClock";
+import { ActivityCardSkeleton } from '@/shared/ui/skeletons';
 
 import { Suspense } from 'react';
 
@@ -36,7 +38,7 @@ function ActivitiesContent() {
             now.setHours(0, 0, 0, 0);
             filtered = filtered.filter(event => new Date(event.event_date) >= now);
         }
-        return filtered.sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime());
+        return filtered.sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime());
     }, [events, showPastActivities]);
 
     const upcomingEvent = useMemo(() => {
@@ -74,7 +76,7 @@ function ActivitiesContent() {
                     </p>
                 }
             >
-                {upcomingEvent && (
+                {upcomingEvent && viewMode !== 'grid' && (
                     <div className="rounded-3xl shadow-xl px-8 pb-4 bg-gradient-to-br 
                         from-theme-gradient-light-start 
                         via-theme-gradient-light-start 
@@ -82,7 +84,7 @@ function ActivitiesContent() {
                         dark:from-theme-gradient-dark-start 
                         dark:via-theme-gradient-dark-start 
                         dark:to-theme-gradient-dark-end">
-                        <FlipClock targetDate={upcomingEvent.event_date} />
+                        <FlipClock targetDate={upcomingEvent.event_date} title={upcomingEvent.name} href={`/activiteiten/${upcomingEvent.id}`} />
                     </div>
                 )}
             </PageHeader>
@@ -158,21 +160,25 @@ function ActivitiesContent() {
                     <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
 
                         {/* Sidebar (Visible on Desktop) */}
-                        <aside className="lg:w-96 xl:w-[28rem] space-y-6">
-                            <FeaturedEvent
-                                event={upcomingEvent}
-                                onEventClick={handleShowDetails}
-                            />
+                        {(viewMode !== 'grid' || selectedDay) && (
+                            <aside className="lg:w-96 xl:w-[28rem] space-y-6">
+                                {viewMode !== 'grid' && (
+                                    <FeaturedEvent
+                                        event={upcomingEvent}
+                                        onEventClick={handleShowDetails}
+                                    />
+                                )}
 
-                            {selectedDay && (
-                                <DayDetails
-                                    selectedDay={selectedDay}
-                                    events={events}
-                                    onClose={() => setSelectedDay(null)}
-                                    onEventClick={handleShowDetails}
-                                />
-                            )}
-                        </aside>
+                                {selectedDay && (
+                                    <DayDetails
+                                        selectedDay={selectedDay}
+                                        events={events}
+                                        onClose={() => setSelectedDay(null)}
+                                        onEventClick={handleShowDetails}
+                                    />
+                                )}
+                            </aside>
+                        )}
 
                         {/* Main View Area */}
                         <div className="flex-1 space-y-6">
@@ -183,13 +189,10 @@ function ActivitiesContent() {
                             )}
 
                             {isLoading ? (
-                                <div className="flex items-center justify-center rounded-3xl  bg-white/70 dark:bg-surface-dark/70 p-16 shadow-sm">
-                                    <div className="text-center">
-                                        <div className="h-12 w-12 animate-spin rounded-full  mx-auto"></div>
-                                        <p className="mt-4 text-sm font-medium text-slate-600 dark:text-ink-muted">
-                                            Activiteiten worden geladen...
-                                        </p>
-                                    </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                                        <ActivityCardSkeleton key={i} />
+                                    ))}
                                 </div>
                             ) : (
                                 <>
@@ -227,21 +230,22 @@ function ActivitiesContent() {
 
                                     {/* Grid View */}
                                     {viewMode === 'grid' && (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            {filteredEvents.map(event => (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 content-loaded">
+                                            {filteredEvents.map((event, index) => (
+                                                <div key={event.id} className="stagger-item" style={{ animationDelay: `${index * 0.05}s` }}>
                                                 <ActiviteitCard
-                                                    key={event.id}
                                                     title={event.name}
                                                     description={event.description}
                                                     date={event.event_date}
                                                     price={event.price}
                                                     image={getImageUrl(event.image)}
-                                                    isPast={new Date(event.event_date) < new Date()}
+                                                    isPast={isEventPast(event.event_date)}
                                                     variant="grid"
                                                     committeeName={event.committee_name}
                                                     onShowDetails={() => handleShowDetails(event)}
                                                     onSignup={() => handleShowDetails(event)}
                                                 />
+                                                </div>
                                             ))}
                                         </div>
                                     )}
