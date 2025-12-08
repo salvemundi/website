@@ -192,7 +192,7 @@ export default function EventDetailPage() {
                 event_date: event.event_date,
                 // Use member price if user is logged in (assumption), or non-member price
                 // Ideally backend handles this logic or we check membership status
-                event_price: user ? event.price_members : event.price_non_members
+                event_price: Number(user ? event.price_members : event.price_non_members) || 0
             });
 
             // Refresh status

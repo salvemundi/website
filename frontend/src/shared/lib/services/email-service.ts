@@ -133,6 +133,9 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
     }
 
     try {
+        // Ensure eventPrice is a number
+        const eventPrice = typeof data.eventPrice === 'number' ? data.eventPrice : Number(data.eventPrice) || 0;
+        
         // Format the event date nicely
         const formattedDate = new Date(data.eventDate).toLocaleDateString('nl-NL', {
             weekday: 'long',
@@ -183,7 +186,7 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
             <div style="background-color: #F5F5DC; padding: 15px; border-radius: 8px; margin: 20px 0;">
               <h2 style="color: #FF6B35; margin-top: 0;">${data.eventName}</h2>
               <p><strong>Datum en tijd:</strong> ${formattedDate}</p>
-              <p><strong>Prijs:</strong> €${data.eventPrice.toFixed(2)}</p>
+              <p><strong>Prijs:</strong> €${eventPrice.toFixed(2)}</p>
               ${data.phoneNumber ? `<p><strong>Telefoonnummer:</strong> ${data.phoneNumber}</p>` : ''}
             </div>
             ${contactInfoSection}
@@ -228,7 +231,7 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
               <p><strong>Email:</strong> ${data.recipientEmail}</p>
               ${data.phoneNumber ? `<p><strong>Telefoonnummer:</strong> ${data.phoneNumber}</p>` : ''}
               <p><strong>Datum en tijd:</strong> ${formattedDate}</p>
-              <p><strong>Prijs:</strong> €${data.eventPrice.toFixed(2)}</p>
+              <p><strong>Prijs:</strong> €${eventPrice.toFixed(2)}</p>
               <p><strong>Aangemeld door:</strong> ${data.userName}</p>
             </div>
           </div>

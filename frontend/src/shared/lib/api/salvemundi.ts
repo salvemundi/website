@@ -285,13 +285,9 @@ export const eventsApi = {
                 } catch (e) {
                     console.warn('Failed to send signup email:', e);
                 }
-                // refresh local signup object to include qr_token
-                try {
-                    const refreshed = await directusFetch<any>(`/items/event_signups/${signup.id}`);
-                    return refreshed || signup;
-                } catch (_) {
-                    return signup;
-                }
+                // Update the local signup object with the QR token instead of refetching
+                signup.qr_token = token;
+                return signup;
             }
 
         } catch (err) {
