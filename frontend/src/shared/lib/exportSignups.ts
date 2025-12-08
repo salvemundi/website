@@ -13,39 +13,18 @@ export default async function exportEventSignups(signups: any[], filename = 'aan
         created_at: s.created_at || ''
     }));
 
-    try {
-        // Only attempt to import SheetJS on the client. During Next.js server build/SSR the
-        // `window` is not available and we should not try to resolve the 'xlsx' package.
-        if (typeof window === 'undefined') throw new Error('Server environment - skip xlsx');
-        const XLSX = await import('xlsx');
-        const ws = XLSX.utils.json_to_sheet(rows);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Aanmeldingen');
-        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-        const blob = new Blob([wbout], { type: 'application/octet-stream' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-        return true;
-    } catch (err) {
-        console.warn('SheetJS not available, falling back to CSV', err);
-        // CSV fallback
-        const header = Object.keys(rows[0] || {}).join(',') + '\n';
-        const csv = rows.map(r => Object.values(r).map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
-        const blob = new Blob([header + csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename.replace(/\.xlsx$/, '.csv');
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-        return true;
-    }
+    // Export as CSV (XLSX support removed to avoid build errors when 'xlsx' package not installed)
+    // To enable XLSX: install 'xlsx' package and uncomment the try/catch block above
+    const header = Object.keys(rows[0] || {}).join(',') + '\n';
+    const csv = rows.map(r => Object.values(r).map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([header + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename.replace(/\.xlsx$/, '.csv');
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    return true;
 }
