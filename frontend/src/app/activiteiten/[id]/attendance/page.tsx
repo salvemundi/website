@@ -187,39 +187,39 @@ export default function AttendancePage() {
                 )}
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                    <div className="bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end rounded-3xl p-6 shadow-lg">
-                        <div className="flex items-center gap-3">
-                            <div className="h-12 w-12 rounded-2xl bg-paars/10 flex items-center justify-center">
-                                <Clock className="h-6 w-6 text-theme-purple-dark" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
+                    <div className="bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end rounded-2xl md:rounded-3xl p-3 md:p-6 shadow-lg">
+                        <div className="flex items-center gap-2 md:gap-3">
+                            <div className="h-8 w-8 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-paars/10 flex items-center justify-center shrink-0">
+                                <Clock className="h-4 w-4 md:h-6 md:w-6 text-theme-purple-dark" />
                             </div>
-                            <div>
-                                <p className="text-sm text-theme-purple-dark font-semibold">Totaal inschrijvingen</p>
-                                <p className="text-3xl font-bold text-theme-purple">{stats.total}</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-3xl p-6 shadow-lg">
-                        <div className="flex items-center gap-3">
-                            <div className="h-12 w-12 rounded-2xl bg-white/20 flex items-center justify-center">
-                                <CheckCircle className="h-6 w-6 text-white" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-white/90 font-semibold">Ingecheckt</p>
-                                <p className="text-3xl font-bold text-white">{stats.checkedIn}</p>
+                            <div className="min-w-0">
+                                <p className="text-xs md:text-sm text-theme-purple-dark font-semibold truncate">Totaal inschrijvingen</p>
+                                <p className="text-xl md:text-3xl font-bold text-theme-purple">{stats.total}</p>
                             </div>
                         </div>
                     </div>
                     
-                    <div className="bg-gradient-to-br from-orange-400 to-red-500 rounded-3xl p-6 shadow-lg">
-                        <div className="flex items-center gap-3">
-                            <div className="h-12 w-12 rounded-2xl bg-white/20 flex items-center justify-center">
-                                <XCircle className="h-6 w-6 text-white" />
+                    <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-2xl md:rounded-3xl p-3 md:p-6 shadow-lg">
+                        <div className="flex items-center gap-2 md:gap-3">
+                            <div className="h-8 w-8 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+                                <CheckCircle className="h-4 w-4 md:h-6 md:w-6 text-white" />
                             </div>
-                            <div>
-                                <p className="text-sm text-white/90 font-semibold">Niet ingecheckt</p>
-                                <p className="text-3xl font-bold text-white">{stats.notCheckedIn}</p>
+                            <div className="min-w-0">
+                                <p className="text-xs md:text-sm text-white/90 font-semibold truncate">Ingecheckt</p>
+                                <p className="text-xl md:text-3xl font-bold text-white">{stats.checkedIn}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl md:rounded-3xl p-3 md:p-6 shadow-lg">
+                        <div className="flex items-center gap-2 md:gap-3">
+                            <div className="h-8 w-8 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+                                <XCircle className="h-4 w-4 md:h-6 md:w-6 text-white" />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-xs md:text-sm text-white/90 font-semibold truncate">Niet ingecheckt</p>
+                                <p className="text-xl md:text-3xl font-bold text-white">{stats.notCheckedIn}</p>
                             </div>
                         </div>
                     </div>
@@ -271,36 +271,7 @@ export default function AttendancePage() {
                     </div>
                 )}
 
-                {/* Manual Token Input */}
-                <div className="mb-6 bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end rounded-3xl p-6 shadow-lg">
-                    <h3 className="text-xl font-bold text-theme-purple mb-4">Handmatige invoer</h3>
-                    <div className="flex gap-2">
-                        <input
-                            id="qr-token-input"
-                            className="flex-1 px-4 py-3 rounded-xl bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-paars"
-                            placeholder="Plak QR token hier..."
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    const el = e.target as HTMLInputElement;
-                                    handleScan(el.value.trim());
-                                    el.value = '';
-                                }
-                            }}
-                        />
-                        <button
-                            onClick={() => {
-                                const el = document.getElementById('qr-token-input') as HTMLInputElement | null;
-                                if (el?.value) {
-                                    handleScan(el.value.trim());
-                                    el.value = '';
-                                }
-                            }}
-                            className="px-6 py-3 bg-theme-purple text-white font-bold rounded-xl hover:scale-105 transition-transform shadow-lg"
-                        >
-                            Check-in
-                        </button>
-                    </div>
-                </div>
+                {/* Manual Token Input removed as requested */}
 
                 {/* Search Bar */}
                 <div className="mb-6 bg-white rounded-3xl p-6 shadow-lg">
