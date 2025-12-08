@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useEffect, useRef, ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import { scrollTriggerAnimation } from '@/shared/lib/gsap/gsapUtils';
+import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 
 interface ScrollTriggerWrapperProps {
     children: ReactNode;
@@ -27,9 +29,10 @@ export const ScrollTriggerWrapper: React.FC<ScrollTriggerWrapperProps> = ({
     stagger = 0,
     className = '',
     triggerStart = 'top 80%',
-    once = true,
+    once = false, // Changed default to false to allow replay
 }) => {
     const ref = useRef<HTMLDivElement>(null);
+    const pathname = usePathname();
 
     useEffect(() => {
         if (!ref.current) return;
@@ -68,10 +71,18 @@ export const ScrollTriggerWrapper: React.FC<ScrollTriggerWrapperProps> = ({
             trigger: ref.current,
             start: triggerStart,
             once,
+            toggleActions: once ? 'play none none none' : 'play none none reverse',
         });
 
-        // Cleanup is handled by scrollTriggerAnimation
-    }, [animation, customAnimation, delay, duration, stagger, triggerStart, once]);
+        // Refresh ScrollTrigger after a short delay to ensure proper positioning
+        const timeout = setTimeout(() => {
+            ScrollTrigger.refresh();
+        }, 100);
+
+        return () => {
+            clearTimeout(timeout);
+        };
+    }, [animation, customAnimation, delay, duration, stagger, triggerStart, once, pathname]);
 
     return (
         <div ref={ref} className={className}>
