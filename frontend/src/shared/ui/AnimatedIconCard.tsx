@@ -14,26 +14,26 @@ interface AnimatedIconCardProps {
     className?: string;
 }
 
-const variantsMap: Record<Variant, Variants> = {
+const variantsMap: Record<Variant, any> = {
     float: {
         rest: { y: 0 },
         hover: {
             y: [0, -6, 0],
-            transition: { duration: 0.9, repeat: Infinity, ease: "easeInOut" },
+            transition: { duration: 0.9, repeat: Infinity, ease: 'easeInOut' as const },
         },
     },
     rotate: {
         rest: { rotate: 0 },
         hover: {
             rotate: [0, 360],
-            transition: { duration: 0.9, repeat: Infinity, ease: "linear" },
+            transition: { duration: 0.9, repeat: Infinity, ease: 'linear' as const },
         },
     },
     pulse: {
         rest: { scale: 1 },
         hover: {
             scale: [1, 1.08, 1],
-            transition: { duration: 0.9, repeat: Infinity, ease: "easeInOut" },
+            transition: { duration: 0.9, repeat: Infinity, ease: 'easeInOut' as const },
         },
     },
 };
