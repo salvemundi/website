@@ -66,7 +66,6 @@ export default function Hero() {
                     text.split('').forEach((char) => {
                         const charSpan = document.createElement('span');
                         charSpan.textContent = char === ' ' ? '\u00A0' : char; // Use non-breaking space
-                        charSpan.style.display = 'inline-block';
                         span.appendChild(charSpan);
                     });
                 });
@@ -125,17 +124,21 @@ export default function Hero() {
             // Floating animation for orbs
             if (orb1Ref.current) {
                 gsap.to(orb1Ref.current, {
-                    y: '20px',
+                    y: '50px',
                     duration: 3,
                     repeat: -1,
                     yoyo: true,
+                    width: '100px',
+                    height: '100px',
                     ease: 'sine.inOut',
                 });
                 gsap.to(orb1Ref.current, {
-                    x: '10px',
+                    x: '70px',
                     duration: 4,
                     repeat: -1,
                     yoyo: true,
+                    width: '170px',
+                    height: '170px',
                     ease: 'sine.inOut',
                 });
             }
@@ -147,12 +150,16 @@ export default function Hero() {
                     repeat: -1,
                     yoyo: true,
                     ease: 'sine.inOut',
+                    width: '100px',
+                    height: '100px',
                 });
                 gsap.to(orb2Ref.current, {
                     x: '-10px',
                     duration: 3.5,
                     repeat: -1,
                     yoyo: true,
+                    width: '170px',
+                    height: '170px',
                     ease: 'sine.inOut',
                 });
             }
@@ -209,7 +216,7 @@ export default function Hero() {
 
     return (
         <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full h-screen max-w-app py-8 sm:py-12 md:py-16 lg:py-20 transition-colors duration-300">
-            <div ref={orb1Ref} className="absolute -left-20 top-10 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-theme-purple to-theme-purple-light" />
+            <div ref={orb1Ref} className="absolute -left-20 top-60 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-theme-purple to-theme-purple-light" />
             <div ref={orb2Ref} className="absolute -right-16 bottom-0 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-theme-purple-light to-theme-purple" />
 
             <div className="relative w-full px-4 sm:px-6 ">
