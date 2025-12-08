@@ -14,6 +14,9 @@ export default async function exportEventSignups(signups: any[], filename = 'aan
     }));
 
     try {
+        // Only attempt to import SheetJS on the client. During Next.js server build/SSR the
+        // `window` is not available and we should not try to resolve the 'xlsx' package.
+        if (typeof window === 'undefined') throw new Error('Server environment - skip xlsx');
         const XLSX = await import('xlsx');
         const ws = XLSX.utils.json_to_sheet(rows);
         const wb = XLSX.utils.book_new();
