@@ -53,10 +53,13 @@ export default function AttendancePage() {
     const toggleCheckIn = async (row: any) => {
         try {
             const target = !row.checked_in;
-            await fetch(`/api/directus/items/event_signups/${row.id}`, {
+            const { directusFetch } = await import('@/shared/lib/directus');
+            await directusFetch(`/items/event_signups/${row.id}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ checked_in: target, checked_in_at: target ? new Date().toISOString() : null })
+                body: JSON.stringify({ 
+                    checked_in: target, 
+                    checked_in_at: target ? new Date().toISOString() : null 
+                })
             });
             showMessage(`${row.participant_name || 'Deelnemer'} is nu ${target ? 'ingecheckt' : 'uitgecheckt'}`, 'success');
             await load();
@@ -318,8 +321,8 @@ export default function AttendancePage() {
                     )}
                 </div>
 
-                {/* Signups Table */}
-                <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
+                {/* Signups List - Desktop Table View */}
+                <div className="bg-white rounded-3xl shadow-lg overflow-hidden hidden md:block">
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead className="bg-gradient-to-r from-theme-purple to-paars text-white">
@@ -388,6 +391,67 @@ export default function AttendancePage() {
                             </tbody>
                         </table>
                     </div>
+                </div>
+
+                {/* Signups List - Mobile Card View */}
+                <div className="md:hidden space-y-4">
+                    {loading ? (
+                        <div className="bg-white rounded-3xl shadow-lg p-8 text-center">
+                            <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-2 text-theme-purple" />
+                            <p className="text-slate-500">Laden...</p>
+                        </div>
+                    ) : filteredSignups.length === 0 ? (
+                        <div className="bg-white rounded-3xl shadow-lg p-8 text-center">
+                            <p className="text-slate-500">
+                                {searchQuery ? 'Geen resultaten gevonden' : 'Geen inschrijvingen gevonden'}
+                            </p>
+                        </div>
+                    ) : (
+                        filteredSignups.map((s) => {
+                            const name = s.participant_name || (s.directus_relations?.first_name ? `${s.directus_relations.first_name} ${s.directus_relations.last_name || ''}` : '—');
+                            const email = s.participant_email || s.directus_relations?.email || '—';
+                            const phone = s.participant_phone || s.directus_relations?.phone_number || '—';
+                            
+                            return (
+                                <div key={s.id} className="bg-white rounded-2xl shadow-lg p-4">
+                                    <div className="flex items-start justify-between gap-3 mb-3">
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="font-bold text-slate-900 text-lg truncate">{name}</h3>
+                                            {email !== '—' && (
+                                                <p className="text-sm text-slate-600 truncate">{email}</p>
+                                            )}
+                                            {phone !== '—' && (
+                                                <p className="text-sm text-slate-600">{phone}</p>
+                                            )}
+                                        </div>
+                                        <button
+                                            onClick={() => toggleCheckIn(s)}
+                                            className={`shrink-0 px-4 py-2 rounded-lg font-semibold text-sm transition-all active:scale-95 ${
+                                                s.checked_in
+                                                    ? 'bg-red-500 text-white'
+                                                    : 'bg-green-500 text-white'
+                                            }`}
+                                        >
+                                            {s.checked_in ? 'Uitchecken' : 'Inchecken'}
+                                        </button>
+                                    </div>
+                                    <div className="pt-3 border-t border-slate-200">
+                                        {s.checked_in ? (
+                                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700 font-semibold text-xs">
+                                                <CheckCircle className="h-3 w-3" />
+                                                Ingecheckt
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-orange-100 text-orange-700 font-semibold text-xs">
+                                                <Clock className="h-3 w-3" />
+                                                Niet ingecheckt
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
                 </div>
             </main>
         </div>
