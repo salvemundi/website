@@ -1,6 +1,7 @@
 import Hero from '@/widgets/hero/ui/Hero';
 import EventsSection from '@/widgets/events-section/ui/EventsSection';
 import { ScrollTriggerWrapper } from '@/shared/ui/ScrollTriggerWrapper';
+import SponsorsSection from '@/widgets/sponsors-section/ui/SponsorsSection';
 
 export default function HomePage() {
     return (
