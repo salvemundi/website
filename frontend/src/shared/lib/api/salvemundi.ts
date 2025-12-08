@@ -250,9 +250,53 @@ export const eventsApi = {
             body: JSON.stringify(payload)
         });
 
-        // Note: QR generation logic is skipped here as it requires 'qrcode' package which might not be installed or configured.
-        // In the original code it was dynamically imported. For now we skip it to avoid build errors if dependencies are missing.
-        // If needed, we can add it back later.
+        // Try to generate a QR token, image and send confirmation email. Failures here should not break signup.
+        try {
+            const { default: qrService } = await import('@/shared/lib/qr-service');
+            const { sendEventSignupEmail } = await import('@/shared/lib/services/email-service');
+
+            if (signup && signup.id) {
+                const token = qrService.generateQRToken(signup.id, signupData.event_id);
+                await qrService.updateSignupWithQRToken(signup.id, token);
+                // generate image
+                let qrDataUrl: string | undefined = undefined;
+                try {
+                    qrDataUrl = await qrService.generateQRCode(token);
+                } catch (e) {
+                    console.warn('Failed to generate QR image:', e);
+                }
+
+                // send email (best-effort)
+                try {
+                    await sendEventSignupEmail({
+                        recipientEmail: signupData.email,
+                        recipientName: signupData.name,
+                        eventName: signupData.event_name || '',
+                        eventDate: signupData.event_date || '',
+                        eventPrice: signupData.event_price || 0,
+                        phoneNumber: signupData.phone_number,
+                        userName: signupData.user_id || 'Gast',
+                        qrCodeDataUrl: qrDataUrl,
+                        committeeName: undefined,
+                        committeeEmail: undefined,
+                        contactName: undefined,
+                        contactPhone: undefined,
+                    });
+                } catch (e) {
+                    console.warn('Failed to send signup email:', e);
+                }
+                // refresh local signup object to include qr_token
+                try {
+                    const refreshed = await directusFetch<any>(`/items/event_signups/${signup.id}`);
+                    return refreshed || signup;
+                } catch (_) {
+                    return signup;
+                }
+            }
+
+        } catch (err) {
+            console.warn('QR/email post-processing failed:', err);
+        }
 
         return signup;
     }
