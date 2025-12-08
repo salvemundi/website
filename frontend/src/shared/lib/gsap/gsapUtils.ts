@@ -136,7 +136,7 @@ export const createParallax = (
         y: () => window.innerHeight * speed,
         ease: 'none',
         scrollTrigger: {
-            trigger: triggerElement || target,
+            trigger: (triggerElement || target) as gsap.DOMTarget,
             start: 'top bottom',
             end: 'bottom top',
             scrub: true,
@@ -163,7 +163,7 @@ export const scrollTriggerAnimation = (
         scrollTrigger: {
             ...defaultOptions,
             ...options,
-            trigger: target,
+            trigger: target as gsap.DOMTarget,
         },
     });
 };
@@ -194,12 +194,13 @@ export const textReveal = (
  * Magnetic button effect (follows cursor)
  */
 export const createMagneticEffect = (button: Element) => {
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleMouseMove = (e: Event) => {
+        const mouseEvent = e as MouseEvent;
         const { left, top, width, height } = button.getBoundingClientRect();
         const centerX = left + width / 2;
         const centerY = top + height / 2;
-        const deltaX = (e.clientX - centerX) * 0.3;
-        const deltaY = (e.clientY - centerY) * 0.3;
+        const deltaX = (mouseEvent.clientX - centerX) * 0.3;
+        const deltaY = (mouseEvent.clientY - centerY) * 0.3;
 
         gsap.to(button, {
             x: deltaX,
