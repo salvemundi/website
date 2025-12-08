@@ -216,7 +216,6 @@ export default function Hero() {
 
     const [localSlides, setLocalSlides] = useState<string[]>(calculatedSlides);
     const [resolvedSlides, setResolvedSlides] = useState<string[] | null>(null);
-    const heroRef = useRef<HTMLElement | null>(null);
 
     // Client-only flag for small screens. When true we avoid mounting
     // heavy DOM-manipulating libs like Swiper so they can't mutate
