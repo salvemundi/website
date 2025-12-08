@@ -48,6 +48,13 @@ export default function Hero() {
 
             // Animate title with character-by-character reveal
             if (titleRef.current) {
+                // First, apply the gradient background directly to the h1
+                titleRef.current.style.background = 'linear-gradient(135deg, var(--theme-gradient-start), var(--theme-gradient-end), var(--theme-gradient-start))';
+                titleRef.current.style.backgroundSize = '200% 200%';
+                titleRef.current.style.webkitBackgroundClip = 'text';
+                titleRef.current.style.backgroundClip = 'text';
+                titleRef.current.style.webkitTextFillColor = 'transparent';
+
                 const spans = titleRef.current.querySelectorAll('span');
 
                 // Split each span into individual characters
@@ -209,7 +216,7 @@ export default function Hero() {
                 <div className="grid gap-8 sm:gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-20 lg:items-center">
                     <div className="space-y-6 sm:space-y-8 lg:space-y-10">
                         <div className="space-y-4 sm:space-y-6">
-                            <h1 ref={titleRef} className="text-3xl font-black leading-tight sm:text-4xl  md:text-5xl lg:text-6xl text-gradient-animated pb-1">
+                            <h1 ref={titleRef} className="text-3xl font-black leading-tight sm:text-4xl md:text-5xl lg:text-6xl pb-1">
                                 <span className="inline-block w-full">Welkom bij</span>
                                 <span className="inline-block w-full">Salve Mundi</span>
                             </h1>
