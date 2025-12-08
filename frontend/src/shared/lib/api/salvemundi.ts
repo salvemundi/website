@@ -604,7 +604,7 @@ export const introSignupsApi = {
     }
 };
 
-export function getImageUrl(imageId: string | undefined | any): string {
+export function getImageUrl(imageId: string | undefined | any, options?: { quality?: number; width?: number; height?: number; format?: string }): string {
     if (!imageId) {
         return '/img/placeholder.svg';
     }
@@ -639,8 +639,28 @@ export function getImageUrl(imageId: string | undefined | any): string {
         : (process.env.NEXT_PUBLIC_DIRECTUS_URL || '/api');
 
     const cleanedToken = token && token !== 'null' && token !== 'undefined' ? token : null;
-    const imageUrl = cleanedToken
-        ? `${baseUrl}/assets/${actualImageId}?access_token=${cleanedToken}`
+    
+    // Build query parameters for image optimization
+    const params = new URLSearchParams();
+    if (cleanedToken) {
+        params.append('access_token', cleanedToken);
+    }
+    if (options?.quality) {
+        params.append('quality', options.quality.toString());
+    }
+    if (options?.width) {
+        params.append('width', options.width.toString());
+    }
+    if (options?.height) {
+        params.append('height', options.height.toString());
+    }
+    if (options?.format) {
+        params.append('format', options.format);
+    }
+    
+    const queryString = params.toString();
+    const imageUrl = queryString 
+        ? `${baseUrl}/assets/${actualImageId}?${queryString}`
         : `${baseUrl}/assets/${actualImageId}`;
 
     return imageUrl;

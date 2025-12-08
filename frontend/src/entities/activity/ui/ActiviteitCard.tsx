@@ -68,7 +68,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
         return (
             <div
                 onClick={onShowDetails}
-                className={`w-full rounded-2xl bg-[var(--bg-card)] p-4 shadow-sm hover:shadow-md transition-all cursor-pointer ${isPast ? 'opacity-75' : ''}`}
+                className={`w-full rounded-2xl bg-[var(--bg-card)] p-4 shadow-sm hover:shadow-md transition-all cursor-pointer ${isPast ? 'opacity-60 filter grayscale' : ''}`}
             >
                 <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
                     <div className="flex-1 min-w-[180px]">
@@ -118,11 +118,11 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     return (
         <div
             onClick={onShowDetails}
-            className="bg-gradient-theme p-4 sm:p-6 rounded-2xl shadow-lg flex flex-col w-full overflow-hidden cursor-pointer transition-all hover:scale-[1.02] relative h-full"
+            className={`bg-gradient-theme p-4 sm:p-6 rounded-2xl shadow-lg flex flex-col w-full overflow-hidden cursor-pointer transition-all hover:scale-[1.02] relative h-full ${isPast ? 'opacity-70 filter grayscale' : ''}`}
         >
-            {/* Greyed out overlay for past activities */}
+            {/* Greyed out overlay for past activities (subtle) */}
             {isPast && (
-                <div className="absolute inset-0 bg-gray-900 bg-opacity-40 rounded-2xl z-0 pointer-events-none" />
+                <div className="absolute inset-0 bg-white/30 rounded-2xl z-0 pointer-events-none" />
             )}
 
             {/* Image with rounded corners at the top - always show */}

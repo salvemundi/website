@@ -4,6 +4,7 @@ import { useEffect, useMemo } from 'react';
 import { CalendarClock, CalendarDays } from 'lucide-react';
 import { useDirectusStore } from '@/shared/lib/store/directusStore';
 import EventCard from '@/shared/ui/EventCard';
+import { EventCardSkeleton } from '@/shared/ui/skeletons';
 
 export default function EventsSection() {
     const events = useDirectusStore((state) => state.events);
@@ -51,7 +52,7 @@ export default function EventsSection() {
     return (
         <section id="kalender" className="px-6 pb-24">
             <div className="mx-auto max-w-app">
-                <div className="flex flex-col gap-6 rounded-xl bg-gradient-primary px-10 py-12 shadow-xl">
+                <div className="flex flex-col gap-6 rounded-xl bg-gradient-primary px-6 sm:px-10 pt-12 sm:pt-16 lg:pt-24 pb-12 shadow-xl">
                     <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                         <div className="space-y-3">
                             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-white">
@@ -81,12 +82,7 @@ export default function EventsSection() {
                     {eventsLoading ? (
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                             {skeletonItems.map((_, index) => (
-                                <div
-                                    key={`event-skeleton-${index}`}
-                                    className="h-40 rounded-[1.75rem] bg-oranje/5/50 shadow-inner"
-                                >
-                                    <div className="h-full animate-pulse rounded-[1.75rem] bg-oranje/10/40" />
-                                </div>
+                                <EventCardSkeleton key={`event-skeleton-${index}`} />
                             ))}
                         </div>
                     ) : displayEvents.length === 0 && !eventsError ? (
@@ -94,14 +90,15 @@ export default function EventsSection() {
                             Nog geen aankomende evenementen. Check later opnieuw!
                         </div>
                     ) : (
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                            {displayEvents.map((event) => (
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 content-loaded">
+                            {displayEvents.map((event, index) => (
+                                <div key={event.id} className="stagger-item" style={{ animationDelay: `${index * 0.05}s` }}>
                                 <EventCard
-                                    key={event.id}
                                     title={event.name}
                                     category={event.committee_name || 'Salve Mundi'}
                                     date={renderDate(event.event_date)}
                                 />
+                                </div>
                             ))}
                         </div>
                     )}

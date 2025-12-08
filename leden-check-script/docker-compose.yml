@@ -1,0 +1,16 @@
+services:
+  nachtwacht:
+    image: ghcr.io/salvemundi/nachtwacht:latest
+    # build: .
+    container_name: salvemundi-nachtwacht
+    # Laad de variabelen uit de .env file
+    env_file:
+      - .env
+    # Zorg dat de container na afloop stopt (geen restart policy voor een cronjob taak)
+    restart: "no"
+    # Logging driver instellen (optioneel, maar netjes)
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

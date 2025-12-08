@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import Map, { Marker, Popup, NavigationControl } from 'react-map-gl/maplibre';
 import { Sticker, getImageUrl } from '@/shared/lib/api/salvemundi';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -76,6 +76,36 @@ const StickerMap: React.FC<StickerMapProps> = ({
                 return true;
             });
     }, [stickers, filterCountry, filterCity, filterUserId, filterUser]);
+
+    // Close popup if the currently open popup is filtered out
+    useEffect(() => {
+        if (!popupInfo) return;
+        const stillVisible = filteredStickers.some(s => s.id === popupInfo.id);
+        if (!stillVisible) {
+            setPopupInfo(null);
+        }
+    }, [filterCountry, filterCity, filterUserId, filterUser, filteredStickers, popupInfo]);
+
+    // Close popup when clicking outside the popup element
+    useEffect(() => {
+        if (!popupInfo) return;
+
+        const handleOutsideClick = (e: MouseEvent) => {
+            try {
+                const popupEl = document.querySelector('.mapboxgl-popup');
+                if (popupEl && popupEl.contains(e.target as Node)) {
+                    // Click happened inside popup -> do nothing
+                    return;
+                }
+            } catch (err) {
+                // ignore
+            }
+            setPopupInfo(null);
+        };
+
+        document.addEventListener('mousedown', handleOutsideClick);
+        return () => document.removeEventListener('mousedown', handleOutsideClick);
+    }, [popupInfo]);
 
     // Handle map click
     const handleMapClick = useCallback((event: any) => {
