@@ -375,7 +375,7 @@ export default function Hero() {
 
 
     return (
-        <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full h-screen max-w-app py-8 sm:py-12 md:py-16 lg:py-20 transition-colors duration-300">
+        <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full h-screen py-8 sm:py-12 md:py-16 lg:py-20 transition-colors duration-300">
             <div ref={orb1Ref} className="absolute -left-20 top-60 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-theme-purple to-theme-purple-light" />
             <div ref={orb2Ref} className="absolute -right-16 bottom-0 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-theme-purple-light to-theme-purple" />
 
@@ -385,7 +385,8 @@ export default function Hero() {
                 part of the hero content and isn't affected by outside DOM
                 mutations. Hidden on sm+ to preserve desktop Swiper. */}
 
-            <div className="relative w-full px-4 sm:px-6 ">
+            <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
+                <div className="relative w-full px-0">
                 <div className="grid gap-8 sm:gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-20 lg:items-center">
                     <div className="space-y-6 sm:space-y-8 lg:space-y-10">
                         <div className="space-y-4 sm:space-y-6">
@@ -406,7 +407,7 @@ export default function Hero() {
                                     href={`/activiteiten/${nextEvent.id}`}
                                     className="block w-full transition-transform hover:scale-[1.02]"
                                 >
-                                    <div className="inset-x-4 bottom-4 w-full sm:inset-x-6 sm:bottom-6 rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4">
+                                    <div className="w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4">
                                         <div className="flex-1 min-w-0">
                                             <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-white">
                                                 Volgende evenement
@@ -424,7 +425,7 @@ export default function Hero() {
                                     </div>
                                 </Link>
                             ) : (
-                                <div className="inset-x-4 bottom-4 w-full sm:inset-x-6 sm:bottom-6 rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur">
+                                <div className="w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur">
                                     <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-white">
                                         Volgende evenement
                                     </p>
@@ -523,6 +524,7 @@ export default function Hero() {
                         </div>
                     </div>
                 </div>
+            </div>
             </div>
         </section>
     );

@@ -41,11 +41,11 @@
   --header-height: 64px;
 
   --bg-soft-light: #faf7fb;
-  --bg-soft-dark: #241d25;
+  --bg-soft-dark: #1a141b;
   --bg-soft: var(--bg-soft-light);
 
   --bg-card-light: #ffffff;
-  --bg-card-dark: #2c2430;
+  --bg-card-dark: #1f1921;
   --bg-card: var(--bg-card-light);
 
   /* Borders - explicit light and dark variants */

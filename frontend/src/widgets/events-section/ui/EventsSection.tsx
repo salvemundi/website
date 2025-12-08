@@ -50,11 +50,11 @@ export default function EventsSection() {
     const skeletonItems = Array.from({ length: 4 });
 
     return (
-        <section id="kalender" className="px-6 pb-24">
-            <div className="mx-auto max-w-app">
-                <div className="flex flex-col gap-6 rounded-xl bg-gradient-primary px-6 sm:px-10 pt-12 sm:pt-16 lg:pt-24 pb-12 shadow-xl">
+        <section id="kalender" className="pb-24">
+            <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
+                <div className="flex flex-col gap-6 rounded-xl bg-gradient-primary mt-8 md:mt-12 px-6 sm:px-10 pt-12 sm:pt-16 lg:pt-24 pb-12 shadow-xl">
                     <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-                        <div className="space-y-3">
+                            <div className="space-y-3">
                             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-white">
                                 <CalendarClock className="h-3 w-3" /> Agenda
                             </p>
@@ -92,14 +92,14 @@ export default function EventsSection() {
                     ) : (
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 content-loaded">
                             {displayEvents.map((event, index) => (
-                                <div key={event.id} className="stagger-item" style={{ animationDelay: `${index * 0.05}s` }}>
-                                <EventCard
-                                    title={event.name}
-                                    category={event.committee_name || 'Salve Mundi'}
-                                    date={renderDate(event.event_date)}
-                                />
-                                </div>
-                            ))}
+                                    <div key={event.id} className="stagger-item" style={{ animationDelay: `${index * 0.05}s` }}>
+                                    <EventCard
+                                        title={event.name}
+                                        category={event.committee_name || 'Salve Mundi'}
+                                        date={renderDate(event.event_date)}
+                                    />
+                                    </div>
+                                ))}
                         </div>
                     )}
                 </div>
