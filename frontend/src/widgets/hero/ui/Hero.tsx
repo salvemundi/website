@@ -51,7 +51,7 @@ export default function Hero() {
                 const spans = titleRef.current.querySelectorAll('span');
 
                 // Split each span into individual characters
-                spans.forEach((span, spanIndex) => {
+                spans.forEach((span) => {
                     const text = span.textContent || '';
                     span.innerHTML = ''; // Clear the span
 
