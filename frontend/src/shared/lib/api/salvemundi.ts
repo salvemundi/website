@@ -3,8 +3,9 @@ import { directusFetch } from '../directus';
 // --- Types ---
 export interface SiteSettings {
     id: number;
-    show_intro: boolean;
-    intro_disabled_message: string;
+    page?: string; // identifier of the page in Directus
+    show?: boolean; // whether to show the page
+    disabled_message?: string; // message to display when disabled
 }
 
 export interface CreateStickerData {
@@ -613,11 +614,18 @@ export const documentsApi = {
 };
 
 export const siteSettingsApi = {
-    get: async (): Promise<SiteSettings | null> => {
-        const query = buildQueryString({
-            fields: ['id', 'show_intro', 'intro_disabled_message'],
+    // If `page` is provided, will filter settings for that page.
+    get: async (page?: string): Promise<SiteSettings | null> => {
+        const params: any = {
+            fields: ['id', 'page', 'show', 'disabled_message'],
             limit: 1
-        });
+        };
+
+        if (page) {
+            params.filter = { page: { _eq: page } };
+        }
+
+        const query = buildQueryString(params);
 
         const data = await directusFetch<SiteSettings | SiteSettings[] | null>(`/items/site_settings?${query}`);
         if (Array.isArray(data)) {
