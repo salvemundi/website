@@ -79,7 +79,8 @@ export default function CommitteeDetailPage() {
                             alt={cleanName}
                             className="h-full w-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-r from-paars/90 to-oranje/80" />
+                        {/* Semi-transparent gradient overlay with backdrop blur so the banner image is blurred underneath */}
+                        <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-paars/60 to-oranje/40 backdrop-blur-md" />
                     </div>
                     <div className="relative mx-auto max-w-app px-4 sm:px-6 lg:px-8">
                         <Link
