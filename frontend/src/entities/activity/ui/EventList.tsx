@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { stripHtml } from '@/shared/lib/text';
 import ActiviteitCard from './ActiviteitCard';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { isEventPast } from '@/shared/lib/utils/date';
@@ -25,7 +26,7 @@ export default function EventList({ events, onEventClick }: EventListProps) {
                 <ActiviteitCard
                     key={event.id}
                     title={event.name}
-                    description={event.description}
+                    description={stripHtml(event.description)}
                     date={event.event_date}
                     price={event.price}
                     image={getImageUrl(event.image)}

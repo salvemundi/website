@@ -95,24 +95,52 @@ app.post('/send-email', async (req, res) => {
 
     console.log('📧 Sending email to:', to);
 
-    // Step 1: Get access token from Microsoft
-    const tokenResponse = await fetch(
-      `https://login.microsoftonline.com/${process.env.MS_GRAPH_TENANT_ID}/oauth2/v2.0/token`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          client_id: process.env.MS_GRAPH_CLIENT_ID,
-          client_secret: process.env.MS_GRAPH_CLIENT_SECRET,
-          scope: 'https://graph.microsoft.com/.default',
-          grant_type: 'client_credentials',
-        }),
-      }
-    );
+    // Step 1: Validate required environment variables
+    const requiredVars = {
+      'MS_GRAPH_TENANT_ID': process.env.MS_GRAPH_TENANT_ID,
+      'MS_GRAPH_CLIENT_ID': process.env.MS_GRAPH_CLIENT_ID,
+      'MS_GRAPH_CLIENT_SECRET': process.env.MS_GRAPH_CLIENT_SECRET,
+    };
+
+    const missingVars = Object.entries(requiredVars)
+      .filter(([key, value]) => !value)
+      .map(([key]) => key);
+
+    if (missingVars.length > 0) {
+      const errorMsg = `Missing required environment variables: ${missingVars.join(', ')}`;
+      console.error('❌', errorMsg);
+      return res.status(500).json({
+        error: 'Email service configuration error',
+        details: errorMsg,
+      });
+    }
+
+    console.log('✅ Environment variables validated');
+    console.log('🔑 Using tenant:', process.env.MS_GRAPH_TENANT_ID);
+
+    // Step 2: Get access token from Microsoft
+    const tokenUrl = `https://login.microsoftonline.com/${process.env.MS_GRAPH_TENANT_ID}/oauth2/v2.0/token`;
+    console.log('🔐 Requesting token from:', tokenUrl);
+
+    const tokenResponse = await fetch(tokenUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: process.env.MS_GRAPH_CLIENT_ID,
+        client_secret: process.env.MS_GRAPH_CLIENT_SECRET,
+        scope: 'https://graph.microsoft.com/.default',
+        grant_type: 'client_credentials',
+      }),
+    });
 
     if (!tokenResponse.ok) {
       const error = await tokenResponse.text();
-      console.error('Token error:', error);
+      console.error('❌ Token request failed:', {
+        status: tokenResponse.status,
+        statusText: tokenResponse.statusText,
+        url: tokenUrl,
+        error: error
+      });
       throw new Error(`Failed to get token: ${tokenResponse.statusText}`);
     }
 
@@ -121,7 +149,7 @@ app.post('/send-email', async (req, res) => {
 
     console.log('✅ Got access token');
 
-    // Step 2: Send email via Graph API
+    // Step 3: Send email via Graph API
     // Use the configured service account (MS_GRAPH_SENDER_UPN) as the mailbox
     // used for sending. Do NOT rely on client-provided `from` to select the
     // Graph user because that will cause ErrorInvalidUser if the user does

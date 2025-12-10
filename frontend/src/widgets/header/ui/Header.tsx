@@ -16,8 +16,8 @@ const Header: React.FC = () => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const headerRef = useRef<HTMLElement | null>(null);
-    const { data: siteSettings } = useSalvemundiSiteSettings();
-    const introEnabled = siteSettings?.show_intro ?? true;
+    const { data: siteSettings } = useSalvemundiSiteSettings('intro');
+    const introEnabled = siteSettings?.show ?? true;
 
     useEffect(() => {
         const handleScroll = () => {

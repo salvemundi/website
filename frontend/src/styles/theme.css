@@ -36,6 +36,9 @@
   --theme-gradient-light-end: #d4add0;
   --theme-gradient-dark-start: #471e3b;
   --theme-gradient-dark-end: #663265;
+  /* Sticker owner highlight color - used for markers that belong to the current logged-in user */
+  --sticker-mine: #2563eb; /* blue-600 */
+  --sticker-mine-light: #60a5fa; /* blue-400 for light accents */
 }
 
 /* Dark mode overrides */
@@ -64,6 +67,9 @@
   --theme-gradient-light-end: #d4add0;
   --theme-gradient-dark-start: #471e3b;
   --theme-gradient-dark-end: #663265;
+  /* Dark mode override for sticker owner color */
+  --sticker-mine: #60a5fa; /* lighter blue on dark bg */
+  --sticker-mine-light: #93c5fd;
 }
 
 /* ==============================================
@@ -106,6 +112,11 @@ input, textarea, select {
   background-color: inherit;
 }
 
+/* Darker form inputs in dark mode */
+.dark input, .dark textarea, .dark select {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
 input::placeholder, textarea::placeholder {
   color: var(--theme-text-muted);
 }
@@ -144,7 +155,6 @@ input::placeholder, textarea::placeholder {
 .text-theme-purple-lighter {
   color: var(--theme-purple-lighter) !important;
 }
-
 .text-theme-purple-dark {
   color: var(--theme-purple-dark) !important;
 }
@@ -397,6 +407,206 @@ input::placeholder, textarea::placeholder {
   50% { transform: scale(1.08); }
   100% { transform: scale(1); }
 }
+
+/* Map popup and control theme overrides for MapLibre/Mapbox popup elements */
+/* Light mode popup */
+.mapboxgl-popup-content {
+  background: #ffffff !important;
+  color: #663265 !important;
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+/* Dark mode popup - when html has dark class */
+html.dark .mapboxgl-popup-content {
+  background: #1f1921 !important;
+  color: #ffffff !important;
+}
+
+.mapboxgl-popup-tip {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+/* Map controls sizing and background */
+.mapboxgl-ctrl, .mapboxgl-ctrl-top-right {
+  background: transparent !important;
+}
+
+/* Ensure popup text inherits parent color */
+.mapboxgl-popup-content * {
+  color: inherit !important;
+}
+
+/* Force high-specificity overrides for popup inner content injected into body */
+html.dark .mapboxgl-popup-content,
+html.dark .mapboxgl-popup-content * {
+  background: #1f1921 !important;
+  color: #ffffff !important;
+}
+
+html:not(.dark) .mapboxgl-popup-content,
+html:not(.dark) .mapboxgl-popup-content * {
+  background: #ffffff !important;
+  color: #663265 !important;
+}
+
+/* Dark mode: make map popups dark and readable */
+html.dark .mapboxgl-popup-content,
+html.dark .mapboxgl-popup-content *,
+html.dark .map-popup-theme .map-popup,
+html.dark .map-popup-theme .map-popup * {
+  background: var(--bg-card) !important;
+  color: var(--text-main) !important;
+}
+
+html.dark .mapboxgl-popup-tip {
+  /* tip color */
+  background: var(--bg-card) !important;
+}
+
+/* Hide the outer tip/arrow entirely in dark mode to avoid visible white edges */
+html.dark .mapboxgl-popup-tip {
+  display: none !important;
+}
+
+/* Mapbox uses anchor wrappers that may have background - clear them */
+html.dark .mapboxgl-popup-anchor-top,
+html.dark .mapboxgl-popup-anchor-bottom,
+html.dark .mapboxgl-popup-anchor-left,
+html.dark .mapboxgl-popup-anchor-right {
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+/* Final ensure: collapse any white frame by forcing the outer popup to be fully transparent */
+html.dark .mapboxgl-popup {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Aggressive overrides to remove any white border/stroke around popups in dark mode */
+html.dark .mapboxgl-popup,
+html.dark .mapboxgl-popup-content,
+html.dark .mapboxgl-popup-tip,
+html.dark .mapboxgl-popup-content *,
+html.dark .mapboxgl-popup * {
+  border: none !important;
+  outline: none !important;
+  box-shadow: 0 12px 34px rgba(0,0,0,0.6) !important;
+  background-clip: padding-box !important;
+}
+
+/* Some map libraries draw an SVG tip/arrow with stroke - clear strokes */
+html.dark .mapboxgl-popup-tip svg,
+html.dark .mapboxgl-popup-tip path,
+html.dark .mapboxgl-popup-tip polygon {
+  stroke: none !important;
+  fill: var(--bg-card) !important;
+}
+
+/* Make outer popup container transparent so inner .map-popup card is the visible surface */
+html.dark .mapboxgl-popup {
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+/* The content wrapper often adds padding/background - clear it */
+html.dark .mapboxgl-popup-content {
+  background: transparent !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Ensure the inner custom card (.map-popup) is visible and styled */
+html.dark .map-popup-theme .map-popup {
+  background: var(--bg-card) !important;
+  padding: 12px !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 12px 34px rgba(0,0,0,0.6) !important;
+}
+
+/* Remove thick white border in dark mode, use subtle translucent border and deeper shadow */
+html.dark .mapboxgl-popup-content {
+  border: 1px solid rgba(255,255,255,0.04) !important;
+  box-shadow: 0 12px 34px rgba(0,0,0,0.6) !important;
+}
+
+/* Avatar border: avoid strong white border in dark mode */
+html.dark .map-popup__avatar {
+  border: 2px solid rgba(255,255,255,0.06) !important;
+}
+
+/* Close button styling */
+.mapboxgl-popup-close-button {
+  color: #663265 !important;
+  font-size: 24px;
+  padding: 0 8px;
+}
+
+html.dark .mapboxgl-popup-close-button {
+  color: #ffffff !important;
+}
+
+.mapboxgl-popup-close-button:hover {
+  background-color: rgba(128, 128, 128, 0.2);
+}
+
+/* Marker styling for sticker map */
+.samu-marker {
+  width: 48px;
+  height: 48px;
+  position: relative;
+  border-radius: 9999px;
+  overflow: visible;
+  display: inline-block;
+  transform-origin: center;
+}
+.samu-marker__img {
+  width: 48px;
+  height: 48px;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 3px solid var(--theme-white);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.samu-marker:hover .samu-marker__img { transform: scale(1.12); }
+.samu-marker__dot {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  border: 2px solid var(--theme-white);
+  background: var(--color-primary-200);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.samu-marker__dot--mine { background: var(--sticker-mine); }
+.samu-marker--mine .samu-marker__img { box-shadow: 0 10px 22px rgba(37,99,235,0.22); }
+.samu-marker--selected { width:48px; height:48px; display:flex; align-items:center; justify-content:center; border-radius:9999px; background:var(--color-primary-500); color:white; border:3px solid var(--theme-white); }
+
+/* Popup content layout */
+.map-popup { display:block; max-width:320px; }
+.map-popup__head { display:flex; gap:0.75rem; align-items:center; margin-bottom:0.5rem; }
+.map-popup__avatar { width:40px; height:40px; border-radius:9999px; object-fit:cover; border:2px solid var(--theme-white); }
+html.dark .map-popup__avatar { border:2px solid rgba(255,255,255,0.06) !important; }
+
+/* Light mode popup text */
+.map-popup__title { font-weight:700; color:#663265; }
+.map-popup__meta { font-size:0.875rem; color:#6f5772; }
+.map-popup__desc { margin-top:0.5rem; color:#663265; }
+.map-popup__footer { margin-top:0.5rem; display:flex; gap:0.75rem; flex-direction:column; }
+.map-popup__footer > div { color:#6f5772; }
+
+/* Dark mode popup text */
+html.dark .map-popup__title { color:#ffffff !important; }
+html.dark .map-popup__meta { color:#c9b2cc !important; }
+html.dark .map-popup__desc { color:#ffffff !important; }
+html.dark .map-popup__footer > div { color:#c9b2cc !important; }
+
 
 /* Animate icons continuously */
 .icon-animate-rotate {

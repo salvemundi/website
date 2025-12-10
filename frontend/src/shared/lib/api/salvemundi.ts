@@ -3,8 +3,9 @@ import { directusFetch } from '../directus';
 // --- Types ---
 export interface SiteSettings {
     id: number;
-    show_intro: boolean;
-    intro_disabled_message: string;
+    page?: string; // identifier of the page in Directus
+    show?: boolean; // whether to show the page
+    disabled_message?: string; // message to display when disabled
 }
 
 export interface CreateStickerData {
@@ -250,9 +251,49 @@ export const eventsApi = {
             body: JSON.stringify(payload)
         });
 
-        // Note: QR generation logic is skipped here as it requires 'qrcode' package which might not be installed or configured.
-        // In the original code it was dynamically imported. For now we skip it to avoid build errors if dependencies are missing.
-        // If needed, we can add it back later.
+        // Try to generate a QR token, image and send confirmation email. Failures here should not break signup.
+        try {
+            const { default: qrService } = await import('@/shared/lib/qr-service');
+            const { sendEventSignupEmail } = await import('@/shared/lib/services/email-service');
+
+            if (signup && signup.id) {
+                const token = qrService.generateQRToken(signup.id, signupData.event_id);
+                await qrService.updateSignupWithQRToken(signup.id, token);
+                // generate image
+                let qrDataUrl: string | undefined = undefined;
+                try {
+                    qrDataUrl = await qrService.generateQRCode(token);
+                } catch (e) {
+                    console.warn('Failed to generate QR image:', e);
+                }
+
+                // send email (best-effort)
+                try {
+                    await sendEventSignupEmail({
+                        recipientEmail: signupData.email,
+                        recipientName: signupData.name,
+                        eventName: signupData.event_name || '',
+                        eventDate: signupData.event_date || '',
+                        eventPrice: signupData.event_price || 0,
+                        phoneNumber: signupData.phone_number,
+                        userName: signupData.user_id || 'Gast',
+                        qrCodeDataUrl: qrDataUrl,
+                        committeeName: undefined,
+                        committeeEmail: undefined,
+                        contactName: undefined,
+                        contactPhone: undefined,
+                    });
+                } catch (e) {
+                    console.warn('Failed to send signup email:', e);
+                }
+                // Update the local signup object with the QR token instead of refetching
+                signup.qr_token = token;
+                return signup;
+            }
+
+        } catch (err) {
+            console.warn('QR/email post-processing failed:', err);
+        }
 
         return signup;
     }
@@ -573,11 +614,18 @@ export const documentsApi = {
 };
 
 export const siteSettingsApi = {
-    get: async (): Promise<SiteSettings | null> => {
-        const query = buildQueryString({
-            fields: ['id', 'show_intro', 'intro_disabled_message'],
+    // If `page` is provided, will filter settings for that page.
+    get: async (page?: string): Promise<SiteSettings | null> => {
+        const params: any = {
+            fields: ['id', 'page', 'show', 'disabled_message'],
             limit: 1
-        });
+        };
+
+        if (page) {
+            params.filter = { page: { _eq: page } };
+        }
+
+        const query = buildQueryString(params);
 
         const data = await directusFetch<SiteSettings | SiteSettings[] | null>(`/items/site_settings?${query}`);
         if (Array.isArray(data)) {

@@ -6,6 +6,7 @@ import { useAuth } from '@/features/auth/providers/auth-provider';
 import { useSalvemundiEvent } from '@/shared/lib/hooks/useSalvemundiApi';
 import { eventsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
 import { directusFetch } from '@/shared/lib/directus';
+import AttendanceButton from '@/entities/activity/ui/AttendanceButton';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import {
     CalendarClock,
@@ -191,7 +192,7 @@ export default function EventDetailPage() {
                 event_date: event.event_date,
                 // Use member price if user is logged in (assumption), or non-member price
                 // Ideally backend handles this logic or we check membership status
-                event_price: user ? event.price_members : event.price_non_members
+                event_price: Number(user ? event.price_members : event.price_non_members) || 0
             });
 
             // Refresh status
@@ -268,6 +269,12 @@ export default function EventDetailPage() {
                             Georganiseerd door {event.committee_name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim()}
                         </p>
                     )}
+                    {user && (
+                        <div>
+                            {/* Show attendance button if authorized */}
+                            <AttendanceButton eventId={event.id} userId={user.id} />
+                        </div>
+                    )}
                 </div>
             </PageHeader>
 
@@ -336,7 +343,7 @@ export default function EventDetailPage() {
                                                 name="name"
                                                 value={formData.name}
                                                 onChange={handleInputChange}
-                                                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-paars transition-all ${errors.name ? "ring-2 ring-red-500" : ""}`}
+                                                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-paars transition-all ${errors.name ? "ring-2 ring-red-500" : ""}`}
                                                 placeholder="Jouw naam"
                                             />
                                             {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
@@ -351,7 +358,7 @@ export default function EventDetailPage() {
                                                 name="email"
                                                 value={formData.email}
                                                 onChange={handleInputChange}
-                                                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-paars transition-all ${errors.email ? "ring-2 ring-red-500" : ""}`}
+                                                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-paars transition-all ${errors.email ? "ring-2 ring-red-500" : ""}`}
                                                 placeholder="naam.achternaam@salvemundi.nl"
                                             />
                                             {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
@@ -366,7 +373,7 @@ export default function EventDetailPage() {
                                                 name="phoneNumber"
                                                 value={formData.phoneNumber}
                                                 onChange={handleInputChange}
-                                                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-paars transition-all ${errors.phoneNumber ? "ring-2 ring-red-500" : ""}`}
+                                                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-paars transition-all ${errors.phoneNumber ? "ring-2 ring-red-500" : ""}`}
                                                 placeholder="0612345678"
                                             />
                                             {errors.phoneNumber && <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>}
@@ -398,23 +405,23 @@ export default function EventDetailPage() {
 
                     {/* Date & Time - Small Tile */}
                     <div className="rounded-3xl  bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg flex flex-col items-center justify-center text-center gap-3 hover:scale-[1.02] transition-transform">
-                        <div className="h-12 w-12 rounded-2xl bg-paars/10 flex items-center justify-center text-theme-purple-dark">
+                        <div className="h-12 w-12 rounded-2xl bg-paars/10 dark:bg-white/20 flex items-center justify-center text-theme-purple-dark dark:text-white">
                             <CalendarClock className="h-6 w-6" />
                         </div>
                         <div>
-                            <p className="text-xs uppercase tracking-wide text-theme-purple-dark dark:text-white/70 font-bold">Datum & Tijd</p>
+                            <p className="text-xs uppercase tracking-wide text-theme-purple-dark dark:text-white/90 font-bold">Datum & Tijd</p>
                             <p className="text-lg font-bold text-theme-purple dark:text-white">{formattedDate}</p>
-                            <p className="text-sm text-theme-purple-dark dark:text-white/80">{formattedTime}</p>
+                            <p className="text-sm text-theme-purple-dark dark:text-white/90">{formattedTime}</p>
                         </div>
                     </div>
 
                     {/* Price - Small Tile */}
                     <div className="rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg flex flex-col items-center justify-center text-center gap-3 hover:scale-[1.02] transition-transform">
-                        <div className="h-12 w-12 rounded-2xl bg-paars/10 flex items-center justify-center text-theme-purple-dark">
+                        <div className="h-12 w-12 rounded-2xl bg-paars/10 dark:bg-white/20 flex items-center justify-center text-theme-purple-dark dark:text-white">
                             <Euro className="h-6 w-6" />
                         </div>
                         <div>
-                            <p className="text-xs uppercase tracking-wide text-theme-purple-dark dark:text-white/70 font-bold">Prijs</p>
+                            <p className="text-xs uppercase tracking-wide text-theme-purple-dark dark:text-white/90 font-bold">Prijs</p>
                             <p className="text-lg font-bold text-theme-purple dark:text-white">{displayPrice}</p>
                         </div>
                     </div>
@@ -422,11 +429,11 @@ export default function EventDetailPage() {
                     {/* Committee - Small Tile */}
                     {event.committee_name && (
                         <div className="rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg flex flex-col items-center justify-center text-center gap-3 hover:scale-[1.02] transition-transform">
-                            <div className="h-12 w-12 rounded-2xl bg-paars/10 flex items-center justify-center text-theme-purple-dark">
+                            <div className="h-12 w-12 rounded-2xl bg-paars/10 dark:bg-white/20 flex items-center justify-center text-theme-purple-dark dark:text-white">
                                 <UsersIcon className="h-6 w-6" />
                             </div>
                             <div>
-                                <p className="text-xs uppercase tracking-wide text-theme-purple-dark dark:text-white/70 font-bold">Organisatie</p>
+                                <p className="text-xs uppercase tracking-wide text-theme-purple-dark dark:text-white/90 font-bold">Organisatie</p>
                                 <p className="text-lg font-bold text-theme-purple dark:text-white">
                                     {event.committee_name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim()}
                                 </p>
@@ -439,16 +446,16 @@ export default function EventDetailPage() {
                     {/* Contact - Small Tile */}
                     {(event.contact_name || committeeEmail) && (
                         <div className="rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg flex flex-col items-center justify-center text-center gap-3 hover:scale-[1.02] transition-transform">
-                            <div className="h-12 w-12 rounded-2xl bg-paars/10 flex items-center justify-center text-theme-purple-dark">
+                            <div className="h-12 w-12 rounded-2xl bg-paars/10 dark:bg-white/20 flex items-center justify-center text-theme-purple-dark dark:text-white">
                                 <Mail className="h-6 w-6" />
                             </div>
                             <div>
-                                <p className="text-xs uppercase tracking-wide text-theme-purple-dark dark:text-white/70 font-bold">Contact</p>
+                                <p className="text-xs uppercase tracking-wide text-theme-purple-dark dark:text-white/90 font-bold">Contact</p>
                                 {event.contact_name && (
                                     <p className="text-sm font-semibold text-theme-purple dark:text-white">{event.contact_name}</p>
                                 )}
                                 {committeeEmail && (
-                                    <a href={`mailto:${committeeEmail}`} className="text-sm text-theme-purple hover:underline break-all">
+                                    <a href={`mailto:${committeeEmail}`} className="text-sm text-theme-purple dark:text-white/90 hover:underline break-all">
                                         {committeeEmail}
                                     </a>
                                 )}
@@ -460,11 +467,11 @@ export default function EventDetailPage() {
                     {event.description && (
                         <div className="md:col-span-2 md:row-span-2 rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-8 shadow-lg flex flex-col">
                             <h2 className="mb-4 text-2xl font-bold text-theme-purple dark:text-white flex items-center gap-2">
-                                <Info className="h-6 w-6 text-theme-purple-dark" />
+                                <Info className="h-6 w-6 text-theme-purple-dark dark:text-white" />
                                 Over dit evenement
                             </h2>
                             <div
-                                className="prose dark:prose-invert max-w-none text-theme-purple dark:text-ink-muted flex-grow"
+                                className="prose dark:prose-invert max-w-none text-theme-purple dark:text-white/90 flex-grow"
                                 dangerouslySetInnerHTML={{ __html: event.description }}
                             />
                         </div>
