@@ -17,6 +17,7 @@ import {
     Info,
     CheckCircle,
 } from "lucide-react";
+import { stripHtml } from '@/shared/lib/text';
 
 interface ActiviteitDetailModalProps {
     isOpen: boolean;
@@ -298,7 +299,7 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                         {/* Description */}
                         <div className="rounded-2xl  bg-white/5 p-4 sm:p-5">
                             <h3 className="text-xl font-semibold text-theme-purple-lighter mb-2">Over deze activiteit</h3>
-                            <p className="text-theme-white leading-relaxed">{activity.description}</p>
+                            <p className="text-theme-white leading-relaxed">{stripHtml(activity.description)}</p>
                         </div>
                     </div>
 
@@ -439,7 +440,7 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                                                 {activity.committee_name && (
                                                     <p>
                                                         <span className="font-semibold text-theme-purple-lighter block text-sm uppercase tracking-wide">Commissie</span>
-                                                        <span className="text-base">{activity.committee_name}</span>
+                                                        <span className="text-base">{stripHtml(activity.committee_name)}</span>
                                                     </p>
                                                 )}
                                                 {committeeEmail && (

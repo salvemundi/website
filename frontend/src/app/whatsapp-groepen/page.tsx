@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { useSalvemundiWhatsAppGroups } from '@/shared/lib/hooks/useSalvemundiApi';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import { stripHtml } from '@/shared/lib/text';
 import { WhatsAppGroup } from '@/shared/lib/api/salvemundi';
 
 export default function WhatsAppGroupsPage() {
@@ -144,7 +145,7 @@ export default function WhatsAppGroupsPage() {
                                                 </h3>
                                                 {group.description && (
                                                     <p className="text-sm text-paars/70">
-                                                        {group.description}
+                                                        {stripHtml(group.description)}
                                                     </p>
                                                 )}
                                             </div>

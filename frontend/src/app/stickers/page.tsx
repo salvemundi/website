@@ -7,6 +7,7 @@ import { stickersApi, calculateStickerStats, geocodeAddress, reverseGeocode, Cre
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { MapPin, Globe, Award, TrendingUp, Plus, X, Search, Loader2 } from 'lucide-react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import { stripHtml } from '@/shared/lib/text';
 
 // Dynamically import StickerMap with ssr: false
 const StickerMap = dynamic(() => import('@/entities/sticker/ui/StickerMap'), {
@@ -363,7 +364,7 @@ function StickersContent() {
                                                 : sticker.city || sticker.country || 'Location not specified'}
                                         </p>
                                         {sticker.description && (
-                                            <p className="text-sm text-gray-700 mt-2 line-clamp-2">{sticker.description}</p>
+                                            <p className="text-sm text-gray-700 mt-2 line-clamp-2">{stripHtml(sticker.description)}</p>
                                         )}
                                         <p className="text-xs text-gray-400 mt-2">
                                             {new Date(sticker.date_created).toLocaleDateString()}
