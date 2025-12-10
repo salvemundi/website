@@ -36,6 +36,9 @@
   --theme-gradient-light-end: #d4add0;
   --theme-gradient-dark-start: #471e3b;
   --theme-gradient-dark-end: #663265;
+  /* Sticker owner highlight color - used for markers that belong to the current logged-in user */
+  --sticker-mine: #2563eb; /* blue-600 */
+  --sticker-mine-light: #60a5fa; /* blue-400 for light accents */
 }
 
 /* Dark mode overrides */
@@ -64,6 +67,9 @@
   --theme-gradient-light-end: #d4add0;
   --theme-gradient-dark-start: #471e3b;
   --theme-gradient-dark-end: #663265;
+  /* Dark mode override for sticker owner color */
+  --sticker-mine: #60a5fa; /* lighter blue on dark bg */
+  --sticker-mine-light: #93c5fd;
 }
 
 /* ==============================================
@@ -149,7 +155,6 @@ input::placeholder, textarea::placeholder {
 .text-theme-purple-lighter {
   color: var(--theme-purple-lighter) !important;
 }
-
 .text-theme-purple-dark {
   color: var(--theme-purple-dark) !important;
 }
@@ -491,8 +496,8 @@ html.dark .mapboxgl-popup-close-button {
   background: var(--color-primary-200);
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
-.samu-marker__dot--mine { background: var(--theme-purple-light); }
-.samu-marker--mine .samu-marker__img { box-shadow: 0 8px 16px rgba(102,50,101,0.25); }
+.samu-marker__dot--mine { background: var(--sticker-mine); }
+.samu-marker--mine .samu-marker__img { box-shadow: 0 10px 22px rgba(37,99,235,0.22); }
 .samu-marker--selected { width:48px; height:48px; display:flex; align-items:center; justify-content:center; border-radius:9999px; background:var(--color-primary-500); color:white; border:3px solid var(--theme-white); }
 
 /* Popup content layout */
