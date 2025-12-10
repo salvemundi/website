@@ -144,7 +144,7 @@ export default function WhatsAppGroupsPage() {
                                                     {group.name}
                                                 </h3>
                                                 {group.description && (
-                                                    <p className="text-sm text-paars/70">
+                                                    <p className="text-sm sm:text-base text-paars/80 leading-relaxed whitespace-pre-line break-words">
                                                         {stripHtml(group.description)}
                                                     </p>
                                                 )}
