@@ -64,7 +64,7 @@ export default function HomePage() {
 
             {/* Join Section */}
             <section className="px-6 py-24 ">
-                <ScrollTriggerWrapper animation="scale" duration={0.9} triggerStart="top 90%" once={true}>
+                <ScrollTriggerWrapper animation="scale" duration={0.9} triggerStart="top 100%" once={true}>
                     <div className="mx-auto max-w-4xl text-center">
                         <h2 className="text-3xl font-black text-gradient sm:text-4xl md:text-5xl mb-6">
                             Klaar om lid te worden?

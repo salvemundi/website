@@ -45,6 +45,11 @@ export const metadata: Metadata = {
             { url: '/img/Logo.png', sizes: '180x180', type: 'image/png' },
         ],
     },
+    appleWebApp: {
+        capable: true,
+        title: 'Salve Mundi',
+        statusBarStyle: 'default',
+    },
 };
 
 
