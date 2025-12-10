@@ -217,6 +217,9 @@ export default function Hero() {
     // heavy DOM-manipulating libs like Swiper so they can't mutate
     // or remove the hero subtree on mobile devices.
     const [isMobile, setIsMobile] = useState<boolean>(false);
+    // Hover states for the action chevrons
+    const [hoverWordLid, setHoverWordLid] = useState<boolean>(false);
+    const [hoverNextEvent, setHoverNextEvent] = useState<boolean>(false);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
