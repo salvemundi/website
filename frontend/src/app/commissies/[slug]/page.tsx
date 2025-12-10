@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { useSalvemundiCommitteesWithMembers, useSalvemundiEventsByCommittee } from '@/shared/lib/hooks/useSalvemundiApi';
+import { useSalvemundiCommitteesWithMembers, useSalvemundiEventsByCommittee, useSalvemundiCommittee } from '@/shared/lib/hooks/useSalvemundiApi';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { slugify } from '@/shared/lib/utils/slug';
 import { Mail, Calendar, Users2 } from 'lucide-react';
@@ -23,6 +23,9 @@ export default function CommitteeDetailPage() {
     );
 
     const committeeId = committee?.id;
+
+    // Fetch full committee details (to get the long description/description field)
+    const { data: committeeDetail } = useSalvemundiCommittee(committeeId);
 
     // Fetch events for this committee
     const { data: events = [] } = useSalvemundiEventsByCommittee(committeeId);
@@ -100,13 +103,39 @@ export default function CommitteeDetailPage() {
                     <div className="grid gap-8 lg:grid-cols-3">
                         {/* Main Content */}
                         <div className="lg:col-span-2 space-y-8">
-                            {/* Description */}
+                                {/* Committee image */}
+                                {committee.image && (
+                                    <div className="rounded-3xl overflow-hidden bg-white/90 p-0 shadow-lg">
+                                        <img
+                                            src={getImageUrl(committee.image)}
+                                            alt={cleanName}
+                                            className="w-full object-cover"
+                                            onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                target.src = '/img/placeholder.svg';
+                                            }}
+                                        />
+                                    </div>
+                                )}
+
+                            {/* Short description / Overview */}
                             {committee.description && (
                                 <div className="rounded-3xl bg-white/90 p-8 shadow-lg">
                                     <h2 className="mb-4 text-2xl font-bold text-slate-900">Over {cleanName}</h2>
                                     <div
                                         className="prose max-w-none text-slate-700"
                                         dangerouslySetInnerHTML={{ __html: committee.description }}
+                                    />
+                                </div>
+                            )}
+
+                            {/* Long description from Directus (if available) - render above activities */}
+                            {committeeDetail?.description && (
+                                <div className="rounded-3xl bg-white/90 p-8 shadow-lg">
+                                    <h2 className="mb-4 text-2xl font-bold text-slate-900">Meer over {cleanName}</h2>
+                                    <div
+                                        className="prose max-w-none text-slate-700"
+                                        dangerouslySetInnerHTML={{ __html: committeeDetail.description }}
                                     />
                                 </div>
                             )}
@@ -119,7 +148,7 @@ export default function CommitteeDetailPage() {
                                         {events.map((event) => (
                                             <Link
                                                 key={event.id}
-                                                href={`/events/${event.id}`}
+                                                href={`/activiteiten/${event.id}`}
                                                 className="group rounded-2xl bg-white p-4 shadow-sm transition hover:shadow-lg"
                                             >
                                                 <div className="mb-2 flex items-center gap-2 text-sm text-paars">
@@ -159,7 +188,7 @@ export default function CommitteeDetailPage() {
                                             <p className="font-semibold text-slate-900">
                                                 {leader.user_id.first_name} {leader.user_id.last_name}
                                             </p>
-                                            <p className="text-sm text-paars">Voorzitter</p>
+                                            <p className="text-sm text-paars">Commissieleider</p>
                                         </div>
                                     </div>
                                     {leader.user_id.email && (
