@@ -174,22 +174,22 @@ export default function WhatsAppGroupsPage() {
                     {/* Additional Info */}
                     <div className="mt-8 bg-white rounded-2xl p-6">
                         <h3 className="font-semibold text-paars mb-3">Groepsregels</h3>
-                        <ul className="space-y-2 text-sm text-paars/80">
+                        <ul className="space-y-2 text-sm text-[#1A1A3C]">
                             <li className="flex items-start gap-2">
                                 <span className="text-geel mt-1">•</span>
-                                <span>Wees respectvol naar alle leden</span>
+                                <span className="text-[#1A1A3C]">Wees respectvol naar alle leden</span>
                             </li>
                             <li className="flex items-start gap-2">
                                 <span className="text-geel mt-1">•</span>
-                                <span>Houd gesprekken relevant voor het groepsonderwerp</span>
+                                <span className="text-[#1A1A3C]">Houd gesprekken relevant voor het groepsonderwerp</span>
                             </li>
                             <li className="flex items-start gap-2">
                                 <span className="text-geel mt-1">•</span>
-                                <span>Geen spam of promotionele inhoud</span>
+                                <span className="text-[#1A1A3C]">Geen spam of promotionele inhoud</span>
                             </li>
                             <li className="flex items-start gap-2">
                                 <span className="text-geel mt-1">•</span>
-                                <span>
+                                <span className="text-[#1A1A3C]">
                                     Volg de{' '}
                                     <a
                                         href="https://salvemundi.nl/gedragscode"
