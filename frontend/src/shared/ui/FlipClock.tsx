@@ -72,10 +72,10 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href }) => {
             )}
 
             <div className="flex gap-4 justify-center items-center mt-3">
-                <FlipUnit value={formatTime(timeLeft.days)} label="DAGEN" />
-                <FlipUnit value={formatTime(timeLeft.hours)} label="UREN" />
-                <FlipUnit value={formatTime(timeLeft.minutes)} label="MINUTEN" />
-                <FlipUnit value={formatTime(timeLeft.seconds)} label="SECONDEN" />
+                <FlipUnit value={formatTime(timeLeft.days)} label={timeLeft.days === 1 ? 'DAG' : 'DAGEN'} />
+                <FlipUnit value={formatTime(timeLeft.hours)} label={timeLeft.hours === 1 ? 'UUR' : 'UREN'} />
+                <FlipUnit value={formatTime(timeLeft.minutes)} label={timeLeft.minutes === 1 ? 'MINUUT' : 'MINUTEN'} />
+                <FlipUnit value={formatTime(timeLeft.seconds)} label={timeLeft.seconds === 1 ? 'SECONDE' : 'SECONDEN'} />
             </div>
         </div>
     );
