@@ -102,10 +102,39 @@ function ActivitiesContent() {
                         <div className="flex flex-wrap items-center gap-3">
                             {/* Calendar Sync Button */}
                             <button
-                                onClick={() => {
+                                onClick={async () => {
                                     const calendarUrl = 'https://api.salvemundi.nl/calendar';
-                                    const webcalUrl = calendarUrl.replace(/^https?:/, 'webcal:');
-                                    window.location.href = webcalUrl;
+
+                                    try {
+                                        // Try to fetch the ICS content and trigger a download. This
+                                        // works reliably from browsers and avoids relying on the
+                                        // webcal: scheme which may not be supported in all clients.
+                                        const resp = await fetch(calendarUrl, { cache: 'no-store' });
+                                        if (!resp.ok) throw new Error(`Fetch failed: ${resp.status}`);
+
+                                        const blob = await resp.blob();
+                                        const url = window.URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = 'salve-mundi.ics';
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        a.remove();
+                                        window.URL.revokeObjectURL(url);
+                                    } catch (err) {
+                                        // If fetch fails (CORS, network, or webcal-only endpoint),
+                                        // fall back to attempting to open the webcal: URL. Some
+                                        // calendar apps expect webcal:// to subscribe directly.
+                                        console.warn('Calendar sync failed, falling back to webcal/open:', err);
+                                        // Attempt webcal scheme first
+                                        try {
+                                            const webcalUrl = calendarUrl.replace(/^https?:/, 'webcal:');
+                                            window.location.href = webcalUrl;
+                                        } catch (e) {
+                                            // As a last resort open the HTTPS URL in a new tab
+                                            window.open(calendarUrl, '_blank');
+                                        }
+                                    }
                                 }}
                                 className="px-4 py-2 text-sm font-semibold bg-white dark:bg-surface-dark text-samu dark:text-white rounded-lg hover:bg-oranje/5 dark:hover:bg-white/5 transition-colors  shadow-sm flex items-center gap-2"
                             >
