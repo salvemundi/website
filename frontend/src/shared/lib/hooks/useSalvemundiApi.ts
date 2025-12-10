@@ -192,10 +192,10 @@ export function useSalvemundiWhatsAppGroups(memberOnly: boolean = false) {
 }
 
 // Site Settings Hook
-export function useSalvemundiSiteSettings(options?: UseQueryOptions<SiteSettings | null>) {
+export function useSalvemundiSiteSettings(page?: string, options?: UseQueryOptions<SiteSettings | null>) {
     return useQuery({
-        queryKey: ['siteSettings'],
-        queryFn: siteSettingsApi.get,
+        queryKey: page ? ['siteSettings', page] : ['siteSettings'],
+        queryFn: () => siteSettingsApi.get(page),
         staleTime: 5 * 60 * 1000,
         ...options
     });

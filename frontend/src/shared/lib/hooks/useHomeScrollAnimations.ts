@@ -63,7 +63,8 @@ const useHomeScrollAnimations = (scopeRef: RefObject<HTMLElement | null>) => {
                         delay: delayMs / 1000,
                         scrollTrigger: {
                             trigger: item,
-                            start: "top 82%",
+                            // Trigger earlier so items reveal sooner on scroll
+                            start: "top 60%",
                         },
                     }
                 );
