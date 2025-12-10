@@ -4,6 +4,7 @@ import { stripHtml } from '@/shared/lib/text';
 interface PageHeaderProps {
     title: string;
     backgroundImage?: string;
+    backgroundPosition?: string;
     imageFilter?: string;
     className?: string;
     titleClassName?: string;
@@ -17,6 +18,7 @@ interface PageHeaderProps {
 const PageHeader: React.FC<PageHeaderProps> = ({
     title,
     backgroundImage = "",
+    backgroundPosition = 'center',
     imageFilter,
     className = "",
     titleClassName = "text-4xl md:text-6xl",
@@ -28,9 +30,10 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     return (
         <header className={`relative flex items-center justify-center mb-5 ${className}`}>
             <div
-                className="absolute inset-0 bg-cover bg-center z-0"
+                className="absolute inset-0 bg-cover z-0"
                 style={{
                     backgroundImage: `url(${backgroundImage})`,
+                    backgroundPosition: backgroundPosition,
                     filter: imageFilter || 'brightness(0.7)'
                 }}
             />

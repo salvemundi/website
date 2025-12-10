@@ -68,7 +68,8 @@ function ActivitiesContent() {
         <div className="">
             <PageHeader
                 title="ACTIVITEITEN"
-                backgroundImage="/img/backgrounds/homepage-banner.jpg"
+                backgroundImage="/img/backgrounds/activity-banner.jpg"
+                backgroundPosition="center 75%"
                 variant="split"
                 description={
                     <p className="text-lg sm:text-xl text-beige/90 max-w-3xl mt-4">
