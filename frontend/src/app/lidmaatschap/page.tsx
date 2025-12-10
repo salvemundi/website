@@ -89,7 +89,7 @@ export default function SignUp() {
             const payload = {
                 amount: '20.00',
                 description: 'Contributie Salve Mundi',
-                redirectUrl: window.location.origin + '/account',
+                redirectUrl: window.location.origin + '/lidmaatschap/bevestiging',
                 isContribution: true,
                 userId: user ? user.id : null,
                 firstName: user ? undefined : form.voornaam,

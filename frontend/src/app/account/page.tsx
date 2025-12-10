@@ -108,15 +108,15 @@ export default function AccountPage() {
             return { text: 'Geen Actief Lidmaatschap', color: 'bg-gray-400', textColor: 'text-white' };
         }
         if (user.membership_status === 'active') {
-            return { text: 'Actief Lid', color: 'bg-theme-purple-lighter', textColor: 'text-theme-purple-darker' };
+            return { text: 'Actief Lid', color: 'bg-theme-purple', textColor: 'text-theme-purple-lighter-darker' };
         }
-        return { text: 'Lidmaatschap Verlopen', color: 'bg-theme-purple/50', textColor: 'text-theme-purple-darker' };
+        return { text: 'Lidmaatschap Verlopen', color: 'bg-theme-purple/50', textColor: 'text-theme-purple-lighter-darker' };
     };
 
     if (authLoading || !user) {
         return (
             <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
-                <div className="text-theme-purple text-xl font-semibold">Laden...</div>
+                <div className="text-theme-purple-lighter text-xl font-semibold">Laden...</div>
             </div>
         );
     }
@@ -127,7 +127,7 @@ export default function AccountPage() {
         <div className="min-h-screen bg-[var(--bg-main)]">
             <div className="mx-auto max-w-app px-4 py-8 sm:px-6 lg:px-8">
 
-                <h1 className="text-3xl font-bold text-theme-purple mb-8">Mijn Account</h1>
+                <h1 className="text-3xl font-bold text-theme-purple-lighter mb-8">Mijn Account</h1>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-min">
 
@@ -149,7 +149,7 @@ export default function AccountPage() {
                                 />
                             ) : (
                                 <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-theme-purple-lighter flex items-center justify-center border-4 border-white/20 shadow-xl">
-                                    <span className="text-3xl sm:text-4xl font-bold text-theme-purple-darker">
+                                    <span className="text-3xl sm:text-4xl font-bold text-theme-purple-lighter-darker">
                                         {user.first_name?.[0]}{user.last_name?.[0]}
                                     </span>
                                 </div>
@@ -157,7 +157,7 @@ export default function AccountPage() {
                         </div>
 
                         <div className="flex-1 text-center sm:text-left z-10">
-                            <h2 className="text-2xl sm:text-3xl font-bold text-theme-purple mb-2">
+                            <h2 className="text-2xl sm:text-3xl font-bold text-theme-purple-lighter mb-2">
                                 {user.first_name && user.last_name
                                     ? `${user.first_name} ${user.last_name}`
                                     : user.email || 'User'}
@@ -165,11 +165,11 @@ export default function AccountPage() {
 
                             <div className="flex flex-wrap justify-center sm:justify-start gap-2 mb-4">
                                 {user.is_member ? (
-                                    <span className="px-3 py-1 bg-theme-purple-lighter text-theme-purple-darker text-xs font-bold uppercase tracking-wider rounded-full">
+                                    <span className="px-3 py-1 bg-theme-purple text-theme-purple-lighter text-xs font-bold uppercase tracking-wider rounded-full">
                                         Fontys Student
                                     </span>
                                 ) : (
-                                    <span className="px-3 py-1 bg-theme-purple/10 text-theme-purple text-xs font-bold uppercase tracking-wider rounded-full">
+                                    <span className="px-3 py-1 bg-theme-purple/10 text-theme-purple-lighter text-xs font-bold uppercase tracking-wider rounded-full">
                                         Geregistreerde Gebruiker
                                     </span>
                                 )}
@@ -179,8 +179,8 @@ export default function AccountPage() {
                             </div>
 
                             {/* Membership expiry date */}
-                            <div className="text-sm text-theme-purple/70 mt-1">
-                                <p className="text-xs text-theme-purple/60 font-bold uppercase">Lidmaatschap eindigt</p>
+                            <div className="text-sm text-theme-purple-lighter/70 mt-1">
+                                <p className="text-xs text-theme-purple-lighter/60 font-bold uppercase">Lidmaatschap eindigt</p>
                                 <p className="font-medium">
                                     {user.membership_expiry
                                         ? format(new Date(user.membership_expiry), 'd MMMM yyyy')
@@ -194,7 +194,7 @@ export default function AccountPage() {
                                         href="https://admin.salvemundi.nl"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-theme-purple font-semibold rounded-xl transition-all text-sm"
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-theme-purple-lighter font-semibold rounded-xl transition-all text-sm"
                                     >
                                         <Shield className="w-4 h-4" />
                                         Admin
@@ -202,7 +202,7 @@ export default function AccountPage() {
                                 )}
                                 <button
                                     onClick={handleLogout}
-                                    className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-600 font-semibold rounded-xl transition-all text-sm"
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/30   hover:bg-red-600/40 text-red-700 font-semibold rounded-xl transition-all text-sm"
                                 >
                                     <LogOut className="w-4 h-4" />
                                     Uitloggen
@@ -214,35 +214,35 @@ export default function AccountPage() {
                     {/* Contact Info Tile */}
                     <div className="md:col-span-1 rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg flex flex-col justify-center gap-4">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-theme-purple/10 rounded-lg text-theme-purple">
+                            <div className="p-2 bg-theme-purple/10 rounded-lg text-theme-purple-lighter">
                                 <Mail className="w-5 h-5" />
                             </div>
                             <div className="overflow-hidden">
-                                <p className="text-xs text-theme-purple/60 font-bold uppercase">E-mailadres</p>
-                                <p className="text-theme-purple font-medium truncate" title={user.email}>{user.email}</p>
+                                <p className="text-xs text-theme-purple-lighter/60 font-bold uppercase">E-mailadres</p>
+                                <p className="text-theme-purple-lighter font-medium truncate" title={user.email}>{user.email}</p>
                             </div>
                         </div>
 
                         {user.fontys_email && (
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-theme-purple/10 rounded-lg text-theme-purple">
+                                <div className="p-2 bg-theme-purple/10 rounded-lg text-theme-purple-lighter">
                                     <Mail className="w-5 h-5" />
                                 </div>
                                 <div className="overflow-hidden">
-                                    <p className="text-xs text-theme-purple/60 font-bold uppercase">Fontys E-mail</p>
-                                    <p className="text-theme-purple font-medium truncate" title={user.fontys_email}>{user.fontys_email}</p>
+                                    <p className="text-xs text-theme-purple-lighter/60 font-bold uppercase">Fontys E-mail</p>
+                                    <p className="text-theme-purple-lighter font-medium truncate" title={user.fontys_email}>{user.fontys_email}</p>
                                 </div>
                             </div>
                         )}
 
                         {user.phone_number && (
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-theme-purple/10 rounded-lg text-theme-purple">
+                                <div className="p-2 bg-theme-purple/10 rounded-lg text-theme-purple-lighter">
                                     <Phone className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-theme-purple/60 font-bold uppercase">Telefoonnummer</p>
-                                    <p className="text-theme-purple font-medium">{user.phone_number}</p>
+                                    <p className="text-xs text-theme-purple-lighter/60 font-bold uppercase">Telefoonnummer</p>
+                                    <p className="text-theme-purple-lighter font-medium">{user.phone_number}</p>
                                 </div>
                             </div>
                         )}
@@ -251,19 +251,19 @@ export default function AccountPage() {
                     {/* Minecraft Tile */}
                     <div className="md:col-span-1 rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg">
                         <div className="flex items-center gap-2 mb-4">
-                            <Gamepad2 className="w-6 h-6 text-theme-purple" />
-                            <h3 className="text-lg font-bold text-theme-purple">Minecraft</h3>
+                            <Gamepad2 className="w-6 h-6 text-theme-purple-lighter" />
+                            <h3 className="text-lg font-bold text-theme-purple-lighter">Minecraft</h3>
                         </div>
 
                         <div className="bg-white/40 rounded-xl p-4">
-                            <p className="text-xs text-theme-purple/60 font-bold uppercase mb-2">Gebruikersnaam</p>
+                            <p className="text-xs text-theme-purple-lighter/60 font-bold uppercase mb-2">Gebruikersnaam</p>
                             {isEditingMinecraft ? (
                                 <div className="flex gap-2">
                                     <input
                                         type="text"
                                         value={minecraftUsername}
                                         onChange={(e) => setMinecraftUsername(e.target.value)}
-                                        className="flex-1 px-3 py-2 text-sm rounded-lg bg-white/80 border-0 focus:ring-2 focus:ring-theme-purple outline-none text-theme-purple"
+                                        className="flex-1 px-3 py-2 text-sm rounded-lg bg-white/80 border-0 focus:ring-2 focus:ring-theme-purple outline-none text-theme-purple-lighter"
                                         placeholder="Username"
                                     />
                                     <button
@@ -276,12 +276,12 @@ export default function AccountPage() {
                                 </div>
                             ) : (
                                 <div className="flex justify-between items-center">
-                                    <span className="text-theme-purple font-medium">
+                                    <span className="text-theme-purple-lighter font-medium">
                                         {user.minecraft_username || 'Niet ingesteld'}
                                     </span>
                                     <button
                                         onClick={() => setIsEditingMinecraft(true)}
-                                        className="text-xs px-3 py-1 bg-theme-purple/10 hover:bg-theme-purple/20 text-theme-purple rounded-lg font-semibold transition-colors"
+                                        className="text-xs px-3 py-1 bg-theme-purple/10 hover:bg-theme-purple/20 text-theme-purple-lighter rounded-lg font-semibold transition-colors"
                                     >
                                         {user.minecraft_username ? 'Wijzig' : 'Instellen'}
                                     </button>
@@ -292,28 +292,28 @@ export default function AccountPage() {
 
                     {/* Quick Links Tile */}
                     <div className="md:col-span-2 rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg">
-                        <h3 className="text-lg font-bold text-theme-purple mb-4">Snelle Links</h3>
+                        <h3 className="text-lg font-bold text-theme-purple-lighter mb-4">Snelle Links</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <button
                                 onClick={() => router.push('/account/transacties')}
                                 className="group flex flex-col items-center justify-center p-4 bg-white/40 hover:bg-white/60 rounded-xl transition-all text-center gap-2"
                             >
-                                <div className="p-3 bg-theme-purple/10 rounded-full text-theme-purple group-hover:scale-110 transition-transform">
+                                <div className="p-3 bg-theme-purple/10 rounded-full text-theme-purple-lighter-lighter group-hover:scale-110 transition-transform">
                                     <CreditCard className="w-6 h-6" />
                                 </div>
-                                <span className="font-semibold text-theme-purple text-sm">Transacties</span>
+                                <span className="font-semibold text-theme-purple-lighter-lighter text-sm">Transacties</span>
                             </button>
 
                             <button
                                 onClick={() => router.push('/account/whatsapp-groepen')}
                                 className="group flex flex-col items-center justify-center p-4 bg-white/40 hover:bg-white/60 rounded-xl transition-all text-center gap-2 relative"
                             >
-                                <div className="p-3 bg-theme-purple/10 rounded-full text-theme-purple group-hover:scale-110 transition-transform">
+                                <div className="p-3 bg-theme-purple/10 rounded-full text-theme-purple-lighter group-hover:scale-110 transition-transform">
                                     <MessageCircle className="w-6 h-6" />
                                 </div>
-                                <span className="font-semibold text-theme-purple text-sm flex items-center gap-1">
+                                <span className="font-semibold text-theme-purple-lighter-lighter text-sm flex items-center gap-1">
                                     WhatsApp
-                                    {user.membership_status !== 'active' && <Lock className="w-3 h-3 text-theme-purple/50" />}
+                                    {user.membership_status !== 'active' && <Lock className="w-3 h-3 text-theme-purple-lighter/50" />}
                                 </span>
                             </button>
 
@@ -323,12 +323,12 @@ export default function AccountPage() {
                                 rel="noopener noreferrer"
                                 className="group flex flex-col items-center justify-center p-4 bg-white/40 hover:bg-white/60 rounded-xl transition-all text-center gap-2"
                             >
-                                <div className="p-3 bg-theme-purple/10 rounded-full text-theme-purple group-hover:scale-110 transition-transform">
+                                <div className="p-3 bg-theme-purple/10 rounded-full text-theme-purple-lighter group-hover:scale-110 transition-transform">
                                     <FileText className="w-6 h-6" />
                                 </div>
-                                <span className="font-semibold text-theme-purple text-sm flex items-center gap-1">
+                                <span className="font-semibold text-theme-purple-lighter-lighter text-sm flex items-center gap-1">
                                     SharePoint
-                                    <ExternalLink className="w-3 h-3 text-theme-purple/50" />
+                                    <ExternalLink className="w-3 h-3 text-theme-purple-lighter/50" />
                                 </span>
                             </a>
                         </div>
@@ -338,14 +338,14 @@ export default function AccountPage() {
                     <div className="md:col-span-3 rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 sm:p-8 shadow-lg">
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-theme-purple/10 rounded-xl text-theme-purple">
+                                <div className="p-2 bg-theme-purple/10 rounded-xl text-theme-purple-lighter">
                                     <Calendar className="w-6 h-6" />
                                 </div>
-                                <h2 className="text-xl font-bold text-theme-purple">Mijn Inschrijvingen</h2>
+                                <h2 className="text-xl font-bold text-theme-purple-lighter">Mijn Inschrijvingen</h2>
                             </div>
                             <button
                                 onClick={() => router.push('/activiteiten')}
-                                className="text-sm font-semibold text-theme-purple hover:text-theme-purple-dark transition-colors flex items-center gap-1"
+                                className="text-sm font-semibold text-theme-purple-lighter hover:text-theme-purple-lighter-dark transition-colors flex items-center gap-1"
                             >
                                 Bekijk agenda <ChevronRight className="w-4 h-4" />
                             </button>
@@ -354,11 +354,11 @@ export default function AccountPage() {
                         {isLoading ? (
                             <div className="text-center py-12">
                                 <div className="animate-spin w-8 h-8 border-4 border-theme-purple/20 border-t-theme-purple rounded-full mx-auto mb-4" />
-                                <div className="text-theme-purple/60">Inschrijvingen laden...</div>
+                                <div className="text-theme-purple-lighter/60">Inschrijvingen laden...</div>
                             </div>
                         ) : eventSignups.length === 0 ? (
                             <div className="text-center py-12 bg-white/30 rounded-2xl border-2 border-dashed border-theme-purple/10">
-                                <p className="text-theme-purple font-medium mb-2">Je hebt je nog niet ingeschreven voor evenementen.</p>
+                                <p className="text-theme-purple-lighter font-medium mb-2">Je hebt je nog niet ingeschreven voor evenementen.</p>
                                 <button
                                     onClick={() => router.push('/activiteiten')}
                                     className="px-6 py-2 bg-theme-purple text-white rounded-full font-semibold shadow-lg shadow-theme-purple/20 transition-transform hover:-translate-y-0.5 hover:shadow-xl text-sm"
@@ -386,28 +386,28 @@ export default function AccountPage() {
                                                     }}
                                                 />
                                             ) : (
-                                                <div className="w-20 h-20 rounded-xl bg-theme-purple/10 flex items-center justify-center text-theme-purple group-hover:scale-105 transition-transform duration-300">
+                                                <div className="w-20 h-20 rounded-xl bg-theme-purple/10 flex items-center justify-center text-theme-purple-lighter group-hover:scale-105 transition-transform duration-300">
                                                     <Calendar className="w-8 h-8" />
                                                 </div>
                                             )}
                                         </div>
 
                                         <div className="flex-1 min-w-0">
-                                            <h3 className="text-lg font-bold text-theme-purple truncate group-hover:text-theme-purple-dark transition-colors">
+                                            <h3 className="text-lg font-bold text-theme-purple-lighter truncate group-hover:text-theme-purple-lighter-dark transition-colors">
                                                 {signup.event_id.name}
                                             </h3>
                                             <div className="space-y-1 mt-1">
-                                                <p className="text-sm text-theme-purple/70 flex items-center gap-2">
+                                                <p className="text-sm text-theme-purple-lighter/70 flex items-center gap-2">
                                                     <Calendar className="w-3 h-3" />
                                                     {format(new Date(signup.event_id.event_date), 'd MMMM yyyy')}
                                                 </p>
-                                                <p className="text-xs text-theme-purple/50">
+                                                <p className="text-xs text-theme-purple-lighter/50">
                                                     Ingeschreven op: {format(new Date(signup.created_at), 'd MMM yyyy')}
                                                 </p>
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center justify-center text-theme-purple/30 group-hover:translate-x-1 transition-transform">
+                                        <div className="flex items-center justify-center text-theme-purple-lighter/30 group-hover:translate-x-1 transition-transform">
                                             <ChevronRight className="w-5 h-5" />
                                         </div>
                                     </div>

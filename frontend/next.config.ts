@@ -53,10 +53,14 @@ const nextConfig = {
 
     // Configure rewrites for API proxy (development & production)
     async rewrites() {
+        // Hardcoded as requested to ensure connection to production backend
+        const BACKEND_URL = 'https://admin.salvemundi.nl'; 
+        console.log('📍 Proxying /api requests to:', BACKEND_URL);
+        
         return [
             {
                 source: '/api/:path*',
-                destination: 'https://admin.salvemundi.nl/:path*',
+                destination: `${BACKEND_URL}/:path*`,
             },
         ];
     },

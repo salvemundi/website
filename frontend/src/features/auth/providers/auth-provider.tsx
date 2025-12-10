@@ -5,6 +5,7 @@ import { PublicClientApplication } from '@azure/msal-browser';
 import { msalConfig, loginRequest } from '@/shared/config/msalConfig';
 import * as authApi from '@/shared/lib/auth';
 import { User, SignupData } from '@/shared/model/types/auth';
+import { toast } from 'sonner';
 
 // Initialize MSAL instance with error handling
 let msalInstance: PublicClientApplication | null = null;
@@ -123,73 +124,100 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    // Handle MSAL redirect promise on component mount
+    useEffect(() => {
+        const handleRedirect = async () => {
+            if (!msalInstance) return;
+
+            try {
+                await msalInstance.initialize();
+                const response = await msalInstance.handleRedirectPromise();
+
+                if (response && response.account) {
+                    msalInstance.setActiveAccount(response.account);
+                    await handleLoginSuccess(response);
+                }
+            } catch (error) {
+                console.error('Error handling redirect promise:', error);
+            }
+        };
+
+        handleRedirect();
+    }, []);
+
+    const handleLoginSuccess = async (loginResponse: any) => {
+        setIsLoading(true);
+        const toastId = toast.loading('Inloggen verwerken...');
+
+        try {
+            // Get the ID token to send to backend
+            const idToken = loginResponse.idToken;
+            const userEmail = loginResponse.account.username;
+
+            // Authenticate with backend using Entra ID token
+            const response = await authApi.loginWithEntraId(idToken, userEmail);
+
+            // Validate the returned access token before persisting it. If the
+            // token is invalid, do not store it (prevents other components from
+            // making requests with a bad token immediately after login).
+            let validatedUser = null;
+            try {
+                validatedUser = await authApi.fetchUserDetails(response.access_token);
+            } catch (e) {
+                console.warn('Could not validate access token returned from Entra login:', e);
+            }
+
+            if (!validatedUser) {
+                // Attempt to refresh using provided refresh token once as a fallback
+                if (response.refresh_token) {
+                    try {
+                        const refreshed = await authApi.refreshAccessToken(response.refresh_token);
+                        // Persist refreshed tokens and user
+                        localStorage.setItem('auth_token', refreshed.access_token);
+                        localStorage.setItem('refresh_token', refreshed.refresh_token);
+                        setUser(refreshed.user);
+                        toast.success('Inloggen geslaagd!', { id: toastId });
+                        return;
+                    } catch (refreshErr) {
+                        console.error('Refresh after failed validation also failed:', refreshErr);
+                    }
+                }
+
+                throw new Error('Login failed: received an invalid access token from the backend.');
+            }
+
+            // Persist tokens and set user after successful validation
+            localStorage.setItem('auth_token', response.access_token);
+            localStorage.setItem('refresh_token', response.refresh_token);
+            setUser(validatedUser);
+            toast.success('Inloggen geslaagd!', { id: toastId });
+        } catch (error) {
+            console.error('Microsoft login processing error:', error);
+            toast.error('Inloggen mislukt. Probeer het opnieuw.', { id: toastId });
+            throw error; // Re-throw to be handled by caller if any
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const loginWithMicrosoft = async () => {
         if (!msalInstance) {
             throw new Error('Microsoft login is not available. Use HTTPS with a redirect URI that matches your Entra app (set NEXT_PUBLIC_AUTH_REDIRECT_URI for LAN/IP testing).');
         }
 
-        setIsLoading(true);
         try {
-            // Initialize MSAL if needed
+            // Initialize MSAL if needed (though useEffect should have handled it)
             await msalInstance.initialize();
 
-            // Attempt silent login first
-            const accounts = msalInstance.getAllAccounts();
-            if (accounts.length > 0) {
-                msalInstance.setActiveAccount(accounts[0]);
-            }
-
-            // Login with popup
-            const loginResponse = await msalInstance.loginPopup(loginRequest);
-
-            if (loginResponse && loginResponse.account) {
-                msalInstance.setActiveAccount(loginResponse.account);
-
-                // Get the ID token to send to backend
-                const idToken = loginResponse.idToken;
-                const userEmail = loginResponse.account.username;
-
-                // Authenticate with backend using Entra ID token
-                const response = await authApi.loginWithEntraId(idToken, userEmail);
-
-                // Validate the returned access token before persisting it. If the
-                // token is invalid, do not store it (prevents other components from
-                // making requests with a bad token immediately after login).
-                let validatedUser = null;
-                try {
-                    validatedUser = await authApi.fetchUserDetails(response.access_token);
-                } catch (e) {
-                    console.warn('Could not validate access token returned from Entra login:', e);
-                }
-
-                if (!validatedUser) {
-                    // Attempt to refresh using provided refresh token once as a fallback
-                    if (response.refresh_token) {
-                        try {
-                            const refreshed = await authApi.refreshAccessToken(response.refresh_token);
-                            // Persist refreshed tokens and user
-                            localStorage.setItem('auth_token', refreshed.access_token);
-                            localStorage.setItem('refresh_token', refreshed.refresh_token);
-                            setUser(refreshed.user);
-                            return;
-                        } catch (refreshErr) {
-                            console.error('Refresh after failed validation also failed:', refreshErr);
-                        }
-                    }
-
-                    throw new Error('Login failed: received an invalid access token from the backend.');
-                }
-
-                // Persist tokens and set user after successful validation
-                localStorage.setItem('auth_token', response.access_token);
-                localStorage.setItem('refresh_token', response.refresh_token);
-                setUser(validatedUser);
-            }
+            // Attempt silent login first? No, loginRedirect handles the flow.
+            
+            // Login with redirect
+            await msalInstance.loginRedirect(loginRequest);
+            // Unlike loginPopup, this promise resolves only after the redirect is initiated.
+            // The actual result is handled in handleRedirectPromise on return.
         } catch (error) {
             console.error('Microsoft login error:', error);
             throw error;
-        } finally {
-            setIsLoading(false);
         }
     };
 
