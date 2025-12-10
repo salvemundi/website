@@ -1,4 +1,4 @@
-import { Configuration, PopupRequest } from '@azure/msal-browser';
+import { Configuration, RedirectRequest } from '@azure/msal-browser';
 
 const redirectUri = process.env.NEXT_PUBLIC_AUTH_REDIRECT_URI || (typeof window !== 'undefined' ? window.location.origin : '');
 const postLogoutRedirectUri = process.env.NEXT_PUBLIC_AUTH_LOGOUT_REDIRECT_URI || redirectUri;
@@ -26,7 +26,7 @@ export const msalConfig: Configuration = {
 };
 
 // Add scopes here for ID token to be used at Microsoft identity platform endpoints.
-export const loginRequest: PopupRequest = {
+export const loginRequest: RedirectRequest = {
     scopes: ['User.Read', 'openid', 'profile', 'email'],
 };
 

@@ -8,16 +8,11 @@ import { useDirectusStore } from '@/shared/lib/store/directusStore';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight } from 'lucide-react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
-
-// Register GSAP plugins
-if (typeof window !== 'undefined') {
-    gsap.registerPlugin(ScrollTrigger);
-}
+import { ChevronRight } from '@/shared/ui/icons/ChevronRight';
+import { useAuth } from '@/features/auth/providers/auth-provider';
 
 export default function Hero() {
+    const { isAuthenticated, isLoading: authLoading } = useAuth();
     const events = useDirectusStore((state) => state.events);
     const eventsLoading = useDirectusStore((state) => state.eventsLoading);
     const loadEvents = useDirectusStore((state) => state.loadEvents);
@@ -317,6 +312,9 @@ export default function Hero() {
 
 
 
+    // Show membership link if not authenticated (and auth is done loading)
+    const showMembershipLink = !authLoading && !isAuthenticated;
+
     return (
         <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full h-screen py-8 sm:py-12 md:py-16 lg:py-20 transition-colors duration-300">
             <div ref={orb1Ref} className="absolute -left-20 top-60 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-theme-purple to-theme-purple-light" />
@@ -344,8 +342,33 @@ export default function Hero() {
 
 
 
-                        <div ref={eventCardRef} className="flex flex-wrap gap-3 sm:gap-4">
-                            {nextEvent ? (
+                        <div className="flex flex-wrap gap-3 sm:gap-4">
+                            {showMembershipLink ? (
+                                <Link
+                                    href="/lidmaatschap"
+                                    className="block w-full transition-transform hover:scale-[1.02]"
+                                >
+                                    <div className="inset-x-4 bottom-4 w-full sm:inset-x-6 sm:bottom-6 rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4">
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-white">
+                                                Word lid
+                                            </p>
+                                            <p className="mt-2 text-base sm:text-lg font-bold text-theme-white truncate">
+                                                Sluit je aan bij Salve Mundi
+                                            </p>
+                                            <p className="mt-1 text-xs sm:text-sm text-theme-white line-clamp-2">
+                                                Ontdek alle voordelen van een lidmaatschap en word onderdeel van onze community!
+                                            </p>
+                                        </div>
+                                        <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white text-theme-purple flex items-center justify-center shadow-md transition-transform group-hover:scale-110"
+                                             onMouseEnter={() => setHoverWordLid(true)}
+                                             onMouseLeave={() => setHoverWordLid(false)}
+                                        >
+                                            <ChevronRight width={20} height={20} strokeWidth={2} __active={hoverWordLid} />
+                                        </div>
+                                    </div>
+                                </Link>
+                            ) : nextEvent ? (
                                 <Link
                                     href={`/activiteiten/${nextEvent.id}`}
                                     className="block w-full transition-transform hover:scale-[1.02]"
@@ -362,8 +385,11 @@ export default function Hero() {
                                                 {nextEvent.description || "Kom gezellig langs bij ons volgende evenement!"}
                                             </p>
                                         </div>
-                                        <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white text-theme-purple flex items-center justify-center shadow-md transition-transform group-hover:scale-110">
-                                            <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6" />
+                                        <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white text-theme-purple flex items-center justify-center shadow-md transition-transform group-hover:scale-110"
+                                             onMouseEnter={() => setHoverNextEvent(true)}
+                                             onMouseLeave={() => setHoverNextEvent(false)}
+                                        >
+                                            <ChevronRight width={20} height={20} strokeWidth={2} __active={hoverNextEvent} />
                                         </div>
                                     </div>
                                 </Link>
@@ -390,23 +416,7 @@ export default function Hero() {
                                 </div>
                             )}
                         </div>
-                        <div ref={buttonsRef} className="flex flex-col gap-3 sm:flex-row sm:gap-4">
-                            <a
-                                href="/lidmaatschap"
-                                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-theme px-8 py-4 text-lg font-bold text-theme-white shadow-lg transition-all hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-theme-purple/30"
-                            >
-                                Word lid
-                                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-xs font-semibold sm:h-6 sm:w-6">
-                                    →
-                                </span>
-                            </a>
-                            <a
-                                href="/activiteiten"
-                                className="inline-flex items-center text-theme-purple-darker justify-center gap-2 rounded-full bg-primary-100 px-5 py-2.5 text-sm font-semibold text-theme-purple shadow-sm transition hover:bg-theme-purple/5 sm:px-6 hover:scale-105 hover:shadow-xl sm:py-3"
-                            >
-                                Bekijk activiteiten
-                            </a>
-                        </div>
+                        
                     </div>
 
 
