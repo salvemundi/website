@@ -71,7 +71,7 @@ export default function Footer() {
                                                 href={fileUrl}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 transition hover:bg-white/20 hover:text-theme-purple-lighter"
+                                                className="inline-flex items-center gap-1 rounded-full bg-white/10  transition hover:bg-white/20 hover:text-theme-purple-lighter"
                                                 title={doc.description || doc.title}
                                             >
                                                 {doc.title}
@@ -101,7 +101,7 @@ export default function Footer() {
                                 <li key={link.href}>
                                     <Link
                                         href={link.href}
-                                        className="inline-flex items-center gap-1 rounded-full px-3 py-1 transition hover:bg-white/10 hover:text-theme-purple-lighter"
+                                        className="inline-flex items-center gap-1 rounded-full  transition hover:bg-white/10 hover:text-theme-purple-lighter"
                                     >
                                         {link.label}
                                     </Link>
@@ -118,7 +118,7 @@ export default function Footer() {
                                     <li key={committee.id}>
                                         <Link
                                             href={`${ROUTES.COMMITTEES}/${slugify(cleanCommitteeName(committee.name))}`}
-                                            className="inline-flex items-center gap-1 rounded-full px-3 py-1 transition hover:bg-white/10 hover:text-theme-purple-lighter"
+                                            className="inline-flex items-center gap-1 rounded-full  transition hover:bg-white/10 hover:text-theme-purple-lighter"
                                         >
                                             {cleanCommitteeName(committee.name)}
                                         </Link>
@@ -136,7 +136,7 @@ export default function Footer() {
                             <li>
                                 <a
                                     href="mailto:info@salvemundi.nl"
-                                    className="inline-flex items-center gap-1 rounded-full px-3 py-1 transition hover:bg-white/10 hover:text-theme-purple-lighter"
+                                    className="inline-flex items-center gap-1 rounded-full  transition hover:bg-white/10 hover:text-theme-purple-lighter"
                                 >
                                     info@salvemundi.nl
                                 </a>
@@ -144,7 +144,7 @@ export default function Footer() {
                             <li>
                                 <a
                                     href="tel:+31624827777"
-                                    className="inline-flex items-center gap-1 rounded-full px-3 py-1 transition hover:bg-white/10 hover:text-geel"
+                                    className="inline-flex items-center gap-1 rounded-full  transition hover:bg-white/10 hover:text-geel"
                                 >
                                     +31 6 24827777
                                 </a>
@@ -155,7 +155,7 @@ export default function Footer() {
                                         href="https://wa.me/31624827777"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-1 rounded-full px-3 py-1 transition hover:bg-white/10 hover:text-theme-purple-lighter"
+                                        className="inline-flex items-center gap-1 rounded-full  transition hover:bg-white/10 hover:text-theme-purple-lighter"
                                     >
                                         WhatsApp
                                     </a>
@@ -164,7 +164,7 @@ export default function Footer() {
                             <li>
                                 <Link
                                     href={ROUTES.SAFE_HAVENS}
-                                    className="inline-flex items-center gap-1 rounded-full bg-theme-purple-light/20 px-3 py-1 font-semibold transition hover:bg-theme-purple-light/30 hover:text-theme-white"
+                                    className="inline-flex items-center gap-1 rounded-full bg-theme-purple-light/20  font-semibold transition hover:bg-theme-purple-light/30 hover:text-theme-white"
                                 >
                                     Safe Havens
                                 </Link>
