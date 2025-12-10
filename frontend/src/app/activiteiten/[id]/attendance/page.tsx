@@ -68,8 +68,12 @@ export default function AttendancePage() {
     };
 
     const toggleCheckIn = async (row: any) => {
+        // Optimistic UI: update local state immediately and animate
+        const target = !row.checked_in;
+        // Update local signups array immediately
+        setSignups(prev => prev.map(s => s.id === row.id ? { ...s, checked_in: target, checked_in_at: target ? new Date().toISOString() : null, _justToggled: true } : s));
+
         try {
-            const target = !row.checked_in;
             const { directusFetch } = await import('@/shared/lib/directus');
             await directusFetch(`/items/event_signups/${row.id}`, {
                 method: 'PATCH',
@@ -78,11 +82,18 @@ export default function AttendancePage() {
                     checked_in_at: target ? new Date().toISOString() : null 
                 })
             });
+
             showMessage(`${row.participant_name || 'Deelnemer'} is nu ${target ? 'ingecheckt' : 'uitgecheckt'}`, 'success');
-            await load();
         } catch (err) {
             console.error(err);
+            // Revert optimistic update on error
+            setSignups(prev => prev.map(s => s.id === row.id ? { ...s, checked_in: !target, checked_in_at: row.checked_in_at || null } : s));
             showMessage('Kon status niet bijwerken', 'error');
+        } finally {
+            // Remove temporary animation flag after a short delay
+            setTimeout(() => {
+                setSignups(prev => prev.map(s => s.id === row.id ? (() => { const { _justToggled, ...rest } = s as any; return rest; })() : s));
+            }, 700);
         }
     };
 
@@ -309,6 +320,7 @@ export default function AttendancePage() {
                 {/* Action Buttons */}
                 <div className="flex flex-wrap gap-3 mb-6">
                     <button
+                        type="button"
                         onClick={load}
                         disabled={loading}
                         className="inline-flex items-center gap-2 px-4 py-3 bg-white text-theme-purple font-semibold rounded-xl shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 disabled:opacity-50"
@@ -318,6 +330,7 @@ export default function AttendancePage() {
                     </button>
                     
                     <button
+                        type="button"
                         onClick={() => exportEventSignups(signups, `aanmeldingen-${eventId}.csv`)}
                         className="inline-flex items-center gap-2 px-4 py-3 bg-white text-theme-purple font-semibold rounded-xl shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
                     >
@@ -326,6 +339,7 @@ export default function AttendancePage() {
                     </button>
                     
                     <button
+                        type="button"
                         onClick={showScanner ? stopScanner : startScanner}
                         className={`inline-flex items-center gap-2 px-4 py-3 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 ${
                             showScanner ? 'bg-red-500 text-white' : 'bg-theme-purple text-white'
@@ -458,12 +472,13 @@ export default function AttendancePage() {
                                             </td>
                                             <td className="px-6 py-4 text-center">
                                                 <button
+                                                    type="button"
                                                     onClick={() => toggleCheckIn(s)}
-                                                    className={`px-4 py-2 rounded-lg font-semibold transition-all hover:scale-105 ${
+                                                    className={`px-4 py-2 rounded-lg font-semibold transition-all transform transition-transform duration-150 ${
                                                         s.checked_in
                                                             ? 'bg-red-500 text-white hover:bg-red-600'
                                                             : 'bg-green-500 text-white hover:bg-green-600'
-                                                    }`}
+                                                    } ${s._justToggled ? 'scale-105 shadow-2xl' : ''}`}
                                                 >
                                                     {s.checked_in ? 'Uitchecken' : 'Inchecken'}
                                                 </button>
@@ -508,12 +523,13 @@ export default function AttendancePage() {
                                             )}
                                         </div>
                                         <button
+                                            type="button"
                                             onClick={() => toggleCheckIn(s)}
-                                            className={`shrink-0 px-4 py-2 rounded-lg font-semibold text-sm transition-all active:scale-95 ${
+                                            className={`shrink-0 px-4 py-2 rounded-lg font-semibold text-sm transition-all active:scale-95 transform duration-150 ${
                                                 s.checked_in
                                                     ? 'bg-red-500 text-white'
                                                     : 'bg-green-500 text-white'
-                                            }`}
+                                            } ${s._justToggled ? 'scale-105 shadow-2xl' : ''}`}
                                         >
                                             {s.checked_in ? 'Uitchecken' : 'Inchecken'}
                                         </button>
