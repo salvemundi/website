@@ -23,7 +23,7 @@ function ActivitiesContent() {
     const { data: events = [], isLoading, error } = useSalvemundiEvents();
 
     // State
-    const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('calendar');
+    const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
     const [showPastActivities, setShowPastActivities] = useState(false);
     const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
