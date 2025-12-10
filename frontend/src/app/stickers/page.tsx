@@ -274,7 +274,7 @@ function StickersContent() {
                         />
                         <button
                             onClick={() => { setFilterCountry(''); setFilterCity(''); setFilterUser(''); setFilterUserId(''); }}
-                            className="px-3 py-2 rounded-lg bg-[var(--bg-soft)] hover:bg-[var(--bg-soft-light)] dark:bg-[var(--bg-soft-dark)] dark:hover:bg-[var(--bg-card-dark)] text-theme"
+                            className="px-3 py-2 rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] hover:bg-[var(--bg-soft)] dark:bg-[var(--bg-soft-dark)] dark:hover:bg-[var(--bg-card-dark)] text-paars"
                         >
                             Clear
                         </button>
