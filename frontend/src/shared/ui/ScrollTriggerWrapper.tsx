@@ -29,7 +29,8 @@ export const ScrollTriggerWrapper: React.FC<ScrollTriggerWrapperProps> = ({
     duration = 0.8,
     stagger = 0,
     className = '',
-    triggerStart = 'top 80%',
+    // Trigger slightly earlier so animations start before element is fully in view
+    triggerStart = 'top 60%',
     once = false,
 }) => {
     const ref = useRef<HTMLDivElement>(null);

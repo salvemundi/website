@@ -153,7 +153,8 @@ export const scrollTriggerAnimation = (
     options?: ScrollTrigger.Vars
 ) => {
     const defaultOptions: ScrollTrigger.Vars = {
-        start: 'top 80%',
+        // Trigger earlier so elements appear before they're fully in view
+        start: 'top 60%',
         toggleActions: 'play none none none',
         once: true,
     };

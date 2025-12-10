@@ -157,7 +157,8 @@ export default function SignUp() {
             <div className="flex flex-col w-full">
                 <PageHeader
                     title={pageTitle}
-                    backgroundImage="/img/placeholder.svg"
+                    backgroundImage="/img/backgrounds/inschrijf-banner.jpg"
+                    contentPadding="py-12 sm:py-16"
                 />
             </div>
 

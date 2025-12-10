@@ -5,6 +5,7 @@ import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { useSalvemundiClubs } from '@/shared/lib/hooks/useSalvemundiApi';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { MessageSquare, Globe, Users } from 'lucide-react';
+import { stripHtml } from '@/shared/lib/text';
 import { CardSkeleton } from '@/shared/ui/skeletons';
 
 export default function ClubsPage() {
@@ -48,9 +49,9 @@ export default function ClubsPage() {
                                 style={{ animationDelay: `${index * 0.05}s` }}
                             >
                                 <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-theme-purple/10 to-theme-purple/20">
-                                    <img
+                                        <img
                                         src={getImageUrl(club.image)}
-                                        alt={club.name || 'Club'}
+                                        alt={stripHtml(club.name) || 'Club'}
                                         className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                                         onError={(e) => {
                                             const target = e.target as HTMLImageElement;
@@ -62,10 +63,10 @@ export default function ClubsPage() {
 
                                 <div className="flex flex-1 flex-col p-6">
                                     <h3 className="mb-3 text-2xl font-bold text-theme">
-                                        {club.name}
+                                        {stripHtml(club.name)}
                                     </h3>
                                     <p className="mb-4 flex-1 text-sm leading-relaxed text-theme-muted line-clamp-3">
-                                        {club.description || 'Geen beschrijving beschikbaar'}
+                                        {stripHtml(club.description) || 'Geen beschrijving beschikbaar'}
                                     </p>
 
                                     <div className="flex flex-wrap gap-2">
