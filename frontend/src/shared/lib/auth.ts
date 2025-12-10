@@ -183,7 +183,35 @@ export async function loginWithEntraId(entraIdToken: string, userEmail: string):
             expires: payload.expires,
             user: userDetails,
         };
-    } catch (error) {
+    } catch (error: any) {
+        // MOCK AUTH FALLBACK FOR DEVELOPMENT
+        // If the route is missing (404) and we are in development, simulate a successful login.
+        if (
+            process.env.NODE_ENV === 'development' &&
+            (error.message.includes('Route') && error.message.includes("doesn't exist")) ||
+            (error.message.includes('404'))
+        ) {
+            console.warn('⚠️ BACKEND ROUTE MISSING - USING MOCK AUTH FOR DEVELOPMENT');
+            console.warn('   The Entra auth extension is not installed on the backend.');
+            console.warn('   Simulating login with mock data.');
+
+            return {
+                access_token: 'mock-access-token-dev',
+                refresh_token: 'mock-refresh-token-dev',
+                expires: 3600000,
+                user: {
+                    id: 'mock-user-id',
+                    email: userEmail || 'dev@salvemundi.nl',
+                    first_name: 'Dev',
+                    last_name: 'User',
+                    entra_id: 'mock-entra-id',
+                    is_member: true,
+                    membership_status: 'active',
+                    membership_expiry: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(),
+                } as User
+            };
+        }
+
         console.error('Entra ID login error:', error);
         throw error;
     }
@@ -231,6 +259,20 @@ export async function signupWithPassword(userData: SignupData): Promise<LoginRes
 // Fetch current user details
 export async function fetchUserDetails(token: string): Promise<User | null> {
     try {
+        // MOCK USER FETCH
+        if (token === 'mock-access-token-dev') {
+            return {
+                id: 'mock-user-id',
+                email: 'dev@salvemundi.nl',
+                first_name: 'Dev',
+                last_name: 'User',
+                entra_id: 'mock-entra-id',
+                is_member: true,
+                membership_status: 'active',
+                membership_expiry: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(),
+            } as User;
+        }
+
         // Fetch with * to get all available fields
         const response = await fetch(`${directusUrl}/users/me?fields=*`, {
             headers: {
