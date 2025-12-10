@@ -23,10 +23,10 @@ export default function IntroPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const { data: siteSettings, isLoading: isSettingsLoading } = useSalvemundiSiteSettings();
-    const isIntroEnabled = siteSettings?.show_intro ?? true;
+    const { data: siteSettings, isLoading: isSettingsLoading } = useSalvemundiSiteSettings('intro');
+    const isIntroEnabled = siteSettings?.show ?? true;
     const introDisabledMessage =
-        siteSettings?.intro_disabled_message ||
+        siteSettings?.disabled_message ||
         'De inschrijvingen voor de introweek zijn momenteel gesloten.';
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
