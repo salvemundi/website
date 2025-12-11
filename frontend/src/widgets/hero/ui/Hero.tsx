@@ -319,8 +319,10 @@ export default function Hero() {
     // Show membership link if not authenticated (and auth is done loading)
     const showMembershipLink = !authLoading && !isAuthenticated;
 
+    // Only apply a min-height on medium+ screens so mobile won't force a
+    // large empty area. On md+ we ensure the hero fills the viewport minus the header.
     return (
-        <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full min-h-screen py-6 sm:py-10 md:py-12 lg:py-16 transition-colors duration-300">
+        <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full py-6 sm:py-10 md:py-12 lg:py-16 md:min-h-[calc(100vh_-_var(--header-height,64px))] transition-colors duration-300">
             <div ref={orb1Ref} className="absolute -left-20 top-60 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-theme-purple to-theme-purple-light" />
             <div ref={orb2Ref} className="absolute -right-16 bottom-0 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-theme-purple-light to-theme-purple" />
 

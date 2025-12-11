@@ -135,7 +135,7 @@ const Header: React.FC = () => {
                                 className="flex items-center gap-2 rounded-full  px-3 py-1.5 text-sm font-medium text-theme shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                             >
                                 <img
-                                    src={user?.avatar ? getImageUrl(user.avatar) : "/logo_old.svg"}
+                                    src={user?.avatar ? getImageUrl(user.avatar) : "/logo_purple.svg"}
                                     alt={user?.email || "profiel"}
                                     className="h-8 w-8 rounded-full object-cover"
                                 />
@@ -180,21 +180,16 @@ const Header: React.FC = () => {
             </div>
 
             {/* Mobile menu */}
-            <div
-                className={`md:hidden ${menuOpen
-                    ? "pointer-events-auto opacity-100"
-                    : "pointer-events-none opacity-0"
-                    } transition-opacity duration-200`}
-            >
-                <div
-                    className="fixed inset-0 z-40 bg-theme-purple-darker/40 backdrop-blur-sm"
-                    onClick={() => setMenuOpen(false)}
-                    aria-hidden={!menuOpen}
-                />
-                <nav
-                    className={`fixed top-0 right-0 z-50 flex h-full w-full max-w-xs flex-col gap-6 bg-[var(--bg-main)] px-6 py-8 shadow-xl transition-transform duration-300 ${menuOpen ? "translate-x-0" : "translate-x-full"
-                        }`}
-                >
+            {menuOpen && (
+                <div className="md:hidden pointer-events-auto opacity-100 h-auto transition-all duration-200">
+                    <div
+                        className="fixed inset-0 z-40 bg-theme-purple-darker/40 backdrop-blur-sm"
+                        onClick={() => setMenuOpen(false)}
+                        aria-hidden={!menuOpen}
+                    />
+                    <nav
+                        className={`fixed top-0 right-0 z-50 flex h-full w-full max-w-xs flex-col gap-6 bg-[var(--bg-main)] px-6 py-8 shadow-xl transition-transform duration-300 translate-x-0`}
+                    >
                     <div className="flex items-center justify-between">
                         <Link
                             href="/"
@@ -209,7 +204,7 @@ const Header: React.FC = () => {
                                         className="h-full w-full object-cover"
                                     />
                                 ) : (
-                                    <img className="h-7 w-7" src="/logo_old.svg" alt="" />
+                                    <img className="h-7 w-7" src="/logo_purple.svg" alt="" />
                                 )}
                             </span>
                             <span className="text-sm font-semibold text-theme">
@@ -252,8 +247,9 @@ const Header: React.FC = () => {
                             Word lid
                         </Link>
                     )}
-                </nav>
-            </div>
+                    </nav>
+                </div>
+            )}
         </header>
     );
 };
