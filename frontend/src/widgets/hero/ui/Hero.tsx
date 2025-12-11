@@ -320,7 +320,7 @@ export default function Hero() {
     const showMembershipLink = !authLoading && !isAuthenticated;
 
     return (
-        <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full h-screen py-8 sm:py-12 md:py-16 lg:py-20 transition-colors duration-300">
+        <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full min-h-screen py-6 sm:py-10 md:py-12 lg:py-16 transition-colors duration-300">
             <div ref={orb1Ref} className="absolute -left-20 top-60 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-theme-purple to-theme-purple-light" />
             <div ref={orb2Ref} className="absolute -right-16 bottom-0 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-theme-purple-light to-theme-purple" />
 
@@ -428,7 +428,7 @@ export default function Hero() {
 
                     <div className="flex flex-wrap gap-3 sm:gap-4">
                         <div ref={imageRef} className="relative w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/80 shadow-2xl backdrop-blur-xl overflow-hidden">
-                            <div className="h-[240px] sm:h-[300px] md:h-[380px] lg:h-[480px] xl:h-[540px]">
+                            <div className="h-[220px] sm:h-[280px] md:h-[340px] lg:h-[420px] xl:h-[480px]">
                                 {/* Mobile fallback: sometimes Swiper or remote assets misbehave on small devices.
                                     Show a single static image for mobile (hidden on sm+). */}
                                 {/* Mobile fallback moved to top of section; keep the inner area clean */}
