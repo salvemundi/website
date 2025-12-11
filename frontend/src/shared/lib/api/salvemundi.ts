@@ -374,7 +374,10 @@ export const membersApi = {
 export const boardApi = {
     getAll: async () => {
         const query = buildQueryString({
-            fields: ['id', 'naam', 'image', 'members.id', 'members.member_id.id', 'members.member_id.first_name', 'members.member_id.last_name', 'members.member_id.picture', 'members.functie'],
+            // Request full member relation and nested user relation fields to ensure names/pictures are populated
+            // Note: the API returns user relation as `user_id` on committee/board member rows.
+            // include year so UI can show the year on historical boards
+            fields: ['id', 'naam', 'image', 'year', 'members.*', 'members.user_id.*', 'members.functie'],
             sort: ['naam']
         });
         return directusFetch<any[]>(`/items/Board?${query}`);
