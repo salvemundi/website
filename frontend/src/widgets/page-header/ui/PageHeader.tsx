@@ -23,7 +23,8 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     backgroundPosition = 'center',
     imageFilter,
     className = "",
-    titleClassName = "text-4xl md:text-6xl",
+    // use slightly smaller base size on mobile and allow breaking long words
+    titleClassName = "text-3xl sm:text-4xl md:text-6xl",
     children,
     variant = 'centered',
     description,
@@ -59,7 +60,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
             <div className={`relative z-20 w-full max-w-app px-4 ${contentPadding} ${variant === 'centered' ? 'text-center' : ''}`}>
                 {variant === 'centered' ? (
                     <>
-                        <h1 className={`text-theme-white font-bold leading-tight drop-shadow-lg ${titleClassName}`}>
+                        <h1 className={`text-theme-white font-bold leading-tight drop-shadow-lg whitespace-normal break-words ${titleClassName}`}>
                             {title.split('\n').map((line, index) => (
                                 <React.Fragment key={index}>
                                     {line}
@@ -73,7 +74,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                 ) : (
                     <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
                         <div className="flex-1 text-center lg:text-left">
-                            <h1 className={`text-theme-purple font-bold leading-tight drop-shadow-lg ${titleClassName}`}>
+                            <h1 className={`text-theme-purple font-bold leading-tight drop-shadow-lg whitespace-normal break-words ${titleClassName}`}>
                                 {title.split('\n').map((line, index) => (
                                     <React.Fragment key={index}>
                                         {line}
