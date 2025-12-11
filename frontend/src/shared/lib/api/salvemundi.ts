@@ -652,6 +652,87 @@ export const introSignupsApi = {
     }
 };
 
+export interface IntroBlog {
+    id: number;
+    title: string;
+    slug?: string;
+    content: string;
+    excerpt?: string;
+    image?: string;
+    published_date: string;
+    is_published: boolean;
+    blog_type: 'update' | 'pictures' | 'event' | 'announcement';
+    created_at: string;
+    updated_at?: string;
+}
+
+export const introBlogsApi = {
+    getAll: async (): Promise<IntroBlog[]> => {
+        return directusFetch<IntroBlog[]>(
+            `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,published_date,is_published,blog_type,created_at,updated_at&filter[is_published][_eq]=true&sort=-published_date`
+        );
+    },
+    getById: async (id: number): Promise<IntroBlog> => {
+        return directusFetch<IntroBlog>(
+            `/items/intro_blogs/${id}?fields=id,title,slug,content,excerpt,image.id,published_date,is_published,blog_type,created_at,updated_at`
+        );
+    },
+    getByType: async (type: 'update' | 'pictures' | 'event' | 'announcement'): Promise<IntroBlog[]> => {
+        return directusFetch<IntroBlog[]>(
+            `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,published_date,is_published,blog_type,created_at,updated_at&filter[is_published][_eq]=true&filter[blog_type][_eq]=${type}&sort=-published_date`
+        );
+    }
+};
+
+export interface IntroPlanningItem {
+    id: number;
+    day: string;
+    date: string;
+    time_start: string;
+    time_end?: string;
+    title: string;
+    description?: string;
+    location?: string;
+    is_mandatory: boolean;
+    // optional icon name selected in Directus (e.g. 'MapPin', 'Clock')
+    icon?: string;
+    sort_order: number;
+}
+
+export const introPlanningApi = {
+    getAll: async (): Promise<IntroPlanningItem[]> => {
+        return directusFetch<IntroPlanningItem[]>(
+            `/items/intro_planning?fields=id,day,date,time_start,time_end,title,description,location,is_mandatory,icon,sort_order&filter[status][_eq]=published&sort=sort_order`
+        );
+    }
+};
+
+export interface IntroParentSignup {
+    id?: number;
+    user_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone_number: string;
+    motivation?: string;
+    availability: string[];
+    created_at?: string;
+}
+
+export const introParentSignupsApi = {
+    create: async (data: IntroParentSignup) => {
+        return directusFetch<any>(`/items/intro_parent_signups`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    getByUserId: async (userId: string): Promise<IntroParentSignup[]> => {
+        return directusFetch<IntroParentSignup[]>(
+            `/items/intro_parent_signups?fields=*&filter[user_id][_eq]=${userId}`
+        );
+    }
+};
+
 export function getImageUrl(imageId: string | undefined | any, options?: { quality?: number; width?: number; height?: number; format?: string }): string {
     if (!imageId) {
         return '/img/placeholder.svg';
