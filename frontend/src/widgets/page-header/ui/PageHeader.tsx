@@ -15,6 +15,8 @@ interface PageHeaderProps {
     contentPadding?: string;
 }
 
+import { useEffect, useRef } from 'react';
+
 const PageHeader: React.FC<PageHeaderProps> = ({
     title,
     backgroundImage = "",
@@ -27,8 +29,23 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     description,
     contentPadding = 'py-20'
 }) => {
+    const headerRef = useRef<HTMLElement | null>(null);
+
+    useEffect(() => {
+        const el = headerRef.current;
+        if (!el) return;
+        const setVar = () => {
+            const h = Math.ceil(el.getBoundingClientRect().height);
+            document.documentElement.style.setProperty('--pageheader-height', `${h}px`);
+        };
+        setVar();
+        const ro = new ResizeObserver(setVar);
+        ro.observe(el);
+        return () => ro.disconnect();
+    }, []);
+
     return (
-        <header className={`relative flex items-center justify-center mb-5 ${className}`}>
+        <header ref={headerRef} className={`relative flex items-center justify-center mb-5 ${className}`}>
             <div
                 className="absolute inset-0 bg-cover z-0"
                 style={{
