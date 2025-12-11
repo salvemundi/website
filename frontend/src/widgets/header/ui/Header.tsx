@@ -34,6 +34,7 @@ const Header: React.FC = () => {
         { name: "Activiteiten", href: ROUTES.ACTIVITIES },
         { name: "Commissies", href: ROUTES.COMMITTEES },
         { name: "Contact", href: ROUTES.CONTACT },
+        ...(isAuthenticated ? [{ name: "Safe Havens", href: ROUTES.SAFE_HAVENS }] : []),
     ];
 
     const getLinkClassName = (href: string) => {
