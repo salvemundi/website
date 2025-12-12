@@ -65,6 +65,17 @@ export default function IntroPage() {
           // send empty values for fields removed from form to satisfy API
           availability: [],
         });
+
+          // Best-effort: subscribe parent email to intro newsletter
+          try {
+            await fetch('/api/newsletter/subscribe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: user.email }),
+            });
+          } catch (err) {
+            console.error('Failed to subscribe parent to intro newsletter', err);
+          }
       } else {
         await introSignupsApi.create({
           first_name: form.voornaam,
@@ -75,6 +86,17 @@ export default function IntroPage() {
           phone_number: form.telefoonnummer,
           favorite_gif: form.favorieteGif || undefined,
         });
+
+          // Best-effort: subscribe participant email to intro newsletter
+          try {
+            await fetch('/api/newsletter/subscribe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: form.email }),
+            });
+          } catch (err) {
+            console.error('Failed to subscribe participant to intro newsletter', err);
+          }
 
         sendIntroSignupEmail({
           participantEmail: form.email,
