@@ -33,9 +33,9 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                             {board.year ?? board.jaar ?? '—'}
                         </div>
 
-                        <div className="rounded-2xl bg-white/90 p-6 sm:p-10 shadow-md transition hover:shadow-2xl min-h-[280px] md:min-h-[320px]">
+                        <div className="rounded-2xl bg-white/90 p-8 sm:p-12 shadow-md transition hover:shadow-2xl min-h-[320px] md:min-h-[380px] lg:min-h-[420px]">
                             <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-                                <div className="flex-1 min-w-0">
+                                <div className="flex-1 min-w-0 pr-6">
                                     <h3 className="mb-1 text-lg sm:text-2xl font-bold text-slate-900">{board.naam}</h3>
                                     {board.omschrijving && (
                                         <p className="mb-2 text-sm text-slate-600">{board.omschrijving}</p>
@@ -49,20 +49,30 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                                                 <span>{board.members.length} bestuursleden</span>
                                             </div>
 
-                                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2">
+                                            <div className="grid grid-cols-1 gap-6 md:grid-cols-1 lg:grid-cols-2">
                                                 {board.members.map((member: any) => {
                                                     // Helper to resolve picture from several potential shapes
                                                     const resolvePicture = (m: any) => {
                                                         // Candidate paths where Directus may store pictures
                                                         const candidates = [
+                                                            // legacy member picture fields
                                                             m?.member_id?.picture,
                                                             m?.member_id?.picture_id,
                                                             m?.member_id?.picture?.id,
+                                                            // nested user picture paths used elsewhere in the app
                                                             m?.member_id?.user?.picture,
+                                                            m?.member_id?.user?.avatar,
+                                                            m?.member_id?.user?.avatar?.id,
+                                                            // direct user relation
                                                             m?.user_id?.picture,
                                                             m?.user_id?.picture?.id,
+                                                            m?.user_id?.avatar,
+                                                            m?.user_id?.avatar?.id,
+                                                            // fallback on direct picture fields
                                                             m?.picture,
                                                             m?.picture?.id,
+                                                            m?.avatar,
+                                                            m?.avatar?.id,
                                                         ];
                                                         for (const c of candidates) {
                                                             if (!c) continue;
@@ -72,14 +82,22 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                                                     };
 
                                                     const avatarRef = resolvePicture(member);
-                                                    const avatarSrc = avatarRef
-                                                        ? (getImageUrl ? getImageUrl(avatarRef, { width: 400, height: 400 }) : (typeof avatarRef === 'string' ? avatarRef : '/img/placeholder.svg'))
-                                                        : '/img/placeholder.svg';
+                                                    // If avatarRef is an URL/string path, use directly; otherwise use getImageUrl for asset ids/objects
+                                                    let avatarSrc = '/img/placeholder.svg';
+                                                    if (avatarRef) {
+                                                        if (typeof avatarRef === 'string' && (avatarRef.startsWith('http://') || avatarRef.startsWith('https://') || avatarRef.startsWith('/')) ) {
+                                                            avatarSrc = avatarRef;
+                                                        } else if (getImageUrl) {
+                                                            avatarSrc = getImageUrl(avatarRef, { width: 400, height: 400 });
+                                                        } else if (typeof avatarRef === 'string') {
+                                                            avatarSrc = avatarRef;
+                                                        }
+                                                    }
 
                                                     const fullName = getMemberFullName ? getMemberFullName(member) : (member.member_id?.first_name && member.member_id?.last_name ? `${member.member_id.first_name} ${member.member_id.last_name}` : member.member_id?.name ?? 'Onbekend');
 
                                                     return (
-                                                        <div key={member.id ?? `${board.id}-${Math.random()}`} className="flex items-start gap-4 rounded-lg bg-slate-50 p-6 min-h-[120px]">
+                                                        <div key={member.id ?? `${board.id}-${Math.random()}`} className="flex items-start gap-4 rounded-lg bg-slate-50 p-6 min-h-[160px]">
                                                             <img
                                                                 src={avatarSrc}
                                                                 alt={fullName}
@@ -93,7 +111,7 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                                                             />
 
                                                             <div className="min-w-0">
-                                                                <p className="font-semibold text-slate-900 text-sm break-words">
+                                                                <p className="font-semibold text-slate-900 text-base sm:text-lg whitespace-normal">
                                                                     {fullName}
                                                                 </p>
                                                                 {member.functie && (
@@ -107,13 +125,15 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                                         </div>
                                     )}
                                 </div>
-
-                                {/* Optional image: full width on mobile, larger on desktop */}
+                                {/* Optional image: full width on mobile, narrower on larger screens so members area has more room */}
                                 {board.image && (
-                                    <div className="order-first sm:order-last w-full sm:w-auto mt-3 sm:mt-0 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
-                                        <div className="w-full h-48 sm:h-28 md:h-48 lg:h-56">
+                                    <div className="order-first sm:order-last w-full sm:w-1/4 lg:w-1/3 mt-3 sm:mt-0 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
+                                        <div className="w-full h-56 sm:h-44 md:h-48 lg:h-56">
                                             <img
-                                                src={getImageUrl ? getImageUrl(board.image, { width: 1200, height: 800 }) : board.image}
+                                                src={
+                                                    // board.image might be an object or id; if it's a URL/string, use directly
+                                                    (typeof board.image === 'string' && (board.image.startsWith('http') || board.image.startsWith('/'))) ? board.image : (getImageUrl ? getImageUrl(board.image, { width: 1600, height: 900 }) : '/img/group-jump.gif')
+                                                }
                                                 alt={board.naam}
                                                 className="h-full w-full object-cover"
                                                 loading="lazy"
