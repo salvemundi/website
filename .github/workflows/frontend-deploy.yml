@@ -29,26 +29,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ------------------------------
-      # Load Vault Secrets using OIDC JWT
-      # ------------------------------
-      - name: Load Vault Secrets
-        id: vault-secrets
-        uses: hashicorp/vault-action@v3
-        with:
-          url: https://secrets.salvemundi.nl
-          method: jwt
-          role: frontend-dev
-          jwtGithubAudience: vault
-          exportEnv: true
-          tlsSkipVerify: false
-          secrets: |
-            secret/data/dev-salvemundi NEXT_PUBLIC_DIRECTUS_URL ;
-            secret/data/dev-salvemundi NEXT_PUBLIC_AUTH_REDIRECT_URI ;
-            secret/data/dev-salvemundi NEXT_PUBLIC_ENTRA_CLIENT_ID ;
-            secret/data/dev-salvemundi NEXT_PUBLIC_ENTRA_TENANT_ID ;
-            secret/data/dev-salvemundi NEXT_PUBLIC_EMAIL_API_ENDPOINT ;
-            secret/data/dev-salvemundi NEXT_PUBLIC_DIRECTUS_API_KEY
+      # # ------------------------------
+      # # Load Vault Secrets using OIDC JWT
+      # # ------------------------------
+      # - name: Load Vault Secrets
+      #   id: vault-secrets
+      #   uses: hashicorp/vault-action@v3
+      #   with:
+      #     url: https://secrets.salvemundi.nl
+      #     method: jwt
+      #     role: frontend-dev
+      #     jwtGithubAudience: vault
+      #     exportEnv: true
+      #     tlsSkipVerify: false
+      #     secrets: |
+      #       secret/data/dev-salvemundi NEXT_PUBLIC_DIRECTUS_URL ;
+      #       secret/data/dev-salvemundi NEXT_PUBLIC_AUTH_REDIRECT_URI ;
+      #       secret/data/dev-salvemundi NEXT_PUBLIC_ENTRA_CLIENT_ID ;
+      #       secret/data/dev-salvemundi NEXT_PUBLIC_ENTRA_TENANT_ID ;
+      #       secret/data/dev-salvemundi NEXT_PUBLIC_EMAIL_API_ENDPOINT ;
+      #       secret/data/dev-salvemundi NEXT_PUBLIC_DIRECTUS_API_KEY
 
       # ------------------------------
       # Set Docker image tag based on branch
