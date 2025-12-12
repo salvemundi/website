@@ -322,7 +322,7 @@ export default function Hero() {
     // Only apply a min-height on medium+ screens so mobile won't force a
     // large empty area. On md+ we ensure the hero fills the viewport minus the header.
     return (
-        <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full py-6 sm:py-10 md:py-12 lg:py-16 md:min-h-[calc(100vh_-_var(--header-height,64px))] transition-colors duration-300">
+    <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full py-6 sm:py-10 md:py-12 lg:py-16 transition-colors duration-300">
             <div ref={orb1Ref} className="absolute -left-20 top-60 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-theme-purple to-theme-purple-light" />
             <div ref={orb2Ref} className="absolute -right-16 bottom-0 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-theme-purple-light to-theme-purple" />
 
@@ -334,7 +334,7 @@ export default function Hero() {
 
             <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
                 <div className="relative w-full px-0">
-                <div className="grid gap-8 sm:gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-20 lg:items-center">
+                <div className="grid gap-8 sm:gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-20 lg:items-stretch">
                     <div className="space-y-6 sm:space-y-8 lg:space-y-10">
                         <div className="space-y-4 sm:space-y-6">
                             <h1 ref={titleRef} className="text-3xl font-black leading-tight sm:text-4xl md:text-5xl lg:text-6xl pb-1">
@@ -429,8 +429,8 @@ export default function Hero() {
 
 
                     <div className="flex flex-wrap gap-3 sm:gap-4">
-                        <div ref={imageRef} className="relative w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/80 shadow-2xl backdrop-blur-xl overflow-hidden">
-                            <div className="h-[220px] sm:h-[280px] md:h-[340px] lg:h-[420px] xl:h-[480px]">
+                        <div ref={imageRef} className="relative w-full h-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/80 shadow-2xl backdrop-blur-xl overflow-hidden">
+                            <div className="h-full min-h-[220px] sm:min-h-[280px] md:min-h-[340px] lg:min-h-[420px] xl:min-h-[480px]">
                                 {/* Mobile fallback: sometimes Swiper or remote assets misbehave on small devices.
                                     Show a single static image for mobile (hidden on sm+). */}
                                 {/* Mobile fallback moved to top of section; keep the inner area clean */}
