@@ -98,7 +98,13 @@ export default function IntroPage() {
   return (
     <>
       <div className="flex flex-col w-full">
-        <PageHeader title="INTRO - AANMELDEN" backgroundImage="/img/backgrounds/intro-banner.jpg" />
+        <PageHeader
+          title="INTRO - AANMELDEN"
+          backgroundImage="/img/backgrounds/intro-banner.jpg"
+          /* match activiteiten banner size and add subtle blur */
+          contentPadding="py-20"
+          imageFilter={`brightness(0.65) blur(6px)`}
+        />
       </div>
 
       <main>
