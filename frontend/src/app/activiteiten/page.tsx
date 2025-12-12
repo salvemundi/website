@@ -70,6 +70,8 @@ function ActivitiesContent() {
                 title="ACTIVITEITEN"
                 backgroundImage="/img/backgrounds/activity-banner.jpg"
                 backgroundPosition="center 75%"
+                /* apply a subtle blur to the banner image */
+                imageFilter={`brightness(0.65) blur(6px)`}
                 variant="split"
                 description={
                     <p className="text-lg sm:text-xl text-beige/90 max-w-3xl mt-4">
