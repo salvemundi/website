@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import HeroBanner from '@/components/HeroBanner';
 import AuthorCard from '@/components/AuthorCard';
 import TagList from '@/components/TagList';
@@ -8,7 +9,7 @@ import { introBlogsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { Calendar, Newspaper, Image as ImageIcon, Megaphone, PartyPopper, X, Filter, Heart, MessageCircle, Share2 } from 'lucide-react';
+import { Calendar, Newspaper, Image as ImageIcon, Megaphone, PartyPopper, X, Filter } from 'lucide-react';
 
 export default function IntroBlogPage() {
     const [selectedBlog, setSelectedBlog] = useState<any>(null);
@@ -50,6 +51,10 @@ export default function IntroBlogPage() {
 
     return (
         <>
+            <div className="flex flex-col w-full">
+                <PageHeader title="INTRO - BLOG & UPDATES" backgroundImage="/img/backgrounds/intro-banner.jpg" />
+            </div>
+
             <main className="px-4 sm:px-6 lg:px-10 py-8 lg:py-12">
                 <div className="max-w-7xl mx-auto">
                     {/* Hero Banner */}
@@ -68,11 +73,21 @@ export default function IntroBlogPage() {
                         }}
                     />
 
+                    {/* Newsletter Signup removed - subscriptions are now automatically handled on intro signup */}
+
                     {/* Two Column Layout: Main Content + Sidebar */}
                     <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
                         {/* Main Content */}
-                        <div className="lg:col-span-2 space-y-6">
-     
+                        <div className="lg:col-span-2 space-y-8">
+                            <div className="text-center mb-8 lg:mb-10">
+                                <div className="inline-flex items-center gap-2 mb-4">
+                                    <Newspaper className="w-5 h-5 lg:w-6 lg:h-6 text-theme-purple" />
+                                    <h2 className="text-2xl lg:text-3xl font-bold text-gradient">Intro Updates & Nieuws</h2>
+                                </div>
+                                <p className="text-theme-muted text-base lg:text-lg">
+                                    Blijf op de hoogte van de laatste ontwikkelingen rondom de introweek
+                                </p>
+                            </div>
 
                             {/* Filter Bar */}
                             {blogTypes.length > 0 && (
@@ -122,81 +137,53 @@ export default function IntroBlogPage() {
                                     </p>
                                 </div>
                             ) : (
-                                <div className="space-y-4">
+                                <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
                                     {filteredBlogs.map((blog) => {
                                         const typeConfig = getBlogTypeConfig(blog.blog_type);
                                         const TypeIcon = typeConfig.icon;
                                         
                                         return (
-                                            <article
+                                            <div
                                                 key={blog.id}
-                                                className="bg-[var(--bg-card)] rounded-xl lg:rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300"
+                                                onClick={() => setSelectedBlog(blog)}
+                                                className="bg-[var(--bg-card)] rounded-xl lg:rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
                                             >
-                                                {/* Post Header */}
-                                                <div className="flex items-center gap-3 p-4">
-                                                    <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-gradient-theme flex items-center justify-center text-white font-bold text-sm lg:text-base flex-shrink-0">
-                                                        I
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2 flex-wrap">
-                                                            <h3 className="font-bold text-theme text-sm lg:text-base">Intro Commissie</h3>
-                                                            <span className={`${typeConfig.color} text-white text-[10px] lg:text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1`}>
-                                                                <TypeIcon className="w-2.5 h-2.5" />
-                                                                {typeConfig.label}
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex items-center gap-1 text-xs text-theme-muted">
-                                                            <Calendar className="w-3 h-3" />
-                                                            {format(new Date(blog.published_date), 'd MMMM yyyy', { locale: nl })}
+                                                {blog.image && (
+                                                    <div className="relative h-40 sm:h-48 overflow-hidden">
+                                                        <img
+                                                            src={getImageUrl(blog.image)}
+                                                            alt={blog.title}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                        <div className={`absolute top-2 right-2 lg:top-3 lg:right-3 ${typeConfig.color} text-white text-[10px] lg:text-xs font-bold px-2 py-1 lg:px-3 rounded-full flex items-center gap-1`}>
+                                                            <TypeIcon className="w-2.5 h-2.5 lg:w-3 lg:h-3" />
+                                                            {typeConfig.label}
                                                         </div>
                                                     </div>
-                                                </div>
-
-                                                {/* Post Content */}
-                                                <div 
-                                                    onClick={() => setSelectedBlog(blog)}
-                                                    className="cursor-pointer"
-                                                >
-                                                    <div className="px-4 pb-3">
-                                                        <h2 className="text-xl lg:text-2xl font-bold text-theme mb-2">{blog.title}</h2>
-                                                        <p className="text-sm lg:text-base text-theme-muted line-clamp-3">
-                                                            {blog.excerpt || blog.content.substring(0, 200) + '...'}
-                                                        </p>
+                                                )}
+                                                {!blog.image && (
+                                                    <div className="relative h-40 sm:h-48 bg-gradient-theme flex items-center justify-center">
+                                                        <TypeIcon className="w-12 h-12 lg:w-16 lg:h-16 text-white/50" />
+                                                        <div className={`absolute top-2 right-2 lg:top-3 lg:right-3 ${typeConfig.color} text-white text-[10px] lg:text-xs font-bold px-2 py-1 lg:px-3 rounded-full flex items-center gap-1`}>
+                                                            <TypeIcon className="w-2.5 h-2.5 lg:w-3 lg:h-3" />
+                                                            {typeConfig.label}
+                                                        </div>
                                                     </div>
-
-                                                    {/* Post Image */}
-                                                    {blog.image && (
-                                                        <div className="relative w-full overflow-hidden" style={{ maxHeight: '500px' }}>
-                                                            <img
-                                                                src={getImageUrl(blog.image)}
-                                                                alt={blog.title}
-                                                                className="w-full h-full object-cover"
-                                                            />
-                                                        </div>
-                                                    )}
-                                                    {!blog.image && (
-                                                        <div className="relative w-full h-64 bg-gradient-theme flex items-center justify-center">
-                                                            <TypeIcon className="w-16 h-16 lg:w-20 lg:h-20 text-white/30" />
-                                                        </div>
-                                                    )}
+                                                )}
+                                                <div className="p-4 lg:p-6">
+                                                    <div className="flex items-center gap-2 text-xs lg:text-sm text-theme-muted mb-2">
+                                                        <Calendar className="w-3 h-3 lg:w-4 lg:h-4" />
+                                                        {format(new Date(blog.published_date), 'd MMMM yyyy', { locale: nl })}
+                                                    </div>
+                                                    <h3 className="text-lg lg:text-xl font-bold text-theme mb-2 lg:mb-3">{blog.title}</h3>
+                                                    <p className="text-sm lg:text-base text-theme-muted line-clamp-3">
+                                                        {blog.excerpt || blog.content.substring(0, 150) + '...'}
+                                                    </p>
+                                                    <div className="mt-3 lg:mt-4 text-theme-purple text-xs lg:text-sm font-semibold">
+                                                        Klik voor meer details →
+                                                    </div>
                                                 </div>
-
-                                                {/* Action Bar */}
-                                                <div className="flex items-center gap-6 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
-                                                    <button className="flex items-center gap-2 text-theme-muted hover:text-theme-purple transition-colors">
-                                                        <Heart className="w-5 h-5" />
-                                                        <span className="text-sm">Leuk vinden</span>
-                                                    </button>
-                                                    <button className="flex items-center gap-2 text-theme-muted hover:text-theme-purple transition-colors">
-                                                        <MessageCircle className="w-5 h-5" />
-                                                        <span className="text-sm">Reageren</span>
-                                                    </button>
-                                                    <button className="flex items-center gap-2 text-theme-muted hover:text-theme-purple transition-colors">
-                                                        <Share2 className="w-5 h-5" />
-                                                        <span className="text-sm">Delen</span>
-                                                    </button>
-                                                </div>
-                                            </article>
+                                            </div>
                                         );
                                     })}
                                 </div>
@@ -205,8 +192,6 @@ export default function IntroBlogPage() {
 
                         {/* Sidebar */}
                         <aside className="space-y-6">
-                            {/* Newsletter Signup removed - subscriptions are now automatically handled on intro signup */}
-
                             {/* Author Card */}
                             <AuthorCard
                                 name="Intro Commissie"

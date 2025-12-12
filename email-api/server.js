@@ -265,6 +265,173 @@ app.post('/send-email', async (req, res) => {
   }
 });
 
+// Intro update notification endpoint
+app.post('/send-intro-update', async (req, res) => {
+  try {
+    console.log('📧 Intro update notification requested');
+
+    const { blogTitle, blogExcerpt, blogUrl, blogImage } = req.body || {};
+
+    if (!blogTitle || !blogUrl) {
+      return res.status(400).json({
+        error: 'Missing required fields: blogTitle, blogUrl'
+      });
+    }
+
+    // Fetch subscribers from Directus
+    const directusUrl = process.env.DIRECTUS_URL || 'https://admin.salvemundi.nl';
+    const directusToken = process.env.DIRECTUS_API_KEY;
+
+    if (!directusToken) {
+      return res.status(500).json({ error: 'Directus API key not configured' });
+    }
+
+    const subscribersResponse = await fetch(
+      `${directusUrl}/items/intro_newsletter_subscribers?filter[is_active][_eq]=true&fields=email`,
+      {
+        headers: {
+          'Authorization': `Bearer ${directusToken}`
+        }
+      }
+    );
+
+    if (!subscribersResponse.ok) {
+      throw new Error(`Failed to fetch subscribers: ${subscribersResponse.statusText}`);
+    }
+
+    const subscribersData = await subscribersResponse.json();
+    const subscribers = subscribersData.data || [];
+
+    if (subscribers.length === 0) {
+      return res.json({
+        success: true,
+        message: 'No active subscribers found',
+        sentCount: 0
+      });
+    }
+
+    // Get access token (reuse logic from /send-email)
+    const tokenUrl = `https://login.microsoftonline.com/${process.env.MS_GRAPH_TENANT_ID}/oauth2/v2.0/token`;
+    const tokenResponse = await fetch(tokenUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: process.env.MS_GRAPH_CLIENT_ID,
+        client_secret: process.env.MS_GRAPH_CLIENT_SECRET,
+        scope: 'https://graph.microsoft.com/.default',
+        grant_type: 'client_credentials',
+      }),
+    });
+
+    if (!tokenResponse.ok) {
+      throw new Error(`Failed to get token: ${tokenResponse.statusText}`);
+    }
+
+    const tokenData = await tokenResponse.json();
+    const accessToken = tokenData.access_token;
+
+    // Send email to each subscriber
+    const senderUpn = process.env.MS_GRAPH_SENDER_UPN || 'noreply@salvemundi.nl';
+    const emailsToSend = subscribers.map(sub => sub.email);
+    
+    const emailHtml = `
+      <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #7B2CBF 0%, #FF6B35 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 28px;">Nieuwe Intro Update!</h1>
+          </div>
+          
+          ${blogImage ? `
+            <div style="width: 100%; height: 250px; overflow: hidden;">
+              <img src="${blogImage}" alt="${blogTitle}" style="width: 100%; height: 100%; object-fit: cover;" />
+            </div>
+          ` : ''}
+          
+          <div style="padding: 30px; background-color: #f9f9f9; border-radius: 0 0 12px 12px;">
+            <h2 style="color: #7B2CBF; margin-top: 0;">${blogTitle}</h2>
+            
+            ${blogExcerpt ? `
+              <p style="font-size: 16px; color: #555; line-height: 1.8;">
+                ${blogExcerpt}
+              </p>
+            ` : ''}
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${blogUrl}" 
+                 style="display: inline-block; background: linear-gradient(135deg, #7B2CBF 0%, #FF6B35 100%); 
+                        color: white; text-decoration: none; padding: 14px 32px; 
+                        border-radius: 25px; font-weight: bold; font-size: 16px;">
+                Lees meer →
+              </a>
+            </div>
+            
+            <p style="color: #666; font-size: 14px; margin-top: 30px;">
+              We hopen je snel te zien tijdens de introweek!<br>
+              <strong>Het Salve Mundi Intro Team</strong>
+            </p>
+          </div>
+          
+          <div style="text-align: center; padding: 20px; font-size: 12px; color: #999;">
+            <p>
+              Je ontvangt deze email omdat je bent ingeschreven voor intro updates.<br>
+              <a href="${blogUrl.replace('/blog', '')}" style="color: #7B2CBF;">Uitschrijven</a>
+            </p>
+          </div>
+        </body>
+      </html>
+    `;
+
+    const emailPayload = {
+      message: {
+        subject: `Intro Update: ${blogTitle}`,
+        body: {
+          contentType: 'HTML',
+          content: emailHtml
+        },
+        toRecipients: emailsToSend.map(email => ({
+          emailAddress: { address: email }
+        })),
+        from: {
+          emailAddress: {
+            address: senderUpn
+          }
+        }
+      },
+      saveToSentItems: false
+    };
+
+    const sendUrl = `https://graph.microsoft.com/v1.0/users/${senderUpn}/sendMail`;
+    const sendResponse = await fetch(sendUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(emailPayload)
+    });
+
+    if (!sendResponse.ok) {
+      const error = await sendResponse.text();
+      throw new Error(`Failed to send email: ${sendResponse.statusText} - ${error}`);
+    }
+
+    console.log(`✅ Intro update email sent to ${emailsToSend.length} subscribers`);
+
+    res.json({
+      success: true,
+      message: 'Intro update emails sent successfully',
+      sentCount: emailsToSend.length
+    });
+
+  } catch (error) {
+    console.error('❌ Intro update notification error:', error);
+    res.status(500).json({
+      error: 'Failed to send intro update notifications',
+      message: error.message
+    });
+  }
+});
+
 // Calendar feed endpoint
 app.get('/calendar', async (req, res) => {
   try {
