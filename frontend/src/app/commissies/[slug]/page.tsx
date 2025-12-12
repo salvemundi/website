@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useSalvemundiCommitteesWithMembers, useSalvemundiEventsByCommittee, useSalvemundiCommittee } from '@/shared/lib/hooks/useSalvemundiApi';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { slugify } from '@/shared/lib/utils/slug';
-import { Mail, Calendar, Users2 } from 'lucide-react';
+import { Mail, Calendar, Users2, History } from 'lucide-react';
 
 function cleanCommitteeName(name: string): string {
     return name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim();
@@ -229,6 +229,26 @@ export default function CommitteeDetailPage() {
                                             </div>
                                         ))}
                                     </div>
+                                </div>
+                            )}
+
+                            {/* Board History Button - Only show for Bestuur */}
+                            {cleanName.toLowerCase().includes('bestuur') && (
+                                <div className="rounded-3xl bg-white/90 p-6 shadow-lg">
+                                    <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-slate-900">
+                                        <History className="h-5 w-5 text-paars" />
+                                        Geschiedenis
+                                    </h3>
+                                    <p className="mb-4 text-sm text-slate-600">
+                                        Bekijk alle eerdere besturen van Salve Mundi
+                                    </p>
+                                    <Link
+                                        href="/commissies/geschiedenis"
+                                        className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-paars to-oranje px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:shadow-lg hover:-translate-y-0.5"
+                                    >
+                                        <History className="h-4 w-4" />
+                                        Bekijk bestuursgeschiedenis
+                                    </Link>
                                 </div>
                             )}
                         </div>
