@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import HeroBanner from '@/components/HeroBanner';
 import { introPlanningApi } from '@/shared/lib/api/salvemundi';
 import { useQuery } from '@tanstack/react-query';
 import { format, parse } from 'date-fns';
@@ -136,12 +136,23 @@ export default function IntroPlanningPage() {
 
     return (
         <>
-            <div className="flex flex-col w-full">
-                <PageHeader title="INTRO - PLANNING" backgroundImage="/img/backgrounds/intro-banner.jpg" />
-            </div>
-
             <main className="px-4 sm:px-6 lg:px-10 py-8 lg:py-12">
                 <div className="max-w-7xl mx-auto">
+                    {/* Hero Banner */}
+                    <HeroBanner
+                        title="Intro Week Planning"
+                        subtitle="Bekijk het volledige programma en mis geen enkel onderdeel van de introweek"
+                        image={{
+                            src: "/img/backgrounds/intro-banner.jpg",
+                            alt: "Intro Banner",
+                            priority: true
+                        }}
+                        cta={{
+                            label: "Meld je aan voor de intro",
+                            href: "/intro",
+                            variant: "primary"
+                        }}
+                    />
                     <div className="text-center mb-8 lg:mb-10">
                         <div className="inline-flex items-center gap-2 mb-4">
                             <Calendar className="w-5 h-5 lg:w-6 lg:h-6 text-theme-purple" />
