@@ -8,6 +8,17 @@ on:
     paths:
       - 'payment-api/**'
       - '.github/workflows/deploy-payment.yml'
+  workflow_dispatch:
+    inputs:
+      deploy_env:
+        description: 'Target Environment Override'
+        required: true
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - force_dev
+          - force_prod
 
 env:
   REGISTRY: ghcr.io
@@ -34,7 +45,14 @@ jobs:
 
       - name: Set Environment Variables
         run: |
-          if [[ "${{ github.ref_name }}" == "Development" ]]; then
+          MODE="${{ inputs.deploy_env }}"
+          REF="${{ github.ref_name }}"
+          
+          if [[ "$MODE" == "force_dev" ]]; then
+            echo "TAG=dev" >> $GITHUB_ENV
+          elif [[ "$MODE" == "force_prod" ]]; then
+            echo "TAG=latest" >> $GITHUB_ENV
+          elif [[ "$REF" == "Development" ]]; then
             echo "TAG=dev" >> $GITHUB_ENV
           else
             echo "TAG=latest" >> $GITHUB_ENV
@@ -75,7 +93,21 @@ jobs:
             # 3. .env genereren
             echo "TAG=${{ env.TAG }}" > .env
 
-            if [ "${{ github.ref_name }}" == "main" ]; then
+            MODE="${{ inputs.deploy_env }}"
+            REF="${{ github.ref_name }}"
+            USE_PROD="false"
+
+            if [[ "$MODE" == "force_prod" ]]; then
+              USE_PROD="true"
+            elif [[ "$MODE" == "force_dev" ]]; then
+              USE_PROD="false"
+            elif [[ "$REF" == "main" ]]; then
+              USE_PROD="true"
+            else
+              USE_PROD="false"
+            fi
+
+            if [ "$USE_PROD" == "true" ]; then
               # PROD Secrets
               echo "MOLLIE_API_KEY=${{ secrets.PROD_MOLLIE_API_KEY }}" >> .env
               echo "MOLLIE_WEBHOOK_URL=${{ secrets.PROD_MOLLIE_WEBHOOK_URL }}" >> .env
