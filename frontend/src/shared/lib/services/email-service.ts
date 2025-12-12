@@ -484,3 +484,36 @@ export async function sendIntroSignupEmail(data: IntroSignupEmailData): Promise<
         console.error('❌ Failed to send intro signup emails:', error);
     }
 }
+
+/**
+ * Send intro blog update notification to all newsletter subscribers
+ */
+export async function sendIntroBlogUpdateNotification(data: {
+    blogTitle: string;
+    blogExcerpt?: string;
+    blogUrl: string;
+    blogImage?: string;
+}): Promise<void> {
+    const emailApiUrl = process.env.NEXT_PUBLIC_EMAIL_API_URL || 'http://localhost:3001';
+
+    try {
+        const response = await fetch(`${emailApiUrl}/send-intro-update`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to send intro update notifications');
+        }
+
+        const result = await response.json();
+        console.log(`✅ Intro update notifications sent to ${result.sentCount} subscribers`);
+    } catch (error) {
+        console.error('❌ Failed to send intro update notifications:', error);
+        throw error;
+    }
+}
