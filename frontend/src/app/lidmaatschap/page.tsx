@@ -159,7 +159,9 @@ export default function SignUp() {
                     title={pageTitle}
                     backgroundImage="/img/backgrounds/homepage-banner.jpg"
                     backgroundPosition="center 75%"
-                    contentPadding="py-12 sm:py-16"
+                    /* match activiteiten banner size and add a subtle blur */
+                    contentPadding="py-20"
+                    imageFilter={`brightness(0.65) blur(6px)`}
                 />
             </div>
 
