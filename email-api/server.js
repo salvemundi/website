@@ -45,7 +45,39 @@ app.use(cors(corsOptions));
 // Explicitly respond to all preflight requests using the same cors policy
 // so that Access-Control-Allow-* headers are always present on OPTIONS.
 app.options('*', cors(corsOptions));
-app.use(express.json());
+// Capture raw body so we can attempt to sanitize malformed JSON (e.g. smart quotes)
+app.use(express.json({
+  verify: (req, res, buf) => {
+    try {
+      req.rawBody = buf.toString();
+    } catch (e) {
+      req.rawBody = '';
+    }
+  }
+}));
+
+// Error handler to attempt to recover from JSON parse errors caused by
+// non-ASCII smart quotes or similar punctuation. If parsing fails we try
+// to replace common smart quotes with ASCII equivalents and re-parse.
+app.use((err, req, res, next) => {
+  if (err && (err instanceof SyntaxError || err.type === 'entity.parse.failed') && req && typeof req.rawBody === 'string') {
+    try {
+      const sanitized = req.rawBody
+        .replace(/[\u2018\u2019]/g, "'") // ‘ ’ => '
+        .replace(/[\u201C\u201D]/g, '"'); // “ ” => "
+
+      req.body = JSON.parse(sanitized);
+      // proceed to the next middleware/route with req.body populated
+      return next();
+    } catch (parseErr) {
+      console.error('Failed to parse sanitized JSON body:', parseErr);
+      return res.status(400).json({ error: 'Invalid JSON in request body' });
+    }
+  }
+
+  // Not a JSON parse error we can handle — forward to the default handler
+  return next(err);
+});
 
 // Health check
 app.get('/health', (req, res) => {
@@ -278,7 +310,7 @@ app.post('/send-intro-update', async (req, res) => {
       });
     }
 
-    // Fetch subscribers from Directus
+    // Fetch subscribers from Directus - get all intro signups (both participants and parents)
     const directusUrl = process.env.DIRECTUS_URL || 'https://admin.salvemundi.nl';
     const directusToken = process.env.DIRECTUS_API_KEY;
 
@@ -286,8 +318,9 @@ app.post('/send-intro-update', async (req, res) => {
       return res.status(500).json({ error: 'Directus API key not configured' });
     }
 
-    const subscribersResponse = await fetch(
-      `${directusUrl}/items/intro_newsletter_subscribers?filter[is_active][_eq]=true&fields=email`,
+    // Fetch participant signups
+    const participantsResponse = await fetch(
+      `${directusUrl}/items/intro_signups?fields=email`,
       {
         headers: {
           'Authorization': `Bearer ${directusToken}`
@@ -295,17 +328,35 @@ app.post('/send-intro-update', async (req, res) => {
       }
     );
 
-    if (!subscribersResponse.ok) {
-      throw new Error(`Failed to fetch subscribers: ${subscribersResponse.statusText}`);
+    // Fetch parent signups
+    const parentsResponse = await fetch(
+      `${directusUrl}/items/intro_parent_signups?fields=email`,
+      {
+        headers: {
+          'Authorization': `Bearer ${directusToken}`
+        }
+      }
+    );
+
+    if (!participantsResponse.ok || !parentsResponse.ok) {
+      throw new Error('Failed to fetch intro signups');
     }
 
-    const subscribersData = await subscribersResponse.json();
-    const subscribers = subscribersData.data || [];
+    const participantsData = await participantsResponse.json();
+    const parentsData = await parentsResponse.json();
+    
+    const participantEmails = (participantsData.data || []).map(p => p.email).filter(Boolean);
+    const parentEmails = (parentsData.data || []).map(p => p.email).filter(Boolean);
+    
+    // Combine and deduplicate emails
+    const allEmails = [...new Set([...participantEmails, ...parentEmails])];
+    
+    const subscribers = allEmails.map(email => ({ email }));
 
     if (subscribers.length === 0) {
       return res.json({
         success: true,
-        message: 'No active subscribers found',
+        message: 'No intro signups found',
         sentCount: 0
       });
     }

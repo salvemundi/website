@@ -53,62 +53,38 @@ export default function IntroPage() {
     setIsSubmitting(true);
     setError(null);
 
-    try {
-      if (isAuthenticated && user) {
-        await introParentSignupsApi.create({
-          user_id: user.id,
-          first_name: user.first_name,
-          last_name: user.last_name,
-          email: user.email,
-          phone_number: (form.telefoonnummer || user.phone_number || '') as string,
-          motivation: parentForm.motivation || '',
-          // send empty values for fields removed from form to satisfy API
-          availability: [],
-        });
+      try {
+        if (isAuthenticated && user) {
+          await introParentSignupsApi.create({
+            user_id: user.id,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email,
+            phone_number: (form.telefoonnummer || user.phone_number || '') as string,
+            motivation: parentForm.motivation || '',
+            // send empty values for fields removed from form to satisfy API
+            availability: [],
+          });
+        } else {
+          await introSignupsApi.create({
+            first_name: form.voornaam,
+            middle_name: form.tussenvoegsel || undefined,
+            last_name: form.achternaam,
+            date_of_birth: form.geboortedatum,
+            email: form.email,
+            phone_number: form.telefoonnummer,
+            favorite_gif: form.favorieteGif || undefined,
+          });
 
-          // Best-effort: subscribe parent email to intro newsletter
-          try {
-            await fetch('/api/newsletter/subscribe', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: user.email }),
-            });
-          } catch (err) {
-            console.error('Failed to subscribe parent to intro newsletter', err);
-          }
-      } else {
-        await introSignupsApi.create({
-          first_name: form.voornaam,
-          middle_name: form.tussenvoegsel || undefined,
-          last_name: form.achternaam,
-          date_of_birth: form.geboortedatum,
-          email: form.email,
-          phone_number: form.telefoonnummer,
-          favorite_gif: form.favorieteGif || undefined,
-        });
-
-          // Best-effort: subscribe participant email to intro newsletter
-          try {
-            await fetch('/api/newsletter/subscribe', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: form.email }),
-            });
-          } catch (err) {
-            console.error('Failed to subscribe participant to intro newsletter', err);
-          }
-
-        sendIntroSignupEmail({
-          participantEmail: form.email,
-          participantFirstName: form.voornaam,
-          participantLastName: form.achternaam,
-          phoneNumber: form.telefoonnummer,
-          dateOfBirth: form.geboortedatum || undefined,
-          favoriteGif: form.favorieteGif || undefined,
-        }).catch(() => {});
-      }
-
-      setSubmitted(true);
+          sendIntroSignupEmail({
+            participantEmail: form.email,
+            participantFirstName: form.voornaam,
+            participantLastName: form.achternaam,
+            phoneNumber: form.telefoonnummer,
+            dateOfBirth: form.geboortedatum || undefined,
+            favoriteGif: form.favorieteGif || undefined,
+          }).catch(() => {});
+        }      setSubmitted(true);
     } catch (err: any) {
       console.error('Failed to submit intro signup:', err);
       setError(err?.message || 'Er is een fout opgetreden bij het versturen van je inschrijving.');
