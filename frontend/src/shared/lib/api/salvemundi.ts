@@ -662,6 +662,7 @@ export interface IntroBlog {
     content: string;
     excerpt?: string;
     image?: string;
+    likes?: number;
     published_date: string;
     is_published: boolean;
     blog_type: 'update' | 'pictures' | 'event' | 'announcement';
@@ -672,17 +673,17 @@ export interface IntroBlog {
 export const introBlogsApi = {
     getAll: async (): Promise<IntroBlog[]> => {
         return directusFetch<IntroBlog[]>(
-            `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,published_date,is_published,blog_type,created_at,updated_at&filter[is_published][_eq]=true&sort=-published_date`
+            `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,likes,published_date,is_published,blog_type,created_at,updated_at&filter[is_published][_eq]=true&sort=-published_date`
         );
     },
     getById: async (id: number): Promise<IntroBlog> => {
         return directusFetch<IntroBlog>(
-            `/items/intro_blogs/${id}?fields=id,title,slug,content,excerpt,image.id,published_date,is_published,blog_type,created_at,updated_at`
+            `/items/intro_blogs/${id}?fields=id,title,slug,content,excerpt,image.id,likes,published_date,is_published,blog_type,created_at,updated_at`
         );
     },
     getByType: async (type: 'update' | 'pictures' | 'event' | 'announcement'): Promise<IntroBlog[]> => {
         return directusFetch<IntroBlog[]>(
-            `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,published_date,is_published,blog_type,created_at,updated_at&filter[is_published][_eq]=true&filter[blog_type][_eq]=${type}&sort=-published_date`
+            `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,likes,published_date,is_published,blog_type,created_at,updated_at&filter[is_published][_eq]=true&filter[blog_type][_eq]=${type}&sort=-published_date`
         );
     }
 };

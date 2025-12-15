@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import HeroBanner from '@/components/HeroBanner';
 import AuthorCard from '@/components/AuthorCard';
 import TagList from '@/components/TagList';
+import LoginRequiredModal from '@/components/LoginRequiredModal';
 import { introBlogsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { Calendar, Newspaper, Image as ImageIcon, Megaphone, PartyPopper, X, Filter, Heart, MessageCircle, Share2, Mail } from 'lucide-react';
@@ -18,8 +19,20 @@ export default function IntroBlogPage() {
     const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
     const [sendingEmail, setSendingEmail] = useState<string | null>(null);
     const { user, isAuthenticated } = useAuth();
+    const [likedBlogs, setLikedBlogs] = useState<number[]>([]);
+    const [showLoginModal, setShowLoginModal] = useState(false);
+
+    useEffect(() => {
+        try {
+            const raw = localStorage.getItem('likedBlogs');
+            if (raw) setLikedBlogs(JSON.parse(raw));
+        } catch (e) {
+            // ignore
+        }
+    }, []);
 
     // Fetch intro blogs/updates
+    const queryClient = useQueryClient();
     const { data: introBlogs, isLoading } = useQuery({
         queryKey: ['intro-blogs'],
         queryFn: introBlogsApi.getAll,
@@ -288,13 +301,71 @@ export default function IntroBlogPage() {
 
                                                 {/* Action Bar */}
                                                 <div className="flex items-center gap-6 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
-                                                    <button className="flex items-center gap-2 text-theme-muted hover:text-theme-purple transition-colors">
+                                                    <button
+                                                        onClick={async (e) => {
+                                                            e.stopPropagation();
+                                                            if (!isAuthenticated) {
+                                                                setShowLoginModal(true);
+                                                                return;
+                                                            }
+                                                            if (likedBlogs.includes(blog.id)) {
+                                                                toast('Je hebt dit al geliked');
+                                                                return;
+                                                            }
+                                                            let previous: any[] | undefined;
+                                                            try {
+                                                                // Optimistic UI: update cache first
+                                                                previous = queryClient.getQueryData<any[]>(['intro-blogs']);
+                                                                queryClient.setQueryData(['intro-blogs'], (old: any[] | undefined) => {
+                                                                    if (!old) return old;
+                                                                    return old.map((b) => b.id === blog.id ? { ...b, likes: (b.likes || 0) + 1 } : b);
+                                                                });
+
+                                                                const resp = await fetch('/api/blog-like', {
+                                                                    method: 'POST',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    body: JSON.stringify({ blogId: blog.id, userId: user?.id }),
+                                                                });
+
+                                                                if (resp.ok) {
+                                                                    const json = await resp.json();
+                                                                    // Reconcile with server value
+                                                                    queryClient.setQueryData(['intro-blogs'], (old: any[] | undefined) => {
+                                                                        if (!old) return old;
+                                                                        return old.map((b) => b.id === blog.id ? { ...b, likes: json.likes ?? (b.likes || 0) } : b);
+                                                                    });
+                                                                    // update selectedBlog if open
+                                                                    if (selectedBlog && selectedBlog.id === blog.id) {
+                                                                        setSelectedBlog({ ...selectedBlog, likes: json.likes ?? (selectedBlog.likes || 0) });
+                                                                    }
+
+                                                                    // record liked locally to prevent repeat likes in UI
+                                                                    const next = Array.from(new Set([...likedBlogs, blog.id]));
+                                                                    setLikedBlogs(next);
+                                                                    try { localStorage.setItem('likedBlogs', JSON.stringify(next)); } catch (e) {}
+
+                                                                    toast.success('Bedankt voor je like!');
+                                                                } else {
+                                                                    // rollback
+                                                                    if (previous) queryClient.setQueryData(['intro-blogs'], previous as any[] | undefined);
+                                                                    const txt = await resp.text().catch(() => undefined);
+                                                                    toast.error('Kon like niet registreren');
+                                                                    console.error('Like API error', resp.status, txt);
+                                                                }
+                                                            } catch (err) {
+                                                                // rollback on error
+                                                                if (previous) queryClient.setQueryData(['intro-blogs'], previous as any[] | undefined);
+                                                                console.error('Failed to call like API', err);
+                                                                toast.error('Er ging iets mis bij liken');
+                                                            }
+                                                        }}
+                                                        disabled={!isAuthenticated || likedBlogs.includes(blog.id)}
+                                                        title={!isAuthenticated ? 'Log in om te liken' : (likedBlogs.includes(blog.id) ? 'Je hebt dit al geliked' : 'Leuk vinden')}
+                                                        className="flex items-center gap-2 text-theme-muted hover:text-theme-purple transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
                                                         <Heart className="w-5 h-5" />
                                                         <span className="text-sm">Leuk vinden</span>
-                                                    </button>
-                                                    <button className="flex items-center gap-2 text-theme-muted hover:text-theme-purple transition-colors">
-                                                        <MessageCircle className="w-5 h-5" />
-                                                        <span className="text-sm">Reageren</span>
+                                                        <span className="text-sm text-theme-muted ml-2">{blog.likes ?? 0}</span>
                                                     </button>
                                                     <button className="flex items-center gap-2 text-theme-muted hover:text-theme-purple transition-colors">
                                                         <Share2 className="w-5 h-5" />
@@ -350,6 +421,9 @@ export default function IntroBlogPage() {
                     </div>
                 </div>
             </main>
+
+            {/* Login Required Modal */}
+            <LoginRequiredModal open={showLoginModal} onClose={() => setShowLoginModal(false)} />
 
             {/* Blog Detail Modal */}
             {selectedBlog && (
