@@ -8,17 +8,65 @@ import { introBlogsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { Calendar, Newspaper, Image as ImageIcon, Megaphone, PartyPopper, X, Filter, Heart, MessageCircle, Share2 } from 'lucide-react';
+import { Calendar, Newspaper, Image as ImageIcon, Megaphone, PartyPopper, X, Filter, Heart, MessageCircle, Share2, Mail } from 'lucide-react';
+import { useAuth } from '@/features/auth/providers/auth-provider';
+import { directusFetch } from '@/shared/lib/directus';
+import { toast } from 'sonner';
 
 export default function IntroBlogPage() {
     const [selectedBlog, setSelectedBlog] = useState<any>(null);
     const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
+    const [sendingEmail, setSendingEmail] = useState<string | null>(null);
+    const { user, isAuthenticated } = useAuth();
 
     // Fetch intro blogs/updates
     const { data: introBlogs, isLoading } = useQuery({
         queryKey: ['intro-blogs'],
         queryFn: introBlogsApi.getAll,
     });
+
+    // Fetch committee_members rows for current user to determine committee membership
+    const { data: committeeRows = [] } = useQuery({
+        queryKey: ['user-committee-members', user?.id],
+        queryFn: async () => {
+            if (!user?.id) return [];
+            try {
+                // Query committee_members table for the current user
+                // This matches the pattern used in qr-service.ts and salvemundi.ts
+                return await directusFetch<any[]>(
+                    `/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(user.id)}&fields=*,committee_id.id,committee_id.name`
+                );
+            } catch (e) {
+                console.warn('Failed to fetch committee memberships for user', e);
+                return [];
+            }
+        },
+        enabled: Boolean(user?.id),
+    });
+
+    // Check if user has permission to send emails (intro commissie or bestuur)
+    const canSendEmails = useMemo(() => {
+        // If not authenticated, no permission
+        if (!isAuthenticated) return false;
+
+        // Prefer checking committee_members table rows
+        if (committeeRows && committeeRows.length > 0) {
+            return committeeRows.some((row: any) => {
+                const name = (row.committee_id && row.committee_id.name) || '';
+                return name.toLowerCase().includes('intro') || name.toLowerCase().includes('bestuur');
+            });
+        }
+
+        // Fallback to user.committees (older mapping)
+        if (user?.committees && user.committees.length > 0) {
+            return user.committees.some((committee: any) => {
+                const name = committee.name || committee?.committee_id?.name || '';
+                return name.toLowerCase().includes('intro') || name.toLowerCase().includes('bestuur');
+            });
+        }
+
+        return false;
+    }, [isAuthenticated, committeeRows, user]);
 
     // Get unique blog types for filtering
     const blogTypes = useMemo(() => {
@@ -45,6 +93,63 @@ export default function IntroBlogPage() {
             case 'update':
             default:
                 return { label: 'Update', color: 'bg-purple-500', icon: Newspaper };
+        }
+    };
+
+    const handleSendEmail = async (blog: any) => {
+        if (!canSendEmails) {
+            toast.error('Je hebt geen toestemming om emails te versturen');
+            return;
+        }
+
+        // store id as string to match state type (string | null)
+        setSendingEmail(String(blog.id));
+        const toastId = toast.loading('Email versturen naar alle intro deelnemers...');
+
+        try {
+            // Use the new API route that fetches subscribers from Directus
+            const resp = await fetch('/api/send-intro-update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    blogTitle: blog.title,
+                    blogExcerpt: blog.excerpt || blog.content.substring(0, 200),
+                    blogUrl: `${window.location.origin}/intro/blog`,
+                    blogImage: blog.image ? getImageUrl(blog.image) : null,
+                }),
+            });
+
+            if (!resp.ok) {
+                // Try to parse JSON error body, otherwise read text
+                let details: string | undefined;
+                try {
+                    const body = await resp.json();
+                    details = JSON.stringify(body);
+                } catch (e) {
+                    try {
+                        details = await resp.text();
+                    } catch (e2) {
+                        details = undefined;
+                    }
+                }
+                const errMsg = `Email API error: ${resp.status} ${resp.statusText}${details ? ' - ' + details : ''}`;
+                console.error(errMsg);
+                toast.error(errMsg, { id: toastId });
+                throw new Error(errMsg);
+            }
+
+            const result = await resp.json();
+            toast.success(`Email verzonden naar ${result.sentCount || 0} deelnemers!`, { id: toastId });
+        } catch (error: any) {
+            console.error('Failed to send email:', error);
+            // If the error already produced a toast above, avoid double toast
+            if (!error || !String(error).includes('Email API error')) {
+                toast.error('Er is iets misgegaan bij het versturen van de email', { id: toastId });
+            }
+        } finally {
+            setSendingEmail(null);
         }
     };
 
@@ -195,6 +300,18 @@ export default function IntroBlogPage() {
                                                         <Share2 className="w-5 h-5" />
                                                         <span className="text-sm">Delen</span>
                                                     </button>
+                                                    {canSendEmails && (
+                                                        <button 
+                                                            onClick={() => handleSendEmail(blog)}
+                                                            disabled={sendingEmail === String(blog.id)}
+                                                            className="flex items-center gap-2 text-theme-muted hover:text-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ml-auto"
+                                                        >
+                                                            <Mail className="w-5 h-5" />
+                                                            <span className="text-sm">
+                                                                {sendingEmail === String(blog.id) ? 'Versturen...' : 'Email naar deelnemers'}
+                                                            </span>
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </article>
                                         );

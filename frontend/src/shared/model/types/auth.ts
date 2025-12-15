@@ -6,12 +6,14 @@ export interface User {
     entra_id?: string;
     fontys_email?: string;
     phone_number?: string;
-    avatar?: string;  // Directus uses 'avatar' not 'picture'
+    avatar?: string;  
     is_member: boolean;
     member_id?: number;
     membership_status?: 'active' | 'expired' | 'none';
     membership_expiry?: string; // ISO date string
     minecraft_username?: string;
+    role?: string; // Optional Directus role id or name
+    committees?: Array<{ id: string; name: string }>;
 }
 
 export interface SignupData {

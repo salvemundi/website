@@ -63,6 +63,7 @@ async function mapDirectusUserToUser(rawUser: any): Promise<User> {
         membership_status: membershipStatus,
         membership_expiry: rawUser.membership_expiry,
         minecraft_username: rawUser.minecraft_username,
+
     };
 }
 
@@ -273,7 +274,6 @@ export async function fetchUserDetails(token: string): Promise<User | null> {
             } as User;
         }
 
-        // Fetch with * to get all available fields
         const response = await fetch(`${directusUrl}/users/me?fields=*`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -328,7 +328,12 @@ export async function fetchUserDetails(token: string): Promise<User | null> {
 
         const userData = await response.json();
         // Directus usually wraps payload in { data: { ... } }
-        const user = userData?.data || userData;
+        const rawUser = userData?.data || userData;
+        
+        // Don't try to map committees here - they should be fetched separately
+        // via the committee_members junction table using a dedicated query
+        // Set committees to empty array as it will be populated by the blog page query
+        const user = { ...rawUser, committees: [] };
 
         return await mapDirectusUserToUser(user);
     } catch (error) {
