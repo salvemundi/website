@@ -12,7 +12,8 @@ export interface PostPreview {
   slug?: string;
   excerpt?: string;
   image?: string;
-  published_date: string;
+  created_at?: string;
+  updated_at?: string;
   readTime?: string;
   tags?: string[];
 }
@@ -45,7 +46,9 @@ export default function FeaturedPosts({
   return (
     <div className="w-full">
       <div className={layoutClass}>
-        {displayedPosts.map((post) => (
+        {displayedPosts.map((post) => {
+          try { console.debug('[featured.post.render]', { id: post.id, created_at: post.created_at, updated_at: post.updated_at }); } catch (e) {}
+          return (
           <article
             key={post.id}
             onClick={() => onPostClick?.(post)}
@@ -72,7 +75,10 @@ export default function FeaturedPosts({
               <div className="flex items-center gap-3 text-xs lg:text-sm text-theme-muted mb-2">
                 <div className="flex items-center gap-1">
                   <Calendar className="w-3 h-3 lg:w-4 lg:h-4" />
-                  {format(new Date(post.published_date), 'd MMM yyyy', { locale: nl })}
+                  {(() => {
+                    const d = post.updated_at || post.created_at || null;
+                    return d && !isNaN(new Date(d).getTime()) ? format(new Date(d), 'd MMM yyyy', { locale: nl }) : '—';
+                  })()}
                 </div>
                 {post.readTime && (
                   <div className="flex items-center gap-1">
@@ -112,7 +118,7 @@ export default function FeaturedPosts({
               )}
             </div>
           </article>
-        ))}
+        })}
       </div>
     </div>
   );

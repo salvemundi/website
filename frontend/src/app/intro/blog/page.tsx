@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import HeroBanner from '@/components/HeroBanner';
 import AuthorCard from '@/components/AuthorCard';
 import TagList from '@/components/TagList';
@@ -9,7 +10,7 @@ import { introBlogsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { Calendar, Newspaper, Image as ImageIcon, Megaphone, PartyPopper, X, Filter, Heart, Mail } from 'lucide-react';
+import { Calendar, Newspaper, Image as ImageIcon, Megaphone, PartyPopper, X, Filter, Heart, Share2, Mail } from 'lucide-react';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
 import { toast } from 'sonner';
@@ -33,10 +34,40 @@ export default function IntroBlogPage() {
 
     // Fetch intro blogs/updates
     const queryClient = useQueryClient();
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
     const { data: introBlogs, isLoading } = useQuery({
         queryKey: ['intro-blogs'],
         queryFn: introBlogsApi.getAll,
+        onError: (err) => console.error('[useQuery intro-blogs] error', err),
+        onSuccess: (data) => console.debug('[useQuery intro-blogs] success', { count: Array.isArray(data) ? data.length : 'unknown' }),
     });
+
+    // Open modal when ?post=<id> is present in URL
+    useEffect(() => {
+        const postId = searchParams?.get('post');
+        if (!postId) return;
+
+        const idNum = Number(postId);
+        if (introBlogs) {
+            const found = introBlogs.find((b: any) => String(b.id) === String(idNum));
+            if (found) {
+                setSelectedBlog(found);
+                return;
+            }
+        }
+
+        // fallback: fetch single blog if not in list
+        (async () => {
+            try {
+                const fetched = await introBlogsApi.getById(idNum);
+                setSelectedBlog(fetched);
+            } catch (e) {
+                console.error('Failed to fetch blog by id from query param', e);
+            }
+        })();
+    }, [searchParams, introBlogs]);
 
     // Fetch committee_members rows for current user to determine committee membership
     const { data: committeeRows = [] } = useQuery({
@@ -242,6 +273,7 @@ export default function IntroBlogPage() {
                             ) : (
                                 <div className="space-y-4">
                                     {filteredBlogs.map((blog) => {
+                                        try { console.debug('[blog.render] ', { id: blog.id, created_at: blog.created_at, updated_at: blog.updated_at }); } catch (e) {}
                                         const typeConfig = getBlogTypeConfig(blog.blog_type);
                                         const TypeIcon = typeConfig.icon;
                                         
@@ -265,14 +297,25 @@ export default function IntroBlogPage() {
                                                         </div>
                                                         <div className="flex items-center gap-1 text-xs text-theme-muted">
                                                             <Calendar className="w-3 h-3" />
-                                                            {format(new Date(blog.published_date), 'd MMMM yyyy', { locale: nl })}
+                                                            {(() => {
+                                                                const d = blog.updated_at || blog.created_at || null;
+                                                                return d && !isNaN(new Date(d).getTime()) ? format(new Date(d), 'd MMMM yyyy', { locale: nl }) : '—';
+                                                            })()}
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 {/* Post Content */}
                                                 <div 
-                                                    onClick={() => setSelectedBlog(blog)}
+                                                    onClick={() => {
+                                                        // open modal and set URL so this detail can be shared
+                                                        try {
+                                                            router.push(`/intro/blog?post=${blog.id}`);
+                                                        } catch (e) {
+                                                            /* ignore */
+                                                        }
+                                                        setSelectedBlog(blog);
+                                                    }}
                                                     className="cursor-pointer"
                                                 >
                                                     <div className="px-4 pb-3">
@@ -367,7 +410,40 @@ export default function IntroBlogPage() {
                                                         <span className="text-sm">Leuk vinden</span>
                                                         <span className="text-sm text-theme-muted ml-2">{blog.likes ?? 0}</span>
                                                     </button>
-                                                    {/* Share button removed */}
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            try {
+                                                                const shareUrl = `${window.location.origin}/intro/blog?post=${blog.id}`;
+
+                                                                if ((navigator as any).share) {
+                                                                    (navigator as any).share({
+                                                                        title: blog.title,
+                                                                        text: blog.excerpt || blog.content?.substring(0, 200) || '',
+                                                                        url: shareUrl,
+                                                                    }).catch((err: any) => {
+                                                                        console.warn('Share failed', err);
+                                                                    });
+                                                                } else if (navigator.clipboard && navigator.clipboard.writeText) {
+                                                                    navigator.clipboard.writeText(shareUrl).then(() => {
+                                                                        toast.success('Link gekopieerd naar klembord');
+                                                                    }).catch((err) => {
+                                                                        console.error('Kopiëren mislukt', err);
+                                                                        toast.error('Kon link niet kopiëren');
+                                                                    });
+                                                                } else {
+                                                                    window.prompt('Kopieer deze link', shareUrl);
+                                                                }
+                                                            } catch (err) {
+                                                                console.error('Share action failed', err);
+                                                                toast.error('Delen mislukt');
+                                                            }
+                                                        }}
+                                                        className="flex items-center gap-2 text-theme-muted hover:text-theme-purple transition-colors"
+                                                    >
+                                                        <Share2 className="w-5 h-5" />
+                                                        <span className="text-sm">Delen</span>
+                                                    </button>
                                                     {canSendEmails && (
                                                         <button 
                                                             onClick={() => handleSendEmail(blog)}
@@ -426,7 +502,10 @@ export default function IntroBlogPage() {
             {selectedBlog && (
                 <div
                     className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-start justify-center p-4 pt-20 overflow-y-auto"
-                    onClick={() => setSelectedBlog(null)}
+                    onClick={() => {
+                        setSelectedBlog(null);
+                        try { router.replace('/intro/blog'); } catch (e) { /* ignore */ }
+                    }}
                 >
                     <div
                         className="bg-[var(--bg-card)] rounded-2xl lg:rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl my-4"
@@ -474,7 +553,10 @@ export default function IntroBlogPage() {
                                 })()}
                                 <div className="flex items-center gap-2 text-theme-muted text-xs lg:text-sm">
                                     <Calendar className="w-3 h-3 lg:w-4 lg:h-4" />
-                                    {format(new Date(selectedBlog.published_date), 'd MMMM yyyy', { locale: nl })}
+                                    {(() => {
+                                        const d = selectedBlog.updated_at || selectedBlog.created_at || null;
+                                        return d && !isNaN(new Date(d).getTime()) ? format(new Date(d), 'd MMMM yyyy', { locale: nl }) : '—';
+                                    })()}
                                 </div>
                             </div>
 
@@ -573,6 +655,41 @@ export default function IntroBlogPage() {
                                         <Heart className="w-5 h-5" />
                                         <span className="text-sm">Leuk vinden</span>
                                         <span className="text-sm text-theme-muted ml-2">{selectedBlog.likes ?? 0}</span>
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            try {
+                                                const shareUrl = `${window.location.origin}/intro/blog?post=${selectedBlog.id}`;
+
+                                                if ((navigator as any).share) {
+                                                    (navigator as any).share({
+                                                        title: selectedBlog.title,
+                                                        text: selectedBlog.excerpt || selectedBlog.content?.substring(0, 200) || '',
+                                                        url: shareUrl,
+                                                    }).catch((err: any) => {
+                                                        console.warn('Share failed', err);
+                                                    });
+                                                } else if (navigator.clipboard && navigator.clipboard.writeText) {
+                                                    navigator.clipboard.writeText(shareUrl).then(() => {
+                                                        toast.success('Link gekopieerd naar klembord');
+                                                    }).catch((err) => {
+                                                        console.error('Kopiëren mislukt', err);
+                                                        toast.error('Kon link niet kopiëren');
+                                                    });
+                                                } else {
+                                                    // fallback: prompt
+                                                    window.prompt('Kopieer deze link', shareUrl);
+                                                }
+                                            } catch (err) {
+                                                console.error('Share action failed', err);
+                                                toast.error('Delen mislukt');
+                                            }
+                                        }}
+                                        className="flex items-center gap-2 text-theme-muted hover:text-theme-purple transition-colors"
+                                    >
+                                        <Share2 className="w-5 h-5" />
+                                        <span className="text-sm">Delen</span>
                                     </button>
                                 </div>
                             </div>
