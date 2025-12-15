@@ -46,9 +46,7 @@ export default function FeaturedPosts({
   return (
     <div className="w-full">
       <div className={layoutClass}>
-        {displayedPosts.map((post) => {
-          try { console.debug('[featured.post.render]', { id: post.id, created_at: post.created_at, updated_at: post.updated_at }); } catch (e) {}
-          return (
+        {displayedPosts.map((post) => (console.debug('[featured.post.render]', { id: post.id, created_at: post.created_at, updated_at: post.updated_at }), (
           <article
             key={post.id}
             onClick={() => onPostClick?.(post)}
@@ -118,7 +116,7 @@ export default function FeaturedPosts({
               )}
             </div>
           </article>
-        })}
+        ))) }
       </div>
     </div>
   );

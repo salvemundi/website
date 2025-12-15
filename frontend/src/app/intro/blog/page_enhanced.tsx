@@ -6,6 +6,7 @@ import HeroBanner from '@/components/HeroBanner';
 import AuthorCard from '@/components/AuthorCard';
 import TagList from '@/components/TagList';
 import { introBlogsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
+import type { IntroBlog } from '@/shared/lib/api/salvemundi';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
@@ -16,11 +17,9 @@ export default function IntroBlogPage() {
     const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
 
     // Fetch intro blogs/updates
-    const { data: introBlogs, isLoading } = useQuery({
+    const { data: introBlogs, isLoading } = useQuery<IntroBlog[], Error>({
         queryKey: ['intro-blogs'],
         queryFn: introBlogsApi.getAll,
-        onError: (err) => console.error('[useQuery intro-blogs] error', err),
-        onSuccess: (data) => console.debug('[useQuery intro-blogs] success', { count: Array.isArray(data) ? data.length : 'unknown' }),
     });
 
     // Get unique blog types for filtering
@@ -139,7 +138,7 @@ export default function IntroBlogPage() {
                                     </p>
                                 </div>
                             ) : (
-                                <div className="flex gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory pb-4 md:grid md:grid-cols-2 md:overflow-visible md:snap-none">
+                                <div className="flex flex-col gap-6">
                                     {filteredBlogs.map((blog) => {
                                         try { console.debug('[blog.render.enhanced] ', { id: blog.id, created_at: blog.created_at, updated_at: blog.updated_at }); } catch (e) {}
                                         const typeConfig = getBlogTypeConfig(blog.blog_type);
@@ -149,7 +148,7 @@ export default function IntroBlogPage() {
                                             <div
                                                 key={blog.id}
                                                 onClick={() => setSelectedBlog(blog)}
-                                                className="snap-start flex-shrink-0 w-full max-w-md sm:max-w-sm bg-[var(--bg-card)] rounded-xl lg:rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer md:w-auto md:max-w-none"
+                                                className="w-full bg-[var(--bg-card)] rounded-xl lg:rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
                                             >
                                                 {blog.image && (
                                                     <div className="relative h-40 sm:h-48 overflow-hidden">
