@@ -19,6 +19,8 @@ export default function IntroBlogPage() {
     const { data: introBlogs, isLoading } = useQuery({
         queryKey: ['intro-blogs'],
         queryFn: introBlogsApi.getAll,
+        onError: (err) => console.error('[useQuery intro-blogs] error', err),
+        onSuccess: (data) => console.debug('[useQuery intro-blogs] success', { count: Array.isArray(data) ? data.length : 'unknown' }),
     });
 
     // Get unique blog types for filtering
@@ -137,8 +139,9 @@ export default function IntroBlogPage() {
                                     </p>
                                 </div>
                             ) : (
-                                <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
+                                <div className="flex gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory pb-4 md:grid md:grid-cols-2 md:overflow-visible md:snap-none">
                                     {filteredBlogs.map((blog) => {
+                                        try { console.debug('[blog.render.enhanced] ', { id: blog.id, created_at: blog.created_at, updated_at: blog.updated_at }); } catch (e) {}
                                         const typeConfig = getBlogTypeConfig(blog.blog_type);
                                         const TypeIcon = typeConfig.icon;
                                         
@@ -146,7 +149,7 @@ export default function IntroBlogPage() {
                                             <div
                                                 key={blog.id}
                                                 onClick={() => setSelectedBlog(blog)}
-                                                className="bg-[var(--bg-card)] rounded-xl lg:rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+                                                className="snap-start flex-shrink-0 w-full max-w-md sm:max-w-sm bg-[var(--bg-card)] rounded-xl lg:rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer md:w-auto md:max-w-none"
                                             >
                                                 {blog.image && (
                                                     <div className="relative h-40 sm:h-48 overflow-hidden">
@@ -171,10 +174,13 @@ export default function IntroBlogPage() {
                                                     </div>
                                                 )}
                                                 <div className="p-4 lg:p-6">
-                                                    <div className="flex items-center gap-2 text-xs lg:text-sm text-theme-muted mb-2">
-                                                        <Calendar className="w-3 h-3 lg:w-4 lg:h-4" />
-                                                        {format(new Date(blog.published_date), 'd MMMM yyyy', { locale: nl })}
-                                                    </div>
+                                                                            <div className="flex items-center gap-2 text-xs lg:text-sm text-theme-muted mb-2">
+                                                                                <Calendar className="w-3 h-3 lg:w-4 lg:h-4" />
+                                                                                {(() => {
+                                                                                    const d = blog.updated_at || blog.created_at || null;
+                                                                                    return d && !isNaN(new Date(d).getTime()) ? format(new Date(d), 'd MMMM yyyy', { locale: nl }) : '—';
+                                                                                })()}
+                                                                            </div>
                                                     <h3 className="text-lg lg:text-xl font-bold text-theme mb-2 lg:mb-3">{blog.title}</h3>
                                                     <p className="text-sm lg:text-base text-theme-muted line-clamp-3">
                                                         {blog.excerpt || blog.content.substring(0, 150) + '...'}
@@ -271,7 +277,10 @@ export default function IntroBlogPage() {
                                 })()}
                                 <div className="flex items-center gap-2 text-theme-muted text-xs lg:text-sm">
                                     <Calendar className="w-3 h-3 lg:w-4 lg:h-4" />
-                                    {format(new Date(selectedBlog.published_date), 'd MMMM yyyy', { locale: nl })}
+                                    {(() => {
+                                        const d = selectedBlog.updated_at || selectedBlog.created_at || null;
+                                        return d && !isNaN(new Date(d).getTime()) ? format(new Date(d), 'd MMMM yyyy', { locale: nl }) : '—';
+                                    })()}
                                 </div>
                             </div>
 
