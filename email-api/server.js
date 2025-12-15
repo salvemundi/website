@@ -354,51 +354,109 @@ app.post('/send-intro-update', async (req, res) => {
 
     // Send email to each subscriber
     const senderUpn = process.env.MS_GRAPH_SENDER_UPN || 'noreply@salvemundi.nl';
-    
+
+    // Prepare inline image attachment if blogImage is provided
+    let inlineAttachments = [];
+    let imageCid = null;
+    if (blogImage) {
+      try {
+        const imgResp = await fetch(String(blogImage));
+        if (imgResp.ok) {
+          const contentType = imgResp.headers.get('content-type') || 'application/octet-stream';
+          const arrayBuffer = await imgResp.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          const base64 = buffer.toString('base64');
+          // Determine extension from content-type
+          const extMatch = (contentType || '').match(/image\/(png|jpeg|jpg|webp|gif)/i);
+          const ext = extMatch ? extMatch[1].replace('jpeg', 'jpg') : 'png';
+          imageCid = `blogimg-${Date.now()}@salvemundi`;
+          inlineAttachments.push({
+            name: `blog-image.${ext}`,
+            contentType,
+            contentBytes: base64,
+            isInline: true,
+            contentId: imageCid,
+          });
+        } else {
+          console.warn('Could not fetch blog image for inline attachment:', imgResp.status, imgResp.statusText);
+        }
+      } catch (e) {
+        console.warn('Error fetching blog image for inline attachment:', e && e.message ? e.message : e);
+      }
+    }
+
     const emailHtml = `
-      <html>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #7B2CBF 0%, #FF6B35 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">Nieuwe Intro Update!</h1>
-          </div>
-          
-          ${blogImage ? `
-            <div style="width: 100%; height: 250px; overflow: hidden;">
-              <img src="${blogImage}" alt="${blogTitle}" style="width: 100%; height: 100%; object-fit: cover;" />
+      <!doctype html>
+      <html lang="nl">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <style>
+          :root{
+            --bg: #f9fafb;
+            --card: #ffffff;
+            --text: #0f172a;
+            --muted: #6b7280;
+            --accent1: #7B2CBF;
+            --accent2: #FF6B35;
+            --btn-text: #ffffff;
+          }
+          @media (prefers-color-scheme: dark){
+            :root{
+              --bg: #071025;
+              --card: #071229;
+              --text: #e6eef8;
+              --muted: #94a3b8;
+            }
+          }
+          body{margin:0;padding:20px;background:var(--bg);font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;-webkit-font-smoothing:antialiased;color:var(--text);}
+          .container{max-width:600px;margin:0 auto}
+          .header{background: linear-gradient(135deg,var(--accent1) 0%, var(--accent2) 100%);padding:30px;text-align:center;border-radius:12px 12px 0 0}
+          .header h1{color:var(--btn-text);margin:0;font-size:28px}
+          .hero-image{width:100%;height:250px;overflow:hidden}
+          .hero-image img{width:100%;height:100%;object-fit:cover;display:block;border:0}
+          .card{background:var(--card);padding:30px;border-radius:0 0 12px 12px;color:var(--text)}
+          .title{color:var(--accent1);margin-top:0}
+          .excerpt{font-size:16px;color:var(--text);line-height:1.8}
+          .cta{display:inline-block;background: linear-gradient(135deg,var(--accent1) 0%, var(--accent2) 100%);color:var(--btn-text);text-decoration:none;padding:14px 32px;border-radius:25px;font-weight:600}
+          .footer{text-align:center;padding:20px;font-size:12px;color:var(--muted)}
+          @media screen and (max-width:480px){.header{padding:20px}.card{padding:20px}.hero-image{height:180px}}
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header"><h1>Nieuwe Intro Update!</h1></div>
+
+          ${imageCid ? `
+            <div class="hero-image">
+              <img src="cid:${imageCid}" alt="${blogTitle}" />
             </div>
-          ` : ''}
-          
-          <div style="padding: 30px; background-color: #f9f9f9; border-radius: 0 0 12px 12px;">
-            <h2 style="color: #7B2CBF; margin-top: 0;">${blogTitle}</h2>
-            
+          ` : (blogImage ? `
+            <div class="hero-image">
+              <img src="${blogImage}" alt="${blogTitle}" />
+            </div>
+          ` : '')}
+
+          <div class="card">
+            <h2 class="title">${blogTitle}</h2>
+
             ${blogExcerpt ? `
-              <p style="font-size: 16px; color: #555; line-height: 1.8;">
-                ${blogExcerpt}
-              </p>
+              <p class="excerpt">${blogExcerpt}</p>
             ` : ''}
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${blogUrl}" 
-                 style="display: inline-block; background: linear-gradient(135deg, #7B2CBF 0%, #FF6B35 100%); 
-                        color: white; text-decoration: none; padding: 14px 32px; 
-                        border-radius: 25px; font-weight: bold; font-size: 16px;">
-                Lees meer →
-              </a>
+
+            <div style="text-align:center;margin:30px 0;">
+              <a href="${blogUrl}" class="cta">Lees meer →</a>
             </div>
-            
-            <p style="color: #666; font-size: 14px; margin-top: 30px;">
-              We hopen je snel te zien tijdens de introweek!<br>
-              <strong>Het Salve Mundi Intro Team</strong>
-            </p>
+
+            <p style="color:var(--muted);font-size:14px;margin-top:30px;">We hopen je snel te zien tijdens de introweek!<br><strong>Het Salve Mundi Intro Team</strong></p>
           </div>
-          
-          <div style="text-align: center; padding: 20px; font-size: 12px; color: #999;">
-            <p>
-              Je ontvangt deze email omdat je bent ingeschreven voor intro updates.<br>
-              <a href="${blogUrl.replace('/blog', '')}" style="color: #7B2CBF;">Uitschrijven</a>
-            </p>
+
+          <div class="footer">
+            <p>Je ontvangt deze email omdat je bent ingeschreven voor intro updates.<br>
+            <a href="${blogUrl.replace('/blog', '')}" style="color:var(--accent1);text-decoration:none">Uitschrijven</a></p>
           </div>
-        </body>
+        </div>
+      </body>
       </html>
     `;
 
@@ -420,6 +478,23 @@ app.post('/send-intro-update', async (req, res) => {
       },
       saveToSentItems: false
     };
+
+    // Attach inline image(s) if prepared
+    if (inlineAttachments.length > 0) {
+      emailPayload.message.attachments = inlineAttachments.map((attachment) => {
+        const attachmentObj = {
+          '@odata.type': '#microsoft.graph.fileAttachment',
+          name: attachment.name,
+          contentType: attachment.contentType,
+          contentBytes: attachment.contentBytes,
+          isInline: Boolean(attachment.isInline),
+        };
+        if (attachment.isInline && attachment.contentId) {
+          attachmentObj.contentId = attachment.contentId;
+        }
+        return attachmentObj;
+      });
+    }
 
     const sendUrl = `https://graph.microsoft.com/v1.0/users/${senderUpn}/sendMail`;
     const sendResponse = await fetch(sendUrl, {
