@@ -9,7 +9,7 @@ import { introBlogsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { Calendar, Newspaper, Image as ImageIcon, Megaphone, PartyPopper, X, Filter, Heart, Share2, Mail } from 'lucide-react';
+import { Calendar, Newspaper, Image as ImageIcon, Megaphone, PartyPopper, X, Filter, Heart, Mail } from 'lucide-react';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
 import { toast } from 'sonner';
@@ -367,10 +367,7 @@ export default function IntroBlogPage() {
                                                         <span className="text-sm">Leuk vinden</span>
                                                         <span className="text-sm text-theme-muted ml-2">{blog.likes ?? 0}</span>
                                                     </button>
-                                                    <button className="flex items-center gap-2 text-theme-muted hover:text-theme-purple transition-colors">
-                                                        <Share2 className="w-5 h-5" />
-                                                        <span className="text-sm">Delen</span>
-                                                    </button>
+                                                    {/* Share button removed */}
                                                     {canSendEmails && (
                                                         <button 
                                                             onClick={() => handleSendEmail(blog)}
@@ -428,7 +425,7 @@ export default function IntroBlogPage() {
             {/* Blog Detail Modal */}
             {selectedBlog && (
                 <div
-                    className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
+                    className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-start justify-center p-4 pt-20 overflow-y-auto"
                     onClick={() => setSelectedBlog(null)}
                 >
                     <div
@@ -511,6 +508,74 @@ export default function IntroBlogPage() {
                                     </div>
                                 </div>
                             )}
+
+                            {/* Detail action bar (like button) */}
+                            <div className="border-t mt-6 pt-4 px-0">
+                                <div className="flex items-center gap-4">
+                                    <button
+                                        onClick={async (e) => {
+                                            e.stopPropagation();
+                                            if (!isAuthenticated) {
+                                                setShowLoginModal(true);
+                                                return;
+                                            }
+                                            if (likedBlogs.includes(selectedBlog.id)) {
+                                                toast('Je hebt dit al geliked');
+                                                return;
+                                            }
+
+                                            let previous: any[] | undefined;
+                                            try {
+                                                // Optimistic UI: update cache first
+                                                previous = queryClient.getQueryData<any[]>(['intro-blogs']);
+                                                queryClient.setQueryData(['intro-blogs'], (old: any[] | undefined) => {
+                                                    if (!old) return old;
+                                                    return old.map((b) => b.id === selectedBlog.id ? { ...b, likes: (b.likes || 0) + 1 } : b);
+                                                });
+
+                                                const resp = await fetch('/api/blog-like', {
+                                                    method: 'POST',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({ blogId: selectedBlog.id, userId: user?.id }),
+                                                });
+
+                                                if (resp.ok) {
+                                                    const json = await resp.json();
+                                                    // Reconcile with server value
+                                                    queryClient.setQueryData(['intro-blogs'], (old: any[] | undefined) => {
+                                                        if (!old) return old;
+                                                        return old.map((b) => b.id === selectedBlog.id ? { ...b, likes: json.likes ?? (b.likes || 0) } : b);
+                                                    });
+
+                                                    setSelectedBlog({ ...selectedBlog, likes: json.likes ?? (selectedBlog.likes || 0) });
+
+                                                    const next = Array.from(new Set([...likedBlogs, selectedBlog.id]));
+                                                    setLikedBlogs(next);
+                                                    try { localStorage.setItem('likedBlogs', JSON.stringify(next)); } catch (e) {}
+
+                                                    toast.success('Bedankt voor je like!');
+                                                } else {
+                                                    // rollback
+                                                    if (previous) queryClient.setQueryData(['intro-blogs'], previous as any[] | undefined);
+                                                    const txt = await resp.text().catch(() => undefined);
+                                                    toast.error('Kon like niet registreren');
+                                                    console.error('Like API error', resp.status, txt);
+                                                }
+                                            } catch (err) {
+                                                if (previous) queryClient.setQueryData(['intro-blogs'], previous as any[] | undefined);
+                                                console.error('Failed to call like API', err);
+                                                toast.error('Er ging iets mis bij liken');
+                                            }
+                                        }}
+                                        disabled={!isAuthenticated || likedBlogs.includes(selectedBlog.id)}
+                                        className="flex items-center gap-2 text-theme-muted hover:text-theme-purple transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <Heart className="w-5 h-5" />
+                                        <span className="text-sm">Leuk vinden</span>
+                                        <span className="text-sm text-theme-muted ml-2">{selectedBlog.likes ?? 0}</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
