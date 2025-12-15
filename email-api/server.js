@@ -298,11 +298,12 @@ app.post('/send-email', async (req, res) => {
 });
 
 // Intro update notification endpoint
+// Now expects the frontend to provide the subscriber emails
 app.post('/send-intro-update', async (req, res) => {
   try {
     console.log('📧 Intro update notification requested');
 
-    const { blogTitle, blogExcerpt, blogUrl, blogImage } = req.body || {};
+    const { blogTitle, blogExcerpt, blogUrl, blogImage, subscribers } = req.body || {};
 
     if (!blogTitle || !blogUrl) {
       return res.status(400).json({
@@ -310,53 +311,23 @@ app.post('/send-intro-update', async (req, res) => {
       });
     }
 
-    // Fetch subscribers from Directus - get all intro signups (both participants and parents)
-    const directusUrl = process.env.DIRECTUS_URL || 'https://admin.salvemundi.nl';
-    const directusToken = process.env.DIRECTUS_API_KEY;
-
-    if (!directusToken) {
-      return res.status(500).json({ error: 'Directus API key not configured' });
-    }
-
-    // Fetch participant signups
-    const participantsResponse = await fetch(
-      `${directusUrl}/items/intro_signups?fields=email`,
-      {
-        headers: {
-          'Authorization': `Bearer ${directusToken}`
-        }
-      }
-    );
-
-    // Fetch parent signups
-    const parentsResponse = await fetch(
-      `${directusUrl}/items/intro_parent_signups?fields=email`,
-      {
-        headers: {
-          'Authorization': `Bearer ${directusToken}`
-        }
-      }
-    );
-
-    if (!participantsResponse.ok || !parentsResponse.ok) {
-      throw new Error('Failed to fetch intro signups');
-    }
-
-    const participantsData = await participantsResponse.json();
-    const parentsData = await parentsResponse.json();
-    
-    const participantEmails = (participantsData.data || []).map(p => p.email).filter(Boolean);
-    const parentEmails = (parentsData.data || []).map(p => p.email).filter(Boolean);
-    
-    // Combine and deduplicate emails
-    const allEmails = [...new Set([...participantEmails, ...parentEmails])];
-    
-    const subscribers = allEmails.map(email => ({ email }));
-
-    if (subscribers.length === 0) {
-      return res.json({
+    if (!subscribers || !Array.isArray(subscribers) || subscribers.length === 0) {
+      return res.status(200).json({
         success: true,
-        message: 'No intro signups found',
+        message: 'No subscribers provided',
+        sentCount: 0
+      });
+    }
+
+    console.log(`📊 Processing ${subscribers.length} subscribers`);
+
+    // Extract email addresses from subscribers array
+    const emailsToSend = subscribers.map(sub => sub.email).filter(Boolean);
+    
+    if (emailsToSend.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: 'No valid email addresses found',
         sentCount: 0
       });
     }
@@ -383,7 +354,6 @@ app.post('/send-intro-update', async (req, res) => {
 
     // Send email to each subscriber
     const senderUpn = process.env.MS_GRAPH_SENDER_UPN || 'noreply@salvemundi.nl';
-    const emailsToSend = subscribers.map(sub => sub.email);
     
     const emailHtml = `
       <html>

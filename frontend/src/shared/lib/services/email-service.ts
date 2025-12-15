@@ -487,6 +487,7 @@ export async function sendIntroSignupEmail(data: IntroSignupEmailData): Promise<
 
 /**
  * Send intro blog update notification to all newsletter subscribers
+ * Uses the Next.js API route which fetches data from Directus and sends to email service
  */
 export async function sendIntroBlogUpdateNotification(data: {
     blogTitle: string;
@@ -494,10 +495,8 @@ export async function sendIntroBlogUpdateNotification(data: {
     blogUrl: string;
     blogImage?: string;
 }): Promise<void> {
-    const emailApiUrl = process.env.NEXT_PUBLIC_EMAIL_API_URL || 'http://localhost:3001';
-
     try {
-        const response = await fetch(`${emailApiUrl}/send-intro-update`, {
+        const response = await fetch('/api/send-intro-update', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
