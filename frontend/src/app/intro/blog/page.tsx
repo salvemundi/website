@@ -9,7 +9,7 @@ import { introBlogsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { Calendar, Newspaper, Image as ImageIcon, Megaphone, PartyPopper, X, Filter, Heart, MessageCircle, Share2, Mail } from 'lucide-react';
+import { Calendar, Newspaper, Image as ImageIcon, Megaphone, PartyPopper, X, Filter, Heart, Share2, Mail } from 'lucide-react';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
 import { toast } from 'sonner';
