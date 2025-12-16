@@ -45,23 +45,10 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit):
         ...(options?.headers as Record<string, string>),
     };
 
-    // Debug: log request info (don't print sensitive tokens)
-    try {
-        console.debug('[directusFetch] Request', { method: options?.method || 'GET', url });
-    } catch (e) {
-        // ignore logging failures
-    }
-
-    let response: Response;
-    try {
-        response = await fetch(url, {
-            ...options,
-            headers,
-        });
-    } catch (networkErr) {
-        console.error('[directusFetch] Network error when fetching', url, networkErr);
-        throw networkErr;
-    }
+    const response = await fetch(url, {
+        ...options,
+        headers,
+    });
 
     // Handle 401 Unauthorized specifically
     if (response.status === 401) {
@@ -73,8 +60,6 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit):
         }
     }
 
-    console.debug('[directusFetch] Response status', { url, status: response.status, ok: response.ok });
-
     if (!response.ok) {
         const contentType = response.headers.get('content-type');
         if (contentType && contentType.includes('text/html')) {
@@ -82,18 +67,10 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit):
             throw new Error(`Directus API error: ${response.status} ${response.statusText} (Server returned HTML, likely a proxy or gateway error)`);
         }
         const errorText = await response.text();
-        console.error('[directusFetch] API error body preview', { url, status: response.status, body: errorText.slice ? errorText.slice(0, 1000) : errorText });
         throw new Error(`Directus API error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     const json = await response.json();
-    try {
-        const dataPreview = Array.isArray(json.data) ? `array(${json.data.length})` : (json.data && typeof json.data === 'object' ? 'object' : typeof json.data);
-        console.debug('[directusFetch] Response OK', { url, status: response.status, data: dataPreview });
-    } catch (e) {
-        // ignore
-    }
-
     return json.data as T;
 }
 
