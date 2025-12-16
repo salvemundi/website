@@ -38,6 +38,7 @@ export default function IntroBlogPage() {
         queryFn: introBlogsApi.getAll,
     });
 
+
     // Fetch committee_members rows for current user to determine committee membership
     const { data: committeeRows = [] } = useQuery({
         queryKey: ['user-committee-members', user?.id],
@@ -56,6 +57,8 @@ export default function IntroBlogPage() {
         },
         enabled: Boolean(user?.id),
     });
+
+    // (debug logging removed)
 
     // Check if user has permission to send emails (intro commissie or bestuur)
     const canSendEmails = useMemo(() => {
@@ -265,7 +268,10 @@ export default function IntroBlogPage() {
                                                         </div>
                                                         <div className="flex items-center gap-1 text-xs text-theme-muted">
                                                             <Calendar className="w-3 h-3" />
-                                                            {format(new Date(blog.published_date), 'd MMMM yyyy', { locale: nl })}
+                                                            {(() => {
+                                                                const date = blog.published_date ?? blog.updated_at;
+                                                                return date ? format(new Date(date), 'd MMMM yyyy', { locale: nl }) : null;
+                                                            })()}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -474,7 +480,7 @@ export default function IntroBlogPage() {
                                 })()}
                                 <div className="flex items-center gap-2 text-theme-muted text-xs lg:text-sm">
                                     <Calendar className="w-3 h-3 lg:w-4 lg:h-4" />
-                                    {format(new Date(selectedBlog.published_date), 'd MMMM yyyy', { locale: nl })}
+                                    {format(new Date(selectedBlog.published_date || selectedBlog.updated_at), 'd MMMM yyyy', { locale: nl })}
                                 </div>
                             </div>
 

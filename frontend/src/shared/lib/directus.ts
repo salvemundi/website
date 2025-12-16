@@ -45,6 +45,25 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit):
         ...(options?.headers as Record<string, string>),
     };
 
+    // Debug: log whether an Authorization header will be sent (mask the token)
+    try {
+        const mask = (s: string | undefined) => {
+            if (!s) return undefined;
+            try {
+                const t = s.replace(/^Bearer\s+/i, '');
+                if (t.length <= 8) return '****' + t.slice(-2);
+                return '****' + t.slice(-6);
+            } catch (e) {
+                return '****';
+            }
+        };
+
+        // Avoid leaking secrets in logs; only indicate presence and a masked suffix
+        console.debug('[directusFetch] url=', url, 'usingSessionToken=', usingSessionToken, 'Authorization=', mask(authHeader));
+    } catch (e) {
+        // ignore logging errors
+    }
+
     const response = await fetch(url, {
         ...options,
         headers,
@@ -67,6 +86,11 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit):
             throw new Error(`Directus API error: ${response.status} ${response.statusText} (Server returned HTML, likely a proxy or gateway error)`);
         }
         const errorText = await response.text();
+        try {
+            console.debug('[directusFetch] non-OK response', { url, status: response.status, statusText: response.statusText, body: errorText.slice(0, 200) });
+        } catch (e) {
+            // ignore logging errors
+        }
         throw new Error(`Directus API error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
