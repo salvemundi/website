@@ -1,20 +1,30 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import PageHeader from '@/widgets/page-header/ui/PageHeader';
+// PageHeader removed for intro pages to avoid duplicate standard banner
 import HeroBanner from '@/components/HeroBanner';
 import AuthorCard from '@/components/AuthorCard';
 import TagList from '@/components/TagList';
+import LoginRequiredModal from '@/components/LoginRequiredModal';
+import { useAuth } from '@/features/auth/providers/auth-provider';
 import { introBlogsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
 import type { IntroBlog } from '@/shared/lib/api/salvemundi';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { Calendar, Newspaper, Image as ImageIcon, Megaphone, PartyPopper, X, Filter } from 'lucide-react';
+import { Calendar, Newspaper, Image as ImageIcon, Megaphone, PartyPopper, X, Filter, Heart, Share2 } from 'lucide-react';
 
 export default function IntroBlogPage() {
     const [selectedBlog, setSelectedBlog] = useState<any>(null);
     const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
+    const { isAuthenticated, user } = useAuth();
+
+    // local likes state (overrides backend value when updated)
+    const [likesMap, setLikesMap] = useState<Record<string | number, number>>({});
+    const [likedSet, setLikedSet] = useState<Record<string | number, boolean>>({});
+    const [likeLoadingId, setLikeLoadingId] = useState<number | null>(null);
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const [copiedId, setCopiedId] = useState<number | null>(null);
 
     // Fetch intro blogs/updates
     const { data: introBlogs, isLoading } = useQuery<IntroBlog[], Error>({
@@ -52,10 +62,6 @@ export default function IntroBlogPage() {
 
     return (
         <>
-            <div className="flex flex-col w-full">
-                <PageHeader title="INTRO - BLOG & UPDATES" backgroundImage="/img/backgrounds/intro-banner.jpg" />
-            </div>
-
             <main className="px-4 sm:px-6 lg:px-10 py-8 lg:py-12">
                 <div className="max-w-7xl mx-auto">
                     {/* Hero Banner */}
@@ -143,6 +149,8 @@ export default function IntroBlogPage() {
                                         try { console.debug('[blog.render.enhanced] ', { id: blog.id, created_at: blog.created_at, updated_at: blog.updated_at }); } catch (e) {}
                                         const typeConfig = getBlogTypeConfig(blog.blog_type);
                                         const TypeIcon = typeConfig.icon;
+                                        const displayedLikes = likesMap[blog.id] ?? blog.likes ?? 0;
+                                        const isLiked = !!likedSet[blog.id];
                                         
                                         return (
                                             <div
@@ -163,15 +171,7 @@ export default function IntroBlogPage() {
                                                         </div>
                                                     </div>
                                                 )}
-                                                {!blog.image && (
-                                                    <div className="relative h-40 sm:h-48 bg-gradient-theme flex items-center justify-center">
-                                                        <TypeIcon className="w-12 h-12 lg:w-16 lg:h-16 text-white/50" />
-                                                        <div className={`absolute top-2 right-2 lg:top-3 lg:right-3 ${typeConfig.color} text-white text-[10px] lg:text-xs font-bold px-2 py-1 lg:px-3 rounded-full flex items-center gap-1`}>
-                                                            <TypeIcon className="w-2.5 h-2.5 lg:w-3 lg:h-3" />
-                                                            {typeConfig.label}
-                                                        </div>
-                                                    </div>
-                                                )}
+                                                {/* If no image is provided, don't render a placeholder — show title and excerpt only. */}
                                                 <div className="p-4 lg:p-6">
                                                                             <div className="flex items-center gap-2 text-xs lg:text-sm text-theme-muted mb-2">
                                                                                 <Calendar className="w-3 h-3 lg:w-4 lg:h-4" />
@@ -184,8 +184,100 @@ export default function IntroBlogPage() {
                                                     <p className="text-sm lg:text-base text-theme-muted line-clamp-3">
                                                         {blog.excerpt || blog.content.substring(0, 150) + '...'}
                                                     </p>
-                                                    <div className="mt-3 lg:mt-4 text-theme-purple text-xs lg:text-sm font-semibold">
-                                                        Klik voor meer details →
+                                                    <div className="mt-3 lg:mt-4 flex items-center justify-between gap-3">
+                                                        <div className="text-theme-purple text-xs lg:text-sm font-semibold">
+                                                            Klik voor meer details →
+                                                        </div>
+
+                                                        <div className="flex items-center gap-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={async (e) => {
+                                                                    e.stopPropagation();
+                                                                    if (!isAuthenticated || !user) {
+                                                                        setShowLoginModal(true);
+                                                                        return;
+                                                                    }
+                                                                    if (likeLoadingId) return;
+                                                                    setLikeLoadingId(blog.id);
+                                                                    try {
+                                                                        if (!isLiked) {
+                                                                            // create like
+                                                                            const resp = await fetch('/api/blog-like', {
+                                                                                method: 'POST',
+                                                                                headers: { 'Content-Type': 'application/json' },
+                                                                                body: JSON.stringify({ blogId: blog.id, userId: user.id }),
+                                                                            });
+                                                                            const data = await resp.json();
+                                                                            if (data && data.likes != null) setLikesMap(prev => ({ ...prev, [blog.id]: data.likes }));
+                                                                            setLikedSet(prev => ({ ...prev, [blog.id]: true }));
+                                                                        } else {
+                                                                            // remove like
+                                                                            const resp = await fetch('/api/blog-unlike', {
+                                                                                method: 'POST',
+                                                                                headers: { 'Content-Type': 'application/json' },
+                                                                                body: JSON.stringify({ blogId: blog.id, userId: user.id }),
+                                                                            });
+                                                                            const data = await resp.json();
+                                                                            if (data && data.likes != null) setLikesMap(prev => ({ ...prev, [blog.id]: data.likes }));
+                                                                            setLikedSet(prev => ({ ...prev, [blog.id]: false }));
+                                                                        }
+
+                                                                        // trigger pop animation by toggling class
+                                                                        const el = document.getElementById(`heart-${blog.id}`);
+                                                                        if (el) {
+                                                                            el.classList.add('pop');
+                                                                            setTimeout(() => el.classList.remove('pop'), 220);
+                                                                        }
+                                                                    } catch (err) {
+                                                                        console.error('Like toggle failed', err);
+                                                                    } finally {
+                                                                        setLikeLoadingId(null);
+                                                                    }
+                                                                }}
+                                                                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border transition ${isLiked ? 'bg-red-500 text-white border-transparent' : 'bg-[var(--bg-card)] text-theme hover:bg-theme-purple/5'}`}
+                                                                aria-label={`Like ${blog.title}`}
+                                                            >
+                                                                <span id={`heart-${blog.id}`} className="heart-pop inline-flex">
+                                                                    <Heart className="w-4 h-4" />
+                                                                </span>
+                                                                <span className="text-sm">{displayedLikes}</span>
+                                                            </button>
+
+                                                            <button
+                                                                type="button"
+                                                                onClick={async (e) => {
+                                                                    e.stopPropagation();
+                                                                    const url = `${window.location.origin}/intro/blog/${blog.slug || blog.id}`;
+                                                                    try {
+                                                                        if (navigator.share) {
+                                                                            await navigator.share({ title: blog.title, text: blog.excerpt || '', url });
+                                                                        } else if (navigator.clipboard) {
+                                                                            await navigator.clipboard.writeText(url);
+                                                                            setCopiedId(blog.id);
+                                                                            setTimeout(() => setCopiedId(null), 2000);
+                                                                        } else {
+                                                                            // last resort
+                                                                            const tmp = document.createElement('input');
+                                                                            tmp.value = url;
+                                                                            document.body.appendChild(tmp);
+                                                                            tmp.select();
+                                                                            document.execCommand('copy');
+                                                                            document.body.removeChild(tmp);
+                                                                            setCopiedId(blog.id);
+                                                                            setTimeout(() => setCopiedId(null), 2000);
+                                                                        }
+                                                                    } catch (err) {
+                                                                        console.error('Share failed', err);
+                                                                    }
+                                                                }}
+                                                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--bg-card)] text-theme hover:bg-theme-purple/5"
+                                                                aria-label={`Share ${blog.title}`}
+                                                            >
+                                                                <Share2 className="w-4 h-4" />
+                                                                <span className="text-sm">{copiedId === blog.id ? 'Gekopieerd' : 'Delen'}</span>
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -318,6 +410,10 @@ export default function IntroBlogPage() {
                 </div>
             )}
 
+            {/* Login Required Modal for liking */}
+            <LoginRequiredModal open={showLoginModal} onClose={() => setShowLoginModal(false)} />
+
         </>
     );
 }
+

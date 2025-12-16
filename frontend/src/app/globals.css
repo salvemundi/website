@@ -57,6 +57,14 @@
   --border-color: var(--border-color-light);
 }
 
+/* Heart toggle animation */
+.heart-pop {
+  transition: transform 180ms cubic-bezier(.2,.9,.2,1), opacity 180ms;
+}
+.heart-pop.pop {
+  transform: scale(1.25);
+}
+
 /* 🌙 Dark mode - switch to dark variants */
 .dark {
   --color-primary: var(--color-primary-dark);
