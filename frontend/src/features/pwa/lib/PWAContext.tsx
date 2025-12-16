@@ -47,7 +47,7 @@ export function PWAProvider({ children }: { children: ReactNode }) {
         const { outcome } = await deferredPrompt.userChoice;
 
         if (outcome === 'accepted') {
-            console.log('User has accepted the PWA install prompt');
+            // user accepted install prompt (log removed)
         }
 
         setDeferredPrompt(null);

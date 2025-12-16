@@ -133,7 +133,7 @@ export const eventsApi = {
                             event.committee_name = committee.name;
                         }
                     } catch (error) {
-                        console.warn(`Could not fetch committee for event ${event.id}`, error);
+                        // suppressed non-error log
                     }
                 }
 
@@ -149,7 +149,7 @@ export const eventsApi = {
                             event.contact_name = `${leaders[0].user_id.first_name || ''} ${leaders[0].user_id.last_name || ''}`.trim();
                         }
                     } catch (error) {
-                        console.warn(`Could not fetch committee leader for event ${event.id}`, error);
+                        // suppressed non-error log
                     }
                 } else if (event.contact) {
                     event.contact_phone = event.contact;
@@ -174,7 +174,7 @@ export const eventsApi = {
                     event.committee_name = committee.name;
                 }
             } catch (error) {
-                console.warn(`Could not fetch committee for event ${event.id}`, error);
+                // suppressed non-error log
             }
         }
 
@@ -190,7 +190,7 @@ export const eventsApi = {
                     event.contact_name = `${leaders[0].user_id.first_name || ''} ${leaders[0].user_id.last_name || ''}`.trim();
                 }
             } catch (error) {
-                console.warn(`Could not fetch committee leader for event ${event.id}`, error);
+                // suppressed non-error log
             }
         } else if (event.contact) {
             event.contact_phone = event.contact;
@@ -264,7 +264,7 @@ export const eventsApi = {
                 try {
                     qrDataUrl = await qrService.generateQRCode(token);
                 } catch (e) {
-                    console.warn('Failed to generate QR image:', e);
+                    // suppressed non-error log
                 }
 
                 // send email (best-effort)
@@ -284,7 +284,7 @@ export const eventsApi = {
                         contactPhone: undefined,
                     });
                 } catch (e) {
-                    console.warn('Failed to send signup email:', e);
+                    // suppressed non-error log
                 }
                 // Update the local signup object with the QR token instead of refetching
                 signup.qr_token = token;
@@ -292,7 +292,7 @@ export const eventsApi = {
             }
 
         } catch (err) {
-            console.warn('QR/email post-processing failed:', err);
+            // suppressed non-error log
         }
 
         return signup;
@@ -663,27 +663,26 @@ export interface IntroBlog {
     excerpt?: string;
     image?: string;
     likes?: number;
-    published_date: string;
+    updated_at: string;
     is_published: boolean;
     blog_type: 'update' | 'pictures' | 'event' | 'announcement';
     created_at: string;
-    updated_at?: string;
 }
 
 export const introBlogsApi = {
     getAll: async (): Promise<IntroBlog[]> => {
         return directusFetch<IntroBlog[]>(
-            `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,likes,published_date,is_published,blog_type,created_at,updated_at&filter[is_published][_eq]=true&sort=-published_date`
+            `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,likes,updated_at,is_published,blog_type,created_at&filter[is_published][_eq]=true&sort=-updated_at`
         );
     },
     getById: async (id: number): Promise<IntroBlog> => {
         return directusFetch<IntroBlog>(
-            `/items/intro_blogs/${id}?fields=id,title,slug,content,excerpt,image.id,likes,published_date,is_published,blog_type,created_at,updated_at`
+            `/items/intro_blogs/${id}?fields=id,title,slug,content,excerpt,image.id,likes,updated_at,is_published,blog_type,created_at`
         );
     },
     getByType: async (type: 'update' | 'pictures' | 'event' | 'announcement'): Promise<IntroBlog[]> => {
         return directusFetch<IntroBlog[]>(
-            `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,likes,published_date,is_published,blog_type,created_at,updated_at&filter[is_published][_eq]=true&filter[blog_type][_eq]=${type}&sort=-published_date`
+            `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,likes,updated_at,is_published,blog_type,created_at&filter[is_published][_eq]=true&filter[blog_type][_eq]=${type}&sort=-updated_at`
         );
     }
 };

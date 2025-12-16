@@ -45,24 +45,7 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit):
         ...(options?.headers as Record<string, string>),
     };
 
-    // Debug: log whether an Authorization header will be sent (mask the token)
-    try {
-        const mask = (s: string | undefined) => {
-            if (!s) return undefined;
-            try {
-                const t = s.replace(/^Bearer\s+/i, '');
-                if (t.length <= 8) return '****' + t.slice(-2);
-                return '****' + t.slice(-6);
-            } catch (e) {
-                return '****';
-            }
-        };
-
-        // Avoid leaking secrets in logs; only indicate presence and a masked suffix
-        console.debug('[directusFetch] url=', url, 'usingSessionToken=', usingSessionToken, 'Authorization=', mask(authHeader));
-    } catch (e) {
-        // ignore logging errors
-    }
+        // Debug logging removed to avoid leaking masked tokens
 
     const response = await fetch(url, {
         ...options,
@@ -74,7 +57,6 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit):
         // If we were using a session token and got a 401, the token is invalid or expired.
         // We strictly clear it to prevent persistent authentication errors on subsequent loads.
         if (usingSessionToken && typeof window !== 'undefined') {
-            console.warn('[directusFetch] Session token rejected (401). Clearing invalid token to restore public access.');
             localStorage.removeItem('auth_token');
         }
     }
@@ -87,9 +69,9 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit):
         }
         const errorText = await response.text();
         try {
-            console.debug('[directusFetch] non-OK response', { url, status: response.status, statusText: response.statusText, body: errorText.slice(0, 200) });
+            // non-OK response details suppressed
         } catch (e) {
-            // ignore logging errors
+            // ignore
         }
         throw new Error(`Directus API error: ${response.status} ${response.statusText} - ${errorText}`);
     }

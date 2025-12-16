@@ -38,7 +38,6 @@ app.use(cors({
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
-            console.warn(`Blocked CORS origin: ${origin}`);
             callback(new Error('Not allowed by CORS'));
         }
     }
@@ -57,6 +56,4 @@ app.use(
     )
 );
 
-app.listen(PORT, () => {
-    console.info(`[PaymentAPI] Server running on port ${PORT}`);
-});
+app.listen(PORT, () => {});

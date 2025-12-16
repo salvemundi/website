@@ -97,8 +97,7 @@ async function sendEmail(
     attachments?: EmailAttachment[]
 ): Promise<void> {
     if (config.useMicrosoftGraph) {
-        console.warn('⚠️ Microsoft Graph API requires backend authentication. Email functionality is disabled.');
-        return;
+      return;
     }
 
     // NOTE: Calling email API directly from frontend causes CORS errors.
@@ -130,8 +129,7 @@ async function sendEmail(
     } catch (error: any) {
         // Silently handle CORS errors - these are expected when calling external API from browser
         if (error.message?.includes('CORS') || error.message?.includes('Failed to fetch')) {
-            console.info('📧 Email sending skipped (CORS policy). Implement a backend API route for production.');
-            return;
+          return;
         }
         throw error;
     }
@@ -145,8 +143,7 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
     const config = getEmailConfig();
 
     if (!config.apiEndpoint) {
-        console.warn('Email API endpoint not configured. Skipping email notification.');
-        return;
+      return;
     }
 
     try {
@@ -265,19 +262,19 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
                 userEmailBody,
                 qrCodeAttachment ? [qrCodeAttachment] : undefined
             );
-            console.log('✅ Participant email sent');
+            
         } catch (err) {
             console.error('❌ Failed to send participant email:', err);
         }
 
         try {
             await sendEmail(config, config.fromEmail, `Nieuwe aanmelding: ${data.eventName} - ${data.recipientName}`, orgEmailBody);
-            console.log('✅ Organization notification email sent');
+            
         } catch (err) {
             console.error('❌ Failed to send organization email:', err);
         }
 
-        console.log('✅ Event signup email process completed');
+        
     } catch (error) {
         console.error('❌ Failed to send event signup email:', error);
         // Don't throw error - we don't want to fail the signup if email fails
@@ -291,8 +288,7 @@ export async function sendMembershipSignupEmail(data: MembershipSignupEmailData)
     const config = getEmailConfig();
 
     if (!config.apiEndpoint) {
-        console.warn('Email API endpoint not configured. Skipping email notification.');
-        return;
+      return;
     }
 
     try {
@@ -360,7 +356,7 @@ export async function sendMembershipSignupEmail(data: MembershipSignupEmailData)
                 'Bevestiging lidmaatschap inschrijving',
                 userEmailBody
             );
-            console.log('✅ Membership signup confirmation sent to participant');
+            // membership confirmation sent (log removed)
         } catch (error) {
             console.error('❌ Failed to send membership confirmation to participant:', error);
         }
@@ -372,7 +368,7 @@ export async function sendMembershipSignupEmail(data: MembershipSignupEmailData)
                 `Nieuwe lidmaatschap aanmelding: ${data.firstName} ${data.lastName}`,
                 adminEmailBody
             );
-            console.log('✅ Membership signup notification sent to organization');
+            // membership notification sent to organization (log removed)
         } catch (error) {
             console.error('❌ Failed to send membership signup notification to organization:', error);
         }
@@ -393,13 +389,12 @@ export async function sendNotificationEmail(
     const config = getEmailConfig();
 
     if (!config.apiEndpoint) {
-        console.warn('Email API endpoint not configured. Skipping email notification.');
-        return;
+      return;
     }
 
     try {
         await sendEmail(config, to, subject, htmlBody);
-        console.log('✅ Notification email sent successfully');
+        // notification sent (log removed)
     } catch (error) {
         console.error('❌ Failed to send notification email:', error);
         throw error;
@@ -414,8 +409,7 @@ export async function sendIntroSignupEmail(data: IntroSignupEmailData): Promise<
     const config = getEmailConfig();
 
     if (!config.apiEndpoint) {
-        console.warn('Email API endpoint not configured. Skipping intro signup email.');
-        return;
+      return;
     }
 
     try {
@@ -467,19 +461,19 @@ export async function sendIntroSignupEmail(data: IntroSignupEmailData): Promise<
         // Send emails sequentially to avoid race conditions
         try {
             await sendEmail(config, data.participantEmail, 'Bevestiging introweek aanmelding', userEmailBody);
-            console.log('✅ Participant email sent');
+            
         } catch (err) {
             console.error('❌ Failed to send participant email:', err);
         }
 
         try {
             await sendEmail(config, config.fromEmail, `Nieuwe introweek aanmelding: ${participantName}`, orgEmailBody);
-            console.log('✅ Organization notification email sent');
+            
         } catch (err) {
             console.error('❌ Failed to send organization email:', err);
         }
 
-        console.log('✅ Intro signup email process completed');
+        
     } catch (error) {
         console.error('❌ Failed to send intro signup emails:', error);
     }
@@ -510,7 +504,7 @@ export async function sendIntroBlogUpdateNotification(data: {
         }
 
         const result = await response.json();
-        console.log(`✅ Intro update notifications sent to ${result.sentCount} subscribers`);
+        // intro update notifications sent (log removed)
     } catch (error) {
         console.error('❌ Failed to send intro update notifications:', error);
         throw error;

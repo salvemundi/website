@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        console.log('📧 Fetching intro signups from Directus...');
+        // suppressed non-error log
 
         // Fetch intro signups (participants and parents) from Directus using server-side env vars
         const directusUrl = process.env.DIRECTUS_URL || process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://admin.salvemundi.nl';
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
                     target = `${base.replace(/\/$/, '')}/send-intro-update`;
                 }
 
-                console.log('📧 Posting intro update to email service at:', target);
+                // suppressed non-error log
                 response = await fetch(target, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -145,8 +145,7 @@ export async function POST(request: NextRequest) {
                 break;
             } catch (err: any) {
                 lastError = err;
-                const code = err?.cause?.code || err?.code || err?.name;
-                console.warn(`Failed to reach email service at ${base}:`, code || err.message || err);
+                // suppressed non-error log
                 // try next endpoint
             }
         }
@@ -173,7 +172,7 @@ export async function POST(request: NextRequest) {
         }
 
         const result = await response.json();
-        console.log(`✅ Intro update emails sent to ${result.sentCount || allEmails.length} subscribers`);
+        // suppressed non-error log
         
         return NextResponse.json({
             success: true,

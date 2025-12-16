@@ -20,9 +20,6 @@ try {
         // });
     }
 } catch (error) {
-    console.warn('⚠️ MSAL initialization failed. Microsoft login will be disabled.');
-    console.warn('💡 Tip: MSAL requires HTTPS or "localhost" (not IP addresses like 192.168.x.x).');
-    console.warn('   Over LAN, expose the dev server over HTTPS and set NEXT_PUBLIC_AUTH_REDIRECT_URI to that HTTPS origin, also adding it in the Entra app.');
     console.error('Error details:', error);
 }
 
@@ -164,7 +161,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             try {
                 validatedUser = await authApi.fetchUserDetails(response.access_token);
             } catch (e) {
-                console.warn('Could not validate access token returned from Entra login:', e);
+                // access token validation failed (log removed)
             }
 
             if (!validatedUser) {
