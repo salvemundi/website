@@ -51,7 +51,7 @@ export default function IntroBlogPage() {
                     `/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(user.id)}&fields=*,committee_id.id,committee_id.name`
                 );
             } catch (e) {
-                console.warn('Failed to fetch committee memberships for user', e);
+                // suppressed non-error log
                 return [];
             }
         },
@@ -269,7 +269,7 @@ export default function IntroBlogPage() {
                                                         <div className="flex items-center gap-1 text-xs text-theme-muted">
                                                             <Calendar className="w-3 h-3" />
                                                             {(() => {
-                                                                const date = blog.published_date ?? blog.updated_at;
+                                                                const date = blog.updated_at;
                                                                 return date ? format(new Date(date), 'd MMMM yyyy', { locale: nl }) : null;
                                                             })()}
                                                         </div>
@@ -480,7 +480,7 @@ export default function IntroBlogPage() {
                                 })()}
                                 <div className="flex items-center gap-2 text-theme-muted text-xs lg:text-sm">
                                     <Calendar className="w-3 h-3 lg:w-4 lg:h-4" />
-                                    {format(new Date(selectedBlog.published_date || selectedBlog.updated_at), 'd MMMM yyyy', { locale: nl })}
+                                    {format(new Date(selectedBlog.updated_at), 'd MMMM yyyy', { locale: nl })}
                                 </div>
                             </div>
 

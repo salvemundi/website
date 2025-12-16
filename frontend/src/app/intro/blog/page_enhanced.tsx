@@ -175,7 +175,7 @@ export default function IntroBlogPage() {
                                                     <div className="flex items-center gap-2 text-xs lg:text-sm text-theme-muted mb-2">
                                                         <Calendar className="w-3 h-3 lg:w-4 lg:h-4" />
                                                         {(() => {
-                                                            const date = blog.published_date ?? blog.updated_at;
+                                                            const date = blog.updated_at;
                                                             return date ? format(new Date(date), 'd MMMM yyyy', { locale: nl }) : null;
                                                         })()}
                                                     </div>
@@ -367,7 +367,7 @@ export default function IntroBlogPage() {
                                 })()}
                                 <div className="flex items-center gap-2 text-theme-muted text-xs lg:text-sm">
                                     <Calendar className="w-3 h-3 lg:w-4 lg:h-4" />
-                                    {format(new Date(selectedBlog.published_date || selectedBlog.updated_at), 'd MMMM yyyy', { locale: nl })}
+                                    {format(new Date(selectedBlog.updated_at), 'd MMMM yyyy', { locale: nl })}
                                 </div>
                             </div>
 

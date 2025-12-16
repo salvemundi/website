@@ -83,14 +83,7 @@ export async function loginWithPassword(email: string, password: string): Promis
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            console.error('❌ Login error response:', errorData);
-            console.error('❌ Full error details:', {
-                status: response.status,
-                statusText: response.statusText,
-                errors: errorData.errors,
-                message: errorData.message,
-                fullResponse: JSON.stringify(errorData, null, 2)
-            });
+            
             const errorMsg = errorData.errors?.[0]?.message || errorData.message || 'Invalid user credentials.';
 
             // Provide helpful error messages
@@ -163,7 +156,7 @@ export async function loginWithEntraId(entraIdToken: string, userEmail: string):
 
         // Validate we actually received an access token
         if (!payload || !payload.access_token) {
-            console.error('Entra login returned unexpected payload:', raw);
+            
             throw new Error('Microsoft login failed: no access token returned from backend');
         }
 
@@ -171,7 +164,7 @@ export async function loginWithEntraId(entraIdToken: string, userEmail: string):
         try {
             enrichedUser = await fetchUserDetails(payload.access_token);
         } catch (error) {
-            console.warn('Failed to refresh user details after Entra login. Falling back to response payload.', error);
+            // failed to refresh user details after Entra login
         }
 
         const userDetails = enrichedUser
@@ -192,9 +185,7 @@ export async function loginWithEntraId(entraIdToken: string, userEmail: string):
             (error.message.includes('Route') && error.message.includes("doesn't exist")) ||
             (error.message.includes('404'))
         ) {
-            console.warn('⚠️ BACKEND ROUTE MISSING - USING MOCK AUTH FOR DEVELOPMENT');
-            console.warn('   The Entra auth extension is not installed on the backend.');
-            console.warn('   Simulating login with mock data.');
+            
 
             return {
                 access_token: 'mock-access-token-dev',
@@ -425,7 +416,7 @@ export async function getUserEventSignups(userId: string) {
                         signup.event_id.contact_name = `${leaders[0].user_id.first_name || ''} ${leaders[0].user_id.last_name || ''}`.trim();
                     }
                 } catch (error) {
-                    console.warn(`Could not fetch committee leader for event ${signup.event_id.id}`, error);
+                    // log removed
                 }
             } else if (signup.event_id?.contact) {
                 signup.event_id.contact_phone = signup.event_id.contact;
@@ -497,12 +488,11 @@ export async function getUserTransactions(userId: string, token: string) {
         },
     });
 
-    if (!response.ok) {
-        // If 403, the collection might not exist or user doesn't have permission
-        if (response.status === 403) {
-            console.warn('Transactions collection not accessible. Returning empty array.');
-            return [];
-        }
+        if (!response.ok) {
+            // If 403, the collection might not exist or user doesn't have permission
+            if (response.status === 403) {
+                return [];
+            }
         throw new Error('Failed to fetch transactions');
     }
 
@@ -531,7 +521,6 @@ export async function getWhatsAppGroups(token: string, memberOnly: boolean = fal
     if (!response.ok) {
         // If 403, the collection might not exist or user doesn't have permission
         if (response.status === 403) {
-            console.warn('WhatsApp groups collection not accessible. Returning empty array.');
             return [];
         }
         throw new Error('Failed to fetch WhatsApp groups');

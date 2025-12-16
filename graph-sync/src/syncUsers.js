@@ -65,7 +65,6 @@ async function setDirectusMembershipStatus(userId, status) {
             { membership_status: status },
             { headers: DIRECTUS_HEADERS }
         );
-        console.log(`✅ [DIRECTUS] Set membership_status='${status}' for user ${userId}`);
     } catch (err) {
         console.error(`❌ [DIRECTUS] Failed to set membership_status for ${userId}:`, err.response?.data || err.message);
     }
@@ -96,7 +95,7 @@ async function userHasAnyMemberships(userId) {
 }
 
 async function getGraphClient() {
-    console.log('🔑 [GRAPH] Requesting token...');
+    
     const tokenResponse = await axios.post(
         `https://login.microsoftonline.com/${process.env.TENANT_ID}/oauth2/v2.0/token`,
         new URLSearchParams({
@@ -107,7 +106,7 @@ async function getGraphClient() {
         }),
         { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
     );
-    console.log('✅ [GRAPH] Token acquired');
+    
     const token = tokenResponse.data.access_token;
     return Client.init({ authProvider: done => done(null, token) });
 }
@@ -125,11 +124,11 @@ async function buildGlobalGroupNameMap() {
         const response = await client.api(nextLink).get();
         const groups = response.value || [];
         allGroups = allGroups.concat(groups);
-        console.log(`📥 [GRAPH] Fetched ${groups.length} groups, total so far: ${allGroups.length}`);
+        
         nextLink = response['@odata.nextLink'] ? response['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0', '') : null;
     }
 
-    console.log(`📊 [GRAPH] Total groups fetched: ${allGroups.length}`);
+    
 
     allGroups.forEach(g => {
         const name = g.displayName || g.mailNickname || g.id;
@@ -137,7 +136,7 @@ async function buildGlobalGroupNameMap() {
         if (name) groupIdByNameGlobal[name] = g.id;
     });
 
-    console.log('🧮 [GROUP-MAP] groupId → name:', groupNameMapGlobal);
+    
 }
 
 function getRoleIdByGroupMembership(groupIds) {
@@ -163,24 +162,24 @@ async function getOrCreateCommitteeForGroup(group) {
     const fromGlobalMap = groupNameMapGlobal[groupId];
     const desiredName = mappedOverride || fromGlobalMap || displayName || mailNickname || groupId;
 
-    console.log(`🏛️ [COMMITTEE] Resolving committee for group id=${groupId}, using name='${desiredName}'`);
+    
 
     try {
         const searchUrl = `${baseUrl}?filter[name][_eq]=${encodeURIComponent(desiredName)}&limit=1`;
         const searchRes = await axios.get(searchUrl, { headers: DIRECTUS_HEADERS });
         const found = searchRes.data?.data?.[0];
         if (found) {
-            console.log(`🏛️ [COMMITTEE] Found existing committee '${desiredName}' (id=${found.id})`);
+            
             return { id: found.id, name: found.name };
         }
     } catch (error) {
         console.error('❌ [DIRECTUS] Error looking up committee by name:', error.response?.data || error.message);
     }
 
-    console.log(`🏗️ [COMMITTEE] Creating new committee with name '${desiredName}'`);
+    
     try {
         const createRes = await axios.post(baseUrl, { name: desiredName }, { headers: DIRECTUS_HEADERS });
-        console.log(`✅ [COMMITTEE] Created committee with name='${desiredName}', id=${createRes.data.data.id}`);
+        
         return { id: createRes.data.data.id, name: desiredName };
     } catch (error) {
         console.error('❌ [DIRECTUS] Error creating committee:', error.response?.data || error.message);
@@ -190,28 +189,28 @@ async function getOrCreateCommitteeForGroup(group) {
 
 async function ensureUserInCommittee(userId, committeeId) {
     const baseUrl = `${process.env.DIRECTUS_URL}/items/committee_members`;
-    console.log(`🔎 [MEMBER] Checking if user ${userId} is already in committee ${committeeId}`);
+    
 
     try {
         const checkUrl = `${baseUrl}?filter[user_id][_eq]=${encodeURIComponent(userId)}&filter[committee_id][_eq]=${encodeURIComponent(committeeId)}&limit=1`;
         const checkRes = await axios.get(checkUrl, { headers: DIRECTUS_HEADERS });
         const existing = checkRes.data?.data || [];
         if (existing.length > 0) {
-            console.log(`⏭️ [MEMBER] User ${userId} already in committee ${committeeId} (membership id=${existing[0].id})`);
+            
             return;
         }
     } catch (error) {
         console.error('❌ [MEMBER] Error checking membership:', error.response?.data || error.message);
     }
 
-    console.log(`➕ [MEMBER] Adding user ${userId} to committee ${committeeId}`);
+    
     try {
         const createRes = await axios.post(
             `${process.env.DIRECTUS_URL}/items/committee_members`,
             { committee_id: committeeId, user_id: userId, is_visible: true, is_leader: false },
             { headers: DIRECTUS_HEADERS }
         );
-        console.log(`✅ [MEMBER] Added membership id=${createRes.data.data.id} for user ${userId}`);
+        
         // Ensure user's membership status is set to active
         try {
             await setDirectusMembershipStatus(userId, 'active');
@@ -227,7 +226,7 @@ async function removeUserFromMissingCommittees(userId, currentCommitteeNames) {
     const cmUrl = `${process.env.DIRECTUS_URL}/items/committee_members`;
     const cUrl = `${process.env.DIRECTUS_URL}/items/committees`;
 
-    console.log(`🧹 [MEMBER] Removing stale memberships for user ${userId}. Allowed committee names:`, Array.from(currentCommitteeNames));
+    
 
     try {
         const params = new URLSearchParams();
@@ -237,13 +236,13 @@ async function removeUserFromMissingCommittees(userId, currentCommitteeNames) {
         const url = `${cmUrl}?${params.toString()}`;
         const res = await axios.get(url, { headers: DIRECTUS_HEADERS });
         const memberships = res.data?.data || [];
-        console.log(`📋 [MEMBER] User ${userId} has ${memberships.length} committee membership(s)`);
+        
 
         for (const m of memberships) {
             const membershipId = m.id;
             const committeeId = m.committee_id;
             if (!committeeId) {
-                console.log(`⚠️ [MEMBER] membership id=${membershipId} missing committee_id, skipping`);
+                
                 continue;
             }
             let committeeName = null;
@@ -254,20 +253,20 @@ async function removeUserFromMissingCommittees(userId, currentCommitteeNames) {
                 console.error(`❌ [MEMBER] Error fetching committee ${committeeId}:`, error.response?.data || error.message);
             }
             if (!committeeName) {
-                console.log(`⚠️ [MEMBER] Committee id=${committeeId} name missing, skipping removal logic`);
+                
                 continue;
             }
             if (!currentCommitteeNames.has(committeeName)) {
-                console.log(`❌ [MEMBER] Removing membership id=${membershipId} for user ${userId} from committee '${committeeName}'`);
+                
                 try {
                     await axios.delete(`${cmUrl}/${membershipId}`, { headers: DIRECTUS_HEADERS });
-                    console.log(`✅ [MEMBER] Deleted membership id=${membershipId}`);
+                    
                 } catch (error) {
                     console.error(`❌ [MEMBER] Error deleting membership id=${membershipId}:`, error.response?.data || error.message);
                 }
                 // continue loop — we'll check remaining memberships after processing all deletions
             } else {
-                console.log(`✅ [MEMBER] Keeping membership id=${membershipId} for committee '${committeeName}'`);
+                
             }
         }
         // After removing stale memberships, ensure membership_status reflects remaining memberships
@@ -286,23 +285,22 @@ async function removeUserFromMissingCommittees(userId, currentCommitteeNames) {
 
 async function syncCommitteesForUserFromGroups(directusUserId, groups) {
     if (!groups || groups.length === 0) {
-        console.log(`🏛️ [COMMITTEE] No groups for user ${directusUserId}, removing all memberships`);
+        
         await removeUserFromMissingCommittees(directusUserId, new Set());
         return;
     }
 
-    console.log(`🏛️ [COMMITTEE] Syncing committees for user ${directusUserId}, ${groups.length} group(s)`);
+    
 
     const currentCommitteeNames = new Set();
 
     for (const g of groups) {
         const groupId = g.id;
         const committeeName = GROUP_NAME_MAP[groupId] || groupNameMapGlobal[groupId] || g.displayName || g.mailNickname || groupId;
-        console.log(`➡️ [COMMITTEE] Group id=${groupId} → committeeName='${committeeName}'`);
+        
 
         const result = await getOrCreateCommitteeForGroup(g);
         if (!result) {
-            console.log(`⚠️ [COMMITTEE] Could not resolve committee for group id=${groupId}`);
             continue;
         }
 
@@ -363,7 +361,7 @@ async function syncGraphGroupsForUser(graphUserId, committeeNames) {
     for (const gid of toAdd) {
         try {
             await client.api(`/groups/${gid}/members/$ref`).post({ '@odata.id': `https://graph.microsoft.com/v1.0/directoryObjects/${graphUserId}` });
-            console.log(`✅ [GRAPH] Added user ${graphUserId} to group ${gid}`);
+            // log removed
         } catch (error) {
             console.error('❌ [GRAPH] Add group member error:', error.response?.data || error.message);
         }
@@ -371,7 +369,7 @@ async function syncGraphGroupsForUser(graphUserId, committeeNames) {
     for (const gid of toRemove) {
         try {
             await client.api(`/groups/${gid}/members/${graphUserId}/$ref`).delete();
-            console.log(`✅ [GRAPH] Removed user ${graphUserId} from group ${gid}`);
+            // log removed
         } catch (error) {
             console.error('❌ [GRAPH] Remove group member error:', error.response?.data || error.message);
         }
@@ -390,7 +388,7 @@ async function updateGraphUserFieldsFromDirectus(graphUserId, directusUser) {
     Object.keys(patch).forEach(k => patch[k] === null && delete patch[k]);
     try {
         await client.api(`/users/${graphUserId}`).patch(patch);
-        console.log(`✅ [GRAPH] Updated fields for user ${graphUserId}`);
+        // log removed
     } catch (error) {
         console.error('❌ [GRAPH] Update user error:', error.response?.data || error.message);
     }
@@ -399,17 +397,14 @@ async function updateGraphUserFieldsFromDirectus(graphUserId, directusUser) {
 async function updateGraphUserFromDirectusByEmail(email) {
     const graphUser = await findGraphUserByEmail(email.toLowerCase());
     if (!graphUser) {
-        console.log(`⚠️ [GRAPH] No user found for email ${email}`);
         return;
     }
     const lockKey = `entra-${graphUser.id}`;
     if (!acquireLock(lockKey)) {
-        console.log(`⏭️ [LOCK] Skipping ${email} (already syncing)`);
         return;
     }
     const dUser = await getDirectusUserByEmail(email.toLowerCase());
     if (!dUser) {
-        console.log(`⚠️ [DIRECTUS] No Directus user for email ${email}`);
         return;
     }
     await updateGraphUserFieldsFromDirectus(graphUser.id, dUser);
@@ -420,7 +415,6 @@ async function updateGraphUserFromDirectusByEmail(email) {
 async function updateGraphUserFromDirectusById(directusUserId) {
     const dUser = await getDirectusUserById(directusUserId);
     if (!dUser || !dUser.email) {
-        console.log(`⚠️ [DIRECTUS] Missing Directus user or email for id ${directusUserId}`);
         return;
     }
     await updateGraphUserFromDirectusByEmail(dUser.email);
@@ -429,11 +423,8 @@ async function updateGraphUserFromDirectusById(directusUserId) {
 async function updateDirectusUserFromGraph(userId) {
     const lockKey = `entra-${userId}`;
     if (!acquireLock(lockKey)) {
-        console.log(`⏭️ [LOCK] Skipping ${userId} (already syncing)`);
         return;
     }
-
-    console.log(`🚦 [SYNC] Starting Entra → Directus for userId=${userId}`);
 
     try {
         const client = await getGraphClient();
@@ -442,14 +433,14 @@ async function updateDirectusUserFromGraph(userId) {
             .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone')
             .get();
 
-        console.log(`📥 [GRAPH] Fetched user id=${u.id}, displayName='${u.displayName}'`);
+        // log removed
 
         const groupResp = await client.api(`/users/${userId}/memberOf/microsoft.graph.group`)
             .select('id,displayName,mailNickname')
             .get();
 
         const groups = groupResp.value || [];
-        console.log(`📚 [GRAPH] User ${u.userPrincipalName} is in ${groups.length} group(s)`);
+        // log removed
 
         const email = (u.mail || u.userPrincipalName || '').toLowerCase();
         const role = getRoleIdByGroupMembership(groups.map(g => g.id));
@@ -475,19 +466,19 @@ async function updateDirectusUserFromGraph(userId) {
 
         if (existingUser) {
             directusUserId = existingUser.id;
-            console.log(`👤 [DIRECTUS] Existing user id=${directusUserId}, email=${existingUser.email}`);
+            // log removed
             if (hasChanges(existingUser, payload)) {
-                console.log(`✏️ [DIRECTUS] Updating user ${email}`);
+                // log removed
                 await axios.patch(`${process.env.DIRECTUS_URL}/users/${directusUserId}`, payload, { headers: DIRECTUS_HEADERS });
-                console.log(`✅ [DIRECTUS] Updated user ${email}`);
+                // log removed
             } else {
-                console.log(`⏭️ [DIRECTUS] No changes for user ${email}`);
+                // log removed
             }
         } else {
             // Always normalize email & external_identifier to lowercase
             const lowercaseEmail = (email || '').toLowerCase();
 
-            console.log(`✨ [DIRECTUS] Creating user ${lowercaseEmail}`);
+            // log removed
             payload.email = lowercaseEmail;
             payload.provider = 'microsoft';
             payload.external_identifier = lowercaseEmail;
@@ -499,7 +490,7 @@ async function updateDirectusUserFromGraph(userId) {
             );
 
             directusUserId = createRes.data.data.id;
-            console.log(`✅ [DIRECTUS] Created user id=${directusUserId}`);
+            // log removed
         }
 
         // --- PHOTO SYNC: Entra -> Directus ---
@@ -545,7 +536,7 @@ async function updateDirectusUserFromGraph(userId) {
 
                 // If both tags exist and match, skip
                 if (graphEtag && dUser.photo_etag && dUser.photo_etag === graphEtag) {
-                    console.log(`⏭️ [PHOTO] No change for user ${gUserId} (etag matches)`);
+                    // log removed
                     return;
                 }
 
@@ -554,12 +545,12 @@ async function updateDirectusUserFromGraph(userId) {
                     if (dUser.avatar) {
                         try {
                             await axios.patch(`${process.env.DIRECTUS_URL}/users/${encodeURIComponent(dUserId)}`, { avatar: null, photo_etag: null }, { headers: DIRECTUS_HEADERS });
-                            console.log(`🗑️ [PHOTO] Removed Directus avatar for user ${dUserId} because Entra photo is missing`);
+                            // log removed
                         } catch (err) {
                             console.error('❌ [PHOTO] Failed to remove Directus avatar:', err.response?.data || err.message);
                         }
                     } else {
-                        console.log(`⏭️ [PHOTO] No Entra photo and no Directus avatar for user ${dUserId}`);
+                        // log removed
                     }
                     return;
                 }
@@ -579,7 +570,6 @@ async function updateDirectusUserFromGraph(userId) {
 
                 const bin = await downloadGraphPhotoBinary(gUserId, token);
                 if (!bin) {
-                    console.log(`⚠️ [PHOTO] Unable to download photo for Graph user ${gUserId}`);
                     return;
                 }
 
@@ -597,7 +587,7 @@ async function updateDirectusUserFromGraph(userId) {
                 // Patch Directus user with new avatar and etag
                 try {
                     await axios.patch(`${process.env.DIRECTUS_URL}/users/${encodeURIComponent(dUserId)}`, { avatar: fileId, photo_etag: graphEtag }, { headers: DIRECTUS_HEADERS });
-                    console.log(`✅ [PHOTO] Uploaded and set avatar (file id=${fileId}) for Directus user ${dUserId}`);
+                    // log removed
                 } catch (err) {
                     console.error('❌ [PHOTO] Failed to patch Directus user with avatar:', err.response?.data || err.message);
                 }
@@ -612,9 +602,7 @@ async function updateDirectusUserFromGraph(userId) {
             console.error('❌ [PHOTO] Error during photo sync:', e.response?.data || e.message);
         }
 
-        console.log(`🏛️ [COMMITTEE] Starting committee sync for user id=${directusUserId} (${email})`);
         await syncCommitteesForUserFromGroups(directusUserId, groups);
-        console.log(`🏁 [COMMITTEE] Finished committee sync for user id=${directusUserId} (${email})`);
         // Ensure membership_status aligns with current memberships
         try {
             const has = (groups && groups.length > 0) || await userHasAnyMemberships(directusUserId);
@@ -636,13 +624,13 @@ app.get('/webhook/entra', (req, res) => {
 
 app.post('/webhook/entra', bodyParser.json(), async (req, res) => {
     const notifications = req.body?.value || [];
-    console.log(`🔔 [WEBHOOK] Received ${notifications.length} notification(s)`);
+    // webhook received; logging removed
     res.sendStatus(202);
 
     for (const notif of notifications) {
         if (notif.resource && notif.resource.includes('/users/')) {
             const userId = notif.resource.split('/users/')[1].split('/')[0];
-            console.log(`🔔 [WEBHOOK] Handling Entra user change userId=${userId}`);
+            // handling Entra user change; logging removed
             await updateDirectusUserFromGraph(userId);
         }
     }
@@ -657,17 +645,17 @@ app.post('/webhook/directus', bodyParser.json(), async (req, res) => {
         if (collection === 'users') {
             const email = payload?.email;
             if (email) {
-                console.log(`🔔 [WEBHOOK] Directus user change email=${email}`);
+                // Directus user change (email); logging removed
                 await updateGraphUserFromDirectusByEmail(email);
             } else if (itemId) {
-                console.log(`🔔 [WEBHOOK] Directus user change id=${itemId}`);
+                // Directus user change (id); logging removed
                 await updateGraphUserFromDirectusById(itemId);
             }
         }
         if (collection === 'committee_members') {
             const userId = payload?.user_id || (payload?.user && payload.user.id) || null;
             if (userId) {
-                console.log(`🔔 [WEBHOOK] Directus committee change for user ${userId}`);
+                // Directus committee change for user; logging removed
                 await updateGraphUserFromDirectusById(userId);
             }
         }
@@ -680,7 +668,7 @@ app.post('/webhook/directus', bodyParser.json(), async (req, res) => {
 // Initial bulk sync endpoint
 app.post('/sync/initial', async (req, res) => {
     try {
-        console.log('🚀 [INIT] Building global group map and starting initial bulk sync...');
+        // init bulk sync started; logging removed
         await buildGlobalGroupNameMap();
 
         const client = await getGraphClient();
@@ -688,20 +676,20 @@ app.post('/sync/initial', async (req, res) => {
         let nextLink = '/users?$select=id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone&$top=100';
 
         while (nextLink) {
-            console.log(`📥 [INIT] Fetching users batch: ${nextLink}`);
+            // fetching users batch; logging removed
             const response = await client.api(nextLink).get();
             users = users.concat(response.value);
             nextLink = response['@odata.nextLink'] ? response['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0', '') : null;
         }
 
-        console.log(`📊 [INIT] Found ${users.length} users`);
+        // init: users found; logging removed
 
         for (let i = 0; i < users.length; i += 20) {
             const batch = users.slice(i, i + 20);
             await Promise.all(batch.map(u => updateDirectusUserFromGraph(u.id)));
         }
 
-        console.log('✅ [INIT] Bulk sync finished');
+        // init bulk sync finished
         res.json({ success: true, processed: users.length });
     } catch (error) {
         console.error('❌ [INIT] Bulk sync error:', error.response?.data || error.message);
@@ -727,11 +715,7 @@ app.post('/sync/directus-to-entra', bodyParser.json(), async (req, res) => {
 });
 
 app.listen(PORT, async () => {
-    console.log(`🚀 Sync server running on port ${PORT}`);
-    console.log(`📡 Entra webhook: POST http://localhost:${PORT}/webhook/entra`);
-    console.log(`📡 Directus webhook: POST http://localhost:${PORT}/webhook/directus`);
-    console.log(`🔄 Initial sync endpoint: POST http://localhost:${PORT}/sync/initial`);
-    console.log(`🔄 Directus→Entra sync endpoint: POST http://localhost:${PORT}/sync/directus-to-entra`);
+    // startup logs removed
     try {
         await buildGlobalGroupNameMap();
     } catch (error) {

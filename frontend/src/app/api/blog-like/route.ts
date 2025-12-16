@@ -82,9 +82,9 @@ export async function POST(request: NextRequest) {
                     'Authorization': `Bearer ${directusToken}`
                 },
                 body: JSON.stringify({ likes: count })
-            }).catch((e) => console.warn('Failed to patch likes count on blog (non-fatal)', e));
+            }).catch(() => {});
         } catch (e) {
-            console.warn('Non-fatal: patch blog likes failed', e);
+            // suppressed non-error log
         }
 
         return NextResponse.json({ success: true, alreadyLiked: false, likes: count });

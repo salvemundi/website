@@ -12,7 +12,7 @@ export interface PostPreview {
   slug?: string;
   excerpt?: string;
   image?: string;
-  published_date: string;
+  updated_at: string;
   readTime?: string;
   tags?: string[];
 }
@@ -72,7 +72,7 @@ export default function FeaturedPosts({
               <div className="flex items-center gap-3 text-xs lg:text-sm text-theme-muted mb-2">
                 <div className="flex items-center gap-1">
                   <Calendar className="w-3 h-3 lg:w-4 lg:h-4" />
-                  {format(new Date(post.published_date || (post as any).updated_at), 'd MMM yyyy', { locale: nl })}
+                  {format(new Date(post.updated_at), 'd MMM yyyy', { locale: nl })}
                 </div>
                 {post.readTime && (
                   <div className="flex items-center gap-1">
