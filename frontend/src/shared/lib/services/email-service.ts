@@ -503,8 +503,8 @@ export async function sendIntroBlogUpdateNotification(data: {
             throw new Error(errorData.error || 'Failed to send intro update notifications');
         }
 
-        const result = await response.json();
-        // intro update notifications sent (log removed)
+        await response.json();
+        // intro update notifications sent (response consumed)
     } catch (error) {
         console.error('❌ Failed to send intro update notifications:', error);
         throw error;
