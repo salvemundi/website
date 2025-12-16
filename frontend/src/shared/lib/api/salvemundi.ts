@@ -663,6 +663,7 @@ export interface IntroBlog {
     excerpt?: string;
     image?: string;
     likes?: number;
+    published_date: string;
     is_published: boolean;
     blog_type: 'update' | 'pictures' | 'event' | 'announcement';
     created_at: string;
@@ -671,41 +672,19 @@ export interface IntroBlog {
 
 export const introBlogsApi = {
     getAll: async (): Promise<IntroBlog[]> => {
-        try {
-            console.debug('[introBlogsApi.getAll] fetching intro_blogs');
-            const data = await directusFetch<IntroBlog[]>(
-                `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,likes,created_at,updated_at,is_published,blog_type&filter[is_published][_eq]=true&sort=-updated_at`
-            );
-            console.debug('[introBlogsApi.getAll] fetched', { count: Array.isArray(data) ? data.length : 'unknown' });
-            return data;
-        } catch (err) {
-            console.error('[introBlogsApi.getAll] failed to fetch intro_blogs', err);
-            throw err;
-        }
+        return directusFetch<IntroBlog[]>(
+            `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,likes,published_date,is_published,blog_type,created_at,updated_at&filter[is_published][_eq]=true&sort=-published_date`
+        );
     },
     getById: async (id: number): Promise<IntroBlog> => {
-        try {
-            console.debug('[introBlogsApi.getById] fetching intro_blog', id);
-            const data = await directusFetch<IntroBlog>(
-                `/items/intro_blogs/${id}?fields=id,title,slug,content,excerpt,image.id,likes,created_at,updated_at,is_published,blog_type`
-            );
-            return data;
-        } catch (err) {
-            console.error('[introBlogsApi.getById] failed', err);
-            throw err;
-        }
+        return directusFetch<IntroBlog>(
+            `/items/intro_blogs/${id}?fields=id,title,slug,content,excerpt,image.id,likes,published_date,is_published,blog_type,created_at,updated_at`
+        );
     },
     getByType: async (type: 'update' | 'pictures' | 'event' | 'announcement'): Promise<IntroBlog[]> => {
-        try {
-            console.debug('[introBlogsApi.getByType] fetching intro_blogs type', type);
-            const data = await directusFetch<IntroBlog[]>(
-                `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,likes,created_at,updated_at,is_published,blog_type&filter[is_published][_eq]=true&filter[blog_type][_eq]=${type}&sort=-updated_at`
-            );
-            return data;
-        } catch (err) {
-            console.error('[introBlogsApi.getByType] failed', err);
-            throw err;
-        }
+        return directusFetch<IntroBlog[]>(
+            `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,likes,published_date,is_published,blog_type,created_at,updated_at&filter[is_published][_eq]=true&filter[blog_type][_eq]=${type}&sort=-published_date`
+        );
     }
 };
 

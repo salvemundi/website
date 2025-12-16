@@ -144,9 +144,8 @@ export default function IntroBlogPage() {
                                     </p>
                                 </div>
                             ) : (
-                                <div className="flex flex-col gap-6">
+                                <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
                                     {filteredBlogs.map((blog) => {
-                                        try { console.debug('[blog.render.enhanced] ', { id: blog.id, created_at: blog.created_at, updated_at: blog.updated_at }); } catch (e) {}
                                         const typeConfig = getBlogTypeConfig(blog.blog_type);
                                         const TypeIcon = typeConfig.icon;
                                         const displayedLikes = likesMap[blog.id] ?? blog.likes ?? 0;
@@ -156,7 +155,7 @@ export default function IntroBlogPage() {
                                             <div
                                                 key={blog.id}
                                                 onClick={() => setSelectedBlog(blog)}
-                                                className="w-full bg-[var(--bg-card)] rounded-xl lg:rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+                                                className="bg-[var(--bg-card)] rounded-xl lg:rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
                                             >
                                                 {blog.image && (
                                                     <div className="relative h-40 sm:h-48 overflow-hidden">
@@ -173,13 +172,10 @@ export default function IntroBlogPage() {
                                                 )}
                                                 {/* If no image is provided, don't render a placeholder — show title and excerpt only. */}
                                                 <div className="p-4 lg:p-6">
-                                                                            <div className="flex items-center gap-2 text-xs lg:text-sm text-theme-muted mb-2">
-                                                                                <Calendar className="w-3 h-3 lg:w-4 lg:h-4" />
-                                                                                {(() => {
-                                                                                    const d = blog.updated_at || blog.created_at || null;
-                                                                                    return d && !isNaN(new Date(d).getTime()) ? format(new Date(d), 'd MMMM yyyy', { locale: nl }) : '—';
-                                                                                })()}
-                                                                            </div>
+                                                    <div className="flex items-center gap-2 text-xs lg:text-sm text-theme-muted mb-2">
+                                                        <Calendar className="w-3 h-3 lg:w-4 lg:h-4" />
+                                                        {format(new Date(blog.published_date), 'd MMMM yyyy', { locale: nl })}
+                                                    </div>
                                                     <h3 className="text-lg lg:text-xl font-bold text-theme mb-2 lg:mb-3">{blog.title}</h3>
                                                     <p className="text-sm lg:text-base text-theme-muted line-clamp-3">
                                                         {blog.excerpt || blog.content.substring(0, 150) + '...'}
@@ -368,10 +364,7 @@ export default function IntroBlogPage() {
                                 })()}
                                 <div className="flex items-center gap-2 text-theme-muted text-xs lg:text-sm">
                                     <Calendar className="w-3 h-3 lg:w-4 lg:h-4" />
-                                    {(() => {
-                                        const d = selectedBlog.updated_at || selectedBlog.created_at || null;
-                                        return d && !isNaN(new Date(d).getTime()) ? format(new Date(d), 'd MMMM yyyy', { locale: nl }) : '—';
-                                    })()}
+                                    {format(new Date(selectedBlog.published_date), 'd MMMM yyyy', { locale: nl })}
                                 </div>
                             </div>
 
