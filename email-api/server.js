@@ -538,7 +538,7 @@ app.get(['/calendar', '/calendar.ics'], async (req, res) => {
 
     // Fetch events from Directus
     const directusUrl = process.env.DIRECTUS_URL || 'https://admin.salvemundi.nl';
-    const directusToken = process.env.DIRECTUS_API_KEY;
+    const directusToken = process.env.DIRECTUS_API_TOKEN;
 
     if (!directusToken) {
       return res.status(500).json({ error: 'Directus API key not configured' });
