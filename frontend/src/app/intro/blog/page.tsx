@@ -171,8 +171,8 @@ export default function IntroBlogPage() {
 
     return (
         <>
-            <main className="px-4 sm:px-6 lg:px-10 py-8 lg:py-12">
-                <div className="max-w-7xl mx-auto">
+            <main className="px-4 sm:px-6 lg:px-10 py-8 lg:py-12 overflow-x-hidden">
+                <div className="max-w-7xl w-full mx-auto">
                     {/* Hero Banner */}
                     <HeroBanner
                         title="Welkom bij de Intro Blog!"
@@ -190,7 +190,7 @@ export default function IntroBlogPage() {
                     />
 
                     {/* Two Column Layout: Main Content + Sidebar */}
-                    <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                         {/* Main Content */}
                         <div className="lg:col-span-2 space-y-6">
      
@@ -251,7 +251,7 @@ export default function IntroBlogPage() {
                                         return (
                                             <article
                                                 key={blog.id}
-                                                className="bg-[var(--bg-card)] rounded-xl lg:rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300"
+                                                className="w-full bg-[var(--bg-card)] rounded-xl lg:rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 box-border"
                                             >
                                                 {/* Post Header */}
                                                 <div className="flex items-center gap-3 p-4">
@@ -282,8 +282,8 @@ export default function IntroBlogPage() {
                                                     className="cursor-pointer"
                                                 >
                                                     <div className="px-4 pb-3">
-                                                        <h2 className="text-xl lg:text-2xl font-bold text-theme mb-2">{blog.title}</h2>
-                                                        <p className="text-sm lg:text-base text-theme-muted line-clamp-3">
+                                                        <h2 className="text-xl lg:text-2xl font-bold text-theme mb-2 break-words">{blog.title}</h2>
+                                                        <p className="text-sm lg:text-base text-theme-muted line-clamp-3 break-words">
                                                             {blog.excerpt || blog.content.substring(0, 200) + '...'}
                                                         </p>
                                                     </div>
@@ -294,7 +294,7 @@ export default function IntroBlogPage() {
                                                             <img
                                                                 src={getImageUrl(blog.image)}
                                                                 alt={blog.title}
-                                                                className="w-full h-full object-cover"
+                                                                className="w-full h-auto max-w-full object-cover"
                                                             />
                                                         </div>
                                                     )}
@@ -306,7 +306,7 @@ export default function IntroBlogPage() {
                                                 </div>
 
                                                 {/* Action Bar */}
-                                                <div className="flex items-center gap-6 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+                                                <div className="flex flex-wrap items-center gap-3 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
                                                     <button
                                                         onClick={async (e) => {
                                                             e.stopPropagation();
@@ -434,8 +434,8 @@ export default function IntroBlogPage() {
                     className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-start justify-center p-4 pt-20 overflow-y-auto"
                     onClick={() => setSelectedBlog(null)}
                 >
-                    <div
-                        className="bg-[var(--bg-card)] rounded-2xl lg:rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl my-4"
+                        <div
+                            className="bg-[var(--bg-card)] rounded-2xl lg:rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl my-4 max-w-full"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {selectedBlog.image && (
@@ -443,7 +443,7 @@ export default function IntroBlogPage() {
                                 <img
                                     src={getImageUrl(selectedBlog.image)}
                                     alt={selectedBlog.title}
-                                    className="w-full h-56 sm:h-64 md:h-80 lg:h-96 object-cover"
+                                    className="w-full h-auto max-w-full object-cover"
                                 />
 
                                 {/* Close button overlays the image on mobile and is positioned inside the modal on desktop */}
@@ -488,10 +488,10 @@ export default function IntroBlogPage() {
                                 {selectedBlog.title}
                             </h2>
 
-                            <div className="prose prose-sm sm:prose lg:prose-lg max-w-none text-theme">
+                            <div className="prose prose-sm sm:prose lg:prose-lg max-w-none text-theme break-words overflow-hidden max-w-full">
                                 <div
                                     dangerouslySetInnerHTML={{ __html: selectedBlog.content }}
-                                    className="whitespace-pre-wrap"
+                                    className="whitespace-pre-wrap break-words"
                                 />
                             </div>
 
@@ -507,7 +507,7 @@ export default function IntroBlogPage() {
                                                 <img
                                                     src={getImageUrl(imageId)}
                                                     alt={`Gallery image ${index + 1}`}
-                                                    className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                                                    className="w-full h-auto max-w-full object-cover hover:scale-110 transition-transform duration-300"
                                                 />
                                             </div>
                                         ))}
