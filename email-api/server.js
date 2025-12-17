@@ -553,12 +553,16 @@ app.get(['/calendar', '/calendar.ics'], async (req, res) => {
       }
     );
 
+    console.log('➡️ Fetching events from Directus', { url: `${directusUrl}/items/events`, status: eventsResponse.status });
     if (!eventsResponse.ok) {
+      const errText = await eventsResponse.text();
+      console.error('❌ Directus events fetch failed', { status: eventsResponse.status, body: errText });
       throw new Error(`Failed to fetch events: ${eventsResponse.statusText}`);
     }
 
     const eventsData = await eventsResponse.json();
     const events = eventsData.data || [];
+    console.log(`⬇️ Directus returned ${events.length} events`);
 
     // VTIMEZONE block for Europe/Amsterdam (basic, widely accepted)
     const tzBlock = [
@@ -627,9 +631,10 @@ app.get(['/calendar', '/calendar.ics'], async (req, res) => {
 
     const icsContent = icsLines.join('\r\n');
 
-    // Set headers for calendar subscription; use attachment to encourage download/subscription
-    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
-    res.setHeader('Content-Disposition', 'attachment; filename="salve-mundi.ics"');
+    // Set headers for calendar subscription — use inline disposition so clients treat it as a feed
+    res.setHeader('Content-Type', 'text/calendar; charset=utf-8; method=PUBLISH; component=VCALENDAR');
+    res.setHeader('Content-Disposition', 'inline; filename="salve-mundi.ics"');
+    res.setHeader('Content-Transfer-Encoding', '8bit');
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.send(icsContent);
 
@@ -649,6 +654,33 @@ app.get('/.well-known/webcal', (req, res) => {
   const redirectUrl = `https://${host}/calendar`;
   console.log('🔁 Redirecting /.well-known/webcal to', redirectUrl);
   res.redirect(301, redirectUrl);
+});
+
+// Debug endpoint to inspect events as returned from Directus (no ICS formatting)
+app.get('/calendar/debug', async (req, res) => {
+  try {
+    const directusUrl = process.env.DIRECTUS_URL || 'https://admin.salvemundi.nl';
+    const directusToken = process.env.DIRECTUS_API_KEY;
+    if (!directusToken) return res.status(500).json({ error: 'Directus API key not configured' });
+
+    const eventsResponse = await fetch(`${directusUrl}/items/events?fields=id,name,event_date,description,location&sort=-event_date&limit=-1`, {
+      headers: { 'Authorization': `Bearer ${directusToken}` }
+    });
+
+    if (!eventsResponse.ok) {
+      const errText = await eventsResponse.text();
+      return res.status(eventsResponse.status).json({ error: 'Failed to fetch events from Directus', details: errText });
+    }
+
+    const eventsData = await eventsResponse.json();
+    const events = (eventsData && eventsData.data) || [];
+
+    // Return a compact representation to help debugging from a browser
+    res.json({ count: events.length, sample: events.slice(0, 10).map(e => ({ id: e.id, name: e.name, event_date: e.event_date, location: e.location })) });
+  } catch (err) {
+    console.error('❌ /calendar/debug error', err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.listen(PORT, () => {
