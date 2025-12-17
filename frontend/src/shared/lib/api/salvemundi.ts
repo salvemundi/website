@@ -30,8 +30,8 @@ export interface Sticker {
     city?: string;
     image?: string;
     date_created: string;
-    user_created?: any;
-    created_by?: any;
+    user_created?: string | { id?: string | number; first_name?: string; last_name?: string; email?: string; avatar?: string };
+    created_by?: string | { id?: string | number; first_name?: string; last_name?: string; email?: string; avatar?: string };
 }
 
 export interface StickerStats {
@@ -79,12 +79,12 @@ export interface PaymentResponse {
 }
 
 // --- Helper Functions ---
-function buildQueryString(params: Record<string, any>): string {
+function buildQueryString(params: { fields?: string[]; sort?: string[]; filter?: unknown; limit?: number }): string {
     const queryParams = new URLSearchParams();
     if (params.fields) queryParams.append('fields', params.fields.join(','));
     if (params.sort) queryParams.append('sort', params.sort.join(','));
     if (params.filter) queryParams.append('filter', JSON.stringify(params.filter));
-    if (params.limit) queryParams.append('limit', params.limit.toString());
+    if (params.limit) queryParams.append('limit', String(params.limit));
     return queryParams.toString();
 }
 

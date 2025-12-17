@@ -225,15 +225,16 @@ export default function Hero() {
     useEffect(() => {
         if (typeof window === 'undefined') return;
         const mq = window.matchMedia('(max-width: 639px)');
-        const update = () => setIsMobile(Boolean(mq.matches));
-        update();
+        const applyUpdate = (e?: MediaQueryListEvent) => setIsMobile(Boolean(e ? e.matches : mq.matches));
+        applyUpdate();
+        const onChange = (e: MediaQueryListEvent) => applyUpdate(e);
         // add/remove listener in a compatible way
-        if (mq.addEventListener) mq.addEventListener('change', update);
-        else mq.addListener(update as any);
+        if (mq.addEventListener) mq.addEventListener('change', onChange);
+        else mq.addListener(onChange as unknown as (this: MediaQueryList, ev: MediaQueryListEvent) => void);
         return () => {
             try {
-                if (mq.removeEventListener) mq.removeEventListener('change', update);
-                else mq.removeListener(update as any);
+                if (mq.removeEventListener) mq.removeEventListener('change', onChange);
+                else mq.removeListener(onChange as unknown as (this: MediaQueryList, ev: MediaQueryListEvent) => void);
             } catch (e) {
                 // ignore
             }

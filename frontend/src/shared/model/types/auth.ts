@@ -23,3 +23,17 @@ export interface SignupData {
     last_name: string;
     phone_number?: string;
 }
+
+export interface EventSignup {
+    id: number;
+    created_at: string;
+    event_id: {
+        id: number;
+        name: string;
+        event_date: string;
+        description: string;
+        image?: string;
+        contact_phone?: string;
+        contact_name?: string;
+    };
+}

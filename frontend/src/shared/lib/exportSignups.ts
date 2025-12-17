@@ -1,9 +1,25 @@
 /**
  * Export signups to an Excel file. Uses SheetJS (xlsx) if present, otherwise falls back to CSV.
  */
-export default async function exportEventSignups(signups: any[], filename = 'aanmeldingen.xlsx') {
+interface ExportSignup {
+    id?: number | string;
+    participant_name?: string;
+    participant_email?: string;
+    participant_phone?: string;
+    checked_in?: boolean;
+    checked_in_at?: string;
+    created_at?: string;
+    directus_relations?: {
+        first_name?: string;
+        last_name?: string;
+        email?: string;
+        phone_number?: string;
+    };
+}
+
+export default async function exportEventSignups(signups: ExportSignup[], filename = 'aanmeldingen.xlsx') {
     // Normalize rows
-    const rows = signups.map(s => ({
+    const rows = signups.map((s) => ({
         id: s.id,
         name: s.participant_name || (s.directus_relations?.first_name ? `${s.directus_relations.first_name} ${s.directus_relations.last_name || ''}`.trim() : ''),
         email: s.participant_email || s.directus_relations?.email || '',

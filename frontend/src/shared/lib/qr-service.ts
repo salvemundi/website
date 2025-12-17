@@ -1,6 +1,10 @@
 import QRCode from 'qrcode';
 import { directusFetch } from './directus';
 
+interface AttendanceOfficer {
+    directus_users_id?: string | number | null;
+}
+
 // Generate a stable token for a signup
 export function generateQRToken(signupId: number, eventId: number) {
     const rand = Math.random().toString(36).substring(2, 15);
@@ -78,7 +82,7 @@ export async function isUserAuthorizedForAttendance(userId: string, eventId: num
         if (!event) return false;
 
         if (event.attendance_officers && Array.isArray(event.attendance_officers)) {
-            const found = event.attendance_officers.some((a: any) => a.directus_users_id === userId);
+            const found = event.attendance_officers.some((a: AttendanceOfficer) => String(a.directus_users_id) === String(userId));
             if (found) return true;
         }
 

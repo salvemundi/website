@@ -22,13 +22,20 @@ interface Event {
 interface Committee {
     id: number;
     name: string;
-    image?: any;
+    image?: string | { id: number; filename?: string } | null;
     is_visible?: boolean;
     short_description?: string;
     description?: string;
-    committee_members?: any[];
+    committee_members?: CommitteeMember[];
     created_at?: string;
     updated_at?: string;
+}
+
+interface CommitteeMember {
+    id: number;
+    name: string;
+    role?: string;
+    image?: string | null;
 }
 
 interface Club {
@@ -74,10 +81,17 @@ interface DirectusStore {
     loadSponsors: () => Promise<void>;
 
     // Hero Banners
-    heroBanners: any[]; // Using any to avoid circular dependency issues for now, or import type if possible
+    heroBanners: HeroBanner[];
     heroBannersLoading: boolean;
     heroBannersError: string | null;
     loadHeroBanners: () => Promise<void>;
+}
+
+interface HeroBanner {
+    id: number;
+    title?: string;
+    image?: string;
+    link?: string;
 }
 
 export const useDirectusStore = create<DirectusStore>((set) => ({
@@ -88,7 +102,7 @@ export const useDirectusStore = create<DirectusStore>((set) => ({
     loadEvents: async () => {
         set({ eventsLoading: true, eventsError: null });
         try {
-            const data = await eventsApi.getAll();
+            const data = await eventsApi.getAll() as Event[];
             set({ events: data, eventsLoading: false });
         } catch (error) {
             console.error('Failed to load events, using mock data:', error);
@@ -107,7 +121,7 @@ export const useDirectusStore = create<DirectusStore>((set) => ({
     loadCommittees: async () => {
         set({ committeesLoading: true, committeesError: null });
         try {
-            const data = await committeesApi.getAllWithMembers();
+            const data = await committeesApi.getAllWithMembers() as Committee[];
             set({ committees: data, committeesLoading: false });
         } catch (error) {
             console.error('Failed to load committees, using mock data:', error);
@@ -125,7 +139,7 @@ export const useDirectusStore = create<DirectusStore>((set) => ({
     loadClubs: async () => {
         set({ clubsLoading: true, clubsError: null });
         try {
-            const data = await clubsApi.getAll();
+            const data = await clubsApi.getAll() as Club[];
             set({ clubs: data, clubsLoading: false });
         } catch (error) {
             console.error('Failed to load clubs, using mock data:', error);
@@ -143,7 +157,7 @@ export const useDirectusStore = create<DirectusStore>((set) => ({
     loadSponsors: async () => {
         set({ sponsorsLoading: true, sponsorsError: null });
         try {
-            const data = await sponsorsApi.getAll();
+            const data = await sponsorsApi.getAll() as Sponsor[];
             set({ sponsors: data, sponsorsLoading: false });
         } catch (error) {
             console.error('Failed to load sponsors:', error);
@@ -162,7 +176,7 @@ export const useDirectusStore = create<DirectusStore>((set) => ({
         set({ heroBannersLoading: true, heroBannersError: null });
         try {
             const { heroBannersApi } = await import('../api/salvemundi');
-            const data = await heroBannersApi.getAll();
+            const data = await heroBannersApi.getAll() as HeroBanner[];
             set({ heroBanners: data, heroBannersLoading: false });
         } catch (error) {
             console.error('Failed to load hero banners:', error);
