@@ -298,11 +298,7 @@ export default function IntroBlogPage() {
                                                             />
                                                         </div>
                                                     )}
-                                                    {!blog.image && (
-                                                        <div className="relative w-full h-64 bg-gradient-theme flex items-center justify-center">
-                                                            <TypeIcon className="w-16 h-16 lg:w-20 lg:h-20 text-white/30" />
-                                                        </div>
-                                                    )}
+                                                    {/* No placeholder shown when there's no image */}
                                                 </div>
 
                                                 {/* Action Bar */}
