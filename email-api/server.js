@@ -660,7 +660,7 @@ app.get('/.well-known/webcal', (req, res) => {
 app.get('/calendar/debug', async (req, res) => {
   try {
     const directusUrl = process.env.DIRECTUS_URL || 'https://admin.salvemundi.nl';
-    const directusToken = process.env.DIRECTUS_KEY;
+    const directusToken = process.env.DIRECTUS_API_TOKEN;
     if (!directusToken) return res.status(500).json({ error: 'Directus API key not configured' });
 
     const eventsResponse = await fetch(`${directusUrl}/items/events?fields=id,name,event_date,description,location&sort=-event_date&limit=-1`, {
