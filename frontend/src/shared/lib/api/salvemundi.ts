@@ -119,7 +119,7 @@ export const paymentApi = {
 export const eventsApi = {
     getAll: async () => {
         const query = buildQueryString({
-            fields: ['id', 'name', 'event_date', 'event_time', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact'],
+            fields: ['id', 'name', 'event_date', 'event_time', 'event_time_end', 'location', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact'],
             sort: ['-event_date']
         });
         const events = await directusFetch<any[]>(`/items/events?${query}`);
@@ -133,7 +133,7 @@ export const eventsApi = {
                             event.committee_name = committee.name;
                         }
                     } catch (error) {
-                        // suppressed non-error log
+                        console.error('eventsApi.getAll: failed to fetch committee for event', { eventId: event.id, committeeId: event.committee_id, error });
                     }
                 }
 
@@ -149,7 +149,7 @@ export const eventsApi = {
                             event.contact_name = `${leaders[0].user_id.first_name || ''} ${leaders[0].user_id.last_name || ''}`.trim();
                         }
                     } catch (error) {
-                        // suppressed non-error log
+                        console.error('eventsApi.getAll: failed to fetch leaders for event', { eventId: event.id, committeeId: event.committee_id, error });
                     }
                 } else if (event.contact) {
                     event.contact_phone = event.contact;
@@ -163,7 +163,7 @@ export const eventsApi = {
 
     getById: async (id: string) => {
         const query = buildQueryString({
-            fields: ['id', 'name', 'event_date', 'event_time', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact']
+            fields: ['id', 'name', 'event_date', 'event_time', 'event_time_end', 'location', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact']
         });
         const event = await directusFetch<any>(`/items/events/${id}?${query}`);
 
@@ -174,7 +174,7 @@ export const eventsApi = {
                     event.committee_name = committee.name;
                 }
             } catch (error) {
-                // suppressed non-error log
+                console.error('eventsApi.getById: failed to fetch committee for event', { eventId: id, committeeId: event.committee_id, error });
             }
         }
 
@@ -190,7 +190,7 @@ export const eventsApi = {
                     event.contact_name = `${leaders[0].user_id.first_name || ''} ${leaders[0].user_id.last_name || ''}`.trim();
                 }
             } catch (error) {
-                // suppressed non-error log
+                console.error('eventsApi.getById: failed to fetch leaders for event', { eventId: id, committeeId: event.committee_id, error });
             }
         } else if (event.contact) {
             event.contact_phone = event.contact;
@@ -202,7 +202,7 @@ export const eventsApi = {
     getByCommittee: async (committeeId: number) => {
         const query = buildQueryString({
             filter: { committee_id: { _eq: committeeId } },
-            fields: ['id', 'name', 'event_date', 'event_time', 'description', 'price_members', 'price_non_members', 'image'],
+            fields: ['id', 'name', 'event_date', 'event_time', 'event_time_end', 'location', 'description', 'price_members', 'price_non_members', 'image'],
             sort: ['-event_date']
         });
         return directusFetch<any[]>(`/items/events?${query}`);
@@ -264,7 +264,7 @@ export const eventsApi = {
                 try {
                     qrDataUrl = await qrService.generateQRCode(token);
                 } catch (e) {
-                    // suppressed non-error log
+                    console.error('eventsApi.createSignup: failed to generate QR code', { signupId: signup.id, error: e });
                 }
 
                 // send email (best-effort)
@@ -284,7 +284,7 @@ export const eventsApi = {
                         contactPhone: undefined,
                     });
                 } catch (e) {
-                    // suppressed non-error log
+                    console.error('eventsApi.createSignup: failed to send signup email', { signupId: signup.id, error: e });
                 }
                 // Update the local signup object with the QR token instead of refetching
                 signup.qr_token = token;
@@ -292,7 +292,7 @@ export const eventsApi = {
             }
 
         } catch (err) {
-            // suppressed non-error log
+            console.error('eventsApi.createSignup: unexpected error during post-signup processing', { signupData, error: err });
         }
 
         return signup;
