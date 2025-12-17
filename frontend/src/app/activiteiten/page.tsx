@@ -270,6 +270,9 @@ function ActivitiesContent() {
                                                     title={event.name}
                                                     description={event.description}
                                                     date={event.event_date}
+                                                    startTime={event.event_time}
+                                                    endTime={event.event_time_end || event.time_end}
+                                                    location={event.location}
                                                     price={event.price}
                                                     image={getImageUrl(event.image)}
                                                     isPast={isEventPast(event.event_date)}

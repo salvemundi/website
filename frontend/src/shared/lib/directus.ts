@@ -70,10 +70,25 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit):
 
         // Debug logging removed to avoid leaking masked tokens
 
-    const response = await fetch(url, {
-        ...options,
-        headers,
-    });
+    // Minimal debug: method, url, usingSessionToken
+    try {
+        const safeHeaders = { ...headers } as Record<string, string>;
+        if (safeHeaders.Authorization) safeHeaders.Authorization = '[REDACTED]';
+        console.debug('[directusFetch] Request:', { method: options?.method || 'GET', url, usingSessionToken, headers: safeHeaders });
+    } catch (e) {
+        // ignore logging errors
+    }
+
+    let response: Response;
+    try {
+        response = await fetch(url, {
+            ...options,
+            headers,
+        });
+    } catch (err) {
+        console.error('[directusFetch] Network error when fetching', { url, method: options?.method || 'GET', error: err });
+        throw err;
+    }
 
     // Handle 401 Unauthorized specifically
     if (response.status === 401) {
@@ -88,18 +103,26 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit):
         const contentType = response.headers.get('content-type');
         if (contentType && contentType.includes('text/html')) {
             // Avoid dumping HTML into the error message
-            throw new Error(`Directus API error: ${response.status} ${response.statusText} (Server returned HTML, likely a proxy or gateway error)`);
+            const msg = `Directus API error: ${response.status} ${response.statusText} (Server returned HTML, likely a proxy or gateway error)`;
+            console.error('[directusFetch] Non-OK HTML response', { url, status: response.status, statusText: response.statusText });
+            throw new Error(msg);
         }
         const errorText = await response.text();
         try {
-            // non-OK response details suppressed
+            console.error('[directusFetch] Non-OK response', { url, status: response.status, statusText: response.statusText, body: errorText, usingSessionToken });
         } catch (e) {
-            // ignore
+            // ignore logging errors
         }
         throw new Error(`Directus API error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
-    const json = await response.json();
+    let json: any;
+    try {
+        json = await response.json();
+    } catch (err) {
+        console.error('[directusFetch] Failed parsing JSON response', { url, error: err });
+        throw err;
+    }
     return json.data as T;
 }
 

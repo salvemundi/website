@@ -15,7 +15,8 @@ import {
     Mail,
     Info,
     CheckCircle,
-    Users
+    Users,
+    MapPin
 } from 'lucide-react';
 import { isEventPast } from '@/shared/lib/utils/date';
 
@@ -138,8 +139,46 @@ export default function EventDetailPage() {
             const [hours, minutes] = event.event_time.split(':');
             return `${hours}:${minutes}`;
         }
-        return new Date(event.event_date).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+        // Only show a time if the stored `event_date` contains a time portion.
+        const raw = event.event_date || '';
+        const hasTimeInDate = raw.includes('T') || /\d{2}:\d{2}/.test(raw);
+        if (hasTimeInDate) {
+            const parsed = new Date(raw);
+            if (!Number.isNaN(parsed.getTime())) return parsed.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+        }
+        return null;
     }, [event]);
+
+    const formattedStart = useMemo(() => {
+        if (!event) return null;
+        if (event.event_time) {
+            const [hours, minutes] = event.event_time.split(':');
+            return `${hours}:${minutes}`;
+        }
+        // Only fallback to the date's time if the date actually contains a time portion
+        const raw = event.event_date || '';
+        const hasTimeInDate = raw.includes('T') || /\d{2}:\d{2}/.test(raw);
+        if (hasTimeInDate) {
+            const parsed = new Date(raw);
+            if (!Number.isNaN(parsed.getTime())) return parsed.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+        }
+        return null;
+    }, [event]);
+
+    const formattedEnd = useMemo(() => {
+        if (!event) return null;
+        const endRaw = event.event_time_end || event.time_end || event.end_time;
+        if (endRaw) {
+            const [hours, minutes] = endRaw.split(':');
+            return `${hours}:${minutes}`;
+        }
+        return null;
+    }, [event]);
+
+    const formattedTimeRange = useMemo(() => {
+        if (!formattedStart) return null;
+        return formattedEnd ? `${formattedStart} - ${formattedEnd}` : formattedStart;
+    }, [formattedStart, formattedEnd]);
 
     // Calculate price based on membership (if we knew it) or just display both/one
     // The modal used `activity.price`, but our event object has `price_members` and `price_non_members`
@@ -231,19 +270,17 @@ export default function EventDetailPage() {
                     title="Activiteit niet gevonden"
                     backgroundImage="/img/backgrounds/Kroto2025.jpg"
                 />
-                <div className="mx-auto max-w-app px-4 py-12">
-                    <div className="rounded-3xl bg-white/80 p-8 text-center shadow-lg">
-                        <p className="mb-4 text-lg font-semibold text-theme-purple-dark">
-                            De gevraagde activiteit kon niet worden gevonden
-                        </p>
+                <main className="mx-auto max-w-app px-4 py-8 sm:px-6 lg:px-8">
+                    <div className="text-center">
+                        <p className="text-lg font-bold mb-4">De gevraagde activiteit kon niet worden gevonden.</p>
                         <button
                             onClick={() => router.push('/activiteiten')}
-                            className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-oranje to-red-600 px-6 py-3 font-semibold text-white shadow-lg transition hover:-translate-y-0.5"
+                            className="inline-flex items-center gap-2 bg-theme-purple text-white font-bold py-2 px-4 rounded-xl"
                         >
                             Terug naar activiteiten
                         </button>
                     </div>
-                </div>
+                </main>
             </div>
         );
     }
@@ -403,65 +440,81 @@ export default function EventDetailPage() {
                         </div>
                     </div>
 
-                    {/* Date & Time - Small Tile */}
-                    <div className="rounded-3xl  bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg flex flex-col items-center justify-center text-center gap-3 hover:scale-[1.02] transition-transform">
-                        <div className="h-12 w-12 rounded-2xl bg-paars/10 dark:bg-white/20 flex items-center justify-center text-theme-purple-dark dark:text-white">
-                            <CalendarClock className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-xs uppercase tracking-wide text-theme-purple-dark dark:text-white/90 font-bold">Datum & Tijd</p>
-                            <p className="text-lg font-bold text-theme-purple dark:text-white">{formattedDate}</p>
-                            <p className="text-sm text-theme-purple-dark dark:text-white/90">{formattedTime}</p>
-                        </div>
-                    </div>
-
-                    {/* Price - Small Tile */}
-                    <div className="rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg flex flex-col items-center justify-center text-center gap-3 hover:scale-[1.02] transition-transform">
-                        <div className="h-12 w-12 rounded-2xl bg-paars/10 dark:bg-white/20 flex items-center justify-center text-theme-purple-dark dark:text-white">
-                            <Euro className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-xs uppercase tracking-wide text-theme-purple-dark dark:text-white/90 font-bold">Prijs</p>
-                            <p className="text-lg font-bold text-theme-purple dark:text-white">{displayPrice}</p>
-                        </div>
-                    </div>
-
-                    {/* Committee - Small Tile */}
-                    {event.committee_name && (
-                        <div className="rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg flex flex-col items-center justify-center text-center gap-3 hover:scale-[1.02] transition-transform">
-                            <div className="h-12 w-12 rounded-2xl bg-paars/10 dark:bg-white/20 flex items-center justify-center text-theme-purple-dark dark:text-white">
-                                <UsersIcon className="h-6 w-6" />
+                    {/* Right column: compact info tiles */}
+                    <div className="md:col-span-1 md:row-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4 h-full">
+                        {/* Date & Time - Compact */}
+                        <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-start gap-4">
+                            <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
+                                <CalendarClock className="h-6 w-6" />
                             </div>
-                            <div>
-                                <p className="text-xs uppercase tracking-wide text-theme-purple-dark dark:text-white/90 font-bold">Organisatie</p>
-                                <p className="text-lg font-bold text-theme-purple dark:text-white">
-                                    {event.committee_name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim()}
-                                </p>
-                            </div>
-                        </div>
-
-
-
-                    )}
-                    {/* Contact - Small Tile */}
-                    {(event.contact_name || committeeEmail) && (
-                        <div className="rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg flex flex-col items-center justify-center text-center gap-3 hover:scale-[1.02] transition-transform">
-                            <div className="h-12 w-12 rounded-2xl bg-paars/10 dark:bg-white/20 flex items-center justify-center text-theme-purple-dark dark:text-white">
-                                <Mail className="h-6 w-6" />
-                            </div>
-                            <div>
-                                <p className="text-xs uppercase tracking-wide text-theme-purple-dark dark:text-white/90 font-bold">Contact</p>
-                                {event.contact_name && (
-                                    <p className="text-sm font-semibold text-theme-purple dark:text-white">{event.contact_name}</p>
-                                )}
-                                {committeeEmail && (
-                                    <a href={`mailto:${committeeEmail}`} className="text-sm text-theme-purple dark:text-white/90 hover:underline break-all">
-                                        {committeeEmail}
-                                    </a>
+                            <div className="min-w-0">
+                                <p className="text-sm uppercase tracking-wide text-white/90 font-bold">Datum & Tijd</p>
+                                <p className="text-base font-semibold text-white truncate">{formattedDate}</p>
+                                {(formattedTimeRange || formattedTime) && (
+                                    <p className="text-sm text-white/80">{formattedTimeRange || formattedTime}</p>
                                 )}
                             </div>
                         </div>
-                    )}
+
+                        {/* Price - Compact */}
+                        <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-start gap-4">
+                            <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
+                                <Euro className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <p className="text-sm uppercase tracking-wide text-white/90 font-bold">Prijs</p>
+                                <p className="text-base font-semibold text-white">{displayPrice}</p>
+                            </div>
+                        </div>
+
+                        {/* Location - Compact */}
+                        {event.location && (
+                            <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-start gap-4">
+                                <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
+                                    <MapPin className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <p className="text-sm uppercase tracking-wide text-white/90 font-bold">Locatie</p>
+                                    <p className="text-base font-semibold text-white break-words max-w-[18rem]">{event.location}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Committee - Compact */}
+                        {event.committee_name && (
+                            <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-start gap-4">
+                                <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
+                                    <UsersIcon className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <p className="text-sm uppercase tracking-wide text-white/90 font-bold">Organisatie</p>
+                                    <p className="text-base font-semibold text-white truncate">
+                                        {event.committee_name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim()}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Contact - Compact */}
+                        {(event.contact_name || committeeEmail) && (
+                            <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-start gap-4">
+                                <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
+                                    <Mail className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <p className="text-sm uppercase tracking-wide text-white/90 font-bold">Contact</p>
+                                    {event.contact_name && (
+                                        <p className="text-base font-semibold text-white">{event.contact_name}</p>
+                                    )}
+                                    {committeeEmail && (
+                                        <a href={`mailto:${committeeEmail}`} className="text-sm text-white/80 hover:underline break-all">
+                                            {committeeEmail}
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
 
                     {/* Description - Large Tile (2x2 on desktop) */}
                     {event.description && (

@@ -7,6 +7,9 @@ interface ActiviteitCardProps {
     description: string;
     image?: string;
     date?: string;
+    startTime?: string | null;
+    endTime?: string | null;
+    location?: string | null;
     title: string;
     price?: number;
     isPast?: boolean;
@@ -23,6 +26,9 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     image,
     title,
     date,
+    startTime,
+    endTime,
+    location,
     price,
     isPast = false,
     onSignup,
@@ -64,6 +70,27 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
         return parsed.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
     };
 
+    const formatTime = (time?: string | null, fallbackDate?: string | undefined) => {
+        if (time) {
+            const parts = time.split(':');
+            if (parts.length >= 2) return `${parts[0]}:${parts[1]}`;
+            return time;
+        }
+
+        // Only fallback to the date's time if the stored `fallbackDate` actually contains a time portion
+        if (!fallbackDate) return null;
+        const raw = fallbackDate;
+        const hasTimeInDate = raw.includes('T') || /\d{2}:\d{2}/.test(raw);
+        if (!hasTimeInDate) return null;
+
+        const parsed = new Date(raw);
+        if (!Number.isNaN(parsed.getTime())) return parsed.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+        return null;
+    };
+    const start = formatTime(startTime, date);
+    const end = formatTime(endTime, date);
+    const timeRange = start ? (end ? `${start} - ${end}` : start) : null;
+
     if (isListVariant) {
         return (
             <div
@@ -79,9 +106,10 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                     </div>
 
                     <div className="flex flex-row flex-wrap gap-4 text-right text-theme-purple font-semibold">
-                        <div className="min-w-[120px]">
-                            <p className="text-xs text-theme-purple/60 uppercase tracking-wide">Datum</p>
-                            <p className="text-base">{formatDate(date)}</p>
+                        <div className="min-w-[160px] text-right">
+                            <p className="text-xs text-theme-purple/60 uppercase tracking-wide">Datum & Tijd</p>
+                            <p className="text-base">{formatDate(date)}{timeRange ? ` — ${timeRange}` : ''}</p>
+                            {location && <p className="text-xs text-theme-muted mt-1 truncate max-w-[220px]">{location}</p>}
                         </div>
                         <div className="min-w-[90px]">
                             <p className="text-xs text-theme-purple/60 uppercase tracking-wide">Prijs</p>
@@ -147,8 +175,12 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                     </h1>
                     <div className="flex flex-col items-end whitespace-nowrap text-right ml-auto">
                         {date && (
-                            <p className="text-xs sm:text-sm font-semibold text-theme-white">{date}</p>
+                            <>
+                                <p className="text-xs sm:text-sm font-semibold text-theme-white">{formatDate(date)}</p>
+                                {timeRange && <p className="text-sm text-theme-white/90">{timeRange}</p>}
+                            </>
                         )}
+                        {location && <p className="text-xs text-theme-white/80 mt-1">{location}</p>}
                         <span className="text-lg font-bold text-theme-white">€{safePrice}</span>
                     </div>
                 </div>
