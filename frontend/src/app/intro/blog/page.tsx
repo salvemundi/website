@@ -197,35 +197,56 @@ export default function IntroBlogPage() {
 
                             {/* Filter Bar */}
                             {blogTypes.length > 0 && (
-                                <div className="flex items-center gap-3 mb-6 overflow-x-auto pb-2">
-                                    <Filter className="w-5 h-5 text-theme-purple flex-shrink-0" />
-                                    <button
-                                        onClick={() => setSelectedFilter(null)}
-                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
-                                            selectedFilter === null
-                                                ? 'bg-gradient-theme text-white shadow-md'
-                                                : 'bg-theme-purple/10 text-theme-purple hover:bg-theme-purple/20'
-                                        }`}
-                                    >
-                                        Alles
-                                    </button>
-                                    {blogTypes.map((type) => {
-                                        const typeConfig = getBlogTypeConfig(type);
-                                        return (
-                                            <button
-                                                key={type}
-                                                onClick={() => setSelectedFilter(type)}
-                                                className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
-                                                    selectedFilter === type
-                                                        ? 'bg-gradient-theme text-white shadow-md'
-                                                        : 'bg-theme-purple/10 text-theme-purple hover:bg-theme-purple/20'
-                                                }`}
+                                <>
+                                    {/* Mobile: dropdown */}
+                                    <div className="mb-4 md:hidden">
+                                        <label className="sr-only">Filter blog posts</label>
+                                        <div className="flex items-center gap-2">
+                                            <Filter className="w-5 h-5 text-theme-purple flex-shrink-0" />
+                                            <select
+                                                value={selectedFilter ?? ''}
+                                                onChange={(e) => setSelectedFilter(e.target.value === '' ? null : e.target.value)}
+                                                className="w-full px-4 py-2 rounded-full bg-[var(--bg-card)] border border-gray-200 text-theme text-sm"
                                             >
-                                                {typeConfig.label}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
+                                                <option value="">Alles</option>
+                                                {blogTypes.map((type) => (
+                                                    <option key={type} value={type}>{getBlogTypeConfig(type).label}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {/* Desktop: pill buttons */}
+                                    <div className="hidden md:flex items-center gap-3 mb-6 overflow-x-auto pb-2">
+                                        <Filter className="w-5 h-5 text-theme-purple flex-shrink-0" />
+                                        <button
+                                            onClick={() => setSelectedFilter(null)}
+                                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
+                                                selectedFilter === null
+                                                    ? 'bg-gradient-theme text-white shadow-md'
+                                                    : 'bg-theme-purple/10 text-theme-purple hover:bg-theme-purple/20'
+                                            }`}
+                                        >
+                                            Alles
+                                        </button>
+                                        {blogTypes.map((type) => {
+                                            const typeConfig = getBlogTypeConfig(type);
+                                            return (
+                                                <button
+                                                    key={type}
+                                                    onClick={() => setSelectedFilter(type)}
+                                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
+                                                        selectedFilter === type
+                                                            ? 'bg-gradient-theme text-white shadow-md'
+                                                            : 'bg-theme-purple/10 text-theme-purple hover:bg-theme-purple/20'
+                                                    }`}
+                                                >
+                                                    {typeConfig.label}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </>
                             )}
 
                             {isLoading ? (
