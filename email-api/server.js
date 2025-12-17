@@ -598,25 +598,40 @@ app.get(['/calendar', '/calendar.ics'], async (req, res) => {
     ];
 
     events.forEach(event => {
-      const startDate = new Date(event.event_date);
-      const endDate = new Date(startDate.getTime() + 3 * 60 * 60 * 1000); // +3 hours
       const now = new Date();
-
-      const formatDateUTC = (date) => {
-        return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-      };
 
       const escapeText = (text) => {
         if (!text) return '';
         return String(text).replace(/\r\n|\r|\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
       };
 
-      // Build event lines
+      // Helper: detect date-only strings like YYYY-MM-DD
+      const isDateOnly = (s) => /^\d{4}-\d{2}-\d{2}$/.test(String(s));
+
       icsLines.push('BEGIN:VEVENT');
       icsLines.push(`UID:${event.id}@salvemundi.nl`);
-      icsLines.push(`DTSTAMP:${formatDateUTC(now)}`);
-      icsLines.push(`DTSTART:${formatDateUTC(startDate)}`);
-      icsLines.push(`DTEND:${formatDateUTC(endDate)}`);
+      icsLines.push(`DTSTAMP:${now.toISOString().replace(/[-:]/g, '').split('.')[0]}Z`);
+
+      if (isDateOnly(event.event_date)) {
+        // All-day event: use VALUE=DATE and DTEND as next day per RFC5545
+        const [y, m, d] = String(event.event_date).split('-').map(Number);
+        const dtStart = `${String(y).padStart(4,'0')}${String(m).padStart(2,'0')}${String(d).padStart(2,'0')}`;
+        // compute next day
+        const startObj = new Date(Date.UTC(y, m - 1, d));
+        const nextDay = new Date(startObj.getTime() + 24 * 60 * 60 * 1000);
+        const dtEnd = `${String(nextDay.getUTCFullYear()).padStart(4,'0')}${String(nextDay.getUTCMonth()+1).padStart(2,'0')}${String(nextDay.getUTCDate()).padStart(2,'0')}`;
+
+        icsLines.push(`DTSTART;VALUE=DATE:${dtStart}`);
+        icsLines.push(`DTEND;VALUE=DATE:${dtEnd}`);
+      } else {
+        // Date-time event: parse and emit UTC times (fallback)
+        const startDate = new Date(event.event_date);
+        const endDate = new Date(startDate.getTime() + 3 * 60 * 60 * 1000); // +3 hours
+        const formatDateUTC = (date) => date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+        icsLines.push(`DTSTART:${formatDateUTC(startDate)}`);
+        icsLines.push(`DTEND:${formatDateUTC(endDate)}`);
+      }
+
       icsLines.push(`SUMMARY:${escapeText(event.name)}`);
       icsLines.push(`DESCRIPTION:${escapeText(event.description || '')}`);
       icsLines.push(`LOCATION:${escapeText(event.location || 'Salve Mundi')}`);
