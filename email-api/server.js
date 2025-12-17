@@ -528,10 +528,13 @@ app.post('/send-intro-update', async (req, res) => {
   }
 });
 
-// Calendar feed endpoint
-app.get('/calendar', async (req, res) => {
+// Calendar feed endpoint (serve both /calendar and /calendar.ics)
+app.get(['/calendar', '/calendar.ics'], async (req, res) => {
   try {
-    console.log('📅 Calendar feed requested');
+    console.log('📅 Calendar feed requested', { host: req.headers.host, url: req.url });
+
+    // Helpful for debugging through proxies/CDNs
+    res.setHeader('Access-Control-Allow-Origin', '*');
 
     // Fetch events from Directus
     const directusUrl = process.env.DIRECTUS_URL || 'https://admin.salvemundi.nl';
@@ -557,6 +560,26 @@ app.get('/calendar', async (req, res) => {
     const eventsData = await eventsResponse.json();
     const events = eventsData.data || [];
 
+    // VTIMEZONE block for Europe/Amsterdam (basic, widely accepted)
+    const tzBlock = [
+      'BEGIN:VTIMEZONE',
+      'TZID:Europe/Amsterdam',
+      'X-LIC-LOCATION:Europe/Amsterdam',
+      'BEGIN:DAYLIGHT',
+      'TZOFFSETFROM:+0100',
+      'TZOFFSETTO:+0200',
+      'TZNAME:CEST',
+      'DTSTART:19700329T020000',
+      'END:DAYLIGHT',
+      'BEGIN:STANDARD',
+      'TZOFFSETFROM:+0200',
+      'TZOFFSETTO:+0100',
+      'TZNAME:CET',
+      'DTSTART:19701025T030000',
+      'END:STANDARD',
+      'END:VTIMEZONE'
+    ];
+
     // Generate ICS content
     const icsLines = [
       'BEGIN:VCALENDAR',
@@ -567,6 +590,7 @@ app.get('/calendar', async (req, res) => {
       'X-WR-CALNAME:Salve Mundi Activiteiten',
       'X-WR-TIMEZONE:Europe/Amsterdam',
       'X-WR-CALDESC:Alle activiteiten van Salve Mundi',
+      ...tzBlock
     ];
 
     events.forEach(event => {
@@ -574,36 +598,38 @@ app.get('/calendar', async (req, res) => {
       const endDate = new Date(startDate.getTime() + 3 * 60 * 60 * 1000); // +3 hours
       const now = new Date();
 
-      const formatDate = (date) => {
+      const formatDateUTC = (date) => {
         return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
       };
 
       const escapeText = (text) => {
         if (!text) return '';
-        return text.replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
+        return String(text).replace(/\r\n|\r|\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
       };
 
-      icsLines.push(
-        'BEGIN:VEVENT',
-        `UID:${event.id}@salvemundi.nl`,
-        `DTSTAMP:${formatDate(now)}`,
-        `DTSTART:${formatDate(startDate)}`,
-        `DTEND:${formatDate(endDate)}`,
-        `SUMMARY:${escapeText(event.name)}`,
-        `DESCRIPTION:${escapeText(event.description || '')}`,
-        `LOCATION:${escapeText(event.location || 'Salve Mundi')}`,
-        `URL:https://salvemundi.nl/activiteiten?event=${event.id}`,
-        'END:VEVENT'
-      );
+      // Build event lines
+      icsLines.push('BEGIN:VEVENT');
+      icsLines.push(`UID:${event.id}@salvemundi.nl`);
+      icsLines.push(`DTSTAMP:${formatDateUTC(now)}`);
+      icsLines.push(`DTSTART:${formatDateUTC(startDate)}`);
+      icsLines.push(`DTEND:${formatDateUTC(endDate)}`);
+      icsLines.push(`SUMMARY:${escapeText(event.name)}`);
+      icsLines.push(`DESCRIPTION:${escapeText(event.description || '')}`);
+      icsLines.push(`LOCATION:${escapeText(event.location || 'Salve Mundi')}`);
+      // Prefer building a URL based on the requested host so proxied domains work
+      const host = req.headers.host || 'salvemundi.nl';
+      const protocol = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'https');
+      icsLines.push(`URL:${protocol}://${host}/activiteiten?event=${event.id}`);
+      icsLines.push('END:VEVENT');
     });
 
     icsLines.push('END:VCALENDAR');
 
     const icsContent = icsLines.join('\r\n');
 
-    // Set headers for calendar subscription
+    // Set headers for calendar subscription; use attachment to encourage download/subscription
     res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
-    res.setHeader('Content-Disposition', 'inline; filename="salve-mundi.ics"');
+    res.setHeader('Content-Disposition', 'attachment; filename="salve-mundi.ics"');
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.send(icsContent);
 
@@ -615,6 +641,14 @@ app.get('/calendar', async (req, res) => {
       message: error.message
     });
   }
+});
+
+// Convenience redirect for webcal scheme (clients sometimes map webcal to HTTP)
+app.get('/.well-known/webcal', (req, res) => {
+  const host = req.headers.host || 'salvemundi.nl';
+  const redirectUrl = `https://${host}/calendar`;
+  console.log('🔁 Redirecting /.well-known/webcal to', redirectUrl);
+  res.redirect(301, redirectUrl);
 });
 
 app.listen(PORT, () => {
