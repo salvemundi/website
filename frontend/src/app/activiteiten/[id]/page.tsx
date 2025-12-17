@@ -443,7 +443,7 @@ export default function EventDetailPage() {
                     {/* Right column: compact info tiles */}
                     <div className="md:col-span-1 md:row-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4 h-full">
                         {/* Date & Time - Compact */}
-                        <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-start gap-4">
+                        <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-center gap-4">
                             <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
                                 <CalendarClock className="h-6 w-6" />
                             </div>
@@ -457,7 +457,7 @@ export default function EventDetailPage() {
                         </div>
 
                         {/* Price - Compact */}
-                        <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-start gap-4">
+                        <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-center gap-4">
                             <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
                                 <Euro className="h-6 w-6" />
                             </div>
@@ -469,7 +469,7 @@ export default function EventDetailPage() {
 
                         {/* Location - Compact */}
                         {event.location && (
-                            <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-start gap-4">
+                            <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-center gap-4">
                                 <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
                                     <MapPin className="h-6 w-6" />
                                 </div>
@@ -482,7 +482,7 @@ export default function EventDetailPage() {
 
                         {/* Committee - Compact */}
                         {event.committee_name && (
-                            <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-start gap-4">
+                            <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-center gap-4">
                                 <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
                                     <UsersIcon className="h-6 w-6" />
                                 </div>
@@ -497,7 +497,7 @@ export default function EventDetailPage() {
 
                         {/* Contact - Compact */}
                         {(event.contact_name || committeeEmail) && (
-                            <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-start gap-4">
+                            <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-center gap-4">
                                 <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
                                     <Mail className="h-6 w-6" />
                                 </div>
