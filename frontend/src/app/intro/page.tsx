@@ -101,7 +101,7 @@ export default function IntroPage() {
           backgroundImage="/img/backgrounds/intro-banner.jpg"
           /* match activiteiten banner size and add subtle blur */
           contentPadding="py-20"
-          imageFilter={`brightness(0.65) blur(6px)`}
+          imageFilter={`brightness(0.65) blur(3px)`}
         />
       </div>
 
