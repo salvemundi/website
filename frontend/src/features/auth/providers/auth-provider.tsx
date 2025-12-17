@@ -142,17 +142,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         handleRedirect();
     }, []);
 
-    const handleLoginSuccess = async (loginResponse: any) => {
+    const handleLoginSuccess = async (loginResponse: unknown) => {
         setIsLoading(true);
         const toastId = toast.loading('Inloggen verwerken...');
 
         try {
             // Get the ID token to send to backend
-            const idToken = loginResponse.idToken;
-            const userEmail = loginResponse.account.username;
+            const lr = loginResponse as { idToken?: string; account?: { username?: string } };
+            const idToken = lr.idToken;
+            const userEmail = lr.account?.username;
 
             // Authenticate with backend using Entra ID token
-            const response = await authApi.loginWithEntraId(idToken, userEmail);
+            const response = await authApi.loginWithEntraId(idToken || '', userEmail || '');
 
             // Validate the returned access token before persisting it. If the
             // token is invalid, do not store it (prevents other components from

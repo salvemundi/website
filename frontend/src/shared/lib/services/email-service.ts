@@ -126,9 +126,10 @@ async function sendEmail(
         if (!response.ok) {
             throw new Error(`Email API responded with status ${response.status}`);
         }
-    } catch (error: any) {
+    } catch (error: unknown) {
         // Silently handle CORS errors - these are expected when calling external API from browser
-        if (error.message?.includes('CORS') || error.message?.includes('Failed to fetch')) {
+        const errMessage = error instanceof Error ? error.message : String(error);
+        if (errMessage.includes('CORS') || errMessage.includes('Failed to fetch')) {
           return;
         }
         throw error;

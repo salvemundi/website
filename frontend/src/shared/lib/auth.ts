@@ -1,5 +1,5 @@
 import { directusFetch, directusUrl } from './directus';
-import { User, SignupData } from '@/shared/model/types/auth';
+import { User, SignupData, EventSignup } from '@/shared/model/types/auth';
 
 export interface LoginResponse {
     access_token: string;
@@ -177,13 +177,14 @@ export async function loginWithEntraId(entraIdToken: string, userEmail: string):
             expires: payload.expires,
             user: userDetails,
         };
-    } catch (error: any) {
+    } catch (error: unknown) {
         // MOCK AUTH FALLBACK FOR DEVELOPMENT
         // If the route is missing (404) and we are in development, simulate a successful login.
+        const errMsg = error instanceof Error ? error.message : String(error);
         if (
             process.env.NODE_ENV === 'development' &&
-            (error.message.includes('Route') && error.message.includes("doesn't exist")) ||
-            (error.message.includes('404'))
+            (errMsg.includes('Route') && errMsg.includes("doesn't exist")) ||
+            (errMsg.includes('404'))
         ) {
             
 
@@ -215,7 +216,7 @@ export async function signupWithPassword(userData: SignupData): Promise<LoginRes
         const roleId = process.env.NEXT_PUBLIC_DEFAULT_USER_ROLE_ID;
 
         // Create the Directus user directly
-        await directusFetch<any>('/users', {
+        await directusFetch<Record<string, unknown>>('/users', {
             method: 'POST',
             body: JSON.stringify({
                 email: userData.email,
@@ -230,17 +231,18 @@ export async function signupWithPassword(userData: SignupData): Promise<LoginRes
 
         // Now login with the new credentials
         return await loginWithPassword(userData.email, userData.password);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('❌ Signup error:', error);
 
+        const errMsg = error instanceof Error ? error.message : String(error);
+
         // Check for duplicate email error
-        const errorMessage = error.message || '';
-        if (errorMessage.includes('unique') || errorMessage.includes('duplicate') || errorMessage.includes('already exists')) {
+        if (errMsg.includes('unique') || errMsg.includes('duplicate') || errMsg.includes('already exists')) {
             throw new Error('This email address is already registered. Please login instead or use a different email.');
         }
 
         // Check for specific Directus error codes
-        if (errorMessage.includes('RECORD_NOT_UNIQUE')) {
+        if (errMsg.includes('RECORD_NOT_UNIQUE')) {
             throw new Error('This email address is already registered. Please login instead or use a different email.');
         }
 
@@ -274,7 +276,7 @@ export async function fetchUserDetails(token: string): Promise<User | null> {
 
         if (!response.ok) {
             // Try to parse JSON error payload
-            let payload: any;
+            let payload: unknown;
             try {
                 payload = await response.json();
             } catch (e) {
@@ -284,7 +286,8 @@ export async function fetchUserDetails(token: string): Promise<User | null> {
             console.error('❌ Failed to fetch user details:', payload);
 
             // Treat common invalid/expired token indicators as an expired session.
-            const errorCode = payload?.errors?.[0]?.extensions?.code || payload?.errors?.[0]?.extensions?.code || payload?.code;
+            const payloadObj = payload as any;
+            const errorCode = payloadObj?.errors?.[0]?.extensions?.code || payloadObj?.code;
             const status = response.status;
 
             if (
@@ -387,18 +390,18 @@ export async function logout(refreshToken: string): Promise<void> {
 }
 
 // Get user's event signups
-export async function getUserEventSignups(userId: string) {
+export async function getUserEventSignups(userId: string): Promise<EventSignup[]> {
     const query = new URLSearchParams({
         'filter[directus_relations][_eq]': userId,
         'fields': 'id,event_id.id,event_id.name,event_id.event_date,event_id.image,event_id.description,event_id.contact,event_id.committee_id,created_at',
         'sort': '-created_at',
     }).toString();
 
-    const signups = await directusFetch<any[]>(`/items/event_signups?${query}`);
+    const signups = await directusFetch<Record<string, unknown>[]>(`/items/event_signups?${query}`);
 
     // For each signup, fetch committee leader contact if no direct contact is provided
     const signupsWithContact = await Promise.all(
-        signups.map(async (signup) => {
+        signups.map(async (signup: any) => {
             if (signup.event_id && !signup.event_id.contact && signup.event_id.committee_id) {
                 try {
                     // Fetch committee leader's contact info
@@ -409,7 +412,7 @@ export async function getUserEventSignups(userId: string) {
                         'limit': '1'
                     }).toString();
 
-                    const leaders = await directusFetch<any[]>(`/items/committee_members?${leaderQuery}`);
+                    const leaders = await directusFetch<Record<string, unknown>[]>(`/items/committee_members?${leaderQuery}`) as any[];
                     if (leaders && leaders.length > 0) {
                         // Do NOT copy phone numbers from Directus user profiles into the event data.
                         // Only set the contact name so the UI can show who to contact without exposing phone numbers.
@@ -425,7 +428,22 @@ export async function getUserEventSignups(userId: string) {
         })
     );
 
-    return signupsWithContact;
+    // Map to typed EventSignup[] for callers
+    const mapped: EventSignup[] = (signupsWithContact as any[]).map((s) => ({
+        id: Number(s.id),
+        created_at: String(s.created_at || ''),
+        event_id: {
+            id: Number(s.event_id?.id ?? s.event_id ?? 0),
+            name: String(s.event_id?.name || ''),
+            event_date: String(s.event_id?.event_date || ''),
+            description: String(s.event_id?.description || ''),
+            image: s.event_id?.image ? String(s.event_id.image) : undefined,
+            contact_phone: s.event_id?.contact_phone ? String(s.event_id.contact_phone) : (s.event_id?.contact ? String(s.event_id.contact) : undefined),
+            contact_name: s.event_id?.contact_name ? String(s.event_id.contact_name) : undefined,
+        }
+    }));
+
+    return mapped;
 }
 
 // Create event signup
@@ -437,13 +455,13 @@ export async function createEventSignup(eventId: number, userId: string, submiss
         'fields': 'id',
     }).toString();
 
-    const existingSignups = await directusFetch<any[]>(`/items/event_signups?${existingQuery}`);
+    const existingSignups = await directusFetch<Record<string, unknown>[]>(`/items/event_signups?${existingQuery}`);
 
     if (existingSignups && existingSignups.length > 0) {
         throw new Error('Je bent al ingeschreven voor deze activiteit');
     }
 
-    return directusFetch<any>('/items/event_signups', {
+    return directusFetch<Record<string, unknown>>('/items/event_signups', {
         method: 'POST',
         body: JSON.stringify({
             event_id: eventId,

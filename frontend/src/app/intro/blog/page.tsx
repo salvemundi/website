@@ -14,12 +14,35 @@ import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
 import { toast } from 'sonner';
 
+interface IntroBlog {
+    id: number | string;
+    title: string;
+    excerpt?: string;
+    content?: string;
+    image?: string | { id: number; filename?: string } | null;
+    blog_type?: string;
+    updated_at?: string;
+    gallery?: string[];
+    likes?: number;
+}
+
+interface CommitteeRow {
+    id: number;
+    committee_id?: { id: number; name?: string };
+}
+
+interface UserCommittee {
+    id?: number | string;
+    name?: string;
+    committee_id?: { name?: string };
+}
+
 export default function IntroBlogPage() {
-    const [selectedBlog, setSelectedBlog] = useState<any>(null);
+    const [selectedBlog, setSelectedBlog] = useState<IntroBlog | null>(null);
     const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
     const [sendingEmail, setSendingEmail] = useState<string | null>(null);
     const { user, isAuthenticated } = useAuth();
-    const [likedBlogs, setLikedBlogs] = useState<number[]>([]);
+    const [likedBlogs, setLikedBlogs] = useState<(number | string)[]>([]);
     const [showLoginModal, setShowLoginModal] = useState(false);
 
     useEffect(() => {
@@ -33,21 +56,21 @@ export default function IntroBlogPage() {
 
     // Fetch intro blogs/updates
     const queryClient = useQueryClient();
-    const { data: introBlogs, isLoading } = useQuery({
+    const { data: introBlogs, isLoading } = useQuery<IntroBlog[]>({
         queryKey: ['intro-blogs'],
         queryFn: introBlogsApi.getAll,
     });
 
 
     // Fetch committee_members rows for current user to determine committee membership
-    const { data: committeeRows = [] } = useQuery({
+    const { data: committeeRows = [] } = useQuery<CommitteeRow[]>({
         queryKey: ['user-committee-members', user?.id],
         queryFn: async () => {
             if (!user?.id) return [];
             try {
                 // Query committee_members table for the current user
                 // This matches the pattern used in qr-service.ts and salvemundi.ts
-                return await directusFetch<any[]>(
+                return await directusFetch<CommitteeRow[]>(
                     `/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(user.id)}&fields=*,committee_id.id,committee_id.name`
                 );
             } catch (e) {
@@ -67,7 +90,7 @@ export default function IntroBlogPage() {
 
         // Prefer checking committee_members table rows
         if (committeeRows && committeeRows.length > 0) {
-            return committeeRows.some((row: any) => {
+            return committeeRows.some((row: CommitteeRow) => {
                 const name = (row.committee_id && row.committee_id.name) || '';
                 return name.toLowerCase().includes('intro') || name.toLowerCase().includes('bestuur');
             });
@@ -75,7 +98,7 @@ export default function IntroBlogPage() {
 
         // Fallback to user.committees (older mapping)
         if (user?.committees && user.committees.length > 0) {
-            return user.committees.some((committee: any) => {
+            return user.committees.some((committee: UserCommittee) => {
                 const name = committee.name || committee?.committee_id?.name || '';
                 return name.toLowerCase().includes('intro') || name.toLowerCase().includes('bestuur');
             });
@@ -86,8 +109,8 @@ export default function IntroBlogPage() {
 
     // Get unique blog types for filtering
     const blogTypes = useMemo(() => {
-        if (!introBlogs) return [];
-        const types = [...new Set(introBlogs.map(blog => blog.blog_type))];
+        if (!introBlogs) return [] as string[];
+        const types = [...new Set(introBlogs.map(blog => blog.blog_type).filter(Boolean))] as string[];
         return types;
     }, [introBlogs]);
 
@@ -112,7 +135,7 @@ export default function IntroBlogPage() {
         }
     };
 
-    const handleSendEmail = async (blog: any) => {
+    const handleSendEmail = async (blog: IntroBlog) => {
         if (!canSendEmails) {
             toast.error('Je hebt geen toestemming om emails te versturen');
             return;
@@ -131,7 +154,7 @@ export default function IntroBlogPage() {
                 },
                 body: JSON.stringify({
                     blogTitle: blog.title,
-                    blogExcerpt: blog.excerpt || blog.content.substring(0, 200),
+                    blogExcerpt: blog.excerpt || (blog.content ?? '').substring(0, 200),
                     blogUrl: `${window.location.origin}/intro/blog`,
                     blogImage: blog.image ? getImageUrl(blog.image) : null,
                 }),
@@ -158,10 +181,16 @@ export default function IntroBlogPage() {
 
             const result = await resp.json();
             toast.success(`Email verzonden naar ${result.sentCount || 0} deelnemers!`, { id: toastId });
-        } catch (error: any) {
-            console.error('Failed to send email:', error);
+        } catch (error: unknown) {
+            const errString =
+                typeof error === 'string'
+                    ? error
+                    : error instanceof Error
+                    ? error.message
+                    : String(error);
+            console.error('Failed to send email:', errString);
             // If the error already produced a toast above, avoid double toast
-            if (!error || !String(error).includes('Email API error')) {
+            if (!errString || !errString.includes('Email API error')) {
                 toast.error('Er is iets misgegaan bij het versturen van de email', { id: toastId });
             }
         } finally {
@@ -266,7 +295,7 @@ export default function IntroBlogPage() {
                             ) : (
                                 <div className="space-y-4">
                                     {filteredBlogs.map((blog) => {
-                                        const typeConfig = getBlogTypeConfig(blog.blog_type);
+                                        const typeConfig = getBlogTypeConfig(blog.blog_type ?? 'update');
                                         const TypeIcon = typeConfig.icon;
                                         
                                         return (
@@ -305,7 +334,7 @@ export default function IntroBlogPage() {
                                                     <div className="px-4 pb-3">
                                                         <h2 className="text-xl lg:text-2xl font-bold text-theme mb-2 break-words">{blog.title}</h2>
                                                         <p className="text-sm lg:text-base text-theme-muted line-clamp-3 break-words">
-                                                            {blog.excerpt || blog.content.substring(0, 200) + '...'}
+                                                            {blog.excerpt || ((blog.content ?? '').substring(0, 200) + '...')}
                                                         </p>
                                                     </div>
 
@@ -335,11 +364,11 @@ export default function IntroBlogPage() {
                                                                 toast('Je hebt dit al geliked');
                                                                 return;
                                                             }
-                                                            let previous: any[] | undefined;
+                                                            let previous: IntroBlog[] | undefined;
                                                             try {
                                                                 // Optimistic UI: update cache first
-                                                                previous = queryClient.getQueryData<any[]>(['intro-blogs']);
-                                                                queryClient.setQueryData(['intro-blogs'], (old: any[] | undefined) => {
+                                                                previous = queryClient.getQueryData<IntroBlog[]>(['intro-blogs']);
+                                                                queryClient.setQueryData(['intro-blogs'], (old: IntroBlog[] | undefined) => {
                                                                     if (!old) return old;
                                                                     return old.map((b) => b.id === blog.id ? { ...b, likes: (b.likes || 0) + 1 } : b);
                                                                 });
@@ -353,7 +382,7 @@ export default function IntroBlogPage() {
                                                                 if (resp.ok) {
                                                                     const json = await resp.json();
                                                                     // Reconcile with server value
-                                                                    queryClient.setQueryData(['intro-blogs'], (old: any[] | undefined) => {
+                                                                    queryClient.setQueryData(['intro-blogs'], (old: IntroBlog[] | undefined) => {
                                                                         if (!old) return old;
                                                                         return old.map((b) => b.id === blog.id ? { ...b, likes: json.likes ?? (b.likes || 0) } : b);
                                                                     });
@@ -370,14 +399,14 @@ export default function IntroBlogPage() {
                                                                     toast.success('Bedankt voor je like!');
                                                                 } else {
                                                                     // rollback
-                                                                    if (previous) queryClient.setQueryData(['intro-blogs'], previous as any[] | undefined);
+                                                                    if (previous) queryClient.setQueryData(['intro-blogs'], previous as IntroBlog[] | undefined);
                                                                     const txt = await resp.text().catch(() => undefined);
                                                                     toast.error('Kon like niet registreren');
                                                                     console.error('Like API error', resp.status, txt);
                                                                 }
                                                             } catch (err) {
                                                                 // rollback on error
-                                                                if (previous) queryClient.setQueryData(['intro-blogs'], previous as any[] | undefined);
+                                                                if (previous) queryClient.setQueryData(['intro-blogs'], previous as IntroBlog[] | undefined);
                                                                 console.error('Failed to call like API', err);
                                                                 toast.error('Er ging iets mis bij liken');
                                                             }
@@ -486,7 +515,7 @@ export default function IntroBlogPage() {
                         <div className="p-4 sm:p-6 lg:p-8">
                             <div className="flex flex-wrap items-center gap-2 lg:gap-3 mb-4">
                                 {(() => {
-                                    const typeConfig = getBlogTypeConfig(selectedBlog.blog_type);
+                                    const typeConfig = getBlogTypeConfig(selectedBlog.blog_type ?? 'update');
                                     const TypeIcon = typeConfig.icon;
                                     return (
                                         <div className={`${typeConfig.color} text-white text-xs lg:text-sm font-bold px-3 py-1.5 lg:px-4 lg:py-2 rounded-full flex items-center gap-1.5 lg:gap-2`}>
@@ -497,7 +526,7 @@ export default function IntroBlogPage() {
                                 })()}
                                 <div className="flex items-center gap-2 text-theme-muted text-xs lg:text-sm">
                                     <Calendar className="w-3 h-3 lg:w-4 lg:h-4" />
-                                    {format(new Date(selectedBlog.updated_at), 'd MMMM yyyy', { locale: nl })}
+                                    {selectedBlog.updated_at ? format(new Date(selectedBlog.updated_at), 'd MMMM yyyy', { locale: nl }) : null}
                                 </div>
                             </div>
 
@@ -507,7 +536,7 @@ export default function IntroBlogPage() {
 
                             <div className="prose prose-sm sm:prose lg:prose-lg max-w-none text-theme break-words overflow-hidden max-w-full">
                                 <div
-                                    dangerouslySetInnerHTML={{ __html: selectedBlog.content }}
+                                    dangerouslySetInnerHTML={{ __html: selectedBlog.content ?? '' }}
                                     className="whitespace-pre-wrap break-words"
                                 />
                             </div>
@@ -547,11 +576,11 @@ export default function IntroBlogPage() {
                                                 return;
                                             }
 
-                                            let previous: any[] | undefined;
+                                            let previous: IntroBlog[] | undefined;
                                             try {
                                                 // Optimistic UI: update cache first
-                                                previous = queryClient.getQueryData<any[]>(['intro-blogs']);
-                                                queryClient.setQueryData(['intro-blogs'], (old: any[] | undefined) => {
+                                                previous = queryClient.getQueryData<IntroBlog[]>(['intro-blogs']);
+                                                queryClient.setQueryData(['intro-blogs'], (old: IntroBlog[] | undefined) => {
                                                     if (!old) return old;
                                                     return old.map((b) => b.id === selectedBlog.id ? { ...b, likes: (b.likes || 0) + 1 } : b);
                                                 });
@@ -565,7 +594,7 @@ export default function IntroBlogPage() {
                                                 if (resp.ok) {
                                                     const json = await resp.json();
                                                     // Reconcile with server value
-                                                    queryClient.setQueryData(['intro-blogs'], (old: any[] | undefined) => {
+                                                    queryClient.setQueryData(['intro-blogs'], (old: IntroBlog[] | undefined) => {
                                                         if (!old) return old;
                                                         return old.map((b) => b.id === selectedBlog.id ? { ...b, likes: json.likes ?? (b.likes || 0) } : b);
                                                     });
@@ -579,13 +608,13 @@ export default function IntroBlogPage() {
                                                     toast.success('Bedankt voor je like!');
                                                 } else {
                                                     // rollback
-                                                    if (previous) queryClient.setQueryData(['intro-blogs'], previous as any[] | undefined);
+                                                    if (previous) queryClient.setQueryData(['intro-blogs'], previous as IntroBlog[] | undefined);
                                                     const txt = await resp.text().catch(() => undefined);
                                                     toast.error('Kon like niet registreren');
                                                     console.error('Like API error', resp.status, txt);
                                                 }
                                             } catch (err) {
-                                                if (previous) queryClient.setQueryData(['intro-blogs'], previous as any[] | undefined);
+                                                if (previous) queryClient.setQueryData(['intro-blogs'], previous as IntroBlog[] | undefined);
                                                 console.error('Failed to call like API', err);
                                                 toast.error('Er ging iets mis bij liken');
                                             }
