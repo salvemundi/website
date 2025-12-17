@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 // PageHeader removed for intro pages to avoid duplicate standard banner
 import HeroBanner from '@/components/HeroBanner';
 import AuthorCard from '@/components/AuthorCard';
@@ -25,6 +25,19 @@ export default function IntroBlogPage() {
     const [likeLoadingId, setLikeLoadingId] = useState<number | null>(null);
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [copiedId, setCopiedId] = useState<number | null>(null);
+
+    // Prevent background scrolling when the blog modal is open
+    useEffect(() => {
+        const previous = document.body.style.overflow;
+        if (selectedBlog) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = previous || '';
+        }
+        return () => {
+            document.body.style.overflow = previous;
+        };
+    }, [selectedBlog]);
 
     // Fetch intro blogs/updates
     const { data: introBlogs, isLoading } = useQuery<IntroBlog[], Error>({
@@ -318,11 +331,11 @@ export default function IntroBlogPage() {
             {/* Blog Detail Modal */}
             {selectedBlog && (
                 <div
-                    className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
                     onClick={() => setSelectedBlog(null)}
                 >
                     <div
-                        className="bg-[var(--bg-card)] rounded-2xl lg:rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl my-4"
+                        className="bg-[var(--bg-card)] rounded-2xl lg:rounded-3xl max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl my-4"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {selectedBlog.image && (
@@ -330,7 +343,7 @@ export default function IntroBlogPage() {
                                 <img
                                     src={getImageUrl(selectedBlog.image)}
                                     alt={selectedBlog.title}
-                                    className="w-full h-56 sm:h-64 md:h-80 lg:h-96 object-cover"
+                                    className="w-full h-56 sm:h-64 md:h-72 object-cover"
                                 />
 
                                 {/* Close button overlays the image on mobile and is positioned inside the modal on desktop */}
