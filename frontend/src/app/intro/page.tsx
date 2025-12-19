@@ -33,6 +33,32 @@ export default function IntroPage() {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasParentSignup, setHasParentSignup] = useState(false);
+
+  // Check whether the logged-in user already signed up as a parent
+  React.useEffect(() => {
+    let mounted = true;
+    const check = async () => {
+      if (user?.id) {
+        try {
+          const existing = await introParentSignupsApi.getByUserId(String(user.id));
+          if (!mounted) return;
+          if (existing && Array.isArray(existing) && existing.length > 0) {
+            setHasParentSignup(true);
+          } else {
+            setHasParentSignup(false);
+          }
+        } catch (e) {
+          console.error('Failed to check existing parent signup', e);
+          if (mounted) setHasParentSignup(false);
+        }
+      } else {
+        if (mounted) setHasParentSignup(false);
+      }
+    };
+    check();
+    return () => { mounted = false; };
+  }, [user?.id]);
 
   const { data: siteSettings, isLoading: isSettingsLoading } = useSalvemundiSiteSettings('intro');
   const isIntroEnabled = siteSettings?.show ?? true;
@@ -133,49 +159,56 @@ export default function IntroPage() {
                 ) : (
                   <>
                     {isAuthenticated ? (
-                      <form onSubmit={handleSubmit} className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4">
-                        <div className="flex items-center gap-2 mb-4">
-                          <Heart className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
-                          <h3 className="text-xl lg:text-2xl font-bold text-white">Word Intro Ouder!</h3>
+                      hasParentSignup ? (
+                        <div className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4 text-center">
+                          <h3 className="text-xl lg:text-2xl font-bold text-white">Je hebt je al aangemeld als Intro Ouder</h3>
+                          <p className="text-theme-white/80">Bedankt! Je inschrijving is ontvangen. Als je iets wilt aanpassen, neem contact op met de intro commissie.</p>
                         </div>
-                        <div className="bg-white/10 rounded-lg p-3 lg:p-4 mb-4">
-                          <p className="text-white text-xs lg:text-sm">
-                            <strong>Naam:</strong> {user?.first_name} {user?.last_name}
-                            <br />
-                            <strong>Email:</strong> {user?.email}
-                          </p>
-                        </div>
-                        <div>
-                          <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Telefoonnummer</label>
-                          <input
-                            type="tel"
-                            name="telefoonnummer"
-                            value={form.telefoonnummer}
-                            onChange={handleChange}
-                            required
-                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
-                          />
-                        </div>
-                        <div>
-                          <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Motivatie *</label>
-                          <textarea
-                            name="motivation"
-                            value={(parentForm as any).motivation}
-                            onChange={handleParentChange}
-                            required
-                            rows={4}
-                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
-                          />
-                        </div>
-                        {error && <p className="text-red-200 text-xs lg:text-sm">{error}</p>}
-                        <button
-                          type="submit"
-                          disabled={isSubmitting}
-                          className="w-full bg-theme-purple-lighter text-theme-purple-darker font-bold py-3 px-6 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm lg:text-base"
-                        >
-                          {isSubmitting ? 'Bezig...' : 'Meld je aan als Introouder'}
-                        </button>
-                      </form>
+                      ) : (
+                        <form onSubmit={handleSubmit} className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4">
+                          <div className="flex items-center gap-2 mb-4">
+                            <Heart className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
+                            <h3 className="text-xl lg:text-2xl font-bold text-white">Word Intro Ouder!</h3>
+                          </div>
+                          <div className="bg-white/10 rounded-lg p-3 lg:p-4 mb-4">
+                            <p className="text-white text-xs lg:text-sm">
+                              <strong>Naam:</strong> {user?.first_name} {user?.last_name}
+                              <br />
+                              <strong>Email:</strong> {user?.email}
+                            </p>
+                          </div>
+                          <div>
+                            <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Telefoonnummer</label>
+                            <input
+                              type="tel"
+                              name="telefoonnummer"
+                              value={form.telefoonnummer}
+                              onChange={handleChange}
+                              required
+                              className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                            />
+                          </div>
+                          <div>
+                            <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Motivatie *</label>
+                            <textarea
+                              name="motivation"
+                              value={(parentForm as any).motivation}
+                              onChange={handleParentChange}
+                              required
+                              rows={4}
+                              className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                            />
+                          </div>
+                          {error && <p className="text-red-200 text-xs lg:text-sm">{error}</p>}
+                          <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="w-full bg-theme-purple-lighter text-theme-purple-darker font-bold py-3 px-6 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm lg:text-base"
+                          >
+                            {isSubmitting ? 'Bezig...' : 'Meld je aan als Introouder'}
+                          </button>
+                        </form>
+                      )
                     ) : (
                       <form onSubmit={handleSubmit} className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4">
                         <div className="flex items-center gap-2 mb-4">
