@@ -69,7 +69,9 @@ const Header: React.FC = () => {
         { name: "Lidmaatschap", href: ROUTES.MEMBERSHIP },
         { name: "Activiteiten", href: ROUTES.ACTIVITIES },
         { name: "Commissies", href: ROUTES.COMMITTEES },
-        { name: "Contact", href: ROUTES.CONTACT },
+    { name: "Contact", href: ROUTES.CONTACT },
+    // Safe Havens will be displayed separately in the navbar
+    { name: "Safe Havens", href: ROUTES.SAFE_HAVENS, separated: true },
     ];
 
     const getLinkClassName = (href: string) => {
@@ -110,7 +112,7 @@ const Header: React.FC = () => {
                     </Link>
 
                     <nav className="hidden items-center gap-5 md:flex">
-                        {navItems.map((link) => (
+                        {navItems.filter(n => !n.separated).map((link) => (
                             <Link
                                 key={link.href}
                                 href={link.href}
@@ -124,6 +126,17 @@ const Header: React.FC = () => {
                                         : "scale-x-0 group-hover:scale-x-100"
                                         }`}
                                 />
+                            </Link>
+                        ))}
+
+                        {/* Separated Safe Havens link */}
+                        {navItems.filter(n => n.separated).map((link) => (
+                            <Link
+                                key={link.href}
+                                href={link.href}
+                                className={getLinkClassName(link.href) + ' pl-6 border-l border-theme-purple/10'}
+                            >
+                                <span className="font-semibold">{link.name}</span>
                             </Link>
                         ))}
                     </nav>
@@ -222,7 +235,7 @@ const Header: React.FC = () => {
                     </div>
 
                     <div className="space-y-4">
-                        {navItems.map((link) => (
+                        {navItems.filter(n => !n.separated).map((link) => (
                             <Link
                                 key={link.href}
                                 href={link.href}
@@ -234,6 +247,22 @@ const Header: React.FC = () => {
                                     Ga
                                 </span>
                             </Link>
+                        ))}
+
+                        {/* Separated Safe Havens on mobile with divider */}
+                        {navItems.filter(n => n.separated).map((link) => (
+                            <div key={link.href} className="pt-2 border-t border-theme-purple/10">
+                                <Link
+                                    href={link.href}
+                                    onClick={() => setMenuOpen(false)}
+                                    className="flex items-center justify-between rounded-2xl bg-[var(--bg-card)]/80 px-4 py-3 text-sm font-semibold text-theme shadow-sm mt-2"
+                                >
+                                    <span>{link.name}</span>
+                                    <span className="text-xs font-semibold uppercase tracking-[0.25em] text-theme-purple">
+                                        Ga
+                                    </span>
+                                </Link>
+                            </div>
                         ))}
                     </div>
 
