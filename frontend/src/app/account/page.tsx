@@ -194,10 +194,10 @@ export default function AccountPage() {
                                         href="https://admin.salvemundi.nl"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-theme-purple-lighter font-semibold rounded-xl transition-all text-sm"
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-theme-purple-dark to-theme-purple hover:from-theme-purple hover:to-theme-purple-light text-theme-white font-semibold rounded-xl transition-all text-sm shadow-md hover:shadow-lg hover:-translate-y-0.5"
                                     >
                                         <Shield className="w-4 h-4" />
-                                        Admin
+                                        Admin Panel
                                     </a>
                                 )}
                                 <button
