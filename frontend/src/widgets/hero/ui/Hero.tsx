@@ -10,6 +10,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight } from '@/shared/ui/icons/ChevronRight';
 import { useAuth } from '@/features/auth/providers/auth-provider';
+import gsap from 'gsap';
 
 export default function Hero() {
     const { isAuthenticated, isLoading: authLoading } = useAuth();
