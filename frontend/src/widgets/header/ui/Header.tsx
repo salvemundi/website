@@ -64,12 +64,13 @@ const Header: React.FC = () => {
     }, [menuOpen]);
 
     const navItems = [
-        { label: 'Home', href: ROUTES.HOME },
-        { label: 'Activiteiten', href: ROUTES.ACTIVITIES },
-        { label: 'Over ons', href: ROUTES.ABOUT },
-        { label: 'Contact', href: ROUTES.CONTACT },
-        { label: 'Safe Havens', href: '/safe-havens' },
-        { label: 'Veilige Plekken', href: '/safe-havens' },
+        { name: "Home", href: ROUTES.HOME },
+        ...(introEnabled ? [{ name: "Intro", href: ROUTES.INTRO }] : []),
+        { name: "Lidmaatschap", href: ROUTES.MEMBERSHIP },
+        { name: "Activiteiten", href: ROUTES.ACTIVITIES },
+        { name: "Commissies", href: ROUTES.COMMITTEES },
+        { name: "Safe Havens", href: "/safe-havens" },
+        { name: "Contact", href: ROUTES.CONTACT },
     ];
 
     const getLinkClassName = (href: string) => {
