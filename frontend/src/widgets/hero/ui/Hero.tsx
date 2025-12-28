@@ -340,6 +340,7 @@ export default function Hero() {
 
 
 
+                        <div className="w-full max-w-full overflow-hidden">
                         <div className="flex flex-wrap gap-3 sm:gap-4 min-h-[100px]">
                             {showMembershipLink ? (
                                 <Link
@@ -413,6 +414,7 @@ export default function Hero() {
                                     )}
                                 </div>
                             )}
+                        </div>
                         </div>
                         
                     </div>
