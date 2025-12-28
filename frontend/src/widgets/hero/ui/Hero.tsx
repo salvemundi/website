@@ -305,13 +305,7 @@ export default function Hero() {
         }
     }, [localSlides]);
 
-    // (removed development-only debug logging)
 
-    // (removed development-only debug body image)
-
-    // (removed development-only floating portal image)
-
-    // (removed development-only MutationObserver/overlay detection)
 
 
 
