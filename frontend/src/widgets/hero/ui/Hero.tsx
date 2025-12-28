@@ -313,24 +313,24 @@ export default function Hero() {
     const showMembershipLink = !authLoading && !isAuthenticated;
 
     return (
-        <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full min-h-[600px] md:min-h-[500px] lg:min-h-screen py-8 sm:py-12 md:py-16 lg:py-20 transition-colors duration-300">
+        <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full min-h-[600px] md:min-h-[500px] lg:min-h-screen py-6 sm:py-10 md:py-16 lg:py-20 transition-colors duration-300">
             <div ref={orb1Ref} className="absolute -left-20 top-60 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-theme-purple to-theme-purple-light" />
             <div ref={orb2Ref} className="absolute -right-16 bottom-0 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-theme-purple-light to-theme-purple" />
 
-            {/* Move mobile fallback to be a direct child of the section so nested
-                inner elements cannot accidentally cover/unmount it. */}
-            {/* Mobile static image: render in-layout (not absolute) so it remains
+            {/* Mobile-only fallback image (shows ONLY on very small screens, for robustness)
+                This ensures even if Swiper fails or images don't load, we have a visual.
+                Hidden on sm+ where Swiper takes over fully. This is embedded as 
                 part of the hero content and isn't affected by outside DOM
                 mutations. Hidden on sm+ to preserve desktop Swiper. */}
 
             <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
                 <div className="relative w-full px-0">
-                <div className="grid gap-6 sm:gap-8 md:grid-cols-2 md:gap-10 lg:gap-16 xl:gap-20 md:items-center">
-                    <div className="space-y-6 sm:space-y-8 lg:space-y-10">
-                        <div className="space-y-4 sm:space-y-6">
+                <div className="grid gap-5 sm:gap-6 md:grid-cols-2 md:gap-10 lg:gap-16 xl:gap-20 md:items-center">
+                    <div className="space-y-5 sm:space-y-6 md:space-y-8 lg:space-y-10">
+                        <div className="space-y-3 sm:space-y-4 md:space-y-6">
                             <h1 ref={titleRef} className="text-3xl font-black leading-tight sm:text-4xl md:text-5xl lg:text-6xl pb-1">
-                                <span className="inline-block w-full">Welkom bij</span>
-                                <span className="inline-block w-full">Salve Mundi</span>
+                                <span className="text-gradient">Studievereniging</span>
+                                <br /><span className="inline-block w-full">Salve Mundi</span>
                             </h1>
                             <p ref={descriptionRef} className="text-sm leading-relaxed text-theme-muted sm:text-base md:text-lg lg:max-w-xl">
                                 Dé studievereniging voor HBO-studenten in Eindhoven. Ontmoet nieuwe mensen, bouw aan je netwerk en maak het meeste van je studententijd met onze diverse activiteiten en gezellige commissies.
@@ -421,7 +421,7 @@ export default function Hero() {
 
                     <div className="flex flex-wrap gap-3 sm:gap-4">
                         <div ref={imageRef} className="relative w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/80 shadow-2xl backdrop-blur-xl overflow-hidden">
-                            <div className="h-[240px] sm:h-[300px] md:h-[380px] lg:h-[480px] xl:h-[540px]">
+                            <div className="h-[240px] sm:h-[280px] md:h-[350px] lg:h-[480px] xl:h-[540px]">
                                 {/* Mobile fallback: sometimes Swiper or remote assets misbehave on small devices.
                                     Show a single static image for mobile (hidden on sm+). */}
                                 {/* Mobile fallback moved to top of section; keep the inner area clean */}
