@@ -23,7 +23,7 @@ export default function HomePage() {
                         </div>
                     </ScrollTriggerWrapper>
 
-                    <ScrollTriggerWrapper animation="slide-up" stagger={0.15} duration={0.8} triggerStart="top 85%">
+                    <ScrollTriggerWrapper animation="slide-up" stagger={0.15} duration={0.8} triggerStart="top 85%" once={true}>
                         <div className="grid gap-8 md:grid-cols-3">
                             {/* Pillar 1: Gezelligheid */}
                             <div className="group relative rounded-3xl bg-[var(--bg-card)] p-8 shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl  ">
