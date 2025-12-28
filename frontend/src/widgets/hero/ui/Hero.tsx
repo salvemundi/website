@@ -422,7 +422,7 @@ export default function Hero() {
 
 
 
-                    <div className="flex flex-wrap gap-3 sm:gap-4">
+                    <div className="flex flex-wrap gap-3 sm:gap-4 min-w-0">
                         <div ref={imageRef} className="relative w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/80 shadow-2xl backdrop-blur-xl overflow-hidden">
                             <div className="h-[240px] sm:h-[280px] md:h-[350px] lg:h-[480px] xl:h-[540px]">
                                 {/* Mobile fallback: sometimes Swiper or remote assets misbehave on small devices.
