@@ -102,7 +102,6 @@ const Calendar1 = ({
       style={{
         cursor: "pointer",
         userSelect: "none",
-        padding: "8px",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
