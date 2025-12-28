@@ -35,27 +35,27 @@ export default function SafeHavensPage() {
                 <div className="max-w-6xl mx-auto">
 
                     {/* Introduction Section */}
-                    <div className="bg-[var(--bg-card)] rounded-3xl shadow-xl p-6 sm:p-8 mb-12">
+                    <div className="bg-[var(--bg-card)] rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 mb-8 sm:mb-12">
                         <div className="max-w-4xl mx-auto">
-                            <div className="flex flex-col md:flex-row items-start gap-4 mb-6">
-                                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-oranje to-paars flex items-center justify-center flex-shrink-0">
-                                    <Shield className="w-8 h-8 text-theme-white" />
+                            <div className="flex flex-col md:flex-row items-start gap-4 mb-4 sm:mb-6">
+                                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-oranje to-paars flex items-center justify-center flex-shrink-0">
+                                    <Shield className="w-7 h-7 sm:w-8 sm:h-8 text-theme-white" />
                                 </div>
                                 <div>
-                                    <h2 className="text-2xl font-bold text-theme-purple mb-4 text-center md:text-left">
+                                    <h2 className="text-xl sm:text-2xl font-bold text-theme-purple mb-3 sm:mb-4 text-center md:text-left">
                                         Wat zijn Safe Havens?
                                     </h2>
-                                    <p className="text-theme-purple/80 leading-relaxed mb-4 text-justify md:text-left">
+                                    <p className="text-sm sm:text-base text-theme-purple/80 leading-relaxed mb-3 sm:mb-4 text-justify md:text-left">
                                         Binnen Salve Mundi vinden wij een veilige en comfortable omgeving heel belangrijk voor al onze leden.
                                         Hierom hebben wij Safe Havens aangesteld die een luisterend oor bieden, begrip tonen, en advies geven
                                         voor jouw situatie.
                                     </p>
-                                    <div className="bg-theme-purple-lighter/20 rounded-xl p-4">
-                                        <p className="text-theme-purple font-semibold flex items-center gap-2">
-                                            <Lock className="w-5 h-5 text-theme-purple-dark" />
+                                    <div className="bg-theme-purple-lighter/20 rounded-xl p-3 sm:p-4">
+                                        <p className="text-sm sm:text-base text-theme-purple font-semibold flex items-center gap-2">
+                                            <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-theme-purple-dark flex-shrink-0" />
                                             Een Safe Haven heeft een <strong>geheimhoudingsplicht</strong>
                                         </p>
-                                        <p className="text-theme-purple/80 text-sm mt-2">
+                                        <p className="text-xs sm:text-sm text-theme-purple/80 mt-2 leading-relaxed">
                                             Jouw klachten of meldingen zullen nooit verspreid worden, ook niet naar het bestuur;
                                             Tenzij door jou anders aangegeven.
                                         </p>
@@ -66,28 +66,28 @@ export default function SafeHavensPage() {
                     </div>
 
                     {/* Topics Section */}
-                    <div className="bg-[var(--bg-card)] rounded-3xl shadow-xl p-6 sm:p-8 mb-12">
-                        <h2 className="text-2xl font-bold text-theme-purple mb-6 text-center px-2">
+                    <div className="bg-[var(--bg-card)] rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 mb-8 sm:mb-12">
+                        <h2 className="text-xl sm:text-2xl font-bold text-theme-purple mb-4 sm:mb-6 text-center px-2">
                             Waar Kun Je Bij Ons Terecht?
                         </h2>
-                        <p className="text-theme-purple/70 text-center mb-6 px-2">
+                        <p className="text-sm sm:text-base text-theme-purple/70 text-center mb-4 sm:mb-6 px-2">
                             Onze Safe Havens zijn er voor (maar niet gelimiteerd tot):
                         </p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 max-w-4xl mx-auto">
                             {topics.map((topic, index) => (
                                 <div
                                     key={index}
-                                    className="flex items-center gap-3 p-4 bg-theme-purple/10 rounded-xl transition-all"
+                                    className="flex items-center gap-3 p-3 sm:p-4 bg-theme-purple/10 rounded-xl transition-all hover:bg-theme-purple/15"
                                 >
-                                    <div className="w-10 h-10 flex items-center justify-center rounded-md bg-gradient-to-br from-oranje to-paars">
-                                        <topic.Icon className="w-5 h-5 text-theme-purple dark:text-theme-white" />
+                                    <div className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-md bg-gradient-to-br from-oranje to-paars flex-shrink-0">
+                                        <topic.Icon className="w-4 h-4 sm:w-5 sm:h-5 text-theme-purple dark:text-theme-white" />
                                     </div>
-                                    <span className="text-theme-purple font-medium">{topic.text}</span>
+                                    <span className="text-sm sm:text-base text-theme-purple font-medium">{topic.text}</span>
                                 </div>
                             ))}
                         </div>
-                        <div className="mt-8 p-6 bg-theme-purple/5 rounded-xl">
-                            <p className="text-theme-purple/80 text-center">
+                        <div className="mt-6 sm:mt-8 p-4 sm:p-6 bg-theme-purple/5 rounded-xl">
+                            <p className="text-sm sm:text-base text-theme-purple/80 text-center leading-relaxed">
                                 We streven ernaar dat deze personen verschillen van geslacht en dat wij Safe Havens zowel binnen
                                 als buiten het bestuur hebben. Zo hopen we dat er altijd iemand is waar je je veilig genoeg bij
                                 voelt om je klachten of meldingen mee te delen.
