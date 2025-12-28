@@ -173,7 +173,7 @@ export default function WhatsAppGroupsPage() {
                     </Card>
 
                     {/* Additional Info */}
-                    <div className="mt-8 bg-white rounded-2xl p-6">
+                    <Card variant="card" className="mt-8">
                         <h3 className="font-semibold text-paars mb-3">Groepsregels</h3>
                         <ul className="space-y-2 text-sm text-paars/80">
                             <li className="flex items-start gap-2">
@@ -203,7 +203,7 @@ export default function WhatsAppGroupsPage() {
                                 </span>
                             </li>
                         </ul>
-                    </div>
+                    </Card>
                 </div>
             </div>
 
