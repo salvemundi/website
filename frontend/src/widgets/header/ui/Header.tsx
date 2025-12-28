@@ -182,7 +182,7 @@ const Header: React.FC = () => {
 
             {/* Mobile menu */}
             <div
-                className={`md:hidden ${menuOpen
+                className={`lg:hidden ${menuOpen
                     ? "pointer-events-auto opacity-100"
                     : "pointer-events-none opacity-0"
                     } transition-opacity duration-200`}
