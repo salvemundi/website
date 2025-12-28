@@ -165,7 +165,7 @@ const Header: React.FC = () => {
 
                         <button
                             type="button"
-                            className="inline-flex items-center justify-center rounded-full bg-[var(--bg-card)]/80 p-2 text-theme shadow-sm transition hover:bg-theme-purple/5 md:hidden"
+                            className="inline-flex items-center justify-center rounded-full bg-[var(--bg-card)]/80 p-2 text-theme shadow-sm transition hover:bg-theme-purple/5 lg:hidden"
                             onClick={() => setMenuOpen(!menuOpen)}
                             aria-expanded={menuOpen}
                             aria-label="Open navigatie"
