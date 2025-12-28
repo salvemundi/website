@@ -340,13 +340,13 @@ export default function Hero() {
 
 
 
-                        <div className="flex flex-wrap gap-3 sm:gap-4">
+                        <div className="flex flex-wrap gap-3 sm:gap-4 min-h-[100px]">
                             {showMembershipLink ? (
                                 <Link
                                     href="/lidmaatschap"
                                     className="block w-full transition-transform hover:scale-[1.02]"
                                 >
-                                    <div className="inset-x-4 bottom-4 w-full sm:inset-x-6 sm:bottom-6 rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-3 sm:p-4 md:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-3 sm:gap-4">
+                                    <div className="inset-x-4 bottom-4 w-full sm:inset-x-6 sm:bottom-6 rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-3 sm:p-4 md:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-3 sm:gap-4 min-h-[90px] sm:min-h-[100px]">
                                         <div className="flex-1 min-w-0">
                                             <p className="text-[0.6rem] sm:text-xs font-semibold uppercase tracking-[0.15em] sm:tracking-[0.2em] md:tracking-[0.3em] text-theme-white">
                                                 Word lid
@@ -371,7 +371,7 @@ export default function Hero() {
                                     href={`/activiteiten/${nextEvent.id}`}
                                     className="block w-full transition-transform hover:scale-[1.02]"
                                 >
-                                    <div className="w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4">
+                                    <div className="w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4 min-h-[90px] sm:min-h-[100px]">
                                         <div className="flex-1 min-w-0">
                                             <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-white">
                                                 Volgende evenement
@@ -392,7 +392,7 @@ export default function Hero() {
                                     </div>
                                 </Link>
                             ) : (
-                                <div className="w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur">
+                                <div className="w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur min-h-[90px] sm:min-h-[100px]">
                                     <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-white">
                                         Volgende evenement
                                     </p>
