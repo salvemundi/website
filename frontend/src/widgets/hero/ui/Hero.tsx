@@ -328,11 +328,12 @@ export default function Hero() {
                 <div className="grid gap-5 sm:gap-6 md:grid-cols-2 md:gap-10 lg:gap-16 xl:gap-20 md:items-center">
                     <div className="space-y-5 sm:space-y-6 md:space-y-8 lg:space-y-10">
                         <div className="space-y-3 sm:space-y-4 md:space-y-6">
-                            <h1 ref={titleRef} className="text-3xl font-black leading-tight sm:text-4xl md:text-5xl lg:text-6xl pb-1">
+                            <h1 ref={titleRef} className="text-2xl font-black leading-tight sm:text-3xl md:text-5xl lg:text-6xl pb-1">
                                 <span className="text-gradient">Studievereniging</span>
-                                <br /><span className="inline-block w-full">Salve Mundi</span>
+                                <br />
+                                <span className="inline-block w-full">Salve Mundi</span>
                             </h1>
-                            <p ref={descriptionRef} className="text-sm leading-relaxed text-theme-muted sm:text-base md:text-lg lg:max-w-xl">
+                            <p ref={descriptionRef} className="text-xs leading-relaxed text-theme-muted sm:text-sm md:text-lg lg:max-w-xl">
                                 Dé studievereniging voor HBO-studenten in Eindhoven. Ontmoet nieuwe mensen, bouw aan je netwerk en maak het meeste van je studententijd met onze diverse activiteiten en gezellige commissies.
                             </p>
                         </div>
