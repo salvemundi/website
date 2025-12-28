@@ -32,7 +32,7 @@ export default function HomePage() {
                                 </div>
                                 <h3 className="mb-4 text-xl font-bold text-theme">Gezelligheid</h3>
                                 <p className="text-theme-muted leading-relaxed">
-                                    Van legendarische borrels in onze eigen soos tot onvergetelijke feesten en weekendjes weg. Bij Salve Mundi maak je vrienden voor het leven.
+                                    Van epische borrels in onze eigen soos tot onvergetelijke feesten en weekendjes weg—bij Salve Mundi maak je vrienden voor het leven.
                                 </p>
                             </div>
 

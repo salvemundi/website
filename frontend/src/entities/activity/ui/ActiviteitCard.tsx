@@ -53,7 +53,14 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     };
 
     const safePrice = (Number(price) || 0).toFixed(2);
-    const committeeLabel = committeeName || 'Algemene Activiteit';
+    
+    // Strip organization suffix from committee name
+    const cleanCommitteeName = (name?: string) => {
+        if (!name) return 'Algemene Activiteit';
+        return name.replace(/\s*[-–—]\s*Salve Mundi\s*$/i, '').trim() || name;
+    };
+    
+    const committeeLabel = cleanCommitteeName(committeeName);
 
     const formatDate = (value?: string) => {
         if (!value) return 'Datum volgt';
