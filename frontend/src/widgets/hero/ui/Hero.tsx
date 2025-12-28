@@ -319,7 +319,7 @@ export default function Hero() {
     const showMembershipLink = !authLoading && !isAuthenticated;
 
     return (
-        <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full h-screen py-8 sm:py-12 md:py-16 lg:py-20 transition-colors duration-300">
+        <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full min-h-[600px] md:min-h-[500px] lg:min-h-screen py-8 sm:py-12 md:py-16 lg:py-20 transition-colors duration-300">
             <div ref={orb1Ref} className="absolute -left-20 top-60 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-theme-purple to-theme-purple-light" />
             <div ref={orb2Ref} className="absolute -right-16 bottom-0 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-theme-purple-light to-theme-purple" />
 
