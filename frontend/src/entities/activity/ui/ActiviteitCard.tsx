@@ -4,18 +4,22 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 
 interface ActiviteitCardProps {
-    description: string;
-    image?: string;
-    date?: string;
+    id: number | string;
     title: string;
-    price?: number;
-    isPast?: boolean;
-    onSignup?: (data: { title: string; date?: string; description: string; price: number }) => void;
-    onShowDetails?: () => void;
+    description?: string;
+    description_logged_in?: string;
+    date: string;
+    location?: string;
+    maxSignUps?: number;
+    priceMembers?: number;
+    priceNonMembers?: number;
+    imageUrl?: string;
+    onSignUp?: () => void;
     requiresLogin?: boolean;
     isSignedUp?: boolean;
     variant?: 'grid' | 'list';
     committeeName?: string;
+    inschrijfDeadline?: string;
 }
 
 const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
@@ -31,16 +35,21 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     isSignedUp = false,
     variant = 'grid',
     committeeName,
+    inschrijfDeadline,
 }) => {
     const { isAuthenticated } = useAuth();
     const router = useRouter();
     const alreadySignedUp = Boolean(isSignedUp);
     const isListVariant = variant === 'list';
+    
+    // Check if registration deadline has passed
+    const isDeadlinePassed = inschrijfDeadline ? new Date(inschrijfDeadline) < new Date() : false;
+    const cannotSignUp = alreadySignedUp || isDeadlinePassed;
 
     const handleSignupClick = (e: React.MouseEvent) => {
         e.stopPropagation();
 
-        if (alreadySignedUp) {
+        if (cannotSignUp) {
             return;
         }
 
