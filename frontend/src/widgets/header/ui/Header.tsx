@@ -110,7 +110,7 @@ const Header: React.FC = () => {
                         </div>
                     </Link>
 
-                    <nav className="hidden items-center gap-3 lg:gap-4 xl:gap-5 md:flex">
+                    <nav className="hidden items-center gap-4 xl:gap-5 lg:flex">
                         {navItems.map((link) => (
                             <Link
                                 key={link.href}
