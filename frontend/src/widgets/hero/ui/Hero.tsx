@@ -18,6 +18,8 @@ export default function Hero() {
     const loadEvents = useDirectusStore((state) => state.loadEvents);
     const heroBanners = useDirectusStore((state) => state.heroBanners);
     const loadHeroBanners = useDirectusStore((state) => state.loadHeroBanners);
+    const [hoverWordLid, setHoverWordLid] = useState(false);
+    const [hoverNextEvent, setHoverNextEvent] = useState(false);
 
     // Refs for GSAP animations
     const heroRef = useRef<HTMLElement>(null);
@@ -348,16 +350,16 @@ export default function Hero() {
                                     href="/lidmaatschap"
                                     className="block w-full transition-transform hover:scale-[1.02]"
                                 >
-                                    <div className="inset-x-4 bottom-4 w-full sm:inset-x-6 sm:bottom-6 rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4">
+                                    <div className="inset-x-4 bottom-4 w-full sm:inset-x-6 sm:bottom-6 rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-3 sm:p-4 md:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-3 sm:gap-4">
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-white">
+                                            <p className="text-[0.6rem] sm:text-xs font-semibold uppercase tracking-[0.15em] sm:tracking-[0.2em] md:tracking-[0.3em] text-theme-white">
                                                 Word lid
                                             </p>
-                                            <p className="mt-2 text-base sm:text-lg font-bold text-theme-white truncate">
+                                            <p className="mt-1 sm:mt-2 text-sm sm:text-base md:text-lg font-bold text-theme-white truncate">
                                                 Sluit je aan bij Salve Mundi
                                             </p>
-                                            <p className="mt-1 text-xs sm:text-sm text-theme-white line-clamp-2">
-                                                Ontdek alle voordelen van een lidmaatschap en word onderdeel van onze community!
+                                            <p className="mt-0.5 sm:mt-1 text-[0.7rem] sm:text-xs md:text-sm text-theme-white line-clamp-2">
+                                                Ontdek alle voordelen van een lidmaatschap!
                                             </p>
                                         </div>
                                         <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white text-theme-purple flex items-center justify-center shadow-md transition-transform group-hover:scale-110"

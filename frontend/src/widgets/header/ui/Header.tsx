@@ -69,6 +69,7 @@ const Header: React.FC = () => {
         { name: "Lidmaatschap", href: ROUTES.MEMBERSHIP },
         { name: "Activiteiten", href: ROUTES.ACTIVITIES },
         { name: "Commissies", href: ROUTES.COMMITTEES },
+        { name: "Safe Havens", href: "/safe-havens" },
         { name: "Contact", href: ROUTES.CONTACT },
     ];
 
@@ -235,9 +236,6 @@ const Header: React.FC = () => {
                                 className="flex items-center justify-between rounded-2xl bg-[var(--bg-card)]/70 px-4 py-3 text-sm font-semibold text-theme shadow-sm"
                             >
                                 <span>{link.name}</span>
-                                <span className="text-xs font-semibold uppercase tracking-[0.25em] text-theme-purple">
-                                    Ga
-                                </span>
                             </Link>
                         ))}
                     </div>
