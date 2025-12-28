@@ -349,7 +349,7 @@ export default function Hero() {
                                 >
                                     <div className="w-full max-w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-3 sm:p-4 md:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-3 sm:gap-4 min-h-[90px] sm:min-h-[100px] overflow-hidden">
                                         <div className="flex-1 min-w-0 overflow-hidden">
-                                            <p className="text-[0.6rem] sm:text-xs font-semibold uppercase tracking-[0.15em] sm:tracking-[0.2em] md:tracking-[0.3em] text-theme-white">
+                                            <p className="text-[0.6rem] sm:text-xs font-semibold uppercase tracking-wide text-theme-white">
                                                 Word lid
                                             </p>
                                             <p className="mt-1 sm:mt-2 text-sm sm:text-base md:text-lg font-bold text-theme-white truncate">
