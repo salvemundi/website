@@ -5,16 +5,15 @@ import { useAuth } from '@/features/auth/providers/auth-provider';
 
 interface ActiviteitCardProps {
     id: number | string;
-    title: string;
-    description?: string;
+    description: string;
     description_logged_in?: string;
-    date: string;
-    location?: string;
-    maxSignUps?: number;
-    priceMembers?: number;
-    priceNonMembers?: number;
-    imageUrl?: string;
-    onSignUp?: () => void;
+    image?: string;
+    date?: string;
+    title: string;
+    price?: number;
+    isPast?: boolean;
+    onSignup?: (data: { title: string; date?: string; description: string; price: number }) => void;
+    onShowDetails?: () => void;
     requiresLogin?: boolean;
     isSignedUp?: boolean;
     variant?: 'grid' | 'list';
@@ -23,7 +22,9 @@ interface ActiviteitCardProps {
 }
 
 const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
+    id,
     description,
+    description_logged_in,
     image,
     title,
     date,
