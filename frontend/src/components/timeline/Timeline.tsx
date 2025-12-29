@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from 'react';
-import { Chrono } from 'react-chrono-extra';
+import { Chrono } from 'react-chrono';
 import { Users } from 'lucide-react';
 
 type TimelineProps = {
