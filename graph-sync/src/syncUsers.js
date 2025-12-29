@@ -655,6 +655,7 @@ async function updateDirectusUserFromGraph(userId) {
         }
     } catch (error) {
         console.error(`❌ [SYNC] Error syncing Entra user ${userId}:`, error.response?.data || error.message);
+        throw error;
     }
 }
 
@@ -732,7 +733,9 @@ async function runBulkSync() {
         total: 0,
         processed: 0,
         errorCount: 0,
+        missingDataCount: 0,
         errors: [],
+        missingData: [],
         startTime: new Date().toISOString(),
         endTime: null,
         lastRunSuccess: null
