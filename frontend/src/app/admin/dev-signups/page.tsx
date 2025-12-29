@@ -73,6 +73,7 @@ export default function DevSignupsPage() {
     const [signups, setSignups] = useState<Signup[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState<string | null>(null);
+    const [isSyncing, setIsSyncing] = useState(false);
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -183,6 +184,33 @@ export default function DevSignupsPage() {
         }
     };
 
+    const handleSyncUsers = async () => {
+        setIsSyncing(true);
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (!token) throw new Error('No auth token');
+
+            const response = await fetch('/api/admin/sync-users', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to start sync');
+            }
+
+            alert('Synchronisatie gestart op de achtergrond. Dit kan enkele minuten duren.');
+        } catch (error: any) {
+            console.error('Failed to sync users:', error);
+            alert(`Fout bij starten synchronisatie: ${error.message}`);
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
     const formatAmount = (amount: string | number): string => {
         const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
         return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(numAmount);
@@ -212,14 +240,24 @@ export default function DevSignupsPage() {
         <div className="min-h-screen bg-[var(--bg-main)]">
             <div className="mx-auto max-w-app px-4 py-8 sm:px-6 lg:px-8">
                 {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-theme-purple-lighter flex items-center gap-3">
-                        <Shield className="h-8 w-8" />
-                        Development Inschrijvingen
-                    </h1>
-                    <p className="mt-1 text-sm text-theme-purple-lighter/60">
-                        Goedkeuren of afwijzen van test-inschrijvingen in de development omgeving.
-                    </p>
+                <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h1 className="text-3xl font-bold text-theme-purple-lighter flex items-center gap-3">
+                            <Shield className="h-8 w-8" />
+                            Development Inschrijvingen
+                        </h1>
+                        <p className="mt-1 text-sm text-theme-purple-lighter/60">
+                            Beheer en keur nieuwe inschrijvingen vanuit de ontwikkelomgeving.
+                        </p>
+                    </div>
+                    <button
+                        onClick={handleSyncUsers}
+                        disabled={isSyncing}
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-theme-purple/20 hover:bg-theme-purple/30 text-theme-purple-lighter rounded-xl border border-theme-purple/30 transition-all font-semibold disabled:opacity-50"
+                    >
+                        <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                        {isSyncing ? 'Synchroniseren...' : 'Sync Gebruikers'}
+                    </button>
                 </div>
 
                 {/* Main Content */}

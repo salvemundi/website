@@ -18,6 +18,7 @@ const MOLLIE_API_KEY = process.env.MOLLIE_API_KEY;
 const DIRECTUS_API_TOKEN = process.env.DIRECTUS_API_TOKEN;
 const EMAIL_SERVICE_URL = process.env.EMAIL_SERVICE_URL || 'http://email-api:3001';
 const MEMBERSHIP_API_URL = process.env.MEMBERSHIP_API_URL || 'http://membership-api:8000/api/membership';
+const GRAPH_SYNC_URL = process.env.GRAPH_SYNC_URL || 'http://graph-sync:3001';
 
 if (!PORT || !DIRECTUS_URL || !WEBHOOK_URL || !MOLLIE_API_KEY || !DIRECTUS_API_TOKEN) {
     console.error('FATAL ERROR: Missing environment variables');
@@ -67,7 +68,8 @@ app.use(
         MEMBERSHIP_API_URL,
         directusService,
         notificationService,
-        membershipService
+        membershipService,
+        GRAPH_SYNC_URL
     )
 );
 

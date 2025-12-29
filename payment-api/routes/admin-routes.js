@@ -1,7 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 
-module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, MEMBERSHIP_API_URL, directusService, notificationService, membershipService) {
+module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, MEMBERSHIP_API_URL, directusService, notificationService, membershipService, GRAPH_SYNC_URL) {
     const router = express.Router();
 
     /**
@@ -241,6 +241,33 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
         } catch (error) {
             console.error('[AdminRoutes] Rejection failed:', error.message);
             res.status(500).json({ error: 'Failed to reject signup', details: error.message });
+        }
+    });
+
+    /**
+     * POST /api/admin/sync-users
+     * Trigger a manual bulk sync from Entra ID to Directus
+     */
+    router.post('/sync-users', requireAdmin, async (req, res) => {
+        console.log('[AdminRoutes] POST /sync-users called');
+        try {
+            // Trigger the sync in the background to avoid timeout
+            // but return a 202 Accepted
+            axios.post(`${GRAPH_SYNC_URL}/sync/initial`)
+                .then(response => {
+                    console.log('[AdminRoutes] Manual sync completed successfully:', response.data);
+                })
+                .catch(error => {
+                    console.error('[AdminRoutes] Manual sync failed:', error.message);
+                });
+
+            res.status(202).json({
+                success: true,
+                message: 'Gebruiker synchronisatie gestart op de achtergrond'
+            });
+        } catch (error) {
+            console.error('[AdminRoutes] Failed to initiate sync:', error.message);
+            res.status(500).json({ error: 'Synchronisatie starten mislukt' });
         }
     });
 
