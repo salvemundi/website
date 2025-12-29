@@ -181,6 +181,13 @@ export default function EventDetailPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Safety check: prevent submission if deadline has passed
+        if (isDeadlinePassed) {
+            setSubmitError('De inschrijfdeadline voor deze activiteit is verstreken.');
+            return;
+        }
+        
         if (!validateForm()) return;
 
         setIsSubmitting(true);
