@@ -1,5 +1,6 @@
 const express = require('express');
 const membershipService = require('../services/membership-service');
+const { getEnvironment } = require('../services/env-utils');
 
 module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, MEMBERSHIP_API_URL, directusService, notificationService) {
     const router = express.Router();
@@ -12,21 +13,27 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 return res.status(400).json({ error: 'Missing required parameters' });
             }
 
+            // Detect environment
+            const environment = getEnvironment(req);
+            const approvalStatus = environment === 'development' ? 'pending' : 'auto_approved';
+
             const transactionPayload = {
                 amount: amount,
                 product_name: description,
                 payment_status: 'open',
                 email: email || null,
-                registration: registrationId || null
+                registration: registrationId || null,
+                environment: environment,
+                approval_status: approvalStatus
             };
 
             if (userId) {
-                transactionPayload.user_id = userId; 
+                transactionPayload.user_id = userId;
             }
 
             const transactionRecordId = await directusService.createDirectusTransaction(
-                DIRECTUS_URL, 
-                DIRECTUS_API_TOKEN, 
+                DIRECTUS_URL,
+                DIRECTUS_API_TOKEN,
                 transactionPayload
             );
 
@@ -52,9 +59,9 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
             });
 
             await directusService.updateDirectusTransaction(
-                DIRECTUS_URL, 
-                DIRECTUS_API_TOKEN, 
-                transactionRecordId, 
+                DIRECTUS_URL,
+                DIRECTUS_API_TOKEN,
+                transactionRecordId,
                 { transaction_id: payment.id }
             );
 
@@ -88,19 +95,37 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
 
             if (transactionRecordId) {
                 await directusService.updateDirectusTransaction(
-                    DIRECTUS_URL, 
-                    DIRECTUS_API_TOKEN, 
-                    transactionRecordId, 
+                    DIRECTUS_URL,
+                    DIRECTUS_API_TOKEN,
+                    transactionRecordId,
                     { payment_status: internalStatus }
                 );
             }
 
+
             if (payment.isPaid()) {
+                // Check approval status before proceeding with account creation
+                if (transactionRecordId) {
+                    const transaction = await directusService.getTransaction(
+                        DIRECTUS_URL,
+                        DIRECTUS_API_TOKEN,
+                        transactionRecordId
+                    );
+
+                    // Only proceed if approved (or auto-approved)
+                    if (transaction &&
+                        transaction.approval_status !== 'approved' &&
+                        transaction.approval_status !== 'auto_approved') {
+                        console.log(`[Webhook] Payment ${paymentId} paid but approval pending. Transaction: ${transactionRecordId}, Status: ${transaction.approval_status}`);
+                        return res.status(200).send('Payment recorded, awaiting approval');
+                    }
+                }
+
                 if (registrationId) {
                     await directusService.updateDirectusRegistration(
-                        DIRECTUS_URL, 
-                        DIRECTUS_API_TOKEN, 
-                        registrationId, 
+                        DIRECTUS_URL,
+                        DIRECTUS_API_TOKEN,
+                        registrationId,
                         { payment_status: 'paid' }
                     );
                 }
@@ -108,13 +133,13 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 if (notContribution === "false") {
                     if (userId) {
                         await membershipService.provisionMember(MEMBERSHIP_API_URL, userId);
-                        
+
                         if (registrationId) {
                             await notificationService.sendConfirmationEmail(
-                                DIRECTUS_URL, 
-                                DIRECTUS_API_TOKEN, 
+                                DIRECTUS_URL,
+                                DIRECTUS_API_TOKEN,
                                 EMAIL_SERVICE_URL,
-                                payment.metadata, 
+                                payment.metadata,
                                 payment.description
                             );
                         }
@@ -132,10 +157,10 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 } else {
                     if (registrationId) {
                         await notificationService.sendConfirmationEmail(
-                            DIRECTUS_URL, 
-                            DIRECTUS_API_TOKEN, 
+                            DIRECTUS_URL,
+                            DIRECTUS_API_TOKEN,
                             EMAIL_SERVICE_URL,
-                            payment.metadata, 
+                            payment.metadata,
                             payment.description
                         );
                     }

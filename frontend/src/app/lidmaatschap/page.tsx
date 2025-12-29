@@ -137,7 +137,26 @@ export default function SignUp() {
             });
         }
 
-        await initiateContributionPayment();
+        try {
+            await initiateContributionPayment();
+
+            // Check if we're in development environment
+            const isDev = typeof window !== 'undefined' && (
+                window.location.hostname.includes('dev.') ||
+                window.location.hostname.includes('localhost') ||
+                window.location.hostname.includes('127.0.0.1')
+            );
+
+            if (isDev && isGuest) {
+                // Development environment - show pending approval message
+                alert('✅ Bedankt voor je betaling!\n\nJe aanmelding is ontvangen en wacht op goedkeuring door een administrator.\n\nJe ontvangt een email zodra je account is aangemaakt.');
+            }
+        } catch (error) {
+            console.error('Payment initiation failed:', error);
+            alert('Er is een fout opgetreden bij het initiëren van de betaling. Probeer het opnieuw.');
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     useEffect(() => {

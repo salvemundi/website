@@ -59,9 +59,26 @@ async function getDirectusRegistration(directusUrl, directusToken, id) {
     }
 }
 
+/**
+ * Haalt een transactie op uit Directus.
+ */
+async function getTransaction(directusUrl, directusToken, id) {
+    try {
+        const response = await axios.get(
+            `${directusUrl}/items/transactions/${id}`,
+            getAuthConfig(directusToken)
+        );
+        return response.data.data;
+    } catch (error) {
+        console.error(`Failed to fetch transaction ${id}:`, error.message);
+        return null;
+    }
+}
+
 module.exports = {
     createDirectusTransaction,
     updateDirectusTransaction,
     updateDirectusRegistration,
-    getDirectusRegistration
+    getDirectusRegistration,
+    getTransaction
 };
