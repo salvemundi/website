@@ -23,7 +23,7 @@ function ActivitiesContent() {
     const { data: events = [], isLoading, error } = useSalvemundiEvents();
 
     // State
-    const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('calendar');
+    const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
     const [showPastActivities, setShowPastActivities] = useState(false);
     const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
@@ -70,9 +70,12 @@ function ActivitiesContent() {
                 title="ACTIVITEITEN"
                 backgroundImage="/img/backgrounds/activity-banner.jpg"
                 backgroundPosition="center 75%"
+                /* apply a subtle blur to the banner image */
+                imageFilter={`brightness(0.65) blur(4px)`}
                 variant="split"
+                titleClassName="text-theme-white text-3xl sm:text-4xl md:text-6xl"
                 description={
-                    <p className="text-lg sm:text-xl text-beige/90 max-w-3xl mt-4">
+                    <p className="text-lg sm:text-xl text-theme-white max-w-3xl mt-4">
                         Bekijk alle evenementen, trainingen en feesten van Salve Mundi.
                     </p>
                 }
@@ -96,7 +99,7 @@ function ActivitiesContent() {
 
                     {/* Controls & Header */}
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-                        <h2 className="text-3xl font-bold text-samu dark:text-white">
+                        <h2 className="text-3xl font-bold text-white">
                             {showPastActivities ? 'Alle Activiteiten' : 'Komende Activiteiten'}
                         </h2>
 
@@ -293,6 +296,9 @@ function ActivitiesContent() {
                                                     title={event.name}
                                                     description={event.description}
                                                     date={event.event_date}
+                                                    startTime={event.event_time}
+                                                    endTime={event.event_time_end || event.time_end}
+                                                    location={event.location}
                                                     price={event.price}
                                                     image={getImageUrl(event.image)}
                                                     isPast={isEventPast(event.event_date)}

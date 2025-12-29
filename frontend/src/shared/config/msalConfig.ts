@@ -7,7 +7,7 @@ const postLogoutRedirectUri = process.env.NEXT_PUBLIC_AUTH_LOGOUT_REDIRECT_URI |
 if (typeof window !== 'undefined') {
     const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)/i.test(window.location.origin);
     if (!isLocalhost && window.location.protocol !== 'https:') {
-        console.warn('Microsoft login needs HTTPS when you are not on localhost. Serve the dev server over HTTPS and set NEXT_PUBLIC_AUTH_REDIRECT_URI to that HTTPS origin (also add it to the Entra app redirect URIs).');
+        // HTTPS requirement hint removed from logs
     }
 }
 

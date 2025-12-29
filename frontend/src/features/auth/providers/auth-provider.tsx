@@ -20,9 +20,6 @@ try {
         // });
     }
 } catch (error) {
-    console.warn('⚠️ MSAL initialization failed. Microsoft login will be disabled.');
-    console.warn('💡 Tip: MSAL requires HTTPS or "localhost" (not IP addresses like 192.168.x.x).');
-    console.warn('   Over LAN, expose the dev server over HTTPS and set NEXT_PUBLIC_AUTH_REDIRECT_URI to that HTTPS origin, also adding it in the Entra app.');
     console.error('Error details:', error);
 }
 
@@ -145,17 +142,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         handleRedirect();
     }, []);
 
-    const handleLoginSuccess = async (loginResponse: any) => {
+    const handleLoginSuccess = async (loginResponse: unknown) => {
         setIsLoading(true);
         const toastId = toast.loading('Inloggen verwerken...');
 
         try {
             // Get the ID token to send to backend
-            const idToken = loginResponse.idToken;
-            const userEmail = loginResponse.account.username;
+            const lr = loginResponse as { idToken?: string; account?: { username?: string } };
+            const idToken = lr.idToken;
+            const userEmail = lr.account?.username;
 
             // Authenticate with backend using Entra ID token
-            const response = await authApi.loginWithEntraId(idToken, userEmail);
+            const response = await authApi.loginWithEntraId(idToken || '', userEmail || '');
 
             // Validate the returned access token before persisting it. If the
             // token is invalid, do not store it (prevents other components from
@@ -164,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             try {
                 validatedUser = await authApi.fetchUserDetails(response.access_token);
             } catch (e) {
-                console.warn('Could not validate access token returned from Entra login:', e);
+                // access token validation failed (log removed)
             }
 
             if (!validatedUser) {

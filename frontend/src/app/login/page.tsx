@@ -1,12 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 
 export default function LoginPage() {
     const router = useRouter();
-    const { loginWithMicrosoft, isLoading } = useAuth();
+    const { loginWithMicrosoft, isLoading, isAuthenticated } = useAuth();
+
+    // If the user is already authenticated, redirect to the account page.
+    useEffect(() => {
+        if (!isLoading && isAuthenticated) {
+            router.replace('/account');
+        }
+    }, [isLoading, isAuthenticated, router]);
 
     const [error, setError] = useState('');
 

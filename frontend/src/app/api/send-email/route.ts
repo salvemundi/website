@@ -19,10 +19,8 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Get email API endpoint from environment
-        // Use EMAIL_API_ENDPOINT (server-side env var) instead of NEXT_PUBLIC_EMAIL_API_ENDPOINT
-        // Default to internal Docker network address for container-to-container communication
-        const emailApiEndpoint = process.env.EMAIL_API_ENDPOINT || 'http://email-api:3001/send-email';
+
+        const emailApiEndpoint = process.env.NEXT_PUBLIC_EMAIL_API_URL || 'http://localhost:3001/send-email';
 
         console.log('📧 Sending email request to:', emailApiEndpoint);
 
@@ -69,10 +67,16 @@ export async function POST(request: NextRequest) {
             stack: error.stack
         });
         
-        // Provide more specific error message for network errors
-        if (error.cause?.code === 'ECONNREFUSED' || error.message?.includes('fetch failed')) {
+        // Provide more specific error message for network / DNS errors
+        const causeCode = error?.cause?.code;
+        if (
+            causeCode === 'ECONNREFUSED' ||
+            causeCode === 'ENOTFOUND' ||
+            (typeof error.message === 'string' && error.message.includes('fetch failed'))
+        ) {
+            const dnsNote = causeCode === 'ENOTFOUND' ? ' (DNS name not found)' : '';
             return NextResponse.json(
-                { error: 'Unable to connect to email service. Please check if the email-api service is running.' },
+                { error: `Unable to connect to email service. Please check if the email-api service is running and EMAIL_API_ENDPOINT is correct${dnsNote}.` },
                 { status: 502 }
             );
         }

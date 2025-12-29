@@ -15,20 +15,38 @@ interface PageHeaderProps {
     contentPadding?: string;
 }
 
+import { useEffect, useRef } from 'react';
+
 const PageHeader: React.FC<PageHeaderProps> = ({
     title,
     backgroundImage = "",
     backgroundPosition = 'center',
     imageFilter,
     className = "",
-    titleClassName = "text-4xl md:text-6xl",
+    // use slightly smaller base size on mobile and allow breaking long words
+    titleClassName = "text-3xl sm:text-4xl md:text-6xl",
     children,
     variant = 'centered',
     description,
     contentPadding = 'py-20'
 }) => {
+    const headerRef = useRef<HTMLElement | null>(null);
+
+    useEffect(() => {
+        const el = headerRef.current;
+        if (!el) return;
+        const setVar = () => {
+            const h = Math.ceil(el.getBoundingClientRect().height);
+            document.documentElement.style.setProperty('--pageheader-height', `${h}px`);
+        };
+        setVar();
+        const ro = new ResizeObserver(setVar);
+        ro.observe(el);
+        return () => ro.disconnect();
+    }, []);
+
     return (
-        <header className={`relative flex items-center justify-center mb-5 ${className}`}>
+        <header ref={headerRef} className={`relative flex items-center justify-center mb-5 ${className}`}>
             <div
                 className="absolute inset-0 bg-cover z-0"
                 style={{
@@ -56,7 +74,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                 ) : (
                     <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
                         <div className="flex-1 text-center lg:text-left">
-                            <h1 className={`text-theme-purple font-bold leading-tight drop-shadow-lg ${titleClassName}`}>
+                            <h1 className={`text-theme-purple font-bold leading-tight drop-shadow-lg whitespace-normal break-words ${titleClassName}`}>
                                 {title.split('\n').map((line, index) => (
                                     <React.Fragment key={index}>
                                         {line}

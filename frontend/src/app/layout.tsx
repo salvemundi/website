@@ -45,6 +45,11 @@ export const metadata: Metadata = {
             { url: '/img/Logo.png', sizes: '180x180', type: 'image/png' },
         ],
     },
+    appleWebApp: {
+        capable: true,
+        title: 'Salve Mundi',
+        statusBarStyle: 'default',
+    },
 };
 
 
@@ -61,6 +66,12 @@ export default function RootLayout({
 }) {
     return (
         <html lang="nl" suppressHydrationWarning>
+            <head>
+                <link 
+                    rel="stylesheet" 
+                    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" 
+                />
+            </head>
             <body className="min-h-screen bg-background dark:bg-background-darker text-ink dark:text-white relative transition-colors duration-300">
                 <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-oranje/10/80 via-transparent to-oranje/20/60 dark:from-oranje/5/40 dark:to-paars/10/40" aria-hidden="true" />
                 <RootProviders>
