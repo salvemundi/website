@@ -24,7 +24,9 @@ interface SyncStatus {
     total: number;
     processed: number;
     errorCount: number;
+    missingDataCount?: number;
     errors: { email: string; error: string; timestamp: string }[];
+    missingData?: { email: string; reason: string }[];
     startTime?: string;
     endTime?: string;
     lastRunSuccess?: boolean | null;
@@ -395,6 +397,26 @@ export default function DevSignupsPage() {
                                                         <span className="text-theme-purple-lighter/40">{format(new Date(err.timestamp), 'HH:mm:ss')}</span>
                                                     </div>
                                                     <code className="text-red-300 break-all opacity-80">{err.error}</code>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Missing Data Report */}
+                                {syncStatus?.missingData && syncStatus.missingData.length > 0 && (
+                                    <div className="mt-4">
+                                        <h3 className="text-sm font-semibold text-theme-purple-lighter/80 mb-3 flex items-center gap-2">
+                                            <AlertCircle className="h-4 w-4 text-theme-purple-lighter" />
+                                            Ontbrekende Gegevens ({syncStatus.missingDataCount})
+                                        </h3>
+                                        <div className="max-h-48 overflow-y-auto rounded-xl bg-black/20 border border-white/5 p-2 space-y-1 custom-scrollbar">
+                                            {syncStatus.missingData.map((item, idx) => (
+                                                <div key={idx} className="p-2 text-xs border-b border-white/5 last:border-0 flex flex-col gap-1">
+                                                    <div className="flex justify-between items-start mb-1">
+                                                        <span className="font-bold text-theme-purple-lighter">{item.email}</span>
+                                                    </div>
+                                                    <div className="text-theme-purple-lighter/70">{item.reason}</div>
                                                 </div>
                                             ))}
                                         </div>
