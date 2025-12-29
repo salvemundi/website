@@ -10,6 +10,8 @@ interface Signup {
     id: string;
     created_at: string;
     email: string;
+    first_name?: string;
+    last_name?: string;
     product_name: string;
     amount: number;
     approval_status: 'pending' | 'approved' | 'rejected';
@@ -255,23 +257,26 @@ export default function DevSignupsPage() {
                             <div className="hidden md:block overflow-x-auto">
                                 <table className="w-full">
                                     <thead className="border-b border-white/10">
-                                        <tr>
-                                            <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-theme-purple-lighter/60">
+                                        <tr className="border-b border-white/5 bg-white/5">
+                                            <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">
                                                 Datum
                                             </th>
-                                            <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-theme-purple-lighter/60">
+                                            <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">
+                                                Naam
+                                            </th>
+                                            <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">
                                                 Email
                                             </th>
-                                            <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-theme-purple-lighter/60">
+                                            <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">
                                                 Product
                                             </th>
-                                            <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-theme-purple-lighter/60">
+                                            <th className="px-4 py-4 text-right text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">
                                                 Bedrag
                                             </th>
-                                            <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-theme-purple-lighter/60">
+                                            <th className="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">
                                                 Status
                                             </th>
-                                            <th className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-theme-purple-lighter/60">
+                                            <th className="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">
                                                 Acties
                                             </th>
                                         </tr>
@@ -285,21 +290,24 @@ export default function DevSignupsPage() {
                                                         : 'Onbekend'}
                                                 </td>
                                                 <td className="px-4 py-4 text-sm text-theme-purple-lighter font-medium">
+                                                    {signup.first_name} {signup.last_name}
+                                                </td>
+                                                <td className="px-4 py-4 text-sm text-theme-purple-lighter">
                                                     {signup.email || 'N/A'}
                                                 </td>
                                                 <td className="px-4 py-4 text-sm text-theme-purple-lighter">
                                                     {signup.product_name}
                                                 </td>
-                                                <td className="px-4 py-4 text-sm font-semibold text-theme-purple-lighter">
+                                                <td className="px-4 py-4 text-right text-sm font-semibold text-theme-purple-lighter">
                                                     {formatAmount(signup.amount)}
                                                 </td>
-                                                <td className="px-4 py-4">
+                                                <td className="px-4 py-4 text-center">
                                                     <span className="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-300">
                                                         {signup.payment_status === 'paid' ? 'Betaald' : 'Pending'}
                                                     </span>
                                                 </td>
-                                                <td className="px-4 py-4 text-right">
-                                                    <div className="flex justify-end gap-2">
+                                                <td className="px-4 py-4 text-center">
+                                                    <div className="flex justify-center gap-2">
                                                         <button
                                                             onClick={() => handleApprove(signup.id)}
                                                             disabled={isProcessing === signup.id || signup.payment_status !== 'paid'}
@@ -334,9 +342,12 @@ export default function DevSignupsPage() {
                                         <div className="flex justify-between items-start mb-3">
                                             <div>
                                                 <h3 className="font-semibold text-theme-purple-lighter">
-                                                    {signup.email || 'N/A'}
+                                                    {signup.first_name} {signup.last_name}
                                                 </h3>
-                                                <p className="text-sm text-theme-purple-lighter/70">
+                                                <p className="text-sm text-theme-purple-lighter/80">
+                                                    {signup.email || 'N/A'}
+                                                </p>
+                                                <p className="text-xs text-theme-purple-lighter/60 mt-0.5">
                                                     {signup.created_at
                                                         ? format(new Date(signup.created_at), 'd MMM yyyy HH:mm')
                                                         : 'Datum onbekend'}

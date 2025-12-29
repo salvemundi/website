@@ -22,6 +22,8 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 product_name: description,
                 payment_status: 'open',
                 email: email || null,
+                first_name: firstName || null,
+                last_name: lastName || null,
                 registration: registrationId || null,
                 environment: environment,
                 approval_status: approvalStatus
