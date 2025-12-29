@@ -30,9 +30,8 @@ export default function ContactPage() {
         <div className="">
             <PageHeader
                 title="CONTACT"
-                backgroundImage="/img/backgrounds/contact-bg.jpg"
             >
-                <p className="text-lg sm:text-xl text-theme-white/90 max-w-3xl mx-auto mt-4">
+                <p className="text-lg sm:text-xl text-white/90 max-w-3xl mx-auto mt-4">
                     Neem contact met ons op voor vragen, suggesties of informatie
                 </p>
             </PageHeader>
