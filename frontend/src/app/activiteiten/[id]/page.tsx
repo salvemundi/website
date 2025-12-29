@@ -153,6 +153,11 @@ export default function EventDetailPage() {
 
     // Treat an event as past only after the end of its calendar day (local timezone)
     const isPast = event ? isEventPast(event.event_date) : false;
+    
+    // Check if registration deadline has passed
+    const isDeadlinePassed = event?.inschrijf_deadline ? new Date(event.inschrijf_deadline) < new Date() : false;
+    const canSignUp = !isPast && !isDeadlinePassed && !signupStatus.isSignedUp;
+    
     const isPaidAndHasQR = signupStatus.isSignedUp && signupStatus.paymentStatus === 'paid' && !!signupStatus.qrToken;
 
     // Form handlers
@@ -319,6 +324,12 @@ export default function EventDetailPage() {
                                             We zien je graag op {formattedDate}.
                                         </p>
                                     )}
+                                </div>
+                            ) : isDeadlinePassed ? (
+                                // Deadline passed
+                                <div className="bg-slate-100 dark:bg-white/5 p-6 rounded-xl text-center h-full flex flex-col justify-center items-center">
+                                    <h3 className="text-2xl font-bold text-slate-400 mb-2">Inschrijving Gesloten</h3>
+                                    <p className="text-slate-500 dark:text-slate-400">De inschrijfdeadline voor deze activiteit is verstreken.</p>
                                 </div>
                             ) : isPast ? (
                                 // Past event
