@@ -8,28 +8,51 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
      * Middleware: require admin access (user must have entra_id)
      */
     async function requireAdmin(req, res, next) {
+        console.log('[AdminRoutes] requireAdmin called:', {
+            hasAuthHeader: !!req.headers.authorization,
+            authHeaderPreview: req.headers.authorization ? req.headers.authorization.substring(0, 30) + '...' : 'NONE',
+            path: req.path,
+            method: req.method
+        });
+
         const authHeader = req.headers.authorization;
         if (!authHeader) {
+            console.error('[AdminRoutes] No authorization header');
             return res.status(401).json({ error: 'No authorization header' });
         }
 
         const token = authHeader.replace('Bearer ', '');
+        console.log('[AdminRoutes] Token extracted, length:', token.length);
 
         try {
+            console.log('[AdminRoutes] Fetching user from Directus:', `${DIRECTUS_URL}/users/me`);
             const response = await axios.get(`${DIRECTUS_URL}/users/me`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const user = response.data.data;
 
+            console.log('[AdminRoutes] User fetched:', {
+                id: user.id,
+                hasEntraId: !!user.entra_id,
+                email: user.email
+            });
+
             // Only users with entra_id (Fontys accounts) are admins
             if (!user.entra_id) {
+                console.error('[AdminRoutes] User has no entra_id');
                 return res.status(403).json({ error: 'Admin access required' });
             }
 
             req.user = user;
+            console.log('[AdminRoutes] Admin check passed');
             next();
         } catch (error) {
-            console.error('[AdminRoutes] Auth failed:', error.message);
+            console.error('[AdminRoutes] Auth failed:', {
+                message: error.message,
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                data: error.response?.data
+            });
             return res.status(401).json({ error: 'Invalid token' });
         }
     }
@@ -39,7 +62,13 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
      * Fetch all pending dev signups
      */
     router.get('/pending-signups', requireAdmin, async (req, res) => {
+        console.log('[AdminRoutes] GET /pending-signups called');
         try {
+            console.log('[AdminRoutes] Fetching from Directus:', {
+                url: `${DIRECTUS_URL}/items/transactions`,
+                usingToken: DIRECTUS_API_TOKEN ? 'Yes (length: ' + DIRECTUS_API_TOKEN.length + ')' : 'No'
+            });
+
             const response = await axios.get(
                 `${DIRECTUS_URL}/items/transactions`,
                 {
