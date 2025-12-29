@@ -74,7 +74,8 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                 {
                     params: {
                         'filter[approval_status][_eq]': 'pending',
-                        'sort': '-date_created',
+                        'filter[environment][_eq]': 'development',
+                        'fields': 'id,product_name,amount,email,approval_status,payment_status,environment',
                         'limit': 100
                     },
                     headers: { 'Authorization': `Bearer ${DIRECTUS_API_TOKEN}` }
