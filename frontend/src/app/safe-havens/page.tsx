@@ -32,9 +32,8 @@ export default function SafeHavensPage() {
     <div>
       <PageHeader
         title="Safe Havens"
-        backgroundImage="/img/backgrounds/safe-havens-banner.jpg"
       >
-        <p className="mx-auto mt-4 max-w-3xl text-lg sm:text-xl text-beige/90">
+        <p className="mx-auto mt-4 max-w-3xl text-lg sm:text-xl text-white/90">
           Een veilig aanspreekpunt voor jouw zorgen en vragen.
         </p>
       </PageHeader>

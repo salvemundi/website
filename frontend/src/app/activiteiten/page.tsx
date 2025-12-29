@@ -71,7 +71,7 @@ function ActivitiesContent() {
                 backgroundImage="/img/backgrounds/activity-banner.jpg"
                 backgroundPosition="center 75%"
                 /* apply a subtle blur to the banner image */
-                imageFilter={`brightness(0.65) blur(4px)`}
+                imageFilter={`brightness(0.65)`}
                 variant="split"
                 titleClassName="text-theme-white text-3xl sm:text-4xl md:text-6xl"
                 description={

@@ -161,7 +161,7 @@ export default function SignUp() {
                     backgroundPosition="center 75%"
                     /* match activiteiten banner size and add a subtle blur */
                     contentPadding="py-20"
-                    imageFilter={`brightness(0.65) blur(6px)`}
+                    imageFilter={``}
                 />
             </div>
 

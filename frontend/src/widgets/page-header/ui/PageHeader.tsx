@@ -50,12 +50,18 @@ const PageHeader: React.FC<PageHeaderProps> = ({
             <div
                 className="absolute inset-0 bg-cover z-0"
                 style={{
-                    backgroundImage: `url(${backgroundImage})`,
+                    backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
+                    backgroundColor: backgroundImage ? 'transparent' : 'var(--color-primary-600)',
                     backgroundPosition: backgroundPosition,
-                    filter: imageFilter || 'brightness(0.7)'
+                    filter: imageFilter || 'brightness(0.7)',
+                    maskImage: 'none',
+                    WebkitMaskImage: 'none'
                 }}
             />
-            <div className="absolute inset-0 bg-gradient-theme/40 z-10" />
+            {/* Purple gradient overlay when no background image */}
+            {!backgroundImage && (
+                <div className="absolute inset-0 bg-gradient-to-br from-theme-purple-darker to-theme-purple z-0" />
+            )}
 
             <div className={`relative z-20 w-full max-w-app px-4 ${contentPadding} ${variant === 'centered' ? 'text-center' : ''}`}>
                 {variant === 'centered' ? (

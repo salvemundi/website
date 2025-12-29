@@ -87,6 +87,12 @@ const Header: React.FC = () => {
         }
     }, [pathname]);
 
+    // Hide main header only on intro blog and planning pages for immersive experience
+    // Keep header visible on main /intro signup page
+    if (pathname?.startsWith('/intro/blog') || pathname?.startsWith('/intro/planning')) {
+        return null;
+    }
+
     return (
         <header ref={headerRef} className="sticky top-0 z-50 w-full">
             <div className="relative">

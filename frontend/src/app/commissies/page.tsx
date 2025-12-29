@@ -39,7 +39,7 @@ export default function CommitteesPage() {
                     title="COMMISSIES"
                     backgroundImage="/img/backgrounds/commissies-banner.png"
                         backgroundPosition="center 30%"
-                    imageFilter={`brightness(0.65) blur(6px)`}
+                    imageFilter={`brightness(0.65)`}
                 >
                     <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-ink-muted dark:text-white/90 sm:text-xl">
                         Ontdek onze commissies en word deel van het team
