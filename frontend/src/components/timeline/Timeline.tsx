@@ -94,27 +94,20 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
         <div className="w-full">
             <Chrono
                 items={items}
-                mode="alternating"
+                mode="VERTICAL_ALTERNATING"
                 slideShow={false}
                 cardHeight={500}
                 theme={chronoTheme}
+                hideControls={false}
+                enableOutline={true}
                 fontSizes={{
                     cardSubtitle: '0.875rem',
-                    cardText: '0.875rem',
                     cardTitle: '1.25rem',
                     title: '1rem',
                 }}
-                classNames={{
-                    card: 'dark:bg-[#1f1921] dark:border dark:border-white/10',
-                    cardMedia: 'rounded-xl',
-                    cardSubTitle: 'dark:text-white/70',
-                    cardText: 'dark:text-white/80',
-                    cardTitle: 'dark:text-white',
-                    title: 'dark:text-white',
-                }}
             >
-                {sortedBoards.map((board) => (
-                    <div key={board.id} className="p-4">
+                {sortedBoards.map((board, index) => (
+                    <div key={board.id || `board-${index}`} className="p-4" data-testid={`timeline-item-${index}`}>
                         {/* Board image */}
                         {board.image && (
                             <div className="w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-700 mb-4">
