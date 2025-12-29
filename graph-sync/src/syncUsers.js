@@ -95,7 +95,7 @@ async function userHasAnyMemberships(userId) {
 }
 
 async function getGraphClient() {
-    
+
     const tokenResponse = await axios.post(
         `https://login.microsoftonline.com/${process.env.TENANT_ID}/oauth2/v2.0/token`,
         new URLSearchParams({
@@ -106,7 +106,7 @@ async function getGraphClient() {
         }),
         { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
     );
-    
+
     const token = tokenResponse.data.access_token;
     return Client.init({ authProvider: done => done(null, token) });
 }
@@ -124,11 +124,11 @@ async function buildGlobalGroupNameMap() {
         const response = await client.api(nextLink).get();
         const groups = response.value || [];
         allGroups = allGroups.concat(groups);
-        
+
         nextLink = response['@odata.nextLink'] ? response['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0', '') : null;
     }
 
-    
+
 
     allGroups.forEach(g => {
         const name = g.displayName || g.mailNickname || g.id;
@@ -136,7 +136,7 @@ async function buildGlobalGroupNameMap() {
         if (name) groupIdByNameGlobal[name] = g.id;
     });
 
-    
+
 }
 
 function getRoleIdByGroupMembership(groupIds) {
@@ -147,7 +147,7 @@ function getRoleIdByGroupMembership(groupIds) {
 }
 
 function hasChanges(existing, newData) {
-    const fields = ['first_name', 'last_name', 'phone_number', 'fontys_email', 'role', 'status'];
+    const fields = ['first_name', 'last_name', 'phone_number', 'fontys_email', 'role', 'status', 'membership_expiry'];
     return fields.some(field => existing[field] !== newData[field]);
 }
 
@@ -162,24 +162,24 @@ async function getOrCreateCommitteeForGroup(group) {
     const fromGlobalMap = groupNameMapGlobal[groupId];
     const desiredName = mappedOverride || fromGlobalMap || displayName || mailNickname || groupId;
 
-    
+
 
     try {
         const searchUrl = `${baseUrl}?filter[name][_eq]=${encodeURIComponent(desiredName)}&limit=1`;
         const searchRes = await axios.get(searchUrl, { headers: DIRECTUS_HEADERS });
         const found = searchRes.data?.data?.[0];
         if (found) {
-            
+
             return { id: found.id, name: found.name };
         }
     } catch (error) {
         console.error('❌ [DIRECTUS] Error looking up committee by name:', error.response?.data || error.message);
     }
 
-    
+
     try {
         const createRes = await axios.post(baseUrl, { name: desiredName }, { headers: DIRECTUS_HEADERS });
-        
+
         return { id: createRes.data.data.id, name: desiredName };
     } catch (error) {
         console.error('❌ [DIRECTUS] Error creating committee:', error.response?.data || error.message);
@@ -189,28 +189,28 @@ async function getOrCreateCommitteeForGroup(group) {
 
 async function ensureUserInCommittee(userId, committeeId) {
     const baseUrl = `${process.env.DIRECTUS_URL}/items/committee_members`;
-    
+
 
     try {
         const checkUrl = `${baseUrl}?filter[user_id][_eq]=${encodeURIComponent(userId)}&filter[committee_id][_eq]=${encodeURIComponent(committeeId)}&limit=1`;
         const checkRes = await axios.get(checkUrl, { headers: DIRECTUS_HEADERS });
         const existing = checkRes.data?.data || [];
         if (existing.length > 0) {
-            
+
             return;
         }
     } catch (error) {
         console.error('❌ [MEMBER] Error checking membership:', error.response?.data || error.message);
     }
 
-    
+
     try {
         const createRes = await axios.post(
             `${process.env.DIRECTUS_URL}/items/committee_members`,
             { committee_id: committeeId, user_id: userId, is_visible: true, is_leader: false },
             { headers: DIRECTUS_HEADERS }
         );
-        
+
         // Ensure user's membership status is set to active
         try {
             await setDirectusMembershipStatus(userId, 'active');
@@ -226,7 +226,7 @@ async function removeUserFromMissingCommittees(userId, currentCommitteeNames) {
     const cmUrl = `${process.env.DIRECTUS_URL}/items/committee_members`;
     const cUrl = `${process.env.DIRECTUS_URL}/items/committees`;
 
-    
+
 
     try {
         const params = new URLSearchParams();
@@ -236,13 +236,13 @@ async function removeUserFromMissingCommittees(userId, currentCommitteeNames) {
         const url = `${cmUrl}?${params.toString()}`;
         const res = await axios.get(url, { headers: DIRECTUS_HEADERS });
         const memberships = res.data?.data || [];
-        
+
 
         for (const m of memberships) {
             const membershipId = m.id;
             const committeeId = m.committee_id;
             if (!committeeId) {
-                
+
                 continue;
             }
             let committeeName = null;
@@ -253,20 +253,20 @@ async function removeUserFromMissingCommittees(userId, currentCommitteeNames) {
                 console.error(`❌ [MEMBER] Error fetching committee ${committeeId}:`, error.response?.data || error.message);
             }
             if (!committeeName) {
-                
+
                 continue;
             }
             if (!currentCommitteeNames.has(committeeName)) {
-                
+
                 try {
                     await axios.delete(`${cmUrl}/${membershipId}`, { headers: DIRECTUS_HEADERS });
-                    
+
                 } catch (error) {
                     console.error(`❌ [MEMBER] Error deleting membership id=${membershipId}:`, error.response?.data || error.message);
                 }
                 // continue loop — we'll check remaining memberships after processing all deletions
             } else {
-                
+
             }
         }
         // After removing stale memberships, ensure membership_status reflects remaining memberships
@@ -285,19 +285,19 @@ async function removeUserFromMissingCommittees(userId, currentCommitteeNames) {
 
 async function syncCommitteesForUserFromGroups(directusUserId, groups) {
     if (!groups || groups.length === 0) {
-        
+
         await removeUserFromMissingCommittees(directusUserId, new Set());
         return;
     }
 
-    
+
 
     const currentCommitteeNames = new Set();
 
     for (const g of groups) {
         const groupId = g.id;
         const committeeName = GROUP_NAME_MAP[groupId] || groupNameMapGlobal[groupId] || g.displayName || g.mailNickname || groupId;
-        
+
 
         const result = await getOrCreateCommitteeForGroup(g);
         if (!result) {
@@ -430,8 +430,18 @@ async function updateDirectusUserFromGraph(userId) {
         const client = await getGraphClient();
 
         const u = await client.api(`/users/${userId}`)
-            .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone')
+            .version('beta')
+            .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,customSecurityAttributes')
             .get();
+
+        const attributes = u.customSecurityAttributes?.SalveMundiLidmaatschap;
+        let membershipExpiry = null;
+        if (attributes?.VerloopdatumStr) {
+            const v = attributes.VerloopdatumStr; // yyyyMMdd
+            if (v && v.length === 8) {
+                membershipExpiry = `${v.substring(0, 4)}-${v.substring(4, 6)}-${v.substring(6, 8)}`;
+            }
+        }
 
         // log removed
 
@@ -460,6 +470,7 @@ async function updateDirectusUserFromGraph(userId) {
             phone_number: formatDutchMobile(u.mobilePhone),
             status: 'active',
             role,
+            membership_expiry: membershipExpiry,
         };
 
         let directusUserId;
@@ -673,11 +684,11 @@ app.post('/sync/initial', async (req, res) => {
 
         const client = await getGraphClient();
         let users = [];
-        let nextLink = '/users?$select=id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone&$top=100';
+        let nextLink = '/users?$select=id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,customSecurityAttributes&$top=100';
 
         while (nextLink) {
             // fetching users batch; logging removed
-            const response = await client.api(nextLink).get();
+            const response = await client.api(nextLink).version('beta').get();
             users = users.concat(response.value);
             nextLink = response['@odata.nextLink'] ? response['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0', '') : null;
         }
