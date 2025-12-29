@@ -494,13 +494,18 @@ async function updateDirectusUserFromGraph(userId) {
 
         if (existingUser) {
             directusUserId = existingUser.id;
-            // log removed
-            if (hasChanges(existingUser, payload)) {
-                // log removed
-                await axios.patch(`${process.env.DIRECTUS_URL}/users/${directusUserId}`, payload, { headers: DIRECTUS_HEADERS });
-                // log removed
-            } else {
-                // log removed
+            const changes = hasChanges(existingUser, payload);
+            console.log(`[${new Date().toISOString()}] [SYNC] User ${email} exists (ID: ${directusUserId}). Has changes: ${changes}`);
+
+            if (changes) {
+                try {
+                    console.log(`[${new Date().toISOString()}] [SYNC] Patching user ${email} with:`, JSON.stringify(payload));
+                    await axios.patch(`${process.env.DIRECTUS_URL}/users/${directusUserId}`, payload, { headers: DIRECTUS_HEADERS });
+                    console.log(`[${new Date().toISOString()}] ✅ [SYNC] Successfully patched user ${email}`);
+                } catch (patchErr) {
+                    console.error(`[${new Date().toISOString()}] ❌ [SYNC] Failed to patch user ${email}:`, patchErr.response?.data || patchErr.message);
+                    throw patchErr;
+                }
             }
         } else {
             // Always normalize email & external_identifier to lowercase
