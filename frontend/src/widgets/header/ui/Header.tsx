@@ -69,6 +69,7 @@ const Header: React.FC = () => {
         { name: "Lidmaatschap", href: ROUTES.MEMBERSHIP },
         { name: "Activiteiten", href: ROUTES.ACTIVITIES },
         { name: "Commissies", href: ROUTES.COMMITTEES },
+        { name: "Safe Havens", href: "/safe-havens" },
         { name: "Contact", href: ROUTES.CONTACT },
     ];
 
@@ -109,7 +110,7 @@ const Header: React.FC = () => {
                         </div>
                     </Link>
 
-                    <nav className="hidden items-center gap-5 md:flex">
+                    <nav className="hidden items-center gap-4 xl:gap-5 lg:flex">
                         {navItems.map((link) => (
                             <Link
                                 key={link.href}
@@ -164,7 +165,7 @@ const Header: React.FC = () => {
 
                         <button
                             type="button"
-                            className="inline-flex items-center justify-center rounded-full bg-[var(--bg-card)]/80 p-2 text-theme shadow-sm transition hover:bg-theme-purple/5 md:hidden"
+                            className="inline-flex items-center justify-center rounded-full bg-[var(--bg-card)]/80 p-2 text-theme shadow-sm transition hover:bg-theme-purple/5 lg:hidden"
                             onClick={() => setMenuOpen(!menuOpen)}
                             aria-expanded={menuOpen}
                             aria-label="Open navigatie"
@@ -180,16 +181,21 @@ const Header: React.FC = () => {
             </div>
 
             {/* Mobile menu */}
-            {menuOpen && (
-                <div className="md:hidden pointer-events-auto opacity-100 h-auto transition-all duration-200">
-                    <div
-                        className="fixed inset-0 z-40 bg-theme-purple-darker/40 backdrop-blur-sm"
-                        onClick={() => setMenuOpen(false)}
-                        aria-hidden={!menuOpen}
-                    />
-                    <nav
-                        className={`fixed top-0 right-0 z-50 flex h-full w-full max-w-xs flex-col gap-6 bg-[var(--bg-main)] px-6 py-8 shadow-xl transition-transform duration-300 translate-x-0`}
-                    >
+            <div
+                className={`lg:hidden ${menuOpen
+                    ? "pointer-events-auto opacity-100"
+                    : "pointer-events-none opacity-0"
+                    } transition-opacity duration-200`}
+            >
+                <div
+                    className="fixed inset-0 z-40 bg-theme-purple-darker/40 backdrop-blur-sm"
+                    onClick={() => setMenuOpen(false)}
+                    aria-hidden={!menuOpen}
+                />
+                <nav
+                    className={`fixed top-0 right-0 z-50 flex h-full w-full max-w-xs flex-col gap-6 bg-[var(--bg-main)] px-6 py-8 shadow-xl transition-transform duration-300 ${menuOpen ? "translate-x-0" : "translate-x-full"
+                        }`}
+                >
                     <div className="flex items-center justify-between">
                         <Link
                             href="/"
@@ -230,9 +236,6 @@ const Header: React.FC = () => {
                                 className="flex items-center justify-between rounded-2xl bg-[var(--bg-card)]/70 px-4 py-3 text-sm font-semibold text-theme shadow-sm"
                             >
                                 <span>{link.name}</span>
-                                <span className="text-xs font-semibold uppercase tracking-[0.25em] text-theme-purple">
-                                    Ga
-                                </span>
                             </Link>
                         ))}
                     </div>
