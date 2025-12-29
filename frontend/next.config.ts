@@ -54,13 +54,26 @@ const nextConfig = {
     // Configure rewrites for API proxy (development & production)
     async rewrites() {
         // Hardcoded as requested to ensure connection to production backend
-        const BACKEND_URL = 'https://admin.salvemundi.nl'; 
-        console.log('📍 Proxying /api requests to:', BACKEND_URL);
-        
+        const DIRECTUS_URL = 'https://admin.salvemundi.nl';
+        const PAYMENT_API_URL = process.env.NEXT_PUBLIC_PAYMENT_API_URL || 'http://payment-api:3000';
+
+        console.log('📍 Proxying /api requests to:', DIRECTUS_URL);
+        console.log('📍 Proxying /api/admin and /api/payments to:', PAYMENT_API_URL);
+
         return [
+            // Payment API endpoints - must come FIRST to match before catch-all
+            {
+                source: '/api/admin/:path*',
+                destination: `${PAYMENT_API_URL}/api/admin/:path*`,
+            },
+            {
+                source: '/api/payments/:path*',
+                destination: `${PAYMENT_API_URL}/api/payments/:path*`,
+            },
+            // Directus endpoints - catch-all for everything else
             {
                 source: '/api/:path*',
-                destination: `${BACKEND_URL}/:path*`,
+                destination: `${DIRECTUS_URL}/:path*`,
             },
         ];
     },
