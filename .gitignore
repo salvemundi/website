@@ -36,6 +36,5 @@ coverage/
 .yarn/
 
 # npm
-# package-lock.json and yarn.lock should be tracked for CI builds
 
 frontend/env
