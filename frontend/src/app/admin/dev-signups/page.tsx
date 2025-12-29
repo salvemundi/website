@@ -90,6 +90,29 @@ export default function DevSignupsPage() {
     const [isSyncing, setIsSyncing] = useState(false);
     const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
     const [showStatus, setShowStatus] = useState(false);
+    const [selectedSyncFields, setSelectedSyncFields] = useState<string[]>([
+        'membership_expiry',
+        'first_name',
+        'last_name',
+        'phone_number',
+        'display_name'
+    ]);
+
+    const syncFieldOptions = [
+        { id: 'membership_expiry', label: 'Lidmaatschap vervaldatum' },
+        { id: 'first_name', label: 'Voornaam' },
+        { id: 'last_name', label: 'Achternaam' },
+        { id: 'display_name', label: 'Display naam' },
+        { id: 'phone_number', label: 'Mobiel nummer (Entra → Directus)' },
+    ];
+
+    const toggleField = (fieldId: string) => {
+        setSelectedSyncFields(prev =>
+            prev.includes(fieldId)
+                ? prev.filter(id => id !== fieldId)
+                : [...prev, fieldId]
+        );
+    };
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -244,7 +267,9 @@ export default function DevSignupsPage() {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
                 },
+                body: JSON.stringify({ fields: selectedSyncFields }),
             });
 
             if (!response.ok) {
@@ -302,7 +327,22 @@ export default function DevSignupsPage() {
                             Beheer inschrijvingen en synchroniseer gebruikers met Microsoft Entra ID.
                         </p>
                     </div>
-                    <div className="flex gap-3">
+
+                    <div className="flex flex-col items-end gap-3">
+                        <div className="flex flex-wrap gap-2 justify-end max-w-xl">
+                            {syncFieldOptions.map(option => (
+                                <button
+                                    key={option.id}
+                                    onClick={() => toggleField(option.id)}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${selectedSyncFields.includes(option.id)
+                                            ? 'bg-theme-purple/20 border-theme-purple/40 text-theme-purple-lighter'
+                                            : 'bg-white/5 border-white/10 text-theme-purple-lighter/40 hover:bg-white/10'
+                                        }`}
+                                >
+                                    {option.label}
+                                </button>
+                            ))}
+                        </div>
                         {syncStatus && !syncStatus.active && syncStatus.status !== 'idle' && (
                             <button
                                 onClick={() => setShowStatus(!showStatus)}

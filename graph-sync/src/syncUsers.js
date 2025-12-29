@@ -191,9 +191,16 @@ function getRoleIdByGroupMembership(groupIds) {
     return ROLE_IDS.ACTIEVE_LEDEN;
 }
 
-function hasChanges(existing, newData) {
-    const fields = ['first_name', 'last_name', 'phone_number', 'fontys_email', 'role', 'status', 'membership_expiry'];
-    return fields.some(field => existing[field] !== newData[field]);
+function hasChanges(existing, newData, selectedFields = null) {
+    const defaultFields = ['first_name', 'last_name', 'phone_number', 'fontys_email', 'role', 'status', 'membership_expiry'];
+    const fieldsToCheck = selectedFields ? selectedFields.filter(f => defaultFields.includes(f)) : defaultFields;
+
+    // Always include critical fields for initial sync check if no selection
+    if (!selectedFields) {
+        return defaultFields.some(field => existing[field] !== newData[field]);
+    }
+
+    return fieldsToCheck.some(field => existing[field] !== newData[field]);
 }
 
 // Committee logic
@@ -465,7 +472,7 @@ async function updateGraphUserFromDirectusById(directusUserId) {
     await updateGraphUserFromDirectusByEmail(dUser.email);
 }
 
-async function updateDirectusUserFromGraph(userId) {
+async function updateDirectusUserFromGraph(userId, selectedFields = null) {
     const lockKey = `entra-${userId}`;
     if (!acquireLock(lockKey)) {
         return;
@@ -494,11 +501,13 @@ async function updateDirectusUserFromGraph(userId) {
         }
 
         const missingFields = [];
-        if (!membershipExpiry) missingFields.push('Lidmaatschap vervaldatum');
-        if (!u.givenName) missingFields.push('Voornaam');
-        if (!u.surname) missingFields.push('Achternaam');
-        if (!u.displayName) missingFields.push('Display naam');
-        if (!u.mobilePhone) missingFields.push('Mobiel nummer');
+        const isSelected = (field) => !selectedFields || selectedFields.includes(field);
+
+        if (isSelected('membership_expiry') && !membershipExpiry) missingFields.push('Lidmaatschap vervaldatum');
+        if (isSelected('first_name') && !u.givenName) missingFields.push('Voornaam');
+        if (isSelected('last_name') && !u.surname) missingFields.push('Achternaam');
+        if (isSelected('display_name') && !u.displayName) missingFields.push('Display naam');
+        if (isSelected('phone_number') && !u.mobilePhone) missingFields.push('Mobiel nummer');
 
         if (missingFields.length > 0) {
             syncStatus.missingDataCount++;
@@ -542,13 +551,22 @@ async function updateDirectusUserFromGraph(userId) {
 
         if (existingUser) {
             directusUserId = existingUser.id;
-            const changes = hasChanges(existingUser, payload);
+            const changes = hasChanges(existingUser, payload, selectedFields);
             console.log(`[${new Date().toISOString()}] [SYNC] User ${email} exists (ID: ${directusUserId}). Has changes: ${changes}`);
 
             if (changes) {
+                // Only send selected fields in patch if we are being selective
+                let finalPayload = payload;
+                if (selectedFields) {
+                    finalPayload = { email }; // Always keep email for context
+                    selectedFields.forEach(f => {
+                        if (payload[f] !== undefined) finalPayload[f] = payload[f];
+                    });
+                }
+
                 try {
-                    console.log(`[${new Date().toISOString()}] [SYNC] Patching user ${email} with:`, JSON.stringify(payload));
-                    await axios.patch(`${process.env.DIRECTUS_URL}/users/${directusUserId}`, payload, { headers: DIRECTUS_HEADERS });
+                    console.log(`[${new Date().toISOString()}] [SYNC] Patching user ${email} with:`, JSON.stringify(finalPayload));
+                    await axios.patch(`${process.env.DIRECTUS_URL}/users/${directusUserId}`, finalPayload, { headers: DIRECTUS_HEADERS });
                     console.log(`[${new Date().toISOString()}] ✅ [SYNC] Successfully patched user ${email}`);
                 } catch (patchErr) {
                     console.error(`[${new Date().toISOString()}] ❌ [SYNC] Failed to patch user ${email}:`, patchErr.response?.data || patchErr.message);
@@ -752,19 +770,21 @@ app.get('/sync/status', (req, res) => {
     res.json(syncStatus);
 });
 
-app.post('/sync/initial', async (req, res) => {
+app.post('/sync/initial', bodyParser.json(), async (req, res) => {
     if (syncStatus.active) {
         return res.status(409).json({ error: 'Sync already in progress' });
     }
 
+    const selectedFields = req.body?.fields || null;
+
     // Start in background
-    runBulkSync();
+    runBulkSync(selectedFields);
 
     res.status(202).json({ success: true, message: 'Bulk sync started in background' });
 });
 
-async function runBulkSync() {
-    console.log(`[${new Date().toISOString()}] 🚀 [INIT] Bulk sync STARTING...`);
+async function runBulkSync(selectedFields = null) {
+    console.log(`[${new Date().toISOString()}] 🚀 [INIT] Bulk sync STARTING... (Fields: ${selectedFields ? selectedFields.join(', ') : 'ALL'})`);
     syncStatus = {
         active: true,
         status: 'running',
@@ -774,6 +794,7 @@ async function runBulkSync() {
         missingDataCount: 0,
         errors: [],
         missingData: [],
+        selectedFields: selectedFields,
         startTime: new Date().toISOString(),
         endTime: null,
         lastRunSuccess: null
@@ -811,7 +832,7 @@ async function runBulkSync() {
                 }
 
                 try {
-                    await updateDirectusUserFromGraph(u.id);
+                    await updateDirectusUserFromGraph(u.id, selectedFields);
                     syncStatus.processed++;
                 } catch (err) {
                     syncStatus.errorCount++;
