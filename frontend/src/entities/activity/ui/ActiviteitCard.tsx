@@ -67,7 +67,8 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     // Strip organization suffix from committee name
     const cleanCommitteeName = (name?: string) => {
         if (!name) return 'Algemene Activiteit';
-        return name.replace(/\s*[-–—]\s*Salve Mundi\s*$/i, '').trim() || name;
+        // Remove both "|| SALVE MUNDI" and " - Salve Mundi" suffixes
+        return name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || name;
     };
     
     const committeeLabel = cleanCommitteeName(committeeName);
