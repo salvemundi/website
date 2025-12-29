@@ -271,5 +271,19 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
         }
     });
 
+    /**
+     * GET /api/admin/sync-status
+     * Get the current status of the manual user sync
+     */
+    router.get('/sync-status', requireAdmin, async (req, res) => {
+        try {
+            const response = await axios.get(`${GRAPH_SYNC_URL}/sync/status`);
+            res.json(response.data);
+        } catch (error) {
+            console.error('[AdminRoutes] Failed to fetch sync status:', error.message);
+            res.status(500).json({ error: 'Status ophalen mislukt' });
+        }
+    });
+
     return router;
 };

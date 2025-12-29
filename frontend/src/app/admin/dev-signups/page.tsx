@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { format } from 'date-fns';
-import { Shield, CheckCircle, XCircle, RefreshCw, Clock } from 'lucide-react';
+import { Shield, CheckCircle, XCircle, RefreshCw, Clock, AlertCircle } from 'lucide-react';
 
 interface Signup {
     id: string;
@@ -16,6 +16,15 @@ interface Signup {
     amount: number;
     approval_status: 'pending' | 'approved' | 'rejected';
     payment_status: string;
+}
+
+interface SyncStatus {
+    active: boolean;
+    status: 'idle' | 'running' | 'completed' | 'failed';
+    total: number;
+    processed: number;
+    errorCount: number;
+    errors: { email: string; error: string; timestamp: string }[];
 }
 
 function Tile({
@@ -74,6 +83,8 @@ export default function DevSignupsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState<string | null>(null);
     const [isSyncing, setIsSyncing] = useState(false);
+    const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
+    const [showStatus, setShowStatus] = useState(false);
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -91,8 +102,42 @@ export default function DevSignupsPage() {
     useEffect(() => {
         if (user?.entra_id) {
             loadPendingSignups();
+            fetchSyncStatus();
         }
     }, [user]);
+
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (isSyncing || (syncStatus?.active)) {
+            interval = setInterval(fetchSyncStatus, 2000);
+        }
+        return () => clearInterval(interval);
+    }, [isSyncing, syncStatus]);
+
+    const fetchSyncStatus = async () => {
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (!token) return;
+
+            const response = await fetch('/api/admin/sync-status', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setSyncStatus(data);
+                if (data.active) {
+                    setIsSyncing(true);
+                    setShowStatus(true);
+                } else if (isSyncing && !data.active) {
+                    setIsSyncing(false);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to fetch sync status:', error);
+        }
+    };
 
     const loadPendingSignups = async () => {
         setIsLoading(true);
@@ -202,7 +247,9 @@ export default function DevSignupsPage() {
                 throw new Error(error.error || 'Failed to start sync');
             }
 
-            alert('Synchronisatie gestart op de achtergrond. Dit kan enkele minuten duren.');
+            alert('Synchronisatie gestart op de achtergrond. Je kunt de voortgang hieronder volgen.');
+            setShowStatus(true);
+            fetchSyncStatus();
         } catch (error: any) {
             console.error('Failed to sync users:', error);
             alert(`Fout bij starten synchronisatie: ${error.message}`);
@@ -244,21 +291,116 @@ export default function DevSignupsPage() {
                     <div>
                         <h1 className="text-3xl font-bold text-theme-purple-lighter flex items-center gap-3">
                             <Shield className="h-8 w-8" />
-                            Development Inschrijvingen
+                            Development Dashboard
                         </h1>
                         <p className="mt-1 text-sm text-theme-purple-lighter/60">
-                            Beheer en keur nieuwe inschrijvingen vanuit de ontwikkelomgeving.
+                            Beheer inschrijvingen en synchroniseer gebruikers met Microsoft Entra ID.
                         </p>
                     </div>
-                    <button
-                        onClick={handleSyncUsers}
-                        disabled={isSyncing}
-                        className="flex items-center justify-center gap-2 px-4 py-2 bg-theme-purple/20 hover:bg-theme-purple/30 text-theme-purple-lighter rounded-xl border border-theme-purple/30 transition-all font-semibold disabled:opacity-50"
-                    >
-                        <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                        {isSyncing ? 'Synchroniseren...' : 'Sync Gebruikers'}
-                    </button>
+                    <div className="flex gap-3">
+                        {syncStatus && !syncStatus.active && syncStatus.status !== 'idle' && (
+                            <button
+                                onClick={() => setShowStatus(!showStatus)}
+                                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-theme-purple-lighter rounded-xl border border-white/10 transition-all text-sm font-medium"
+                            >
+                                {showStatus ? 'Status Verbergen' : 'Laatste Sync Bekijken'}
+                            </button>
+                        )}
+                        <button
+                            onClick={handleSyncUsers}
+                            disabled={isSyncing}
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-theme-purple/20 hover:bg-theme-purple/30 text-theme-purple-lighter rounded-xl border border-theme-purple/30 transition-all font-semibold disabled:opacity-50"
+                        >
+                            <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                            {isSyncing ? 'Synchroniseren...' : 'Sync Gebruikers'}
+                        </button>
+                    </div>
                 </div>
+
+                {/* Sync Progress Tile */}
+                {showStatus && syncStatus && (
+                    <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                        <Tile
+                            title="Synchronisatie Status"
+                            icon={<RefreshCw className={`h-5 w-5 ${syncStatus.active ? 'animate-spin' : ''}`} />}
+                            actions={
+                                <button
+                                    onClick={() => setShowStatus(false)}
+                                    className="text-theme-purple-lighter/60 hover:text-theme-purple-lighter text-sm"
+                                >
+                                    Sluiten
+                                </button>
+                            }
+                        >
+                            <div className="space-y-6">
+                                <div>
+                                    <div className="flex justify-between items-end mb-2">
+                                        <div>
+                                            <span className="text-sm font-medium text-theme-purple-lighter/70 block mb-1">Voortgang</span>
+                                            <span className="text-2xl font-bold text-theme-purple-lighter">
+                                                {syncStatus.total > 0 ? Math.round((syncStatus.processed / syncStatus.total) * 100) : 0}%
+                                            </span>
+                                        </div>
+                                        <div className="text-right text-sm text-theme-purple-lighter/60">
+                                            {syncStatus.processed} van {syncStatus.total} gebruikers
+                                        </div>
+                                    </div>
+                                    <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                                        <div
+                                            className="h-full bg-gradient-to-r from-theme-purple to-theme-purple-lighter transition-all duration-500 ease-out"
+                                            style={{ width: `${syncStatus.total > 0 ? (syncStatus.processed / syncStatus.total) * 100 : 0}%` }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                                        <div className="text-sm text-theme-purple-lighter/60 mb-1">Status</div>
+                                        <div className={`font-bold capitalize ${syncStatus.status === 'completed' ? 'text-green-400' :
+                                                syncStatus.status === 'failed' ? 'text-red-400' : 'text-theme-purple-lighter'
+                                            }`}>
+                                            {syncStatus.status === 'running' ? 'Bezig...' :
+                                                syncStatus.status === 'completed' ? 'Voltooid' :
+                                                    syncStatus.status === 'failed' ? 'Mislukt' : 'Inactief'}
+                                        </div>
+                                    </div>
+                                    <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                                        <div className="text-sm text-theme-purple-lighter/60 mb-1">Fouten</div>
+                                        <div className={`font-bold ${syncStatus.errorCount > 0 ? 'text-yellow-400' : 'text-theme-purple-lighter'}`}>
+                                            {syncStatus.errorCount}
+                                        </div>
+                                    </div>
+                                    <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                                        <div className="text-sm text-theme-purple-lighter/60 mb-1">Tijd</div>
+                                        <div className="font-bold text-theme-purple-lighter">
+                                            {syncStatus.startTime ? format(new Date(syncStatus.startTime), 'HH:mm:ss') : '--:--'}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {syncStatus.errors.length > 0 && (
+                                    <div className="mt-4">
+                                        <h3 className="text-sm font-semibold text-theme-purple-lighter/80 mb-3 flex items-center gap-2">
+                                            <AlertCircle className="h-4 w-4 text-yellow-400" />
+                                            Foutrapportage ({syncStatus.errors.length})
+                                        </h3>
+                                        <div className="max-h-48 overflow-y-auto rounded-xl bg-black/20 border border-white/5 p-2 space-y-1 custom-scrollbar">
+                                            {syncStatus.errors.map((err, idx) => (
+                                                <div key={idx} className="p-2 text-xs border-b border-white/5 last:border-0 flex flex-col gap-1">
+                                                    <div className="flex justify-between font-medium">
+                                                        <span className="text-theme-purple-lighter">{err.email}</span>
+                                                        <span className="text-theme-purple-lighter/40">{format(new Date(err.timestamp), 'HH:mm:ss')}</span>
+                                                    </div>
+                                                    <code className="text-red-300 break-all opacity-80">{err.error}</code>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </Tile>
+                    </div>
+                )}
 
                 {/* Main Content */}
                 <Tile
