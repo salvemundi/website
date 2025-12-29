@@ -6,6 +6,8 @@ require('dotenv').config();
 const directusService = require('./services/directus-service');
 const notificationService = require('./services/notification-service');
 const paymentRoutes = require('./routes/payments');
+const adminRoutes = require('./routes/admin-routes');
+const membershipService = require('./services/membership-service');
 
 const app = express();
 
@@ -44,16 +46,29 @@ app.use(cors({
 }));
 
 app.use(
-    '/api/payments', 
+    '/api/payments',
     paymentRoutes(
-        mollieClient, 
-        DIRECTUS_URL, 
-        DIRECTUS_API_TOKEN, 
-        EMAIL_SERVICE_URL, 
+        mollieClient,
+        DIRECTUS_URL,
+        DIRECTUS_API_TOKEN,
+        EMAIL_SERVICE_URL,
         MEMBERSHIP_API_URL,
-        directusService, 
+        directusService,
         notificationService
     )
 );
 
-app.listen(PORT, () => {});
+app.use(
+    '/api/admin',
+    adminRoutes(
+        DIRECTUS_URL,
+        DIRECTUS_API_TOKEN,
+        EMAIL_SERVICE_URL,
+        MEMBERSHIP_API_URL,
+        directusService,
+        notificationService,
+        membershipService
+    )
+);
+
+app.listen(PORT, () => { });
