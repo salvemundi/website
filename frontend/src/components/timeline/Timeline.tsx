@@ -113,7 +113,7 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                     title: 'dark:text-white',
                 }}
             >
-                {sortedBoards.map((board, index) => (
+                {sortedBoards.map((board) => (
                     <div key={board.id} className="p-4">
                         {/* Board image */}
                         {board.image && (
