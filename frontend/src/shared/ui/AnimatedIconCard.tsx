@@ -42,7 +42,7 @@ export default function AnimatedIconCard({ icon, title, children, iconBgClass = 
     const chosen = variantsMap[variant];
 
     return (
-        <motion.article initial="rest" whileHover="hover" className={`group relative rounded-3xl bg-[var(--bg-card)] p-8 shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl ${className}`}>
+        <motion.article initial="rest" whileHover="hover" className={`group relative rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-8 shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl ${className}`}>
             <motion.div className={`mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl ${iconBgClass}`} variants={chosen}>
                 {icon}
             </motion.div>

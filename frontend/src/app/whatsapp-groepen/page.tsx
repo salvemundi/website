@@ -100,7 +100,7 @@ export default function WhatsAppGroupsPage() {
                     </div>
 
                     {/* Groups Section */}
-                    <div className="bg-white rounded-3xl shadow-2xl p-8">
+                    <div className="bg-white dark:bg-[#1f1921] dark:border dark:border-white/10 rounded-3xl shadow-2xl p-8">
                         {groupsLoading ? (
                             <div className="text-center py-12">
                                 <div className="text-paars">WhatsApp groepen worden geladen...</div>
@@ -172,7 +172,7 @@ export default function WhatsAppGroupsPage() {
                     </div>
 
                     {/* Additional Info */}
-                    <div className="mt-8 bg-white rounded-2xl p-6">
+                    <div className="mt-8 bg-white dark:bg-[#1f1921] dark:border dark:border-white/10 rounded-2xl p-6">
                         <h3 className="font-semibold text-paars mb-3">Groepsregels</h3>
                         <ul className="space-y-2 text-sm text-[#1A1A3C]">
                             <li className="flex items-start gap-2">

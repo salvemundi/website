@@ -205,23 +205,7 @@ function ActivitiesContent() {
                                         Lijst
                                     </span>
                                 </button>
-                                <button
-                                    onClick={() => setViewMode('grid')}
-                                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${viewMode === 'grid'
-                                        ? 'bg-gradient-primary text-white shadow-md'
-                                        : 'text-samu dark:text-white hover:bg-oranje/5 dark:hover:bg-white/5'
-                                        }`}
-                                >
-                                    <span className="flex items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <rect x="3" y="3" width="7" height="7" />
-                                            <rect x="14" y="3" width="7" height="7" />
-                                            <rect x="14" y="14" width="7" height="7" />
-                                            <rect x="3" y="14" width="7" height="7" />
-                                        </svg>
-                                        Grid
-                                    </span>
-                                </button>
+
                                 <button
                                     onClick={() => setViewMode('calendar')}
                                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${viewMode === 'calendar'
@@ -287,31 +271,7 @@ function ActivitiesContent() {
                                         />
                                     )}
 
-                                    {/* Grid View */}
-                                    {viewMode === 'grid' && (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 content-loaded">
-                                            {filteredEvents.map((event, index) => (
-                                                <div key={event.id} className="stagger-item" style={{ animationDelay: `${index * 0.05}s` }}>
-                                                    <ActiviteitCard
-                                                        id={event.id}
-                                                        title={event.name}
-                                                        description={event.description}
-                                                        date={event.event_date}
-                                                        startTime={event.event_time}
-                                                        endTime={event.event_time_end || event.time_end}
-                                                        location={event.location}
-                                                        price={event.price}
-                                                        image={getImageUrl(event.image)}
-                                                        isPast={isEventPast(event.event_date)}
-                                                        variant="grid"
-                                                        committeeName={event.committee_name}
-                                                        onShowDetails={() => handleShowDetails(event)}
-                                                        onSignup={() => handleShowDetails(event)}
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
+
                                 </>
                             )}
                         </div>

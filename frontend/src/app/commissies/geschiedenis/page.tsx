@@ -48,9 +48,8 @@ export default function BoardHistoryPage() {
             <div className="relative z-10">
                 <PageHeader
                     title="BESTUURSGESCHIEDENIS"
-                    backgroundImage="/img/backgrounds/commissies-banner.jpg"
                 >
-                    <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-ink-muted dark:text-white/90 sm:text-xl">
+                    <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-white/90 sm:text-xl">
                         Ontdek alle eerdere besturen van Salve Mundi
                     </p>
                 </PageHeader>
