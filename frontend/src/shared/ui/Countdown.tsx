@@ -51,10 +51,10 @@ const Countdown: React.FC<CountdownProps> = ({ targetDate, title, onSignup }) =>
     };
 
     const countdownBlocks = [
-        { label: 'Dagen', value: formatTime(timeLeft.days) },
-        { label: 'Uren', value: formatTime(timeLeft.hours) },
-        { label: 'Minuten', value: formatTime(timeLeft.minutes) },
-        { label: 'Seconden', value: formatTime(timeLeft.seconds) },
+        { label: timeLeft.days === 1 ? 'Dag' : 'Dagen', value: formatTime(timeLeft.days) },
+        { label: timeLeft.hours === 1 ? 'Uur' : 'Uren', value: formatTime(timeLeft.hours) },
+        { label: timeLeft.minutes === 1 ? 'Minuut' : 'Minuten', value: formatTime(timeLeft.minutes) },
+        { label: timeLeft.seconds === 1 ? 'Seconde' : 'Seconden', value: formatTime(timeLeft.seconds) },
     ];
 
     return (

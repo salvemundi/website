@@ -30,8 +30,8 @@ export interface Sticker {
     city?: string;
     image?: string;
     date_created: string;
-    user_created?: any;
-    created_by?: any;
+    user_created?: string | { id?: string | number; first_name?: string; last_name?: string; email?: string; avatar?: string };
+    created_by?: string | { id?: string | number; first_name?: string; last_name?: string; email?: string; avatar?: string };
 }
 
 export interface StickerStats {
@@ -79,12 +79,12 @@ export interface PaymentResponse {
 }
 
 // --- Helper Functions ---
-function buildQueryString(params: Record<string, any>): string {
+function buildQueryString(params: { fields?: string[]; sort?: string[]; filter?: unknown; limit?: number }): string {
     const queryParams = new URLSearchParams();
     if (params.fields) queryParams.append('fields', params.fields.join(','));
     if (params.sort) queryParams.append('sort', params.sort.join(','));
     if (params.filter) queryParams.append('filter', JSON.stringify(params.filter));
-    if (params.limit) queryParams.append('limit', params.limit.toString());
+    if (params.limit) queryParams.append('limit', String(params.limit));
     return queryParams.toString();
 }
 
@@ -133,7 +133,7 @@ export const eventsApi = {
                             event.committee_name = committee.name;
                         }
                     } catch (error) {
-                        console.warn(`Could not fetch committee for event ${event.id}`, error);
+                        console.error('eventsApi.getAll: failed to fetch committee for event', { eventId: event.id, committeeId: event.committee_id, error });
                     }
                 }
 
@@ -149,7 +149,7 @@ export const eventsApi = {
                             event.contact_name = `${leaders[0].user_id.first_name || ''} ${leaders[0].user_id.last_name || ''}`.trim();
                         }
                     } catch (error) {
-                        console.warn(`Could not fetch committee leader for event ${event.id}`, error);
+                        console.error('eventsApi.getAll: failed to fetch leaders for event', { eventId: event.id, committeeId: event.committee_id, error });
                     }
                 } else if (event.contact) {
                     event.contact_phone = event.contact;
@@ -174,7 +174,7 @@ export const eventsApi = {
                     event.committee_name = committee.name;
                 }
             } catch (error) {
-                console.warn(`Could not fetch committee for event ${event.id}`, error);
+                console.error('eventsApi.getById: failed to fetch committee for event', { eventId: id, committeeId: event.committee_id, error });
             }
         }
 
@@ -190,7 +190,7 @@ export const eventsApi = {
                     event.contact_name = `${leaders[0].user_id.first_name || ''} ${leaders[0].user_id.last_name || ''}`.trim();
                 }
             } catch (error) {
-                console.warn(`Could not fetch committee leader for event ${event.id}`, error);
+                console.error('eventsApi.getById: failed to fetch leaders for event', { eventId: id, committeeId: event.committee_id, error });
             }
         } else if (event.contact) {
             event.contact_phone = event.contact;
@@ -202,7 +202,7 @@ export const eventsApi = {
     getByCommittee: async (committeeId: number) => {
         const query = buildQueryString({
             filter: { committee_id: { _eq: committeeId } },
-            fields: ['id', 'name', 'event_date', 'event_time', 'description', 'price_members', 'price_non_members', 'image'],
+            fields: ['id', 'name', 'event_date', 'event_time', 'event_time_end', 'location', 'description', 'price_members', 'price_non_members', 'image'],
             sort: ['-event_date']
         });
         return directusFetch<any[]>(`/items/events?${query}`);
@@ -264,7 +264,7 @@ export const eventsApi = {
                 try {
                     qrDataUrl = await qrService.generateQRCode(token);
                 } catch (e) {
-                    console.warn('Failed to generate QR image:', e);
+                    console.error('eventsApi.createSignup: failed to generate QR code', { signupId: signup.id, error: e });
                 }
 
                 // send email (best-effort)
@@ -284,7 +284,7 @@ export const eventsApi = {
                         contactPhone: undefined,
                     });
                 } catch (e) {
-                    console.warn('Failed to send signup email:', e);
+                    console.error('eventsApi.createSignup: failed to send signup email', { signupId: signup.id, error: e });
                 }
                 // Update the local signup object with the QR token instead of refetching
                 signup.qr_token = token;
@@ -292,7 +292,7 @@ export const eventsApi = {
             }
 
         } catch (err) {
-            console.warn('QR/email post-processing failed:', err);
+            console.error('eventsApi.createSignup: unexpected error during post-signup processing', { signupData, error: err });
         }
 
         return signup;
@@ -374,7 +374,10 @@ export const membersApi = {
 export const boardApi = {
     getAll: async () => {
         const query = buildQueryString({
-            fields: ['id', 'naam', 'image', 'members.id', 'members.member_id.id', 'members.member_id.first_name', 'members.member_id.last_name', 'members.member_id.picture', 'members.functie'],
+            // Request full member relation and nested user relation fields to ensure names/pictures are populated
+            // Note: the API returns user relation as `user_id` on committee/board member rows.
+            // include year so UI can show the year on historical boards
+            fields: ['id', 'naam', 'image', 'year', 'members.*', 'members.user_id.*', 'members.functie'],
             sort: ['naam']
         });
         return directusFetch<any[]>(`/items/Board?${query}`);
@@ -649,6 +652,87 @@ export const introSignupsApi = {
             method: 'POST',
             body: JSON.stringify(data)
         });
+    }
+};
+
+export interface IntroBlog {
+    id: number;
+    title: string;
+    slug?: string;
+    content: string;
+    excerpt?: string;
+    image?: string;
+    likes?: number;
+    updated_at: string;
+    is_published: boolean;
+    blog_type: 'update' | 'pictures' | 'event' | 'announcement';
+    created_at: string;
+}
+
+export const introBlogsApi = {
+    getAll: async (): Promise<IntroBlog[]> => {
+        return directusFetch<IntroBlog[]>(
+            `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,likes,updated_at,is_published,blog_type,created_at&filter[is_published][_eq]=true&sort=-updated_at`
+        );
+    },
+    getById: async (id: number): Promise<IntroBlog> => {
+        return directusFetch<IntroBlog>(
+            `/items/intro_blogs/${id}?fields=id,title,slug,content,excerpt,image.id,likes,updated_at,is_published,blog_type,created_at`
+        );
+    },
+    getByType: async (type: 'update' | 'pictures' | 'event' | 'announcement'): Promise<IntroBlog[]> => {
+        return directusFetch<IntroBlog[]>(
+            `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,likes,updated_at,is_published,blog_type,created_at&filter[is_published][_eq]=true&filter[blog_type][_eq]=${type}&sort=-updated_at`
+        );
+    }
+};
+
+export interface IntroPlanningItem {
+    id: number;
+    day: string;
+    date: string;
+    time_start: string;
+    time_end?: string;
+    title: string;
+    description?: string;
+    location?: string;
+    is_mandatory: boolean;
+    // optional icon name selected in Directus (e.g. 'MapPin', 'Clock')
+    icon?: string;
+    sort_order: number;
+}
+
+export const introPlanningApi = {
+    getAll: async (): Promise<IntroPlanningItem[]> => {
+        return directusFetch<IntroPlanningItem[]>(
+            `/items/intro_planning?fields=id,day,date,time_start,time_end,title,description,location,is_mandatory,icon,sort_order&filter[status][_eq]=published&sort=sort_order`
+        );
+    }
+};
+
+export interface IntroParentSignup {
+    id?: number;
+    user_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone_number: string;
+    motivation?: string;
+    availability: string[];
+    created_at?: string;
+}
+
+export const introParentSignupsApi = {
+    create: async (data: IntroParentSignup) => {
+        return directusFetch<any>(`/items/intro_parent_signups`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    getByUserId: async (userId: string): Promise<IntroParentSignup[]> => {
+        return directusFetch<IntroParentSignup[]>(
+            `/items/intro_parent_signups?fields=*&filter[user_id][_eq]=${userId}`
+        );
     }
 };
 

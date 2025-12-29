@@ -22,7 +22,7 @@ export default function AttendanceButton({ eventId, userId }: { eventId: number;
     if (!authorized) return null;
 
     return (
-        <button onClick={() => router.push(`/activiteiten/${eventId}/attendance`)} className="inline-flex items-center gap-2 rounded-full bg-theme-purple text-white px-4 py-2 font-semibold">
+        <button type="button" onClick={() => router.push(`/activiteiten/${eventId}/attendance`)} className="inline-flex items-center gap-2 rounded-full bg-theme-purple text-white px-4 py-2 font-semibold transition-transform active:scale-95 hover:scale-[1.02] shadow-sm">
             Beheer aanwezigheid
         </button>
     );

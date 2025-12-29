@@ -136,7 +136,7 @@ const Header: React.FC = () => {
                                 className="flex items-center gap-2 rounded-full  px-3 py-1.5 text-sm font-medium text-theme shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                             >
                                 <img
-                                    src={user?.avatar ? getImageUrl(user.avatar) : "/logo_old.svg"}
+                                    src={user?.avatar ? getImageUrl(user.avatar) : "/logo_purple.svg"}
                                     alt={user?.email || "profiel"}
                                     className="h-8 w-8 rounded-full object-cover"
                                 />
@@ -210,7 +210,7 @@ const Header: React.FC = () => {
                                         className="h-full w-full object-cover"
                                     />
                                 ) : (
-                                    <img className="h-7 w-7" src="/logo_old.svg" alt="" />
+                                    <img className="h-7 w-7" src="/logo_purple.svg" alt="" />
                                 )}
                             </span>
                             <span className="text-sm font-semibold text-theme">
@@ -250,8 +250,9 @@ const Header: React.FC = () => {
                             Word lid
                         </Link>
                     )}
-                </nav>
-            </div>
+                    </nav>
+                </div>
+            )}
         </header>
     );
 };

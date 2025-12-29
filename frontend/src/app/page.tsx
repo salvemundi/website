@@ -12,7 +12,7 @@ export default function HomePage() {
             {/* Why Salve Mundi Section */}
             <section className="px-6 py-24 bg-[var(--bg-main)]">
                 <div className="mx-auto max-w-app">
-                    <ScrollTriggerWrapper animation="slide-up" duration={0.8}>
+                    <ScrollTriggerWrapper animation="slide-up" duration={0.8} triggerStart="top 90%" once={true}>
                         <div className="text-center mb-16">
                             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-theme-purple mb-4">
                                 Waarom Salve Mundi?
@@ -64,7 +64,7 @@ export default function HomePage() {
 
             {/* Join Section */}
             <section className="px-6 py-24 ">
-                <ScrollTriggerWrapper animation="scale" duration={0.9}>
+                <ScrollTriggerWrapper animation="scale" duration={0.9} triggerStart="top 100%" once={true}>
                     <div className="mx-auto max-w-4xl text-center">
                         <h2 className="text-3xl font-black text-gradient sm:text-4xl md:text-5xl mb-6">
                             Klaar om lid te worden?

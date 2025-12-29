@@ -7,7 +7,13 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 
 interface StickerMapProps {
     stickers?: Sticker[];
-    user?: any;
+    user?: {
+        id?: string | number;
+        first_name?: string;
+        last_name?: string;
+        email?: string;
+        avatar?: string;
+    } | null;
     onLocationSelect?: (lat: number, lng: number) => void;
     selectedLocation?: { lat: number; lng: number } | null;
     filterCountry?: string;
@@ -82,19 +88,19 @@ const StickerMap: React.FC<StickerMapProps> = ({
         const mq = window.matchMedia('(prefers-color-scheme: dark)');
         const mqHandler = () => check();
         if (mq.addEventListener) mq.addEventListener('change', mqHandler);
-        else mq.addListener(mqHandler as any);
+        else mq.addListener(mqHandler as unknown as (this: MediaQueryList, ev: MediaQueryListEvent) => void);
         const mo = new MutationObserver(() => check());
         mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
         return () => {
             try {
                 if (mq.removeEventListener) mq.removeEventListener('change', mqHandler);
-                else mq.removeListener(mqHandler as any);
+                else mq.removeListener(mqHandler as unknown as (this: MediaQueryList, ev: MediaQueryListEvent) => void);
             } catch (e) {}
             mo.disconnect();
         };
     }, []);
 
-    const handleMapClick = useCallback((event: any) => {
+    const handleMapClick = useCallback((event: { lngLat: { lat: number; lng: number } }) => {
         if (onLocationSelect) {
             const { lngLat } = event;
             onLocationSelect(lngLat.lat, lngLat.lng);
@@ -114,9 +120,9 @@ const StickerMap: React.FC<StickerMapProps> = ({
                 <NavigationControl position="top-right" />
 
                 {(filteredStickers || []).map((sticker) => {
-                    const userObj = (sticker.created_by && typeof sticker.created_by !== 'string') ? sticker.created_by : (sticker.user_created && typeof sticker.user_created !== 'string') ? sticker.user_created : null;
-                    const ownerId = userObj ? (userObj.id || (userObj as any).email || '') : (typeof sticker.user_created === 'string' ? sticker.user_created : (typeof sticker.created_by === 'string' ? sticker.created_by : ''));
-                    const isMine = user && ownerId && user.id === ownerId;
+                    const userObj = (sticker.created_by && typeof sticker.created_by !== 'string') ? (sticker.created_by as { id?: string | number; first_name?: string; last_name?: string; email?: string; avatar?: string }) : (sticker.user_created && typeof sticker.user_created !== 'string') ? (sticker.user_created as { id?: string | number; first_name?: string; last_name?: string; email?: string; avatar?: string }) : null;
+                    const ownerId = userObj ? (userObj.id ?? userObj.email ?? '') : (typeof sticker.user_created === 'string' ? sticker.user_created : (typeof sticker.created_by === 'string' ? sticker.created_by : ''));
+                    const isMine = Boolean(user && ownerId && String(user.id) === String(ownerId));
                     const avatarUrl = userObj?.avatar ? getImageUrl(userObj.avatar) : '/img/Logo.png';
 
                     return (

@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write       # Needed for GitHub OIDC authentication
+      id-token: write # Needed for GitHub OIDC authentication
       packages: write
 
     steps:
@@ -30,25 +30,18 @@ jobs:
         uses: actions/checkout@v4
 
       # ------------------------------
-      # Load Vault Secrets using OIDC JWT
+      # Load Infisical Secrets
       # ------------------------------
-      - name: Load Vault Secrets
-        id: vault-secrets
-        uses: hashicorp/vault-action@v3
+      - name: Infisical Secrets Action
+        uses: Infisical/secrets-action@v1.0.8
         with:
-          url: https://secrets.salvemundi.nl
-          method: jwt
-          role: frontend-dev
-          jwtGithubAudience: vault
-          exportEnv: true
-          tlsSkipVerify: false
-          secrets: |
-            secret/data/dev-salvemundi NEXT_PUBLIC_DIRECTUS_URL ;
-            secret/data/dev-salvemundi NEXT_PUBLIC_AUTH_REDIRECT_URI ;
-            secret/data/dev-salvemundi NEXT_PUBLIC_ENTRA_CLIENT_ID ;
-            secret/data/dev-salvemundi NEXT_PUBLIC_ENTRA_TENANT_ID ;
-            secret/data/dev-salvemundi NEXT_PUBLIC_EMAIL_API_ENDPOINT ;
-            secret/data/dev-salvemundi NEXT_PUBLIC_DIRECTUS_API_KEY
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          domain: "https://infisical.salvemundi.nl"
+          project-slug: "salvemundi-2-j-tu"
+          env-slug: "dev"
+          secret-path: "/"
+          export-type: "env"
 
       # ------------------------------
       # Set Docker image tag based on branch
@@ -88,6 +81,7 @@ jobs:
             NEXT_PUBLIC_ENTRA_TENANT_ID=${{ env.NEXT_PUBLIC_ENTRA_TENANT_ID }}
             NEXT_PUBLIC_EMAIL_API_ENDPOINT=${{ env.NEXT_PUBLIC_EMAIL_API_ENDPOINT }}
             NEXT_PUBLIC_DIRECTUS_API_KEY=${{ env.NEXT_PUBLIC_DIRECTUS_API_KEY }}
+            NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
 
       # ------------------------------
       # Copy docker-compose.yml to server

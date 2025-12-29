@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import gsap from 'gsap';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
 import 'swiper/css';
@@ -178,19 +179,23 @@ export default function Hero() {
     // heavy DOM-manipulating libs like Swiper so they can't mutate
     // or remove the hero subtree on mobile devices.
     const [isMobile, setIsMobile] = useState<boolean>(false);
+    // Hover states for the action chevrons
+    const [hoverWordLid, setHoverWordLid] = useState<boolean>(false);
+    const [hoverNextEvent, setHoverNextEvent] = useState<boolean>(false);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
         const mq = window.matchMedia('(max-width: 639px)');
-        const update = () => setIsMobile(Boolean(mq.matches));
-        update();
+        const applyUpdate = (e?: MediaQueryListEvent) => setIsMobile(Boolean(e ? e.matches : mq.matches));
+        applyUpdate();
+        const onChange = (e: MediaQueryListEvent) => applyUpdate(e);
         // add/remove listener in a compatible way
-        if (mq.addEventListener) mq.addEventListener('change', update);
-        else mq.addListener(update as any);
+        if (mq.addEventListener) mq.addEventListener('change', onChange);
+        else mq.addListener(onChange as unknown as (this: MediaQueryList, ev: MediaQueryListEvent) => void);
         return () => {
             try {
-                if (mq.removeEventListener) mq.removeEventListener('change', update);
-                else mq.removeListener(update as any);
+                if (mq.removeEventListener) mq.removeEventListener('change', onChange);
+                else mq.removeListener(onChange as unknown as (this: MediaQueryList, ev: MediaQueryListEvent) => void);
             } catch (e) {
                 // ignore
             }
@@ -270,6 +275,8 @@ export default function Hero() {
     // Show membership link if not authenticated (and auth is done loading)
     const showMembershipLink = !authLoading && !isAuthenticated;
 
+    // Only apply a min-height on medium+ screens so mobile won't force a
+    // large empty area. On md+ we ensure the hero fills the viewport minus the header.
     return (
         <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full min-h-[600px] md:min-h-[500px] lg:min-h-screen py-6 sm:py-10 md:py-16 lg:py-20 transition-colors duration-300">
             

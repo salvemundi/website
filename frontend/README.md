@@ -42,6 +42,21 @@ The following environment variables are required for full functionality:
 
 You can set these in a `.env.local` file for local development.
 
+## Local development with .env.local
+
+1. Create a `.env.local` in the `frontend/` folder (a sample is provided in the repo).
+2. Ensure the variables start with `NEXT_PUBLIC_` so they are available in the browser.
+3. Install and run the dev server:
+
+```sh
+npm install
+npm run dev
+```
+
+Open the app at the address printed by Next.js (commonly `http://localhost:3000`).
+
+Tip: `.env.local` is already listed in the repository `.gitignore`, so it won't be committed.
+
 ## Building for Production
 
 ```sh

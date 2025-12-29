@@ -19,15 +19,9 @@ app.post(PATH, (req, res) => {
     const notifications = Array.isArray(req.body?.value) ? req.body.value : [];
     for (const n of notifications) {
         if (process.env.WEBHOOK_CLIENT_STATE && n.clientState !== process.env.WEBHOOK_CLIENT_STATE) {
-            console.warn("ClientState mismatch; dropping notification");
             continue;
         }
-        console.log("Graph change:", {
-            changeType: n.changeType,
-            resource: n.resource,
-            subscriptionId: n.subscriptionId,
-            eventTime: n.subscriptionExpirationDateTime,
-        });
+        // Graph change received; logging removed
         // enqueue real processing here (if expanding this service)
     }
 });
@@ -35,7 +29,4 @@ app.post(PATH, (req, res) => {
 // Health check endpoint (for docker-compose healthcheck)
 app.get('/healthz', (req, res) => res.send('OK'));
 
-app.listen(PORT, () => {
-    console.log(`Graph Webhook listening on port ${PORT}, path ${PATH}`);
-    console.log('Server started successfully');
-});
+app.listen(PORT, () => {});

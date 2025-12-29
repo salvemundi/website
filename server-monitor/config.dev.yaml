@@ -25,5 +25,5 @@ functional:
     - name: "Directus API Dev"
       url: "http://directus:8055/server/ping"
     - name: "Frontend Dev"
-      url: "http://frontend-dev:80"
+      url: "http://frontend-dev:3000"
   # TCP Check verwijderd ivm netwerk isolatie

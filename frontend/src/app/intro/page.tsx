@@ -1,228 +1,314 @@
 'use client';
-
 import React, { useState } from 'react';
 import Link from 'next/link';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import BackToTopButton from '@/shared/ui/BackToTopButton';
-import { introSignupsApi } from '@/shared/lib/api/salvemundi';
+import { introSignupsApi, introParentSignupsApi } from '@/shared/lib/api/salvemundi';
 import { sendIntroSignupEmail } from '@/shared/lib/services/email-service';
 import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
+import { useAuth } from '@/features/auth/providers/auth-provider';
+import { Users, Heart, CheckCircle2 } from 'lucide-react';
 
 export default function IntroPage() {
-    const [form, setForm] = useState({
-        voornaam: '',
-        tussenvoegsel: '',
-        achternaam: '',
-        geboortedatum: '',
-        email: '',
-        telefoonnummer: '',
-        favorieteGif: '',
-    });
+  const { isAuthenticated, user } = useAuth();
 
-    const [submitted, setSubmitted] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+  const [form, setForm] = useState({
+    voornaam: '',
+    tussenvoegsel: '',
+    achternaam: '',
+    geboortedatum: '',
+    email: '',
+    telefoonnummer: user?.phone_number || '',
+    favorieteGif: '',
+  });
 
-    const { data: siteSettings, isLoading: isSettingsLoading } = useSalvemundiSiteSettings('intro');
-    const isIntroEnabled = siteSettings?.show ?? true;
-    const introDisabledMessage =
-        siteSettings?.disabled_message ||
-        'De inschrijvingen voor de introweek zijn momenteel gesloten.';
+  // keep telefoonnummer in sync when user becomes available
+  React.useEffect(() => {
+    if (user?.phone_number) {
+  setForm(prev => ({ ...prev, telefoonnummer: user?.phone_number || '' }));
+    }
+  }, [user?.phone_number]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-        if (error) setError(null);
-    };
+  // parent form - only keep motivation (availability removed)
+  const [parentForm, setParentForm] = useState({ motivation: '' });
+  const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [hasParentSignup, setHasParentSignup] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        setError(null);
-
+  // Check whether the logged-in user already signed up as a parent
+  React.useEffect(() => {
+    let mounted = true;
+    const check = async () => {
+      if (user?.id) {
         try {
-            await introSignupsApi.create({
-                first_name: form.voornaam,
-                middle_name: form.tussenvoegsel || undefined,
-                last_name: form.achternaam,
-                date_of_birth: form.geboortedatum,
-                email: form.email,
-                phone_number: form.telefoonnummer,
-                favorite_gif: form.favorieteGif || undefined,
-            });
-
-            sendIntroSignupEmail({
-                participantEmail: form.email,
-                participantFirstName: form.voornaam,
-                participantLastName: form.achternaam,
-                phoneNumber: form.telefoonnummer,
-                dateOfBirth: form.geboortedatum || undefined,
-                favoriteGif: form.favorieteGif || undefined,
-            }).catch((emailError) => {
-                console.warn('Failed to send intro signup email:', emailError);
-            });
-
-            setSubmitted(true);
-        } catch (err: any) {
-            console.error('Failed to submit intro signup:', err);
-            setError(
-                err.message ||
-                'Er is een fout opgetreden bij het versturen van je inschrijving. Probeer het opnieuw.'
-            );
-        } finally {
-            setIsSubmitting(false);
+          const existing = await introParentSignupsApi.getByUserId(String(user.id));
+          if (!mounted) return;
+          if (existing && Array.isArray(existing) && existing.length > 0) {
+            setHasParentSignup(true);
+          } else {
+            setHasParentSignup(false);
+          }
+        } catch (e) {
+          console.error('Failed to check existing parent signup', e);
+          if (mounted) setHasParentSignup(false);
         }
+      } else {
+        if (mounted) setHasParentSignup(false);
+      }
     };
+    check();
+    return () => { mounted = false; };
+  }, [user?.id]);
 
-    return (
-        <>
-            <div className="flex flex-col w-full">
-                <PageHeader title="INTRO" backgroundImage="/img/backgrounds/intro-banner.jpg" />
+  const { data: siteSettings, isLoading: isSettingsLoading } = useSalvemundiSiteSettings('intro');
+  const isIntroEnabled = siteSettings?.show ?? true;
+  const introDisabledMessage = siteSettings?.disabled_message || 'De inschrijvingen voor de introweek zijn momenteel gesloten.';
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    if (error) setError(null);
+  };
+
+  const handleParentChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setParentForm({ ...parentForm, [e.target.name]: e.target.value });
+    if (error) setError(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
+      try {
+        if (isAuthenticated && user) {
+          await introParentSignupsApi.create({
+            user_id: user.id,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email,
+            phone_number: (form.telefoonnummer || user.phone_number || '') as string,
+            motivation: parentForm.motivation || '',
+            // send empty values for fields removed from form to satisfy API
+            availability: [],
+          });
+        } else {
+          await introSignupsApi.create({
+            first_name: form.voornaam,
+            middle_name: form.tussenvoegsel || undefined,
+            last_name: form.achternaam,
+            date_of_birth: form.geboortedatum,
+            email: form.email,
+            phone_number: form.telefoonnummer,
+            favorite_gif: form.favorieteGif || undefined,
+          });
+
+          sendIntroSignupEmail({
+            participantEmail: form.email,
+            participantFirstName: form.voornaam,
+            participantLastName: form.achternaam,
+            phoneNumber: form.telefoonnummer,
+            dateOfBirth: form.geboortedatum || undefined,
+            favoriteGif: form.favorieteGif || undefined,
+          }).catch(() => {});
+        }      setSubmitted(true);
+    } catch (err: any) {
+      console.error('Failed to submit intro signup:', err);
+      setError(err?.message || 'Er is een fout opgetreden bij het versturen van je inschrijving.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <>
+      <div className="flex flex-col w-full">
+        <PageHeader
+          title="INTRO - AANMELDEN"
+          backgroundImage="/img/backgrounds/intro-banner.jpg"
+          /* match activiteiten banner size and add subtle blur */
+          contentPadding="py-20"
+          imageFilter={`brightness(0.65) blur(3px)`}
+        />
+      </div>
+
+      <main>
+        {!isIntroEnabled ? (
+          <section className="px-4 sm:px-6 lg:px-10 py-12 lg:py-16">
+            <div className="max-w-4xl mx-auto bg-[var(--bg-card)] rounded-2xl lg:rounded-3xl p-6 lg:p-8 text-center shadow-2xl">
+              <h2 className="text-2xl lg:text-3xl font-bold text-gradient mb-4">Intro momenteel niet beschikbaar</h2>
+              <p className="text-base lg:text-lg text-theme-muted mb-6">{introDisabledMessage}</p>
+              {isSettingsLoading && <p className="text-sm text-theme-muted mb-6">Bezig met controleren van status...</p>}
+              <Link href="/" className="inline-flex items-center justify-center px-6 py-3 bg-gradient-theme text-theme-white font-semibold rounded-full">
+                Terug naar Home
+              </Link>
             </div>
-
-            <main className="">
-                {!isIntroEnabled ? (
-                    <section className="px-6 sm:px-10 py-16">
-                        <div className="max-w-4xl mx-auto bg-[var(--bg-card)] rounded-3xl p-8 text-center shadow-2xl">
-                            <h2 className="text-3xl font-bold text-gradient mb-4">Intro momenteel niet beschikbaar</h2>
-                            <p className="text-lg text-theme-muted mb-6">{introDisabledMessage}</p>
-                            {isSettingsLoading && (
-                                <p className="text-sm text-theme-muted mb-6">Bezig met controleren van status...</p>
-                            )}
-                            <Link
-                                href="/"
-                                className="inline-flex items-center justify-center px-6 py-3 bg-gradient-theme text-theme-white font-semibold rounded-full hover:scale-105 transition-all duration-300"
-                            >
-                                Terug naar Home
-                            </Link>
-                        </div>
-                    </section>
+          </section>
+        ) : (
+          <section className="px-4 sm:px-6 lg:px-10 py-8 lg:py-10">
+            <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 max-w-7xl mx-auto">
+              <div className="flex-1">
+                <p className="text-base lg:text-xl leading-relaxed text-theme">Meld je hieronder aan voor de introweek.</p>
+              </div>
+              <div className="flex-1 w-full">
+                {submitted ? (
+                  <div className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 text-center">
+                    <CheckCircle2 className="w-12 h-12 lg:w-16 lg:h-16 text-white mx-auto mb-4" />
+                    <h2 className="text-2xl lg:text-3xl font-bold text-theme-purple-lighter mb-4">Bedankt!</h2>
+                    <p className="text-theme-white text-base lg:text-lg">We hebben je inschrijving ontvangen.</p>
+                  </div>
                 ) : (
-                    <>
-                        <section className="px-6 sm:px-10 py-10">
-                            <div className="flex flex-col md:flex-row gap-10">
-                                <div className="flex-1">
-                                    <p className="text-xl leading-relaxed text-theme">
-                                        Word jij <span className="font-bold text-theme-purple">🎓 student</span> bij{' '}
-                                        <span className="font-bold text-theme-purple">Fontys ICT</span>
-                                        <sup className="text-theme-purple">®</sup> en kijk je uit naar de{' '}
-                                        <span className="font-bold">introweek</span>? Meld je dan nu aan voor een{' '}
-                                        <span className="font-bold">onvergetelijke week</span> vol spannende activiteiten die je met ons en je nieuwe klasgenoten kunt beleven.
-                                        Sluit je aan bij de <span className="font-bold text-theme-purple">SalveMundi</span>, waar je kunt genieten van een gezellige sfeer en nieuwe vrienden kunt maken. Of doe mee aan een potje <span className="font-bold text-theme-purple">weerwolven van wakkerdam</span>, een spel vol strategie en plezier. Iedereen is welkom, en we beloven dat het niet een <span className="font-bold">geweldige ervaring</span> wordt waar je nog lang over zult napraten!
-                                    </p>
-
-                                    <div className="mt-6">
-                                        <iframe
-                                            className="w-full rounded-lg shadow-lg"
-                                            style={{ aspectRatio: '16/9' }}
-                                            src="https://www.youtube.com/embed/WJwaM5Qmbr0"
-                                            title="Intro Video"
-                                            frameBorder="0"
-                                            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                            allowFullScreen
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="flex-1">
-                                    {submitted ? (
-                                        <div className="bg-gradient-theme rounded-3xl p-8 text-center">
-                                            <h2 className="text-3xl font-bold text-theme-purple-lighter mb-4">Bedankt voor je inschrijving!</h2>
-                                            <p className="text-theme-white text-lg">
-                                                We hebben je inschrijving ontvangen en kijken ernaar uit om je te zien tijdens de introweek!
-                                            </p>
-                                        </div>
-                                    ) : (
-                                        <form onSubmit={handleSubmit} className="bg-gradient-theme rounded-3xl p-8 shadow-lg space-y-4">
-                                            {error && <div className="bg-theme-purple-dark text-theme-white p-3 rounded-lg">{error}</div>}
-
-                                            <div>
-                                                <label className="block font-semibold text-theme-white mb-2">Voornaam</label>
-                                                <input
-                                                    type="text"
-                                                    name="voornaam"
-                                                    value={form.voornaam}
-                                                    onChange={handleChange}
-                                                    required
-                                                    className="w-full p-3 bg-theme-white text-theme-purple rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-purple-light"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block font-semibold text-theme-white mb-2">Tussenvoegsel</label>
-                                                <input
-                                                    type="text"
-                                                    name="tussenvoegsel"
-                                                    value={form.tussenvoegsel}
-                                                    onChange={handleChange}
-                                                    className="w-full p-3 bg-theme-white text-theme-purple rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-purple-light"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block font-semibold text-theme-white mb-2">Achternaam</label>
-                                                <input
-                                                    type="text"
-                                                    name="achternaam"
-                                                    value={form.achternaam}
-                                                    onChange={handleChange}
-                                                    required
-                                                    className="w-full p-3 bg-theme-white text-theme-purple rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-purple-light"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block font-semibold text-theme-white mb-2">Geboortedatum</label>
-                                                <input
-                                                    type="date"
-                                                    name="geboortedatum"
-                                                    value={form.geboortedatum}
-                                                    onChange={handleChange}
-                                                    required
-                                                    className="w-full p-3 bg-theme-white text-theme-purple rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-purple-light"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block font-semibold text-theme-white mb-2">Email</label>
-                                                <input
-                                                    type="email"
-                                                    name="email"
-                                                    value={form.email}
-                                                    onChange={handleChange}
-                                                    required
-                                                    className="w-full p-3 bg-theme-white text-theme-purple rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-purple-light"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block font-semibold text-theme-white mb-2">Telefoonnummer</label>
-                                                <input
-                                                    type="tel"
-                                                    name="telefoonnummer"
-                                                    value={form.telefoonnummer}
-                                                    onChange={handleChange}
-                                                    required
-                                                    className="w-full p-3 bg-theme-white text-theme-purple rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-purple-light"
-                                                />
-                                            </div>
-
-                                            <button
-                                                type="submit"
-                                                disabled={isSubmitting}
-                                                className="w-full bg-theme-purple-lighter text-theme-purple-darker font-bold py-3 px-6 rounded-lg hover:bg-theme-purple-light hover:text-theme-white transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                {isSubmitting ? 'Bezig met versturen...' : 'Verstuur'}
-                                            </button>
-                                        </form>
-                                    )}
-                                </div>
-                            </div>
-                        </section>
-                    </>
+                  <>
+                    {isAuthenticated ? (
+                      hasParentSignup ? (
+                        <div className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4 text-center">
+                          <h3 className="text-xl lg:text-2xl font-bold text-white">Je hebt je al aangemeld als Intro Ouder</h3>
+                          <p className="text-theme-white/80">Bedankt! Je inschrijving is ontvangen. Als je iets wilt aanpassen, neem contact op met de intro commissie.</p>
+                        </div>
+                      ) : (
+                        <form onSubmit={handleSubmit} className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4">
+                          <div className="flex items-center gap-2 mb-4">
+                            <Heart className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
+                            <h3 className="text-xl lg:text-2xl font-bold text-white">Word Intro Ouder!</h3>
+                          </div>
+                          <div className="bg-white/10 rounded-lg p-3 lg:p-4 mb-4">
+                            <p className="text-white text-xs lg:text-sm">
+                              <strong>Naam:</strong> {user?.first_name} {user?.last_name}
+                              <br />
+                              <strong>Email:</strong> {user?.email}
+                            </p>
+                          </div>
+                          <div>
+                            <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Telefoonnummer</label>
+                            <input
+                              type="tel"
+                              name="telefoonnummer"
+                              value={form.telefoonnummer}
+                              onChange={handleChange}
+                              required
+                              className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                            />
+                          </div>
+                          <div>
+                            <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Motivatie *</label>
+                            <textarea
+                              name="motivation"
+                              value={(parentForm as any).motivation}
+                              onChange={handleParentChange}
+                              required
+                              rows={4}
+                              className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                            />
+                          </div>
+                          {error && <p className="text-red-200 text-xs lg:text-sm">{error}</p>}
+                          <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="w-full bg-theme-purple-lighter text-theme-purple-darker font-bold py-3 px-6 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm lg:text-base"
+                          >
+                            {isSubmitting ? 'Bezig...' : 'Meld je aan als Introouder'}
+                          </button>
+                        </form>
+                      )
+                    ) : (
+                      <form onSubmit={handleSubmit} className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Users className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
+                          <h3 className="text-xl lg:text-2xl font-bold text-white">Meld je aan!</h3>
+                        </div>
+                        <div>
+                          <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Voornaam *</label>
+                          <input
+                            type="text"
+                            name="voornaam"
+                            value={form.voornaam}
+                            onChange={handleChange}
+                            required
+                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Tussenvoegsel</label>
+                          <input
+                            type="text"
+                            name="tussenvoegsel"
+                            value={form.tussenvoegsel}
+                            onChange={handleChange}
+                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Achternaam *</label>
+                          <input
+                            type="text"
+                            name="achternaam"
+                            value={form.achternaam}
+                            onChange={handleChange}
+                            required
+                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Geboortedatum *</label>
+                          <input
+                            type="date"
+                            name="geboortedatum"
+                            value={form.geboortedatum}
+                            onChange={handleChange}
+                            required
+                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Email *</label>
+                          <input
+                            type="email"
+                            name="email"
+                            value={form.email}
+                            onChange={handleChange}
+                            required
+                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Telefoonnummer *</label>
+                          <input
+                            type="tel"
+                            name="telefoonnummer"
+                            value={form.telefoonnummer}
+                            onChange={handleChange}
+                            required
+                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Favoriete GIF URL (optioneel)</label>
+                          <input
+                            type="url"
+                            name="favorieteGif"
+                            value={form.favorieteGif}
+                            onChange={handleChange}
+                            placeholder="https://..."
+                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                          />
+                        </div>
+                        {error && <p className="text-red-200 text-xs lg:text-sm">{error}</p>}
+                        <button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="w-full bg-theme-purple-lighter text-theme-purple-darker font-bold py-3 px-6 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm lg:text-base"
+                        >
+                          {isSubmitting ? 'Bezig...' : 'Verstuur'}
+                        </button>
+                      </form>
+                    )}
+                  </>
                 )}
-            </main>
+              </div>
+            </div>
+          </section>
+        )}
+      </main>
 
-            <BackToTopButton />
-        </>
-    );
+    </>
+  );
 }

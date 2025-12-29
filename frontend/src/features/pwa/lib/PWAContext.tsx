@@ -2,6 +2,12 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
+// Minimal typing for the beforeinstallprompt event
+interface BeforeInstallPromptEvent extends Event {
+    prompt: () => Promise<void>;
+    userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform?: string }>;
+}
+
 interface PWAContextType {
     showBottomNav: boolean;
     showInstallPrompt: boolean;
@@ -14,7 +20,7 @@ const PWAContext = createContext<PWAContextType | undefined>(undefined);
 export function PWAProvider({ children }: { children: ReactNode }) {
     const [showBottomNav, setShowBottomNav] = useState(false);
     const [showInstallPrompt, setShowInstallPrompt] = useState(false);
-    const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+    const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
     useEffect(() => {
         // Check if mobile
@@ -22,7 +28,7 @@ export function PWAProvider({ children }: { children: ReactNode }) {
         setShowBottomNav(isMobile);
 
         // Listen for beforeinstallprompt event
-        const handleBeforeInstallPrompt = (e: any) => {
+        const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
             e.preventDefault();
             setDeferredPrompt(e);
 
@@ -33,10 +39,10 @@ export function PWAProvider({ children }: { children: ReactNode }) {
             }
         };
 
-        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
 
         return () => {
-            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
         };
     }, []);
 
@@ -47,7 +53,7 @@ export function PWAProvider({ children }: { children: ReactNode }) {
         const { outcome } = await deferredPrompt.userChoice;
 
         if (outcome === 'accepted') {
-            console.log('User has accepted the PWA install prompt');
+            // user accepted install prompt (log removed)
         }
 
         setDeferredPrompt(null);

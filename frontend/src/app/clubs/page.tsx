@@ -52,7 +52,7 @@ export default function ClubsPage() {
                                         <img
                                         src={getImageUrl(club.image)}
                                         alt={stripHtml(club.name) || 'Club'}
-                                        className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                                        className="h-full w-full object-contain object-center transition duration-700 group-hover:scale-105"
                                         onError={(e) => {
                                             const target = e.target as HTMLImageElement;
                                             target.src = '/img/placeholder.svg';

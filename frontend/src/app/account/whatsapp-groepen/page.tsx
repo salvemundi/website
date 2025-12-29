@@ -145,7 +145,7 @@ export default function WhatsAppGroupsPage() {
                                                     {group.name}
                                                 </h3>
                                                 {group.description && (
-                                                    <p className="text-sm text-paars/70">
+                                                    <p className="text-sm sm:text-base text-paars/80 leading-relaxed whitespace-pre-line break-words">
                                                         {stripHtml(group.description)}
                                                     </p>
                                                 )}
@@ -175,22 +175,22 @@ export default function WhatsAppGroupsPage() {
                     {/* Additional Info */}
                     <Card variant="card" className="mt-8">
                         <h3 className="font-semibold text-paars mb-3">Groepsregels</h3>
-                        <ul className="space-y-2 text-sm text-paars/80">
+                        <ul className="space-y-2 text-sm text-[#1A1A3C]">
                             <li className="flex items-start gap-2">
                                 <span className="text-geel mt-1">•</span>
-                                <span>Wees respectvol naar alle leden</span>
+                                <span className="text-[#1A1A3C]">Wees respectvol naar alle leden</span>
                             </li>
                             <li className="flex items-start gap-2">
                                 <span className="text-geel mt-1">•</span>
-                                <span>Houd gesprekken relevant voor het groepsonderwerp</span>
+                                <span className="text-[#1A1A3C]">Houd gesprekken relevant voor het groepsonderwerp</span>
                             </li>
                             <li className="flex items-start gap-2">
                                 <span className="text-geel mt-1">•</span>
-                                <span>Geen spam of promotionele inhoud</span>
+                                <span className="text-[#1A1A3C]">Geen spam of promotionele inhoud</span>
                             </li>
                             <li className="flex items-start gap-2">
                                 <span className="text-geel mt-1">•</span>
-                                <span>
+                                <span className="text-[#1A1A3C]">
                                     Volg de{' '}
                                     <a
                                         href="https://salvemundi.nl/gedragscode"

@@ -4,12 +4,11 @@ const directusService = require('./directus-service');
 
 async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl, metadata, description) {
     if (!metadata || !metadata.email || metadata.email === 'null') {
-        console.log("⚠️ No email found in metadata, skipping confirmation email.");
         return;
     }
 
     try {
-        console.log(`📧 Preparing confirmation email for ${metadata.email}...`);
+        
         
         let attachments = [];
         let qrHtml = '';
@@ -75,7 +74,7 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
             attachments: attachments
         });
         
-        console.log("✅ Confirmation email sent.");
+        
     } catch (error) {
         console.error("❌ Failed to send confirmation email:", error.message);
     }
@@ -83,8 +82,6 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
 
 async function sendWelcomeEmail(emailServiceUrl, email, firstName, credentials) {
     try {
-        console.log(`📧 Sending welcome email to ${email}...`);
-        
         await axios.post(`${emailServiceUrl}/send-email`, {
             to: email,
             subject: `Welkom bij Salve Mundi! - Je accountgegevens`,
@@ -108,7 +105,7 @@ async function sendWelcomeEmail(emailServiceUrl, email, firstName, credentials) 
                 </div>
             `
         });
-        console.log("✅ Welcome email sent.");
+        
     } catch (error) {
         console.error("❌ Failed to send welcome email:", error.message);
     }
