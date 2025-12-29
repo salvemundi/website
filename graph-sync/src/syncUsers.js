@@ -462,11 +462,18 @@ async function updateDirectusUserFromGraph(userId) {
             }
         }
 
-        if (!membershipExpiry) {
+        const missingFields = [];
+        if (!membershipExpiry) missingFields.push('Lidmaatschap vervaldatum');
+        if (!u.givenName) missingFields.push('Voornaam');
+        if (!u.surname) missingFields.push('Achternaam');
+        if (!u.displayName) missingFields.push('Display naam');
+        if (!u.mobilePhone) missingFields.push('Mobiel nummer');
+
+        if (missingFields.length > 0) {
             syncStatus.missingDataCount++;
             syncStatus.missingData.push({
                 email: (u.mail || u.userPrincipalName || 'Unknown').toLowerCase(),
-                reason: 'Geen lidmaatschapsdatum gevonden in Entra ID'
+                reason: `Missende velden: ${missingFields.join(', ')}`
             });
         }
 
