@@ -81,9 +81,23 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                 }
             );
 
+            console.log('[AdminRoutes] Directus response received:', {
+                status: response.status,
+                dataLength: response.data?.data?.length || 0
+            });
+
             res.json({ signups: response.data.data || [] });
         } catch (error) {
-            console.error('[AdminRoutes] Failed to fetch pending signups:', error.message);
+            console.error('[AdminRoutes] Failed to fetch pending signups:', {
+                message: error.message,
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                directusError: error.response?.data,
+                requestURL: error.config?.url,
+                requestParams: error.config?.params,
+                hasAuthHeader: !!error.config?.headers?.Authorization,
+                authHeaderLength: error.config?.headers?.Authorization?.length
+            });
             res.status(500).json({ error: 'Failed to fetch pending signups' });
         }
     });
