@@ -37,6 +37,27 @@ const DIRECTUS_HEADERS = {
     Authorization: `Bearer ${process.env.DIRECTUS_STATIC_TOKEN}`,
 };
 
+const EXCLUDED_EMAILS = [
+    'youtube@salvemundi.nl',
+    'github@salvemundi.nl',
+    'intern@salvemundi.nl',
+    'ik.ben.de.website@salvemundi.nl',
+    // Voeg hier meer emails toe die overgeslagen moeten worden
+];
+
+function shouldExcludeUser(email) {
+    if (!email) return true;
+    const lowerEmail = email.toLowerCase();
+
+    // Exact match check
+    if (EXCLUDED_EMAILS.includes(lowerEmail)) return true;
+
+    // Pattern checks (optioneel)
+    if (lowerEmail.startsWith('test-')) return true;
+
+    return false;
+}
+
 const syncLock = new Map();
 const LOCK_TTL = 5000;
 
@@ -772,7 +793,13 @@ async function runBulkSync() {
             console.log(`[${new Date().toISOString()}] ⚙️ [INIT] Processing batch ${Math.floor(i / 10) + 1}/${Math.ceil(users.length / 10)}...`);
 
             await Promise.all(batch.map(async (u) => {
-                const userEmail = u.mail || u.userPrincipalName || 'Unknown';
+                const userEmail = (u.mail || u.userPrincipalName || 'Unknown').toLowerCase();
+
+                if (shouldExcludeUser(userEmail)) {
+                    // console.log(`[${new Date().toISOString()}] ⏭️ [INIT] Skipping excluded user: ${userEmail}`);
+                    return;
+                }
+
                 try {
                     await updateDirectusUserFromGraph(u.id);
                     syncStatus.processed++;
