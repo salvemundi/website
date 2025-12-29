@@ -121,10 +121,10 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                     {!isPast && (
                         <button
                             onClick={handleSignupClick}
-                            className={`${alreadySignedUp ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-gradient-theme text-theme-white shadow-lg shadow-theme-purple/30 hover:-translate-y-0.5 hover:shadow-xl'} px-4 py-2 text-sm font-semibold rounded-full transition-transform`}
-                            disabled={alreadySignedUp}
+                            className={`${cannotSignUp ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-gradient-theme text-theme-white shadow-lg shadow-theme-purple/30 hover:-translate-y-0.5 hover:shadow-xl'} px-4 py-2 text-sm font-semibold rounded-full transition-transform`}
+                            disabled={cannotSignUp}
                         >
-                            {alreadySignedUp ? 'AL AANGEMELD' : 'AANMELDEN'}
+                            {alreadySignedUp ? 'AL AANGEMELD' : isDeadlinePassed ? 'INSCHRIJVEN GESLOTEN' : 'AANMELDEN'}
                         </button>
                     )}
                 </div>
@@ -194,15 +194,26 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                     {!isPast && (
                         <button
                             onClick={handleSignupClick}
-                            className={`${alreadySignedUp ? 'bg-gray-400 text-theme-white cursor-not-allowed' : 'bg-theme-purple-lighter text-theme-purple-darker shadow-lg shadow-theme-purple/30 hover:-translate-y-0.5 hover:shadow-xl'} font-semibold px-5 py-3 rounded-full w-full sm:w-auto flex items-center justify-center gap-2 transition-transform`}
-                            disabled={alreadySignedUp}
+                            className={`${cannotSignUp ? 'bg-gray-400 text-theme-white cursor-not-allowed' : 'bg-theme-purple-lighter text-theme-purple-darker shadow-lg shadow-theme-purple/30 hover:-translate-y-0.5 hover:shadow-xl'} font-semibold px-5 py-3 rounded-full w-full sm:w-auto flex items-center justify-center gap-2 transition-transform`}
+                            disabled={cannotSignUp}
                         >
-                            {requiresLogin && !isAuthenticated && (
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                </svg>
-                            )}
-                            {alreadySignedUp ? 'AL AANGEMELD' : 'AANMELDEN'}
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                            </svg>
+                            {alreadySignedUp ? 'AL AANGEMELD' : isDeadlinePassed ? 'INSCHRIJVEN GESLOTEN' : 'AANMELDEN'}
                         </button>
                     )}
                 </div>
