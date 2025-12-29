@@ -25,6 +25,9 @@ interface SyncStatus {
     processed: number;
     errorCount: number;
     errors: { email: string; error: string; timestamp: string }[];
+    startTime?: string;
+    endTime?: string;
+    lastRunSuccess?: boolean | null;
 }
 
 function Tile({
@@ -357,7 +360,7 @@ export default function DevSignupsPage() {
                                     <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
                                         <div className="text-sm text-theme-purple-lighter/60 mb-1">Status</div>
                                         <div className={`font-bold capitalize ${syncStatus.status === 'completed' ? 'text-green-400' :
-                                                syncStatus.status === 'failed' ? 'text-red-400' : 'text-theme-purple-lighter'
+                                            syncStatus.status === 'failed' ? 'text-red-400' : 'text-theme-purple-lighter'
                                             }`}>
                                             {syncStatus.status === 'running' ? 'Bezig...' :
                                                 syncStatus.status === 'completed' ? 'Voltooid' :
