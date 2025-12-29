@@ -40,6 +40,18 @@ const DIRECTUS_HEADERS = {
 const syncLock = new Map();
 const LOCK_TTL = 5000;
 
+let syncStatus = {
+    active: false,
+    status: 'idle', // 'idle', 'running', 'completed', 'failed'
+    total: 0,
+    processed: 0,
+    errorCount: 0,
+    errors: [], // [{ email: string, error: string, timestamp: string }]
+    startTime: null,
+    endTime: null,
+    lastRunSuccess: null
+};
+
 function acquireLock(key) {
     const now = Date.now();
     const existing = syncLock.get(key);
@@ -677,36 +689,94 @@ app.post('/webhook/directus', bodyParser.json(), async (req, res) => {
 });
 
 // Initial bulk sync endpoint
+app.get('/sync/status', (req, res) => {
+    res.json(syncStatus);
+});
+
 app.post('/sync/initial', async (req, res) => {
+    if (syncStatus.active) {
+        return res.status(409).json({ error: 'Sync already in progress' });
+    }
+
+    // Start in background
+    runBulkSync();
+
+    res.status(202).json({ success: true, message: 'Bulk sync started in background' });
+});
+
+async function runBulkSync() {
+    console.log(`[${new Date().toISOString()}] 🚀 [INIT] Bulk sync STARTING...`);
+    syncStatus = {
+        active: true,
+        status: 'running',
+        total: 0,
+        processed: 0,
+        errorCount: 0,
+        errors: [],
+        startTime: new Date().toISOString(),
+        endTime: null,
+        lastRunSuccess: null
+    };
+
     try {
-        // init bulk sync started; logging removed
+        console.log(`[${new Date().toISOString()}] 🔍 [INIT] Building global group name map...`);
         await buildGlobalGroupNameMap();
 
         const client = await getGraphClient();
         let users = [];
         let nextLink = '/users?$select=id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,customSecurityAttributes&$top=100';
 
+        console.log(`[${new Date().toISOString()}] 📥 [INIT] Fetching users from Microsoft Graph...`);
         while (nextLink) {
-            // fetching users batch; logging removed
             const response = await client.api(nextLink).version('beta').get();
             users = users.concat(response.value);
             nextLink = response['@odata.nextLink'] ? response['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0', '') : null;
+            console.log(`[${new Date().toISOString()}] 📥 [INIT] Fetched batch. Total users so far: ${users.length}`);
         }
 
-        // init: users found; logging removed
+        syncStatus.total = users.length;
+        console.log(`[${new Date().toISOString()}] ✅ [INIT] Total users to process: ${users.length}`);
 
-        for (let i = 0; i < users.length; i += 20) {
-            const batch = users.slice(i, i + 20);
-            await Promise.all(batch.map(u => updateDirectusUserFromGraph(u.id)));
+        for (let i = 0; i < users.length; i += 10) {
+            const batch = users.slice(i, i + 10);
+            console.log(`[${new Date().toISOString()}] ⚙️ [INIT] Processing batch ${Math.floor(i / 10) + 1}/${Math.ceil(users.length / 10)}...`);
+
+            await Promise.all(batch.map(async (u) => {
+                const userEmail = u.mail || u.userPrincipalName || 'Unknown';
+                try {
+                    await updateDirectusUserFromGraph(u.id);
+                    syncStatus.processed++;
+                } catch (err) {
+                    syncStatus.errorCount++;
+                    const errorMsg = err.response?.data || err.message;
+                    console.error(`[${new Date().toISOString()}] ❌ [INIT] Failed for user ${userEmail}:`, errorMsg);
+                    syncStatus.errors.push({
+                        email: userEmail,
+                        error: typeof errorMsg === 'object' ? JSON.stringify(errorMsg) : String(errorMsg),
+                        timestamp: new Date().toISOString()
+                    });
+                }
+            }));
         }
 
-        // init bulk sync finished
-        res.json({ success: true, processed: users.length });
+        syncStatus.status = 'completed';
+        syncStatus.lastRunSuccess = true;
+        console.log(`[${new Date().toISOString()}] ✨ [INIT] Bulk sync COMPLETED. Processed: ${syncStatus.processed}, Errors: ${syncStatus.errorCount}`);
     } catch (error) {
-        console.error('❌ [INIT] Bulk sync error:', error.response?.data || error.message);
-        res.status(500).json({ error: error.message });
+        syncStatus.status = 'failed';
+        syncStatus.lastRunSuccess = false;
+        const mainError = error.response?.data || error.message;
+        console.error(`[${new Date().toISOString()}] 🚨 [INIT] FATAL Bulk sync error:`, mainError);
+        syncStatus.errors.push({
+            email: 'SYSTEM',
+            error: typeof mainError === 'object' ? JSON.stringify(mainError) : String(mainError),
+            timestamp: new Date().toISOString()
+        });
+    } finally {
+        syncStatus.active = false;
+        syncStatus.endTime = new Date().toISOString();
     }
-});
+}
 
 app.post('/sync/directus-to-entra', bodyParser.json(), async (req, res) => {
     try {
