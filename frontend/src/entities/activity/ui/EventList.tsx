@@ -37,8 +37,9 @@ export default function EventList({ events, onEventClick }: EventListProps) {
                     isPast={isEventPast(event.event_date)}
                     variant="list"
                     committeeName={event.committee_name}
+                    inschrijfDeadline={event.inschrijf_deadline}
                     onShowDetails={() => onEventClick(event)}
-                // Note: onSignup is handled via details modal in this layout
+                    onSignup={() => onEventClick(event)}
                 />
             ))}
         </div>

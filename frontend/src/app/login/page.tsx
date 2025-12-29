@@ -34,7 +34,7 @@ export default function LoginPage() {
 
             <div className="container mx-auto px-4 py-16">
                 <div className="max-w-md mx-auto">
-                    <div className="bg-[var(--bg-card)] rounded-3xl shadow-2xl p-8">
+                    <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl shadow-2xl p-8">
                         <h1 className="text-3xl font-bold text-gradient mb-2 text-center">
                             Welcome Back
                         </h1>

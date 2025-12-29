@@ -56,12 +56,12 @@ export default function CommitteesPage() {
                             ))}
                         </div>
                     ) : error ? (
-                        <div className="rounded-3xl bg-[var(--bg-card)]/80 p-8 text-center shadow-lg">
+                        <div className="rounded-3xl bg-[var(--bg-card)]/80 dark:border dark:border-white/10 p-8 text-center shadow-lg">
                             <p className="mb-2 text-lg font-semibold text-theme-purple">Fout bij laden van commissies</p>
                             <p className="text-sm text-theme-muted">{String(error)}</p>
                         </div>
                     ) : committeesWithMembers.length === 0 ? (
-                        <div className="rounded-3xl bg-[var(--bg-card)]/80 p-8 text-center shadow-lg">
+                        <div className="rounded-3xl bg-[var(--bg-card)]/80 dark:border dark:border-white/10 p-8 text-center shadow-lg">
                             <p className="text-lg text-theme-muted">Geen commissies gevonden</p>
                         </div>
                     ) : (
@@ -85,7 +85,7 @@ export default function CommitteesPage() {
                                     >
                                         <Link
                                             href={`/commissies/${slugify(cleanCommitteeName(committee.name))}`}
-                                            className={`group flex h-full flex-col overflow-hidden rounded-3xl bg-[var(--bg-card)]/90 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl ${isBestuur ? 'ring-4 ring-theme-purple-lighter/30' : ''
+                                            className={`group flex h-full flex-col overflow-hidden rounded-3xl bg-[var(--bg-card)]/90 dark:border dark:border-white/10 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl ${isBestuur ? 'ring-4 ring-theme-purple-lighter/30' : ''
                                                 }`}
                                         >
                                             <div className="relative h-56 w-full overflow-hidden bg-gradient-to-br from-theme-purple/20 to-theme-purple-dark/20">
