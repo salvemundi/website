@@ -60,7 +60,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
             <div className={`relative z-20 w-full max-w-app px-4 ${contentPadding} ${variant === 'centered' ? 'text-center' : ''}`}>
                 {variant === 'centered' ? (
                     <>
-                        <h1 className={`text-theme-white font-bold leading-tight drop-shadow-lg whitespace-normal break-words ${titleClassName}`}>
+                        <h1 className={`text-theme-white font-bold leading-tight drop-shadow-lg shadow-black/50 ${titleClassName}`} style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
                             {title.split('\n').map((line, index) => (
                                 <React.Fragment key={index}>
                                     {line}

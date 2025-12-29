@@ -155,37 +155,6 @@ function ActivitiesContent() {
                             >
                                 {showPastActivities ? 'Verberg Afgelopen' : 'Toon Afgelopen'}
                             </button>
-
-                            {/* View Mode Toggles */}
-                            <div className="flex rounded-lg  bg-white dark:bg-surface-dark overflow-hidden shadow-sm">
-                                <button
-                                    onClick={() => setViewMode('grid')}
-                                    className={`px-4 py-2 text-sm font-semibold transition-all ${viewMode === 'grid'
-                                        ? 'bg-gradient-primary text-white shadow-md'
-                                        : 'bg-white dark:bg-surface-dark text-samu dark:text-white hover:bg-oranje/5 dark:hover:bg-white/5'
-                                        }`}
-                                >
-                                    Raster
-                                </button>
-                                <button
-                                    onClick={() => setViewMode('list')}
-                                    className={`px-4 py-2 text-sm font-semibold transition-all  ${viewMode === 'list'
-                                        ? 'bg-gradient-primary text-white shadow-md'
-                                        : 'bg-white dark:bg-surface-dark text-samu dark:text-white hover:bg-oranje/5 dark:hover:bg-white/5'
-                                        }`}
-                                >
-                                    Lijst
-                                </button>
-                                <button
-                                    onClick={() => setViewMode('calendar')}
-                                    className={`px-4 py-2 text-sm font-semibold transition-all ${viewMode === 'calendar'
-                                        ? 'bg-gradient-primary text-white shadow-md'
-                                        : 'bg-white dark:bg-surface-dark text-samu dark:text-white hover:bg-oranje/5 dark:hover:bg-white/5'
-                                        }`}
-                                >
-                                    Kalender
-                                </button>
-                            </div>
                         </div>
                     </div>
 
@@ -215,6 +184,63 @@ function ActivitiesContent() {
 
                         {/* Main View Area */}
                         <div className="flex-1 space-y-6">
+                            {/* View Mode Toggles - Hidden on mobile */}
+                            <div className="hidden md:flex rounded-lg  bg-white dark:bg-surface-dark overflow-hidden shadow-sm">
+                                <button
+                                    onClick={() => setViewMode('list')}
+                                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${viewMode === 'list'
+                                        ? 'bg-gradient-primary text-white shadow-md'
+                                        : 'text-samu dark:text-white hover:bg-oranje/5 dark:hover:bg-white/5'
+                                        }`}
+                                >
+                                    <span className="flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <line x1="8" y1="6" x2="21" y2="6" />
+                                            <line x1="8" y1="12" x2="21" y2="12" />
+                                            <line x1="8" y1="18" x2="21" y2="18" />
+                                            <line x1="3" y1="6" x2="3.01" y2="6" />
+                                            <line x1="3" y1="12" x2="3.01" y2="12" />
+                                            <line x1="3" y1="18" x2="3.01" y2="18" />
+                                        </svg>
+                                        Lijst
+                                    </span>
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('grid')}
+                                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${viewMode === 'grid'
+                                        ? 'bg-gradient-primary text-white shadow-md'
+                                        : 'text-samu dark:text-white hover:bg-oranje/5 dark:hover:bg-white/5'
+                                        }`}
+                                >
+                                    <span className="flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <rect x="3" y="3" width="7" height="7" />
+                                            <rect x="14" y="3" width="7" height="7" />
+                                            <rect x="14" y="14" width="7" height="7" />
+                                            <rect x="3" y="14" width="7" height="7" />
+                                        </svg>
+                                        Grid
+                                    </span>
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('calendar')}
+                                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${viewMode === 'calendar'
+                                        ? 'bg-gradient-primary text-white shadow-md'
+                                        : 'text-samu dark:text-white hover:bg-oranje/5 dark:hover:bg-white/5'
+                                        }`}
+                                >
+                                    <span className="flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                            <line x1="16" y1="2" x2="16" y2="6" />
+                                            <line x1="8" y1="2" x2="8" y2="6" />
+                                            <line x1="3" y1="10" x2="21" y2="10" />
+                                        </svg>
+                                        Kalender
+                                    </span>
+                                </button>
+                            </div>
+
                             {error && (
                                 <div className="rounded-3xl  bg-red-50 dark:bg-red-900/20 px-5 py-4 text-sm text-red-600 dark:text-red-400 shadow-sm">
                                     Er is een fout opgetreden bij het laden van de activiteiten.

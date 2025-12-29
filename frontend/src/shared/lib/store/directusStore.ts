@@ -6,6 +6,7 @@ interface Event {
     id: number | string;
     name: string;
     event_date: string;
+    inschrijf_deadline?: string;
     description?: string;
     description_logged_in?: string;
     price_members?: number;

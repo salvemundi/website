@@ -119,7 +119,7 @@ export const paymentApi = {
 export const eventsApi = {
     getAll: async () => {
         const query = buildQueryString({
-            fields: ['id', 'name', 'event_date', 'event_time', 'event_time_end', 'location', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact'],
+            fields: ['id', 'name', 'event_date', 'event_time', 'inschrijf_deadline', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact'],
             sort: ['-event_date']
         });
         const events = await directusFetch<any[]>(`/items/events?${query}`);
@@ -163,7 +163,7 @@ export const eventsApi = {
 
     getById: async (id: string) => {
         const query = buildQueryString({
-            fields: ['id', 'name', 'event_date', 'event_time', 'event_time_end', 'location', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact']
+            fields: ['id', 'name', 'event_date', 'event_time', 'inschrijf_deadline', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact']
         });
         const event = await directusFetch<any>(`/items/events/${id}?${query}`);
 

@@ -58,6 +58,9 @@ export default function ContactPage() {
                                         >
                                             Rachelsmolen 1, 5612MA Eindhoven
                                         </p>
+                                        <p className="text-theme-purple/70 text-sm mt-1">
+                                            Gebouw R1 • Lokaal R1.31
+                                        </p>
                                     </div>
                                 </div>
 

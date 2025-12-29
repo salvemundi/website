@@ -7,6 +7,7 @@ import { useSalvemundiWhatsAppGroups } from '@/shared/lib/hooks/useSalvemundiApi
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { stripHtml } from '@/shared/lib/text';
 import { WhatsAppGroup } from '@/shared/lib/api/salvemundi';
+import Card from '@/shared/ui/Card';
 
 export default function WhatsAppGroupsPage() {
     const router = useRouter();
@@ -41,7 +42,7 @@ export default function WhatsAppGroupsPage() {
                 />
                 <div className="container mx-auto px-4 py-16">
                     <div className="max-w-4xl mx-auto">
-                        <div className="bg-white rounded-3xl shadow-2xl p-8 text-center">
+                        <Card variant="card" padding="p-8" className="text-center">
                             <div className="text-6xl mb-4">🔒</div>
                             <h1 className="text-3xl font-bold text-paars mb-4">Actief Lidmaatschap Vereist</h1>
                             <p className="text-paars/70 mb-6">
@@ -54,7 +55,7 @@ export default function WhatsAppGroupsPage() {
                             >
                                 Terug naar Account
                             </button>
-                        </div>
+                        </Card>
                     </div>
                 </div>
             </div>
@@ -100,7 +101,7 @@ export default function WhatsAppGroupsPage() {
                     </div>
 
                     {/* Groups Section */}
-                    <div className="bg-white rounded-3xl shadow-2xl p-8">
+                    <Card variant="card" padding="p-8">
                         {groupsLoading ? (
                             <div className="text-center py-12">
                                 <div className="text-paars">WhatsApp groepen worden geladen...</div>
@@ -131,9 +132,9 @@ export default function WhatsAppGroupsPage() {
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {groups.map((group: WhatsAppGroup) => (
-                                    <div
+                                    <Card
                                         key={group.id}
-                                        className="p-6 rounded-2xl transition-all hover:shadow-lg"
+                                        variant="gradient"
                                     >
                                         <div className="flex items-start gap-4 mb-4">
                                             <div className="w-16 h-16 rounded-full bg-geel flex items-center justify-center flex-shrink-0">
@@ -165,14 +166,14 @@ export default function WhatsAppGroupsPage() {
                                                 <span>→</span>
                                             </button>
                                         </div>
-                                    </div>
+                                    </Card>
                                 ))}
                             </div>
                         )}
-                    </div>
+                    </Card>
 
                     {/* Additional Info */}
-                    <div className="mt-8 bg-white rounded-2xl p-6">
+                    <Card variant="card" className="mt-8">
                         <h3 className="font-semibold text-paars mb-3">Groepsregels</h3>
                         <ul className="space-y-2 text-sm text-[#1A1A3C]">
                             <li className="flex items-start gap-2">
@@ -202,7 +203,7 @@ export default function WhatsAppGroupsPage() {
                                 </span>
                             </li>
                         </ul>
-                    </div>
+                    </Card>
                 </div>
             </div>
 

@@ -11,6 +11,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight } from '@/shared/ui/icons/ChevronRight';
 import { useAuth } from '@/features/auth/providers/auth-provider';
+import gsap from 'gsap';
 
 export default function Hero() {
     const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -19,6 +20,8 @@ export default function Hero() {
     const loadEvents = useDirectusStore((state) => state.loadEvents);
     const heroBanners = useDirectusStore((state) => state.heroBanners);
     const loadHeroBanners = useDirectusStore((state) => state.loadHeroBanners);
+    const [hoverWordLid, setHoverWordLid] = useState(false);
+    const [hoverNextEvent, setHoverNextEvent] = useState(false);
 
     // Refs for GSAP animations
     const heroRef = useRef<HTMLElement>(null);
@@ -118,48 +121,6 @@ export default function Hero() {
                 }, 0.4);
             }
 
-            // Floating animation for orbs
-            if (orb1Ref.current) {
-                gsap.to(orb1Ref.current, {
-                    y: '50px',
-                    duration: 3,
-                    repeat: -1,
-                    yoyo: true,
-                    width: '100px',
-                    height: '100px',
-                    ease: 'sine.inOut',
-                });
-                gsap.to(orb1Ref.current, {
-                    x: '70px',
-                    duration: 4,
-                    repeat: -1,
-                    yoyo: true,
-                    width: '170px',
-                    height: '170px',
-                    ease: 'sine.inOut',
-                });
-            }
-
-            if (orb2Ref.current) {
-                gsap.to(orb2Ref.current, {
-                    y: '-15px',
-                    duration: 2.5,
-                    repeat: -1,
-                    yoyo: true,
-                    ease: 'sine.inOut',
-                    width: '100px',
-                    height: '100px',
-                });
-                gsap.to(orb2Ref.current, {
-                    x: '-10px',
-                    duration: 3.5,
-                    repeat: -1,
-                    yoyo: true,
-                    width: '170px',
-                    height: '170px',
-                    ease: 'sine.inOut',
-                });
-            }
         }, heroRef);
 
         return () => ctx.revert();
@@ -307,13 +268,7 @@ export default function Hero() {
         }
     }, [localSlides]);
 
-    // (removed development-only debug logging)
 
-    // (removed development-only debug body image)
-
-    // (removed development-only floating portal image)
-
-    // (removed development-only MutationObserver/overlay detection)
 
 
 
@@ -323,48 +278,48 @@ export default function Hero() {
     // Only apply a min-height on medium+ screens so mobile won't force a
     // large empty area. On md+ we ensure the hero fills the viewport minus the header.
     return (
-    <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full py-6 sm:py-10 md:py-12 lg:py-16 transition-colors duration-300">
-            <div ref={orb1Ref} className="absolute -left-20 top-60 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-theme-purple to-theme-purple-light" />
-            <div ref={orb2Ref} className="absolute -right-16 bottom-0 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-theme-purple-light to-theme-purple" />
-
-            {/* Move mobile fallback to be a direct child of the section so nested
-                inner elements cannot accidentally cover/unmount it. */}
-            {/* Mobile static image: render in-layout (not absolute) so it remains
+        <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full min-h-[600px] md:min-h-[500px] lg:min-h-screen py-6 sm:py-10 md:py-16 lg:py-20 transition-colors duration-300">
+            
+            {/* Mobile-only fallback image (shows ONLY on very small screens, for robustness)
+                This ensures even if Swiper fails or images don't load, we have a visual.
+                Hidden on sm+ where Swiper takes over fully. This is embedded as 
                 part of the hero content and isn't affected by outside DOM
                 mutations. Hidden on sm+ to preserve desktop Swiper. */}
 
             <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
                 <div className="relative w-full px-0">
-                <div className="grid gap-8 sm:gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-20 lg:items-stretch">
-                    <div className="space-y-6 sm:space-y-8 lg:space-y-10">
-                        <div className="space-y-4 sm:space-y-6">
-                            <h1 ref={titleRef} className="text-3xl font-black leading-tight sm:text-4xl md:text-5xl lg:text-6xl pb-1">
-                                <span className="inline-block w-full">Welkom bij</span>
+                <div className="grid gap-5 sm:gap-6 md:grid-cols-2 md:gap-10 lg:gap-16 xl:gap-20 md:items-center">
+                    <div className="space-y-5 sm:space-y-6 md:space-y-8 lg:space-y-10 min-w-0">
+                        <div className="space-y-3 sm:space-y-4 md:space-y-6">
+                            <h1 ref={titleRef} className="text-2xl font-black leading-tight sm:text-3xl md:text-5xl lg:text-6xl pb-1">
+                                <span className="text-gradient">Studievereniging</span>
+                                <br />
                                 <span className="inline-block w-full">Salve Mundi</span>
                             </h1>
-                            <p ref={descriptionRef} className="text-sm leading-relaxed text-theme-muted sm:text-base md:text-lg lg:max-w-xl">
+                            <p ref={descriptionRef} className="text-xs leading-relaxed text-theme-muted sm:text-sm md:text-lg lg:max-w-xl">
                                 Dé studievereniging voor HBO-studenten in Eindhoven. Ontmoet nieuwe mensen, bouw aan je netwerk en maak het meeste van je studententijd met onze diverse activiteiten en gezellige commissies.
                             </p>
                         </div>
 
 
 
-                        <div className="flex flex-wrap gap-3 sm:gap-4">
+                        <div className="w-full max-w-full">
+                        <div className="flex flex-wrap gap-3 sm:gap-4 min-h-[100px]">
                             {showMembershipLink ? (
                                 <Link
                                     href="/lidmaatschap"
                                     className="block w-full transition-transform hover:scale-[1.02]"
                                 >
-                                    <div className="inset-x-4 bottom-4 w-full sm:inset-x-6 sm:bottom-6 rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4">
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-white">
+                                    <div className="w-full max-w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-3 sm:p-4 md:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-3 sm:gap-4 min-h-[90px] sm:min-h-[100px] overflow-hidden">
+                                        <div className="flex-1 min-w-0 overflow-hidden">
+                                            <p className="text-[0.6rem] sm:text-xs font-semibold uppercase tracking-wide text-theme-white">
                                                 Word lid
                                             </p>
-                                            <p className="mt-2 text-base sm:text-lg font-bold text-theme-white truncate">
+                                            <p className="mt-1 sm:mt-2 text-sm sm:text-base md:text-lg font-bold text-theme-white truncate">
                                                 Sluit je aan bij Salve Mundi
                                             </p>
-                                            <p className="mt-1 text-xs sm:text-sm text-theme-white line-clamp-2">
-                                                Ontdek alle voordelen van een lidmaatschap en word onderdeel van onze community!
+                                            <p className="mt-0.5 sm:mt-1 text-[0.7rem] sm:text-xs md:text-sm text-theme-white line-clamp-2">
+                                                Ontdek alle voordelen van een lidmaatschap!
                                             </p>
                                         </div>
                                         <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white text-theme-purple flex items-center justify-center shadow-md transition-transform group-hover:scale-110"
@@ -380,7 +335,7 @@ export default function Hero() {
                                     href={`/activiteiten/${nextEvent.id}`}
                                     className="block w-full transition-transform hover:scale-[1.02]"
                                 >
-                                    <div className="w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4">
+                                    <div className="w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4 min-h-[90px] sm:min-h-[100px]">
                                         <div className="flex-1 min-w-0">
                                             <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-white">
                                                 Volgende evenement
@@ -401,7 +356,7 @@ export default function Hero() {
                                     </div>
                                 </Link>
                             ) : (
-                                <div className="w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur">
+                                <div className="w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur min-h-[90px] sm:min-h-[100px]">
                                     <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-white">
                                         Volgende evenement
                                     </p>
@@ -423,15 +378,16 @@ export default function Hero() {
                                 </div>
                             )}
                         </div>
+                        </div>
                         
                     </div>
 
 
 
 
-                    <div className="flex flex-wrap gap-3 sm:gap-4">
-                        <div ref={imageRef} className="relative w-full h-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/80 shadow-2xl backdrop-blur-xl overflow-hidden">
-                            <div className="h-full min-h-[220px] sm:min-h-[280px] md:min-h-[340px] lg:min-h-[420px] xl:min-h-[480px]">
+                    <div className="flex flex-wrap gap-3 sm:gap-4 min-w-0">
+                        <div ref={imageRef} className="relative w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/80 shadow-2xl backdrop-blur-xl overflow-hidden">
+                            <div className="h-[240px] sm:h-[280px] md:h-[350px] lg:h-[480px] xl:h-[540px]">
                                 {/* Mobile fallback: sometimes Swiper or remote assets misbehave on small devices.
                                     Show a single static image for mobile (hidden on sm+). */}
                                 {/* Mobile fallback moved to top of section; keep the inner area clean */}
