@@ -134,7 +134,7 @@ export default function IntroPage() {
       <main>
         {!isIntroEnabled ? (
           <section className="px-4 sm:px-6 lg:px-10 py-12 lg:py-16">
-            <div className="max-w-4xl mx-auto bg-[var(--bg-card)] rounded-2xl lg:rounded-3xl p-6 lg:p-8 text-center shadow-2xl">
+            <div className="max-w-4xl mx-auto bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl lg:rounded-3xl p-6 lg:p-8 text-center shadow-2xl">
               <h2 className="text-2xl lg:text-3xl font-bold text-gradient mb-4">Intro momenteel niet beschikbaar</h2>
               <p className="text-base lg:text-lg text-theme-muted mb-6">{introDisabledMessage}</p>
               {isSettingsLoading && <p className="text-sm text-theme-muted mb-6">Bezig met controleren van status...</p>}

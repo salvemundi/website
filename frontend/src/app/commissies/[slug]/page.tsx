@@ -32,11 +32,11 @@ export default function CommitteeDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="relative min-h-screen bg-[#fef5f3]">
+            <div className="relative min-h-screen" style={{backgroundColor: 'var(--bg-main)'}}>
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-oranje/10/80 via-transparent to-oranje/20/60" />
                 <div className="relative z-10">
                     <div className="mx-auto max-w-app px-4 py-12">
-                        <div className="h-96 animate-pulse rounded-3xl bg-white/60" />
+                        <div className="h-96 animate-pulse rounded-3xl bg-white/60 dark:bg-white/10" />
                     </div>
                 </div>
             </div>
@@ -45,11 +45,11 @@ export default function CommitteeDetailPage() {
 
     if (error || !committee) {
         return (
-            <div className="relative min-h-screen bg-[#fef5f3]">
+            <div className="relative min-h-screen" style={{backgroundColor: 'var(--bg-main)'}}>
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-oranje/10/80 via-transparent to-oranje/20/60" />
                 <div className="relative z-10">
                     <div className="mx-auto max-w-app px-4 py-12">
-                        <div className="rounded-3xl bg-white/80 p-8 text-center shadow-lg">
+                        <div className="rounded-3xl bg-white/80 dark:bg-[#1f1921] dark:border dark:border-white/10 p-8 text-center shadow-lg">
                             <p className="mb-4 text-lg font-semibold text-paars">Commissie niet gevonden</p>
                             <Link
                                 href="/commissies"
@@ -61,7 +61,7 @@ export default function CommitteeDetailPage() {
                     </div>
                 </div>
             </div>
-        );
+        );    
     }
 
     const cleanName = cleanCommitteeName(committee.name);
@@ -106,7 +106,7 @@ export default function CommitteeDetailPage() {
                         <div className="lg:col-span-2 space-y-8">
                                 {/* Committee image */}
                                 {committee.image && (
-                                    <div className="rounded-3xl overflow-hidden bg-white/90 p-0 shadow-lg">
+                                    <div className="rounded-3xl overflow-hidden bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 p-0 shadow-lg">
                                         <img
                                             src={getImageUrl(committee.image)}
                                             alt={cleanName}
@@ -121,10 +121,10 @@ export default function CommitteeDetailPage() {
 
                             {/* Short description / Overview */}
                             {committee.description && (
-                                <div className="rounded-3xl bg-white/90 p-8 shadow-lg">
-                                    <h2 className="mb-4 text-2xl font-bold text-slate-900">Over {cleanName}</h2>
+                                <div className="rounded-3xl bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 p-8 shadow-lg">
+                                    <h2 className="mb-4 text-2xl font-bold text-slate-900 dark:text-white">Over {cleanName}</h2>
                                     <div
-                                        className="prose max-w-none text-slate-700"
+                                        className="prose max-w-none text-slate-700 dark:text-white/80"
                                         dangerouslySetInnerHTML={{ __html: committee.description }}
                                     />
                                 </div>
@@ -132,10 +132,10 @@ export default function CommitteeDetailPage() {
 
                             {/* Long description from Directus (if available) - render above activities */}
                             {committeeDetail?.description && (
-                                <div className="rounded-3xl bg-white/90 p-8 shadow-lg">
-                                    <h2 className="mb-4 text-2xl font-bold text-slate-900">Meer over {cleanName}</h2>
+                                <div className="rounded-3xl bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 p-8 shadow-lg">
+                                    <h2 className="mb-4 text-2xl font-bold text-slate-900 dark:text-white">Meer over {cleanName}</h2>
                                     <div
-                                        className="prose max-w-none text-slate-700"
+                                        className="prose max-w-none text-slate-700 dark:text-white/80"
                                         dangerouslySetInnerHTML={{ __html: committeeDetail.description }}
                                     />
                                 </div>
@@ -143,14 +143,14 @@ export default function CommitteeDetailPage() {
 
                             {/* Events */}
                             {events.length > 0 && (
-                                <div className="rounded-3xl bg-white/90 p-8 shadow-lg">
-                                    <h2 className="mb-6 text-2xl font-bold text-slate-900">Activiteiten</h2>
+                                <div className="rounded-3xl bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 p-8 shadow-lg">
+                                    <h2 className="mb-6 text-2xl font-bold text-slate-900 dark:text-white">Activiteiten</h2>
                                     <div className="grid gap-4 sm:grid-cols-2">
                                         {events.map((event) => (
                                             <Link
                                                 key={event.id}
                                                 href={`/activiteiten/${event.id}`}
-                                                className="group rounded-2xl bg-white p-4 shadow-sm transition hover:shadow-lg"
+                                                className="group rounded-2xl bg-white dark:bg-[#2a232b] p-4 shadow-sm transition hover:shadow-lg"
                                             >
                                                 <div className="mb-2 flex items-center gap-2 text-sm text-paars">
                                                     <Calendar className="h-4 w-4" />
@@ -159,7 +159,7 @@ export default function CommitteeDetailPage() {
                                                         month: 'long',
                                                     })}
                                                 </div>
-                                                <h3 className="font-semibold text-slate-900 group-hover:text-paars">
+                                                <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-paars">
                                                     {event.name}
                                                 </h3>
                                             </Link>
@@ -173,8 +173,8 @@ export default function CommitteeDetailPage() {
                         <div className="space-y-6">
                             {/* Leader Contact */}
                             {leader && (
-                                <div className="rounded-3xl bg-white/90 p-6 shadow-lg">
-                                    <h3 className="mb-4 text-lg font-bold text-slate-900">Contact</h3>
+                                <div className="rounded-3xl bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 p-6 shadow-lg">
+                                    <h3 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">Contact</h3>
                                     <div className="flex items-center gap-4">
                                         <img
                                             src={getImageUrl(leader.user_id.avatar)}
@@ -186,7 +186,7 @@ export default function CommitteeDetailPage() {
                                             }}
                                         />
                                         <div>
-                                            <p className="font-semibold text-slate-900">
+                                            <p className="font-semibold text-slate-900 dark:text-white">
                                                 {leader.user_id.first_name} {leader.user_id.last_name}
                                             </p>
                                             <p className="text-sm text-paars">Commissieleider</p>
@@ -195,7 +195,7 @@ export default function CommitteeDetailPage() {
                                     {leader.user_id.email && (
                                         <a
                                             href={`mailto:${leader.user_id.email}`}
-                                            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-paars shadow-sm transition hover:bg-paars/5"
+                                            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-paars/10 dark:bg-[#2a232b] px-4 py-2 text-sm font-semibold text-paars dark:text-white shadow-sm transition hover:bg-paars/20 dark:hover:bg-paars/30"
                                         >
                                             <Mail className="h-4 w-4" />
                                             Contact opnemen
@@ -206,8 +206,8 @@ export default function CommitteeDetailPage() {
 
                             {/* Members */}
                             {members.length > 0 && (
-                                <div className="rounded-3xl bg-white/90 p-6 shadow-lg">
-                                    <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-slate-900">
+                                <div className="rounded-3xl bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 p-6 shadow-lg">
+                                    <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white">
                                         <Users2 className="h-5 w-5 text-paars" />
                                         Leden ({members.length})
                                     </h3>
@@ -223,7 +223,7 @@ export default function CommitteeDetailPage() {
                                                         target.src = '/img/placeholder.svg';
                                                     }}
                                                 />
-                                                <p className="mt-2 text-xs font-medium text-slate-900">
+                                                <p className="mt-2 text-xs font-medium text-slate-900 dark:text-white">
                                                     {member.user_id.first_name}
                                                 </p>
                                             </div>
@@ -234,17 +234,17 @@ export default function CommitteeDetailPage() {
 
                             {/* Board History Button - Only show for Bestuur */}
                             {cleanName.toLowerCase().includes('bestuur') && (
-                                <div className="rounded-3xl bg-white/90 p-6 shadow-lg">
-                                    <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-slate-900">
+                                <div className="rounded-3xl bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 p-6 shadow-lg">
+                                    <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white">
                                         <History className="h-5 w-5 text-paars" />
                                         Geschiedenis
                                     </h3>
-                                    <p className="mb-4 text-sm text-slate-600">
+                                    <p className="mb-4 text-sm text-slate-600 dark:text-white/70">
                                         Bekijk alle eerdere besturen van Salve Mundi
                                     </p>
                                     <Link
                                         href="/commissies/geschiedenis"
-                                        className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-paars to-oranje px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:shadow-lg hover:-translate-y-0.5"
+                                        className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-theme text-theme-white px-4 py-3 text-sm font-semibold shadow-lg transition hover:shadow-xl hover:-translate-y-0.5"
                                     >
                                         <History className="h-4 w-4" />
                                         Bekijk bestuursgeschiedenis

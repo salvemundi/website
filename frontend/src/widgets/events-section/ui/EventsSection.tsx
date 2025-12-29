@@ -50,7 +50,7 @@ export default function EventsSection() {
     const skeletonItems = Array.from({ length: 4 });
 
     return (
-        <section id="kalender" className="py-12 sm:py-16 md:py-20">
+        <section id="kalender" className="py-12 sm:py-16 md:py-20 bg-[var(--bg-main)]">
             <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
                 <div className="flex flex-col gap-6 rounded-xl bg-gradient-primary px-6 sm:px-10 pt-12 sm:pt-16 lg:pt-24 pb-12 shadow-xl">
                     <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
