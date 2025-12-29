@@ -71,6 +71,8 @@ jobs:
           file: ./directus/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
+          provenance: false
+          no-cache: true
 
       - name: Copy Config Files via SCP
         uses: appleboy/scp-action@v0.1.7
