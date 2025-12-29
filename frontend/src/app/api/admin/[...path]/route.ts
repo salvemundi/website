@@ -4,8 +4,9 @@ const PAYMENT_API_URL = process.env.PAYMENT_API_URL || 'http://payment-api:3002'
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { path: string[] } }
+    context: { params: Promise<{ path: string[] }> }
 ) {
+    const params = await context.params;
     const path = params.path.join('/');
     const url = new URL(request.url);
 
@@ -31,8 +32,9 @@ export async function GET(
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { path: string[] } }
+    context: { params: Promise<{ path: string[] }> }
 ) {
+    const params = await context.params;
     const path = params.path.join('/');
     const body = await request.json().catch(() => null);
 
