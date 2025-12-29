@@ -65,6 +65,8 @@ jobs:
           push: true
           # Aanhalingstekens toegevoegd
           tags: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}"
+          provenance: false
+          no-cache: true
 
       - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.7
