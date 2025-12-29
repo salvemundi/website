@@ -113,7 +113,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
         return (
             <div
                 onClick={onShowDetails}
-                className={`w-full rounded-2xl bg-[var(--bg-card)] p-4 shadow-sm hover:shadow-md transition-all cursor-pointer ${isPast ? 'opacity-60 filter grayscale' : ''}`}
+                className={`w-full rounded-2xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-4 shadow-sm hover:shadow-md transition-all cursor-pointer ${isPast ? 'opacity-60 filter grayscale' : ''}`}
             >
                 <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
                     <div className="flex-1 min-w-[180px]">

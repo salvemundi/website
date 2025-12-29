@@ -59,7 +59,7 @@ export default function CalendarView({
     };
 
     return (
-        <div className="bg-[var(--bg-card)] rounded-3xl shadow-xl overflow-hidden">
+        <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl shadow-xl overflow-hidden">
             {/* Header */}
             <div className="p-6 flex items-center justify-between bg-gradient-theme text-theme-white">
                 <h2 className="text-2xl font-bold capitalize">
