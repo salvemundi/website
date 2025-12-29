@@ -447,7 +447,9 @@ async function updateDirectusUserFromGraph(userId) {
             .get();
 
         const attributes = u.customSecurityAttributes?.SalveMundiLidmaatschap;
-        console.log(`[${new Date().toISOString()}] [SYNC] Attributes for ${u.mail || u.id}:`, attributes ? JSON.stringify(attributes) : 'NULL');
+        console.log(`[${new Date().toISOString()}] [SYNC] User keys for ${u.mail || u.id}:`, Object.keys(u).join(', '));
+        console.log(`[${new Date().toISOString()}] [SYNC] Full customSecurityAttributes for ${u.mail || u.id}:`, u.customSecurityAttributes ? JSON.stringify(u.customSecurityAttributes) : 'UNDEFINED');
+        console.log(`[${new Date().toISOString()}] [SYNC] SalveMundiLidmaatschap attributes:`, attributes ? JSON.stringify(attributes) : 'NULL');
 
         let membershipExpiry = null;
         if (attributes?.VerloopdatumStr) {
