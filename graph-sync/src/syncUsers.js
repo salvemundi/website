@@ -46,7 +46,9 @@ let syncStatus = {
     total: 0,
     processed: 0,
     errorCount: 0,
+    missingDataCount: 0,
     errors: [], // [{ email: string, error: string, timestamp: string }]
+    missingData: [], // [{ email: string, reason: string }]
     startTime: null,
     endTime: null,
     lastRunSuccess: null
@@ -458,6 +460,14 @@ async function updateDirectusUserFromGraph(userId) {
                 membershipExpiry = `${v.substring(0, 4)}-${v.substring(4, 6)}-${v.substring(6, 8)}`;
                 console.log(`[${new Date().toISOString()}] [SYNC] Parsed expiry: ${membershipExpiry}`);
             }
+        }
+
+        if (!membershipExpiry) {
+            syncStatus.missingDataCount++;
+            syncStatus.missingData.push({
+                email: (u.mail || u.userPrincipalName || 'Unknown').toLowerCase(),
+                reason: 'Geen lidmaatschapsdatum gevonden in Entra ID'
+            });
         }
 
         // log removed
