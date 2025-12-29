@@ -281,7 +281,9 @@ export default function DevSignupsPage() {
                                         {signups.map((signup) => (
                                             <tr key={signup.id} className="hover:bg-white/5 transition-colors">
                                                 <td className="px-4 py-4 text-sm text-theme-purple-lighter">
-                                                    {format(new Date(signup.date_created), 'd MMM yyyy HH:mm')}
+                                                    {signup.date_created
+                                                        ? format(new Date(signup.date_created), 'd MMM yyyy HH:mm')
+                                                        : 'Onbekend'}
                                                 </td>
                                                 <td className="px-4 py-4 text-sm text-theme-purple-lighter font-medium">
                                                     {signup.email || 'N/A'}
@@ -336,7 +338,9 @@ export default function DevSignupsPage() {
                                                     {signup.email || 'N/A'}
                                                 </h3>
                                                 <p className="text-sm text-theme-purple-lighter/70">
-                                                    {format(new Date(signup.date_created), 'd MMM yyyy HH:mm')}
+                                                    {signup.date_created
+                                                        ? format(new Date(signup.date_created), 'd MMM yyyy HH:mm')
+                                                        : 'Datum onbekend'}
                                                 </p>
                                             </div>
                                             <span className="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-300">
