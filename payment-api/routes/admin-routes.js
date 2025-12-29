@@ -87,6 +87,17 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                 dataLength: response.data?.data?.length || 0
             });
 
+            // TEMPORARY: Fetch one record with fields=* to see what's actually available
+            try {
+                const schemaCheck = await axios.get(`${DIRECTUS_URL}/items/transactions`, {
+                    params: { limit: 1, fields: '*' },
+                    headers: { 'Authorization': `Bearer ${DIRECTUS_API_TOKEN}` }
+                });
+                console.log('[AdminRoutes] Schema Check - Available fields:', Object.keys(schemaCheck.data.data[0] || {}));
+            } catch (e) {
+                console.log('[AdminRoutes] Schema Check failed:', e.message);
+            }
+
             res.json({ signups: response.data.data || [] });
         } catch (error) {
             console.error('[AdminRoutes] Failed to fetch pending signups:', {
