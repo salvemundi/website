@@ -253,7 +253,7 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
         try {
             // Trigger the sync in the background to avoid timeout
             // but return a 202 Accepted
-            axios.post(`${GRAPH_SYNC_URL}/sync/initial`)
+            axios.post(`${GRAPH_SYNC_URL}/sync/initial`, req.body)
                 .then(response => {
                     console.log('[AdminRoutes] Manual sync completed successfully:', response.data);
                 })
