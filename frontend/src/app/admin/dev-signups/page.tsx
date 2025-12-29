@@ -6,14 +6,13 @@ import { useAuth } from '@/features/auth/providers/auth-provider';
 import { format } from 'date-fns';
 import { Shield, CheckCircle, XCircle, RefreshCw, Clock } from 'lucide-react';
 
-interface PendingSignup {
-    id: number;
-    date_created: string;
-    product_name: string;
-    amount: string;
+interface Signup {
+    id: string;
+    created_at: string;
     email: string;
-    environment: string;
-    approval_status: string;
+    product_name: string;
+    amount: number;
+    approval_status: 'pending' | 'approved' | 'rejected';
     payment_status: string;
 }
 
@@ -69,9 +68,9 @@ function Tile({
 export default function DevSignupsPage() {
     const router = useRouter();
     const { user, isLoading: authLoading } = useAuth();
-    const [signups, setSignups] = useState<PendingSignup[]>([]);
+    const [signups, setSignups] = useState<Signup[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [isProcessing, setIsProcessing] = useState<number | null>(null);
+    const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -118,7 +117,7 @@ export default function DevSignupsPage() {
         }
     };
 
-    const handleApprove = async (signupId: number) => {
+    const handleApprove = async (signupId: string) => {
         if (!confirm('Weet je zeker dat je deze inschrijving wilt goedkeuren? Er wordt een account aangemaakt.')) {
             return;
         }
@@ -150,7 +149,7 @@ export default function DevSignupsPage() {
         }
     };
 
-    const handleReject = async (signupId: number) => {
+    const handleReject = async (signupId: string) => {
         if (!confirm('Weet je zeker dat je deze inschrijving wilt afwijzen? Er wordt GEEN account aangemaakt.')) {
             return;
         }
@@ -281,8 +280,8 @@ export default function DevSignupsPage() {
                                         {signups.map((signup) => (
                                             <tr key={signup.id} className="hover:bg-white/5 transition-colors">
                                                 <td className="px-4 py-4 text-sm text-theme-purple-lighter">
-                                                    {signup.date_created
-                                                        ? format(new Date(signup.date_created), 'd MMM yyyy HH:mm')
+                                                    {signup.created_at
+                                                        ? format(new Date(signup.created_at), 'd MMM yyyy HH:mm')
                                                         : 'Onbekend'}
                                                 </td>
                                                 <td className="px-4 py-4 text-sm text-theme-purple-lighter font-medium">
@@ -338,8 +337,8 @@ export default function DevSignupsPage() {
                                                     {signup.email || 'N/A'}
                                                 </h3>
                                                 <p className="text-sm text-theme-purple-lighter/70">
-                                                    {signup.date_created
-                                                        ? format(new Date(signup.date_created), 'd MMM yyyy HH:mm')
+                                                    {signup.created_at
+                                                        ? format(new Date(signup.created_at), 'd MMM yyyy HH:mm')
                                                         : 'Datum onbekend'}
                                                 </p>
                                             </div>

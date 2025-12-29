@@ -75,28 +75,13 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                     params: {
                         'filter[approval_status][_eq]': 'pending',
                         'filter[environment][_eq]': 'development',
-                        'fields': 'id,product_name,amount,email,approval_status,payment_status,environment',
+                        'fields': 'id,created_at,product_name,amount,email,approval_status,payment_status,environment',
+                        'sort': '-created_at',
                         'limit': 100
                     },
                     headers: { 'Authorization': `Bearer ${DIRECTUS_API_TOKEN}` }
                 }
             );
-
-            console.log('[AdminRoutes] Directus response received:', {
-                status: response.status,
-                dataLength: response.data?.data?.length || 0
-            });
-
-            // TEMPORARY: Fetch one record with fields=* to see what's actually available
-            try {
-                const schemaCheck = await axios.get(`${DIRECTUS_URL}/items/transactions`, {
-                    params: { limit: 1, fields: '*' },
-                    headers: { 'Authorization': `Bearer ${DIRECTUS_API_TOKEN}` }
-                });
-                console.log('[AdminRoutes] Schema Check - Available fields:', Object.keys(schemaCheck.data.data[0] || {}));
-            } catch (e) {
-                console.log('[AdminRoutes] Schema Check failed:', e.message);
-            }
 
             res.json({ signups: response.data.data || [] });
         } catch (error) {
@@ -104,11 +89,7 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                 message: error.message,
                 status: error.response?.status,
                 statusText: error.response?.statusText,
-                directusErrorFull: JSON.stringify(error.response?.data, null, 2),
-                requestURL: error.config?.url,
-                requestParams: error.config?.params,
-                hasAuthHeader: !!error.config?.headers?.Authorization,
-                authHeaderLength: error.config?.headers?.Authorization?.length
+                directusErrorFull: JSON.stringify(error.response?.data, null, 2)
             });
             res.status(500).json({ error: 'Failed to fetch pending signups' });
         }
