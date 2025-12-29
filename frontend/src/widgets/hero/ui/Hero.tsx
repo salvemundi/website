@@ -120,7 +120,6 @@ export default function Hero() {
                 }, 0.4);
             }
 
-           
         }, heroRef);
 
         return () => ctx.revert();
