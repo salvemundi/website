@@ -8,10 +8,7 @@ import FeaturedEvent from "@/entities/activity/ui/FeaturedEvent";
 import DayDetails from "@/entities/activity/ui/DayDetails";
 import EventList from "@/entities/activity/ui/EventList";
 import { useSalvemundiEvents } from "@/shared/lib/hooks/useSalvemundiApi";
-import { getImageUrl } from "@/shared/lib/api/salvemundi";
 import { addMonths, subMonths } from 'date-fns';
-import { isEventPast } from '@/shared/lib/utils/date';
-import ActiviteitCard from "@/entities/activity/ui/ActiviteitCard";
 import FlipClock from "@/shared/ui/FlipClock";
 import { ActivityCardSkeleton } from '@/shared/ui/skeletons';
 
