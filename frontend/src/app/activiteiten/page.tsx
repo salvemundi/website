@@ -292,21 +292,22 @@ function ActivitiesContent() {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 content-loaded">
                                             {filteredEvents.map((event, index) => (
                                                 <div key={event.id} className="stagger-item" style={{ animationDelay: `${index * 0.05}s` }}>
-                                                <ActiviteitCard
-                                                    title={event.name}
-                                                    description={event.description}
-                                                    date={event.event_date}
-                                                    startTime={event.event_time}
-                                                    endTime={event.event_time_end || event.time_end}
-                                                    location={event.location}
-                                                    price={event.price}
-                                                    image={getImageUrl(event.image)}
-                                                    isPast={isEventPast(event.event_date)}
-                                                    variant="grid"
-                                                    committeeName={event.committee_name}
-                                                    onShowDetails={() => handleShowDetails(event)}
-                                                    onSignup={() => handleShowDetails(event)}
-                                                />
+                                                    <ActiviteitCard
+                                                        id={event.id}
+                                                        title={event.name}
+                                                        description={event.description}
+                                                        date={event.event_date}
+                                                        startTime={event.event_time}
+                                                        endTime={event.event_time_end || event.time_end}
+                                                        location={event.location}
+                                                        price={event.price}
+                                                        image={getImageUrl(event.image)}
+                                                        isPast={isEventPast(event.event_date)}
+                                                        variant="grid"
+                                                        committeeName={event.committee_name}
+                                                        onShowDetails={() => handleShowDetails(event)}
+                                                        onSignup={() => handleShowDetails(event)}
+                                                    />
                                                 </div>
                                             ))}
                                         </div>

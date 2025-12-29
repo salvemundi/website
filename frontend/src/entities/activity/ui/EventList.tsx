@@ -25,6 +25,7 @@ export default function EventList({ events, onEventClick }: EventListProps) {
             {events.map((event) => (
                 <ActiviteitCard
                     key={event.id}
+                    id={event.id}
                     title={event.name}
                     description={stripHtml(event.description)}
                     date={event.event_date}

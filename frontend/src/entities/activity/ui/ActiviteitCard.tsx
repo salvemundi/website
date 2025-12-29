@@ -25,9 +25,9 @@ interface ActiviteitCardProps {
 }
 
 const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
-    id,
+    id: _id,
     description,
-    description_logged_in,
+    description_logged_in: _description_logged_in,
     image,
     title,
     date,
