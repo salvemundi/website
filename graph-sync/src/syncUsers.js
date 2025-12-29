@@ -447,11 +447,14 @@ async function updateDirectusUserFromGraph(userId) {
             .get();
 
         const attributes = u.customSecurityAttributes?.SalveMundiLidmaatschap;
+        console.log(`[${new Date().toISOString()}] [SYNC] Attributes for ${u.mail || u.id}:`, attributes ? JSON.stringify(attributes) : 'NULL');
+
         let membershipExpiry = null;
         if (attributes?.VerloopdatumStr) {
             const v = attributes.VerloopdatumStr; // yyyyMMdd
             if (v && v.length === 8) {
                 membershipExpiry = `${v.substring(0, 4)}-${v.substring(4, 6)}-${v.substring(6, 8)}`;
+                console.log(`[${new Date().toISOString()}] [SYNC] Parsed expiry: ${membershipExpiry}`);
             }
         }
 
@@ -468,7 +471,7 @@ async function updateDirectusUserFromGraph(userId) {
         const role = getRoleIdByGroupMembership(groups.map(g => g.id));
 
         const existingRes = await axios.get(
-            `${process.env.DIRECTUS_URL}/users?filter[email][_eq]=${encodeURIComponent(email)}`,
+            `${process.env.DIRECTUS_URL}/users?filter[email][_eq]=${encodeURIComponent(email)}&fields=id,email,first_name,last_name,phone_number,status,role,membership_expiry,fontys_email`,
             { headers: DIRECTUS_HEADERS }
         );
 
