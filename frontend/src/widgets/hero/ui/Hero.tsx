@@ -11,7 +11,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight } from '@/shared/ui/icons/ChevronRight';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import gsap from 'gsap';
+
 
 export default function Hero() {
     const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -30,8 +30,6 @@ export default function Hero() {
     const eventCardRef = useRef<HTMLDivElement>(null);
     const buttonsRef = useRef<HTMLDivElement>(null);
     const imageRef = useRef<HTMLDivElement>(null);
-    const orb1Ref = useRef<HTMLDivElement>(null);
-    const orb2Ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         loadEvents?.();
@@ -179,9 +177,6 @@ export default function Hero() {
     // heavy DOM-manipulating libs like Swiper so they can't mutate
     // or remove the hero subtree on mobile devices.
     const [isMobile, setIsMobile] = useState<boolean>(false);
-    // Hover states for the action chevrons
-    const [hoverWordLid, setHoverWordLid] = useState<boolean>(false);
-    const [hoverNextEvent, setHoverNextEvent] = useState<boolean>(false);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;

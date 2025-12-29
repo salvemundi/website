@@ -195,7 +195,6 @@ export default function EventDetailPage() {
     
     // Check if registration deadline has passed
     const isDeadlinePassed = event?.inschrijf_deadline ? new Date(event.inschrijf_deadline) < new Date() : false;
-    const canSignUp = !isPast && !isDeadlinePassed && !signupStatus.isSignedUp;
     
     const isPaidAndHasQR = signupStatus.isSignedUp && signupStatus.paymentStatus === 'paid' && !!signupStatus.qrToken;
 
