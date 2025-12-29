@@ -55,7 +55,7 @@ const nextConfig = {
     async rewrites() {
         // Hardcoded as requested to ensure connection to production backend
         const DIRECTUS_URL = 'https://admin.salvemundi.nl';
-        const PAYMENT_API_URL = process.env.NEXT_PUBLIC_PAYMENT_API_URL || 'http://payment-api:3000';
+        const PAYMENT_API_URL = process.env.NEXT_PUBLIC_PAYMENT_API_URL || 'http://payment-api:3002';
 
         console.log('📍 Proxying /api requests to:', DIRECTUS_URL);
         console.log('📍 Proxying /api/admin and /api/payments to:', PAYMENT_API_URL);
