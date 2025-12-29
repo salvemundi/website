@@ -83,7 +83,7 @@ export async function loginWithPassword(email: string, password: string): Promis
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            
+
             const errorMsg = errorData.errors?.[0]?.message || errorData.message || 'Invalid user credentials.';
 
             // Provide helpful error messages
@@ -156,7 +156,7 @@ export async function loginWithEntraId(entraIdToken: string, userEmail: string):
 
         // Validate we actually received an access token
         if (!payload || !payload.access_token) {
-            
+
             throw new Error('Microsoft login failed: no access token returned from backend');
         }
 
@@ -186,7 +186,7 @@ export async function loginWithEntraId(entraIdToken: string, userEmail: string):
             (errMsg.includes('Route') && errMsg.includes("doesn't exist")) ||
             (errMsg.includes('404'))
         ) {
-            
+
 
             return {
                 access_token: 'mock-access-token-dev',
@@ -267,7 +267,7 @@ export async function fetchUserDetails(token: string): Promise<User | null> {
             } as User;
         }
 
-        const response = await fetch(`${directusUrl}/users/me?fields=*`, {
+        const response = await fetch(`${directusUrl}/users/me?fields=*,membership_expiry`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
@@ -323,7 +323,7 @@ export async function fetchUserDetails(token: string): Promise<User | null> {
         const userData = await response.json();
         // Directus usually wraps payload in { data: { ... } }
         const rawUser = userData?.data || userData;
-        
+
         // Don't try to map committees here - they should be fetched separately
         // via the committee_members junction table using a dedicated query
         // Set committees to empty array as it will be populated by the blog page query
@@ -506,11 +506,11 @@ export async function getUserTransactions(userId: string, token: string) {
         },
     });
 
-        if (!response.ok) {
-            // If 403, the collection might not exist or user doesn't have permission
-            if (response.status === 403) {
-                return [];
-            }
+    if (!response.ok) {
+        // If 403, the collection might not exist or user doesn't have permission
+        if (response.status === 403) {
+            return [];
+        }
         throw new Error('Failed to fetch transactions');
     }
 
