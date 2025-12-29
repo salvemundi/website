@@ -1,4 +1,4 @@
-declare module 'react-chrono' {
+declare module 'react-chrono-extra' {
   import { ReactNode } from 'react';
 
   export interface TimelineItemModel {
