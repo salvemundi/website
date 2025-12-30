@@ -1,5 +1,7 @@
 # Gebruik de officiële Directus basis-image
-FROM directus/directus:latest
+# Directus CMS
+# Environment Isolation Audit: 2025-12-30
+FROM directus/directus:11.1.1
 
 # Stap 1: Voorbereiding
 USER root

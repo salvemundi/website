@@ -1,4 +1,6 @@
-FROM mcr.microsoft.com/powershell:lts-7.2-ubuntu-22.04
+# Nachtwacht Leden Check Script
+# Environment Isolation Audit: 2025-12-30
+FROM mcr.microsoft.com/powershell:lts-ubuntu-22.04
 
 LABEL description="Salve Mundi Leden Nachtwacht"
 LABEL maintainer="DevOps Team"
