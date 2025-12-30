@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'Development'
+      - 'main'
     paths:
       - 'directus/**'
       - '.github/workflows/deploy-directus.yml'
