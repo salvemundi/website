@@ -5,29 +5,32 @@ FROM directus/directus:latest
 USER root
 RUN corepack enable
 
-# Stap 2: Kopieer de extensie naar een tijdelijke map voor de build
-COPY --chown=node:node ./directus-extension-entra-auth /tmp/directus-extension-entra-auth
+# Stap 2: Kopieer de extensie DIRECT naar de eindbestemming
+# Dit voorkomt verwarring met tmp mappen en copy-errors
+WORKDIR /directus/extensions/endpoints/directus-extension-entra-auth
+COPY --chown=node:node ./directus-extension-entra-auth .
 
-# Stap 3: Build proces
-WORKDIR /tmp/directus-extension-entra-auth
-# Installeer dev-dependencies (om te kunnen builden)
+# Stap 3: Build en Installatie (In-Place)
+# Verwijder node_modules om zeker te zijn van een schone installatie
+RUN rm -rf node_modules dist
+
+# Installeer dependencies (inclusief dev voor de build)
 RUN npm install --include=dev
-# Build de extensie (maakt dist/ map aan)
+
+# Draai de build (genereert dist/ van src/)
 RUN npm run build
-# Verwijder dev-dependencies (alleen productie overhouden)
+
+# Schoonmaak: verwijder dev dependencies
 RUN npm prune --production
 
-# Stap 4: Installatie in Directus extensions map
+# Stap 4: Herstel Rechten (Critical step)
 WORKDIR /directus
-# Maak de doelmap
-RUN mkdir -p /directus/extensions/endpoints/directus-extension-entra-auth
-# Kopieer package.json, dist/ en node_modules (productie deps)
-RUN cp -r /tmp/directus-extension-entra-auth/package.json /directus/extensions/endpoints/directus-extension-entra-auth/ && \
-    cp -r /tmp/directus-extension-entra-auth/dist /directus/extensions/endpoints/directus-extension-entra-auth/ && \
-    cp -r /tmp/directus-extension-entra-auth/node_modules /directus/extensions/endpoints/directus-extension-entra-auth/
+RUN chown -R node:node /directus/extensions
 
-# Stap 5: Clean-up en Rechten
-RUN rm -rf /tmp/directus-extension-entra-auth && \
-    chown -R node:node /directus/extensions
+# Debug: Laat zien wat er precies aanwezig is (verschijnt in build logs)
+RUN echo "--- Extension Directory Contents ---" && \
+    ls -la /directus/extensions/endpoints/directus-extension-entra-auth && \
+    echo "--- Dist Directory Contents ---" && \
+    ls -la /directus/extensions/endpoints/directus-extension-entra-auth/dist || echo "No dist folder found"
 
 USER node
