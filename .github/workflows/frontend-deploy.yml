@@ -30,6 +30,19 @@ jobs:
         uses: actions/checkout@v4
 
       # ------------------------------
+      # Determine environment
+      # ------------------------------
+      - name: Set environment variables
+        run: |
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            echo "TAG=latest" >> $GITHUB_ENV
+            echo "INFISICAL_ENV=prod" >> $GITHUB_ENV
+          else
+            echo "TAG=dev" >> $GITHUB_ENV
+            echo "INFISICAL_ENV=dev" >> $GITHUB_ENV
+          fi
+
+      # ------------------------------
       # Load Infisical Secrets
       # ------------------------------
       - name: Infisical Secrets Action
@@ -46,15 +59,8 @@ jobs:
       # ------------------------------
       # Set Docker image tag based on branch
       # ------------------------------
-      - name: Set Docker image tag
-        run: |
-          if [[ "${{ github.ref_name }}" == "main" ]]; then
-            echo "TAG=latest" >> $GITHUB_ENV
-            echo "INFISICAL_ENV=prod" >> $GITHUB_ENV
-          else
-            echo "TAG=dev" >> $GITHUB_ENV
-            echo "INFISICAL_ENV=dev" >> $GITHUB_ENV
-          fi
+      # Set Docker image tag (Already set above, but kept metadata consistency)
+      # ------------------------------
 
       # ------------------------------
       # Login to GitHub Container Registry
