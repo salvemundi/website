@@ -157,5 +157,5 @@ jobs:
             # echo 'AUTH_ENTRA_FIELDS_MAPPING={"email": "userPrincipalName", "first_name": "givenName", "last_name": "surname"}' >> .env
 
             # Restart
-            docker-compose pull directus
-            docker-compose up -d --no-deps --force-recreate --remove-orphans directus
+            docker-compose pull
+            docker-compose up -d --force-recreate --remove-orphans
