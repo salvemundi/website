@@ -3,6 +3,7 @@ name: Deploy Leden Check Script
 on:
   push:
     branches:
+      - 'Development'
       - 'main'
     paths:
       - 'leden-check-script/**'
@@ -12,7 +13,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: salvemundi/nachtwacht
-  DEPLOY_PATH: /opt/leden-check-script
 
 jobs:
   build-and-deploy:
@@ -31,15 +31,25 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set environment variables
+        run: |
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            echo "TAG=latest" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=/opt/leden-check-script-prod" >> $GITHUB_ENV
+          else
+            echo "TAG=dev" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=/opt/leden-check-script-dev" >> $GITHUB_ENV
+          fi
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
           context: ./leden-check-script
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
 
       - name: Copy docker-compose.yml to server
+        if: github.ref_name == 'main' || github.ref_name == 'Development'
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -64,8 +74,8 @@ jobs:
             cd ${{ env.DEPLOY_PATH }}
 
             # 3. Generate .env
-            # We use global Tenant ID but SPECIFIC Client ID/Secret for this high-privilege task
-            echo "ENTRA_TENANT_ID=${{ secrets.NACHTWACHT_TENANT_ID }}" > .env
+            echo "TAG=${{ env.TAG }}" > .env
+            echo "ENTRA_TENANT_ID=${{ secrets.AUTH_MICROSOFT_TENANT_ID }}" >> .env
             echo "ENTRA_CLIENT_ID=${{ secrets.NACHTWACHT_CLIENT_ID }}" >> .env
             echo "ENTRA_CLIENT_SECRET=${{ secrets.NACHTWACHT_CLIENT_SECRET }}" >> .env
             
