@@ -12,7 +12,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: salvemundi/frontend
-  DEPLOY_PATH: /opt/frontend
 
 jobs:
   build-and-deploy:
@@ -37,9 +36,11 @@ jobs:
           if [[ "${{ github.ref_name }}" == "main" ]]; then
             echo "TAG=latest" >> $GITHUB_ENV
             echo "INFISICAL_ENV=prod" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=/opt/frontend-prod" >> $GITHUB_ENV
           else
             echo "TAG=dev" >> $GITHUB_ENV
             echo "INFISICAL_ENV=dev" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=/opt/frontend-dev" >> $GITHUB_ENV
           fi
 
       # ------------------------------
@@ -121,11 +122,11 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,DEPLOY_PATH,TAG
+          envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,TAG
           script: |
             echo $GH_PASSWORD | docker login $GH_REGISTRY -u $GH_USERNAME --password-stdin
-            mkdir -p $DEPLOY_PATH
-            cd $DEPLOY_PATH
+            mkdir -p ${{ env.DEPLOY_PATH }}
+            cd ${{ env.DEPLOY_PATH }}
             echo "TAG=$TAG" > .env
             docker compose pull frontend
             docker compose up -d frontend --remove-orphans

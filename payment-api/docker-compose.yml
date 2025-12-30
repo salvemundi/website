@@ -1,7 +1,7 @@
 services:
   payment-api:
     image: ghcr.io/salvemundi/payment-api:${TAG}
-    container_name: payment-api
+    container_name: payment-api-${TAG:-dev}
     restart: unless-stopped
     networks:
       - proxy-network

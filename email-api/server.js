@@ -13,7 +13,8 @@ const allowedOrigins = [
   'http://localhost:5173',
   'https://salvemundi.nl',
   'https://www.salvemundi.nl',
-  'https://dev.salvemundi.nl'
+  'https://dev.salvemundi.nl',
+  'https://preprod.salvemundi.nl'
 ];
 
 // Reusable CORS options so we can apply the same policy to preflight
@@ -323,7 +324,7 @@ app.post('/send-intro-update', async (req, res) => {
 
     // Extract email addresses from subscribers array
     const emailsToSend = subscribers.map(sub => sub.email).filter(Boolean);
-    
+
     if (emailsToSend.length === 0) {
       return res.status(200).json({
         success: true,
@@ -615,11 +616,11 @@ app.get(['/calendar', '/calendar.ics'], async (req, res) => {
       if (isDateOnly(event.event_date)) {
         // All-day event: use VALUE=DATE and DTEND as next day per RFC5545
         const [y, m, d] = String(event.event_date).split('-').map(Number);
-        const dtStart = `${String(y).padStart(4,'0')}${String(m).padStart(2,'0')}${String(d).padStart(2,'0')}`;
+        const dtStart = `${String(y).padStart(4, '0')}${String(m).padStart(2, '0')}${String(d).padStart(2, '0')}`;
         // compute next day
         const startObj = new Date(Date.UTC(y, m - 1, d));
         const nextDay = new Date(startObj.getTime() + 24 * 60 * 60 * 1000);
-        const dtEnd = `${String(nextDay.getUTCFullYear()).padStart(4,'0')}${String(nextDay.getUTCMonth()+1).padStart(2,'0')}${String(nextDay.getUTCDate()).padStart(2,'0')}`;
+        const dtEnd = `${String(nextDay.getUTCFullYear()).padStart(4, '0')}${String(nextDay.getUTCMonth() + 1).padStart(2, '0')}${String(nextDay.getUTCDate()).padStart(2, '0')}`;
 
         icsLines.push(`DTSTART;VALUE=DATE:${dtStart}`);
         icsLines.push(`DTEND;VALUE=DATE:${dtEnd}`);
