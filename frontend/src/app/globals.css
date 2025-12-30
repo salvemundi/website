@@ -1,0 +1,664 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "../styles/theme.css";
+
+/* Google Material Symbols - outlined */
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0..200&display=swap');
+
+/* Root color system */
+:root {
+  /* Main brand color - Light mode variants */
+  --color-primary-50: #f4e9f3;
+  --color-primary-100: #e4cbe2;
+  --color-primary-200: #d4add0;
+  --color-primary-300: #c48fbe;
+  --color-primary-400: #b471ad;
+  --color-primary-500: #a4539b;
+  --color-primary-600: #8c4682;
+  --color-primary-700: #75386a;
+  --color-primary-800: #5e2b52;
+  --color-primary-900: #471e3b;
+
+  /* Main brand - explicit light and dark variants */
+  --color-primary-light: #663265;
+  --color-primary-dark: #d9a3d6;
+  --color-primary: var(--color-primary-light);
+
+  /* Text - explicit light and dark variants */
+  --text-main-light: #663265;
+  --text-main-dark: #ffffff;
+  --text-main: var(--text-main-light);
+
+  --text-muted-light: #6f5772;
+  --text-muted-dark: #c9b2cc;
+  --text-muted: var(--text-muted-light);
+
+  /* Backgrounds - explicit light and dark variants */
+  --bg-main-light: #f8f9fa;
+  --bg-main-dark: #1a141b;
+  --bg-main: var(--bg-main-light);
+
+  /* Header height default (used by Hero for viewport calc). Updated at runtime by Header. */
+  --header-height: 64px;
+
+  --bg-soft-light: #faf7fb;
+  --bg-soft-dark: #1a141b;
+  --bg-soft: var(--bg-soft-light);
+
+  --bg-card-light: #ffffff;
+  --bg-card-dark: #1f1921;
+  --bg-card: var(--bg-card-light);
+
+  /* Borders - explicit light and dark variants */
+  --border-color-light: #d9c7db;
+  --border-color-dark: #4b3a4d;
+  --border-color: var(--border-color-light);
+}
+
+/* Heart toggle animation */
+.heart-pop {
+  transition: transform 180ms cubic-bezier(.2,.9,.2,1), opacity 180ms;
+}
+.heart-pop.pop {
+  transform: scale(1.25);
+}
+
+/* 🌙 Dark mode - switch to dark variants */
+.dark {
+  --color-primary: var(--color-primary-dark);
+  --text-main: var(--text-main-dark);
+  --text-muted: var(--text-muted-dark);
+  --bg-main: var(--bg-main-dark);
+  --bg-soft: var(--bg-soft-dark);
+  --bg-card: var(--bg-card-dark);
+  --border-color: var(--border-color-dark);
+}
+
+/* Apply them globally */
+html, body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+}
+
+/* Apply theme text color to all elements */
+* {
+  color: inherit;
+}
+
+/* Ensure text elements inherit properly */
+h1, h2, h3, h4, h5, h6,
+p, span, div, section, article,
+li, label, button, a,
+td, th, blockquote, figcaption {
+  color: inherit;
+}
+
+/* Ensure elements that explicitly set white text inside light backgrounds remain readable in light mode.
+   This targets common utility classes like `bg-white` / `bg-white/..` with child elements using `text-white`.
+   We scope this to light mode (when `body` does NOT have the `dark` class) so dark mode remains unaffected. */
+
+.text-primary {
+  color: var(--color-primary);
+}
+
+/* Utility for Material Symbols */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+  font-family: 'Material Symbols Outlined';
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  letter-spacing: normal;
+  font-feature-settings: "liga" 1;
+  -webkit-font-feature-settings: "liga" 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+.bg-primary {
+  background-color: var(--color-primary);
+}
+
+.border-primary {
+  border-color: var(--color-primary);
+}
+
+/* Shade utilities */
+.text-primary-50 {
+  color: var(--color-primary-50);
+}
+.text-primary-100 {
+  color: var(--color-primary-100);
+}
+.text-primary-200 {
+  color: var(--color-primary-200);
+}
+.text-primary-300 {
+  color: var(--color-primary-300);
+}
+.text-primary-400 {
+  color: var(--color-primary-400);
+}
+.text-primary-500 {
+  color: var(--color-primary-500);
+}
+.text-primary-600 {
+  color: var(--color-primary-600);
+}
+.text-primary-700 {
+  color: var(--color-primary-700);
+}
+.text-primary-800 {
+  color: var(--color-primary-800);
+}
+.text-primary-900 {
+  color: var(--color-primary-900);
+}
+
+.bg-primary-50 {
+  background-color: var(--color-primary-50);
+}
+.bg-primary-100 {
+  background-color: var(--color-primary-100);
+}
+.bg-primary-200 {
+  background-color: var(--color-primary-200);
+}
+.bg-primary-300 {
+  background-color: var(--color-primary-300);
+}
+.bg-primary-400 {
+  background-color: var(--color-primary-400);
+}
+.bg-primary-500 {
+  background-color: var(--color-primary-500);
+}
+.bg-primary-600 {
+  background-color: var(--color-primary-600);
+}
+.bg-primary-700 {
+  background-color: var(--color-primary-700);
+}
+.bg-primary-800 {
+  background-color: var(--color-primary-800);
+}
+.bg-primary-900 {
+  background-color: var(--color-primary-900);
+}
+
+/* ==============================================
+   LEGACY COMPATIBILITY VARIABLES
+   ============================================== */
+:root {
+  /* Legacy brand variables for backward compatibility */
+  --color-oranje: var(--color-primary);
+  --color-paars: var(--color-primary-600);
+  --color-geel: var(--color-primary-200);
+  --color-samu: var(--text-main);
+  --color-beige: var(--bg-soft);
+
+  --color-text-oranje: var(--color-primary);
+
+  /* Legacy semantic mappings */
+  --color-background: var(--bg-main);
+  --color-surface: var(--bg-card);
+  --color-ink: var(--text-main);
+  --color-ink-muted: var(--text-muted);
+  --color-ink-subtle: var(--text-muted);
+  --color-ink-dim: var(--text-muted);
+
+  --color-ui-border: transparent;
+  --color-ui-borderSoft: transparent;
+  --color-ui-input: var(--bg-soft);
+
+  /* Additional semantic variables */
+  --color-primary-light: var(--color-primary);
+  --color-secondary-light: var(--color-primary-400);
+  --color-tertiary-light: var(--color-primary-200);
+  --color-neutral-light: var(--text-muted);
+  --color-base-light: var(--bg-main);
+
+  /* Shadows & Radius */
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.06),
+    0 1px 3px rgba(16, 24, 40, 0.1);
+  --shadow-card-dark: 0 4px 6px -1px rgba(0, 0, 0, 0.5),
+    0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 15px rgba(102, 50, 101, 0.3);
+
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+
+  /* Gradients - Lighter for light mode */
+  --bg-gradient-primary: linear-gradient(to right, #471e3b, #5e2b52);
+  --bg-gradient-card: linear-gradient(
+    to bottom right,
+    var(--bg-main),
+    var(--bg-soft)
+  );
+}
+
+.dark {
+  --color-text-oranje: #ffffff;
+  --color-samu: #ffffff;
+  --color-beige: var(--bg-main);
+
+  --shadow-card: var(--shadow-card-dark);
+  /* Darker gradient for dark mode */
+  --bg-gradient-card: linear-gradient(
+    to bottom right,
+    var(--bg-soft),
+    var(--bg-main)
+  );
+  --bg-gradient-primary: linear-gradient(to right, #3d1a3a, #5e2b52);
+}
+
+/* ==============================================
+   FONT DECLARATIONS
+   ============================================== */
+@font-face {
+  font-family: "Poppins";
+  src: url("/fonts/poppins/Poppins-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src: url("/fonts/poppins/Poppins-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src: url("/fonts/poppins/Poppins-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src: url("/fonts/poppins/Poppins-BoldItalic.ttf") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ==============================================
+   BASE STYLES
+   ============================================== */
+:root {
+  font-family: "Poppins", Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Make media elements responsive */
+img,
+video,
+canvas,
+iframe {
+  max-width: 100%;
+}
+
+/* ==============================================
+   LEAFLET MAP STYLES
+   ============================================== */
+.leaflet-container {
+  font-family: "Poppins", Arial, Helvetica, sans-serif;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+}
+
+.leaflet-popup-content {
+  margin: 8px;
+}
+
+/* ==============================================
+   MOBILE HOME THEME
+   ============================================== */
+@media (max-width: 768px) {
+  body.mobile-home-theme {
+    background: radial-gradient(
+        circle at 15% 20%,
+        rgba(102, 50, 101, 0.25),
+        transparent 45%
+      ),
+      radial-gradient(
+        circle at 85% 25%,
+        rgba(185, 154, 217, 0.18),
+        transparent 40%
+      ),
+      radial-gradient(
+        circle at 20% 80%,
+        rgba(102, 50, 101, 0.15),
+        transparent 45%
+      ),
+      var(--bg-main);
+    color: var(--text-main);
+    overflow-x: hidden;
+  }
+
+  body.mobile-home-theme::before,
+  body.mobile-home-theme::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  body.mobile-home-theme::before {
+    background: radial-gradient(
+          circle at 10% 30%,
+          rgba(102, 50, 101, 0.22),
+          transparent 35%
+        )
+        0 0/100% 100% no-repeat,
+      radial-gradient(
+          circle at 90% 10%,
+          rgba(185, 154, 217, 0.18),
+          transparent 40%
+        )
+        0 0/100% 100% no-repeat;
+    filter: blur(50px);
+  }
+
+  body.mobile-home-theme::after {
+    background: radial-gradient(
+        circle at 25% 85%,
+        rgba(102, 50, 101, 0.16),
+        transparent 45%
+      )
+      0 0/100% 100% no-repeat;
+    filter: blur(60px);
+  }
+
+  body.mobile-home-theme main {
+    background: transparent;
+    color: inherit;
+  }
+
+  body.mobile-home-theme .bg-white,
+  body.mobile-home-theme .bg-gray-50,
+  body.mobile-home-theme .bg-gray-100 {
+    background-color: rgba(240, 235, 216, 0.92) !important;
+    color: var(--text-main);
+    border-color: rgba(19, 42, 64, 0.08);
+    box-shadow: 0 12px 40px rgba(19, 42, 64, 0.08);
+    backdrop-filter: blur(6px);
+  }
+
+  body.mobile-home-theme .text-gray-700,
+  body.mobile-home-theme .text-gray-800,
+  body.mobile-home-theme .text-gray-900 {
+    color: var(--text-main) !important;
+  }
+
+  body.mobile-home-theme a,
+  body.mobile-home-theme button {
+    border-radius: 14px;
+  }
+}
+
+/* ==============================================
+   ANIMATIONS
+   ============================================== */
+[data-scroll-speed] {
+  will-change: transform;
+}
+
+[data-scroll-fade] {
+  will-change: transform, opacity;
+}
+
+@keyframes committeeAvatarScroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* ==============================================
+   CUSTOM SCROLLBAR
+   ============================================== */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: var(--color-primary-400);
+  border-radius: 4px;
+}
+
+.scrollbar-thin:hover::-webkit-scrollbar-thumb {
+  background-color: var(--color-primary-600);
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary-400) transparent;
+}
+
+/* Hide scrollbar completely */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* ==============================================
+   GOOGLE MAPS AUTOCOMPLETE
+   ============================================== */
+.pac-container {
+  z-index: 9999 !important;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  margin-top: 4px;
+  font-family: inherit;
+}
+
+.pac-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  border: none;
+}
+
+.pac-item:hover {
+  background-color: var(--bg-soft);
+}
+
+.pac-item-selected {
+  background-color: var(--bg-soft);
+}
+
+.pac-item-query {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.pac-matched {
+  font-weight: 700;
+}
+
+/* ==============================================
+   REACT DATEPICKER
+   ============================================== */
+.react-datepicker-wrapper {
+  display: block;
+  width: 100%;
+}
+
+.react-datepicker {
+  font-family: inherit;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.react-datepicker__header {
+  background-color: var(--color-primary);
+  border-bottom: none;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  padding-top: 0.5rem;
+}
+
+.react-datepicker__current-month,
+.react-datepicker__day-name {
+  color: white;
+  font-weight: 600;
+}
+
+.react-datepicker__day {
+  border-radius: 0.375rem;
+  transition: all 0.15s ease-in-out;
+}
+
+.react-datepicker__day:hover {
+  background-color: var(--bg-soft);
+  border-radius: 0.375rem;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: var(--color-primary);
+  border-radius: 0.375rem;
+  color: white;
+  font-weight: 600;
+}
+
+.react-datepicker__day--selected:hover {
+  background-color: var(--color-primary-700);
+}
+
+.react-datepicker__navigation-icon::before {
+  border-color: white;
+}
+
+.react-datepicker__navigation:hover *::before {
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+/* ==============================================
+   UTILITY CLASSES
+   ============================================== */
+.card {
+  background: var(--bg-card);
+  border: 1px solid transparent;
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-card);
+}
+
+.btn-oranje {
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: var(--radius-xl);
+  transition: background-color 0.2s;
+}
+
+.btn-oranje:hover {
+  background: var(--color-primary-700);
+}
+
+.btn-paars {
+  background: var(--color-primary-600);
+  color: #fff;
+  border-radius: var(--radius-xl);
+  transition: background-color 0.2s;
+}
+
+.btn-paars:hover {
+  background: var(--color-primary-800);
+}
+
+/* ==============================================
+   LOADING ANIMATIONS & TRANSITIONS
+   ============================================== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.fade-in-scale {
+  animation: fadeInScale 0.3s ease-out forwards;
+}
+
+/* Stagger animation for grids */
+.stagger-item {
+  opacity: 0;
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.stagger-item:nth-child(1) { animation-delay: 0.05s; }
+.stagger-item:nth-child(2) { animation-delay: 0.1s; }
+.stagger-item:nth-child(3) { animation-delay: 0.15s; }
+.stagger-item:nth-child(4) { animation-delay: 0.2s; }
+.stagger-item:nth-child(5) { animation-delay: 0.25s; }
+.stagger-item:nth-child(6) { animation-delay: 0.3s; }
+.stagger-item:nth-child(7) { animation-delay: 0.35s; }
+.stagger-item:nth-child(8) { animation-delay: 0.4s; }
+
+/* Smooth content reveal */
+.content-loaded {
+  animation: fadeInScale 0.5s ease-out;
+}
+
+/* Debug helpers (temporary) */
+.debug-outline-red {
+  outline: 3px dashed rgba(255, 60, 60, 0.9);
+  outline-offset: -4px;
+}
+.debug-outline-green {
+  outline: 3px dashed rgba(60, 255, 120, 0.9);
+  outline-offset: -4px;
+}
+

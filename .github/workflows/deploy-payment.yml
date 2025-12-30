@@ -1,0 +1,128 @@
+name: Deploy Payment API
+
+on:
+  push:
+    branches:
+      - 'Development'
+      - 'main'
+    paths:
+      - 'payment-api/**'
+      - '.github/workflows/deploy-payment.yml'
+  workflow_dispatch:
+    inputs:
+      deploy_env:
+        description: 'Target Environment Override'
+        required: true
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - force_dev
+          - force_prod
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: salvemundi/payment-api
+  DEPLOY_PATH: /opt/payment-api
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set Environment Variables
+        run: |
+          MODE="${{ inputs.deploy_env }}"
+          REF="${{ github.ref_name }}"
+          
+          if [[ "$MODE" == "force_dev" ]]; then
+            echo "TAG=dev" >> $GITHUB_ENV
+          elif [[ "$MODE" == "force_prod" ]]; then
+            echo "TAG=latest" >> $GITHUB_ENV
+          elif [[ "$REF" == "Development" ]]; then
+            echo "TAG=dev" >> $GITHUB_ENV
+          else
+            echo "TAG=latest" >> $GITHUB_ENV
+          fi
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./payment-api
+          push: true
+          # Aanhalingstekens toegevoegd
+          tags: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}"
+          provenance: false
+          no-cache: true
+
+      - name: Copy docker-compose.yml to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "payment-api/docker-compose.yml"
+          target: ${{ env.DEPLOY_PATH }}
+          strip_components: 1
+
+      - name: Deploy on Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # 1. Login met de tijdelijke token (Fix voor denied error)
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # 2. Map voorbereiden
+            mkdir -p ${{ env.DEPLOY_PATH }}
+            cd ${{ env.DEPLOY_PATH }}
+
+            # 3. .env genereren
+            echo "TAG=${{ env.TAG }}" > .env
+
+            MODE="${{ inputs.deploy_env }}"
+            REF="${{ github.ref_name }}"
+            USE_PROD="false"
+
+            if [[ "$MODE" == "force_prod" ]]; then
+              USE_PROD="true"
+            elif [[ "$MODE" == "force_dev" ]]; then
+              USE_PROD="false"
+            elif [[ "$REF" == "main" ]]; then
+              USE_PROD="true"
+            else
+              USE_PROD="false"
+            fi
+
+            if [ "$USE_PROD" == "true" ]; then
+              # PROD Secrets
+              echo "MOLLIE_API_KEY=${{ secrets.PROD_MOLLIE_API_KEY }}" >> .env
+              echo "MOLLIE_WEBHOOK_URL=${{ secrets.PROD_MOLLIE_WEBHOOK_URL }}" >> .env
+              echo "DIRECTUS_URL=${{ secrets.DIRECTUS_URL }}" >> .env
+              echo "DIRECTUS_API_TOKEN=${{ secrets.DIRECTUS_API_TOKEN }}" >> .env
+            else
+              # DEV Secrets
+              echo "MOLLIE_API_KEY=${{ secrets.DEV_MOLLIE_API_KEY }}" >> .env
+              echo "MOLLIE_WEBHOOK_URL=${{ secrets.DEV_MOLLIE_WEBHOOK_URL }}" >> .env
+              echo "DIRECTUS_URL=${{ secrets.DIRECTUS_URL }}" >> .env
+              echo "DIRECTUS_API_TOKEN=${{ secrets.DIRECTUS_API_TOKEN }}" >> .env
+            fi
+
+            # 4. Pull & Up
+            docker compose pull payment-api
+            docker compose up -d payment-api --remove-orphans

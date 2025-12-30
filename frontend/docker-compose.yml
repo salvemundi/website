@@ -1,0 +1,14 @@
+services:
+  frontend:
+    image: ghcr.io/salvemundi/frontend:${TAG}
+    container_name: frontend-${TAG}
+    restart: unless-stopped
+    environment:
+      # Server-side environment variable for email API endpoint
+      - EMAIL_API_ENDPOINT=${EMAIL_API_ENDPOINT:-http://email-api:3001/send-email}
+    networks:
+      - proxy-network
+
+networks:
+  proxy-network:
+    external: true

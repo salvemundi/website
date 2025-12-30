@@ -6,6 +6,7 @@ dist/
 
 # Logs
 *.log
+.next
 
 # OS generated files
 .DS_Store
@@ -35,9 +36,5 @@ coverage/
 .yarn/
 
 # npm
-package-lock.json
-yarn.lock
 
-# Images and fonts (if generated)
-public/fonts/
-public/img/
+frontend/env

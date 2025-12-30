@@ -1,0 +1,30 @@
+{
+  "name": "directus-extension-entra-auth",
+  "version": "1.0.0",
+  "description": "Directus extension for Microsoft Entra ID authentication",
+  "keywords": [
+    "directus",
+    "directus-extension",
+    "directus-custom-endpoint"
+  ],
+  "type": "module",
+  "main": "dist/index.js",
+  "directus:extension": {
+    "type": "endpoint",
+    "path": "dist/index.js",
+    "source": "src/index.js",
+    "host": "*"
+  },
+  "scripts": {
+    "build": "directus-extension build",
+    "dev": "directus-extension build -w --no-minify",
+    "link": "directus-extension link"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2",
+    "jwks-rsa": "^3.1.0"
+  },
+  "devDependencies": {
+    "@directus/extensions-sdk": "^17.0.0"
+  }
+}
