@@ -4,6 +4,13 @@ export const directusUrl = '/api';
 
 const apiKey = process.env.NEXT_PUBLIC_DIRECTUS_API_KEY || '';
 
+// Debug logging for build-time secrets (Visible in browser console)
+if (typeof window !== 'undefined') {
+    console.log('[Directus Debug] API Key status:', apiKey ?
+        `Gevonden (Lengte: ${apiKey.length}, Begint met: ${apiKey.substring(0, 4)}...)` :
+        'NIET GEVONDEN');
+}
+
 // Create a simple fetch wrapper for Directus REST API
 export async function directusFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${directusUrl}${endpoint}`;
@@ -68,7 +75,7 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit):
         ...incomingHeaders,
     };
 
-        // Debug logging removed to avoid leaking masked tokens
+    // Debug logging removed to avoid leaking masked tokens
 
     // Minimal debug: method, url, usingSessionToken
     try {
