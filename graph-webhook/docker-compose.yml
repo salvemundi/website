@@ -3,7 +3,7 @@ services:
     image: ghcr.io/salvemundi/graph-webhook:${TAG:-latest}
     # build: .
     # Trigger dev deploy
-    container_name: graph-webhook-${TAG:-dev}
+    container_name: graph-webhook
     restart: unless-stopped
     env_file: .env
     networks:
