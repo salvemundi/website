@@ -38,12 +38,14 @@ jobs:
         run: |
           if [[ "${{ github.ref_name }}" == "main" ]]; then
             echo "TAG=latest" >> $GITHUB_ENV
-            echo "CORS_ORIGIN=${{ secrets.PROD_CORS_ORIGIN }}" >> $GITHUB_ENV
           else
             echo "TAG=dev" >> $GITHUB_ENV
-            echo "CORS_ORIGIN=${{ secrets.DEV_CORS_ORIGIN }}" >> $GITHUB_ENV
           fi
           echo "DEPLOY_PATH=/opt/directus" >> $GITHUB_ENV
+
+          # ALWAYS include all origins for the shared Directus instance
+          # This prevents one branch deployment from locking out requested origins from the other.
+          printf "CORS_ORIGIN=%s,%s\n" "${{ secrets.PROD_CORS_ORIGIN }}" "${{ secrets.DEV_CORS_ORIGIN }}" >> $GITHUB_ENV
 
           # Global Secrets (Same for both)
           echo "DIRECTUS_KEY=${{ secrets.DIRECTUS_KEY }}" >> $GITHUB_ENV

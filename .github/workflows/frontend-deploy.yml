@@ -43,13 +43,13 @@ jobs:
             echo "NEXT_PUBLIC_AUTH_REDIRECT_URI=https://dev.salvemundi.nl" >> $GITHUB_ENV
           fi
           
-          # Map existing GitHub Secrets to frontend variables (Using unified secrets)
-          echo "NEXT_PUBLIC_DIRECTUS_URL=${{ secrets.DIRECTUS_URL }}" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_DIRECTUS_API_KEY=${{ secrets.DIRECTUS_API_TOKEN }}" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_ENTRA_CLIENT_ID=${{ secrets.NEXT_PUBLIC_ENTRA_CLIENT_ID }}" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_ENTRA_TENANT_ID=${{ secrets.AUTH_MICROSOFT_TENANT_ID }}" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_EMAIL_API_ENDPOINT=/api/send-email" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=" >> $GITHUB_ENV
+          # Map existing GitHub Secrets to frontend variables safely using printf
+          printf "NEXT_PUBLIC_DIRECTUS_URL=%s\n" "${{ secrets.DIRECTUS_URL }}" >> $GITHUB_ENV
+          printf "NEXT_PUBLIC_DIRECTUS_API_KEY=%s\n" "${{ secrets.DIRECTUS_API_TOKEN }}" >> $GITHUB_ENV
+          printf "NEXT_PUBLIC_ENTRA_CLIENT_ID=%s\n" "${{ secrets.NEXT_PUBLIC_ENTRA_CLIENT_ID }}" >> $GITHUB_ENV
+          printf "NEXT_PUBLIC_ENTRA_TENANT_ID=%s\n" "${{ secrets.AUTH_MICROSOFT_TENANT_ID }}" >> $GITHUB_ENV
+          printf "NEXT_PUBLIC_EMAIL_API_ENDPOINT=%s\n" "/api/send-email" >> $GITHUB_ENV
+          printf "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=%s\n" "" >> $GITHUB_ENV
 
       # ------------------------------
       # Login to GitHub Container Registry
