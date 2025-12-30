@@ -1,9 +1,9 @@
 console.log('[ENTRA-AUTH-DEBUG] Loading extension module into memory...');
 
-const jwt = require('jsonwebtoken');
-const jwksClient = require('jwks-rsa');
+import jwt from 'jsonwebtoken';
+import jwksClient from 'jwks-rsa';
 
-const entraAuthEndpoint = (router, { services, exceptions, database, logger, env }) => {
+export default (router, { services, exceptions, database, logger, env }) => {
     logger.info('[ENTRA-AUTH] Extension initializing...');
 
     router.get('/', (req, res) => {
@@ -20,6 +20,7 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
         jwksRequestsPerMinute: 10
     });
 
+    // Match the route expected by the frontend
     router.post('/auth/login/entra', async (req, res, next) => {
         logger.info('[ENTRA-AUTH] POST /auth/login/entra route hit.');
 
@@ -33,6 +34,7 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
 
             let microsoftUser;
             try {
+                // Pass environment and client to the helper function
                 microsoftUser = await verifyMicrosoftToken(token, env, logger, client);
             } catch (error) {
                 logger.error('[ENTRA-AUTH] Token verification failed:', error);
@@ -47,6 +49,7 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
             }
 
             const accountability = { admin: true, role: null, user: null };
+            // Ensure schema is passed correctly
             const usersService = new UsersService({ schema: req.schema, accountability });
 
             let user = await database('directus_users')
@@ -126,6 +129,7 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
         }
     });
 
+    // Helper function to verify token
     async function verifyMicrosoftToken(idToken, env, logger, client) {
         return new Promise((resolve, reject) => {
             const getKey = (header, callback) => {
@@ -153,5 +157,3 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
         });
     }
 };
-
-module.exports = entraAuthEndpoint;
