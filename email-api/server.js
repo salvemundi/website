@@ -1,7 +1,6 @@
-/**
  * Email API
- * Environment Isolation Audit: 2025-12-30
- */
+  * Environment Isolation Audit: 2025 - 12 - 31(Permission Fix Re - run)
+    */
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();

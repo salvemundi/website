@@ -1,5 +1,5 @@
 # Nachtwacht Leden Check Script
-# Environment Isolation Audit: 2025-12-30
+# Environment Isolation Audit: 2025-12-31 (Permission Fix Re-run)
 FROM mcr.microsoft.com/powershell:lts-ubuntu-22.04
 
 LABEL description="Salve Mundi Leden Nachtwacht"
