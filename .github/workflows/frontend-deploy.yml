@@ -39,7 +39,7 @@ jobs:
           client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
           domain: "https://infisical.salvemundi.nl"
           project-slug: "salvemundi-2-j-tu"
-          env-slug: "dev"
+          env-slug: ${{ env.INFISICAL_ENV }}
           secret-path: "/"
           export-type: "env"
 
@@ -48,10 +48,12 @@ jobs:
       # ------------------------------
       - name: Set Docker image tag
         run: |
-          if [[ "${{ github.ref_name }}" == "Development" ]]; then
-            echo "TAG=dev" >> $GITHUB_ENV
-          else
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
             echo "TAG=latest" >> $GITHUB_ENV
+            echo "INFISICAL_ENV=prod" >> $GITHUB_ENV
+          else
+            echo "TAG=dev" >> $GITHUB_ENV
+            echo "INFISICAL_ENV=dev" >> $GITHUB_ENV
           fi
 
       # ------------------------------

@@ -35,35 +35,35 @@ jobs:
       - name: Map Secrets to Environment
         id: selection
         run: |
-          if [[ "${{ github.ref_name }}" == "Development" ]]; then
-            echo "TAG=dev" >> $GITHUB_ENV
-            
-            # Mapping secrets (Gebruik productie-waarden voor parity)
-            echo "DIRECTUS_KEY=${{ secrets.DIRECTUS_KEY }}" >> $GITHUB_ENV
-            echo "DIRECTUS_SECRET=${{ secrets.DIRECTUS_SECRET }}" >> $GITHUB_ENV
-            echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}" >> $GITHUB_ENV
-            echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> $GITHUB_ENV
-            echo "PUBLIC_URL=${{ secrets.DEV_DIRECTUS_URL }}" >> $GITHUB_ENV
-            
-            # Database
-            echo "POSTGRES_DB=${{ secrets.DB_DATABASE }}" >> $GITHUB_ENV
-            echo "POSTGRES_USER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
-            echo "POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
-            
-            # Auth (Microsoft Entra ID - DEV prefix)
-            echo "AUTH_MICROSOFT_CLIENT_ID=${{ secrets.DEV_MS_GRAPH_CLIENT_ID }}" >> $GITHUB_ENV
-            echo "AUTH_MICROSOFT_CLIENT_SECRET=${{ secrets.DEV_MS_GRAPH_CLIENT_SECRET }}" >> $GITHUB_ENV
-            echo "AUTH_MICROSOFT_ISSUER_URL=${{ secrets.AUTH_MICROSOFT_ISSUER_URL }}" >> $GITHUB_ENV
-            echo "AUTH_MICROSOFT_TENANT_ID=${{ secrets.DEV_MS_GRAPH_TENANT_ID }}" >> $GITHUB_ENV
-            echo "ENTRA_AUTH_FRONTEND_CLIENT_ID=${{ secrets.NEXT_PUBLIC_ENTRA_CLIENT_ID }}" >> $GITHUB_ENV
-            echo "AUTH_MICROSOFT_DEFAULT_ROLE_ID=${{ secrets.DIRECTUS_MEMBER_ROLE_ID }}" >> $GITHUB_ENV
-            
-            echo "CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}" >> $GITHUB_ENV
-            echo "CORS_ALLOW_CREDENTIALS=${{ secrets.CORS_ALLOW_CREDENTIALS }}" >> $GITHUB_ENV
-            
-          else
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
             echo "TAG=latest" >> $GITHUB_ENV
+            echo "CORS_ORIGIN=${{ secrets.PROD_CORS_ORIGIN }}" >> $GITHUB_ENV
+          else
+            echo "TAG=dev" >> $GITHUB_ENV
+            echo "CORS_ORIGIN=${{ secrets.DEV_CORS_ORIGIN }}" >> $GITHUB_ENV
           fi
+
+          # Global Secrets (Same for both)
+          echo "DIRECTUS_KEY=${{ secrets.DIRECTUS_KEY }}" >> $GITHUB_ENV
+          echo "DIRECTUS_SECRET=${{ secrets.DIRECTUS_SECRET }}" >> $GITHUB_ENV
+          echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}" >> $GITHUB_ENV
+          echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> $GITHUB_ENV
+          echo "PUBLIC_URL=${{ secrets.DIRECTUS_URL }}" >> $GITHUB_ENV
+          
+          # Database
+          echo "POSTGRES_DB=${{ secrets.DB_DATABASE }}" >> $GITHUB_ENV
+          echo "POSTGRES_USER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
+          echo "POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
+          
+          # Auth (Microsoft Entra ID - Global)
+          echo "AUTH_MICROSOFT_CLIENT_ID=${{ secrets.AUTH_MICROSOFT_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "AUTH_MICROSOFT_CLIENT_SECRET=${{ secrets.AUTH_MICROSOFT_CLIENT_SECRET }}" >> $GITHUB_ENV
+          echo "AUTH_MICROSOFT_ISSUER_URL=${{ secrets.AUTH_MICROSOFT_ISSUER_URL }}" >> $GITHUB_ENV
+          echo "AUTH_MICROSOFT_TENANT_ID=${{ secrets.AUTH_MICROSOFT_TENANT_ID }}" >> $GITHUB_ENV
+          echo "ENTRA_AUTH_FRONTEND_CLIENT_ID=${{ secrets.NEXT_PUBLIC_ENTRA_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "AUTH_MICROSOFT_DEFAULT_ROLE_ID=${{ secrets.DIRECTUS_MEMBER_ROLE_ID }}" >> $GITHUB_ENV
+          
+          echo "CORS_ALLOW_CREDENTIALS=${{ secrets.CORS_ALLOW_CREDENTIALS }}" >> $GITHUB_ENV
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5

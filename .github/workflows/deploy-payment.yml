@@ -113,13 +113,13 @@ jobs:
               # PROD Secrets
               echo "MOLLIE_API_KEY=${{ secrets.PROD_MOLLIE_API_KEY }}" >> .env
               echo "MOLLIE_WEBHOOK_URL=${{ secrets.PROD_MOLLIE_WEBHOOK_URL }}" >> .env
-              echo "DIRECTUS_URL=${{ secrets.PROD_DIRECTUS_URL }}" >> .env
-              echo "DIRECTUS_API_TOKEN=${{ secrets.PROD_DIRECTUS_API_TOKEN }}" >> .env
+              echo "DIRECTUS_URL=${{ secrets.DIRECTUS_URL }}" >> .env
+              echo "DIRECTUS_API_TOKEN=${{ secrets.DIRECTUS_API_TOKEN }}" >> .env
             else
               # DEV Secrets
               echo "MOLLIE_API_KEY=${{ secrets.DEV_MOLLIE_API_KEY }}" >> .env
               echo "MOLLIE_WEBHOOK_URL=${{ secrets.DEV_MOLLIE_WEBHOOK_URL }}" >> .env
-              echo "DIRECTUS_URL=${{ secrets.DEV_DIRECTUS_URL }}" >> .env
+              echo "DIRECTUS_URL=${{ secrets.DIRECTUS_URL }}" >> .env
               echo "DIRECTUS_API_TOKEN=${{ secrets.DEV_DIRECTUS_API_TOKEN }}" >> .env
             fi
 
