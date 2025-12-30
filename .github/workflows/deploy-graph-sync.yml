@@ -62,27 +62,37 @@ jobs:
 
       - name: Deploy on Server
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          GH_REGISTRY: ${{ env.REGISTRY }}
+          GH_USERNAME: ${{ github.actor }}
+          GH_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOY_PATH: ${{ env.DEPLOY_PATH }}
+          TAG: ${{ env.TAG }}
+          TENANT_ID: ${{ secrets.AUTH_MICROSOFT_TENANT_ID }}
+          CLIENT_ID: ${{ secrets.GRAPH_SYNC_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.GRAPH_SYNC_CLIENT_SECRET }}
+          DIRECTUS_URL: ${{ secrets.DIRECTUS_URL }}
+          DIRECTUS_STATIC_TOKEN: ${{ secrets.GRAPH_SYNC_DIRECTUS_TOKEN }}
+          DIRECTUS_DEFAULT_ROLE_ID: ${{ secrets.GRAPH_SYNC_DEFAULT_ROLE_ID }}
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,DEPLOY_PATH,TAG,TENANT_ID,CLIENT_ID,CLIENT_SECRET,DIRECTUS_URL,DIRECTUS_STATIC_TOKEN,DIRECTUS_DEFAULT_ROLE_ID
           script: |
-            # 1. Login with temporary token
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            echo $GH_PASSWORD | docker login $GH_REGISTRY -u $GH_USERNAME --password-stdin
 
-            # 2. Prepare directory
-            mkdir -p ${{ env.DEPLOY_PATH }}
-            cd ${{ env.DEPLOY_PATH }}
+            mkdir -p $DEPLOY_PATH
+            cd $DEPLOY_PATH
 
-            # 3. Generate .env
-            echo "TAG=${{ env.TAG }}" > .env
-            echo "TENANT_ID=${{ secrets.AUTH_MICROSOFT_TENANT_ID }}" >> .env
-            echo "CLIENT_ID=${{ secrets.GRAPH_SYNC_CLIENT_ID }}" >> .env
-            echo "CLIENT_SECRET=${{ secrets.GRAPH_SYNC_CLIENT_SECRET }}" >> .env
-            echo "DIRECTUS_URL=${{ secrets.DIRECTUS_URL }}" >> .env
-            echo "DIRECTUS_STATIC_TOKEN=${{ secrets.GRAPH_SYNC_DIRECTUS_TOKEN }}" >> .env
-            echo "DIRECTUS_DEFAULT_ROLE_ID=${{ secrets.GRAPH_SYNC_DEFAULT_ROLE_ID }}" >> .env
-            
-            # 4. Pull & Up
+            # Generate .env safely
+            echo "TAG=$TAG" > .env
+            printf "TENANT_ID=%s\n" "$TENANT_ID" >> .env
+            printf "CLIENT_ID=%s\n" "$CLIENT_ID" >> .env
+            printf "CLIENT_SECRET=%s\n" "$CLIENT_SECRET" >> .env
+            printf "DIRECTUS_URL=%s\n" "$DIRECTUS_URL" >> .env
+            printf "DIRECTUS_STATIC_TOKEN=%s\n" "$DIRECTUS_STATIC_TOKEN" >> .env
+            printf "DIRECTUS_DEFAULT_ROLE_ID=%s\n" "$DIRECTUS_DEFAULT_ROLE_ID" >> .env
+
             docker compose pull graph-sync
             docker compose up -d graph-sync --force-recreate --remove-orphans
