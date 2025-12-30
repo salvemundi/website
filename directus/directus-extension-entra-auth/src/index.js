@@ -1,17 +1,12 @@
-console.log('[EntraAuth] Extension module loading started...');
-
 import jwt from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
 
 export default (router, context) => {
     const { services, exceptions, database, logger, env } = context || {};
 
-    console.log('[EntraAuth] Extension initialization started.');
-    console.log(`[EntraAuth] Context keys available: ${Object.keys(context || {}).join(', ')}`);
-    if (services) {
-        console.log(`[EntraAuth] Services available: ${Object.keys(services).join(', ')}`);
+    if (logger) {
+        logger.info('[EntraAuth] Extension initialization started.');
     }
-    console.log(`[EntraAuth] Environment check - Tenant ID configured: ${!!(env?.AUTH_MICROSOFT_TENANT_ID)}`);
 
     if (logger) {
         logger.info('[EntraAuth] Registering routes...');
@@ -50,25 +45,6 @@ export default (router, context) => {
                 return res.status(400).json({ error: 'Token and email are required', code: 'INVALID_PAYLOAD' });
             }
 
-            // --- DIAGNOSTIC: Unsafe Token Inspection (Stringified) ---
-            try {
-                const decoded = jwt.decode(token);
-                if (logger) {
-                    logger.info(`[EntraAuth][${requestId}] DIAGNOSTIC - Unsafe Token Decode: ${JSON.stringify({
-                        aud: decoded?.aud,
-                        iss: decoded?.iss,
-                        tid: decoded?.tid,
-                        exp: decoded ? new Date(decoded.exp * 1000).toISOString() : 'N/A'
-                    })}`);
-                    logger.info(`[EntraAuth][${requestId}] DIAGNOSTIC - Expected Config: ${JSON.stringify({
-                        expectedAud: env?.AUTH_MICROSOFT_CLIENT_ID,
-                        expectedIssPrefix: `https://login.microsoftonline.com/${env?.AUTH_MICROSOFT_TENANT_ID || 'common'}/v2.0`
-                    })}`);
-                }
-            } catch (decodeErr) {
-                if (logger) logger.error(`[EntraAuth][${requestId}] Failed to decode token for diagnostics: ${decodeErr.message}`);
-            }
-            // --------------------------------------------------------
 
             if (!UsersService || !AuthenticationService) {
                 const msg = 'Internal error: Required Directus services are missing.';
