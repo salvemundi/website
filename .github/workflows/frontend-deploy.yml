@@ -106,8 +106,6 @@ jobs:
           source: "frontend/docker-compose.yml"
           target: ${{ env.DEPLOY_PATH }}
           strip_components: 1
-          rm: true
-          overwrite: true
 
       # ------------------------------
       # Deploy on server
@@ -131,4 +129,4 @@ jobs:
             cd ${{ env.DEPLOY_PATH }}
             echo "TAG=$TAG" > .env
             docker compose pull frontend
-            docker compose up -d frontend --remove-orphans
+            docker compose up -d frontend --force-recreate --remove-orphans
