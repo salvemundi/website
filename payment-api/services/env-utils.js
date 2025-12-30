@@ -10,22 +10,22 @@
  */
 function getEnvironment(req) {
     const origin = req.headers.origin || req.headers.referer || '';
-    
+
     // Check for localhost or local IP
     if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
         return 'development';
     }
-    
+
     // Check for dev subdomain
     if (origin.includes('dev.salvemundi.nl')) {
         return 'development';
     }
-    
-    // Check for production domain
-    if (origin.includes('salvemundi.nl')) {
+
+    // Check for production or pre-production domain
+    if (origin.includes('salvemundi.nl') || origin.includes('preprod.salvemundi.nl')) {
         return 'production';
     }
-    
+
     // Default to production for safety (unknown sources)
     return 'production';
 }
