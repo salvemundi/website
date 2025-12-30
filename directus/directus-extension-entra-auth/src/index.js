@@ -20,12 +20,12 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
         jwksRequestsPerMinute: 10
     });
 
-    router.post('/', async (req, res, next) => {
-        logger.info('[ENTRA-AUTH] POST / (ROOT) route hit.');
-        
+    router.post('/auth/login/entra', async (req, res, next) => {
+        logger.info('[ENTRA-AUTH] POST /auth/login/entra route hit.');
+
         try {
             const { token, email } = req.body;
-            
+
             if (!token || !email) {
                 logger.warn('[ENTRA-AUTH] Missing token or email.');
                 return res.status(400).json({ error: 'Token and email are required', code: 'INVALID_PAYLOAD' });
@@ -41,14 +41,14 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
 
             const tokenEmail = microsoftUser.email || microsoftUser.preferred_username;
             const requestedEmail = email.toLowerCase();
-            
+
             if (tokenEmail.toLowerCase() !== requestedEmail) {
                 throw new InvalidCredentialsException('Email does not match Microsoft account');
             }
-            
+
             const accountability = { admin: true, role: null, user: null };
             const usersService = new UsersService({ schema: req.schema, accountability });
-            
+
             let user = await database('directus_users')
                 .where({ entra_id: microsoftUser.oid })
                 .first();
@@ -58,7 +58,7 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
                     .where({ email: requestedEmail })
                     .first();
             }
-            
+
             const isFontysMember = requestedEmail.endsWith('@student.fontys.nl') || requestedEmail.endsWith('@fontys.nl');
 
             if (!user) {
@@ -80,7 +80,7 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
                 if (!user.entra_id) updates.entra_id = microsoftUser.oid;
                 if (!user.external_identifier) updates.external_identifier = microsoftUser.oid;
                 if (isFontysMember && !user.fontys_email) updates.fontys_email = requestedEmail;
-                
+
                 if (Object.keys(updates).length > 0) {
                     await usersService.updateOne(user.id, updates);
                 }
@@ -109,7 +109,7 @@ const entraAuthEndpoint = (router, { services, exceptions, database, logger, env
                     issuer: 'directus'
                 }
             );
-            
+
             logger.info(`[ENTRA-AUTH] Login successful for user ${user.id}.`);
 
             res.json({
