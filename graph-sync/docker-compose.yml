@@ -3,7 +3,7 @@ services:
     image: ghcr.io/salvemundi/graph-sync:${TAG:-latest}
     # build: .
     # Trigger dev deploy
-    container_name: graph-sync-${TAG:-dev}
+    container_name: graph-sync
     env_file: .env
     networks:
       - proxy-network

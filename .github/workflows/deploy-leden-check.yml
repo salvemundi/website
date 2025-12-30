@@ -3,7 +3,6 @@ name: Deploy Leden Check Script
 on:
   push:
     branches:
-      - 'Development'
       - 'main'
     paths:
       - 'leden-check-script/**'
@@ -33,13 +32,8 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Set environment variables
         run: |
-          if [[ "${{ github.ref_name }}" == "main" ]]; then
-            echo "TAG=latest" >> $GITHUB_ENV
-            echo "DEPLOY_PATH=/opt/leden-check-script-prod" >> $GITHUB_ENV
-          else
-            echo "TAG=dev" >> $GITHUB_ENV
-            echo "DEPLOY_PATH=/opt/leden-check-script-dev" >> $GITHUB_ENV
-          fi
+          echo "TAG=latest" >> $GITHUB_ENV
+          echo "DEPLOY_PATH=/opt/leden-check-script" >> $GITHUB_ENV
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
