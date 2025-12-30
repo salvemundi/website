@@ -50,11 +50,11 @@ jobs:
             echo "POSTGRES_USER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
             echo "POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
             
-            # Auth (Microsoft Entra ID - Prod parity)
-            echo "AUTH_MICROSOFT_CLIENT_ID=${{ secrets.PROD_MS_GRAPH_CLIENT_ID }}" >> $GITHUB_ENV
-            echo "AUTH_MICROSOFT_CLIENT_SECRET=${{ secrets.PROD_MS_GRAPH_CLIENT_SECRET }}" >> $GITHUB_ENV
+            # Auth (Microsoft Entra ID - DEV prefix)
+            echo "AUTH_MICROSOFT_CLIENT_ID=${{ secrets.DEV_MS_GRAPH_CLIENT_ID }}" >> $GITHUB_ENV
+            echo "AUTH_MICROSOFT_CLIENT_SECRET=${{ secrets.DEV_MS_GRAPH_CLIENT_SECRET }}" >> $GITHUB_ENV
             echo "AUTH_MICROSOFT_ISSUER_URL=${{ secrets.AUTH_MICROSOFT_ISSUER_URL }}" >> $GITHUB_ENV
-            echo "AUTH_MICROSOFT_TENANT_ID=${{ secrets.AUTH_MICROSOFT_TENANT_ID }}" >> $GITHUB_ENV
+            echo "AUTH_MICROSOFT_TENANT_ID=${{ secrets.DEV_MS_GRAPH_TENANT_ID }}" >> $GITHUB_ENV
             echo "AUTH_MICROSOFT_DEFAULT_ROLE_ID=${{ secrets.DIRECTUS_MEMBER_ROLE_ID }}" >> $GITHUB_ENV
             
             echo "CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}" >> $GITHUB_ENV
