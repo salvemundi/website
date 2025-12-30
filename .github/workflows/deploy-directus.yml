@@ -43,9 +43,9 @@ jobs:
           fi
           echo "DEPLOY_PATH=/opt/directus" >> $GITHUB_ENV
 
-          # ALWAYS include all origins for the shared Directus instance
-          # This prevents one branch deployment from locking out requested origins from the other.
-          printf "CORS_ORIGIN=%s,%s\n" "${{ secrets.PROD_CORS_ORIGIN }}" "${{ secrets.DEV_CORS_ORIGIN }}" >> $GITHUB_ENV
+          # ALWAYS include all origins for the shared Directus instance.
+          # We explicitly add preprod just in case it's not in the PROD_CORS_ORIGIN secret.
+          printf "CORS_ORIGIN=%s,%s,https://preprod.salvemundi.nl,https://salvemundi.nl,https://dev.salvemundi.nl\n" "${{ secrets.PROD_CORS_ORIGIN }}" "${{ secrets.DEV_CORS_ORIGIN }}" >> $GITHUB_ENV
 
           # Global Secrets (Same for both)
           echo "DIRECTUS_KEY=${{ secrets.DIRECTUS_KEY }}" >> $GITHUB_ENV
