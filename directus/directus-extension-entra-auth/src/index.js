@@ -6,12 +6,10 @@ import jwksClient from 'jwks-rsa';
 export default (router, context) => {
     const { services, exceptions, database, logger, env } = context || {};
 
-    // Log direct naar console om zeker te zijn dat het niet door Directus logger wordt ingeslikt
     console.log('[EntraAuth] Extension initialization started.');
     console.log(`[EntraAuth] Context keys available: ${Object.keys(context || {}).join(', ')}`);
     console.log(`[EntraAuth] Environment check - Tenant ID configured: ${!!(env?.AUTH_MICROSOFT_TENANT_ID)}`);
 
-    // Nette logging via Directus logger (indien beschikbaar)
     if (logger) {
         logger.info('[EntraAuth] Registering routes...');
     }
@@ -21,11 +19,9 @@ export default (router, context) => {
         res.send('Entra Auth Extension is ACTIVE and running.');
     });
 
-    // Veilig ophalen van services en exceptions met fallbacks
     const UsersService = services?.UsersService;
     const AuthenticationService = services?.AuthenticationService;
 
-    // Vang de TypeError op door fallbacks te gebruiken voor ontbrekende exceptions
     const InvalidPayloadException = exceptions?.InvalidPayloadException || Error;
     const InvalidCredentialsException = exceptions?.InvalidCredentialsException || Error;
 
@@ -37,13 +33,11 @@ export default (router, context) => {
         jwksRequestsPerMinute: 10
     });
 
-    // Match the route expected by the frontend
     router.post('/auth/login/entra', async (req, res, next) => {
         const requestId = Math.random().toString(36).substring(7);
         if (logger) {
             logger.info(`[EntraAuth][${requestId}] POST /auth/login/entra route hit.`);
         }
-        console.log(`[EntraAuth][${requestId}] Processing login request for payload keys: ${Object.keys(req.body || {}).join(', ')}`);
 
         try {
             const { token, email } = req.body || {};
@@ -52,6 +46,27 @@ export default (router, context) => {
                 if (logger) logger.warn(`[EntraAuth][${requestId}] Missing token or email.`);
                 return res.status(400).json({ error: 'Token and email are required', code: 'INVALID_PAYLOAD' });
             }
+
+            // --- DIAGNOSTIC: Unsafe Token Inspection ---
+            try {
+                const decoded = jwt.decode(token);
+                if (logger) {
+                    logger.info(`[EntraAuth][${requestId}] DIAGNOSTIC - Unsafe Token Decode:`, {
+                        aud: decoded?.aud,
+                        iss: decoded?.iss,
+                        tid: decoded?.tid,
+                        exp: decoded ? new Date(decoded.exp * 1000).toISOString() : 'N/A',
+                        now: new Date().toISOString()
+                    });
+                    logger.info(`[EntraAuth][${requestId}] DIAGNOSTIC - Expected Config:`, {
+                        expectedAud: env?.AUTH_MICROSOFT_CLIENT_ID,
+                        expectedIssPrefix: `https://login.microsoftonline.com/${env?.AUTH_MICROSOFT_TENANT_ID || 'common'}`
+                    });
+                }
+            } catch (decodeErr) {
+                if (logger) logger.error(`[EntraAuth][${requestId}] Failed to decode token for diagnostics:`, decodeErr.message);
+            }
+            // ------------------------------------------
 
             if (!UsersService || !AuthenticationService) {
                 const msg = 'Internal error: Required Directus services are missing.';
@@ -65,12 +80,21 @@ export default (router, context) => {
                 microsoftUser = await verifyMicrosoftToken(token, env, logger, client);
                 if (logger) logger.debug(`[EntraAuth][${requestId}] Token verified for OID: ${microsoftUser.oid}`);
             } catch (error) {
-                if (logger) logger.error(`[EntraAuth][${requestId}] Token verification failed:`, error);
-                throw new InvalidCredentialsException('Invalid or expired Microsoft token');
+                if (logger) {
+                    logger.error(`[EntraAuth][${requestId}] Token verification FAILED.`);
+                    logger.error(`[EntraAuth][${requestId}] Error Name: ${error.name}`);
+                    logger.error(`[EntraAuth][${requestId}] Error Message: ${error.message}`);
+                }
+                throw new InvalidCredentialsException(`Invalid or expired Microsoft token: ${error.message}`);
             }
 
-            const tokenEmail = microsoftUser.email || microsoftUser.preferred_username;
+            const tokenEmail = microsoftUser.email || microsoftUser.preferred_username || microsoftUser.upn;
             const requestedEmail = email.toLowerCase();
+
+            if (!tokenEmail) {
+                if (logger) logger.error(`[EntraAuth][${requestId}] No email found in Microsoft token.`);
+                throw new InvalidCredentialsException('No email found in Microsoft account');
+            }
 
             if (tokenEmail.toLowerCase() !== requestedEmail) {
                 if (logger) logger.warn(`[EntraAuth][${requestId}] Email mismatch. Token: ${tokenEmail}, Requested: ${requestedEmail}`);
@@ -80,14 +104,14 @@ export default (router, context) => {
             const accountability = { admin: true, role: null, user: null };
             const usersService = new UsersService({ schema: req.schema, accountability });
 
-            // User Lookup Strategy
             if (logger) logger.debug(`[EntraAuth][${requestId}] Looking up user in database...`);
             let user = await database('directus_users')
                 .where({ entra_id: microsoftUser.oid })
+                .orWhere({ external_identifier: microsoftUser.oid })
                 .first();
 
             if (!user) {
-                if (logger) logger.debug(`[EntraAuth][${requestId}] User not found by entra_id, trying email...`);
+                if (logger) logger.debug(`[EntraAuth][${requestId}] User not found by ID, trying email...`);
                 user = await database('directus_users')
                     .where({ email: requestedEmail })
                     .first();
@@ -162,7 +186,6 @@ export default (router, context) => {
         }
     });
 
-    // Helper function to verify token
     async function verifyMicrosoftToken(idToken, env, logger, client) {
         return new Promise((resolve, reject) => {
             const getKey = (header, callback) => {
