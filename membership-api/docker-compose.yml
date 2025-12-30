@@ -1,7 +1,7 @@
 services:
   membership-api:
     image: ghcr.io/salvemundi/membership-api:${TAG}
-    container_name: membership-api
+    container_name: membership-api-${TAG:-dev}
     restart: unless-stopped
     networks:
       - proxy-network

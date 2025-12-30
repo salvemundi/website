@@ -33,6 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 const allowedOrigins = [
     'https://dev.salvemundi.nl',
     'https://salvemundi.nl',
+    'https://preprod.salvemundi.nl',
     'http://localhost:5173'
 ];
 

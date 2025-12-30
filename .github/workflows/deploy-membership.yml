@@ -12,7 +12,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: salvemundi/membership-api
-  DEPLOY_PATH: /opt/membership-api
 
 jobs:
   build-and-deploy:
@@ -32,12 +31,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set Environment Variables
+      - name: Set environment variables
         run: |
-          if [[ "${{ github.ref_name }}" == "Development" ]]; then
-            echo "TAG=dev" >> $GITHUB_ENV
-          else
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
             echo "TAG=latest" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=/opt/membership-api-prod" >> $GITHUB_ENV
+          else
+            echo "TAG=dev" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=/opt/membership-api-dev" >> $GITHUB_ENV
           fi
 
       - name: Build and Push Docker Image

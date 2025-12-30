@@ -17,8 +17,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ghcr.io/salvemundi/directus:dev
-    container_name: directus
+    image: ghcr.io/salvemundi/directus:${TAG:-dev}
+    container_name: directus-${TAG:-dev}
     restart: unless-stopped
     env_file: .env
     environment:

@@ -1,7 +1,7 @@
 services:
   email-api:
     image: ghcr.io/salvemundi/email-api:${TAG}
-    container_name: email-api
+    container_name: email-api-${TAG:-dev}
     restart: unless-stopped
     networks:
       - proxy-network
