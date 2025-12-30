@@ -37,16 +37,18 @@ jobs:
             echo "TAG=latest" >> $GITHUB_ENV
             echo "DEPLOY_PATH=/opt/frontend-prod" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_AUTH_REDIRECT_URI=https://preprod.salvemundi.nl" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_DIRECTUS_API_KEY=${{ secrets.PROD_DIRECTUS_API_KEY || secrets.DIRECTUS_API_TOKEN }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_ENTRA_CLIENT_ID=${{ secrets.PROD_ENTRA_CLIENT_ID || secrets.NEXT_PUBLIC_ENTRA_CLIENT_ID }}" >> $GITHUB_ENV
           else
             echo "TAG=dev" >> $GITHUB_ENV
             echo "DEPLOY_PATH=/opt/frontend-dev" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_AUTH_REDIRECT_URI=https://dev.salvemundi.nl" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_DIRECTUS_API_KEY=${{ secrets.DEV_DIRECTUS_API_KEY || secrets.DIRECTUS_API_TOKEN }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_ENTRA_CLIENT_ID=${{ secrets.DEV_ENTRA_CLIENT_ID || secrets.NEXT_PUBLIC_ENTRA_CLIENT_ID }}" >> $GITHUB_ENV
           fi
           
           # Map existing GitHub Secrets to frontend variables
           echo "NEXT_PUBLIC_DIRECTUS_URL=${{ secrets.DIRECTUS_URL }}" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_DIRECTUS_API_KEY=${{ secrets.DIRECTUS_API_TOKEN }}" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_ENTRA_CLIENT_ID=${{ secrets.NEXT_PUBLIC_ENTRA_CLIENT_ID }}" >> $GITHUB_ENV
           echo "NEXT_PUBLIC_ENTRA_TENANT_ID=${{ secrets.AUTH_MICROSOFT_TENANT_ID }}" >> $GITHUB_ENV
           echo "NEXT_PUBLIC_EMAIL_API_ENDPOINT=/api/send-email" >> $GITHUB_ENV
           echo "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=" >> $GITHUB_ENV
