@@ -1,3 +1,7 @@
+/**
+ * Payment API
+ * Environment Isolation Audit: 2025-12-30
+ */
 const express = require('express');
 const cors = require('cors');
 const { createMollieClient } = require('@mollie/api-client');

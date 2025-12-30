@@ -4,7 +4,9 @@ import secrets
 import string
 import re
 import unidecode
-from fastapi import FastAPI, HTTPException, BackgroundTasks, APIRouter
+# Membership API
+# Environment Isolation Audit: 2025-12-30
+from fastapi import FastAPI, HTTPException, Request, BackgroundTasks, APIRouter
 from pydantic import BaseModel
 import httpx
 
