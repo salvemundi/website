@@ -57,8 +57,6 @@ jobs:
           source: "graph-webhook/docker-compose.yml"
           target: ${{ env.DEPLOY_PATH }}
           strip_components: 1
-          rm: true
-          overwrite: true
 
       - name: Deploy on Server
         uses: appleboy/ssh-action@v1.0.3
@@ -80,4 +78,4 @@ jobs:
             
             # 4. Pull & Up
             docker compose pull graph-webhook
-            docker compose up -d graph-webhook --remove-orphans
+            docker compose up -d graph-webhook --force-recreate --remove-orphans

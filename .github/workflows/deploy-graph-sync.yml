@@ -59,8 +59,6 @@ jobs:
           source: "graph-sync/docker-compose.yml"
           target: ${{ env.DEPLOY_PATH }}
           strip_components: 1
-          rm: true
-          overwrite: true
 
       - name: Deploy on Server
         uses: appleboy/ssh-action@v1.0.3
@@ -87,4 +85,4 @@ jobs:
             
             # 4. Pull & Up
             docker compose pull graph-sync
-            docker compose up -d graph-sync --remove-orphans
+            docker compose up -d graph-sync --force-recreate --remove-orphans
