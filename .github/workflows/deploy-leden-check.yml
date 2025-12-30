@@ -52,8 +52,6 @@ jobs:
           source: "leden-check-script/docker-compose.yml"
           target: ${{ env.DEPLOY_PATH }}
           strip_components: 1
-          rm: true
-          overwrite: true
 
       - name: Deploy on Server
         uses: appleboy/ssh-action@v1.0.3
@@ -79,8 +77,5 @@ jobs:
             echo "GROUP_ID_VERLOPEN=${{ secrets.NACHTWACHT_GROUP_ID_VERLOPEN }}" >> .env
 
             # 4. Pull & Up
-            # We use up without -d to see logs in CI/CD or just run it? 
-            # Usually we deploy as a service or cronjob. The user asked for a workflow.
-            # Docker compose up -d will start it, it runs, then exits.
             docker compose pull nachtwacht
-            docker compose up -d nachtwacht --remove-orphans
+            docker compose up -d nachtwacht --force-recreate --remove-orphans
