@@ -86,6 +86,8 @@ jobs:
           source: "directus/docker-compose.yml"
           target: ${{ env.DEPLOY_PATH }}
           strip_components: 1
+          rm: true
+          overwrite: true
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.1

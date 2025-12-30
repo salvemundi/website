@@ -106,6 +106,8 @@ jobs:
           source: "frontend/docker-compose.yml"
           target: ${{ env.DEPLOY_PATH }}
           strip_components: 1
+          rm: true
+          overwrite: true
 
       # ------------------------------
       # Deploy on server
