@@ -43,7 +43,7 @@ jobs:
             echo "DIRECTUS_SECRET=${{ secrets.DIRECTUS_SECRET }}" >> $GITHUB_ENV
             echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}" >> $GITHUB_ENV
             echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> $GITHUB_ENV
-            echo "PUBLIC_URL=${{ secrets.PROD_DIRECTUS_URL }}" >> $GITHUB_ENV
+            echo "PUBLIC_URL=${{ secrets.DEV_DIRECTUS_URL }}" >> $GITHUB_ENV
             
             # Database
             echo "POSTGRES_DB=${{ secrets.DB_DATABASE }}" >> $GITHUB_ENV
