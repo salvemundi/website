@@ -13,7 +13,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: salvemundi/graph-webhook
-  DEPLOY_PATH: /opt/graph-webhook
 
 jobs:
   build-and-deploy:
@@ -35,10 +34,12 @@ jobs:
 
       - name: Set Environment Variables
         run: |
-          if [[ "${{ github.ref_name }}" == "Development" ]]; then
-            echo "TAG=dev" >> $GITHUB_ENV
-          else
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
             echo "TAG=latest" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=/opt/graph-webhook-prod" >> $GITHUB_ENV
+          else
+            echo "TAG=dev" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=/opt/graph-webhook-dev" >> $GITHUB_ENV
           fi
 
       - name: Build and Push Docker Image
