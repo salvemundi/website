@@ -57,6 +57,16 @@ jobs:
           secret-path: "/"
           export-type: "env"
 
+      - name: Export Secrets to GITHUB_ENV
+        run: |
+          echo "NEXT_PUBLIC_DIRECTUS_URL=$NEXT_PUBLIC_DIRECTUS_URL" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_AUTH_REDIRECT_URI=$NEXT_PUBLIC_AUTH_REDIRECT_URI" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_ENTRA_CLIENT_ID=$NEXT_PUBLIC_ENTRA_CLIENT_ID" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_ENTRA_TENANT_ID=$NEXT_PUBLIC_ENTRA_TENANT_ID" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_EMAIL_API_ENDPOINT=$NEXT_PUBLIC_EMAIL_API_ENDPOINT" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_DIRECTUS_API_KEY=$NEXT_PUBLIC_DIRECTUS_API_KEY" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=$NEXT_PUBLIC_GOOGLE_MAPS_API_KEY" >> $GITHUB_ENV
+
       # ------------------------------
       # Set Docker image tag based on branch
       # ------------------------------
