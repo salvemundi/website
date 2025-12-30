@@ -70,6 +70,10 @@ jobs:
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
             # 2. Map voorbereiden
+            # Explicitly stop and remove ANY container with the target name to prevent conflicts
+            docker stop email-api-${{ env.TAG }} || true
+            docker rm email-api-${{ env.TAG }} || true
+
             mkdir -p ${{ env.DEPLOY_PATH }}
             cd ${{ env.DEPLOY_PATH }}
 
