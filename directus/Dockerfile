@@ -1,6 +1,6 @@
 # Gebruik de officiële Directus basis-image
 # Directus CMS
-# Environment Isolation Audit: 2025-12-30
+# Environment Isolation Audit: 2025-12-31 (Permission Fix Re-run)
 FROM directus/directus:11.1.1
 
 # Stap 1: Voorbereiding
