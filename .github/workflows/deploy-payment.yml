@@ -80,8 +80,6 @@ jobs:
           source: "payment-api/docker-compose.yml"
           target: ${{ env.DEPLOY_PATH }}
           strip_components: 1
-          rm: true
-          overwrite: true
 
       - name: Deploy on Server
         uses: appleboy/ssh-action@v1.0.3
@@ -130,4 +128,4 @@ jobs:
 
             # 4. Pull & Up
             docker compose pull payment-api
-            docker compose up -d payment-api --remove-orphans
+            docker compose up -d payment-api --force-recreate --remove-orphans
