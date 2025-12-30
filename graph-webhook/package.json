@@ -1,6 +1,7 @@
 {
     "name": "graph-webhook",
     "version": "1.0.0",
+    "isolation_audit": "2025-12-30",
     "type": "module",
     "main": "src/server.js",
     "scripts": {
