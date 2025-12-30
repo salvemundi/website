@@ -5,7 +5,7 @@ import string
 import re
 import unidecode
 # Membership API
-# Environment Isolation Audit: 2025-12-30
+# Environment Isolation Audit: 2025-12-31 (Permission Fix Re-run)
 from fastapi import FastAPI, HTTPException, Request, BackgroundTasks, APIRouter
 from pydantic import BaseModel
 import httpx
