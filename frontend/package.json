@@ -2,7 +2,7 @@
   "name": "frontend",
   "private": true,
   "version": "1.0.1",
-  "isolation_audit": "2025-12-30",
+  "isolation_audit": "2025-12-31",
   "type": "module",
   "scripts": {
     "dev": "next dev -p 5173",
