@@ -43,9 +43,17 @@ jobs:
           fi
           echo "DEPLOY_PATH=/opt/directus" >> $GITHUB_ENV
 
-          # ALWAYS include all origins for the shared Directus instance.
-          # We explicitly add preprod just in case it's not in the PROD_CORS_ORIGIN secret.
-          printf "CORS_ORIGIN=%s,%s,https://preprod.salvemundi.nl,https://salvemundi.nl,https://dev.salvemundi.nl\n" "${{ secrets.PROD_CORS_ORIGIN }}" "${{ secrets.DEV_CORS_ORIGIN }}" >> $GITHUB_ENV
+          # Build CORS_ORIGIN with all required origins, filtering out empties
+          CORS_LIST="https://admin.salvemundi.nl,https://preprod.salvemundi.nl,https://salvemundi.nl,https://dev.salvemundi.nl"
+          if [ -n "${{ secrets.PROD_CORS_ORIGIN }}" ]; then
+            CORS_LIST="${{ secrets.PROD_CORS_ORIGIN }},$CORS_LIST"
+          fi
+          if [ -n "${{ secrets.DEV_CORS_ORIGIN }}" ]; then
+            CORS_LIST="${{ secrets.DEV_CORS_ORIGIN }},$CORS_LIST"
+          fi
+          # Remove any duplicate entries
+          CORS_LIST=$(echo "$CORS_LIST" | tr ',' '\n' | sort -u | tr '\n' ',' | sed 's/,$//')
+          printf "CORS_ORIGIN=%s\n" "$CORS_LIST" >> $GITHUB_ENV
 
           # Global Secrets (Same for both)
           echo "DIRECTUS_KEY=${{ secrets.DIRECTUS_KEY }}" >> $GITHUB_ENV
