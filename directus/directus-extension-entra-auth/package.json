@@ -7,11 +7,11 @@
     "directus-extension",
     "directus-custom-endpoint"
   ],
-  "main": "src/index.js",
+  "main": "index.js",
   "directus:extension": {
     "type": "endpoint",
-    "path": "src/index.js",
-    "source": "src/index.js",
+    "path": "index.js",
+    "source": "index.js",
     "host": "*"
   },
   "scripts": {
