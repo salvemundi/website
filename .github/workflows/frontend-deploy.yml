@@ -47,7 +47,8 @@ jobs:
       # Load Infisical Secrets
       # ------------------------------
       - name: Infisical Secrets Action
-        uses: Infisical/secrets-action@v1.0.8
+        uses: Infisical/secrets-action@v1.1.0
+        id: infisical
         with:
           client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
           client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
@@ -57,16 +58,34 @@ jobs:
           secret-path: "/"
           export-type: "env"
 
-      - name: Export Secrets to GITHUB_ENV
+      - name: Check Infisical Secrets
         run: |
-          # explicitly export each secret to GITHUB_ENV for the build step
-          echo "NEXT_PUBLIC_DIRECTUS_URL=${NEXT_PUBLIC_DIRECTUS_URL}" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_AUTH_REDIRECT_URI=${NEXT_PUBLIC_AUTH_REDIRECT_URI}" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_ENTRA_CLIENT_ID=${NEXT_PUBLIC_ENTRA_CLIENT_ID}" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_ENTRA_TENANT_ID=${NEXT_PUBLIC_ENTRA_TENANT_ID}" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_EMAIL_API_ENDPOINT=${NEXT_PUBLIC_EMAIL_API_ENDPOINT}" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_DIRECTUS_API_KEY=${NEXT_PUBLIC_DIRECTUS_API_KEY}" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}" >> $GITHUB_ENV
+          echo "Checking variables fetched from Infisical (environment: ${{ env.INFISICAL_ENV }})..."
+          
+          # Check for essential variables without printing values
+          MISSING=0
+          if [ -z "$NEXT_PUBLIC_DIRECTUS_API_KEY" ]; then echo "❌ NEXT_PUBLIC_DIRECTUS_API_KEY is MISSING"; MISSING=1; fi
+          if [ -z "$NEXT_PUBLIC_DIRECTUS_URL" ]; then echo "❌ NEXT_PUBLIC_DIRECTUS_URL is MISSING"; MISSING=1; fi
+          
+          if [ "$MISSING" -eq "1" ]; then
+            echo "--- Debug Info ---"
+            echo "Environment slug used: ${{ env.INFISICAL_ENV }}"
+            echo "Variables starting with NEXT_PUBLIC_ found: $(env | grep NEXT_PUBLIC_ | cut -d= -f1 | tr '\n' ' ')"
+            echo "------------------"
+            echo "ERROR: Essential secrets are missing from Infisical. Please check if the secrets exist for environment '${{ env.INFISICAL_ENV }}' and path '/' in Infisical."
+            exit 1
+          fi
+          
+          echo "✅ Essential secrets found. Mapping to GITHUB_ENV..."
+          
+          # Mapping to GITHUB_ENV for the docker build step
+          echo "NEXT_PUBLIC_DIRECTUS_URL=$NEXT_PUBLIC_DIRECTUS_URL" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_AUTH_REDIRECT_URI=$NEXT_PUBLIC_AUTH_REDIRECT_URI" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_ENTRA_CLIENT_ID=$NEXT_PUBLIC_ENTRA_CLIENT_ID" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_ENTRA_TENANT_ID=$NEXT_PUBLIC_ENTRA_TENANT_ID" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_EMAIL_API_ENDPOINT=$NEXT_PUBLIC_EMAIL_API_ENDPOINT" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_DIRECTUS_API_KEY=$NEXT_PUBLIC_DIRECTUS_API_KEY" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=$NEXT_PUBLIC_GOOGLE_MAPS_API_KEY" >> $GITHUB_ENV
 
       # ------------------------------
       # Login to GitHub Container Registry
