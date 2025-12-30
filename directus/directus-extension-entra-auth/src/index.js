@@ -47,26 +47,25 @@ export default (router, context) => {
                 return res.status(400).json({ error: 'Token and email are required', code: 'INVALID_PAYLOAD' });
             }
 
-            // --- DIAGNOSTIC: Unsafe Token Inspection ---
+            // --- DIAGNOSTIC: Unsafe Token Inspection (Stringified) ---
             try {
                 const decoded = jwt.decode(token);
                 if (logger) {
-                    logger.info(`[EntraAuth][${requestId}] DIAGNOSTIC - Unsafe Token Decode:`, {
+                    logger.info(`[EntraAuth][${requestId}] DIAGNOSTIC - Unsafe Token Decode: ${JSON.stringify({
                         aud: decoded?.aud,
                         iss: decoded?.iss,
                         tid: decoded?.tid,
-                        exp: decoded ? new Date(decoded.exp * 1000).toISOString() : 'N/A',
-                        now: new Date().toISOString()
-                    });
-                    logger.info(`[EntraAuth][${requestId}] DIAGNOSTIC - Expected Config:`, {
+                        exp: decoded ? new Date(decoded.exp * 1000).toISOString() : 'N/A'
+                    })}`);
+                    logger.info(`[EntraAuth][${requestId}] DIAGNOSTIC - Expected Config: ${JSON.stringify({
                         expectedAud: env?.AUTH_MICROSOFT_CLIENT_ID,
-                        expectedIssPrefix: `https://login.microsoftonline.com/${env?.AUTH_MICROSOFT_TENANT_ID || 'common'}`
-                    });
+                        expectedIssPrefix: `https://login.microsoftonline.com/${env?.AUTH_MICROSOFT_TENANT_ID || 'common'}/v2.0`
+                    })}`);
                 }
             } catch (decodeErr) {
-                if (logger) logger.error(`[EntraAuth][${requestId}] Failed to decode token for diagnostics:`, decodeErr.message);
+                if (logger) logger.error(`[EntraAuth][${requestId}] Failed to decode token for diagnostics: ${decodeErr.message}`);
             }
-            // ------------------------------------------
+            // --------------------------------------------------------
 
             if (!UsersService || !AuthenticationService) {
                 const msg = 'Internal error: Required Directus services are missing.';
