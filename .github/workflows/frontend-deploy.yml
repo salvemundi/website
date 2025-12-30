@@ -59,19 +59,14 @@ jobs:
 
       - name: Export Secrets to GITHUB_ENV
         run: |
-          echo "NEXT_PUBLIC_DIRECTUS_URL=$NEXT_PUBLIC_DIRECTUS_URL" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_AUTH_REDIRECT_URI=$NEXT_PUBLIC_AUTH_REDIRECT_URI" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_ENTRA_CLIENT_ID=$NEXT_PUBLIC_ENTRA_CLIENT_ID" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_ENTRA_TENANT_ID=$NEXT_PUBLIC_ENTRA_TENANT_ID" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_EMAIL_API_ENDPOINT=$NEXT_PUBLIC_EMAIL_API_ENDPOINT" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_DIRECTUS_API_KEY=$NEXT_PUBLIC_DIRECTUS_API_KEY" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=$NEXT_PUBLIC_GOOGLE_MAPS_API_KEY" >> $GITHUB_ENV
-
-      # ------------------------------
-      # Set Docker image tag based on branch
-      # ------------------------------
-      # Set Docker image tag (Already set above, but kept metadata consistency)
-      # ------------------------------
+          # explicitly export each secret to GITHUB_ENV for the build step
+          echo "NEXT_PUBLIC_DIRECTUS_URL=${NEXT_PUBLIC_DIRECTUS_URL}" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_AUTH_REDIRECT_URI=${NEXT_PUBLIC_AUTH_REDIRECT_URI}" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_ENTRA_CLIENT_ID=${NEXT_PUBLIC_ENTRA_CLIENT_ID}" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_ENTRA_TENANT_ID=${NEXT_PUBLIC_ENTRA_TENANT_ID}" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_EMAIL_API_ENDPOINT=${NEXT_PUBLIC_EMAIL_API_ENDPOINT}" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_DIRECTUS_API_KEY=${NEXT_PUBLIC_DIRECTUS_API_KEY}" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}" >> $GITHUB_ENV
 
       # ------------------------------
       # Login to GitHub Container Registry
@@ -135,6 +130,12 @@ jobs:
           envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,TAG
           script: |
             echo $GH_PASSWORD | docker login $GH_REGISTRY -u $GH_USERNAME --password-stdin
+            
+            # Explicitly stop and remove ANY container with the target name to prevent conflicts
+            # from orphaned or previous deployments at different paths.
+            docker stop frontend-$TAG || true
+            docker rm frontend-$TAG || true
+
             mkdir -p ${{ env.DEPLOY_PATH }}
             cd ${{ env.DEPLOY_PATH }}
             echo "TAG=$TAG" > .env
