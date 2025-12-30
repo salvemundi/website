@@ -86,8 +86,6 @@ jobs:
           source: "directus/docker-compose.yml"
           target: ${{ env.DEPLOY_PATH }}
           strip_components: 1
-          rm: true
-          overwrite: true
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.1
@@ -123,6 +121,7 @@ jobs:
           script: |
             echo $GH_PASSWORD | docker login $GH_REGISTRY -u $GH_USERNAME --password-stdin
 
+            mkdir -p $DEPLOY_PATH
             cd $DEPLOY_PATH
 
             # Generate .env (Using printf to prevent shell expansion of special characters)
@@ -164,5 +163,5 @@ jobs:
             # echo 'AUTH_ENTRA_FIELDS_MAPPING={"email": "userPrincipalName", "first_name": "givenName", "last_name": "surname"}' >> .env
 
             # Restart
-            docker-compose pull
-            docker-compose up -d --force-recreate --remove-orphans
+            docker compose pull
+            docker compose up -d --force-recreate --remove-orphans
