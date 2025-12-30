@@ -207,7 +207,7 @@ export default (router, context) => {
                 idToken,
                 getKey,
                 {
-                    audience: env?.AUTH_MICROSOFT_CLIENT_ID,
+                    audience: env?.ENTRA_AUTH_FRONTEND_CLIENT_ID || env?.AUTH_MICROSOFT_CLIENT_ID,
                     issuer: expectedIssuer,
                     algorithms: ['RS256']
                 },

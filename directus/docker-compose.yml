@@ -55,6 +55,7 @@ services:
       - AUTH_MICROSOFT_DEFAULT_ROLE_ID=${AUTH_MICROSOFT_DEFAULT_ROLE_ID}
       # Custom Variabele
       - AUTH_MICROSOFT_TENANT_ID=${AUTH_MICROSOFT_TENANT_ID}
+      - ENTRA_AUTH_FRONTEND_CLIENT_ID=${ENTRA_AUTH_FRONTEND_CLIENT_ID}
       # JSON Mapping (Let op de quotes!)
       # - 'AUTH_ENTRA_FIELDS_MAPPING={"email": "userPrincipalName", "first_name": "givenName", "last_name": "surname"}'
 
