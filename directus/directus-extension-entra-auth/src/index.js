@@ -1,13 +1,20 @@
-console.log('[ENTRA-AUTH-DEBUG] Loading extension module into memory...');
+console.log('[EntraAuth] Extension module loading started...');
 
 import jwt from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
 
-export default (router, { services, exceptions, database, logger, env }) => {
-    logger.info('[ENTRA-AUTH] Extension initializing...');
+export default (router, context) => {
+    const { services, exceptions, database, logger, env } = context;
+
+    // Log direct naar console om zeker te zijn dat het niet door Directus logger wordt ingeslikt
+    console.log('[EntraAuth] Extension initialization started.');
+    console.log(`[EntraAuth] Environment check - Tenant ID configured: ${!!env.AUTH_MICROSOFT_TENANT_ID}`);
+
+    logger.info('[EntraAuth] Registering routes...');
 
     router.get('/', (req, res) => {
-        res.send('Entra Auth Extension is ACTIVE');
+        logger.info('[EntraAuth] Diagnostic GET / request received');
+        res.send('Entra Auth Extension is ACTIVE and running.');
     });
 
     const { UsersService, AuthenticationService } = services;
@@ -22,22 +29,26 @@ export default (router, { services, exceptions, database, logger, env }) => {
 
     // Match the route expected by the frontend
     router.post('/auth/login/entra', async (req, res, next) => {
-        logger.info('[ENTRA-AUTH] POST /auth/login/entra route hit.');
+        const requestId = Math.random().toString(36).substring(7);
+        logger.info(`[EntraAuth][${requestId}] POST /auth/login/entra route hit.`);
+        console.log(`[EntraAuth][${requestId}] Processing login request for payload keys: ${Object.keys(req.body).join(', ')}`);
 
         try {
             const { token, email } = req.body;
 
             if (!token || !email) {
-                logger.warn('[ENTRA-AUTH] Missing token or email.');
+                logger.warn(`[EntraAuth][${requestId}] Missing token or email.`);
                 return res.status(400).json({ error: 'Token and email are required', code: 'INVALID_PAYLOAD' });
             }
 
             let microsoftUser;
             try {
                 // Pass environment and client to the helper function
+                logger.debug(`[EntraAuth][${requestId}] Verifying Microsoft token...`);
                 microsoftUser = await verifyMicrosoftToken(token, env, logger, client);
+                logger.debug(`[EntraAuth][${requestId}] Token verified for OID: ${microsoftUser.oid}`);
             } catch (error) {
-                logger.error('[ENTRA-AUTH] Token verification failed:', error);
+                logger.error(`[EntraAuth][${requestId}] Token verification failed:`, error);
                 throw new InvalidCredentialsException('Invalid or expired Microsoft token');
             }
 
@@ -45,18 +56,21 @@ export default (router, { services, exceptions, database, logger, env }) => {
             const requestedEmail = email.toLowerCase();
 
             if (tokenEmail.toLowerCase() !== requestedEmail) {
+                logger.warn(`[EntraAuth][${requestId}] Email mismatch. Token: ${tokenEmail}, Requested: ${requestedEmail}`);
                 throw new InvalidCredentialsException('Email does not match Microsoft account');
             }
 
             const accountability = { admin: true, role: null, user: null };
-            // Ensure schema is passed correctly
             const usersService = new UsersService({ schema: req.schema, accountability });
 
+            // User Lookup Strategy
+            logger.debug(`[EntraAuth][${requestId}] Looking up user in database...`);
             let user = await database('directus_users')
                 .where({ entra_id: microsoftUser.oid })
                 .first();
 
             if (!user) {
+                logger.debug(`[EntraAuth][${requestId}] User not found by entra_id, trying email...`);
                 user = await database('directus_users')
                     .where({ email: requestedEmail })
                     .first();
@@ -65,7 +79,7 @@ export default (router, { services, exceptions, database, logger, env }) => {
             const isFontysMember = requestedEmail.endsWith('@student.fontys.nl') || requestedEmail.endsWith('@fontys.nl');
 
             if (!user) {
-                logger.info('[ENTRA-AUTH] Creating new user...');
+                logger.info(`[EntraAuth][${requestId}] Creating new user for ${requestedEmail}...`);
                 const newUserId = await usersService.createOne({
                     email: requestedEmail,
                     entra_id: microsoftUser.oid,
@@ -79,6 +93,7 @@ export default (router, { services, exceptions, database, logger, env }) => {
                 });
                 user = await usersService.readOne(newUserId);
             } else {
+                logger.debug(`[EntraAuth][${requestId}] User found (ID: ${user.id}). Updating sync fields...`);
                 const updates = {};
                 if (!user.entra_id) updates.entra_id = microsoftUser.oid;
                 if (!user.external_identifier) updates.external_identifier = microsoftUser.oid;
@@ -90,6 +105,7 @@ export default (router, { services, exceptions, database, logger, env }) => {
             }
 
             if (user.status !== 'active') {
+                logger.warn(`[EntraAuth][${requestId}] User ${user.id} is not active.`);
                 throw new InvalidCredentialsException('Account is not active.');
             }
 
@@ -113,7 +129,7 @@ export default (router, { services, exceptions, database, logger, env }) => {
                 }
             );
 
-            logger.info(`[ENTRA-AUTH] Login successful for user ${user.id}.`);
+            logger.info(`[EntraAuth][${requestId}] Login successful for user ${user.id}.`);
 
             res.json({
                 data: {
@@ -124,7 +140,7 @@ export default (router, { services, exceptions, database, logger, env }) => {
             });
 
         } catch (error) {
-            logger.error('[ENTRA-AUTH] Error:', error);
+            logger.error(`[EntraAuth][${requestId}] Error processing request:`, error);
             next(error);
         }
     });
