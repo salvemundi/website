@@ -8,6 +8,9 @@ export default (router, context) => {
 
     console.log('[EntraAuth] Extension initialization started.');
     console.log(`[EntraAuth] Context keys available: ${Object.keys(context || {}).join(', ')}`);
+    if (services) {
+        console.log(`[EntraAuth] Services available: ${Object.keys(services).join(', ')}`);
+    }
     console.log(`[EntraAuth] Environment check - Tenant ID configured: ${!!(env?.AUTH_MICROSOFT_TENANT_ID)}`);
 
     if (logger) {
@@ -149,12 +152,42 @@ export default (router, context) => {
                 throw new InvalidCredentialsException('Account is not active.');
             }
 
+            if (logger) logger.debug(`[EntraAuth][${requestId}] User validated. Generating Directus tokens...`);
+
+            // Use the AuthenticationService to create a session
             const authService = new AuthenticationService({
                 schema: req.schema,
                 accountability: { admin: false, role: user.role, user: user.id }
             });
 
-            const refreshToken = await authService.refresh(user.id);
+            // In Directus v11, we should use a more standard way to generate tokens.
+            // If the extension is supposed to return a refresh token, it should be a real one from the DB.
+
+            let refreshToken;
+            try {
+                // Generate a random token for the session
+                refreshToken = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
+
+                if (logger) logger.debug(`[EntraAuth][${requestId}] Creating session in database for user ${user.id}...`);
+
+                // Insert the session into directus_sessions to ensure it's valid for /auth/refresh
+                await database('directus_sessions').insert({
+                    token: refreshToken,
+                    user: user.id,
+                    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
+                    ip: req.ip || '0.0.0.0',
+                    user_agent: req.headers['user-agent'] || 'Directus Entra Auth Extension'
+                });
+
+                if (logger) logger.info(`[EntraAuth][${requestId}] Session created successfully for user ${user.id}.`);
+
+            } catch (err) {
+                if (logger) logger.error(`[EntraAuth][${requestId}] Failed to create session in database: ${err.message}`);
+                // Fallback to stateless token if DB insert fails
+                refreshToken = jwt.sign({ id: user.id, type: 'refresh' }, env?.SECRET, { expiresIn: '7d' });
+                if (logger) logger.warn(`[EntraAuth][${requestId}] Falling back to stateless refresh token.`);
+            }
+
             const accessToken = jwt.sign(
                 {
                     id: user.id,
@@ -168,8 +201,6 @@ export default (router, context) => {
                     issuer: 'directus'
                 }
             );
-
-            if (logger) logger.info(`[EntraAuth][${requestId}] Login successful for user ${user.id}.`);
 
             res.json({
                 data: {
