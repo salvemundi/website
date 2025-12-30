@@ -23,7 +23,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: salvemundi/payment-api
-  DEPLOY_PATH: /opt/payment-api
 
 jobs:
   build-and-deploy:
@@ -50,12 +49,16 @@ jobs:
           
           if [[ "$MODE" == "force_dev" ]]; then
             echo "TAG=dev" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=/opt/payment-api-dev" >> $GITHUB_ENV
           elif [[ "$MODE" == "force_prod" ]]; then
             echo "TAG=latest" >> $GITHUB_ENV
-          elif [[ "$REF" == "Development" ]]; then
-            echo "TAG=dev" >> $GITHUB_ENV
-          else
+            echo "DEPLOY_PATH=/opt/payment-api-prod" >> $GITHUB_ENV
+          elif [[ "$REF" == "main" ]]; then
             echo "TAG=latest" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=/opt/payment-api-prod" >> $GITHUB_ENV
+          else
+            echo "TAG=dev" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=/opt/payment-api-dev" >> $GITHUB_ENV
           fi
 
       - name: Build and Push Docker Image
