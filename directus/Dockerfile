@@ -5,9 +5,9 @@ FROM directus/directus:latest
 USER root
 RUN corepack enable
 
-# Stap 2: Kopieer de extensie DIRECT naar de eindbestemming
-# Dit voorkomt verwarring met tmp mappen en copy-errors
-WORKDIR /directus/extensions/endpoints/directus-extension-entra-auth
+# Stap 2: Kopieer de extensie DIRECT naar de root extensions map
+# Dit vervangt de 'endpoints' submap, wat soms discovery issues geeft
+WORKDIR /directus/extensions/directus-extension-entra-auth
 COPY --chown=node:node ./directus-extension-entra-auth .
 
 # Stap 3: Build en Installatie (In-Place)
@@ -28,9 +28,10 @@ WORKDIR /directus
 RUN chown -R node:node /directus/extensions
 
 # Debug: Laat zien wat er precies aanwezig is (verschijnt in build logs)
-RUN echo "--- Extension Directory Contents ---" && \
-    ls -la /directus/extensions/endpoints/directus-extension-entra-auth && \
+# Dit helpt ons bevestigen dat de files op de juiste plek staan
+RUN echo "--- Extension Directory Contents (ROOT) ---" && \
+    ls -la /directus/extensions/directus-extension-entra-auth && \
     echo "--- Dist Directory Contents ---" && \
-    ls -la /directus/extensions/endpoints/directus-extension-entra-auth/dist || echo "No dist folder found"
+    ls -la /directus/extensions/directus-extension-entra-auth/dist || echo "No dist folder found"
 
 USER node
