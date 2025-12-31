@@ -78,4 +78,19 @@ app.use(
     )
 );
 
-app.listen(PORT, () => { });
+app.listen(PORT, () => {
+    console.log(`[PaymentAPI] Server running on port ${PORT}`);
+    console.log(`[PaymentAPI] Environment: DIRECTUS_URL=${DIRECTUS_URL ? 'Set' : 'Unset'}, MEMBERSHIP=${MEMBERSHIP_API_URL}`);
+    console.log(`[PaymentAPI] CORS origins configured:`, allowedOrigins);
+});
+
+// Global error handlers to diagnose silent crashes
+process.on('uncaughtException', (err) => {
+    console.error('[PaymentAPI] FATAL: Uncaught Exception:', err);
+    // Give it a second to flush logs before exit
+    setTimeout(() => process.exit(1), 1000);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('[PaymentAPI] POST-DEPLOY DEBUG: Unhandled Rejection at:', promise, 'reason:', reason);
+});
