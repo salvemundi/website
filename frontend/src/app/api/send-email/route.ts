@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        
+
         const { to, from, fromName, subject, html, attachments } = body;
 
         if (!to || !subject || !html) {
@@ -20,7 +20,9 @@ export async function POST(request: NextRequest) {
         }
 
 
-        const emailApiEndpoint = process.env.NEXT_PUBLIC_EMAIL_API_URL || 'http://localhost:3001/send-email';
+
+        // Prioritize the server-side internal Docker URL, then public URL, then localhost fallback
+        const emailApiEndpoint = process.env.EMAIL_API_ENDPOINT || process.env.NEXT_PUBLIC_EMAIL_API_URL || 'http://localhost:3001/send-email';
 
         console.log('📧 Sending email request to:', emailApiEndpoint);
 
@@ -66,7 +68,7 @@ export async function POST(request: NextRequest) {
             cause: error.cause,
             stack: error.stack
         });
-        
+
         // Provide more specific error message for network / DNS errors
         const causeCode = error?.cause?.code;
         if (
@@ -80,7 +82,7 @@ export async function POST(request: NextRequest) {
                 { status: 502 }
             );
         }
-        
+
         return NextResponse.json(
             { error: error.message || 'Failed to send email' },
             { status: 500 }

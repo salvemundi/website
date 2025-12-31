@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     environment:
       # Server-side environment variable for email API endpoint
-      - EMAIL_API_ENDPOINT=${EMAIL_API_ENDPOINT:-http://email-api:3001/send-email}
+      - EMAIL_API_ENDPOINT=${EMAIL_API_ENDPOINT:-http://email-api-${TAG:-dev}:3001/send-email}
     networks:
       - proxy-network
 
