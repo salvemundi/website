@@ -122,5 +122,12 @@ jobs:
             mkdir -p ${{ env.DEPLOY_PATH }}
             cd ${{ env.DEPLOY_PATH }}
             echo "TAG=$TAG" > .env
+            
+            # Determine Payment API URL based on TAG
+            if [ "$TAG" == "latest" ]; then
+              echo "NEXT_PUBLIC_PAYMENT_API_URL=http://payment-api-prod:3002" >> .env
+            else
+              echo "NEXT_PUBLIC_PAYMENT_API_URL=http://payment-api-dev:3002" >> .env
+            fi
             docker compose pull frontend
             docker compose up -d frontend --force-recreate --remove-orphans
