@@ -73,7 +73,7 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                 `${DIRECTUS_URL}/items/transactions`,
                 {
                     params: {
-                        'filter[approval_status][_eq]': 'pending',
+                        'filter[approval_status][_in]': 'pending,rejected',
                         'filter[environment][_eq]': 'development',
                         'fields': 'id,created_at,product_name,amount,email,first_name,last_name,approval_status,payment_status,environment',
                         'sort': '-created_at',
