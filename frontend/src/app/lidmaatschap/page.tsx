@@ -125,17 +125,7 @@ export default function SignUp() {
         e.preventDefault();
         setIsProcessing(true);
 
-        if (isGuest) {
-            sendMembershipSignupEmail({
-                recipientEmail: form.email,
-                firstName: form.voornaam,
-                lastName: form.achternaam,
-                phoneNumber: form.telefoon,
-                dateOfBirth: form.geboortedatum ? form.geboortedatum.toLocaleDateString('nl-NL') : undefined,
-            }).catch((err) => {
-                console.warn('Failed to send membership signup email:', err);
-            });
-        }
+
 
         try {
             await initiateContributionPayment();
