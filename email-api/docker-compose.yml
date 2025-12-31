@@ -1,4 +1,5 @@
 services:
+  # Trigger deployment
   email-api:
     image: ghcr.io/salvemundi/email-api:${TAG}
     container_name: email-api-${TAG:-dev}
