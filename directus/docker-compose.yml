@@ -56,6 +56,11 @@ services:
       # Custom Variabele
       - AUTH_MICROSOFT_TENANT_ID=${AUTH_MICROSOFT_TENANT_ID}
       - ENTRA_AUTH_FRONTEND_CLIENT_ID=${ENTRA_AUTH_FRONTEND_CLIENT_ID}
+      
+      # Security & Proxy
+      - REFRESH_TOKEN_COOKIE_SECURE=${REFRESH_TOKEN_COOKIE_SECURE}
+      - REFRESH_TOKEN_COOKIE_SAME_SITE=${REFRESH_TOKEN_COOKIE_SAME_SITE}
+      - TRUSTED_PROXIES=${TRUSTED_PROXIES}
       # JSON Mapping (Let op de quotes!)
       # - 'AUTH_ENTRA_FIELDS_MAPPING={"email": "userPrincipalName", "first_name": "givenName", "last_name": "surname"}'
 

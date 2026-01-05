@@ -172,6 +172,11 @@ jobs:
             echo "ENTRA_AUTH_FRONTEND_CLIENT_ID=$ENTRA_AUTH_FRONTEND_CLIENT_ID" >> .env
             # echo 'AUTH_ENTRA_FIELDS_MAPPING={"email": "userPrincipalName", "first_name": "givenName", "last_name": "surname"}' >> .env
 
+            # Cookie & Proxy Security (Hardcoded for Prod stability)
+            echo "REFRESH_TOKEN_COOKIE_SECURE=true" >> .env
+            echo "REFRESH_TOKEN_COOKIE_SAME_SITE=lax" >> .env
+            echo "TRUSTED_PROXIES=10.0.0.0/8,172.16.0.0/12,192.168.0.0/16" >> .env
+
             # Restart
             docker compose pull
             docker compose up -d --force-recreate --remove-orphans
