@@ -212,13 +212,13 @@ export default function AccountPage() {
       return {
         text: "Actief Lid",
         color: "bg-theme-purple",
-        textColor: "text-theme-purple-lighter-darker",
+        textColor: "text-white",
       };
     }
     return {
       text: "Lidmaatschap Verlopen",
       color: "bg-theme-purple/50",
-      textColor: "text-theme-purple-lighter-darker",
+      textColor: "text-white",
     };
   }, [user?.membership_status]);
 
@@ -238,7 +238,7 @@ export default function AccountPage() {
         {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <h1 className="truncate text-3xl font-bold text-theme-purple-lighter">
+            <h1 className="truncate text-3xl font-bold text-theme-purple-lighter-darker">
               Mijn Account
             </h1>
             <p className="mt-1 text-sm text-theme-purple-lighter/60">
