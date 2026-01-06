@@ -37,6 +37,12 @@ export default function NieuweActiviteitPage() {
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+    const showToast = (message: string, type: 'success' | 'error') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 5000);
+    };
 
     useEffect(() => {
         loadCommittees();
@@ -101,7 +107,8 @@ export default function NieuweActiviteitPage() {
             const formData = new FormData();
             formData.append('file', imageFile);
 
-            const response = await fetch('/api/files', {
+            // Upload directly to Directus files endpoint
+            const response = await fetch('https://admin.salvemundi.nl/files', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
@@ -109,7 +116,11 @@ export default function NieuweActiviteitPage() {
                 body: formData
             });
 
-            if (!response.ok) throw new Error('Image upload failed');
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Upload error response:', errorText);
+                throw new Error('Image upload failed');
+            }
 
             const result = await response.json();
             return result.data?.id || null;
@@ -123,7 +134,7 @@ export default function NieuweActiviteitPage() {
         e.preventDefault();
         
         if (!validateForm()) {
-            alert('Controleer de verplichte velden');
+            showToast('Controleer de verplichte velden', 'error');
             return;
         }
 
@@ -169,11 +180,11 @@ export default function NieuweActiviteitPage() {
                 body: JSON.stringify(eventData)
             });
 
-            alert('Activiteit succesvol aangemaakt!');
-            router.push('/admin/activiteiten');
+            showToast('Activiteit succesvol aangemaakt!', 'success');
+            setTimeout(() => router.push('/admin/activiteiten'), 1500);
         } catch (error) {
             console.error('Failed to create event:', error);
-            alert('Fout bij aanmaken van activiteit');
+            showToast('Fout bij aanmaken van activiteit', 'error');
         } finally {
             setIsSaving(false);
         }
@@ -517,6 +528,26 @@ export default function NieuweActiviteitPage() {
                     </div>
                 </form>
             </div>
+
+            {/* Toast Notification */}
+            {toast && (
+                <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
+                    <div className={`px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 ${
+                        toast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                    }`}>
+                        {toast.type === 'success' ? (
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                        ) : (
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        )}
+                        <span className="font-medium">{toast.message}</span>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
