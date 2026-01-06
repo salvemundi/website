@@ -47,7 +47,7 @@ jobs:
       # Fetch Secrets from Infisical
       # ------------------------------
       - name: Infisical Secrets
-        uses: Infisical/secrets-action@v1.4.1
+        uses: Infisical/secrets-action@v1.0.15
         with:
           client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
           client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
