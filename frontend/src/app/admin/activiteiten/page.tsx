@@ -128,7 +128,7 @@ export default function AdminActiviteitenPage() {
     };
 
     const getImageUrl = (image?: { id: string } | string) => {
-        if (!image) return null;
+        if (!image) return '';
         const imageId = typeof image === 'object' ? image.id : image;
         return `https://admin.salvemundi.nl/assets/${imageId}`;
     };
