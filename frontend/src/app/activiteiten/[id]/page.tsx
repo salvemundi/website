@@ -523,11 +523,17 @@ export default function EventDetailPage() {
                                     {event.contact_name && (
                                         <p className="text-base font-semibold text-white">{event.contact_name}</p>
                                     )}
-                                    {committeeEmail && (
-                                        <a href={`mailto:${committeeEmail}`} className="text-sm text-white/80 hover:underline break-all">
-                                            {committeeEmail}
-                                        </a>
-                                    )}
+                                                {committeeEmail && (
+                                                    <a href={`mailto:${committeeEmail}`} className="text-sm text-white/80 hover:underline break-all">
+                                                        {committeeEmail}
+                                                    </a>
+                                                )}
+                                                {/* Show explicit contact email if set on the event */}
+                                                {event.contact && typeof event.contact === 'string' && event.contact.includes('@') && (
+                                                    <a href={`mailto:${event.contact}`} className="text-sm text-white/80 hover:underline break-all block mt-1">
+                                                        {event.contact}
+                                                    </a>
+                                                )}
                                 </div>
                             </div>
                         )}

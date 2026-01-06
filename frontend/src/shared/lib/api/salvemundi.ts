@@ -152,7 +152,12 @@ export const eventsApi = {
                         console.error('eventsApi.getAll: failed to fetch leaders for event', { eventId: event.id, committeeId: event.committee_id, error });
                     }
                 } else if (event.contact) {
-                    event.contact_phone = event.contact;
+                    // Directus 'contact' field may contain either a phone number or an email address.
+                    if (typeof event.contact === 'string' && event.contact.includes('@')) {
+                        event.contact_email = event.contact;
+                    } else {
+                        event.contact_phone = event.contact;
+                    }
                 }
                 return event;
             })
@@ -193,7 +198,11 @@ export const eventsApi = {
                 console.error('eventsApi.getById: failed to fetch leaders for event', { eventId: id, committeeId: event.committee_id, error });
             }
         } else if (event.contact) {
-            event.contact_phone = event.contact;
+            if (typeof event.contact === 'string' && event.contact.includes('@')) {
+                event.contact_email = event.contact;
+            } else {
+                event.contact_phone = event.contact;
+            }
         }
 
         return event;
