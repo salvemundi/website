@@ -6,7 +6,6 @@ import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { nl } from 'date-fns/locale';
-import { sendMembershipSignupEmail } from '@/shared/lib/services/email-service';
 
 const DeletionTimer = ({ expiryDateStr }: { expiryDateStr: string }) => {
     const [timeLeft, setTimeLeft] = useState<{ days: number, hours: number, minutes: number } | null>(null);
