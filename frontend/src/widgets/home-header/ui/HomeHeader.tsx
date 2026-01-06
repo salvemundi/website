@@ -22,7 +22,7 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({
             <div>
                 <div
                     className="absolute inset-0 w-full bg-cover rounded-4xl bg-center"
-                    style={{ backgroundImage: `url(${backgroundImage})`, filter: 'brightness(0.7) blur(6px)' }}
+                    style={{ backgroundImage: `url(${backgroundImage})`, filter: 'brightness(0.7) blur(0px)' }}
                     aria-hidden="true"
                 />
                 <div
