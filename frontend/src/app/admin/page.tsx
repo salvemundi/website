@@ -97,17 +97,17 @@ function StatCard({
     return (
         <Component
             onClick={onClick}
-            className={`w-full bg-gradient-to-br ${colors.gradient} rounded-2xl shadow-lg p-6 relative overflow-hidden ${onClick ? 'hover:shadow-2xl transition-all cursor-pointer hover:-translate-y-1 hover:scale-[1.02]' : ''}`}
+            className={`w-full bg-gradient-to-br ${colors.gradient} rounded-2xl shadow-lg p-4 sm:p-6 relative overflow-hidden ${onClick ? 'hover:shadow-2xl transition-all cursor-pointer hover:-translate-y-1 hover:scale-[1.02]' : ''}`}
         >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
+            <div className="absolute top-0 right-0 w-28 h-28 sm:w-32 sm:h-32 bg-white/10 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16" />
             <div className="relative z-10">
-                <div className="flex items-start justify-between">
-                    <div className="flex-1 pr-2">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-3">
+                    <div className="flex-1 text-center sm:text-left sm:pr-2">
                         <p className={`${colors.subtitleText} text-sm font-medium mb-2`}>{title}</p>
-                        <p className={`${typeof value === 'string' && value.length > 10 ? 'text-2xl' : 'text-4xl'} font-bold ${colors.text} mb-1 break-words`}>{value}</p>
+                        <p className={`${typeof value === 'string' && value.length > 10 ? 'text-2xl' : 'text-3xl sm:text-4xl'} font-bold ${colors.text} mb-1 break-words`}>{value}</p>
                         {subtitle && <p className={`${colors.subtitleText} text-xs line-clamp-2`} title={subtitle}>{subtitle}</p>}
                     </div>
-                    <div className={`${colors.iconBg} p-3 rounded-xl ${colors.text} backdrop-blur-sm flex-shrink-0`}>
+                    <div className={`hidden sm:block ${colors.iconBg} p-3 rounded-xl ${colors.text} backdrop-blur-sm flex-shrink-0`}>
                         {icon}
                     </div>
                 </div>
@@ -530,17 +530,17 @@ export default function AdminDashboardPage() {
             
             <div className="container mx-auto px-4 py-8 max-w-7xl">
                 {/* Quick Actions */}
-                <div className="mb-8 flex gap-4 flex-wrap">
+                <div className="mb-8 flex flex-col sm:flex-row gap-4">
                     <button
                         onClick={() => router.push('/admin/activiteiten/nieuw')}
-                        className="bg-theme-purple text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2"
+                        className="bg-theme-purple text-white px-4 sm:px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2 w-full sm:w-auto justify-center"
                     >
                         <Plus className="h-5 w-5" />
                         Nieuwe Activiteit
                     </button>
                     <button
                         onClick={() => router.push('/admin/activiteiten')}
-                        className="bg-white text-theme-purple px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2"
+                        className="bg-white text-theme-purple px-4 sm:px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2 w-full sm:w-auto justify-center"
                     >
                         <FileText className="h-5 w-5" />
                         Beheer Activiteiten
@@ -552,19 +552,15 @@ export default function AdminDashboardPage() {
                     {/* Left Column */}
                     <div className="space-y-6">
                         {/* Events & Activiteiten - Purple Theme */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="sm:col-span-2 w-full">
-                                <div className="w-full h-full">
-                                    <StatCard
-                                        title="Aankomende Events"
-                                        value={stats.upcomingEvents}
-                                        icon={<Calendar className="h-6 w-6" />}
-                                        subtitle={`Van ${stats.totalEvents} totaal`}
-                                        onClick={() => router.push('/admin/activiteiten')}
-                                        colorClass="purple"
-                                    />
-                                </div>
-                            </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <StatCard
+                                title="Aankomende Events"
+                                value={stats.upcomingEvents}
+                                icon={<Calendar className="h-6 w-6" />}
+                                subtitle={`Van ${stats.totalEvents} totaal`}
+                                onClick={() => router.push('/admin/activiteiten')}
+                                colorClass="purple"
+                            />
                             
                             <StatCard
                                 title="Totaal Inschrijvingen"
@@ -575,18 +571,20 @@ export default function AdminDashboardPage() {
                                 colorClass="purple"
                             />
                             
-                            <StatCard
-                                title="Meeste Activiteiten"
-                                value={stats.topCommittee ? cleanCommitteeName(stats.topCommittee.name) : 'Geen data'}
-                                icon={<FileText className="h-6 w-6" />}
-                                subtitle={stats.topCommittee ? `${stats.topCommittee.count} activiteiten dit jaar` : undefined}
-                                onClick={() => router.push('/commissies')}
-                                colorClass="purple"
-                            />
+                            <div className="col-span-2 w-full">
+                                <StatCard
+                                    title="Meeste Activiteiten"
+                                    value={stats.topCommittee ? cleanCommitteeName(stats.topCommittee.name) : 'Geen data'}
+                                    icon={<FileText className="h-6 w-6" />}
+                                    subtitle={stats.topCommittee ? `${stats.topCommittee.count} ${stats.topCommittee.count === 1 ? 'activiteit' : 'activiteiten'} dit jaar` : undefined}
+                                    onClick={() => router.push('/commissies')}
+                                    colorClass="purple"
+                                />
+                            </div>
                         </div>
 
                         {/* Stickers - Orange Theme */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-4">
                             <StatCard
                                 title="Totaal Stickers"
                                 value={stats.totalStickers}
@@ -610,15 +608,15 @@ export default function AdminDashboardPage() {
                     {/* Right Column */}
                     <div className="space-y-6">
                         {/* Intro - Blue Theme */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-4">
                             {stats.mostLikedPost && (
-                                <div className="sm:col-span-2 w-full">
+                                <div className="col-span-2 w-full">
                                     <div className="w-full h-full">
                                         <StatCard
                                             title="Populairste Post"
-                                            value={stats.mostLikedPost.likes}
+                                            value={stats.mostLikedPost.title}
                                             icon={<Heart className="h-6 w-6" />}
-                                            subtitle={stats.mostLikedPost.title}
+                                            subtitle={`${stats.mostLikedPost.likes} likes`}
                                             onClick={() => router.push('/intro/blog')}
                                             colorClass="blue"
                                         />
@@ -646,7 +644,7 @@ export default function AdminDashboardPage() {
                         </div>
 
                         {/* Members - Green Theme */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-4">
                             <StatCard
                                 title="Commissieleden"
                                 value={stats.totalCommitteeMembers}
