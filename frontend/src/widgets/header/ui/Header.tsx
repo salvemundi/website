@@ -3,18 +3,20 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Sparkles } from "lucide-react";
+import { Menu, X, Sparkles, Shield } from "lucide-react";
 import { useAuth } from "@/features/auth/providers/auth-provider";
 import { getImageUrl } from "@/shared/lib/api/salvemundi";
 import { useSalvemundiSiteSettings } from "@/shared/lib/hooks/useSalvemundiApi";
 import { ROUTES } from "@/shared/lib/routes";
 import { ThemeToggle } from "@/features/theme/ui/ThemeToggle";
+import { directusFetch } from "@/shared/lib/directus";
 
 const Header: React.FC = () => {
     const pathname = usePathname();
     const { isAuthenticated, user } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
+    const [isCommitteeMember, setIsCommitteeMember] = useState(false);
     const headerRef = useRef<HTMLElement | null>(null);
     const { data: siteSettings } = useSalvemundiSiteSettings('intro');
     const introEnabled = siteSettings?.show ?? true;
@@ -27,6 +29,30 @@ const Header: React.FC = () => {
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
+
+    // Check if user is a committee member
+    useEffect(() => {
+        const checkCommitteeMembership = async () => {
+            if (!user?.id) {
+                setIsCommitteeMember(false);
+                return;
+            }
+
+            try {
+                const query = new URLSearchParams({
+                    'filter[user_id][_eq]': user.id,
+                    'limit': '1',
+                }).toString();
+
+                const memberships = await directusFetch<any[]>(`/items/committee_members?${query}`);
+                setIsCommitteeMember(memberships && memberships.length > 0);
+            } catch (error) {
+                setIsCommitteeMember(false);
+            }
+        };
+
+        checkCommitteeMembership();
+    }, [user?.id]);
 
     // Measure header height and expose as CSS variable so other components
     // (like the Hero) can size themselves relative to the header. Use
@@ -115,6 +141,17 @@ const Header: React.FC = () => {
                             </p>
                         </div>
                     </Link>
+
+                    {isCommitteeMember && (
+                        <Link
+                            href="/admin"
+                            className="hidden lg:flex items-center gap-2 rounded-full bg-theme-purple text-white px-3 py-1.5 text-sm font-medium shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+                            title="Admin Panel"
+                        >
+                            <Shield className="h-4 w-4" />
+                            <span className="hidden xl:inline">Admin</span>
+                        </Link>
+                    )}
 
                     <nav className="hidden items-center gap-4 xl:gap-5 lg:flex">
                         {navItems.map((link) => (
@@ -234,6 +271,17 @@ const Header: React.FC = () => {
                     </div>
 
                     <div className="space-y-4">
+                        {isCommitteeMember && (
+                            <Link
+                                href="/admin"
+                                onClick={() => setMenuOpen(false)}
+                                className="flex items-center gap-2 rounded-2xl bg-theme-purple text-white px-4 py-3 text-sm font-semibold shadow-lg"
+                            >
+                                <Shield className="h-5 w-5" />
+                                <span>Admin Panel</span>
+                            </Link>
+                        )}
+
                         {navItems.map((link) => (
                             <Link
                                 key={link.href}

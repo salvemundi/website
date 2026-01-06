@@ -471,8 +471,7 @@ export default function AccountPage() {
                 <QuickLink
                   label="Admin panel"
                   icon={<Shield className="h-6 w-6" />}
-                  href="https://admin.salvemundi.nl"
-                  external
+                  href="/admin"
                 />
               ) : null}
             </div>

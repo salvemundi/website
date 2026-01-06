@@ -37,6 +37,7 @@ export default function EventList({ events, onEventClick }: EventListProps) {
                     isPast={isEventPast(event.event_date)}
                     variant="list"
                     committeeName={event.committee_name}
+                    contact={event.contact}
                     inschrijfDeadline={event.inschrijf_deadline}
                     onShowDetails={() => onEventClick(event)}
                     onSignup={() => onEventClick(event)}
