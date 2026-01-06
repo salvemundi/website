@@ -273,7 +273,7 @@ export default function Hero() {
     // Only apply a min-height on medium+ screens so mobile won't force a
     // large empty area. On md+ we ensure the hero fills the viewport minus the header.
     return (
-        <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full min-h-[600px] md:min-h-[500px] lg:min-h-screen py-6 sm:py-10 md:py-16 lg:py-20 transition-colors duration-300">
+        <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full min-h-[600px] md:min-h-[500px] py-6 sm:py-10 md:py-16 lg:py-20 transition-colors duration-300">
             
             {/* Mobile-only fallback image (shows ONLY on very small screens, for robustness)
                 This ensures even if Swiper fails or images don't load, we have a visual.
