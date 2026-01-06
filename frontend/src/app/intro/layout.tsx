@@ -58,7 +58,7 @@ export default function IntroLayout({ children }: { children: React.ReactNode })
                             <div className={`w-8 h-8 rounded-full bg-gradient-theme flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
                                 isSidebarExpanded ? 'scale-110' : ''
                             }`}>
-                                <img src="/logo_white.svg" alt="Intro" className="w-5 h-5" />
+                                <img src="/logo_old.svg" alt="Intro" className="w-5 h-5" />
                             </div>
                             <span className={`font-bold text-theme-purple text-sm transition-all duration-300 whitespace-nowrap ${
                                 isSidebarExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 w-0 overflow-hidden'
