@@ -52,7 +52,7 @@ jobs:
           client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
           client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
           env-slug: ${{ env.INFISICAL_ENV_SLUG }}
-          project-slug: "Salvemundi"
+          project-slug: "secret-management"
           domain: "https://infisical.salvemundi.nl"
           export-type: "env"
 
