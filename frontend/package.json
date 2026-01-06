@@ -5,8 +5,8 @@
   "isolation_audit": "2025-12-31",
   "type": "module",
   "scripts": {
-    "dev": "next dev -p 5173",
-    "build": "next build",
+    "dev": "infisical run -- next dev -p 5173",
+    "build": "infisical run -- next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
