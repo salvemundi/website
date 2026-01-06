@@ -47,7 +47,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
 
     const effectiveImageFilter = useMemo(() => {
         const base = imageFilter || 'brightness(0.7)';
-        return /blur\(/.test(base) ? base : `${base} blur(6px)`;
+        return /blur\(/.test(base) ? base : `${base} blur(0px)`;
     }, [imageFilter]);
 
     return (

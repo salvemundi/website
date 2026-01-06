@@ -414,7 +414,7 @@ iframe {
     color: var(--text-main);
     border-color: rgba(19, 42, 64, 0.08);
     box-shadow: 0 12px 40px rgba(19, 42, 64, 0.08);
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(0px);
   }
 
   body.mobile-home-theme .text-gray-700,
