@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { eventsApi, clubsApi, committeesApi, sponsorsApi } from '../api/salvemundi';
-import { MOCK_EVENTS, MOCK_COMMITTEES, MOCK_CLUBS } from '../mockData';
+import { MOCK_COMMITTEES } from '../mockData';
 
 interface Event {
     id: number | string;
@@ -106,11 +106,11 @@ export const useDirectusStore = create<DirectusStore>((set) => ({
             const data = await eventsApi.getAll() as Event[];
             set({ events: data, eventsLoading: false });
         } catch (error) {
-            console.error('Failed to load events, using mock data:', error);
+            console.error('Failed to load events:', error);
             set({
-                events: MOCK_EVENTS as Event[],
+                events: [],
                 eventsLoading: false,
-                // We don't set error here so the UI shows the mock data
+                eventsError: error instanceof Error ? error.message : 'Failed to load events',
             });
         }
     },
@@ -143,10 +143,11 @@ export const useDirectusStore = create<DirectusStore>((set) => ({
             const data = await clubsApi.getAll() as Club[];
             set({ clubs: data, clubsLoading: false });
         } catch (error) {
-            console.error('Failed to load clubs, using mock data:', error);
+            console.error('Failed to load clubs:', error);
             set({
-                clubs: MOCK_CLUBS as Club[],
+                clubs: [],
                 clubsLoading: false,
+                clubsError: error instanceof Error ? error.message : 'Failed to load clubs',
             });
         }
     },
