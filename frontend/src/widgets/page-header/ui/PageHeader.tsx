@@ -15,7 +15,7 @@ interface PageHeaderProps {
     contentPadding?: string;
 }
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 
 const PageHeader: React.FC<PageHeaderProps> = ({
     title,
@@ -45,6 +45,11 @@ const PageHeader: React.FC<PageHeaderProps> = ({
         return () => ro.disconnect();
     }, []);
 
+    const effectiveImageFilter = useMemo(() => {
+        const base = imageFilter || 'brightness(0.7)';
+        return /blur\(/.test(base) ? base : `${base} blur(6px)`;
+    }, [imageFilter]);
+
     return (
         <header ref={headerRef} className={`relative flex items-center justify-center mb-5 ${className}`}>
             <div
@@ -53,7 +58,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                     backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
                     backgroundColor: backgroundImage ? 'transparent' : 'var(--color-primary-600)',
                     backgroundPosition: backgroundPosition,
-                    filter: imageFilter || 'brightness(0.7)',
+                    filter: effectiveImageFilter,
                     maskImage: 'none',
                     WebkitMaskImage: 'none'
                 }}
