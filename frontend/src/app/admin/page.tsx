@@ -1,0 +1,804 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/features/auth/providers/auth-provider';
+import { directusFetch } from '@/shared/lib/directus';
+import { stickersApi, eventsApi } from '@/shared/lib/api/salvemundi';
+import { 
+    Users, 
+    Calendar, 
+    Award, 
+    Cake, 
+    TrendingUp,
+    UserCheck,
+    Plus,
+    FileText,
+    Sticker,
+    Mail,
+    Heart,
+    AlertCircle,
+    Activity
+} from 'lucide-react';
+import PageHeader from '@/widgets/page-header/ui/PageHeader';
+
+// Helper function to clean committee names
+function cleanCommitteeName(name: string): string {
+    return name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim();
+}
+
+interface DashboardStats {
+    totalSignups: number;
+    upcomingBirthdays: Array<{ id: string; first_name: string; last_name: string; birthday: string }>;
+    topStickers: Array<{ id: string; first_name: string; last_name: string; count: number }>;
+    totalCommitteeMembers: number;
+    upcomingEvents: number;
+    totalEvents: number;
+    totalStickers: number;
+    stickerGrowthRate: number;
+    introSignups: number;
+    introBlogLikes: number;
+    systemErrors: number;
+    mostLikedPost?: { id: string; title: string; likes: number; slug: string };
+    upcomingEventsWithSignups: Array<{ id: string; name: string; event_date: string; signups: number }>;    topCommittee?: { name: string; count: number };}
+
+function StatCard({ 
+    title, 
+    value, 
+    icon, 
+    subtitle,
+    onClick,
+    colorClass = 'purple'
+}: { 
+    title: string; 
+    value: string | number; 
+    icon: React.ReactNode;
+    subtitle?: string;
+    onClick?: () => void;
+    colorClass?: 'purple' | 'orange' | 'blue' | 'green' | 'red';
+}) {
+    const Component = onClick ? 'button' : 'div';
+    
+    const colorStyles = {
+        purple: {
+            gradient: 'from-purple-500 to-purple-600',
+            iconBg: 'bg-white/20',
+            text: 'text-white',
+            subtitleText: 'text-purple-100'
+        },
+        orange: {
+            gradient: 'from-orange-500 to-orange-600',
+            iconBg: 'bg-white/20',
+            text: 'text-white',
+            subtitleText: 'text-orange-100'
+        },
+        blue: {
+            gradient: 'from-blue-500 to-blue-600',
+            iconBg: 'bg-white/20',
+            text: 'text-white',
+            subtitleText: 'text-blue-100'
+        },
+        green: {
+            gradient: 'from-green-500 to-green-600',
+            iconBg: 'bg-white/20',
+            text: 'text-white',
+            subtitleText: 'text-green-100'
+        },
+        red: {
+            gradient: 'from-red-500 to-red-600',
+            iconBg: 'bg-white/20',
+            text: 'text-white',
+            subtitleText: 'text-red-100'
+        }
+    };
+    
+    const colors = colorStyles[colorClass];
+    
+    return (
+        <Component
+            onClick={onClick}
+            className={`w-full bg-gradient-to-br ${colors.gradient} rounded-2xl shadow-lg p-6 relative overflow-hidden ${onClick ? 'hover:shadow-2xl transition-all cursor-pointer hover:-translate-y-1 hover:scale-[1.02]' : ''}`}
+        >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
+            <div className="relative z-10">
+                <div className="flex items-start justify-between">
+                    <div className="flex-1 pr-2">
+                        <p className={`${colors.subtitleText} text-sm font-medium mb-2`}>{title}</p>
+                        <p className={`${typeof value === 'string' && value.length > 10 ? 'text-2xl' : 'text-4xl'} font-bold ${colors.text} mb-1 break-words`}>{value}</p>
+                        {subtitle && <p className={`${colors.subtitleText} text-xs line-clamp-2`} title={subtitle}>{subtitle}</p>}
+                    </div>
+                    <div className={`${colors.iconBg} p-3 rounded-xl ${colors.text} backdrop-blur-sm flex-shrink-0`}>
+                        {icon}
+                    </div>
+                </div>
+            </div>
+        </Component>
+    );
+}
+
+function ListCard({ 
+    title, 
+    icon, 
+    children 
+}: { 
+    title: string; 
+    icon: React.ReactNode;
+    children: React.ReactNode;
+}) {
+    return (
+        <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="flex items-center gap-3 mb-4">
+                <div className="bg-theme-purple/10 p-2 rounded-xl text-theme-purple">
+                    {icon}
+                </div>
+                <h3 className="text-lg font-bold text-slate-800">{title}</h3>
+            </div>
+            {children}
+        </div>
+    );
+}
+
+export default function AdminDashboardPage() {
+    const router = useRouter();
+    const { user } = useAuth();
+    const [stats, setStats] = useState<DashboardStats>({
+        totalSignups: 0,
+        upcomingBirthdays: [],
+        topStickers: [],
+        totalCommitteeMembers: 0,
+        upcomingEvents: 0,
+        totalEvents: 0,
+        totalStickers: 0,
+        stickerGrowthRate: 0,
+        introSignups: 0,
+        introBlogLikes: 0,
+        systemErrors: 0,
+        mostLikedPost: undefined,
+        upcomingEventsWithSignups: [],
+        topCommittee: undefined,
+    });
+    const [isIctMember, setIsIctMember] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        loadDashboardData();
+        checkIctMembership();
+    }, []);
+
+    const checkIctMembership = async () => {
+        if (!user?.id) return;
+        try {
+            // Check if user is member of ICT committee (committee with name 'ICT' or 'ict')
+            const committees = await directusFetch<any[]>('/items/committee_members?fields=committee_id.name&filter[user_id][_eq]=' + user.id);
+            const isIct = committees.some(cm => cm.committee_id?.name?.toLowerCase() === 'ict');
+            setIsIctMember(isIct);
+        } catch (error) {
+            console.error('Failed to check ICT membership:', error);
+        }
+    };
+
+    const loadDashboardData = async () => {
+        setIsLoading(true);
+        try {
+            // Fetch all stats in parallel
+            const [
+                signupsData,
+                usersData,
+                stickersData,
+                committeeMembersCount,
+                eventsData,
+                stickerStats,
+                introStats,
+                systemHealth,
+                upcomingEventsDetail,
+                topCommittee
+            ] = await Promise.all([
+                // Total event signups
+                directusFetch<any>('/items/event_signups?aggregate[count]=*'),
+                // Users with birthdays in next 7 days
+                fetchUpcomingBirthdays(),
+                // Top sticker collectors
+                fetchTopStickerCollectors(),
+                // Total committee members from visible committees only
+                fetchVisibleCommitteeMembersCount(),
+                // Events (all and upcoming)
+                fetchEventsStats(),
+                // Sticker stats (total + growth)
+                fetchStickerStats(),
+                // Intro newsletter/blog stats
+                fetchIntroStats(),
+                // System health
+                fetchSystemHealth(),
+                // Upcoming events with signup counts
+                fetchUpcomingEventsWithSignups(),
+                // Top committee by activities this year
+                fetchTopCommitteeByActivities()
+            ]);
+
+            setStats({
+                totalSignups: signupsData?.[0]?.count || 0,
+                upcomingBirthdays: usersData || [],
+                topStickers: stickersData || [],
+                totalCommitteeMembers: committeeMembersCount,
+                upcomingEvents: eventsData.upcoming,
+                totalEvents: eventsData.total,
+                totalStickers: stickerStats.total,
+                stickerGrowthRate: stickerStats.growthRate,
+                introSignups: introStats.signups,
+                introBlogLikes: introStats.blogLikes,
+                systemErrors: systemHealth.errors,
+                mostLikedPost: introStats.mostLikedPost,
+                upcomingEventsWithSignups: upcomingEventsDetail,
+                topCommittee: topCommittee,
+            });
+        } catch (error) {
+            console.error('Failed to load dashboard data:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const fetchUpcomingBirthdays = async () => {
+        try {
+            // Fetch all users with birthdays
+            const users = await directusFetch<any[]>('/users?fields=id,first_name,last_name,date_of_birth&filter[date_of_birth][_nnull]=true');
+            
+            const today = new Date();
+            const nextWeek = new Date();
+            nextWeek.setDate(today.getDate() + 7);
+
+            const upcoming = users.filter(user => {
+                if (!user.date_of_birth) return false;
+                
+                const birthday = new Date(user.date_of_birth);
+                const thisYearBirthday = new Date(today.getFullYear(), birthday.getMonth(), birthday.getDate());
+                
+                return thisYearBirthday >= today && thisYearBirthday <= nextWeek;
+            }).map(user => ({
+                id: user.id,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                birthday: user.date_of_birth
+            }));
+
+            return upcoming.slice(0, 5); // Top 5
+        } catch (error) {
+            console.error('Failed to fetch birthdays:', error);
+            return [];
+        }
+    };
+
+    const fetchVisibleCommitteeMembersCount = async () => {
+        try {
+            // Get only visible committees
+            const committees = await directusFetch<any[]>(
+                '/items/committees?fields=id&filter[is_visible][_eq]=true'
+            );
+            
+            if (committees.length === 0) {
+                return 0;
+            }
+
+            // Get all committee members for visible committees
+            const committeeIds = committees.map(c => c.id);
+            const members = await directusFetch<any[]>(
+                `/items/committee_members?fields=id&filter[committee_id][_in]=${committeeIds.join(',')}`
+            );
+            
+            return members.length;
+        } catch (error) {
+            console.error('Failed to fetch visible committee members count:', error);
+            return 0;
+        }
+    };
+
+    const fetchTopStickerCollectors = async () => {
+        try {
+            // Use the centralized stickers API (same as stickers page) to respect permissions/fields
+            const stickers = await stickersApi.getAll();
+
+            const counts: Record<string, { id: string; first_name: string; last_name: string; count: number }> = {};
+
+            stickers.forEach((sticker: any) => {
+                const user = sticker.user_created || sticker.user_created;
+                if (user && typeof user === 'object' && user.id) {
+                    const userId = user.id;
+                    if (!counts[userId]) {
+                        counts[userId] = {
+                            id: userId,
+                            first_name: user.first_name || 'Onbekend',
+                            last_name: user.last_name || '',
+                            count: 0
+                        };
+                    }
+                    counts[userId].count++;
+                }
+            });
+
+            const sorted = Object.values(counts).sort((a, b) => b.count - a.count);
+            return sorted.slice(0, 3); // Top 3
+        } catch (error) {
+            console.error('Failed to fetch sticker stats:', error);
+            return [];
+        }
+    };
+
+    const fetchEventsStats = async () => {
+        try {
+            const allEvents = await directusFetch<any[]>('/items/events?fields=id,event_date&limit=-1');
+            const now = new Date();
+            
+            const upcoming = allEvents.filter(event => new Date(event.event_date) >= now);
+            
+            return {
+                total: allEvents.length,
+                upcoming: upcoming.length
+            };
+        } catch (error) {
+            console.error('Failed to fetch events stats:', error);
+            return { total: 0, upcoming: 0 };
+        }
+    };
+
+    const fetchStickerStats = async () => {
+        try {
+            const allStickers = await stickersApi.getAll();
+            const now = new Date();
+            const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            
+            const recentStickers = allStickers.filter((s: any) => 
+                s.date_created && new Date(s.date_created) >= lastWeek
+            );
+            
+            const growthRate = allStickers.length > 0 
+                ? Math.round((recentStickers.length / allStickers.length) * 100) 
+                : 0;
+            
+            return {
+                total: allStickers.length,
+                growthRate
+            };
+        } catch (error) {
+            console.error('Failed to fetch sticker stats:', error);
+            return { total: 0, growthRate: 0 };
+        }
+    };
+
+    const fetchIntroStats = async () => {
+        try {
+            const [signupsData, blogsData] = await Promise.all([
+                directusFetch<any>('/items/intro_signups?aggregate[count]=*').catch(() => [{ count: 0 }]),
+                directusFetch<any[]>('/items/intro_blogs?fields=id,title,slug,likes&filter[is_published][_eq]=true').catch(() => [])
+            ]);
+            
+            const totalLikes = blogsData.reduce((sum: number, blog: any) => sum + (blog.likes || 0), 0);
+            const mostLiked = blogsData.length > 0 
+                ? blogsData.reduce((max: any, blog: any) => (blog.likes || 0) > (max.likes || 0) ? blog : max)
+                : undefined;
+            
+            return {
+                signups: signupsData?.[0]?.count || 0,
+                blogLikes: totalLikes,
+                mostLikedPost: mostLiked ? {
+                    id: mostLiked.id,
+                    title: mostLiked.title,
+                    likes: mostLiked.likes || 0,
+                    slug: mostLiked.slug
+                } : undefined
+            };
+        } catch (error) {
+            console.error('Failed to fetch intro stats:', error);
+            return { signups: 0, blogLikes: 0, mostLikedPost: undefined };
+        }
+    };
+
+    const fetchSystemHealth = async () => {
+        try {
+            // Simple health check: count recent failed API calls or errors
+            // For now, return 0 as placeholder (can be extended with error logging)
+            return { errors: 0 };
+        } catch (error) {
+            console.error('Failed to fetch system health:', error);
+            return { errors: 0 };
+        }
+    };
+
+    const fetchTopCommitteeByActivities = async () => {
+        try {
+            const currentYear = new Date().getFullYear();
+            
+            // Use eventsApi to respect permissions
+            const allEvents = await eventsApi.getAll();
+
+            // Filter events from this year - also include events without start_date
+            const eventsThisYear = allEvents.filter((event: any) => {
+                if (!event.start_date) {
+                    return true; // Include events without date
+                }
+                const eventDate = new Date(event.start_date);
+                const eventYear = eventDate.getFullYear();
+                return eventYear === currentYear;
+            });
+
+            // Count events per committee
+            const committeeCounts: Record<string, { name: string; count: number }> = {};
+            
+            // Fetch all committees to map IDs to names
+            const committees = await directusFetch<any[]>('/items/committees?fields=id,name');
+            const committeeMap = new Map(committees.map(c => [c.id, c.name]));
+            
+            eventsThisYear.forEach((event: any) => {
+                const committee = event.committee_id;
+                
+                // Handle both object and direct ID cases
+                if (committee) {
+                    let committeeId: string | number;
+                    let committeeName: string;
+                    
+                    if (typeof committee === 'object' && committee.id) {
+                        committeeId = committee.id;
+                        committeeName = committee.name || committeeMap.get(committeeId) || 'Onbekend';
+                    } else if (typeof committee === 'string' || typeof committee === 'number') {
+                        // committee_id is just an ID, not expanded - look up the name
+                        committeeId = committee;
+                        committeeName = committeeMap.get(committeeId) || 'Onbekend';
+                    } else {
+                        return;
+                    }
+                    
+                    if (!committeeCounts[committeeId]) {
+                        committeeCounts[committeeId] = { name: committeeName, count: 0 };
+                    }
+                    committeeCounts[committeeId].count++;
+                }
+            });
+
+            // Find committee with most activities
+            const sortedCommittees = Object.values(committeeCounts).sort((a, b) => b.count - a.count);
+            const topCommittee = sortedCommittees[0];
+            
+            return topCommittee || undefined;
+        } catch (error) {
+            console.error('Failed to fetch top committee:', error);
+            return undefined;
+        }
+    };
+
+    const fetchUpcomingEventsWithSignups = async () => {
+        try {
+            const allEvents = await directusFetch<any[]>('/items/events?fields=id,name,event_date&limit=-1');
+            const now = new Date();
+            
+            const upcoming = allEvents.filter(event => new Date(event.event_date) >= now);
+            
+            // Get signup counts for each upcoming event
+            const eventsWithSignups = await Promise.all(
+                upcoming.slice(0, 5).map(async (event) => {
+                    try {
+                        const signups = await directusFetch<any>(`/items/event_signups?aggregate[count]=*&filter[event_id][_eq]=${event.id}`);
+                        return {
+                            id: event.id,
+                            name: event.name,
+                            event_date: event.event_date,
+                            signups: signups?.[0]?.count || 0
+                        };
+                    } catch (error) {
+                        return {
+                            id: event.id,
+                            name: event.name,
+                            event_date: event.event_date,
+                            signups: 0
+                        };
+                    }
+                })
+            );
+            
+            return eventsWithSignups;
+        } catch (error) {
+            console.error('Failed to fetch upcoming events with signups:', error);
+            return [];
+        }
+    };
+
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
+    };
+
+    if (isLoading) {
+        return (
+            <>
+                <PageHeader
+                    title="Admin Dashboard"
+                    description="Beheer en statistieken"
+                />
+                <div className="container mx-auto px-4 py-8 max-w-7xl">
+                    <div className="flex items-center justify-center py-20">
+                        <div className="h-12 w-12 animate-spin rounded-full border-4 border-theme-purple/20 border-t-theme-purple" />
+                    </div>
+                </div>
+            </>
+        );
+    }
+
+    return (
+        <>
+            <PageHeader
+                title="Admin Dashboard"
+                description={`Welkom ${user?.first_name || 'Admin'}`}
+            />
+            
+            <div className="container mx-auto px-4 py-8 max-w-7xl">
+                {/* Quick Actions */}
+                <div className="mb-8 flex gap-4 flex-wrap">
+                    <button
+                        onClick={() => router.push('/admin/activiteiten/nieuw')}
+                        className="bg-theme-purple text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2"
+                    >
+                        <Plus className="h-5 w-5" />
+                        Nieuwe Activiteit
+                    </button>
+                    <button
+                        onClick={() => router.push('/admin/activiteiten')}
+                        className="bg-white text-theme-purple px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2"
+                    >
+                        <FileText className="h-5 w-5" />
+                        Beheer Activiteiten
+                    </button>
+                </div>
+
+                {/* Grouped Cards - Horizontal Layout */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    {/* Left Column */}
+                    <div className="space-y-6">
+                        {/* Events & Activiteiten - Purple Theme */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="sm:col-span-2 w-full">
+                                <div className="w-full h-full">
+                                    <StatCard
+                                        title="Aankomende Events"
+                                        value={stats.upcomingEvents}
+                                        icon={<Calendar className="h-6 w-6" />}
+                                        subtitle={`Van ${stats.totalEvents} totaal`}
+                                        onClick={() => router.push('/admin/activiteiten')}
+                                        colorClass="purple"
+                                    />
+                                </div>
+                            </div>
+                            
+                            <StatCard
+                                title="Totaal Inschrijvingen"
+                                value={stats.totalSignups}
+                                icon={<UserCheck className="h-6 w-6" />}
+                                subtitle="Alle activiteiten"
+                                onClick={() => router.push('/activiteiten')}
+                                colorClass="purple"
+                            />
+                            
+                            <StatCard
+                                title="Meeste Activiteiten"
+                                value={stats.topCommittee ? cleanCommitteeName(stats.topCommittee.name) : 'Geen data'}
+                                icon={<FileText className="h-6 w-6" />}
+                                subtitle={stats.topCommittee ? `${stats.topCommittee.count} activiteiten dit jaar` : undefined}
+                                onClick={() => router.push('/commissies')}
+                                colorClass="purple"
+                            />
+                        </div>
+
+                        {/* Stickers - Orange Theme */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <StatCard
+                                title="Totaal Stickers"
+                                value={stats.totalStickers}
+                                icon={<Sticker className="h-6 w-6" />}
+                                subtitle="Alle verzamelde stickers"
+                                onClick={() => router.push('/stickers')}
+                                colorClass="orange"
+                            />
+                            
+                            <StatCard
+                                title="Sticker Groei"
+                                value={`${stats.stickerGrowthRate}%`}
+                                icon={<TrendingUp className="h-6 w-6" />}
+                                subtitle="Laatste 7 dagen"
+                                onClick={() => router.push('/stickers')}
+                                colorClass="orange"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Right Column */}
+                    <div className="space-y-6">
+                        {/* Intro - Blue Theme */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {stats.mostLikedPost && (
+                                <div className="sm:col-span-2 w-full">
+                                    <div className="w-full h-full">
+                                        <StatCard
+                                            title="Populairste Post"
+                                            value={stats.mostLikedPost.likes}
+                                            icon={<Heart className="h-6 w-6" />}
+                                            subtitle={stats.mostLikedPost.title}
+                                            onClick={() => router.push('/intro/blog')}
+                                            colorClass="blue"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                            
+                            <StatCard
+                                title="Intro Aanmeldingen"
+                                value={stats.introSignups}
+                                icon={<Mail className="h-6 w-6" />}
+                                subtitle="Totaal aanmeldingen"
+                                onClick={() => router.push('/intro')}
+                                colorClass="blue"
+                            />
+                            
+                            <StatCard
+                                title="Blog Likes"
+                                value={stats.introBlogLikes}
+                                icon={<Heart className="h-6 w-6" />}
+                                subtitle="Alle intro blogs"
+                                onClick={() => router.push('/intro/blog')}
+                                colorClass="blue"
+                            />
+                        </div>
+
+                        {/* Members - Green Theme */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <StatCard
+                                title="Commissieleden"
+                                value={stats.totalCommitteeMembers}
+                                icon={<Users className="h-6 w-6" />}
+                                subtitle="Actieve leden"
+                                onClick={() => router.push('/commissies')}
+                                colorClass="green"
+                            />
+                            
+                            <StatCard
+                                title="Jarigen Komende Week"
+                                value={stats.upcomingBirthdays.length}
+                                icon={<Cake className="h-6 w-6" />}
+                                subtitle="Vergeet niet te feliciteren!"
+                                colorClass="green"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+                    {/* Upcoming Events with Signups */}
+                    <ListCard
+                        title="Aankomende Events"
+                        icon={<Calendar className="h-5 w-5" />}
+                    >
+                        {stats.upcomingEventsWithSignups.length > 0 ? (
+                            <div className="space-y-3">
+                                {stats.upcomingEventsWithSignups.map(event => (
+                                    <button
+                                        key={event.id}
+                                        onClick={() => router.push(`/activiteiten/${event.id}`)}
+                                        className="flex items-center justify-between p-3 bg-purple-50 rounded-xl w-full hover:bg-purple-100 transition"
+                                    >
+                                        <div className="text-left">
+                                            <p className="font-semibold text-slate-800 line-clamp-1">
+                                                {event.name}
+                                            </p>
+                                            <p className="text-sm text-slate-500">{formatDate(event.event_date)}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-lg font-bold text-purple-700">{event.signups}</span>
+                                            <UserCheck className="h-5 w-5 text-purple-600" />
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-slate-500 text-center py-4">Geen aankomende events</p>
+                        )}
+                    </ListCard>
+
+                    {/* Upcoming Birthdays */}
+                    <ListCard
+                        title="Aankomende Jarigen"
+                        icon={<Cake className="h-5 w-5" />}
+                    >
+                        {stats.upcomingBirthdays.length > 0 ? (
+                            <div className="space-y-3">
+                                {stats.upcomingBirthdays.map(person => (
+                                    <div key={person.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                                        <div>
+                                            <p className="font-semibold text-slate-800">
+                                                {person.first_name} {person.last_name}
+                                            </p>
+                                            <p className="text-sm text-slate-500">{formatDate(person.birthday)}</p>
+                                        </div>
+                                        <Cake className="h-5 w-5 text-theme-purple" />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-slate-500 text-center py-4">Geen jarigen deze week</p>
+                        )}
+                    </ListCard>
+
+                    {/* Top Sticker Collectors */}
+                    <ListCard
+                        title="Top 3 Sticker Verzamelaars"
+                        icon={<Award className="h-5 w-5" />}
+                    >
+                        {stats.topStickers.length > 0 ? (
+                            <div className="space-y-3">
+                                {stats.topStickers.map((person, index) => (
+                                    <div key={person.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${
+                                                index === 0 ? 'bg-yellow-500' :
+                                                index === 1 ? 'bg-slate-400' :
+                                                'bg-orange-600'
+                                            }`}>
+                                                {index + 1}
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-slate-800">
+                                                    {person.first_name} {person.last_name}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-2xl font-bold text-theme-purple">{person.count}</span>
+                                            <Award className="h-5 w-5 text-theme-purple" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-slate-500 text-center py-4">Geen stickers gevonden</p>
+                        )}
+                    </ListCard>
+                </div>
+
+                {/* System Health - ICT Only */}
+                {isIctMember && (
+                    <div className="mt-8">
+                        <ListCard
+                            title="Systeemstatus"
+                            icon={<Activity className="h-5 w-5" />}
+                        >
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between p-3 bg-green-50 rounded-xl">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
+                                        <div>
+                                            <p className="font-semibold text-slate-800">API Status</p>
+                                            <p className="text-sm text-slate-500">Operationeel</p>
+                                        </div>
+                                    </div>
+                                    <span className="text-green-600 font-bold">✓</span>
+                                </div>
+                                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                                    <div className="flex items-center gap-3">
+                                        <AlertCircle className="h-5 w-5 text-slate-400" />
+                                        <div>
+                                            <p className="font-semibold text-slate-800">Recente Fouten</p>
+                                            <p className="text-sm text-slate-500">Laatste 24 uur</p>
+                                        </div>
+                                    </div>
+                                    <span className="text-2xl font-bold text-slate-600">{stats.systemErrors}</span>
+                                </div>
+                                <div className="p-3 bg-blue-50 rounded-xl">
+                                    <p className="text-sm text-blue-700">
+                                        <strong>ICT Dashboard:</strong> Alleen zichtbaar voor ICT commissieleden.
+                                    </p>
+                                </div>
+                            </div>
+                        </ListCard>
+                    </div>
+                )}
+
+                {/* Additional Info removed */}
+            </div>
+        </>
+    );
+}
