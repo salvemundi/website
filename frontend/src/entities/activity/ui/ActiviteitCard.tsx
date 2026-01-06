@@ -22,6 +22,7 @@ interface ActiviteitCardProps {
     variant?: 'grid' | 'list';
     committeeName?: string;
     inschrijfDeadline?: string;
+    contact?: string;
 }
 
 const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
@@ -42,6 +43,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     isSignedUp = false,
     variant = 'grid',
     committeeName,
+    contact,
     inschrijfDeadline,
 }) => {
     const { isAuthenticated } = useAuth();
@@ -121,6 +123,12 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                             {committeeLabel}
                         </p>
                         <h3 className="text-lg font-bold text-theme-purple leading-snug">{title}</h3>
+                        {contact && (
+                            <p className="text-sm text-theme-muted mt-1">
+                                <span className="font-medium text-theme-purple/90">Contact:</span>{' '}
+                                <span className="text-theme-muted">{contact}</span>
+                            </p>
+                        )}
                     </div>
 
                     <div className="flex flex-row flex-wrap gap-4 text-right text-theme-purple font-semibold">
@@ -199,6 +207,12 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                             </>
                         )}
                         {location && <p className="text-xs text-theme-white/80 mt-1">{location}</p>}
+                        {contact && (
+                            <p className="text-xs text-theme-white/80 mt-1">
+                                <span className="font-medium">Contact:</span>{' '}
+                                <span className="font-medium">{contact}</span>
+                            </p>
+                        )}
                         <span className="text-lg font-bold text-theme-white">€{safePrice}</span>
                     </div>
                 </div>
