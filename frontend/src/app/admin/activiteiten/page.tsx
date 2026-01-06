@@ -20,6 +20,7 @@ interface Event {
     price_non_members?: number;
     inschrijf_deadline?: string;
     signup_count?: number;
+    image?: { id: string } | string;
 }
 
 export default function AdminActiviteitenPage() {
@@ -43,7 +44,7 @@ export default function AdminActiviteitenPage() {
         try {
             // Fetch all events with signup counts
             const eventsData = await directusFetch<Event[]>(
-                '/items/events?fields=id,name,event_date,description,location,max_sign_ups,price_members,price_non_members,inschrijf_deadline,contact&sort=-event_date&limit=-1'
+                '/items/events?fields=id,name,event_date,description,location,max_sign_ups,price_members,price_non_members,inschrijf_deadline,contact,image.id&sort=-event_date&limit=-1'
             );
 
             // Get signup counts for each event
@@ -124,6 +125,12 @@ export default function AdminActiviteitenPage() {
 
     const isEventPast = (dateString: string) => {
         return new Date(dateString) < new Date();
+    };
+
+    const getImageUrl = (image?: { id: string } | string) => {
+        if (!image) return null;
+        const imageId = typeof image === 'object' ? image.id : image;
+        return `https://admin.salvemundi.nl/assets/${imageId}`;
     };
 
     return (
@@ -217,27 +224,39 @@ export default function AdminActiviteitenPage() {
                                     {/* Event Info */}
                                     <div className="flex-1">
                                         <div className="flex items-start justify-between mb-3">
-                                            <div>
-                                                <h3 className="text-xl font-bold text-slate-800 mb-2">
-                                                    {event.name}
-                                                </h3>
-                                                <div className="flex flex-wrap gap-3 text-sm text-slate-600">
-                                                    <div className="flex items-center gap-1">
-                                                        <Calendar className="h-4 w-4" />
-                                                        <span>{formatDate(event.event_date)}</span>
-                                                    </div>
-                                                    {event.location && (
+                                            <div className="flex items-start gap-4 flex-1">
+                                                {/* Event Image */}
+                                                {event.image && (
+                                                    <img
+                                                        src={getImageUrl(event.image)}
+                                                        alt={event.name}
+                                                        className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+                                                    />
+                                                )}
+                                                
+                                                {/* Event Title and Details */}
+                                                <div className="flex-1">
+                                                    <h3 className="text-xl font-bold text-slate-800 mb-2">
+                                                        {event.name}
+                                                    </h3>
+                                                    <div className="flex flex-wrap gap-3 text-sm text-slate-600">
                                                         <div className="flex items-center gap-1">
-                                                            <span>📍</span>
-                                                            <span>{event.location}</span>
+                                                            <Calendar className="h-4 w-4" />
+                                                            <span>{formatDate(event.event_date)}</span>
                                                         </div>
-                                                    )}
-                                                    {event.contact && (
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-slate-500">Contact:</span>
-                                                            <span className="font-medium text-slate-700">{event.contact}</span>
-                                                        </div>
-                                                    )}
+                                                        {event.location && (
+                                                            <div className="flex items-center gap-1">
+                                                                <span>📍</span>
+                                                                <span>{event.location}</span>
+                                                            </div>
+                                                        )}
+                                                        {event.contact && (
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-slate-500">Contact:</span>
+                                                                <span className="font-medium text-slate-700">{event.contact}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                             {isEventPast(event.event_date) && (
