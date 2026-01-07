@@ -70,6 +70,10 @@ const nextConfig = {
                 source: '/api/payments/:path*',
                 destination: `${PAYMENT_API_URL}/api/payments/:path*`,
             },
+            {
+                source: '/api/coupons/:path*',
+                destination: `${PAYMENT_API_URL}/api/coupons/:path*`,
+            },
             // Directus endpoints - catch-all for everything else
             {
                 source: '/api/:path*',
