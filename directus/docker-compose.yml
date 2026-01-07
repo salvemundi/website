@@ -12,7 +12,6 @@ services:
       - postgres_app_data:/var/lib/postgresql/data
     networks:
       - internal_backend
-
   directus:
     build:
       context: .
@@ -30,19 +29,16 @@ services:
       - CORS_ORIGIN=${CORS_ORIGIN}
       - CORS_ALLOW_CREDENTIALS=${CORS_ALLOW_CREDENTIALS}
       - LOG_LEVEL=debug
-      
       # Database connection (gebruikt de POSTGRES_ variabelen)
       - DB_CLIENT=postgres
-      - DB_HOST=directus_db
+      - DB_HOST=db
       - DB_PORT=5432
       - DB_DATABASE=${POSTGRES_DB}
       - DB_USER=${POSTGRES_USER}
       - DB_PASSWORD=${POSTGRES_PASSWORD}
-      
       # Admin Init
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-
       # Microsoft Entra ID (Exact zoals in werkende env)
       - AUTH_PROVIDERS=microsoft
       - AUTH_MICROSOFT_DRIVER=openid
@@ -56,26 +52,24 @@ services:
       # Custom Variabele
       - AUTH_MICROSOFT_TENANT_ID=${AUTH_MICROSOFT_TENANT_ID}
       - ENTRA_AUTH_FRONTEND_CLIENT_ID=${ENTRA_AUTH_FRONTEND_CLIENT_ID}
-      
       # Security & Proxy
       - REFRESH_TOKEN_COOKIE_SECURE=${REFRESH_TOKEN_COOKIE_SECURE}
       - REFRESH_TOKEN_COOKIE_SAME_SITE=${REFRESH_TOKEN_COOKIE_SAME_SITE}
       - TRUSTED_PROXIES=${TRUSTED_PROXIES}
       # JSON Mapping (Let op de quotes!)
       # - 'AUTH_ENTRA_FIELDS_MAPPING={"email": "userPrincipalName", "first_name": "givenName", "last_name": "surname"}'
-
     volumes:
       - directus_uploads:/directus/uploads
+      - directus_pm2:/home/node/.pm2
     networks:
       - proxy-network
       - internal_backend
     depends_on:
       - db
-
 volumes:
   postgres_app_data:
   directus_uploads:
-
+  directus_pm2:
 networks:
   proxy-network:
     external: true
