@@ -22,22 +22,17 @@ jobs:
       packages: write
 
     env:
-      TAG: ${{ github.ref == 'refs/heads/main' && 'latest' || github.ref == 'refs/heads/Development' && 'staging' || 'dev' }}
-      DEPLOY_PATH: ${{ github.ref == 'refs/heads/main' && '/opt/frontend-prod' || github.ref == 'refs/heads/Development' && '/opt/frontend-staging' || '/opt/frontend-dev' }}
-      INFISICAL_ENV_SLUG: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/Development' && 'staging' || 'dev' }}
+      TAG: ${{ github.ref_name == 'main' && 'latest' || github.ref_name == 'Development' && 'staging' || 'dev' }}
+      DEPLOY_PATH: ${{ github.ref_name == 'main' && '/opt/frontend-prod' || github.ref_name == 'Development' && '/opt/frontend-staging' || '/opt/frontend-dev' }}
+      INFISICAL_ENV_SLUG: ${{ github.ref_name == 'main' && 'prod' || github.ref_name == 'Development' && 'staging' || 'dev' }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Debug branch
-        run: |
-          echo "ref=$GITHUB_REF"
-          echo "ref_name=${{ github.ref_name }}"
-          echo "TAG=${{ env.TAG }}"
-          echo "INFISICAL_ENV_SLUG=${{ env.INFISICAL_ENV_SLUG }}"
-          echo "DEPLOY_PATH=${{ env.DEPLOY_PATH }}"
-
+      # ------------------------------
+      # Fetch Secrets from Infisical
+      # ------------------------------
       - name: Infisical Secrets
         uses: Infisical/secrets-action@v1.0.15
         with:
