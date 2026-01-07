@@ -52,10 +52,11 @@ export default function AdminCouponsPage() {
         }
     };
 
-    const formatCurrency = (val: number | string) => {
+    const formatCurrency = (val: number | string, coupon?: Coupon) => {
         let num = typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val;
         if (num === null || num === undefined || isNaN(num)) {
-            return `€ 0,00 (Debug: ${typeof val} ${val})`;
+            const keys = coupon ? Object.keys(coupon).join(', ') : 'unknown';
+            return `€ 0,00 (Keys: ${keys} | Val: ${val})`;
         }
         return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(num);
     };
@@ -121,7 +122,7 @@ export default function AdminCouponsPage() {
                                                     {coupon.discount_type === 'percentage' ? (
                                                         <><Percent className="h-4 w-4 text-slate-400" /> {coupon.discount_value}%</>
                                                     ) : (
-                                                        formatCurrency(coupon.discount_value)
+                                                        formatCurrency(coupon.discount_value, coupon)
                                                     )}
                                                 </div>
                                             </td>
