@@ -5,11 +5,11 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
 import { stickersApi, eventsApi } from '@/shared/lib/api/salvemundi';
-import { 
-    Users, 
-    Calendar, 
-    Award, 
-    Cake, 
+import {
+    Users,
+    Calendar,
+    Award,
+    Cake,
     TrendingUp,
     UserCheck,
     Plus,
@@ -18,7 +18,9 @@ import {
     Mail,
     Heart,
     AlertCircle,
-    Activity
+    Activity,
+    Ticket,
+    Shield
 } from 'lucide-react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 
@@ -40,25 +42,28 @@ interface DashboardStats {
     introBlogLikes: number;
     systemErrors: number;
     mostLikedPost?: { id: string; title: string; likes: number; slug: string };
-    upcomingEventsWithSignups: Array<{ id: string; name: string; event_date: string; signups: number }>;    topCommittee?: { name: string; count: number };}
+    upcomingEventsWithSignups: Array<{ id: string; name: string; event_date: string; signups: number }>;
+    topCommittee?: { name: string; count: number };
+    totalCoupons: number;
+}
 
-function StatCard({ 
-    title, 
-    value, 
-    icon, 
+function StatCard({
+    title,
+    value,
+    icon,
     subtitle,
     onClick,
     colorClass = 'purple'
-}: { 
-    title: string; 
-    value: string | number; 
+}: {
+    title: string;
+    value: string | number;
     icon: React.ReactNode;
     subtitle?: string;
     onClick?: () => void;
     colorClass?: 'purple' | 'orange' | 'blue' | 'green' | 'red';
 }) {
     const Component = onClick ? 'button' : 'div';
-    
+
     const colorStyles = {
         purple: {
             gradient: 'from-purple-500 to-purple-600',
@@ -91,9 +96,9 @@ function StatCard({
             subtitleText: 'text-red-100'
         }
     };
-    
+
     const colors = colorStyles[colorClass];
-    
+
     return (
         <Component
             onClick={onClick}
@@ -116,12 +121,12 @@ function StatCard({
     );
 }
 
-function ListCard({ 
-    title, 
-    icon, 
-    children 
-}: { 
-    title: string; 
+function ListCard({
+    title,
+    icon,
+    children
+}: {
+    title: string;
     icon: React.ReactNode;
     children: React.ReactNode;
 }) {
@@ -156,6 +161,7 @@ export default function AdminDashboardPage() {
         mostLikedPost: undefined,
         upcomingEventsWithSignups: [],
         topCommittee: undefined,
+        totalCoupons: 0,
     });
     const [isIctMember, setIsIctMember] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -191,7 +197,9 @@ export default function AdminDashboardPage() {
                 introStats,
                 systemHealth,
                 upcomingEventsDetail,
-                topCommittee
+                upcomingEventsDetail,
+                topCommittee,
+                couponsData
             ] = await Promise.all([
                 // Total event signups
                 directusFetch<any>('/items/event_signups?aggregate[count]=*'),
@@ -212,7 +220,9 @@ export default function AdminDashboardPage() {
                 // Upcoming events with signup counts
                 fetchUpcomingEventsWithSignups(),
                 // Top committee by activities this year
-                fetchTopCommitteeByActivities()
+                fetchTopCommitteeByActivities(),
+                // Total active coupons
+                directusFetch<any>('/items/coupons?aggregate[count]=*&filter[is_active][_eq]=true').catch(() => [{ count: 0 }])
             ]);
 
             setStats({
@@ -230,6 +240,7 @@ export default function AdminDashboardPage() {
                 mostLikedPost: introStats.mostLikedPost,
                 upcomingEventsWithSignups: upcomingEventsDetail,
                 topCommittee: topCommittee,
+                totalCoupons: couponsData?.[0]?.count || 0,
             });
         } catch (error) {
             console.error('Failed to load dashboard data:', error);
@@ -242,17 +253,17 @@ export default function AdminDashboardPage() {
         try {
             // Fetch all users with birthdays
             const users = await directusFetch<any[]>('/users?fields=id,first_name,last_name,date_of_birth&filter[date_of_birth][_nnull]=true');
-            
+
             const today = new Date();
             const nextWeek = new Date();
             nextWeek.setDate(today.getDate() + 7);
 
             const upcoming = users.filter(user => {
                 if (!user.date_of_birth) return false;
-                
+
                 const birthday = new Date(user.date_of_birth);
                 const thisYearBirthday = new Date(today.getFullYear(), birthday.getMonth(), birthday.getDate());
-                
+
                 return thisYearBirthday >= today && thisYearBirthday <= nextWeek;
             }).map(user => ({
                 id: user.id,
@@ -274,7 +285,7 @@ export default function AdminDashboardPage() {
             const committees = await directusFetch<any[]>(
                 '/items/committees?fields=id&filter[is_visible][_eq]=true'
             );
-            
+
             if (committees.length === 0) {
                 return 0;
             }
@@ -284,7 +295,7 @@ export default function AdminDashboardPage() {
             const members = await directusFetch<any[]>(
                 `/items/committee_members?fields=id&filter[committee_id][_in]=${committeeIds.join(',')}`
             );
-            
+
             return members.length;
         } catch (error) {
             console.error('Failed to fetch visible committee members count:', error);
@@ -327,9 +338,9 @@ export default function AdminDashboardPage() {
         try {
             const allEvents = await directusFetch<any[]>('/items/events?fields=id,event_date&limit=-1');
             const now = new Date();
-            
+
             const upcoming = allEvents.filter(event => new Date(event.event_date) >= now);
-            
+
             return {
                 total: allEvents.length,
                 upcoming: upcoming.length
@@ -345,15 +356,15 @@ export default function AdminDashboardPage() {
             const allStickers = await stickersApi.getAll();
             const now = new Date();
             const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-            
-            const recentStickers = allStickers.filter((s: any) => 
+
+            const recentStickers = allStickers.filter((s: any) =>
                 s.date_created && new Date(s.date_created) >= lastWeek
             );
-            
-            const growthRate = allStickers.length > 0 
-                ? Math.round((recentStickers.length / allStickers.length) * 100) 
+
+            const growthRate = allStickers.length > 0
+                ? Math.round((recentStickers.length / allStickers.length) * 100)
                 : 0;
-            
+
             return {
                 total: allStickers.length,
                 growthRate
@@ -370,12 +381,12 @@ export default function AdminDashboardPage() {
                 directusFetch<any>('/items/intro_signups?aggregate[count]=*').catch(() => [{ count: 0 }]),
                 directusFetch<any[]>('/items/intro_blogs?fields=id,title,slug,likes&filter[is_published][_eq]=true').catch(() => [])
             ]);
-            
+
             const totalLikes = blogsData.reduce((sum: number, blog: any) => sum + (blog.likes || 0), 0);
-            const mostLiked = blogsData.length > 0 
+            const mostLiked = blogsData.length > 0
                 ? blogsData.reduce((max: any, blog: any) => (blog.likes || 0) > (max.likes || 0) ? blog : max)
                 : undefined;
-            
+
             return {
                 signups: signupsData?.[0]?.count || 0,
                 blogLikes: totalLikes,
@@ -406,7 +417,7 @@ export default function AdminDashboardPage() {
     const fetchTopCommitteeByActivities = async () => {
         try {
             const currentYear = new Date().getFullYear();
-            
+
             // Use eventsApi to respect permissions
             const allEvents = await eventsApi.getAll();
 
@@ -422,19 +433,19 @@ export default function AdminDashboardPage() {
 
             // Count events per committee
             const committeeCounts: Record<string, { name: string; count: number }> = {};
-            
+
             // Fetch all committees to map IDs to names
             const committees = await directusFetch<any[]>('/items/committees?fields=id,name');
             const committeeMap = new Map(committees.map(c => [c.id, c.name]));
-            
+
             eventsThisYear.forEach((event: any) => {
                 const committee = event.committee_id;
-                
+
                 // Handle both object and direct ID cases
                 if (committee) {
                     let committeeId: string | number;
                     let committeeName: string;
-                    
+
                     if (typeof committee === 'object' && committee.id) {
                         committeeId = committee.id;
                         committeeName = committee.name || committeeMap.get(committeeId) || 'Onbekend';
@@ -445,7 +456,7 @@ export default function AdminDashboardPage() {
                     } else {
                         return;
                     }
-                    
+
                     if (!committeeCounts[committeeId]) {
                         committeeCounts[committeeId] = { name: committeeName, count: 0 };
                     }
@@ -456,7 +467,7 @@ export default function AdminDashboardPage() {
             // Find committee with most activities
             const sortedCommittees = Object.values(committeeCounts).sort((a, b) => b.count - a.count);
             const topCommittee = sortedCommittees[0];
-            
+
             return topCommittee || undefined;
         } catch (error) {
             console.error('Failed to fetch top committee:', error);
@@ -468,9 +479,9 @@ export default function AdminDashboardPage() {
         try {
             const allEvents = await directusFetch<any[]>('/items/events?fields=id,name,event_date&limit=-1');
             const now = new Date();
-            
+
             const upcoming = allEvents.filter(event => new Date(event.event_date) >= now);
-            
+
             // Get signup counts for each upcoming event
             const eventsWithSignups = await Promise.all(
                 upcoming.slice(0, 5).map(async (event) => {
@@ -492,7 +503,7 @@ export default function AdminDashboardPage() {
                     }
                 })
             );
-            
+
             return eventsWithSignups;
         } catch (error) {
             console.error('Failed to fetch upcoming events with signups:', error);
@@ -527,7 +538,7 @@ export default function AdminDashboardPage() {
                 title="Admin Dashboard"
                 description={`Welkom ${user?.first_name || 'Admin'}`}
             />
-            
+
             <div className="container mx-auto px-4 py-8 max-w-7xl">
                 {/* Quick Actions */}
                 <div className="mb-8 flex flex-col sm:flex-row gap-4">
@@ -547,6 +558,31 @@ export default function AdminDashboardPage() {
                     </button>
                 </div>
 
+                {/* Financieel & Beheer */}
+                <div className="mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <StatCard
+                            title="Coupons"
+                            value={stats.totalCoupons}
+                            icon={<Ticket className="h-6 w-6" />}
+                            subtitle="Actieve coupons"
+                            onClick={() => router.push('/admin/coupons')}
+                            colorClass="green"
+                        />
+
+                        {user?.entra_id && (
+                            <StatCard
+                                title="Signups"
+                                value="Beheer"
+                                icon={<Shield className="h-6 w-6" />}
+                                subtitle="Alle aanmeldingen"
+                                onClick={() => router.push('/admin/dev-signups')}
+                                colorClass="red"
+                            />
+                        )}
+                    </div>
+                </div>
+
                 {/* Grouped Cards - Horizontal Layout */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                     {/* Left Column */}
@@ -561,7 +597,7 @@ export default function AdminDashboardPage() {
                                 onClick={() => router.push('/admin/activiteiten')}
                                 colorClass="purple"
                             />
-                            
+
                             <StatCard
                                 title="Totaal Inschrijvingen"
                                 value={stats.totalSignups}
@@ -570,7 +606,7 @@ export default function AdminDashboardPage() {
                                 onClick={() => router.push('/activiteiten')}
                                 colorClass="purple"
                             />
-                            
+
                             <div className="col-span-2 w-full">
                                 <StatCard
                                     title="Meeste Activiteiten"
@@ -593,7 +629,7 @@ export default function AdminDashboardPage() {
                                 onClick={() => router.push('/stickers')}
                                 colorClass="orange"
                             />
-                            
+
                             <StatCard
                                 title="Sticker Groei"
                                 value={`${stats.stickerGrowthRate}%`}
@@ -623,7 +659,7 @@ export default function AdminDashboardPage() {
                                     </div>
                                 </div>
                             )}
-                            
+
                             <StatCard
                                 title="Intro Aanmeldingen"
                                 value={stats.introSignups}
@@ -632,7 +668,7 @@ export default function AdminDashboardPage() {
                                 onClick={() => router.push('/intro')}
                                 colorClass="blue"
                             />
-                            
+
                             <StatCard
                                 title="Blog Likes"
                                 value={stats.introBlogLikes}
@@ -653,7 +689,7 @@ export default function AdminDashboardPage() {
                                 onClick={() => router.push('/commissies')}
                                 colorClass="green"
                             />
-                            
+
                             <StatCard
                                 title="Jarigen Komende Week"
                                 value={stats.upcomingBirthdays.length}
@@ -731,11 +767,10 @@ export default function AdminDashboardPage() {
                                 {stats.topStickers.map((person, index) => (
                                     <div key={person.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
                                         <div className="flex items-center gap-3">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${
-                                                index === 0 ? 'bg-yellow-500' :
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${index === 0 ? 'bg-yellow-500' :
                                                 index === 1 ? 'bg-slate-400' :
-                                                'bg-orange-600'
-                                            }`}>
+                                                    'bg-orange-600'
+                                                }`}>
                                                 {index + 1}
                                             </div>
                                             <div>
