@@ -30,7 +30,7 @@ export default function AdminCouponsPage() {
     const loadCoupons = async () => {
         setIsLoading(true);
         try {
-            const data = await directusFetch<Coupon[]>('/items/coupons?sort=-id');
+            const data = await directusFetch<Coupon[]>('/items/coupons?sort=-id&fields=*');
             setCoupons(data);
         } catch (error) {
             console.error('Failed to load coupons:', error);
@@ -54,7 +54,9 @@ export default function AdminCouponsPage() {
 
     const formatCurrency = (val: number | string) => {
         let num = typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val;
-        if (num === null || num === undefined || isNaN(num)) return '€ 0,00';
+        if (num === null || num === undefined || isNaN(num)) {
+            return `€ 0,00 (Debug: ${typeof val} ${val})`;
+        }
         return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(num);
     };
 
