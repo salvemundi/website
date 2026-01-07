@@ -36,20 +36,25 @@ jobs:
           if [[ "${{ github.ref_name }}" == "main" ]]; then
             echo "TAG=latest" >> $GITHUB_ENV
             echo "DEPLOY_PATH=/opt/frontend-prod" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_AUTH_REDIRECT_URI=https://preprod.salvemundi.nl" >> $GITHUB_ENV
+            echo "INFISICAL_ENV_SLUG=prod" >> $GITHUB_ENV
           else
             echo "TAG=dev" >> $GITHUB_ENV
             echo "DEPLOY_PATH=/opt/frontend-dev" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_AUTH_REDIRECT_URI=https://dev.salvemundi.nl" >> $GITHUB_ENV
+            echo "INFISICAL_ENV_SLUG=staging" >> $GITHUB_ENV
           fi
-          
-          # Map existing GitHub Secrets to frontend variables safely using printf
-          printf "NEXT_PUBLIC_DIRECTUS_URL=%s\n" "${{ secrets.DIRECTUS_URL }}" >> $GITHUB_ENV
-          printf "NEXT_PUBLIC_DIRECTUS_API_KEY=%s\n" "${{ secrets.DIRECTUS_API_TOKEN }}" >> $GITHUB_ENV
-          printf "NEXT_PUBLIC_ENTRA_CLIENT_ID=%s\n" "${{ secrets.NEXT_PUBLIC_ENTRA_CLIENT_ID }}" >> $GITHUB_ENV
-          printf "NEXT_PUBLIC_ENTRA_TENANT_ID=%s\n" "${{ secrets.AUTH_MICROSOFT_TENANT_ID }}" >> $GITHUB_ENV
-          printf "NEXT_PUBLIC_EMAIL_API_ENDPOINT=%s\n" "/api/send-email" >> $GITHUB_ENV
-          printf "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=%s\n" "" >> $GITHUB_ENV
+
+      # ------------------------------
+      # Fetch Secrets from Infisical
+      # ------------------------------
+      - name: Infisical Secrets
+        uses: Infisical/secrets-action@v1.0.15
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          env-slug: ${{ env.INFISICAL_ENV_SLUG }}
+          project-slug: "salvemundi-2-j-tu"
+          domain: "https://infisical.salvemundi.nl"
+          export-type: "env"
 
       # ------------------------------
       # Login to GitHub Container Registry
@@ -113,7 +118,7 @@ jobs:
           envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,TAG
           script: |
             echo $GH_PASSWORD | docker login $GH_REGISTRY -u $GH_USERNAME --password-stdin
-            
+
             # Explicitly stop and remove ANY container with the target name to prevent conflicts
             # from orphaned or previous deployments at different paths.
             docker stop frontend-$TAG || true
@@ -122,7 +127,7 @@ jobs:
             mkdir -p ${{ env.DEPLOY_PATH }}
             cd ${{ env.DEPLOY_PATH }}
             echo "TAG=$TAG" > .env
-            
+
             # Determine Payment API URL based on TAG
             if [ "$TAG" == "latest" ]; then
               echo "NEXT_PUBLIC_PAYMENT_API_URL=http://payment-api-prod:3002" >> .env
