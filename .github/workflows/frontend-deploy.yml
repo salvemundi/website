@@ -36,11 +36,11 @@ jobs:
           if [[ "${{ github.ref_name }}" == "main" ]]; then
             echo "TAG=latest" >> $GITHUB_ENV
             echo "DEPLOY_PATH=/opt/frontend-prod" >> $GITHUB_ENV
-            echo "INFISICAL_ENV_SLUG=prod" >> $GITHUB_ENV
+            echo "INFISICAL_ENV_SLUG=dev" >> $GITHUB_ENV
           else
             echo "TAG=dev" >> $GITHUB_ENV
             echo "DEPLOY_PATH=/opt/frontend-dev" >> $GITHUB_ENV
-            echo "INFISICAL_ENV_SLUG=staging" >> $GITHUB_ENV
+            echo "INFISICAL_ENV_SLUG=dev" >> $GITHUB_ENV
           fi
 
       # ------------------------------
