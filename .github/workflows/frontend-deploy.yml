@@ -18,8 +18,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write # Needed for GitHub OIDC authentication
+      id-token: write
       packages: write
+
+    env:
+      TAG: ${{ github.ref_name == 'main' && 'latest' || github.ref_name == 'Development' && 'staging' || 'dev' }}
+      DEPLOY_PATH: ${{ github.ref_name == 'main' && '/opt/frontend-prod' || github.ref_name == 'Development' && '/opt/frontend-staging' || '/opt/frontend-dev' }}
+      INFISICAL_ENV_SLUG: ${{ github.ref_name == 'main' && 'prod' || github.ref_name == 'Development' && 'staging' || 'dev' }}
 
     steps:
       # ------------------------------
@@ -27,25 +32,6 @@ jobs:
       # ------------------------------
       - name: Checkout code
         uses: actions/checkout@v4
-
-      # ------------------------------
-      # Set Environment Variables
-      # ------------------------------
-      - name: Set environment variables
-        run: |
-          if [[ "${{ github.ref_name }}" == "main" ]]; then
-            echo "TAG=latest" >> $GITHUB_ENV
-            echo "DEPLOY_PATH=/opt/frontend-prod" >> $GITHUB_ENV
-            echo "INFISICAL_ENV_SLUG=prod" >> $GITHUB_ENV
-          elif [[ "${{ github.ref_name }}" == "Development" ]]; then
-            echo "TAG=staging" >> $GITHUB_ENV
-            echo "DEPLOY_PATH=/opt/frontend-staging" >> $GITHUB_ENV
-            echo "INFISICAL_ENV_SLUG=staging" >> $GITHUB_ENV
-          else
-            echo "TAG=dev" >> $GITHUB_ENV
-            echo "DEPLOY_PATH=/opt/frontend-dev" >> $GITHUB_ENV
-            echo "INFISICAL_ENV_SLUG=dev" >> $GITHUB_ENV
-          fi
 
       # ------------------------------
       # Fetch Secrets from Infisical
@@ -119,24 +105,23 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,TAG
+          envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,DEPLOY_PATH,TAG
           script: |
-            echo $GH_PASSWORD | docker login $GH_REGISTRY -u $GH_USERNAME --password-stdin
+            echo "$GH_PASSWORD" | docker login "$GH_REGISTRY" -u "$GH_USERNAME" --password-stdin
 
-            # Explicitly stop and remove ANY container with the target name to prevent conflicts
-            # from orphaned or previous deployments at different paths.
-            docker stop frontend-$TAG || true
-            docker rm frontend-$TAG || true
+            docker stop "frontend-$TAG" || true
+            docker rm "frontend-$TAG" || true
 
-            mkdir -p ${{ env.DEPLOY_PATH }}
-            cd ${{ env.DEPLOY_PATH }}
+            mkdir -p "$DEPLOY_PATH"
+            cd "$DEPLOY_PATH"
+
             echo "TAG=$TAG" > .env
 
-            # Determine Payment API URL based on TAG
-            if [ "$TAG" == "latest" ]; then
+            if [ "$TAG" = "latest" ]; then
               echo "NEXT_PUBLIC_PAYMENT_API_URL=http://payment-api-prod:3002" >> .env
             else
               echo "NEXT_PUBLIC_PAYMENT_API_URL=http://payment-api-dev:3002" >> .env
             fi
+
             docker compose pull frontend
             docker compose up -d frontend --force-recreate --remove-orphans
