@@ -311,7 +311,7 @@ export const eventsApi = {
 export const committeesApi = {
     getAll: async () => {
         const query = buildQueryString({
-            fields: ['id', 'name', 'image.id', 'is_visible', 'short_description', 'created_at', 'updated_at'],
+            fields: ['id', 'name', 'email', 'image.id', 'is_visible', 'short_description', 'created_at', 'updated_at'],
             sort: ['name']
         });
         return directusFetch<any[]>(`/items/committees?${query}`);
@@ -319,7 +319,7 @@ export const committeesApi = {
 
     getAllWithMembers: async () => {
         try {
-            const committees = await directusFetch<any[]>(`/items/committees?fields=id,name,image.id,is_visible,short_description,created_at,updated_at&sort=name`);
+            const committees = await directusFetch<any[]>(`/items/committees?fields=id,name,email,image.id,is_visible,short_description,created_at,updated_at&sort=name`);
             const visibleCommittees = committees.filter(c => c.is_visible !== false);
 
             const committeesWithMembers = await Promise.all(
@@ -332,7 +332,7 @@ export const committeesApi = {
             );
             return committeesWithMembers;
         } catch (error) {
-            const committees = await directusFetch<any[]>(`/items/committees?fields=id,name,image.id,created_at,updated_at&sort=name`);
+            const committees = await directusFetch<any[]>(`/items/committees?fields=id,name,email,image.id,created_at,updated_at&sort=name`);
             const committeesWithMembers = await Promise.all(
                 committees.map(async (committee) => {
                     const members = await directusFetch<any[]>(
@@ -347,14 +347,14 @@ export const committeesApi = {
 
     getById: async (id: number) => {
         try {
-            const committee = await directusFetch<any>(`/items/committees/${id}?fields=id,name,image.id,is_visible,short_description,description,created_at,updated_at`);
+            const committee = await directusFetch<any>(`/items/committees/${id}?fields=id,name,email,image.id,is_visible,short_description,description,created_at,updated_at`);
             const members = await directusFetch<any[]>(
                 `/items/committee_members?filter[committee_id][_eq]=${id}&fields=*,user_id.*`
             );
             committee.committee_members = members;
             return committee;
         } catch (error) {
-            const committee = await directusFetch<any>(`/items/committees/${id}?fields=id,name,image.id,created_at,updated_at`);
+            const committee = await directusFetch<any>(`/items/committees/${id}?fields=id,name,email,image.id,created_at,updated_at`);
             const members = await directusFetch<any[]>(
                 `/items/committee_members?filter[committee_id][_eq]=${id}&fields=*,user_id.*`
             );

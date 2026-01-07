@@ -513,7 +513,7 @@ export default function EventDetailPage() {
                         )}
 
                         {/* Contact - Compact */}
-                        {(event.contact_name || committeeEmail) && (
+                        {(event.contact_name || committeeEmail || event.contact) && (
                             <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-center gap-4">
                                 <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
                                     <Mail className="h-6 w-6" />
@@ -533,6 +533,10 @@ export default function EventDetailPage() {
                                                     <a href={`mailto:${event.contact}`} className="text-sm text-white/80 hover:underline break-all block mt-1">
                                                         {event.contact}
                                                     </a>
+                                                )}
+                                                {/* Fallback: show contact (e.g., phone) when it's not an email */}
+                                                {event.contact && typeof event.contact === 'string' && !event.contact.includes('@') && (
+                                                    <p className="text-sm text-white/80 break-all mt-1">{event.contact}</p>
                                                 )}
                                 </div>
                             </div>

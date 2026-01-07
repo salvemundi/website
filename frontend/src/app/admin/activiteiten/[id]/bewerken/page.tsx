@@ -76,7 +76,7 @@ export default function BewerkenActiviteitPage() {
         setIsLoading(true);
         try {
             // Load committees
-            const committeesData = await directusFetch<Committee[]>('/items/committees?fields=id,name&sort=name&limit=-1');
+            const committeesData = await directusFetch<Committee[]>('/items/committees?fields=id,name&sort=name&limit=-1&filter[is_visible][_eq]=true');
             setCommittees(committeesData);
 
             // Load event
