@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { Ticket, Plus, Timer, Percent, DollarSign, CheckCircle, XCircle } from 'lucide-react';
+import { Ticket, Plus, Percent, DollarSign, CheckCircle, XCircle } from 'lucide-react';
 
 interface Coupon {
     id: number;
