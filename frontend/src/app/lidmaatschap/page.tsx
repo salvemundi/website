@@ -60,7 +60,11 @@ export default function SignUp() {
         email: '',
         geboortedatum: null as Date | null,
         telefoon: '',
+        coupon: '',
     });
+
+    const [couponStatus, setCouponStatus] = useState<{ valid: boolean; message: string; discount?: number; type?: string } | null>(null);
+    const [verifyingCoupon, setVerifyingCoupon] = useState(false);
 
     const [isProcessing, setIsProcessing] = useState(false);
 
@@ -83,6 +87,39 @@ export default function SignUp() {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
+    const verifyCoupon = async () => {
+        if (!form.coupon) return;
+        setVerifyingCoupon(true);
+        setCouponStatus(null);
+
+        try {
+            const response = await fetch('/api/coupons/validate', { // Proxy via next.config.ts 
+                // Wait, frontend doesn't have direct access to payment-api usually unless via Next.js API route or proxy. 
+                // The current codebase uses `/api/payments/create` which maps to `app/api/payments/create/route.ts` (Next.js backend)
+                // I need to create the Next.js API route for coupon validation too!
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ couponCode: form.coupon }),
+            });
+
+            const data = await response.json();
+            if (response.ok && data.valid) {
+                setCouponStatus({
+                    valid: true,
+                    message: `Korting toegepast: ${data.description}`,
+                    discount: data.discount_value,
+                    type: data.discount_type
+                });
+            } else {
+                setCouponStatus({ valid: false, message: data.error || 'Ongeldige coupon code' });
+            }
+        } catch (error) {
+            setCouponStatus({ valid: false, message: 'Kon coupon niet valideren' });
+        } finally {
+            setVerifyingCoupon(false);
+        }
+    };
+
     const initiateContributionPayment = async () => {
         try {
             const payload = {
@@ -94,6 +131,7 @@ export default function SignUp() {
                 firstName: user ? undefined : form.voornaam,
                 lastName: user ? undefined : form.achternaam,
                 email: user ? user.email : form.email,
+                couponCode: couponStatus?.valid ? form.coupon : undefined
             };
 
             const response = await fetch('/api/payments/create', {
@@ -268,6 +306,53 @@ export default function SignUp() {
                                     Telefoonnummer
                                     <input type="tel" name="telefoon" value={form.telefoon} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple" />
                                 </label>
+
+                                <div className="border-t border-theme-white/20 pt-4 mt-2">
+                                    <label className="font-semibold text-theme-white block mb-2">Heb je een coupon code?</label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            name="coupon"
+                                            value={form.coupon}
+                                            onChange={handleChange}
+                                            placeholder="Bijv. ACTIE2024"
+                                            className="p-2 rounded w-full bg-theme-white text-theme-purple uppercase"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={verifyCoupon}
+                                            disabled={!form.coupon || verifyingCoupon}
+                                            className="bg-theme-purple-lighter text-theme-purple-darker font-bold px-4 rounded hover:bg-white disabled:opacity-50"
+                                        >
+                                            {verifyingCoupon ? '...' : 'Check'}
+                                        </button>
+                                    </div>
+                                    {couponStatus && (
+                                        <p className={`text-sm mt-2 font-bold ${couponStatus.valid ? 'text-green-400' : 'text-red-300'}`}>
+                                            {couponStatus.message}
+                                        </p>
+                                    )}
+
+                                    {/* Summary of price */}
+                                    <div className="mt-4 flex justify-between items-center text-theme-white font-bold text-lg">
+                                        <span>Totaal:</span>
+                                        <span>
+                                            {couponStatus?.valid && couponStatus.discount ? (
+                                                <>
+                                                    <span className="line-through text-theme-white/50 text-sm mr-2">€20,00</span>
+                                                    <span>
+                                                        {couponStatus.type === 'percentage'
+                                                            ? `€${(20 * (1 - couponStatus.discount / 100)).toFixed(2).replace('.', ',')}`
+                                                            : `€${Math.max(0, 20 - couponStatus.discount).toFixed(2).replace('.', ',')}`
+                                                        }
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                <span>€20,00</span>
+                                            )}
+                                        </span>
+                                    </div>
+                                </div>
 
                                 <button type="submit" disabled={isProcessing} className="bg-theme-white text-theme-purple-darker font-bold py-2 px-4 rounded shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl mt-4 disabled:opacity-50 disabled:cursor-not-allowed">
                                     {isProcessing ? 'Verwerken...' : 'Betalen en Inschrijven (€20,00)'}
