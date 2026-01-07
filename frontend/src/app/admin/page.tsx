@@ -197,7 +197,6 @@ export default function AdminDashboardPage() {
                 introStats,
                 systemHealth,
                 upcomingEventsDetail,
-                upcomingEventsDetail,
                 topCommittee,
                 couponsData
             ] = await Promise.all([
