@@ -53,13 +53,9 @@ export default function AdminCouponsPage() {
     };
 
     const formatCurrency = (val: number | string) => {
-        let num = val;
-        if (typeof val === 'string') {
-            // Replace comma with dot if present to handle localized strings
-            num = parseFloat(val.replace(',', '.'));
-        }
-        if (typeof num === 'number' && isNaN(num)) return '€ 0,00';
-        return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(num as number);
+        let num = typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val;
+        if (num === null || num === undefined || isNaN(num)) return '€ 0,00';
+        return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(num);
     };
 
     return (
@@ -123,7 +119,7 @@ export default function AdminCouponsPage() {
                                                     {coupon.discount_type === 'percentage' ? (
                                                         <><Percent className="h-4 w-4 text-slate-400" /> {coupon.discount_value}%</>
                                                     ) : (
-                                                        <><Euro className="h-4 w-4 text-slate-400" /> {formatCurrency(coupon.discount_value)}</>
+                                                        formatCurrency(coupon.discount_value)
                                                     )}
                                                 </div>
                                             </td>
