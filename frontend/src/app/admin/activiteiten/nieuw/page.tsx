@@ -50,7 +50,7 @@ export default function NieuweActiviteitPage() {
 
     const loadCommittees = async () => {
         try {
-            const data = await directusFetch<Committee[]>('/items/committees?fields=id,name&sort=name&limit=-1');
+            const data = await directusFetch<Committee[]>('/items/committees?fields=id,name&sort=name&limit=-1&filter[is_visible][_eq]=true');
             setCommittees(data);
         } catch (error) {
             console.error('Failed to load committees:', error);
