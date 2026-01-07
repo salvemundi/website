@@ -32,12 +32,36 @@ export default function NewCouponPage() {
                 throw new Error('Vul alle verplichte velden in');
             }
 
-            const payload = {
-                ...formData,
-                discount_value: parseFloat(formData.discount_value.toString().replace(',', '.')),
-                usage_limit: formData.usage_limit ? parseInt(formData.usage_limit) : null,
+            const discountValue = parseFloat(formData.discount_value.toString().replace(',', '.'));
+            if (isNaN(discountValue)) {
+                throw new Error('Ongeldige waarde voor korting');
+            }
+
+            // Create a clean payload with only valid values
+            const payload: any = {
+                coupon_code: formData.coupon_code,
+                discount_type: formData.discount_type,
+                discount_value: discountValue,
+                is_active: formData.is_active,
                 usage_count: 0
             };
+
+            // Only add optional fields if they have a value
+            if (formData.usage_limit) {
+                payload.usage_limit = parseInt(formData.usage_limit);
+            } else {
+                payload.usage_limit = null;
+            }
+
+            if (formData.valid_from) {
+                payload.valid_from = formData.valid_from;
+            }
+
+            if (formData.valid_until) {
+                payload.valid_until = formData.valid_until;
+            }
+
+            console.log('[NewCoupon] Sending payload:', payload);
 
             await directusFetch('/items/coupons', {
                 method: 'POST',
