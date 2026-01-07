@@ -109,9 +109,16 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit):
         throw new Error(`Directus API error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
+    // Handle 204 No Content
+    if (response.status === 204) {
+        return {} as T;
+    }
+
     let json: any;
     try {
-        json = await response.json();
+        const text = await response.text();
+        if (!text) return {} as T;
+        json = JSON.parse(text);
     } catch (err) {
         console.error('[directusFetch] Failed parsing JSON response', { url, error: err });
         throw err;
