@@ -53,9 +53,8 @@ export default function AdminCouponsPage() {
             <div className="container mx-auto px-4 py-8 max-w-7xl">
                 <div className="flex justify-end mb-6">
                     <button
-                        onClick={() => router.push('/admin/coupons/nieuw')} // Future impl
-                        className="bg-theme-purple text-white px-4 py-2 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 opacity-50 cursor-not-allowed"
-                        title="Nog niet geïmplementeerd"
+                        onClick={() => router.push('/admin/coupons/nieuw')}
+                        className="bg-theme-purple text-white px-4 py-2 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
                     >
                         <Plus className="h-5 w-5" />
                         Nieuwe Coupon
