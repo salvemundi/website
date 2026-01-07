@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { Ticket, Save, Calendar, DollarSign, Percent, AlertCircle } from 'lucide-react';
+import { Ticket, Save, Calendar, Euro, Percent, AlertCircle } from 'lucide-react';
 
 export default function NewCouponPage() {
     const router = useRouter();
@@ -34,7 +34,7 @@ export default function NewCouponPage() {
 
             const payload = {
                 ...formData,
-                discount_value: parseFloat(formData.discount_value),
+                discount_value: parseFloat(formData.discount_value.toString().replace(',', '.')),
                 usage_limit: formData.usage_limit ? parseInt(formData.usage_limit) : null,
                 usage_count: 0
             };
@@ -120,7 +120,7 @@ export default function NewCouponPage() {
                             <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Waarde</label>
                             <div className="relative">
                                 {formData.discount_type === 'fixed' ? (
-                                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                                    <Euro className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                                 ) : (
                                     <Percent className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                                 )}
@@ -129,7 +129,7 @@ export default function NewCouponPage() {
                                     required
                                     min="0"
                                     step="0.01"
-                                    placeholder={formData.discount_type === 'fixed' ? '10.00' : '20'}
+                                    placeholder={formData.discount_type === 'fixed' ? '10,00' : '20'}
                                     className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                                     value={formData.discount_value}
                                     onChange={(e) => setFormData({ ...formData, discount_value: e.target.value })}

@@ -53,9 +53,13 @@ export default function AdminCouponsPage() {
     };
 
     const formatCurrency = (val: number | string) => {
-        const num = typeof val === 'string' ? parseFloat(val) : val;
-        if (isNaN(num)) return '€ 0,00';
-        return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(num);
+        let num = val;
+        if (typeof val === 'string') {
+            // Replace comma with dot if present to handle localized strings
+            num = parseFloat(val.replace(',', '.'));
+        }
+        if (typeof num === 'number' && isNaN(num)) return '€ 0,00';
+        return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(num as number);
     };
 
     return (
@@ -135,10 +139,10 @@ export default function AdminCouponsPage() {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex flex-col text-sm">
-                                                    {coupon.valid_from && <span className="text-slate-600 dark:text-slate-400">Van: {new Date(coupon.valid_from).toLocaleDateString()}</span>}
+                                                    {coupon.valid_from && <span className="text-slate-600 dark:text-slate-400">Van: {new Date(coupon.valid_from).toLocaleDateString('nl-NL')}</span>}
                                                     {coupon.valid_until ? (
                                                         <span className={`${new Date(coupon.valid_until) < new Date() ? 'text-red-500' : 'text-slate-600 dark:text-slate-400'}`}>
-                                                            Tot: {new Date(coupon.valid_until).toLocaleDateString()}
+                                                            Tot: {new Date(coupon.valid_until).toLocaleDateString('nl-NL')}
                                                         </span>
                                                     ) : (
                                                         <span className="text-slate-400">Geen einddatum</span>
