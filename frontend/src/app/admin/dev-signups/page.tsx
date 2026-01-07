@@ -321,7 +321,7 @@ export default function DevSignupsPage() {
                     <div>
                         <h1 className="text-3xl font-bold text-theme-purple-lighter flex items-center gap-3">
                             <Shield className="h-8 w-8" />
-                            Development Dashboard
+                            Signups Dashboard
                         </h1>
                         <p className="mt-1 text-sm text-theme-purple-lighter/60">
                             Beheer inschrijvingen en synchroniseer gebruikers met Microsoft Entra ID.
