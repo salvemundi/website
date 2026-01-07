@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { Ticket, Plus, Percent, DollarSign, CheckCircle, XCircle } from 'lucide-react';
+import { Ticket, Plus, Percent, DollarSign, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 
 interface Coupon {
     id: number;
@@ -40,7 +40,22 @@ export default function AdminCouponsPage() {
         }
     };
 
-    const formatCurrency = (val: number) => new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(val);
+    const handleDelete = async (id: number) => {
+        if (!confirm('Weet je zeker dat je deze coupon wilt verwijderen?')) return;
+        try {
+            await directusFetch(`/items/coupons/${id}`, { method: 'DELETE' });
+            loadCoupons();
+        } catch (e) {
+            console.error(e);
+            alert('Kon coupon niet verwijderen');
+        }
+    };
+
+    const formatCurrency = (val: number | string) => {
+        const num = typeof val === 'string' ? parseFloat(val) : val;
+        if (isNaN(num)) return '€ 0,00';
+        return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(num);
+    };
 
     return (
         <>
@@ -71,6 +86,7 @@ export default function AdminCouponsPage() {
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Gebruik</th>
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Geldigheid</th>
                                     <th className="px-6 py-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
+                                    <th className="px-6 py-4 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Acties</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-900">
@@ -138,6 +154,15 @@ export default function AdminCouponsPage() {
                                                         <XCircle className="h-3 w-3" /> Inactief
                                                     </span>
                                                 )}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right">
+                                                <button
+                                                    onClick={() => handleDelete(coupon.id)}
+                                                    className="text-slate-400 hover:text-red-500 transition-colors p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                                                    title="Verwijderen"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
                                             </td>
                                         </tr>
                                     ))
