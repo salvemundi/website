@@ -171,10 +171,35 @@ export default function CommitteeDetailPage() {
 
                         {/* Sidebar */}
                         <div className="space-y-6">
+                            {/* Committee Email Contact */}
+                            {committee.email && (
+                                <div className="rounded-3xl bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 p-6 shadow-lg">
+                                    <h3 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">Commissie Contact</h3>
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-paars/10 dark:bg-paars/20">
+                                            <Mail className="h-6 w-6 text-paars" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm text-slate-600 dark:text-white/60 mb-1">Email</p>
+                                            <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                                                {committee.email}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <a
+                                        href={`mailto:${committee.email}`}
+                                        className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-paars/10 dark:bg-[#2a232b] px-4 py-2 text-sm font-semibold text-paars dark:text-white shadow-sm transition hover:bg-paars/20 dark:hover:bg-paars/30"
+                                    >
+                                        <Mail className="h-4 w-4" />
+                                        E-mail versturen
+                                    </a>
+                                </div>
+                            )}
+
                             {/* Leader Contact */}
                             {leader && (
                                 <div className="rounded-3xl bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 p-6 shadow-lg">
-                                    <h3 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">Contact</h3>
+                                    <h3 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">Commissieleider</h3>
                                     <div className="flex items-center gap-4">
                                         <img
                                             src={getImageUrl(leader.user_id.avatar)}
