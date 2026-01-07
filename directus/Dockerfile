@@ -29,6 +29,11 @@ RUN npm prune --production
 WORKDIR /directus
 RUN chown -R node:node /directus/extensions
 
+# Stap 5: PM2 Directory Setup (Fix permission errors)
+# Ensure the PM2 directory exists with correct ownership before switching to node user
+RUN mkdir -p /home/node/.pm2 && \
+    chown -R node:node /home/node/.pm2
+
 # Debug: Laat zien wat er precies aanwezig is (verschijnt in build logs)
 # Dit helpt ons bevestigen dat de files op de juiste plek staan
 RUN echo "--- Extension Directory Contents (ROOT) ---" && \
