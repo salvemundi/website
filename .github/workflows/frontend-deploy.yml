@@ -37,8 +37,9 @@ jobs:
       - name: Infisical Secrets
         uses: Infisical/secrets-action@v1.0.15
         with:
-          method: "service-token"
-          service-token: ${{ secrets.INFISICAL_SERVICE_TOKEN }}
+          method: "universal"
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
           env-slug: ${{ env.INFISICAL_ENV_SLUG }}
           project-slug: "salvemundi-2-j-tu"
           domain: "https://infisical.salvemundi.nl"
@@ -52,7 +53,7 @@ jobs:
           echo "Infisical Secrets Path: ${{ env.INFISICAL_SECRETS_PATH }}"
           echo "Deploy Path: ${{ env.DEPLOY_PATH }}"
           echo "Tag: ${{ env.TAG }}"
-      
+
       - name: Debug - Show Loaded Secrets (MASKED)
         run: |
           echo "=== Loaded Environment Variables ==="
