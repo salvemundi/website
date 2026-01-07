@@ -18,42 +18,52 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write # Needed for GitHub OIDC authentication
+      id-token: write
       packages: write
 
+    env:
+      TAG: ${{ github.ref_name == 'main' && 'latest' || github.ref_name == 'Development' && 'dev' || 'local' }}
+      DEPLOY_PATH: ${{ github.ref_name == 'main' && '/opt/frontend-prod' || github.ref_name == 'Development' && '/opt/frontend-dev' || '/opt/frontend-local' }}
+      INFISICAL_ENVIRONMENT: ${{ github.ref_name == 'main' && 'prod' || github.ref_name == 'Development' && 'dev' || 'local' }}
+
     steps:
-      # ------------------------------
-      # Checkout code
-      # ------------------------------
       - name: Checkout code
         uses: actions/checkout@v4
 
       # ------------------------------
-      # Set Environment Variables
+      # Fetch Secrets from Infisical
       # ------------------------------
-      - name: Set environment variables
-        run: |
-          if [[ "${{ github.ref_name }}" == "main" ]]; then
-            echo "TAG=latest" >> $GITHUB_ENV
-            echo "DEPLOY_PATH=/opt/frontend-prod" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_AUTH_REDIRECT_URI=https://preprod.salvemundi.nl" >> $GITHUB_ENV
-          else
-            echo "TAG=dev" >> $GITHUB_ENV
-            echo "DEPLOY_PATH=/opt/frontend-dev" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_AUTH_REDIRECT_URI=https://dev.salvemundi.nl" >> $GITHUB_ENV
-          fi
-          
-          # Map existing GitHub Secrets to frontend variables safely using printf
-          printf "NEXT_PUBLIC_DIRECTUS_URL=%s\n" "${{ secrets.DIRECTUS_URL }}" >> $GITHUB_ENV
-          printf "NEXT_PUBLIC_DIRECTUS_API_KEY=%s\n" "${{ secrets.DIRECTUS_API_TOKEN }}" >> $GITHUB_ENV
-          printf "NEXT_PUBLIC_ENTRA_CLIENT_ID=%s\n" "${{ secrets.NEXT_PUBLIC_ENTRA_CLIENT_ID }}" >> $GITHUB_ENV
-          printf "NEXT_PUBLIC_ENTRA_TENANT_ID=%s\n" "${{ secrets.AUTH_MICROSOFT_TENANT_ID }}" >> $GITHUB_ENV
-          printf "NEXT_PUBLIC_EMAIL_API_ENDPOINT=%s\n" "/api/send-email" >> $GITHUB_ENV
-          printf "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=%s\n" "" >> $GITHUB_ENV
+      - name: Infisical Secrets
+        uses: Infisical/secrets-action@v1.0.15
+        with:
+          method: "universal"
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          env-slug: ${{ env.INFISICAL_ENVIRONMENT }}
+          project-slug: "salvemundi-2-j-tu"
+          domain: "https://infisical.salvemundi.nl"
+          export-type: "env"
 
-      # ------------------------------
-      # Login to GitHub Container Registry
-      # ------------------------------
+      - name: Debug - Show Infisical Environment
+        run: |
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Infisical Environment: ${{ env.INFISICAL_ENVIRONMENT }}"
+          echo "Deploy Path: ${{ env.DEPLOY_PATH }}"
+          echo "Tag: ${{ env.TAG }}"
+      
+      - name: Debug - Show Loaded Secrets (MASKED)
+        run: |
+          echo "=== Loaded Environment Variables ==="
+          echo "NEXT_PUBLIC_DIRECTUS_URL: ${NEXT_PUBLIC_DIRECTUS_URL}"
+          echo "NEXT_PUBLIC_DIRECTUS_URL content: $(echo ${NEXT_PUBLIC_DIRECTUS_URL} | cat -A)"
+          echo "NEXT_PUBLIC_AUTH_REDIRECT_URI: ${NEXT_PUBLIC_AUTH_REDIRECT_URI}"
+          echo "NEXT_PUBLIC_ENTRA_CLIENT_ID: ${NEXT_PUBLIC_ENTRA_CLIENT_ID}"
+          echo "NEXT_PUBLIC_ENTRA_TENANT_ID: ${NEXT_PUBLIC_ENTRA_TENANT_ID}"
+          echo "NEXT_PUBLIC_EMAIL_API_ENDPOINT: ${NEXT_PUBLIC_EMAIL_API_ENDPOINT}"
+          echo "NEXT_PUBLIC_DIRECTUS_API_KEY: ${NEXT_PUBLIC_DIRECTUS_API_KEY}"
+          echo "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}"
+          echo "==================================="
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -61,9 +71,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # ------------------------------
-      # Build and push Docker image
-      # ------------------------------
       - name: Build & Push Docker Image
         uses: docker/build-push-action@v5
         with:
@@ -82,9 +89,6 @@ jobs:
             NEXT_PUBLIC_DIRECTUS_API_KEY=${{ env.NEXT_PUBLIC_DIRECTUS_API_KEY }}
             NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
 
-      # ------------------------------
-      # Copy docker-compose.yml to server
-      # ------------------------------
       - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -95,9 +99,6 @@ jobs:
           target: ${{ env.DEPLOY_PATH }}
           strip_components: 1
 
-      # ------------------------------
-      # Deploy on server
-      # ------------------------------
       - name: Deploy on Server
         uses: appleboy/ssh-action@v1.0.3
         env:
@@ -110,24 +111,25 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,TAG
+          envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,DEPLOY_PATH,TAG
           script: |
-            echo $GH_PASSWORD | docker login $GH_REGISTRY -u $GH_USERNAME --password-stdin
-            
-            # Explicitly stop and remove ANY container with the target name to prevent conflicts
-            # from orphaned or previous deployments at different paths.
-            docker stop frontend-$TAG || true
-            docker rm frontend-$TAG || true
+            echo "$GH_PASSWORD" | docker login "$GH_REGISTRY" -u "$GH_USERNAME" --password-stdin
 
-            mkdir -p ${{ env.DEPLOY_PATH }}
-            cd ${{ env.DEPLOY_PATH }}
+            docker stop "frontend-$TAG" || true
+            docker rm "frontend-$TAG" || true
+
+            mkdir -p "$DEPLOY_PATH"
+            cd "$DEPLOY_PATH"
+
             echo "TAG=$TAG" > .env
-            
-            # Determine Payment API URL based on TAG
-            if [ "$TAG" == "latest" ]; then
+
+            if [ "$TAG" = "latest" ]; then
               echo "NEXT_PUBLIC_PAYMENT_API_URL=http://payment-api-prod:3002" >> .env
-            else
+            elif [ "$TAG" = "dev" ]; then
               echo "NEXT_PUBLIC_PAYMENT_API_URL=http://payment-api-dev:3002" >> .env
+            else
+              echo "NEXT_PUBLIC_PAYMENT_API_URL=http://payment-api-local:3002" >> .env
             fi
+
             docker compose pull frontend
             docker compose up -d frontend --force-recreate --remove-orphans

@@ -11,6 +11,7 @@ const directusService = require('./services/directus-service');
 const notificationService = require('./services/notification-service');
 const paymentRoutes = require('./routes/payments');
 const adminRoutes = require('./routes/admin-routes');
+const couponRoutes = require('./routes/coupons');
 const membershipService = require('./services/membership-service');
 
 const app = express();
@@ -75,6 +76,16 @@ app.use(
         notificationService,
         membershipService,
         GRAPH_SYNC_URL
+    )
+);
+
+// Add coupon routes
+app.use(
+    '/api/coupons',
+    couponRoutes(
+        directusService,
+        DIRECTUS_URL,
+        DIRECTUS_API_TOKEN
     )
 );
 

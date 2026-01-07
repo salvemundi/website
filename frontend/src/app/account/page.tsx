@@ -212,13 +212,13 @@ export default function AccountPage() {
       return {
         text: "Actief Lid",
         color: "bg-theme-purple",
-        textColor: "text-theme-purple-lighter-darker",
+        textColor: "text-white",
       };
     }
     return {
       text: "Lidmaatschap Verlopen",
       color: "bg-theme-purple/50",
-      textColor: "text-theme-purple-lighter-darker",
+      textColor: "text-white",
     };
   }, [user?.membership_status]);
 
@@ -238,7 +238,7 @@ export default function AccountPage() {
         {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <h1 className="truncate text-3xl font-bold text-theme-purple-lighter">
+            <h1 className="truncate text-3xl font-bold text-theme-purple-lighter-darker">
               Mijn Account
             </h1>
             <p className="mt-1 text-sm text-theme-purple-lighter/60">
@@ -248,7 +248,7 @@ export default function AccountPage() {
 
           <button
             onClick={handleLogout}
-            className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white/70 bg-white/10 hover:bg-white/15 border border-white/10 transition"
+            className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-theme-purple dark:text-white bg-white/10 hover:bg-white/15 border border-white/10 transition hover:text-theme-purple-dark"
           >
             <LogOut className="h-4 w-4" />
             Uitloggen
@@ -471,8 +471,7 @@ export default function AccountPage() {
                 <QuickLink
                   label="Admin panel"
                   icon={<Shield className="h-6 w-6" />}
-                  href="https://admin.salvemundi.nl"
-                  external
+                  href="/admin"
                 />
               ) : null}
             </div>

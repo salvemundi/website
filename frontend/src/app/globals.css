@@ -7,6 +7,21 @@
 /* Google Material Symbols - outlined */
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0..200&display=swap');
 
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
 /* Root color system */
 :root {
   /* Main brand color - Light mode variants */
@@ -399,7 +414,7 @@ iframe {
     color: var(--text-main);
     border-color: rgba(19, 42, 64, 0.08);
     box-shadow: 0 12px 40px rgba(19, 42, 64, 0.08);
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(0px);
   }
 
   body.mobile-home-theme .text-gray-700,
