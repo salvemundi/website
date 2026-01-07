@@ -107,8 +107,8 @@ export default function NieuweActiviteitPage() {
             const formData = new FormData();
             formData.append('file', imageFile);
 
-            // Upload directly to Directus files endpoint
-            const response = await fetch('https://admin.salvemundi.nl/files', {
+            // Upload via local proxy to avoid CORS issues
+            const response = await fetch('/api/files', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
