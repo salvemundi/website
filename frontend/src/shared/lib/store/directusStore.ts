@@ -23,6 +23,7 @@ interface Event {
 interface Committee {
     id: number;
     name: string;
+    email?: string;
     image?: string | { id: number; filename?: string } | null;
     is_visible?: boolean;
     short_description?: string;
