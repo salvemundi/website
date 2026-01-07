@@ -22,9 +22,9 @@ jobs:
       packages: write
 
     env:
-      TAG: ${{ github.ref_name == 'main' && 'latest' || github.ref_name == 'Development' && 'staging' || 'dev' }}
-      DEPLOY_PATH: ${{ github.ref_name == 'main' && '/opt/frontend-prod' || github.ref_name == 'Development' && '/opt/frontend-staging' || '/opt/frontend-dev' }}
-      INFISICAL_ENVIRONMENT: ${{ github.ref_name == 'main' && 'prod' || github.ref_name == 'Development' && 'staging' || 'dev' }}
+      TAG: ${{ github.ref_name == 'main' && 'latest' || github.ref_name == 'Development' && 'dev' || 'local' }}
+      DEPLOY_PATH: ${{ github.ref_name == 'main' && '/opt/frontend-prod' || github.ref_name == 'Development' && '/opt/frontend-dev' || '/opt/frontend-local' }}
+      INFISICAL_ENVIRONMENT: ${{ github.ref_name == 'main' && 'prod' || github.ref_name == 'Development' && 'dev' || 'local' }}
 
     steps:
       - name: Checkout code
@@ -125,10 +125,10 @@ jobs:
 
             if [ "$TAG" = "latest" ]; then
               echo "NEXT_PUBLIC_PAYMENT_API_URL=http://payment-api-prod:3002" >> .env
-            elif [ "$TAG" = "staging" ]; then
-              echo "NEXT_PUBLIC_PAYMENT_API_URL=http://payment-api-staging:3002" >> .env
-            else
+            elif [ "$TAG" = "dev" ]; then
               echo "NEXT_PUBLIC_PAYMENT_API_URL=http://payment-api-dev:3002" >> .env
+            else
+              echo "NEXT_PUBLIC_PAYMENT_API_URL=http://payment-api-local:3002" >> .env
             fi
 
             docker compose pull frontend
