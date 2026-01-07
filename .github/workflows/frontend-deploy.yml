@@ -37,7 +37,8 @@ jobs:
       - name: Infisical Secrets
         uses: Infisical/secrets-action@v1.0.15
         with:
-          token: ${{ secrets.INFISICAL_SERVICE_TOKEN }}
+          method: "service-token"
+          service-token: ${{ secrets.INFISICAL_SERVICE_TOKEN }}
           env-slug: ${{ env.INFISICAL_ENV_SLUG }}
           project-slug: "salvemundi-2-j-tu"
           domain: "https://infisical.salvemundi.nl"
