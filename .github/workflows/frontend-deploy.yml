@@ -25,6 +25,7 @@ jobs:
       TAG: ${{ github.ref_name == 'main' && 'latest' || github.ref_name == 'Development' && 'staging' || 'dev' }}
       DEPLOY_PATH: ${{ github.ref_name == 'main' && '/opt/frontend-prod' || github.ref_name == 'Development' && '/opt/frontend-staging' || '/opt/frontend-dev' }}
       INFISICAL_ENV_SLUG: ${{ github.ref_name == 'main' && 'prod' || github.ref_name == 'Development' && 'staging' || 'dev' }}
+      INFISICAL_SECRETS_PATH: ${{ github.ref_name == 'main' && '/main' || github.ref_name == 'Development' && '/dev' || '/dev' }}
 
     steps:
       - name: Checkout code
@@ -36,17 +37,18 @@ jobs:
       - name: Infisical Secrets
         uses: Infisical/secrets-action@v1.0.15
         with:
-          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          token: ${{ secrets.INFISICAL_SERVICE_TOKEN }}
           env-slug: ${{ env.INFISICAL_ENV_SLUG }}
           project-slug: "salvemundi-2-j-tu"
           domain: "https://infisical.salvemundi.nl"
           export-type: "env"
+          secret-path: ${{ env.INFISICAL_SECRETS_PATH }}
 
       - name: Debug - Show Infisical Environment
         run: |
           echo "Branch: ${{ github.ref_name }}"
           echo "Infisical Environment: ${{ env.INFISICAL_ENV_SLUG }}"
+          echo "Infisical Secrets Path: ${{ env.INFISICAL_SECRETS_PATH }}"
           echo "Deploy Path: ${{ env.DEPLOY_PATH }}"
           echo "Tag: ${{ env.TAG }}"
       
