@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { Ticket, Save, ArrowLeft, Calendar, DollarSign, Percent, AlertCircle } from 'lucide-react';
+import { Ticket, Save, Calendar, DollarSign, Percent, AlertCircle } from 'lucide-react';
 
 export default function NewCouponPage() {
     const router = useRouter();
@@ -93,8 +93,8 @@ export default function NewCouponPage() {
                                 <button
                                     type="button"
                                     className={`flex-1 py-1.5 px-3 rounded-md text-sm font-medium transition-all ${formData.discount_type === 'fixed'
-                                            ? 'bg-white text-theme-purple shadow-sm'
-                                            : 'text-slate-500 hover:text-slate-700'
+                                        ? 'bg-white text-theme-purple shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700'
                                         }`}
                                     onClick={() => setFormData({ ...formData, discount_type: 'fixed' })}
                                 >
@@ -103,8 +103,8 @@ export default function NewCouponPage() {
                                 <button
                                     type="button"
                                     className={`flex-1 py-1.5 px-3 rounded-md text-sm font-medium transition-all ${formData.discount_type === 'percentage'
-                                            ? 'bg-white text-theme-purple shadow-sm'
-                                            : 'text-slate-500 hover:text-slate-700'
+                                        ? 'bg-white text-theme-purple shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700'
                                         }`}
                                     onClick={() => setFormData({ ...formData, discount_type: 'percentage' })}
                                 >
