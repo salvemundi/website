@@ -43,6 +43,25 @@ jobs:
           domain: "https://infisical.salvemundi.nl"
           export-type: "env"
 
+      - name: Debug - Show Infisical Environment
+        run: |
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Infisical Environment: ${{ env.INFISICAL_ENV_SLUG }}"
+          echo "Deploy Path: ${{ env.DEPLOY_PATH }}"
+          echo "Tag: ${{ env.TAG }}"
+      
+      - name: Debug - Show Loaded Secrets (MASKED)
+        run: |
+          echo "=== Loaded Environment Variables ==="
+          echo "NEXT_PUBLIC_DIRECTUS_URL: ${NEXT_PUBLIC_DIRECTUS_URL}"
+          echo "NEXT_PUBLIC_AUTH_REDIRECT_URI: ${NEXT_PUBLIC_AUTH_REDIRECT_URI}"
+          echo "NEXT_PUBLIC_ENTRA_CLIENT_ID: ${NEXT_PUBLIC_ENTRA_CLIENT_ID}"
+          echo "NEXT_PUBLIC_ENTRA_TENANT_ID: ${NEXT_PUBLIC_ENTRA_TENANT_ID}"
+          echo "NEXT_PUBLIC_EMAIL_API_ENDPOINT: ${NEXT_PUBLIC_EMAIL_API_ENDPOINT}"
+          echo "NEXT_PUBLIC_DIRECTUS_API_KEY: ${NEXT_PUBLIC_DIRECTUS_API_KEY}"
+          echo "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}"
+          echo "==================================="
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -104,6 +123,8 @@ jobs:
 
             if [ "$TAG" = "latest" ]; then
               echo "NEXT_PUBLIC_PAYMENT_API_URL=http://payment-api-prod:3002" >> .env
+            elif [ "$TAG" = "staging" ]; then
+              echo "NEXT_PUBLIC_PAYMENT_API_URL=http://payment-api-staging:3002" >> .env
             else
               echo "NEXT_PUBLIC_PAYMENT_API_URL=http://payment-api-dev:3002" >> .env
             fi
