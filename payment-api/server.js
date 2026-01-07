@@ -35,6 +35,15 @@ const mollieClient = createMollieClient({ apiKey: MOLLIE_API_KEY });
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Request logging middleware
+app.use((req, res, next) => {
+    console.log(`[PaymentAPI] Incoming Request: ${req.method} ${req.url}`);
+    next();
+});
+
+// Health check
+app.get('/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
+
 const allowedOrigins = [
     'https://dev.salvemundi.nl',
     'https://salvemundi.nl',
