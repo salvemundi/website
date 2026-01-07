@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { Ticket, Plus, Percent, DollarSign, CheckCircle, XCircle, Trash2 } from 'lucide-react';
+import { Ticket, Plus, Percent, Euro, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 
 interface Coupon {
     id: number;
@@ -45,9 +45,10 @@ export default function AdminCouponsPage() {
         try {
             await directusFetch(`/items/coupons/${id}`, { method: 'DELETE' });
             loadCoupons();
-        } catch (e) {
+        } catch (e: any) {
             console.error(e);
-            alert('Kon coupon niet verwijderen');
+            const message = e.errors?.[0]?.message || e.message || 'Onbekende fout';
+            alert(`Kon coupon niet verwijderen: ${message}`);
         }
     };
 
@@ -118,7 +119,7 @@ export default function AdminCouponsPage() {
                                                     {coupon.discount_type === 'percentage' ? (
                                                         <><Percent className="h-4 w-4 text-slate-400" /> {coupon.discount_value}%</>
                                                     ) : (
-                                                        <><DollarSign className="h-4 w-4 text-slate-400" /> {formatCurrency(coupon.discount_value)}</>
+                                                        <><Euro className="h-4 w-4 text-slate-400" /> {formatCurrency(coupon.discount_value)}</>
                                                     )}
                                                 </div>
                                             </td>
