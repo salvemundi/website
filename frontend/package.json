@@ -6,8 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "infisical run -- next dev -p 5173",
-    "build": "next build",
-    "build:infisical": "infisical run -- next build",
+    "build": "infisical run -- next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
