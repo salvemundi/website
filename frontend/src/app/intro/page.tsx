@@ -6,6 +6,7 @@ import { introSignupsApi, introParentSignupsApi } from '@/shared/lib/api/salvemu
 import { sendIntroSignupEmail } from '@/shared/lib/services/email-service';
 import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { useAuth } from '@/features/auth/providers/auth-provider';
+import { isValidPhoneNumber } from '@/shared/lib/phone';
 import { Users, Heart, CheckCircle2 } from 'lucide-react';
 
 export default function IntroPage() {
@@ -33,6 +34,7 @@ export default function IntroPage() {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
   const [hasParentSignup, setHasParentSignup] = useState(false);
 
   // Check whether the logged-in user already signed up as a parent
@@ -67,6 +69,7 @@ export default function IntroPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     if (error) setError(null);
+    if (e.target.name === 'telefoonnummer' && phoneError) setPhoneError(null);
   };
 
   const handleParentChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -76,41 +79,51 @@ export default function IntroPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setError(null);
+    setPhoneError(null);
 
-      try {
-        if (isAuthenticated && user) {
-          await introParentSignupsApi.create({
-            user_id: user.id,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            email: user.email,
-            phone_number: (form.telefoonnummer || user.phone_number || '') as string,
-            motivation: parentForm.motivation || '',
-            // send empty values for fields removed from form to satisfy API
-            availability: [],
-          });
-        } else {
-          await introSignupsApi.create({
-            first_name: form.voornaam,
-            middle_name: form.tussenvoegsel || undefined,
-            last_name: form.achternaam,
-            date_of_birth: form.geboortedatum,
-            email: form.email,
-            phone_number: form.telefoonnummer,
-            favorite_gif: form.favorieteGif || undefined,
-          });
+    // determine phone to validate (for authenticated parent we allow user phone fallback)
+    const phoneToValidate = isAuthenticated && user ? (form.telefoonnummer || user.phone_number || '') : form.telefoonnummer;
+    if (!isValidPhoneNumber(phoneToValidate)) {
+      setPhoneError('Ongeldig telefoonnummer');
+      return;
+    }
 
-          sendIntroSignupEmail({
-            participantEmail: form.email,
-            participantFirstName: form.voornaam,
-            participantLastName: form.achternaam,
-            phoneNumber: form.telefoonnummer,
-            dateOfBirth: form.geboortedatum || undefined,
-            favoriteGif: form.favorieteGif || undefined,
-          }).catch(() => {});
-        }      setSubmitted(true);
+    setIsSubmitting(true);
+
+    try {
+      if (isAuthenticated && user) {
+        await introParentSignupsApi.create({
+          user_id: user.id,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          email: user.email,
+          phone_number: (form.telefoonnummer || user.phone_number || '') as string,
+          motivation: parentForm.motivation || '',
+          // send empty values for fields removed from form to satisfy API
+          availability: [],
+        });
+      } else {
+        await introSignupsApi.create({
+          first_name: form.voornaam,
+          middle_name: form.tussenvoegsel || undefined,
+          last_name: form.achternaam,
+          date_of_birth: form.geboortedatum,
+          email: form.email,
+          phone_number: form.telefoonnummer,
+          favorite_gif: form.favorieteGif || undefined,
+        });
+
+        sendIntroSignupEmail({
+          participantEmail: form.email,
+          participantFirstName: form.voornaam,
+          participantLastName: form.achternaam,
+          phoneNumber: form.telefoonnummer,
+          dateOfBirth: form.geboortedatum || undefined,
+          favoriteGif: form.favorieteGif || undefined,
+        }).catch(() => {});
+      }
+      setSubmitted(true);
     } catch (err: any) {
       console.error('Failed to submit intro signup:', err);
       setError(err?.message || 'Er is een fout opgetreden bij het versturen van je inschrijving.');
@@ -187,6 +200,7 @@ export default function IntroPage() {
                               required
                               className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
                             />
+                            {phoneError && <p className="text-red-200 text-xs lg:text-sm mt-1">{phoneError}</p>}
                           </div>
                           <div>
                             <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Motivatie *</label>
@@ -279,6 +293,7 @@ export default function IntroPage() {
                             required
                             className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
                           />
+                          {phoneError && <p className="text-red-200 text-xs lg:text-sm mt-1">{phoneError}</p>}
                         </div>
                         <div>
                           <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Favoriete GIF URL (optioneel)</label>

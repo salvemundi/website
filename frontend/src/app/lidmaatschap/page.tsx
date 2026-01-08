@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { isValidPhoneNumber } from '@/shared/lib/phone';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import DatePicker from 'react-datepicker';
@@ -67,6 +68,7 @@ export default function SignUp() {
     const [verifyingCoupon, setVerifyingCoupon] = useState(false);
 
     const [isProcessing, setIsProcessing] = useState(false);
+    const [phoneError, setPhoneError] = useState<string | null>(null);
 
     const isGuest = !user;
     const isValidMember = user && user.is_member;
@@ -85,6 +87,7 @@ export default function SignUp() {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });
+        if (e.target.name === 'telefoon' && phoneError) setPhoneError(null);
     };
 
     const verifyCoupon = async () => {
@@ -160,9 +163,14 @@ export default function SignUp() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setPhoneError(null);
+
+        if (!isValidPhoneNumber(form.telefoon)) {
+            setPhoneError('Ongeldig telefoonnummer');
+            return;
+        }
+
         setIsProcessing(true);
-
-
 
         try {
             await initiateContributionPayment();
@@ -305,6 +313,7 @@ export default function SignUp() {
                                 <label className="font-semibold text-theme-purple-lighter">
                                     Telefoonnummer
                                     <input type="tel" name="telefoon" value={form.telefoon} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple" />
+                                    {phoneError && <p className="text-red-300 text-sm mt-1">{phoneError}</p>}
                                 </label>
 
                                 <div className="border-t border-theme-white/20 pt-4 mt-2">
