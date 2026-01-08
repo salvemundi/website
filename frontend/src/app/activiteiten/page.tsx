@@ -159,9 +159,9 @@ function ActivitiesContent() {
                     <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
 
                         {/* Sidebar (Visible on Desktop) */}
-                        {(viewMode !== 'grid' || selectedDay) && (
+                        {(selectedDay || upcomingEvent) && (
                             <aside className="lg:w-96 xl:w-[28rem] space-y-6">
-                                {viewMode !== 'grid' && (
+                                {upcomingEvent && (
                                     <FeaturedEvent
                                         event={upcomingEvent}
                                         onEventClick={handleShowDetails}
@@ -200,6 +200,23 @@ function ActivitiesContent() {
                                             <line x1="3" y1="18" x2="3.01" y2="18" />
                                         </svg>
                                         Lijst
+                                    </span>
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('grid')}
+                                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${viewMode === 'grid'
+                                        ? 'bg-gradient-primary text-white shadow-md'
+                                        : 'text-samu dark:text-white hover:bg-oranje/5 dark:hover:bg-white/5'
+                                        }`}
+                                >
+                                    <span className="flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <rect x="3" y="3" width="8" height="8" rx="1" ry="1" />
+                                            <rect x="13" y="3" width="8" height="8" rx="1" ry="1" />
+                                            <rect x="3" y="13" width="8" height="8" rx="1" ry="1" />
+                                            <rect x="13" y="13" width="8" height="8" rx="1" ry="1" />
+                                        </svg>
+                                        Kaarten
                                     </span>
                                 </button>
 
@@ -265,6 +282,15 @@ function ActivitiesContent() {
                                         <EventList
                                             events={filteredEvents}
                                             onEventClick={handleShowDetails}
+                                        />
+                                    )}
+
+                                    {/* Grid / Card View */}
+                                    {viewMode === 'grid' && (
+                                        <EventList
+                                            events={filteredEvents.filter(e => String(e.id) !== String(upcomingEvent?.id))}
+                                            onEventClick={handleShowDetails}
+                                            variant="grid"
                                         />
                                     )}
 
