@@ -169,16 +169,25 @@ export default function CommitteeDetailPage() {
                         <div className="lg:col-span-2 space-y-8">
                                 {/* Committee image */}
                                 {committee.image && (
+<<<<<<< HEAD
                                     <div className="rounded-3xl overflow-hidden bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 shadow-lg relative h-96">
                                         <SmartImage
+=======
+                                    <div className="rounded-3xl overflow-hidden bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 shadow-lg relative w-full max-w-[720px] mx-auto">
+                                        <Image
+>>>>>>> b6ce79f56ebb8cc882bda555fb12c2969983d732
                                             src={getImageUrl(committee.image)}
                                             alt={cleanName}
-                                            fill
-                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px"
-                                            className="object-cover"
+                                            width={720}
+                                            height={480}
+                                            className="object-contain w-full h-auto bg-white"
                                             loading="lazy"
                                             placeholder="blur"
                                             blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
+<<<<<<< HEAD
+=======
+                                            onError={() => { /* fallback handled by Next/Image automatically */ }}
+>>>>>>> b6ce79f56ebb8cc882bda555fb12c2969983d732
                                         />
                                     </div>
                                 )}
