@@ -21,6 +21,8 @@ const Header: React.FC = () => {
     const headerRef = useRef<HTMLElement | null>(null);
     const { data: siteSettings } = useSalvemundiSiteSettings('intro');
     const introEnabled = siteSettings?.show ?? true;
+    const { data: kroegentochtSettings } = useSalvemundiSiteSettings('kroegentocht');
+    const kroegentochtEnabled = kroegentochtSettings?.show ?? true;
 
     useEffect(() => {
         const handleScroll = () => {
@@ -96,6 +98,7 @@ const Header: React.FC = () => {
         { name: "Lidmaatschap", href: ROUTES.MEMBERSHIP },
         { name: "Activiteiten", href: ROUTES.ACTIVITIES },
         { name: "Commissies", href: ROUTES.COMMITTEES },
+        ...(kroegentochtEnabled ? [{ name: "Kroegentocht", href: ROUTES.PUB_CRAWL }] : []),
         { name: "Safe Havens", href: "/safe-havens" },
         { name: "Contact", href: ROUTES.CONTACT },
     ];

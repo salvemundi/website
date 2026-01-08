@@ -1,12 +1,15 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import BackToTopButton from '@/shared/ui/BackToTopButton';
 import { pubCrawlSignupsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
-import { useSalvemundiPubCrawlEvents } from '@/shared/lib/hooks/useSalvemundiApi';
+import { directusFetch } from '@/shared/lib/directus';
+import { useSalvemundiPubCrawlEvents, useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { format } from 'date-fns';
 import { sendEventSignupEmail } from '@/shared/lib/services/email-service';
+import { CheckCircle2 } from 'lucide-react';
 
 const ASSOCIATIONS = [
     'Salve Mundi',
@@ -27,6 +30,11 @@ const ASSOCIATIONS = [
     'Anders'
 ];
 
+interface Participant {
+    name: string;
+    initial: string;
+}
+
 export default function KroegentochtPage() {
     const [form, setForm] = useState({
         name: '',
@@ -35,10 +43,15 @@ export default function KroegentochtPage() {
         customAssociation: '',
         amount_tickets: 1,
     });
+    const [participants, setParticipants] = useState<Participant[]>([{ name: '', initial: '' }]);
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { data: pubCrawlEvents, isLoading: eventsLoading } = useSalvemundiPubCrawlEvents();
+    const { data: siteSettings, isLoading: isSettingsLoading } = useSalvemundiSiteSettings('kroegentocht');
+    
+    const isKroegentochtEnabled = siteSettings?.show ?? true;
+    const kroegentochtDisabledMessage = siteSettings?.disabled_message || 'De inschrijvingen voor de kroegentocht zijn momenteel gesloten.';
 
     const nextEvent = useMemo(() => {
         if (!pubCrawlEvents || pubCrawlEvents.length === 0) return null;
@@ -82,15 +95,39 @@ export default function KroegentochtPage() {
             const parsed = parseInt(value, 10);
             const clamped = Number.isNaN(parsed) ? 1 : Math.min(10, Math.max(1, parsed));
             setForm({ ...form, amount_tickets: clamped });
+            
+            // Update participants array based on ticket count
+            const newParticipants = Array.from({ length: clamped }, (_, i) => 
+                participants[i] || { name: '', initial: '' }
+            );
+            setParticipants(newParticipants);
             return;
         }
         setForm({ ...form, [name]: value });
+    };
+
+    const handleParticipantChange = (index: number, field: 'name' | 'initial', value: string) => {
+        const newParticipants = [...participants];
+        if (field === 'initial') {
+            // Limit initial to single character
+            newParticipants[index][field] = value.slice(0, 1).toUpperCase();
+        } else {
+            newParticipants[index][field] = value;
+        }
+        setParticipants(newParticipants);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!nextEvent) {
             setError('Er is momenteel geen kroegentocht beschikbaar om voor in te schrijven.');
+            return;
+        }
+
+        // Validate all participants have name and initial
+        const invalidParticipants = participants.some(p => !p.name.trim() || !p.initial.trim());
+        if (invalidParticipants) {
+            setError('Vul voor alle tickets een naam en eerste letter achternaam in.');
             return;
         }
 
@@ -103,13 +140,35 @@ export default function KroegentochtPage() {
                 ? form.customAssociation
                 : form.association;
 
-            // Create or update signup
+            // Format name_initials as JSON array string
+            const nameInitials = JSON.stringify(participants.map(p => ({
+                name: p.name,
+                initial: p.initial
+            })));
+
+            // Check for existing signup with same email for this event
+            const existingQuery = new URLSearchParams({
+                ['filter[pub_crawl_event_id][_eq]']: String(nextEvent.id),
+                ['filter[email][_eq]']: form.email,
+                limit: '1'
+            }).toString();
+
+            const existing = await directusFetch<any[]>(`/items/pub_crawl_signups?${existingQuery}`);
+            if (existing && existing.length > 0) {
+                // Don't add or update - keep form filled so user can change the email
+                setError('Dit e-mailadres staat al geregistreerd voor deze kroegentocht. Gebruik een ander e-mailadres.');
+                setLoading(false);
+                return;
+            }
+
+            // Create signup
             await pubCrawlSignupsApi.create({
                 name: form.name,
                 email: form.email,
                 association: finalAssociation,
                 amount_tickets: form.amount_tickets,
                 pub_crawl_event_id: nextEvent.id,
+                name_initials: nameInitials,
             });
 
             const eventDate = nextEvent.date || new Date().toISOString();
@@ -162,51 +221,70 @@ export default function KroegentochtPage() {
             </div>
 
             <main className="relative overflow-hidden bg-white dark:bg-gray-900">
-                <div className="flex flex-col lg:flex-row gap-6 p-6 sm:p-10">
-                    {/* Form Section */}
-                    <section className="w-full lg:w-1/2 bg-gradient-theme rounded-3xl shadow-lg p-6 sm:p-8">
-                        <h1 className="text-3xl font-bold text-white mb-6">
-                            Inschrijven voor de Kroegentocht
-                        </h1>
+                {!isKroegentochtEnabled ? (
+                    <section className="px-4 sm:px-6 lg:px-10 py-12 lg:py-16">
+                        <div className="max-w-4xl mx-auto bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl lg:rounded-3xl p-6 lg:p-8 text-center shadow-2xl">
+                            <h2 className="text-2xl lg:text-3xl font-bold text-gradient mb-4">Kroegentocht momenteel niet beschikbaar</h2>
+                            <p className="text-base lg:text-lg text-theme-muted mb-6">{kroegentochtDisabledMessage}</p>
+                            {isSettingsLoading && <p className="text-sm text-theme-muted mb-6">Bezig met controleren van status...</p>}
+                            <Link href="/" className="inline-flex items-center justify-center px-6 py-3 bg-gradient-theme text-theme-white font-semibold rounded-full">
+                                Terug naar Home
+                            </Link>
+                        </div>
+                    </section>
+                ) : (
+                    <div className="flex flex-col lg:flex-row gap-6 p-6 sm:p-10">
+                        {/* Form Section */}
+                        <section className="w-full lg:w-1/2 bg-gradient-theme rounded-3xl shadow-lg p-6 sm:p-8">
+                            <h1 className="text-3xl font-bold text-white mb-6">
+                                Inschrijven voor de Kroegentocht
+                            </h1>
 
-                        {submitted ? (
-                            <div className="text-white">
-                                <h2 className="text-2xl font-semibold mb-4">✅ Inschrijving Voltooid!</h2>
-                                <p className="text-lg mb-4">
-                                    Bedankt voor je inschrijving voor de Kroegentocht!
-                                </p>
-                                <p className="text-white/90">
-                                    Je ontvangt binnenkort een bevestigingsmail met alle details op <strong>{form.email}</strong>.
-                                </p>
-                                <button
-                                    onClick={() => {
-                                        setSubmitted(false);
-                                        setForm({
-                                            name: '',
-                                            email: '',
-                                            association: '',
-                                            customAssociation: '',
-                                            amount_tickets: 1,
-                                        });
-                                    }}
-                                    className="mt-6 bg-white text-theme-purple font-bold py-2 px-4 rounded hover:bg-white/90 transition"
-                                >
-                                    Nieuwe inschrijving
-                                </button>
-                            </div>
-                        ) : (
-                            <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-                                {error && (
-                                    <div className="bg-white/20 text-white px-4 py-3 rounded">
-                                        {error}
+                            {submitted ? (
+                                <div className="text-white">
+                                    <div className="flex items-center justify-center mb-4">
+                                        <CheckCircle2 className="w-12 h-12 lg:w-16 lg:h-16 text-white" />
                                     </div>
-                                )}
+                                    <h2 className="text-2xl font-semibold mb-4 text-center">Inschrijving Voltooid!</h2>
+                                    <p className="text-lg mb-4">
+                                        Bedankt voor je inschrijving voor de Kroegentocht!
+                                    </p>
+                                    <p className="text-white/90 mb-2">
+                                        Je ontvangt binnenkort een bevestigingsmail met alle details op <strong>{form.email}</strong>.
+                                    </p>
+                                    <p className="text-white/90 mb-6">
+                                        Aantal tickets: <strong>{form.amount_tickets}</strong>
+                                    </p>
+                                    <button
+                                        onClick={() => {
+                                            setSubmitted(false);
+                                            setForm({
+                                                name: '',
+                                                email: '',
+                                                association: '',
+                                                customAssociation: '',
+                                                amount_tickets: 1,
+                                            });
+                                            setParticipants([{ name: '', initial: '' }]);
+                                        }}
+                                        className="bg-white text-theme-purple font-bold py-2 px-4 rounded hover:bg-white/90 transition"
+                                    >
+                                        Nieuwe inschrijving
+                                    </button>
+                                </div>
+                            ) : (
+                                <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+                                    {error && (
+                                        <div className="bg-white/20 text-white px-4 py-3 rounded">
+                                            {error}
+                                        </div>
+                                    )}
 
-                                {!eventsLoading && !canSignUp && (
-                                    <div className="bg-white/20 text-white px-4 py-3 rounded">
-                                        Momenteel is er geen kroegentocht gepland. Houd deze pagina in de gaten voor nieuwe data!
-                                    </div>
-                                )}
+                                    {!eventsLoading && !canSignUp && (
+                                        <div className="bg-white/20 text-white px-4 py-3 rounded">
+                                            Momenteel is er geen kroegentocht gepland. Houd deze pagina in de gaten voor nieuwe data!
+                                        </div>
+                                    )}
 
                                 {/* Name */}
                                 <label className="font-semibold text-white">
@@ -288,6 +366,43 @@ export default function KroegentochtPage() {
                                         Maximum 10 tickets per inschrijving
                                     </span>
                                 </label>
+
+                                {/* Participant Names and Initials */}
+                                <div className="bg-white/10 rounded-lg p-4 space-y-3">
+                                    <h3 className="font-semibold text-white text-lg mb-2">
+                                        Deelnemers ({form.amount_tickets} {form.amount_tickets === 1 ? 'ticket' : 'tickets'})
+                                    </h3>
+                                    <p className="text-sm text-white/80 mb-3">
+                                        Vul voor elk ticket een naam en eerste letter van de achternaam in.
+                                    </p>
+                                    {participants.map((participant, index) => (
+                                        <div key={index} className="bg-white/10 rounded p-3 space-y-2">
+                                            <label className="block text-sm font-semibold text-white">
+                                                Ticket {index + 1} - Naam
+                                                <input
+                                                    type="text"
+                                                    value={participant.name}
+                                                    onChange={(e) => handleParticipantChange(index, 'name', e.target.value)}
+                                                    required
+                                                    placeholder="Voornaam + eventueel tussenvoegsel"
+                                                    className="mt-1 p-2 rounded w-full bg-white text-theme-purple text-sm"
+                                                />
+                                            </label>
+                                            <label className="block text-sm font-semibold text-white">
+                                                Eerste letter achternaam
+                                                <input
+                                                    type="text"
+                                                    value={participant.initial}
+                                                    onChange={(e) => handleParticipantChange(index, 'initial', e.target.value)}
+                                                    required
+                                                    placeholder="Bijv. S"
+                                                    maxLength={1}
+                                                    className="mt-1 p-2 rounded w-20 bg-white text-theme-purple text-sm uppercase"
+                                                />
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
 
                                 <button
                                     type="submit"
@@ -415,7 +530,7 @@ export default function KroegentochtPage() {
                         </div>
                     </div>
                 </div>
-
+                )}
             </main>
 
             <BackToTopButton />

@@ -45,6 +45,8 @@ interface DashboardStats {
     upcomingEventsWithSignups: Array<{ id: string; name: string; event_date: string; signups: number }>;
     topCommittee?: { name: string; count: number };
     totalCoupons: number;
+    pubCrawlSignups: number;
+    upcomingPubCrawl?: { id: number; name: string; date: string };
 }
 
 function StatCard({
@@ -162,6 +164,8 @@ export default function AdminDashboardPage() {
         upcomingEventsWithSignups: [],
         topCommittee: undefined,
         totalCoupons: 0,
+        pubCrawlSignups: 0,
+        upcomingPubCrawl: undefined,
     });
     const [isIctMember, setIsIctMember] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -198,7 +202,8 @@ export default function AdminDashboardPage() {
                 systemHealth,
                 upcomingEventsDetail,
                 topCommittee,
-                couponsData
+                couponsData,
+                pubCrawlStats
             ] = await Promise.all([
                 // Total event signups
                 directusFetch<any>('/items/event_signups?aggregate[count]=*'),
@@ -221,7 +226,9 @@ export default function AdminDashboardPage() {
                 // Top committee by activities this year
                 fetchTopCommitteeByActivities(),
                 // Total active coupons
-                directusFetch<any>('/items/coupons?aggregate[count]=*&filter[is_active][_eq]=true').catch(() => [{ count: 0 }])
+                directusFetch<any>('/items/coupons?aggregate[count]=*&filter[is_active][_eq]=true').catch(() => [{ count: 0 }]),
+                // Pub crawl stats
+                fetchPubCrawlStats()
             ]);
 
             setStats({
@@ -240,6 +247,8 @@ export default function AdminDashboardPage() {
                 upcomingEventsWithSignups: upcomingEventsDetail,
                 topCommittee: topCommittee,
                 totalCoupons: couponsData?.[0]?.count || 0,
+                pubCrawlSignups: pubCrawlStats.signups,
+                upcomingPubCrawl: pubCrawlStats.upcomingEvent,
             });
         } catch (error) {
             console.error('Failed to load dashboard data:', error);
@@ -519,6 +528,40 @@ export default function AdminDashboardPage() {
         }
     };
 
+    const fetchPubCrawlStats = async () => {
+        try {
+            // Get upcoming pub crawl event
+            const allEvents = await directusFetch<any[]>('/items/pub_crawl_events?fields=id,name,date&sort=-date');
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const upcomingEvent = allEvents.find(event => {
+                const eventDate = new Date(event.date);
+                eventDate.setHours(0, 0, 0, 0);
+                return eventDate >= today;
+            });
+
+            if (!upcomingEvent) {
+                return { signups: 0, upcomingEvent: undefined };
+            }
+
+            // Get signups count for upcoming event
+            const signupsData = await directusFetch<any>(`/items/pub_crawl_signups?aggregate[count]=*&filter[pub_crawl_event_id][_eq]=${upcomingEvent.id}`);
+            
+            return {
+                signups: signupsData?.[0]?.count || 0,
+                upcomingEvent: {
+                    id: upcomingEvent.id,
+                    name: upcomingEvent.name,
+                    date: upcomingEvent.date
+                }
+            };
+        } catch (error) {
+            console.error('Failed to fetch pub crawl stats:', error);
+            return { signups: 0, upcomingEvent: undefined };
+        }
+    };
+
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
@@ -586,6 +629,17 @@ export default function AdminDashboardPage() {
                                 subtitle="Alle aanmeldingen"
                                 onClick={() => router.push('/admin/dev-signups')}
                                 colorClass="red"
+                            />
+                        )}
+
+                        {stats.upcomingPubCrawl && (
+                            <StatCard
+                                title="Kroegentocht Aanmeldingen"
+                                value={stats.pubCrawlSignups}
+                                icon={<Ticket className="h-6 w-6" />}
+                                subtitle={stats.upcomingPubCrawl.name}
+                                onClick={() => router.push('/admin/kroegentocht')}
+                                colorClass="purple"
                             />
                         )}
                     </div>
@@ -686,6 +740,8 @@ export default function AdminDashboardPage() {
                                 colorClass="blue"
                             />
                         </div>
+
+                        {/* Kroegentocht stat moved to top row */}
 
                         {/* Members - Green Theme */}
                         <div className="grid grid-cols-2 gap-4">
