@@ -55,6 +55,13 @@ export default function IntroBlogPage() {
         }
     }, []);
 
+    // Ensure we don't show liked state when the user is not authenticated.
+    useEffect(() => {
+        if (!isAuthenticated) {
+            setLikedBlogs([]);
+        }
+    }, [isAuthenticated]);
+
     // initialize liked blogs from server for authenticated user
     useEffect(() => {
         if (!isAuthenticated || !user) return;
@@ -330,6 +337,9 @@ export default function IntroBlogPage() {
                                     {filteredBlogs.map((blog) => {
                                         const typeConfig = getBlogTypeConfig(blog.blog_type ?? 'update');
                                         const TypeIcon = typeConfig.icon;
+                                        // Only show the "liked" icon/state if the current user is authenticated
+                                        // and the server/local state indicates they liked this blog.
+                                        const isUserLiked = isAuthenticated && likedBlogs.includes(blog.id);
                                         
                                         return (
                                             <article
@@ -448,24 +458,24 @@ export default function IntroBlogPage() {
                                                             }
                                                         }}
                                                         disabled={likeLoadingId === blog.id}
-                                                        title={!isAuthenticated ? 'Log in om te liken' : (likedBlogs.includes(blog.id) ? 'Klik om like te verwijderen' : 'Leuk vinden')}
+                                                        title={!isAuthenticated ? 'Log in om te liken' : (isUserLiked ? 'Klik om like te verwijderen' : 'Leuk vinden')}
                                                         className={`flex items-center gap-2 transition-all duration-200 ${
-                                                            likedBlogs.includes(blog.id) 
-                                                                ? 'text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-full shadow-md' 
+                                                            isUserLiked
+                                                                ? 'text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-full shadow-md'
                                                                 : 'text-theme-muted hover:text-red-500 hover:scale-110'
                                                         } ${likeLoadingId === blog.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                                     >
                                                         {likeLoadingId === blog.id ? (
                                                             <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                                                        ) : likedBlogs.includes(blog.id) ? (
+                                                        ) : isUserLiked ? (
                                                             <svg className="w-5 h-5 animate-[pulse_0.5s_ease-in-out]" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                                                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.41 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.41 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                                                             </svg>
                                                         ) : (
                                                             <Heart className="w-5 h-5" />
                                                         )}
-                                                        <span className="text-sm font-medium">{likedBlogs.includes(blog.id) ? 'Geliked' : 'Leuk vinden'}</span>
-                                                        <span className={`text-sm font-semibold ${likedBlogs.includes(blog.id) ? 'text-white' : 'text-theme-muted'}`}>{blog.likes ?? 0}</span>
+                                                        <span className="text-sm font-medium">{isUserLiked ? 'Geliked' : 'Leuk vinden'}</span>
+                                                        <span className={`text-sm font-semibold ${isUserLiked ? 'text-white' : 'text-theme-muted'}`}>{blog.likes ?? 0}</span>
                                                     </button>
                                                     {/* Share button removed */}
                                                     {canSendEmails && (
@@ -612,7 +622,10 @@ export default function IntroBlogPage() {
                             {/* Detail action bar (like button) */}
                             <div className="border-t mt-6 pt-4 px-0">
                                 <div className="flex items-center gap-4">
-                                    <button
+                                    {(() => {
+                                        const selectedIsUserLiked = isAuthenticated && likedBlogs.includes(selectedBlog.id);
+                                        return (
+                                            <button
                                         onClick={async (e) => {
                                             e.stopPropagation();
                                             if (!isAuthenticated) {
@@ -670,25 +683,27 @@ export default function IntroBlogPage() {
                                             }
                                         }}
                                         disabled={likeLoadingId === selectedBlog.id}
-                                        title={!isAuthenticated ? 'Log in om te liken' : (likedBlogs.includes(selectedBlog.id) ? 'Klik om like te verwijderen' : 'Leuk vinden')}
+                                        title={!isAuthenticated ? 'Log in om te liken' : (selectedIsUserLiked ? 'Klik om like te verwijderen' : 'Leuk vinden')}
                                         className={`flex items-center gap-2 transition-all duration-200 ${
-                                            likedBlogs.includes(selectedBlog.id) 
-                                                ? 'text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-full shadow-md' 
+                                            selectedIsUserLiked
+                                                ? 'text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-full shadow-md'
                                                 : 'text-theme-muted hover:text-red-500 hover:scale-110'
                                         } ${likeLoadingId === selectedBlog.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                     >
                                         {likeLoadingId === selectedBlog.id ? (
                                             <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                                        ) : likedBlogs.includes(selectedBlog.id) ? (
+                                        ) : selectedIsUserLiked ? (
                                             <svg className="w-5 h-5 animate-[pulse_0.5s_ease-in-out]" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.41 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.41 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                                             </svg>
                                         ) : (
                                             <Heart className="w-5 h-5" />
                                         )}
-                                        <span className="text-sm font-medium">{likedBlogs.includes(selectedBlog.id) ? 'Geliked' : 'Leuk vinden'}</span>
-                                        <span className={`text-sm font-semibold ${likedBlogs.includes(selectedBlog.id) ? 'text-white' : 'text-theme-muted'}`}>{selectedBlog.likes ?? 0}</span>
+                                        <span className="text-sm font-medium">{selectedIsUserLiked ? 'Geliked' : 'Leuk vinden'}</span>
+                                        <span className={`text-sm font-semibold ${selectedIsUserLiked ? 'text-white' : 'text-theme-muted'}`}>{selectedBlog.likes ?? 0}</span>
                                     </button>
+                                );
+                                    })()}
                                 </div>
                             </div>
                         </div>
