@@ -60,6 +60,27 @@ function getEmailConfig(): EmailConfig {
     };
 }
 
+// Insert a standard contact footer into arbitrary HTML email bodies.
+function appendContactFooter(html: string): string {
+    if (!html || typeof html !== 'string') return html;
+
+    const contactBlock = `
+      <div style="margin-top:30px;padding-top:20px;border-top:1px solid #ddd;font-size:13px;color:#666;">
+        <p style="margin:0 0 6px 0;"><strong>Contact:</strong> <a href="mailto:info@salvemundi.nl" style="color:#7B2CBF;text-decoration:none;">info@salvemundi.nl</a></p>
+        <p style="margin:0;font-size:12px;color:#999;">Bezoek https://salvemundi.nl voor meer informatie</p>
+      </div>
+    `;
+
+    // Try to insert before </body> if present, otherwise before </html>, otherwise append.
+    if (/<\/body>/i.test(html)) {
+        return html.replace(/<\/body>/i, contactBlock + '\n</body>');
+    }
+    if (/<\/html>/i.test(html)) {
+        return html.replace(/<\/html>/i, contactBlock + '\n</html>');
+    }
+    return html + contactBlock;
+}
+
 function buildCommitteeEmailFromName(name?: string | null): string | undefined {
     if (!name) return undefined;
     const normalized = name.toLowerCase();
@@ -108,6 +129,8 @@ async function sendEmail(
     // For now, we'll attempt to send but gracefully handle CORS failures.
 
     try {
+      // Ensure a consistent contact footer is included in all outgoing emails
+      htmlBody = appendContactFooter(htmlBody);
         const response = await fetch(config.apiEndpoint, {
             method: 'POST',
             headers: {
@@ -415,6 +438,17 @@ export async function sendIntroSignupEmail(data: IntroSignupEmailData): Promise<
 
     try {
         const participantName = `${data.participantFirstName} ${data.participantLastName}`.trim();
+
+        // Intro committee contact details
+        const introCommitteeName = 'Intro Commissie';
+        const introCommitteeEmail = 'intro@salvemundi.nl';
+        const introContactSection = `
+          <div style="background-color: #F5F5DC; padding: 12px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #FF6B35; margin-top: 0;">Contact Intro Commissie</h3>
+            <p style="margin:0;"><strong>Commissie:</strong> ${introCommitteeName}</p>
+            <p style="margin:0;"><strong>E-mail:</strong> <a href="mailto:${introCommitteeEmail}" style="color:#7B2CBF; text-decoration:none;">${introCommitteeEmail}</a></p>
+          </div>
+        `;
         const userEmailBody = `
       <html>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
@@ -432,6 +466,7 @@ export async function sendIntroSignupEmail(data: IntroSignupEmailData): Promise<
               <img src="${data.favoriteGif}" alt="Favoriete GIF" style="max-width: 240px; border-radius: 12px;" />
             ` : ''}
             <p>We sturen je binnenkort meer informatie, maar zet de introweek alvast in je agenda.</p>
+            ${introContactSection}
             <p style="margin-top: 30px;">Tot snel!<br/><strong>Salve Mundi</strong></p>
           </div>
         </body>
@@ -454,6 +489,7 @@ export async function sendIntroSignupEmail(data: IntroSignupEmailData): Promise<
               <p><strong>Favoriete GIF:</strong></p>
               <img src="${data.favoriteGif}" alt="Favoriete GIF" style="max-width: 300px; border-radius: 12px;" />
             ` : ''}
+            ${introContactSection}
           </div>
         </body>
       </html>

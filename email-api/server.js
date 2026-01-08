@@ -131,6 +131,22 @@ function ensureAdaptiveEmailHtml(rawHtml) {
   return `<!doctype html>\n<html lang="en">\n<head>\n  <meta charset="utf-8" />\n  <meta name="viewport" content="width=device-width,initial-scale=1" />\n  ${adaptiveHead}\n</head>\n<body bgcolor="#f9fafb" style="margin:0;padding:0;background:var(--bg);color:var(--text);">\n  ${rawHtml}\n</body>\n</html>`;
 }
 
+// Append a simple contact footer to HTML email bodies if not already present
+function appendContactFooterToHtml(html) {
+  if (!html || typeof html !== 'string') return html;
+  const footerHtml = `\n<div style="margin-top:24px;padding-top:12px;border-top:1px solid #ddd;font-size:13px;color:#666;">\n  <p style="margin:0 0 6px 0;"><strong>Contact:</strong> <a href="mailto:info@salvemundi.nl" style="color:#7B2CBF;text-decoration:none;">info@salvemundi.nl</a></p>\n  <p style="margin:0;font-size:12px;color:#999;">Bezoek https://salvemundi.nl voor meer informatie</p>\n</div>\n`;
+
+  if (/<\/body>/i.test(html)) {
+    return html.replace(/<\/body>/i, footerHtml + '\n</body>');
+  }
+
+  if (/<\/html>/i.test(html)) {
+    return html.replace(/<\/html>/i, footerHtml + '\n</html>');
+  }
+
+  return html + footerHtml;
+}
+
 // Send email endpoint
 app.post('/send-email', async (req, res) => {
   try {
@@ -222,7 +238,7 @@ app.post('/send-email', async (req, res) => {
         subject: subject,
         body: {
           contentType: 'HTML',
-          content: ensureAdaptiveEmailHtml(html),
+          content: appendContactFooterToHtml(ensureAdaptiveEmailHtml(html)),
         },
         toRecipients: [
           {
@@ -494,7 +510,7 @@ app.post('/send-intro-update', async (req, res) => {
         subject: `Intro Update: ${blogTitle}`,
         body: {
           contentType: 'HTML',
-          content: emailHtml
+          content: appendContactFooterToHtml(emailHtml)
         },
         toRecipients: emailsToSend.map(email => ({
           emailAddress: { address: email }
