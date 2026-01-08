@@ -135,9 +135,10 @@ export const eventsApi = {
             events.map(async (event) => {
                 if (event.committee_id) {
                     try {
-                        const committee = await directusFetch<any>(`/items/committees/${event.committee_id}?fields=id,name`);
+                        const committee = await directusFetch<any>(`/items/committees/${event.committee_id}?fields=id,name,email`);
                         if (committee) {
                             event.committee_name = cleanCommitteeName(committee.name);
+                            event.committee_email = committee.email || undefined;
                         }
                     } catch (error) {
                         console.error('eventsApi.getAll: failed to fetch committee for event', { eventId: event.id, committeeId: event.committee_id, error });
@@ -181,9 +182,10 @@ export const eventsApi = {
 
                 if (event.committee_id) {
             try {
-                const committee = await directusFetch<any>(`/items/committees/${event.committee_id}?fields=id,name`);
+                const committee = await directusFetch<any>(`/items/committees/${event.committee_id}?fields=id,name,email`);
                 if (committee) {
                     event.committee_name = cleanCommitteeName(committee.name);
+                    event.committee_email = committee.email || undefined;
                 }
             } catch (error) {
                 console.error('eventsApi.getById: failed to fetch committee for event', { eventId: id, committeeId: event.committee_id, error });
@@ -294,7 +296,9 @@ export const eventsApi = {
                     try {
                         const eventDetails = await eventsApi.getById(String(signupData.event_id));
                         if (eventDetails) {
-                            committeeName = cleanCommitteeName(eventDetails.committee_name) || undefined;
+                            committeeName = eventDetails.committee_name || undefined;
+                            committeeEmail = eventDetails.committee_email || undefined;
+                            
                             if (eventDetails.contact) {
                                 if (typeof eventDetails.contact === 'string' && eventDetails.contact.includes('@')) {
                                     committeeEmail = eventDetails.contact;
@@ -302,19 +306,8 @@ export const eventsApi = {
                                     contactPhone = eventDetails.contact;
                                 }
                             }
-                            // If committe email not present, try to fetch committee record
-                            if (!committeeEmail && eventDetails.committee_id) {
-                                try {
-                                    const committee = await directusFetch<any>(`/items/committees/${eventDetails.committee_id}?fields=id,name,email`);
-                                    if (committee) {
-                                        committeeName = cleanCommitteeName(committee.name) || committeeName;
-                                        committeeEmail = committee.email || committeeEmail;
-                                    }
-                                } catch (e) {
-                                    // ignore
-                                }
-                            }
-                            // If no contactName found, try to get a leader name (getById already tries this in other methods but ensure)
+                            
+                            // If no contactName found, try to get a leader name
                             if (!contactName && eventDetails.contact_name) {
                                 contactName = eventDetails.contact_name;
                             }

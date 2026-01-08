@@ -186,7 +186,8 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
                 contentId: qrCodeCid,
             };
         }
-        const displayCommitteeName = cleanCommitteeName(data.committeeName) || data.committeeName;
+        // Committee name is already cleaned when fetched from DB
+        const displayCommitteeName = data.committeeName;
         const committeeEmail = data.committeeEmail || buildCommitteeEmailFromName(displayCommitteeName);
         const contactInfoSection = (data.contactName || data.contactPhone || committeeEmail || displayCommitteeName)
             ? `
