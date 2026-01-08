@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
+import SmartImage from '@/shared/ui/SmartImage';
 import { useSalvemundiCommitteesWithMembers, useSalvemundiEventsByCommittee, useSalvemundiCommittee } from '@/shared/lib/hooks/useSalvemundiApi';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
@@ -113,7 +113,7 @@ export default function CommitteeDetailPage() {
                 {/* Hero with Committee Image */}
                 <section className="relative overflow-hidden py-20">
                     <div className="absolute inset-0">
-                        <Image
+                        <SmartImage
                             src={committee.image ? getImageUrl(committee.image) : '/img/group-jump.gif'}
                             alt={cleanName}
                             fill
@@ -170,7 +170,7 @@ export default function CommitteeDetailPage() {
                                 {/* Committee image */}
                                 {committee.image && (
                                     <div className="rounded-3xl overflow-hidden bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 shadow-lg relative h-96">
-                                        <Image
+                                        <SmartImage
                                             src={getImageUrl(committee.image)}
                                             alt={cleanName}
                                             fill
@@ -179,10 +179,6 @@ export default function CommitteeDetailPage() {
                                             loading="lazy"
                                             placeholder="blur"
                                             blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.src = '/img/placeholder.svg';
-                                            }}
                                         />
                                     </div>
                                 )}
@@ -270,7 +266,7 @@ export default function CommitteeDetailPage() {
                                     <h3 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">Commissieleider</h3>
                                     <div className="flex items-center gap-4">
                                         <div className="relative h-16 w-16 rounded-full overflow-hidden">
-                                            <Image
+                                            <SmartImage
                                                 src={getImageUrl(leader.user_id.avatar)}
                                                 alt={`${leader.user_id.first_name} ${leader.user_id.last_name}`}
                                                 fill
@@ -279,10 +275,6 @@ export default function CommitteeDetailPage() {
                                                 loading="lazy"
                                                 placeholder="blur"
                                                 blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZGRkIi8+PC9zdmc+"
-                                                onError={(e) => {
-                                                    const target = e.target as HTMLImageElement;
-                                                    target.src = '/img/placeholder.svg';
-                                                }}
                                             />
                                         </div>
                                         <div>
@@ -315,7 +307,7 @@ export default function CommitteeDetailPage() {
                                         {members.map((member: any) => (
                                             <div key={member.id} className="text-center">
                                                 <div className="relative mx-auto h-16 w-16 rounded-full overflow-hidden">
-                                                    <Image
+                                                    <SmartImage
                                                         src={getImageUrl(member.user_id.avatar)}
                                                         alt={`${member.user_id.first_name}`}
                                                         fill
@@ -324,10 +316,6 @@ export default function CommitteeDetailPage() {
                                                         loading="lazy"
                                                         placeholder="blur"
                                                         blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZGRkIi8+PC9zdmc+"
-                                                        onError={(e) => {
-                                                            const target = e.target as HTMLImageElement;
-                                                            target.src = '/img/placeholder.svg';
-                                                        }}
                                                     />
                                                 </div>
                                                 <p className="mt-2 text-xs font-medium text-slate-900 dark:text-white">
@@ -386,7 +374,7 @@ export default function CommitteeDetailPage() {
                                 <div key={member.id} className="flex items-center justify-between gap-4 p-3 rounded-md bg-slate-50">
                                     <div className="flex items-center gap-3">
                                         <div className="relative h-10 w-10 rounded-full overflow-hidden">
-                                            <Image
+                                            <SmartImage
                                                 src={getImageUrl(member.user_id.avatar)}
                                                 alt={`${member.user_id.first_name} ${member.user_id.last_name}`}
                                                 fill
