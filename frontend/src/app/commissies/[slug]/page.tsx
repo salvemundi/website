@@ -1,11 +1,14 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSalvemundiCommitteesWithMembers, useSalvemundiEventsByCommittee, useSalvemundiCommittee } from '@/shared/lib/hooks/useSalvemundiApi';
+import { useAuth } from '@/features/auth/providers/auth-provider';
+import { directusFetch } from '@/shared/lib/directus';
+import { useCallback, useState } from 'react';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { slugify } from '@/shared/lib/utils/slug';
-import { Mail, Calendar, Users2, History } from 'lucide-react';
+import { Mail, Calendar, Users2, History, Edit, Trash2, Check, X } from 'lucide-react';
 
 function cleanCommitteeName(name: string): string {
     return name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim();
@@ -29,17 +32,26 @@ export default function CommitteeDetailPage() {
 
     // Fetch events for this committee
     const { data: events = [] } = useSalvemundiEventsByCommittee(committeeId);
+    const { user } = useAuth();
+    const router = useRouter();
+
+    // Determine leader status from application storage (preferred) or committee membership
+    const storedCommittees = user?.committees || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem(`user_committees_${user?.id}`) || 'null') || [] : []);
+    const isLeaderFromStorage = !!storedCommittees?.find((c: any) => String(c.id) === String(committeeId) && c.is_leader);
+    // we'll determine leader status after we have the visible members list
+
+    const [membersModalOpen, setMembersModalOpen] = useState(false);
 
     if (isLoading) {
         return (
             <div className="relative min-h-screen" style={{backgroundColor: 'var(--bg-main)'}}>
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-oranje/10/80 via-transparent to-oranje/20/60" />
                 <div className="relative z-10">
-                    <div className="mx-auto max-w-app px-4 py-12">
-                        <div className="h-96 animate-pulse rounded-3xl bg-white/60 dark:bg-white/10" />
+                        <div className="mx-auto max-w-app px-4 py-12">
+                            <div className="h-96 animate-pulse rounded-3xl bg-white/60 dark:bg-white/10" />
+                        </div>
                     </div>
                 </div>
-            </div>
         );
     }
 
@@ -66,7 +78,33 @@ export default function CommitteeDetailPage() {
 
     const cleanName = cleanCommitteeName(committee.name);
     const members = committee.committee_members?.filter((m: any) => m.is_visible) || [];
+
     const leader = members.find((m: any) => m.is_leader);
+    const isLeader = Boolean(isLeaderFromStorage || (user && leader && String(leader.user_id.id) === String(user.id)));
+
+    const removeMember = async (memberRowId: number) => {
+        try {
+            if (!confirm('Weet je zeker dat je dit lid wilt verwijderen uit de commissie?')) return;
+            await directusFetch(`/items/committee_members/${memberRowId}`, { method: 'DELETE' });
+            window.location.reload();
+        } catch (error) {
+            console.error('Failed to remove member:', error);
+            alert('Fout bij verwijderen van lid');
+        }
+    };
+
+    const toggleLeader = async (memberRowId: number, makeLeader: boolean) => {
+        try {
+            await directusFetch(`/items/committee_members/${memberRowId}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ is_leader: makeLeader }),
+            });
+            window.location.reload();
+        } catch (error) {
+            console.error('Failed to toggle leader:', error);
+            alert('Fout bij bijwerken rol');
+        }
+    };
 
     return (
         <>
@@ -89,9 +127,29 @@ export default function CommitteeDetailPage() {
                         >
                             ← Terug naar commissies
                         </Link>
-                        <h1 className="text-4xl font-black text-white sm:text-5xl md:text-6xl">
-                            {cleanName}
-                        </h1>
+                        <div className="flex items-center gap-4">
+                            <h1 className="text-4xl font-black text-white sm:text-5xl md:text-6xl">
+                                {cleanName}
+                            </h1>
+                            {isLeader && (
+                                <div className="ml-2 flex items-center gap-2">
+                                    <button
+                                        onClick={() => router.push(`/admin/commissies/${committeeId}`)}
+                                        className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-2 text-sm font-semibold text-white hover:bg-white/30"
+                                    >
+                                        <Edit className="h-4 w-4" />
+                                        Bewerken
+                                    </button>
+                                    <button
+                                        onClick={() => setMembersModalOpen(true)}
+                                        className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-sm font-semibold text-white hover:bg-white/20"
+                                    >
+                                        <Users2 className="h-4 w-4" />
+                                        Beheer leden
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                         {committee.short_description && (
                             <p className="mt-4 max-w-2xl text-lg text-ink-muted dark:text-white/90">
                                 {committee.short_description}
@@ -251,6 +309,16 @@ export default function CommitteeDetailPage() {
                                                 <p className="mt-2 text-xs font-medium text-slate-900 dark:text-white">
                                                     {member.user_id.first_name}
                                                 </p>
+                                                {isLeader && (
+                                                    <div className="mt-2 flex items-center justify-center gap-2">
+                                                        <button onClick={() => toggleLeader(member.id, !member.is_leader)} title={member.is_leader ? 'Maak geen leider' : 'Maak leider'} className="text-sm text-paars">
+                                                            {member.is_leader ? 'Leider' : 'Maak leider'}
+                                                        </button>
+                                                        <button onClick={() => removeMember(member.id)} title="Verwijder lid" className="text-sm text-red-600">
+                                                            Verwijder
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -281,6 +349,34 @@ export default function CommitteeDetailPage() {
                 </main>
 
             </div>
+            {membersModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-black/50" onClick={() => setMembersModalOpen(false)} />
+                    <div className="relative z-10 w-full max-w-3xl mx-4 bg-white rounded-2xl p-6 shadow-lg">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-bold">Beheer commissieleden</h3>
+                            <button onClick={() => setMembersModalOpen(false)} className="text-sm text-slate-600">Sluiten</button>
+                        </div>
+                        <div className="grid gap-4">
+                            {members.map((member: any) => (
+                                <div key={member.id} className="flex items-center justify-between gap-4 p-3 rounded-md bg-slate-50">
+                                    <div className="flex items-center gap-3">
+                                        <img src={getImageUrl(member.user_id.avatar)} className="h-10 w-10 rounded-full object-cover" />
+                                        <div>
+                                            <div className="font-semibold">{member.user_id.first_name} {member.user_id.last_name}</div>
+                                            <div className="text-sm text-slate-500">{member.user_id.email}</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button onClick={() => toggleLeader(member.id, !member.is_leader)} className="px-3 py-1 rounded-md bg-paars/10 text-paars text-sm">{member.is_leader ? 'Zet geen leider' : 'Maak leider'}</button>
+                                        <button onClick={() => removeMember(member.id)} className="px-3 py-1 rounded-md bg-red-50 text-red-600 text-sm">Verwijder</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }

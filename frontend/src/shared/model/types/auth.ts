@@ -13,7 +13,7 @@ export interface User {
     membership_expiry?: string; // ISO date string
     minecraft_username?: string;
     role?: string; // Optional Directus role id or name
-    committees?: Array<{ id: string; name: string }>;
+    committees?: Array<{ id: string; name: string; is_leader?: boolean }>;
 }
 
 export interface SignupData {
