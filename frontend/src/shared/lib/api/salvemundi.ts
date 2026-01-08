@@ -278,6 +278,44 @@ export const eventsApi = {
 
                 // send email (best-effort)
                 try {
+                    // Try to fetch additional event details so we can include committee/contact info
+                    let committeeName: string | undefined = undefined;
+                    let committeeEmail: string | undefined = undefined;
+                    let contactName: string | undefined = undefined;
+                    let contactPhone: string | undefined = undefined;
+
+                    try {
+                        const eventDetails = await eventsApi.getById(String(signupData.event_id));
+                        if (eventDetails) {
+                            committeeName = eventDetails.committee_name || undefined;
+                            if (eventDetails.contact) {
+                                if (typeof eventDetails.contact === 'string' && eventDetails.contact.includes('@')) {
+                                    committeeEmail = eventDetails.contact;
+                                } else if (typeof eventDetails.contact === 'string') {
+                                    contactPhone = eventDetails.contact;
+                                }
+                            }
+                            // If committe email not present, try to fetch committee record
+                            if (!committeeEmail && eventDetails.committee_id) {
+                                try {
+                                    const committee = await directusFetch<any>(`/items/committees/${eventDetails.committee_id}?fields=id,name,email`);
+                                    if (committee) {
+                                        committeeName = committee.name || committeeName;
+                                        committeeEmail = committee.email || committeeEmail;
+                                    }
+                                } catch (e) {
+                                    // ignore
+                                }
+                            }
+                            // If no contactName found, try to get a leader name (getById already tries this in other methods but ensure)
+                            if (!contactName && eventDetails.contact_name) {
+                                contactName = eventDetails.contact_name;
+                            }
+                        }
+                    } catch (e) {
+                        console.error('eventsApi.createSignup: failed to fetch event details for contact info', { eventId: signupData.event_id, error: e });
+                    }
+
                     await sendEventSignupEmail({
                         recipientEmail: signupData.email,
                         recipientName: signupData.name,
@@ -287,10 +325,10 @@ export const eventsApi = {
                         phoneNumber: signupData.phone_number,
                         userName: signupData.user_id || 'Gast',
                         qrCodeDataUrl: qrDataUrl,
-                        committeeName: undefined,
-                        committeeEmail: undefined,
-                        contactName: undefined,
-                        contactPhone: undefined,
+                        committeeName,
+                        committeeEmail,
+                        contactName,
+                        contactPhone,
                     });
                 } catch (e) {
                     console.error('eventsApi.createSignup: failed to send signup email', { signupId: signup.id, error: e });
