@@ -32,12 +32,6 @@ const SafeHavenCard: React.FC<SafeHavenCardProps> = ({ safeHaven }) => {
         return `${hours}:${minutes}`;
     };
 
-    // Render email without wrapping (card will expand horizontally if needed)
-    const renderEmailNoWrap = (email?: string) => {
-        if (!email) return null;
-        return email;
-    };
-
     return (
         <div
             className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-lg p-5 sm:p-6 transition-all hover:shadow-xl hover:scale-[1.02] duration-300 w-full flex flex-col h-full min-h-[280px]"
