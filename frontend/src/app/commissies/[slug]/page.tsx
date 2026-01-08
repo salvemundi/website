@@ -1,14 +1,14 @@
 'use client';
+import { useState } from 'react';
 
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSalvemundiCommitteesWithMembers, useSalvemundiEventsByCommittee, useSalvemundiCommittee } from '@/shared/lib/hooks/useSalvemundiApi';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
-import { useCallback, useState } from 'react';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { slugify } from '@/shared/lib/utils/slug';
-import { Mail, Calendar, Users2, History, Edit, Trash2, Check, X } from 'lucide-react';
+import { Mail, Calendar, Users2, History, Edit,} from 'lucide-react';
 
 function cleanCommitteeName(name: string): string {
     return name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim();
