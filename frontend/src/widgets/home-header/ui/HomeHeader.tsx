@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 
 interface HomeHeaderProps {
     title: string;
@@ -43,11 +44,14 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({
                             </React.Fragment>
                         ))}
                     </h1>
-                    <div className="relative flex justify-center items-center ">
-                        <img
+                    <div className="relative flex justify-center items-center w-full max-w-3/4 h-72 sm:h-96 mx-auto">
+                        <Image
                             src="/img/newlogo.svg"
                             alt="Salve Mundi Logo"
-                            className="object-contain w-full max-w-3/4 max-h-72 sm:max-h-96"
+                            fill
+                            className="object-contain"
+                            sizes="(max-width: 640px) 75vw, 384px"
+                            priority
                         />
                     </div>
                     {children}

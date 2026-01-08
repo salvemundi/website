@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
@@ -243,11 +244,16 @@ export default function AdminActiviteitenPage() {
                                                 <div className="flex items-start gap-4 flex-1 min-w-0">
                                                 {/* Event Image */}
                                                 {event.image && (
-                                                    <img
-                                                        src={getImageUrl(event.image)}
-                                                        alt={event.name}
-                                                        className="w-12 h-12 sm:w-16 sm:h-16 md:w-24 md:h-24 object-cover rounded-lg flex-shrink-0"
-                                                    />
+                                                    <div className="relative w-12 h-12 sm:w-16 sm:h-16 md:w-24 md:h-24 flex-shrink-0">
+                                                        <Image
+                                                            src={getImageUrl(event.image)}
+                                                            alt={event.name}
+                                                            fill
+                                                            className="object-cover rounded-lg"
+                                                            sizes="(max-width: 640px) 48px, (max-width: 768px) 64px, 96px"
+                                                            loading="lazy"
+                                                        />
+                                                    </div>
                                                 )}
                                                 
                                                 {/* Event Title and Details */}

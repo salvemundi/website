@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { directusFetch } from '@/shared/lib/directus';
 import { Sponsor } from '@/shared/model/types/sponsor';
 import './sponsors-section.css';
@@ -100,11 +101,16 @@ export default function SponsorsSection() {
                             rel="noopener noreferrer"
                             className="sponsor-item"
                         >
-                            <img
-                                src={`/api/assets/${sponsor.image}`}
-                                alt="Sponsor"
-                                className="sponsor-logo"
-                            />
+                            <div className="relative w-full h-full">
+                                <Image
+                                    src={`/api/assets/${sponsor.image}`}
+                                    alt="Sponsor"
+                                    fill
+                                    className="sponsor-logo object-contain"
+                                    sizes="200px"
+                                    loading="lazy"
+                                />
+                            </div>
                         </a>
                     ))}
                 </div>

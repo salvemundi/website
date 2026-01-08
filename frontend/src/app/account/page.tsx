@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useAuth } from "@/features/auth/providers/auth-provider";
 import { getUserEventSignups, updateMinecraftUsername } from "@/shared/lib/auth";
 import { getImageUrl } from "@/shared/lib/api/salvemundi";
@@ -263,15 +264,22 @@ export default function AccountPage() {
               {/* Avatar */}
               <div className="shrink-0 self-center sm:self-start">
                 {user.avatar ? (
-                  <img
-                    src={getImageUrl(user.avatar)}
-                    alt={`${user.first_name} ${user.last_name}`}
-                    className="h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover border-4 border-white/20 shadow-xl"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = "/img/avatar-placeholder.svg";
-                    }}
-                  />
+                  <div className="relative h-24 w-24 sm:h-28 sm:w-28 rounded-full overflow-hidden border-4 border-white/20 shadow-xl">
+                    <Image
+                      src={getImageUrl(user.avatar)}
+                      alt={`${user.first_name} ${user.last_name}`}
+                      fill
+                      sizes="112px"
+                      className="object-cover"
+                      priority
+                      placeholder="blur"
+                      blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTEyIiBoZWlnaHQ9IjExMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTEyIiBoZWlnaHQ9IjExMiIgZmlsbD0iI2VlZSIvPjwvc3ZnPg=="
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/img/avatar-placeholder.svg";
+                      }}
+                    />
+                  </div>
                 ) : (
                   <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-full bg-theme-purple-lighter flex items-center justify-center border-4 border-white/20 shadow-xl">
                     <span className="text-3xl font-bold text-theme-purple-lighter-darker">
@@ -521,15 +529,22 @@ export default function AccountPage() {
                   >
                     <div className="shrink-0">
                       {signup.event_id.image ? (
-                        <img
-                          src={getImageUrl(signup.event_id.image)}
-                          alt={signup.event_id.name}
-                          className="h-20 w-20 rounded-xl object-cover shadow-sm transition-transform duration-300 group-hover:scale-105"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = "/img/placeholder.svg";
-                          }}
-                        />
+                        <div className="relative h-20 w-20 rounded-xl overflow-hidden shadow-sm">
+                          <Image
+                            src={getImageUrl(signup.event_id.image)}
+                            alt={signup.event_id.name}
+                            fill
+                            sizes="80px"
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            loading="lazy"
+                            placeholder="blur"
+                            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjZWVlIi8+PC9zdmc+"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = "/img/placeholder.svg";
+                            }}
+                          />
+                        </div>
                       ) : (
                         <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-theme-purple/10 text-theme-purple-lighter transition-transform duration-300 group-hover:scale-105">
                           <Calendar className="h-8 w-8" />

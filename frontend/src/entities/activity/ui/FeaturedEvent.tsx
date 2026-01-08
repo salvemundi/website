@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { Calendar, Clock, MapPin } from 'lucide-react';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 
@@ -38,11 +39,16 @@ export default function FeaturedEvent({ event, onEventClick }: FeaturedEventProp
                 onClick={() => onEventClick(event)}
                 className="group cursor-pointer space-y-4"
             >
-                <div className="overflow-hidden rounded-2xl">
-                    <img
+                <div className="overflow-hidden rounded-2xl relative h-48">
+                    <Image
                         src={getImageUrl(event.image)}
                         alt={event.name}
-                        className="h-48 w-full object-cover transition duration-500 group-hover:scale-105"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 400px"
+                        className="object-cover transition duration-500 group-hover:scale-105"
+                        loading="lazy"
+                        placeholder="blur"
+                        blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjE5MiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjE5MiIgZmlsbD0iI2VlZSIvPjwvc3ZnPg=="
                         onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             target.src = '/img/placeholder.svg';

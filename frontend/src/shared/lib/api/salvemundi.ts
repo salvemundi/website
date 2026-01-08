@@ -776,11 +776,16 @@ export function getImageUrl(imageId: string | undefined | any, options?: { quali
     if (typeof imageId === 'object' && imageId !== null) {
         actualImageId = imageId.id || imageId.filename_disk || imageId.filename_download;
         if (!actualImageId) {
-            console.error('[getImageUrl] Could not extract image ID from object:', imageId);
+            // Silently return placeholder for invalid image objects
             return '/img/placeholder.svg';
         }
     } else {
         actualImageId = String(imageId);
+    }
+
+    // Validate that actualImageId is a valid UUID or filename
+    if (!actualImageId || actualImageId === 'null' || actualImageId === 'undefined') {
+        return '/img/placeholder.svg';
     }
 
     let token: string | null = null;

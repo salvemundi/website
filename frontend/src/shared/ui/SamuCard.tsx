@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface SamuCardProps {
     description: string;
@@ -19,11 +20,16 @@ const SamuCard: React.FC<SamuCardProps> = ({
     return (
         <div className="bg-gradient-theme text-theme-white rounded-3xl p-6 flex h-full flex-col items-center gap-5 shadow-lg">
             {image && (
-                <img
-                    src={image}
-                    alt="Card illustration"
-                    className="w-full h-auto rounded-2xl object-contain"
-                />
+                <div className="relative w-full h-64">
+                    <Image
+                        src={image}
+                        alt="Card illustration"
+                        fill
+                        className="rounded-2xl object-contain"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        loading="lazy"
+                    />
+                </div>
             )}
             <p className="text-center text-base leading-relaxed sm:text-lg flex-1 text-theme-white/90">
                 {description}

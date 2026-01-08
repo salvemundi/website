@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSalvemundiCommitteesWithMembers, useSalvemundiEventsByCommittee, useSalvemundiCommittee } from '@/shared/lib/hooks/useSalvemundiApi';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
@@ -112,10 +113,14 @@ export default function CommitteeDetailPage() {
                 {/* Hero with Committee Image */}
                 <section className="relative overflow-hidden py-20">
                     <div className="absolute inset-0">
-                        <img
+                        <Image
                             src={committee.image ? getImageUrl(committee.image) : '/img/group-jump.gif'}
                             alt={cleanName}
-                            className="h-full w-full object-cover"
+                            fill
+                            sizes="100vw"
+                            className="object-cover"
+                            priority
+                            quality={75}
                         />
                         {/* Semi-transparent gradient overlay with backdrop blur so the banner image is blurred underneath */}
                         <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-paars/60 to-oranje/40 backdrop-blur-md" />
@@ -164,11 +169,16 @@ export default function CommitteeDetailPage() {
                         <div className="lg:col-span-2 space-y-8">
                                 {/* Committee image */}
                                 {committee.image && (
-                                    <div className="rounded-3xl overflow-hidden bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 p-0 shadow-lg">
-                                        <img
+                                    <div className="rounded-3xl overflow-hidden bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 shadow-lg relative h-96">
+                                        <Image
                                             src={getImageUrl(committee.image)}
                                             alt={cleanName}
-                                            className="w-full object-cover"
+                                            fill
+                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px"
+                                            className="object-cover"
+                                            loading="lazy"
+                                            placeholder="blur"
+                                            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
                                             onError={(e) => {
                                                 const target = e.target as HTMLImageElement;
                                                 target.src = '/img/placeholder.svg';
@@ -259,15 +269,22 @@ export default function CommitteeDetailPage() {
                                 <div className="rounded-3xl bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 p-6 shadow-lg">
                                     <h3 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">Commissieleider</h3>
                                     <div className="flex items-center gap-4">
-                                        <img
-                                            src={getImageUrl(leader.user_id.avatar)}
-                                            alt={`${leader.user_id.first_name} ${leader.user_id.last_name}`}
-                                            className="h-16 w-16 rounded-full object-cover"
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.src = '/img/placeholder.svg';
-                                            }}
-                                        />
+                                        <div className="relative h-16 w-16 rounded-full overflow-hidden">
+                                            <Image
+                                                src={getImageUrl(leader.user_id.avatar)}
+                                                alt={`${leader.user_id.first_name} ${leader.user_id.last_name}`}
+                                                fill
+                                                sizes="64px"
+                                                className="object-cover"
+                                                loading="lazy"
+                                                placeholder="blur"
+                                                blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZGRkIi8+PC9zdmc+"
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.src = '/img/placeholder.svg';
+                                                }}
+                                            />
+                                        </div>
                                         <div>
                                             <p className="font-semibold text-slate-900 dark:text-white">
                                                 {leader.user_id.first_name} {leader.user_id.last_name}
@@ -297,15 +314,22 @@ export default function CommitteeDetailPage() {
                                     <div className="grid grid-cols-3 gap-4">
                                         {members.map((member: any) => (
                                             <div key={member.id} className="text-center">
-                                                <img
-                                                    src={getImageUrl(member.user_id.avatar)}
-                                                    alt={`${member.user_id.first_name}`}
-                                                    className="mx-auto h-16 w-16 rounded-full object-cover"
-                                                    onError={(e) => {
-                                                        const target = e.target as HTMLImageElement;
-                                                        target.src = '/img/placeholder.svg';
-                                                    }}
-                                                />
+                                                <div className="relative mx-auto h-16 w-16 rounded-full overflow-hidden">
+                                                    <Image
+                                                        src={getImageUrl(member.user_id.avatar)}
+                                                        alt={`${member.user_id.first_name}`}
+                                                        fill
+                                                        sizes="64px"
+                                                        className="object-cover"
+                                                        loading="lazy"
+                                                        placeholder="blur"
+                                                        blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZGRkIi8+PC9zdmc+"
+                                                        onError={(e) => {
+                                                            const target = e.target as HTMLImageElement;
+                                                            target.src = '/img/placeholder.svg';
+                                                        }}
+                                                    />
+                                                </div>
                                                 <p className="mt-2 text-xs font-medium text-slate-900 dark:text-white">
                                                     {member.user_id.first_name}
                                                 </p>
@@ -361,7 +385,18 @@ export default function CommitteeDetailPage() {
                             {members.map((member: any) => (
                                 <div key={member.id} className="flex items-center justify-between gap-4 p-3 rounded-md bg-slate-50">
                                     <div className="flex items-center gap-3">
-                                        <img src={getImageUrl(member.user_id.avatar)} className="h-10 w-10 rounded-full object-cover" />
+                                        <div className="relative h-10 w-10 rounded-full overflow-hidden">
+                                            <Image
+                                                src={getImageUrl(member.user_id.avatar)}
+                                                alt={`${member.user_id.first_name} ${member.user_id.last_name}`}
+                                                fill
+                                                sizes="40px"
+                                                className="object-cover"
+                                                loading="lazy"
+                                                placeholder="blur"
+                                                blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjZGRkIi8+PC9zdmc+"
+                                            />
+                                        </div>
                                         <div>
                                             <div className="font-semibold">{member.user_id.first_name} {member.user_id.last_name}</div>
                                             <div className="text-sm text-slate-500">{member.user_id.email}</div>
