@@ -45,12 +45,12 @@ export default function SafeHavensPage() {
   const { data: safeHavens, isLoading, error } = useSalvemundiSafeHavens();
 
   const topics = [
-    { Icon: AlertTriangle, text: 'Agressie & geweld', color: 'from-red-500 to-orange-500' },
-    { Icon: Heart, text: 'Seksuele intimidatie', color: 'from-pink-500 to-rose-500' },
-    { Icon: UserX, text: 'Pesten & uitsluiting', color: 'from-purple-500 to-indigo-500' },
-    { Icon: Users, text: 'Discriminatie', color: 'from-blue-500 to-cyan-500' },
-    { Icon: Shield, text: 'Grensoverschrijdend gedrag', color: 'from-emerald-500 to-teal-500' },
-    { Icon: MessageSquare, text: 'Persoonlijke situaties', color: 'from-amber-500 to-yellow-500' },
+    { Icon: AlertTriangle, text: 'Agressie & geweld', color: 'from-slate-600 to-slate-700' },
+    { Icon: Heart, text: 'Seksuele intimidatie', color: 'from-slate-600 to-slate-700' },
+    { Icon: UserX, text: 'Pesten & uitsluiting', color: 'from-slate-600 to-slate-700' },
+    { Icon: Users, text: 'Discriminatie', color: 'from-slate-600 to-slate-700' },
+    { Icon: Shield, text: 'Grensoverschrijdend gedrag', color: 'from-slate-600 to-slate-700' },
+    { Icon: MessageSquare, text: 'Persoonlijke situaties', color: 'from-slate-600 to-slate-700' },
   ];
 
   return (
@@ -71,12 +71,12 @@ export default function SafeHavensPage() {
             <BentoCard className="lg:col-span-8 lg:row-span-2">
               <div className="flex flex-col gap-6">
                 <div className="flex items-start gap-4 sm:gap-6">
-                  <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shrink-0 shadow-lg">
+                  <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-slate-600 dark:bg-slate-700 flex items-center justify-center shrink-0 shadow-lg">
                     <Shield className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-theme bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-theme">
                       Wat zijn Safe Havens?
                     </h2>
                     <p className="mt-3 text-base sm:text-lg text-theme-muted leading-relaxed">
@@ -88,9 +88,9 @@ export default function SafeHavensPage() {
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="rounded-2xl bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 border border-purple-200/50 dark:border-purple-800/30 p-5">
+                  <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/30 p-5">
                     <div className="flex items-start gap-3">
-                      <Lock className="mt-0.5 h-5 w-5 text-purple-600 dark:text-purple-400 shrink-0" />
+                      <Lock className="mt-0.5 h-5 w-5 text-slate-600 dark:text-slate-400 shrink-0" />
                       <div>
                         <p className="text-base font-bold text-theme">
                           Volledige vertrouwelijkheid
@@ -103,9 +103,9 @@ export default function SafeHavensPage() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/30 dark:to-blue-950/30 border border-indigo-200/50 dark:border-indigo-800/30 p-5">
+                  <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/30 p-5">
                     <div className="flex items-start gap-3">
-                      <Users className="mt-0.5 h-5 w-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                      <Users className="mt-0.5 h-5 w-5 text-slate-600 dark:text-slate-400 shrink-0" />
                       <div>
                         <p className="text-base font-bold text-theme">
                           Diverse achtergronden
@@ -137,7 +137,7 @@ export default function SafeHavensPage() {
                   {topics.map((topic, index) => (
                     <li
                       key={index}
-                      className="group flex items-center gap-3 rounded-xl bg-theme-purple/5 dark:bg-white/5 border border-theme-purple/10 dark:border-white/10 p-3 hover:bg-theme-purple/10 dark:hover:bg-white/10 hover:border-theme-purple/20 dark:hover:border-white/20 transition-all duration-200"
+                      className="group flex items-center gap-3 rounded-xl bg-slate-50 dark:bg-slate-900/20 border border-slate-200 dark:border-slate-700/30 p-3 hover:bg-slate-100 dark:hover:bg-slate-800/40 hover:border-slate-300 dark:hover:border-slate-600/50 transition-all duration-200"
                     >
                       <div className={`h-9 w-9 rounded-lg bg-gradient-to-br ${topic.color} flex items-center justify-center shrink-0 shadow-sm group-hover:shadow-md transition-shadow`}>
                         <topic.Icon className="h-4.5 w-4.5 text-white" />
@@ -168,12 +168,13 @@ export default function SafeHavensPage() {
                     </h2>
                     <p className="mt-2 text-sm sm:text-base text-theme-muted">
                       Kies een persoon waarbij jij je het meest comfortabel voelt om mee te praten.
+
                     </p>
                   </div>
                   
                   {safeHavens && safeHavens.length > 0 && (
-                    <div className="px-4 py-2 rounded-full bg-purple-100 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700">
-                      <p className="text-sm font-semibold text-purple-700 dark:text-purple-300">
+                    <div className="px-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-600">
+                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                         {safeHavens.length} beschikbaar
                       </p>
                     </div>
@@ -197,20 +198,20 @@ export default function SafeHavensPage() {
                 ) : null}
 
                 {isLoading ? (
-                  <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+                  <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-5">
                     {[1, 2, 3, 4, 5, 6].map((i) => (
                       <SafeHavenCardSkeleton key={i} />
                     ))}
                   </div>
                 ) : safeHavens && safeHavens.length > 0 ? (
-                  <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+                  <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-5">
                     {safeHavens.map((safeHaven: any) => (
                       <SafeHavenCard key={safeHaven.id} safeHaven={safeHaven} />
                     ))}
                   </div>
                 ) : (
-                  <div className="mt-6 rounded-2xl bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 border border-purple-200 dark:border-purple-800 p-10 text-center">
-                    <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                  <div className="mt-6 rounded-2xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-700 p-10 text-center">
+                    <div className="mx-auto h-16 w-16 rounded-2xl bg-slate-600 dark:bg-slate-700 flex items-center justify-center shadow-lg">
                       <Shield className="h-8 w-8 text-white" />
                     </div>
                     <p className="mt-5 text-lg sm:text-xl font-bold text-theme">
@@ -229,7 +230,7 @@ export default function SafeHavensPage() {
             <BentoCard className="lg:col-span-4 lg:row-span-4">
               <div className="h-full flex flex-col">
                 <div className="text-center">
-                  <div className="mx-auto mb-5 h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center shadow-lg">
+                  <div className="mx-auto mb-5 h-16 w-16 rounded-2xl bg-slate-600 dark:bg-slate-700 flex items-center justify-center shadow-lg">
                     <MapPin className="h-8 w-8 text-white" />
                   </div>
 
@@ -248,7 +249,7 @@ export default function SafeHavensPage() {
                     href="https://www.fontys.nl/fontyshelpt.htm"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex items-center justify-between gap-3 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-600 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl hover:scale-[1.02]"
+                    className="group flex items-center justify-between gap-3 rounded-xl bg-slate-600 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl hover:scale-[1.02]"
                   >
                     <div className="flex items-center gap-3">
                       <Shield className="h-5 w-5" />
@@ -261,7 +262,7 @@ export default function SafeHavensPage() {
 
                   <a
                     href="mailto:bestuur@salvemundi.nl"
-                    className="group flex items-center justify-center gap-2 rounded-xl bg-purple-600 hover:bg-purple-700 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl"
+                    className="group flex items-center justify-center gap-2 rounded-xl bg-slate-600 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl"
                   >
                     <MessageSquare className="h-5 w-5" />
                     <span className="font-semibold text-sm sm:text-base">
@@ -283,7 +284,7 @@ export default function SafeHavensPage() {
                 </div>
 
                 <div className="mt-auto pt-6">
-                  <div className="rounded-xl bg-theme-purple/5 dark:bg-white/5 border border-theme-purple/10 dark:border-white/10 p-4">
+                  <div className="rounded-xl bg-slate-50 dark:bg-slate-900/20 border border-slate-200 dark:border-slate-700/30 p-4">
                     <p className="text-xs text-center text-theme-muted leading-relaxed">
                       Alle gesprekken zijn vertrouwelijk en worden met respect behandeld. 
                       Jouw welzijn staat voorop.
