@@ -134,7 +134,7 @@ function ensureAdaptiveEmailHtml(rawHtml) {
 // Append a simple contact footer to HTML email bodies if not already present
 function appendContactFooterToHtml(html) {
   if (!html || typeof html !== 'string') return html;
-  const footerHtml = `\n<div style="margin-top:24px;padding-top:12px;border-top:1px solid #ddd;font-size:13px;color:#666;">\n  <p style="margin:0 0 6px 0;"><strong>Contact:</strong> <a href="mailto:info@salvemundi.nl" style="color:#7B2CBF;text-decoration:none;">info@salvemundi.nl</a></p>\n  <p style="margin:0;font-size:12px;color:#999;">Bezoek https://salvemundi.nl voor meer informatie</p>\n</div>\n`;
+  const footerHtml = `\n<div style="margin-top:24px;padding-top:12px;border-top:1px solid #ddd;font-size:13px;color:#666;">\n  <p style="margin:0 0 6px 0;"><strong>Algemene info, mail naar:</strong> <a href=\"mailto:info@salvemundi.nl\" style=\"color:#7B2CBF;text-decoration:none;\">info@salvemundi.nl</a></p>\n  <p style=\"margin:0;font-size:12px;color:#999;\">Bezoek https://salvemundi.nl voor meer informatie</p>\n</div>\n`;
 
   if (/<\/body>/i.test(html)) {
     return html.replace(/<\/body>/i, footerHtml + '\n</body>');
