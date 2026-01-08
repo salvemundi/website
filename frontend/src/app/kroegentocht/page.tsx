@@ -181,23 +181,22 @@ export default function KroegentochtPage() {
             const contactName = (nextEvent as any).contact_name;
             const contactPhone = (nextEvent as any).contact_phone;
 
-            try {
-                await sendEventSignupEmail({
-                    recipientEmail: form.email,
-                    recipientName: form.name || 'Deelnemer',
-                    eventName: nextEvent.name || 'Kroegentocht',
-                    eventDate,
-                    eventPrice,
-                    phoneNumber: undefined,
-                    userName: form.name || form.email,
-                    committeeName: nextEvent.association || 'Salve Mundi',
-                    committeeEmail: nextEvent.email,
-                    contactName,
-                    contactPhone,
-                });
-            } catch (emailErr) {
+            // Send confirmation email asynchronously; don't await to avoid blocking signup
+            sendEventSignupEmail({
+                recipientEmail: form.email,
+                recipientName: form.name || 'Deelnemer',
+                eventName: nextEvent.name || 'Kroegentocht',
+                eventDate,
+                eventPrice,
+                phoneNumber: undefined,
+                userName: form.name || form.email,
+                committeeName: nextEvent.association || 'Salve Mundi',
+                committeeEmail: nextEvent.email,
+                contactName,
+                contactPhone,
+            }).catch((emailErr) => {
                 console.error('Kon kroegentocht bevestigingsmail niet versturen:', emailErr);
-            }
+            });
 
             setSubmitted(true);
         } catch (err: any) {

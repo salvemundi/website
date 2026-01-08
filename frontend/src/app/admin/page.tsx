@@ -47,6 +47,8 @@ interface DashboardStats {
     totalCoupons: number;
     pubCrawlSignups: number;
     upcomingPubCrawl?: { id: number; name: string; date: string };
+    pubCrawlTickets?: number;
+    pubCrawlGroups?: number;
 }
 
 function StatCard({
@@ -166,6 +168,8 @@ export default function AdminDashboardPage() {
         totalCoupons: 0,
         pubCrawlSignups: 0,
         upcomingPubCrawl: undefined,
+        pubCrawlTickets: 0,
+        pubCrawlGroups: 0,
     });
     const [isIctMember, setIsIctMember] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -249,6 +253,8 @@ export default function AdminDashboardPage() {
                 totalCoupons: couponsData?.[0]?.count || 0,
                 pubCrawlSignups: pubCrawlStats.signups,
                 upcomingPubCrawl: pubCrawlStats.upcomingEvent,
+                pubCrawlTickets: pubCrawlStats.totalTickets || 0,
+                pubCrawlGroups: pubCrawlStats.groups || 0,
             });
         } catch (error) {
             console.error('Failed to load dashboard data:', error);
@@ -545,11 +551,17 @@ export default function AdminDashboardPage() {
                 return { signups: 0, upcomingEvent: undefined };
             }
 
-            // Get signups count for upcoming event
-            const signupsData = await directusFetch<any>(`/items/pub_crawl_signups?aggregate[count]=*&filter[pub_crawl_event_id][_eq]=${upcomingEvent.id}`);
-            
+            // Get all signups for upcoming event so we can compute total tickets and groups
+            const signupsItems = await directusFetch<any[]>(`/items/pub_crawl_signups?filter[pub_crawl_event_id][_eq]=${upcomingEvent.id}&limit=-1&fields=id,amount_tickets`);
+            const groups = Array.isArray(signupsItems) ? signupsItems.length : 0;
+            const totalTickets = Array.isArray(signupsItems)
+                ? signupsItems.reduce((sum, s) => sum + (Number(s.amount_tickets) || 0), 0)
+                : 0;
+
             return {
-                signups: signupsData?.[0]?.count || 0,
+                signups: groups,
+                totalTickets,
+                groups,
                 upcomingEvent: {
                     id: upcomingEvent.id,
                     name: upcomingEvent.name,
@@ -635,9 +647,9 @@ export default function AdminDashboardPage() {
                         {stats.upcomingPubCrawl && (
                             <StatCard
                                 title="Kroegentocht Aanmeldingen"
-                                value={stats.pubCrawlSignups}
+                                value={stats.pubCrawlTickets ?? 0}
                                 icon={<Ticket className="h-6 w-6" />}
-                                subtitle={stats.upcomingPubCrawl.name}
+                                subtitle={`${stats.upcomingPubCrawl.name} • ${stats.pubCrawlGroups ?? 0} groepen`}
                                 onClick={() => router.push('/admin/kroegentocht')}
                                 colorClass="purple"
                             />
