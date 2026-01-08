@@ -21,6 +21,32 @@ export default function CommitteeImage({ src, alt, className, onError }: Committ
     // Otherwise (static image or hovered GIF), show the actual source
     const displaySrc = isGif && !isHovered ? '/img/newlogo.png' : src;
 
+    const isExternal = /^https?:\/\//i.test(displaySrc) || displaySrc.includes('access_token=');
+
+    // When the image is external or contains an access token, avoid Next.js image optimization
+    // which proxies the request via /_next/image (can trigger 403 for protected Directus assets).
+    if (isExternal) {
+        return (
+            <div
+                className={`relative h-full w-full ${className || ''}`}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+            >
+                <img
+                    src={displaySrc}
+                    alt={alt}
+                    className={`${isGif && !isHovered ? 'object-contain p-8 bg-white/50' : 'object-cover'} h-full w-full`}
+                    loading="lazy"
+                    onError={(e) => {
+                        if (onError) onError(e as unknown as React.SyntheticEvent<HTMLImageElement, Event>);
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/img/placeholder.svg';
+                    }}
+                />
+            </div>
+        );
+    }
+
     return (
         <div
             className="relative h-full w-full"
