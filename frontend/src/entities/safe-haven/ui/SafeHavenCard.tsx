@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { Mail, Phone } from 'lucide-react';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 
@@ -27,15 +28,20 @@ const SafeHavenCard: React.FC<SafeHavenCardProps> = ({ safeHaven }) => {
         >
             {/* Profile Image */}
             {safeHaven.image ? (
-                <img
-                    src={getImageUrl(safeHaven.image)}
-                    alt={safeHaven.contact_name}
-                    className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full object-cover mx-auto mb-4 border-4 border-theme-purple/10"
-                    onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/img/avatar-placeholder.svg';
-                    }}
-                />
+                <div className="relative w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 mx-auto mb-4">
+                    <Image
+                        src={getImageUrl(safeHaven.image)}
+                        alt={safeHaven.contact_name}
+                        fill
+                        className="rounded-full object-cover border-4 border-theme-purple/10"
+                        sizes="(max-width: 640px) 96px, (max-width: 1024px) 112px, 128px"
+                        loading="lazy"
+                        onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/img/avatar-placeholder.svg';
+                        }}
+                    />
+                </div>
             ) : (
                 <div className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full bg-gradient-theme flex items-center justify-center mx-auto mb-4 border-4 border-theme-purple/10">
                     <span className="text-3xl sm:text-4xl text-white font-bold">

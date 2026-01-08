@@ -1,5 +1,6 @@
 import React from "react";
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft } from 'lucide-react';
 import { stripHtml } from '@/shared/lib/text';
 
@@ -56,17 +57,21 @@ const PageHeader: React.FC<PageHeaderProps> = ({
 
     return (
         <header ref={headerRef} className={`relative flex items-center justify-center mb-5 ${className}`}>
-            <div
-                className="absolute inset-0 bg-cover z-0"
-                style={{
-                    backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
-                    backgroundColor: backgroundImage ? 'transparent' : 'var(--color-primary-600)',
-                    backgroundPosition: backgroundPosition,
-                    filter: effectiveImageFilter,
-                    maskImage: 'none',
-                    WebkitMaskImage: 'none'
-                }}
-            />
+            {backgroundImage ? (
+                <div className="absolute inset-0 z-0">
+                    <Image
+                        src={backgroundImage}
+                        alt={typeof title === 'string' ? title : 'banner'}
+                        fill
+                        sizes="100vw"
+                        className="object-cover"
+                        style={{ objectPosition: backgroundPosition, filter: effectiveImageFilter }}
+                        priority
+                    />
+                </div>
+            ) : (
+                <div className="absolute inset-0 bg-cover z-0" style={{ backgroundColor: 'var(--color-primary-600)' }} />
+            )}
             {/* Purple gradient overlay when no background image */}
             {!backgroundImage && (
                 <div className="absolute inset-0 bg-gradient-to-br from-theme-purple-darker to-theme-purple z-0" />

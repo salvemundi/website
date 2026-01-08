@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 
 interface CommitteeImageProps {
     src: string;
@@ -26,10 +27,15 @@ export default function CommitteeImage({ src, alt, className, onError }: Committ
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <img
+            <Image
                 src={displaySrc}
                 alt={alt}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 400px"
                 className={`${className} ${isGif && !isHovered ? 'object-contain p-8 bg-white/50' : 'object-cover'}`}
+                loading="lazy"
+                placeholder="blur"
+                blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI1MCIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
                 onError={onError}
             />
         </div>

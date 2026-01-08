@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { Mail, Phone } from 'lucide-react';
 
 export interface SocialLink {
@@ -49,13 +50,20 @@ export default function AuthorCard({
       <div className={`flex ${compact ? 'items-center gap-3' : 'flex-col items-center text-center'}`}>
         {/* Avatar */}
         {avatar ? (
-          <img
-            src={avatar}
-            alt={name}
-            className={`${
+          <div className={`relative ${
               compact ? 'w-12 h-12 lg:w-16 lg:h-16' : 'w-20 h-20 lg:w-24 lg:h-24'
-            } rounded-full object-cover border-2 border-theme-purple shadow-md`}
-          />
+            } rounded-full overflow-hidden border-2 border-theme-purple shadow-md`}>
+            <Image
+              src={avatar}
+              alt={name}
+              fill
+              sizes={compact ? "64px" : "96px"}
+              className="object-cover"
+              loading="lazy"
+              placeholder="blur"
+              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiBmaWxsPSIjZWVlIi8+PC9zdmc+"
+            />
+          </div>
         ) : (
           <div
             className={`${

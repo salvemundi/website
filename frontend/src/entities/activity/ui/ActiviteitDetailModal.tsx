@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from "react";
+import Image from 'next/image';
 import { useAuth } from "@/features/auth/providers/auth-provider";
 // import AttendanceButton from "./AttendanceButton"; // TODO: Port AttendanceButton
 // import { isUserAuthorizedForAttendance, getEventSignupsWithCheckIn } from "../lib/qr-service"; // TODO: Port qr-service
@@ -220,11 +221,16 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                 {/* Content */}
                 <div className="p-4 sm:p-6">
                     {/* Image */}
-                    <div className="relative mb-6">
-                        <img
+                    <div className="relative mb-6 h-64 rounded-xl overflow-hidden">
+                        <Image
                             src={activity.image || '/img/placeholder.svg'}
                             alt={activity.title}
-                            className="w-full h-64 object-cover rounded-xl"
+                            fill
+                            sizes="(max-width: 768px) 100vw, 700px"
+                            className="object-cover"
+                            priority
+                            placeholder="blur"
+                            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzAwIiBoZWlnaHQ9IjI1NiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNzAwIiBoZWlnaHQ9IjI1NiIgZmlsbD0iI2VlZSIvPjwvc3ZnPg=="
                             onError={(e) => {
                                 const target = e.target as HTMLImageElement;
                                 target.src = '/img/placeholder.svg';

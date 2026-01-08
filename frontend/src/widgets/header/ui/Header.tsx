@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X, Sparkles, Shield } from "lucide-react";
 import { useAuth } from "@/features/auth/providers/auth-provider";
@@ -188,11 +189,16 @@ const Header: React.FC = () => {
                                 href={ROUTES.ACCOUNT}
                                 className="flex items-center gap-2 rounded-full  px-3 py-1.5 text-sm font-medium text-theme shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                             >
-                                <img
-                                    src={user?.avatar ? getImageUrl(user.avatar) : "/logo_purple.svg"}
-                                    alt={user?.email || "profiel"}
-                                    className="h-8 w-8 rounded-full object-cover"
-                                />
+                                <div className="relative h-8 w-8 rounded-full overflow-hidden">
+                                    <Image
+                                        src={user?.avatar ? getImageUrl(user.avatar) : "/logo_purple.svg"}
+                                        alt={user?.email || "profiel"}
+                                        fill
+                                        sizes="32px"
+                                        className="object-cover"
+                                        priority
+                                    />
+                                </div>
                                 <span className="hidden sm:inline">Mijn profiel</span>
                             </Link>
                         ) : (
@@ -257,10 +263,13 @@ const Header: React.FC = () => {
                         >
                             <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-card)] shadow-sm overflow-hidden">
                                 {user?.avatar ? (
-                                    <img
+                                    <Image
                                         src={getImageUrl(user.avatar)}
                                         alt={user.email || "profiel"}
-                                        className="h-full w-full object-cover"
+                                        fill
+                                        sizes="40px"
+                                        className="object-cover"
+                                        priority
                                     />
                                 ) : (
                                     <img className="h-7 w-7" src="/logo_purple.svg" alt="" />

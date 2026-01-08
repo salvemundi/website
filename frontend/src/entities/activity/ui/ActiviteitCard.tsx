@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 
 interface ActiviteitCardProps {
@@ -181,11 +182,16 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
             )}
 
             {/* Image with rounded corners at the top - always show */}
-            <div className="relative z-10">
-                <img
+            <div className="relative z-10 h-40 sm:h-44 md:h-48 mb-4 rounded-xl overflow-hidden">
+                <Image
                     src={image || '/img/placeholder.svg'}
                     alt={title}
-                    className="w-full h-40 sm:h-44 md:h-48 object-cover rounded-xl mb-4"
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+                    className="object-cover"
+                    loading="lazy"
+                    placeholder="blur"
+                    blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjE5MiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjE5MiIgZmlsbD0iI2VlZSIvPjwvc3ZnPg=="
                     onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.src = '/img/placeholder.svg';

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { useSalvemundiCommitteesWithMembers } from '@/shared/lib/hooks/useSalvemundiApi';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
@@ -119,16 +120,22 @@ export default function CommitteesPage() {
                                                         <Users className="h-4 w-4 text-theme-purple" />
                                                         <div className="flex -space-x-2">
                                                             {members.slice(0, 5).map((member: any, idx: number) => (
-                                                                <img
-                                                                    key={idx}
-                                                                    src={member.image}
-                                                                    alt={member.firstName}
-                                                                    className="h-8 w-8 rounded-full object-cover"
-                                                                    onError={(e) => {
-                                                                        const target = e.target as HTMLImageElement;
-                                                                        target.src = '/img/placeholder.svg';
-                                                                    }}
-                                                                />
+                                                                <div key={idx} className="relative h-8 w-8 rounded-full overflow-hidden ring-2 ring-white dark:ring-gray-800">
+                                                                    <Image
+                                                                        src={member.image}
+                                                                        alt={member.firstName}
+                                                                        fill
+                                                                        sizes="32px"
+                                                                        className="object-cover"
+                                                                        loading="lazy"
+                                                                        placeholder="blur"
+                                                                        blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjZGRkIi8+PC9zdmc+"
+                                                                        onError={(e) => {
+                                                                            const target = e.target as HTMLImageElement;
+                                                                            target.src = '/img/placeholder.svg';
+                                                                        }}
+                                                                    />
+                                                                </div>
                                                             ))}
                                                             {members.length > 5 && (
                                                                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-theme-purple/20 text-xs font-semibold text-theme-purple">

@@ -2,6 +2,7 @@
 
 
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import Image from 'next/image';
 import { useSalvemundiClubs } from '@/shared/lib/hooks/useSalvemundiApi';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { MessageSquare, Globe, Users } from 'lucide-react';
@@ -49,10 +50,15 @@ export default function ClubsPage() {
                                 style={{ animationDelay: `${index * 0.05}s` }}
                             >
                                 <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-theme-purple/10 to-theme-purple/20">
-                                        <img
+                                    <Image
                                         src={getImageUrl(club.image)}
                                         alt={stripHtml(club.name) || 'Club'}
-                                        className="h-full w-full object-contain object-center transition duration-700 group-hover:scale-105"
+                                        fill
+                                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                        className="object-contain object-center transition duration-700 group-hover:scale-105"
+                                        loading="lazy"
+                                        placeholder="blur"
+                                        blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjE5MiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjE5MiIgZmlsbD0iI2VlZSIvPjwvc3ZnPg=="
                                         onError={(e) => {
                                             const target = e.target as HTMLImageElement;
                                             target.src = '/img/placeholder.svg';
