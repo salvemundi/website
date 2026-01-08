@@ -68,6 +68,19 @@ function cleanCommitteeName(name?: string | null): string | undefined {
   return String(name).replace(/\|\|\s*salvemundi/i, '').trim();
 }
 
+// Fallback sanitizer used in email rendering to strip any remaining '||' parts
+function sanitizeCommitteeDisplay(name?: string | null): string | undefined {
+  if (!name) return undefined;
+  let s = String(name);
+  // If there's a pipe delimiter, remove it and everything after
+  if (s.includes('||')) {
+    s = s.split('||')[0];
+  }
+  // Remove any mention of salvemundi
+  s = s.replace(/salvemundi/gi, '').trim();
+  return s || undefined;
+}
+
 function buildCommitteeEmailFromName(name?: string | null): string | undefined {
     if (!name) return undefined;
     const normalized = name.toLowerCase();
@@ -186,8 +199,8 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
                 contentId: qrCodeCid,
             };
         }
-        // Committee name is already cleaned when fetched from DB
-        const displayCommitteeName = data.committeeName;
+        // Prefer committee name from data, but sanitize as a fallback in case it still contains markers
+        const displayCommitteeName = sanitizeCommitteeDisplay(data.committeeName) || data.committeeName;
         const committeeEmail = data.committeeEmail || buildCommitteeEmailFromName(displayCommitteeName);
         const contactInfoSection = (data.contactName || data.contactPhone || committeeEmail || displayCommitteeName)
             ? `
