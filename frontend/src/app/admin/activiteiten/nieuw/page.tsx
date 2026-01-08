@@ -206,10 +206,10 @@ export default function NieuweActiviteitPage() {
                     Terug
                 </button>
 
-                <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg p-8 space-y-6">
+                <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-8 space-y-6 text-slate-900 dark:text-slate-200">
                     {/* Basic Info */}
                     <div>
-                        <label htmlFor="name" className="block text-sm font-bold text-slate-700 mb-2">
+                        <label htmlFor="name" className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">
                             Naam *
                         </label>
                         <input
@@ -218,7 +218,7 @@ export default function NieuweActiviteitPage() {
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
-                            className={`w-full px-4 py-3 rounded-lg border ${errors.name ? 'border-red-500' : 'border-slate-300'} focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition`}
+                            className={`w-full px-4 py-3 rounded-lg border ${errors.name ? 'border-red-500' : 'border-slate-300'} focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100`}
                             placeholder="Bijv. Borrel: Back to School"
                         />
                         {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
@@ -226,7 +226,7 @@ export default function NieuweActiviteitPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label htmlFor="event_date" className="block text-sm font-bold text-slate-700 mb-2">
+                            <label htmlFor="event_date" className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">
                                 Datum *
                             </label>
                             <input
@@ -235,13 +235,13 @@ export default function NieuweActiviteitPage() {
                                 name="event_date"
                                 value={formData.event_date}
                                 onChange={handleChange}
-                                className={`w-full px-4 py-3 rounded-lg border ${errors.event_date ? 'border-red-500' : 'border-slate-300'} focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition`}
+                                className={`w-full px-4 py-3 rounded-lg border ${errors.event_date ? 'border-red-500' : 'border-slate-300'} focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100`}
                             />
                             {errors.event_date && <p className="text-red-500 text-sm mt-1">{errors.event_date}</p>}
                         </div>
 
                         <div>
-                            <label htmlFor="inschrijf_deadline" className="block text-sm font-bold text-slate-700 mb-2">
+                            <label htmlFor="inschrijf_deadline" className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">
                                 Inschrijfdeadline
                             </label>
                             <input
@@ -250,14 +250,14 @@ export default function NieuweActiviteitPage() {
                                 name="inschrijf_deadline"
                                 value={formData.inschrijf_deadline}
                                 onChange={handleChange}
-                                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                             />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label htmlFor="event_time" className="block text-sm font-bold text-slate-700 mb-2">
+                            <label htmlFor="event_time" className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">
                                 Starttijd
                             </label>
                             <input
@@ -266,12 +266,12 @@ export default function NieuweActiviteitPage() {
                                 name="event_time"
                                 value={formData.event_time}
                                 onChange={handleChange}
-                                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="event_time_end" className="block text-sm font-bold text-slate-700 mb-2">
+                            <label htmlFor="event_time_end" className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">
                                 Eindtijd
                             </label>
                             <input
@@ -280,13 +280,13 @@ export default function NieuweActiviteitPage() {
                                 name="event_time_end"
                                 value={formData.event_time_end}
                                 onChange={handleChange}
-                                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                             />
                         </div>
                     </div>
 
                     <div>
-                        <label htmlFor="location" className="block text-sm font-bold text-slate-700 mb-2">
+                        <label htmlFor="location" className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">
                             Locatie
                         </label>
                         <input
@@ -295,13 +295,13 @@ export default function NieuweActiviteitPage() {
                             name="location"
                             value={formData.location}
                             onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                            className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                             placeholder="Bijv. R10 Building"
                         />
                     </div>
 
                     <div>
-                        <label htmlFor="description" className="block text-sm font-bold text-slate-700 mb-2">
+                        <label htmlFor="description" className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">
                             Beschrijving *
                         </label>
                         <textarea
@@ -310,14 +310,14 @@ export default function NieuweActiviteitPage() {
                             value={formData.description}
                             onChange={handleChange}
                             rows={5}
-                            className={`w-full px-4 py-3 rounded-lg border ${errors.description ? 'border-red-500' : 'border-slate-300'} focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition`}
+                            className={`w-full px-4 py-3 rounded-lg border ${errors.description ? 'border-red-500' : 'border-slate-300'} focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100`}
                             placeholder="Beschrijving van de activiteit"
                         />
                         {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
                     </div>
 
                     <div>
-                        <label htmlFor="description_logged_in" className="block text-sm font-bold text-slate-700 mb-2">
+                        <label htmlFor="description_logged_in" className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">
                             Extra beschrijving voor ingelogde gebruikers
                         </label>
                         <textarea
@@ -326,7 +326,7 @@ export default function NieuweActiviteitPage() {
                             value={formData.description_logged_in}
                             onChange={handleChange}
                             rows={3}
-                            className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                            className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                             placeholder="Extra informatie die alleen zichtbaar is voor ingelogde gebruikers"
                         />
                     </div>
@@ -344,13 +344,13 @@ export default function NieuweActiviteitPage() {
                                 value={formData.capacity}
                                 onChange={handleChange}
                                 min="0"
-                                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                                 placeholder="Max deelnemers"
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="price_members" className="block text-sm font-bold text-slate-700 mb-2">
+                            <label htmlFor="price_members" className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">
                                 Prijs Leden (€)
                             </label>
                             <input
@@ -361,13 +361,13 @@ export default function NieuweActiviteitPage() {
                                 onChange={handleChange}
                                 min="0"
                                 step="0.01"
-                                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                                 placeholder="0.00"
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="price_non_members" className="block text-sm font-bold text-slate-700 mb-2">
+                            <label htmlFor="price_non_members" className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">
                                 Prijs Niet-leden (€)
                             </label>
                             <input
@@ -378,7 +378,7 @@ export default function NieuweActiviteitPage() {
                                 onChange={handleChange}
                                 min="0"
                                 step="0.01"
-                                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                                 placeholder="0.00"
                             />
                         </div>
@@ -386,7 +386,7 @@ export default function NieuweActiviteitPage() {
 
                     {/* Committee & Contact */}
                     <div>
-                        <label htmlFor="committee_id" className="block text-sm font-bold text-slate-700 mb-2">
+                        <label htmlFor="committee_id" className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">
                             Commissie
                         </label>
                         <select
@@ -394,7 +394,7 @@ export default function NieuweActiviteitPage() {
                             name="committee_id"
                             value={formData.committee_id}
                             onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                            className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                         >
                             <option value="">Selecteer een commissie...</option>
                             {committees.map(committee => (
@@ -406,7 +406,7 @@ export default function NieuweActiviteitPage() {
                     </div>
 
                     <div>
-                        <label htmlFor="contact" className="block text-sm font-bold text-slate-700 mb-2">
+                        <label htmlFor="contact" className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">
                             Contact (email of telefoon)
                         </label>
                         <input
@@ -415,23 +415,23 @@ export default function NieuweActiviteitPage() {
                             name="contact"
                             value={formData.contact}
                             onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                            className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                             placeholder="naam@salvemundi.nl of +31 6 12345678"
                         />
                     </div>
 
                     {/* Image Upload */}
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">
+                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">
                             Afbeelding
                         </label>
                         {!imagePreview ? (
                             <label
-                                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-theme-purple transition"
+                                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-theme-purple transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
                                 onClick={() => fileInputRef.current?.click()}
                             >
                                 <Upload className="h-8 w-8 text-slate-400 mb-2" />
-                                <span className="text-sm text-slate-500">Klik om een afbeelding te uploaden</span>
+                                <span className="text-sm text-slate-500 dark:text-slate-400">Klik om een afbeelding te uploaden</span>
                                 <input
                                     ref={fileInputRef}
                                     type="file"
@@ -451,7 +451,7 @@ export default function NieuweActiviteitPage() {
                                     <button
                                         type="button"
                                         onClick={() => window.open(imagePreview || '', '_blank')}
-                                        className="bg-white text-slate-700 p-2 rounded-full hover:bg-slate-100 transition shadow"
+                                        className="bg-white text-slate-700 p-2 rounded-full hover:bg-slate-100 transition shadow dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                                         title="Bekijk afbeelding"
                                     >
                                         View
@@ -459,7 +459,7 @@ export default function NieuweActiviteitPage() {
                                     <button
                                         type="button"
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="bg-white text-slate-700 p-2 rounded-full hover:bg-slate-100 transition shadow"
+                                        className="bg-white text-slate-700 p-2 rounded-full hover:bg-slate-100 transition shadow dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                                         title="Wijzig afbeelding"
                                     >
                                         Change
@@ -492,9 +492,9 @@ export default function NieuweActiviteitPage() {
                             name="only_members"
                             checked={formData.only_members}
                             onChange={handleChange}
-                            className="w-5 h-5 text-theme-purple border-slate-300 rounded focus:ring-theme-purple"
+                            className="w-5 h-5 text-theme-purple border-slate-300 rounded focus:ring-theme-purple dark:border-slate-600 dark:bg-slate-700"
                         />
-                        <label htmlFor="only_members" className="text-sm font-medium text-slate-700">
+                        <label htmlFor="only_members" className="text-sm font-medium text-slate-700 dark:text-slate-200">
                             Alleen voor leden
                         </label>
                     </div>
