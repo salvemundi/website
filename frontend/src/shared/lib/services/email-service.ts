@@ -21,6 +21,8 @@ export interface EventSignupEmailData {
     committeeEmail?: string;
     contactName?: string;
     contactPhone?: string;
+  participants?: { name: string; initial: string }[];
+  amountTickets?: number;
 }
 
 export interface MembershipSignupEmailData {
@@ -212,6 +214,24 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
           ${committeeEmail ? `<p><strong>E-mail:</strong> <a href="mailto:${committeeEmail}" style="color: #7B2CBF; font-weight: bold;">${committeeEmail}</a></p>` : ''}
         </div>
       ` : '';
+        // Build ticket HTML if participants were provided
+        const ticketsHtml = (data.participants && data.participants.length > 0)
+            ? data.participants.map((p, idx) => `
+              <div style="border: 2px dashed #7B2CBF; border-radius: 8px; padding: 12px; margin-bottom:12px; background: linear-gradient(90deg,#fff,#f7f7ff);">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                  <div style="flex:1">
+                    <div style="font-size:14px; color:#FF6B35; font-weight:700;">Ticket ${idx + 1}</div>
+                    <div style="font-size:16px; font-weight:600; color:#333;">${p.name}</div>
+                    <div style="font-size:13px; color:#666;">Initiaal: ${p.initial}</div>
+                  </div>
+                  <div style="text-align:center; width:120px;">
+                    ${data.qrCodeDataUrl ? `<img src="cid:${qrCodeCid}" alt="QR" style="max-width:100px; height:auto; border-radius:6px;"/>` : ''}
+                    <div style="font-size:12px; color:#999; margin-top:6px;">${data.eventName}</div>
+                  </div>
+                </div>
+              </div>
+            `).join('')
+            : '';
 
         const userEmailBody = `
       <html>
@@ -228,6 +248,8 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
               ${data.phoneNumber ? `<p><strong>Telefoonnummer:</strong> ${data.phoneNumber}</p>` : ''}
             </div>
             ${contactInfoSection}
+            ${data.amountTickets ? `<p><strong>Aantal tickets:</strong> ${data.amountTickets}</p>` : ''}
+            ${ticketsHtml}
             ${qrCodeAttachment ? `
               <div style="background-color: #F5F5DC; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
                 <h3 style="color: #7B2CBF; margin-top: 0;">Jouw Toegangscode</h3>
@@ -256,6 +278,11 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
     `;
 
         // Email to the organization
+        // Build a compact participant list for organization email
+        const orgParticipantsList = (data.participants && data.participants.length > 0)
+            ? `<ul style="padding-left:16px;">${data.participants.map(p => `<li>${p.name} (${p.initial})</li>`).join('')}</ul>`
+            : '';
+
         const orgEmailBody = `
       <html>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
@@ -272,6 +299,8 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
               <p><strong>Prijs:</strong> €${eventPrice.toFixed(2)}</p>
               <p><strong>Aangemeld door:</strong> ${data.userName}</p>
             </div>
+            ${data.amountTickets ? `<p><strong>Aantal tickets:</strong> ${data.amountTickets}</p>` : ''}
+            ${orgParticipantsList}
           </div>
         </body>
       </html>

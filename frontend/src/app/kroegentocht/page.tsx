@@ -214,6 +214,9 @@ export default function KroegentochtPage() {
                 committeeEmail: nextEvent.email,
                 contactName,
                 contactPhone,
+                // include participant details and ticket count for the email template
+                participants: participants.map(p => ({ name: p.name, initial: p.initial })),
+                amountTickets: form.amount_tickets,
             }).catch((emailErr) => {
                 console.error('Kon kroegentocht bevestigingsmail niet versturen:', emailErr);
             });
