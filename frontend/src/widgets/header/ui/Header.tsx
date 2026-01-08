@@ -173,6 +173,16 @@ const Header: React.FC = () => {
                     </nav>
 
                     <div className="flex items-center gap-3">
+                        {isCommitteeMember && (
+                            <Link
+                                href="/admin"
+                                title="Admin Panel"
+                                className="inline-flex lg:hidden items-center justify-center rounded-full bg-theme-purple text-white p-2 shadow-sm transition hover:shadow-lg"
+                            >
+                                <Shield className="h-4 w-4" />
+                            </Link>
+                        )}
+
                         {isAuthenticated ? (
                             <Link
                                 href={ROUTES.ACCOUNT}
