@@ -91,8 +91,14 @@ function buildQueryString(params: { fields?: string[]; sort?: string[]; filter?:
 // Clean committee names coming from Directus to remove internal suffixes
 function cleanCommitteeName(name?: string | null): string | undefined {
     if (!name) return undefined;
-    // Remove occurrences like '||Salvemundi' (case-insensitive) and trim
-    return String(name).replace(/\|\|\s*salvemundi/i, '').trim();
+    // Remove any trailing '|| ... Salvemundi' or similar suffixes that include 'salvemundi'
+    // Also remove stray pipes and excessive whitespace.
+    let s = String(name);
+    // Remove patterns like '|| Salve Mundi', '||Salvemundi', '|| Salve Mundi - some'
+    s = s.replace(/\|\|.*salvemundi.*$/i, '');
+    // Remove any remaining trailing pipes
+    s = s.replace(/\|+$/g, '');
+    return s.trim();
 }
 
 // --- API Collecties ---
@@ -301,7 +307,8 @@ export const eventsApi = {
                             
                             if (eventDetails.contact) {
                                 if (typeof eventDetails.contact === 'string' && eventDetails.contact.includes('@')) {
-                                    committeeEmail = eventDetails.contact;
+                                    // Prefer explicit committee email (from committee record). Use event contact only as fallback.
+                                    if (!committeeEmail) committeeEmail = eventDetails.contact;
                                 } else if (typeof eventDetails.contact === 'string') {
                                     contactPhone = eventDetails.contact;
                                 }

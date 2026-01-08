@@ -261,7 +261,7 @@ const Header: React.FC = () => {
                             onClick={() => setMenuOpen(false)}
                             className="flex items-center gap-3"
                         >
-                            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-card)] shadow-sm overflow-hidden">
+                            <span className="inline-flex relative h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-card)] shadow-sm overflow-hidden">
                                 {user?.avatar ? (
                                     <Image
                                         src={getImageUrl(user.avatar)}
