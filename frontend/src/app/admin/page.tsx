@@ -381,9 +381,18 @@ export default function AdminDashboardPage() {
                 directusFetch<any[]>('/items/intro_blogs?fields=id,title,slug,likes&filter[is_published][_eq]=true').catch(() => [])
             ]);
 
-            const totalLikes = blogsData.reduce((sum: number, blog: any) => sum + (blog.likes || 0), 0);
+            // Ensure likes are parsed as numbers to avoid string concatenation
+            const totalLikes = blogsData.reduce((sum: number, blog: any) => {
+                const likes = typeof blog.likes === 'string' ? parseInt(blog.likes, 10) : (blog.likes || 0);
+                return sum + (isNaN(likes) ? 0 : likes);
+            }, 0);
+            
             const mostLiked = blogsData.length > 0
-                ? blogsData.reduce((max: any, blog: any) => (blog.likes || 0) > (max.likes || 0) ? blog : max)
+                ? blogsData.reduce((max: any, blog: any) => {
+                    const blogLikes = typeof blog.likes === 'string' ? parseInt(blog.likes, 10) : (blog.likes || 0);
+                    const maxLikes = typeof max.likes === 'string' ? parseInt(max.likes, 10) : (max.likes || 0);
+                    return (isNaN(blogLikes) ? 0 : blogLikes) > (isNaN(maxLikes) ? 0 : maxLikes) ? blog : max;
+                })
                 : undefined;
 
             return {
@@ -392,7 +401,7 @@ export default function AdminDashboardPage() {
                 mostLikedPost: mostLiked ? {
                     id: mostLiked.id,
                     title: mostLiked.title,
-                    likes: mostLiked.likes || 0,
+                    likes: typeof mostLiked.likes === 'string' ? parseInt(mostLiked.likes, 10) : (mostLiked.likes || 0),
                     slug: mostLiked.slug
                 } : undefined
             };

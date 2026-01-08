@@ -680,19 +680,41 @@ export interface IntroBlog {
 
 export const introBlogsApi = {
     getAll: async (): Promise<IntroBlog[]> => {
-        return directusFetch<IntroBlog[]>(
+        const rows = await directusFetch<IntroBlog[]>(
             `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,likes,updated_at,is_published,blog_type,created_at&filter[is_published][_eq]=true&sort=-updated_at`
         );
+        return (rows || []).map((r) => {
+            const raw = (r as any).likes;
+            let likes = 0;
+            if (raw !== undefined && raw !== null) {
+                likes = typeof raw === 'number' ? raw : parseInt(String(raw), 10) || 0;
+            }
+            return { ...r, likes };
+        });
     },
     getById: async (id: number): Promise<IntroBlog> => {
-        return directusFetch<IntroBlog>(
+        const row = await directusFetch<IntroBlog>(
             `/items/intro_blogs/${id}?fields=id,title,slug,content,excerpt,image.id,likes,updated_at,is_published,blog_type,created_at`
         );
+        const raw = (row as any)?.likes;
+        let likes = 0;
+        if (raw !== undefined && raw !== null) {
+            likes = typeof raw === 'number' ? raw : parseInt(String(raw), 10) || 0;
+        }
+        return { ...(row as any), likes } as IntroBlog;
     },
     getByType: async (type: 'update' | 'pictures' | 'event' | 'announcement'): Promise<IntroBlog[]> => {
-        return directusFetch<IntroBlog[]>(
+        const rows = await directusFetch<IntroBlog[]>(
             `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,likes,updated_at,is_published,blog_type,created_at&filter[is_published][_eq]=true&filter[blog_type][_eq]=${type}&sort=-updated_at`
         );
+        return (rows || []).map((r) => {
+            const raw = (r as any).likes;
+            let likes = 0;
+            if (raw !== undefined && raw !== null) {
+                likes = typeof raw === 'number' ? raw : parseInt(String(raw), 10) || 0;
+            }
+            return { ...r, likes };
+        });
     }
 };
 

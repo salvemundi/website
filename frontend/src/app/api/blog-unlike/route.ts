@@ -19,14 +19,23 @@ export async function POST(request: NextRequest) {
 
         const likesCollection = `${directusUrl.replace(/\/$/, '')}/items/intro_blog_likes`;
 
-        // Find like record for this user and blog
-        const checkUrl = `${likesCollection}?filter[blog][_eq]=${encodeURIComponent(blogId)}&filter[user_id][_eq]=${encodeURIComponent(userId)}&limit=1`;
-        const checkResp = await fetch(checkUrl, { headers: { 'Authorization': `Bearer ${directusToken}` } });
-        if (!checkResp.ok) {
-            return NextResponse.json({ error: 'Failed to check existing like' }, { status: 502 });
+        // Find like record for this user and blog. Try both possible user field names.
+        let existing: any = null;
+        const tryChecks = [
+            `${likesCollection}?filter[blog][_eq]=${encodeURIComponent(blogId)}&filter[user][_eq]=${encodeURIComponent(userId)}&limit=1`,
+            `${likesCollection}?filter[blog][_eq]=${encodeURIComponent(blogId)}&filter[user_id][_eq]=${encodeURIComponent(userId)}&limit=1`
+        ];
+
+        for (const url of tryChecks) {
+            const resp = await fetch(url, { headers: { 'Authorization': `Bearer ${directusToken}` } });
+            if (!resp.ok) continue;
+            const d = await resp.json().catch(() => null);
+            if (Array.isArray(d?.data) && d.data.length > 0) {
+                existing = d.data[0];
+                break;
+            }
         }
-        const checkData = await checkResp.json();
-        const existing = Array.isArray(checkData.data) && checkData.data.length > 0 ? checkData.data[0] : null;
+
         if (!existing) {
             // nothing to delete
             const countUrl = `${likesCollection}?filter[blog][_eq]=${encodeURIComponent(blogId)}&limit=0&meta=filter_count`;
