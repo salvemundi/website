@@ -31,6 +31,7 @@ interface CalendarViewProps {
     onEventClick: (event: Event) => void;
     onPrevMonth: () => void;
     onNextMonth: () => void;
+    onGoToDate?: (date: Date) => void;
 }
 
 export default function CalendarView({
@@ -40,7 +41,8 @@ export default function CalendarView({
     onSelectDay,
     onEventClick,
     onPrevMonth,
-    onNextMonth
+    onNextMonth,
+    onGoToDate
 }: CalendarViewProps) {
     const monthStart = startOfMonth(currentDate);
     const monthEnd = endOfMonth(monthStart);
@@ -74,7 +76,11 @@ export default function CalendarView({
                         <ChevronLeft className="w-6 h-6" />
                     </button>
                     <button
-                        onClick={() => onSelectDay(new Date())} // Reset to today logic handled by parent usually, but here we can just select today
+                        onClick={() => {
+                            const today = new Date();
+                            onSelectDay(today);
+                            onGoToDate?.(today);
+                        }}
                         className="px-4 py-1.5 bg-white/20 hover:bg-white/30 rounded-full text-sm font-semibold transition-colors"
                     >
                         Vandaag

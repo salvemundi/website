@@ -265,6 +265,7 @@ function ActivitiesContent() {
                                                     onEventClick={handleShowDetails}
                                                     onPrevMonth={() => setCurrentDate(subMonths(currentDate, 1))}
                                                     onNextMonth={() => setCurrentDate(addMonths(currentDate, 1))}
+                                                    onGoToDate={(d: Date) => setCurrentDate(d)}
                                                 />
                                             </div>
                                             {/* Mobile Fallback for Calendar is List */}

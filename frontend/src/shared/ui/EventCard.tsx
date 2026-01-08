@@ -24,9 +24,9 @@ export default function EventCard({ title, category, date, tag }: EventCardProps
         <article
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
-            className="group relative overflow-hidden rounded-[1.75rem] bg-[var(--bg-card)] p-6 shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-xl"
+            className="group relative z-0 overflow-visible rounded-[1.75rem] bg-[var(--bg-card)] p-6 shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-xl group-hover:z-10"
         >
-            <span className="absolute -top-12 -right-12 h-24 w-24 rounded-full bg-theme-purple/20 transition duration-500 group-hover:scale-125" />
+            <span className="absolute -top-12 -right-12 h-24 w-24 rounded-full bg-theme-purple/20 transition duration-500 group-hover:scale-125 pointer-events-none" />
 
             <div className="relative space-y-3">
                 {tag && (
