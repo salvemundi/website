@@ -32,13 +32,14 @@
 
 .sponsor-item {
     flex-shrink: 0;
-    display: flex;
+    /* shrink-to-fit so the rectangle wraps the image */
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 1rem 2rem;
+    padding: 0.6rem 0.9rem;
     background: var(--bg-card);
-    border-radius: 1rem;
-    transition: all 0.3s ease;
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     cursor: pointer;
 }
@@ -49,18 +50,19 @@
 }
 
 .sponsor-logo {
-    height: 60px;
+    /* Let image keep its original colors and size the card to it */
+    max-height: 64px;
+    height: auto;
     width: auto;
-    max-width: 180px;
+    max-width: 220px;
     object-fit: contain;
-    filter: grayscale(100%);
-    opacity: 0.7;
-    transition: all 0.3s ease;
+    filter: none;
+    opacity: 1;
+    display: block;
 }
 
 .sponsor-item:hover .sponsor-logo {
-    filter: grayscale(0%);
-    opacity: 1;
+    transform: scale(1.02);
 }
 
 @keyframes scroll-sponsors {

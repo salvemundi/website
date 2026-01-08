@@ -1,9 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import BackToTopButton from '@/shared/ui/BackToTopButton';
 import { pubCrawlSignupsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
 import { directusFetch } from '@/shared/lib/directus';
 import { useSalvemundiPubCrawlEvents, useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
@@ -88,6 +87,27 @@ export default function KroegentochtPage() {
     const headerBackgroundImage = nextEvent?.image
         ? getImageUrl(nextEvent.image)
         : '/img/placeholder.svg';
+
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalSrc, setModalSrc] = useState<string | null>(null);
+
+    const openImageModal = (src: string) => {
+        setModalSrc(src);
+        setModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setModalOpen(false);
+        setModalSrc(null);
+    };
+
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') closeModal();
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -459,7 +479,9 @@ export default function KroegentochtPage() {
                                         <img
                                             src={getImageUrl(nextEvent.image)}
                                             alt={nextEvent.name}
-                                            className="w-full h-48 object-cover rounded-2xl"
+                                            role="button"
+                                            onClick={() => openImageModal(getImageUrl(nextEvent.image))}
+                                            className="w-full h-48 object-cover rounded-2xl cursor-zoom-in"
                                             onError={(e) => {
                                                 const target = e.target as HTMLImageElement;
                                                 target.src = '/img/placeholder.svg';
@@ -531,8 +553,30 @@ export default function KroegentochtPage() {
                 </div>
                 )}
             </main>
-
-            <BackToTopButton />
+            {modalOpen && modalSrc && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+                    onClick={closeModal}
+                    role="dialog"
+                    aria-modal="true"
+                >
+                    <div className="max-w-[95vw] max-h-[95vh]">
+                        <img
+                            src={modalSrc}
+                            alt="Kroegentocht afbeelding"
+                            className="max-w-full max-h-[90vh] rounded-lg shadow-lg"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                        <button
+                            onClick={closeModal}
+                            aria-label="Sluiten"
+                            className="mt-3 w-full bg-white text-theme-purple font-semibold py-2 rounded-lg"
+                        >
+                            Sluiten
+                        </button>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
