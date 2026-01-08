@@ -88,6 +88,13 @@ function buildQueryString(params: { fields?: string[]; sort?: string[]; filter?:
     return queryParams.toString();
 }
 
+// Clean committee names coming from Directus to remove internal suffixes
+function cleanCommitteeName(name?: string | null): string | undefined {
+    if (!name) return undefined;
+    // Remove occurrences like '||Salvemundi' (case-insensitive) and trim
+    return String(name).replace(/\|\|\s*salvemundi/i, '').trim();
+}
+
 // --- API Collecties ---
 
 export const paymentApi = {
@@ -130,7 +137,7 @@ export const eventsApi = {
                     try {
                         const committee = await directusFetch<any>(`/items/committees/${event.committee_id}?fields=id,name`);
                         if (committee) {
-                            event.committee_name = committee.name;
+                            event.committee_name = cleanCommitteeName(committee.name);
                         }
                     } catch (error) {
                         console.error('eventsApi.getAll: failed to fetch committee for event', { eventId: event.id, committeeId: event.committee_id, error });
@@ -172,11 +179,11 @@ export const eventsApi = {
         });
         const event = await directusFetch<any>(`/items/events/${id}?${query}`);
 
-        if (event.committee_id) {
+                if (event.committee_id) {
             try {
                 const committee = await directusFetch<any>(`/items/committees/${event.committee_id}?fields=id,name`);
                 if (committee) {
-                    event.committee_name = committee.name;
+                    event.committee_name = cleanCommitteeName(committee.name);
                 }
             } catch (error) {
                 console.error('eventsApi.getById: failed to fetch committee for event', { eventId: id, committeeId: event.committee_id, error });
@@ -287,7 +294,7 @@ export const eventsApi = {
                     try {
                         const eventDetails = await eventsApi.getById(String(signupData.event_id));
                         if (eventDetails) {
-                            committeeName = eventDetails.committee_name || undefined;
+                            committeeName = cleanCommitteeName(eventDetails.committee_name) || undefined;
                             if (eventDetails.contact) {
                                 if (typeof eventDetails.contact === 'string' && eventDetails.contact.includes('@')) {
                                     committeeEmail = eventDetails.contact;
@@ -300,7 +307,7 @@ export const eventsApi = {
                                 try {
                                     const committee = await directusFetch<any>(`/items/committees/${eventDetails.committee_id}?fields=id,name,email`);
                                     if (committee) {
-                                        committeeName = committee.name || committeeName;
+                                        committeeName = cleanCommitteeName(committee.name) || committeeName;
                                         committeeEmail = committee.email || committeeEmail;
                                     }
                                 } catch (e) {

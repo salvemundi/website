@@ -60,25 +60,12 @@ function getEmailConfig(): EmailConfig {
     };
 }
 
-// Insert a standard contact footer into arbitrary HTML email bodies.
-function appendContactFooter(html: string): string {
-    if (!html || typeof html !== 'string') return html;
+// Footer is appended server-side to avoid duplicates in emails.
 
-    const contactBlock = `
-      <div style="margin-top:30px;padding-top:20px;border-top:1px solid #ddd;font-size:13px;color:#666;">
-        <p style="margin:0 0 6px 0;"><strong>Contact:</strong> <a href="mailto:info@salvemundi.nl" style="color:#7B2CBF;text-decoration:none;">info@salvemundi.nl</a></p>
-        <p style="margin:0;font-size:12px;color:#999;">Bezoek https://salvemundi.nl voor meer informatie</p>
-      </div>
-    `;
-
-    // Try to insert before </body> if present, otherwise before </html>, otherwise append.
-    if (/<\/body>/i.test(html)) {
-        return html.replace(/<\/body>/i, contactBlock + '\n</body>');
-    }
-    if (/<\/html>/i.test(html)) {
-        return html.replace(/<\/html>/i, contactBlock + '\n</html>');
-    }
-    return html + contactBlock;
+// Clean committee names to remove internal suffixes like '||Salvemundi'
+function cleanCommitteeName(name?: string | null): string | undefined {
+  if (!name) return undefined;
+  return String(name).replace(/\|\|\s*salvemundi/i, '').trim();
 }
 
 function buildCommitteeEmailFromName(name?: string | null): string | undefined {
@@ -129,8 +116,6 @@ async function sendEmail(
     // For now, we'll attempt to send but gracefully handle CORS failures.
 
     try {
-      // Ensure a consistent contact footer is included in all outgoing emails
-      htmlBody = appendContactFooter(htmlBody);
         const response = await fetch(config.apiEndpoint, {
             method: 'POST',
             headers: {
@@ -201,12 +186,13 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
                 contentId: qrCodeCid,
             };
         }
-        const committeeEmail = data.committeeEmail || buildCommitteeEmailFromName(data.committeeName);
-        const contactInfoSection = (data.contactName || data.contactPhone || committeeEmail || data.committeeName)
+        const displayCommitteeName = cleanCommitteeName(data.committeeName) || data.committeeName;
+        const committeeEmail = data.committeeEmail || buildCommitteeEmailFromName(displayCommitteeName);
+        const contactInfoSection = (data.contactName || data.contactPhone || committeeEmail || displayCommitteeName)
             ? `
         <div style="background-color: #F5F5DC; padding: 15px; border-radius: 8px; margin: 20px 0;">
           <h3 style="color: #FF6B35; margin-top: 0;">Contactinformatie</h3>
-          ${data.committeeName ? `<p><strong>Commissie:</strong> ${data.committeeName}</p>` : ''}
+          ${displayCommitteeName ? `<p><strong>Commissie:</strong> ${displayCommitteeName}</p>` : ''}
           ${data.contactName ? `<p><strong>Contactpersoon:</strong> ${data.contactName}</p>` : ''}
           ${data.contactPhone ? `<p><strong>Telefoon:</strong> ${data.contactPhone}</p>` : ''}
           ${committeeEmail ? `<p><strong>E-mail:</strong> <a href="mailto:${committeeEmail}" style="color: #7B2CBF; font-weight: bold;">${committeeEmail}</a></p>` : ''}
@@ -440,11 +426,11 @@ export async function sendIntroSignupEmail(data: IntroSignupEmailData): Promise<
         const participantName = `${data.participantFirstName} ${data.participantLastName}`.trim();
 
         // Intro committee contact details
-        const introCommitteeName = 'Intro Commissie';
+        const introCommitteeName = cleanCommitteeName('Intro') || 'Intro';
         const introCommitteeEmail = 'intro@salvemundi.nl';
         const introContactSection = `
           <div style="background-color: #F5F5DC; padding: 12px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #FF6B35; margin-top: 0;">Contact Intro Commissie</h3>
+            <h3 style="color: #FF6B35; margin-top: 0;">Contact ${introCommitteeName}</h3>
             <p style="margin:0;"><strong>Commissie:</strong> ${introCommitteeName}</p>
             <p style="margin:0;"><strong>E-mail:</strong> <a href="mailto:${introCommitteeEmail}" style="color:#7B2CBF; text-decoration:none;">${introCommitteeEmail}</a></p>
           </div>
