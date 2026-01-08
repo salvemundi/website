@@ -182,7 +182,7 @@ export default function IntroBlogPage() {
                                         const typeConfig = getBlogTypeConfig(blog.blog_type);
                                         const TypeIcon = typeConfig.icon;
                                         const displayedLikes = likesMap[blog.id] ?? blog.likes ?? 0;
-                                        const isLiked = !!likedSet[blog.id];
+                                        const isLiked = isAuthenticated && !!likedSet[blog.id];
                                         
                                         return (
                                             <div
