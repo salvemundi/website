@@ -109,6 +109,28 @@ app.options('/send-email', (req, res) => {
   res.sendStatus(204);
 });
 
+// Helper: ensure HTML email content includes color-scheme meta and
+// a small CSS block with `prefers-color-scheme` so emails adapt to
+// light/dark where supported. If the provided HTML already contains
+// a <head> we inject the meta/styles there; otherwise we wrap the
+// content in a basic HTML scaffold.
+function ensureAdaptiveEmailHtml(rawHtml) {
+  if (!rawHtml || typeof rawHtml !== 'string') return rawHtml;
+
+  const hasHead = /<head[\s>]/i.test(rawHtml);
+  const hasColorMeta = /name=("|')?color-scheme|supported-color-schemes/i.test(rawHtml);
+  const adaptiveHead = `\n    <meta name="color-scheme" content="light dark">\n    <meta name="supported-color-schemes" content="light dark">\n    <style>\n      :root{--bg:#ffffff;--card:#ffffff;--text:#000000;--muted:#6b7280;--accent1:#7B2CBF;--accent2:#FF6B35;--btn-text:#ffffff} \n      @media (prefers-color-scheme: dark){ :root{--bg:#071025;--card:#071229;--text:#e6eef8;--muted:#94a3b8} }\n      /* Fallbacks for clients that don't support variables */\n      body{background:var(--bg);color:var(--text)}\n      .card{background:var(--card)}\n    </style>\n  `;
+
+  if (hasHead) {
+    if (hasColorMeta) return rawHtml;
+    // inject before </head>
+    return rawHtml.replace(/<\/head>/i, adaptiveHead + '\n</head>');
+  }
+
+  // No head — wrap the content. Add a bgcolor attribute for older clients.
+  return `<!doctype html>\n<html lang="en">\n<head>\n  <meta charset="utf-8" />\n  <meta name="viewport" content="width=device-width,initial-scale=1" />\n  ${adaptiveHead}\n</head>\n<body bgcolor="#f9fafb" style="margin:0;padding:0;background:var(--bg);color:var(--text);">\n  ${rawHtml}\n</body>\n</html>`;
+}
+
 // Send email endpoint
 app.post('/send-email', async (req, res) => {
   try {
@@ -200,7 +222,7 @@ app.post('/send-email', async (req, res) => {
         subject: subject,
         body: {
           contentType: 'HTML',
-          content: html,
+          content: ensureAdaptiveEmailHtml(html),
         },
         toRecipients: [
           {
@@ -396,6 +418,8 @@ app.post('/send-intro-update', async (req, res) => {
       <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta name="color-scheme" content="light dark">
+        <meta name="supported-color-schemes" content="light dark">
         <style>
           :root{
             --bg: #f9fafb;
@@ -428,7 +452,7 @@ app.post('/send-intro-update', async (req, res) => {
           @media screen and (max-width:480px){.header{padding:20px}.card{padding:20px}.hero-image{height:180px}}
         </style>
       </head>
-      <body>
+      <body bgcolor="#f9fafb" style="margin:0;padding:20px;background:var(--bg);font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;-webkit-font-smoothing:antialiased;color:var(--text);">
         <div class="container">
           <div class="header"><h1>Nieuwe Intro Update!</h1></div>
 
