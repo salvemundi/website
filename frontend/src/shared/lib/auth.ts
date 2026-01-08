@@ -48,6 +48,26 @@ async function mapDirectusUserToUser(rawUser: any): Promise<User> {
         membershipStatus = fallbackMember ? 'active' : 'none';
     }
 
+    // Check if user is a safe haven by querying safe_havens collection
+    let isSafeHaven = false;
+    try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+        if (token) {
+            const safeHavensResponse = await directusFetch<any[]>(
+                `/items/safe_havens?filter[user_id][_eq]=${rawUser.id}&limit=1`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    }
+                }
+            );
+            isSafeHaven = safeHavensResponse && safeHavensResponse.length > 0;
+        }
+    } catch (e) {
+        // Silently fail - user is just not a safe haven
+        console.log('Could not check safe haven status:', e);
+    }
+
     return {
         id: rawUser.id,
         email: rawUser.email || '',
@@ -63,7 +83,7 @@ async function mapDirectusUserToUser(rawUser: any): Promise<User> {
         membership_status: membershipStatus,
         membership_expiry: rawUser.membership_expiry,
         minecraft_username: rawUser.minecraft_username,
-
+        is_safe_haven: isSafeHaven,
     };
 }
 
