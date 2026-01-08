@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import Image from 'next/image';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import BackToTopButton from '@/shared/ui/BackToTopButton';
 import { pubCrawlSignupsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
