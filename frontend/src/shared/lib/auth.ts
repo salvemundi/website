@@ -336,6 +336,65 @@ export async function fetchUserDetails(token: string): Promise<User | null> {
     }
 }
 
+// Fetch committees (commissions) that a user belongs to and persist to localStorage
+export async function fetchAndPersistUserCommittees(userId: string, token?: string): Promise<Array<{ id: string; name: string }>> {
+    try {
+        // Build a query to get committee info via committee_members relation
+        // We prefer using the Directus JWT when available for private collections
+        const base = '/items/committee_members?';
+        const params = new URLSearchParams({
+            'filter[user_id][_eq]': userId,
+            'fields': 'committee_id.id,committee_id.name,is_leader',
+        }).toString();
+
+        const url = `${base}${params}`;
+
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const resp = await fetch(`${directusUrl}${url}`, { headers });
+
+        let rows: any[] = [];
+        if (resp.ok) {
+            const payload = await resp.json().catch(() => ({}));
+            rows = payload?.data || payload || [];
+        } else {
+            // fallback to directusFetch if available
+            try {
+                const { directusFetch } = await import('./directus');
+                rows = await directusFetch<any[]>(`/items/committee_members?${params}`);
+            } catch (e) {
+                rows = [];
+            }
+        }
+
+        const committees: Array<{ id: string; name: string; is_leader?: boolean }> = [];
+        for (const r of rows) {
+            const c = r?.committee_id;
+            if (c && c.id) {
+                const id = String(c.id);
+                const name = String(c.name || '');
+                const isLeader = !!r?.is_leader;
+                if (!committees.find((x) => x.id === id)) committees.push({ id, name, is_leader: isLeader });
+            }
+        }
+
+        // Persist under a per-user key
+        try {
+            if (typeof window !== 'undefined') {
+                localStorage.setItem(`user_committees_${userId}`, JSON.stringify(committees));
+            }
+        } catch (e) {
+            // ignore storage errors
+        }
+
+        return committees;
+    } catch (error) {
+        console.error('Failed to fetch/persist user committees:', error);
+        return [];
+    }
+}
+
 // Refresh access token
 export async function refreshAccessToken(refreshToken: string): Promise<LoginResponse> {
     try {

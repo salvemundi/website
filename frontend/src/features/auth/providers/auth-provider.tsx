@@ -71,7 +71,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 try {
                     const userData = await authApi.fetchUserDetails(token);
                     if (userData) {
-                        setUser(userData);
+                        try {
+                            const committees = await authApi.fetchAndPersistUserCommittees(userData.id, token || undefined);
+                            setUser({ ...userData, committees });
+                        } catch (e) {
+                            setUser(userData);
+                        }
                     } else {
                         // Token was invalid/expired and was cleared by fetchUserDetails
                         // Try refresh if we still have a refresh token
@@ -80,7 +85,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                                 const response = await authApi.refreshAccessToken(refreshToken);
                                 localStorage.setItem('auth_token', response.access_token);
                                 localStorage.setItem('refresh_token', response.refresh_token);
-                                setUser(response.user);
+                                try {
+                                    const committees = await authApi.fetchAndPersistUserCommittees(response.user.id, response.access_token);
+                                    setUser({ ...response.user, committees });
+                                } catch (e) {
+                                    setUser(response.user);
+                                }
                             } catch (refreshError) {
                                 // Refresh failed, clear storage
                                 localStorage.removeItem('auth_token');
@@ -187,7 +197,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Persist tokens and set user after successful validation
             localStorage.setItem('auth_token', response.access_token);
             localStorage.setItem('refresh_token', response.refresh_token);
-            setUser(validatedUser);
+            try {
+                const committees = await authApi.fetchAndPersistUserCommittees(validatedUser.id, response.access_token);
+                setUser({ ...validatedUser, committees });
+            } catch (e) {
+                setUser(validatedUser);
+            }
             toast.success('Inloggen geslaagd!', { id: toastId });
         } catch (error) {
             console.error('Microsoft login processing error:', error);
@@ -225,7 +240,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const response = await authApi.signupWithPassword(userData);
             localStorage.setItem('auth_token', response.access_token);
             localStorage.setItem('refresh_token', response.refresh_token);
-            setUser(response.user);
+            try {
+                const committees = await authApi.fetchAndPersistUserCommittees(response.user.id, response.access_token);
+                setUser({ ...response.user, committees });
+            } catch (e) {
+                setUser(response.user);
+            }
         } catch (error) {
             console.error('Signup error:', error);
             throw error;
@@ -255,7 +275,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (token) {
             try {
                 const userData = await authApi.fetchUserDetails(token);
-                setUser(userData);
+                if (userData) {
+                    try {
+                        const committees = await authApi.fetchAndPersistUserCommittees(userData.id, token);
+                        setUser({ ...userData, committees });
+                    } catch (e) {
+                        setUser(userData);
+                    }
+                }
             } catch (error) {
                 console.error('Failed to refresh user:', error);
                 logout();
