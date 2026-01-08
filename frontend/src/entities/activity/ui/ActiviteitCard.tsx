@@ -115,8 +115,9 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
         return (
             <div
                 onClick={onShowDetails}
-                className={`w-full rounded-2xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-4 shadow-sm hover:shadow-md transition-all cursor-pointer ${isPast ? 'opacity-60 filter grayscale' : ''}`}
+                className={`group relative z-0 overflow-visible w-full rounded-2xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-4 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 group-hover:z-10 ${isPast ? 'opacity-60 filter grayscale' : ''}`}
             >
+                <span className="absolute -top-5 -right-5 h-20 w-20 rounded-full bg-theme-purple/20 transition-transform duration-300 group-hover:scale-110 pointer-events-none" />
                 <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
                     <div className="flex-1 min-w-[180px]">
                         <p className="text-xs uppercase tracking-wider text-theme-purple/60 font-semibold">
