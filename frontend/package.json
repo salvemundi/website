@@ -5,7 +5,7 @@
   "isolation_audit": "2025-12-31",
   "type": "module",
   "scripts": {
-    "dev": "infisical run -- next dev -p 5173",
+    "dev": "infisical run --env=local -- next dev -p 5173",
     "build": "next build",
     "build:infisical": "infisical run -- next build",
     "start": "next start",

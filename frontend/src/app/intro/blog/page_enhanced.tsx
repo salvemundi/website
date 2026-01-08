@@ -79,6 +79,11 @@ export default function IntroBlogPage() {
         return () => abortCtrl.abort();
     }, [isAuthenticated, user]);
 
+    // Ensure liked set is cleared when the user is not authenticated
+    useEffect(() => {
+        if (!isAuthenticated) setLikedSet({});
+    }, [isAuthenticated]);
+
     const getBlogTypeConfig = (type: string) => {
         switch (type) {
             case 'pictures':
