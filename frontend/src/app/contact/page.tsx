@@ -55,10 +55,13 @@ export default function ContactPage() {
                                         <p
                                             className="text-theme-purple text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
                                         >
-                                            Rachelsmolen 1, 5612MA Eindhoven
+                                            rachelsmolen 1
                                         </p>
                                         <p className="text-theme-purple/70 text-sm mt-1">
-                                            Gebouw R1 • Lokaal R1.31
+                                            gebouw r10
+                                        </p>
+                                        <p className="text-theme-purple/70 text-sm mt-1">
+                                            lokaal 2.26 (2de verdieping)
                                         </p>
                                     </div>
                                 </div>
