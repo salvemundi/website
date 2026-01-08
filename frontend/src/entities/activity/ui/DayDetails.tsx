@@ -40,7 +40,7 @@ export default function DayDetails({ selectedDay, events, onClose, onEventClick 
                         <div
                             key={event.id}
                             onClick={() => onEventClick(event)}
-                            className="group cursor-pointer rounded-xl bg-slate-50 dark:bg-[#2a232b] p-3 transition hover:bg-oranje/5"
+                            className="group cursor-pointer rounded-xl bg-slate-50 dark:bg-[#2a232b] p-3 transition hover:bg-oranje/5 hover:ring-2 hover:ring-inset hover:ring-purple-600/30"
                         >
                             <h4 className="font-semibold text-paars dark:text-white group-hover:text-oranje">
                                 {event.name}
