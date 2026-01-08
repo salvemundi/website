@@ -1,7 +1,6 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import { directusFetch } from '@/shared/lib/directus';
 import { Sponsor } from '@/shared/model/types/sponsor';
 import './sponsors-section.css';
@@ -101,16 +100,22 @@ export default function SponsorsSection() {
                             rel="noopener noreferrer"
                             className="sponsor-item"
                         >
-                            <div className="relative w-full h-full">
-                                <Image
-                                    src={`/api/assets/${sponsor.image}`}
-                                    alt="Sponsor"
-                                    fill
-                                    className="sponsor-logo object-contain"
-                                    sizes="200px"
-                                    loading="lazy"
-                                />
-                            </div>
+                                    {(() => {
+                                        const imageId = typeof sponsor.image === 'string'
+                                            ? sponsor.image
+                                            : sponsor.image && typeof sponsor.image === 'object'
+                                                ? sponsor.image.id
+                                                : null;
+                                        const src = imageId ? `/api/assets/${imageId}` : '/img/placeholder.png';
+                                        return (
+                                            <img
+                                                src={src}
+                                                alt={sponsor.website_url || 'Sponsor'}
+                                                className="sponsor-logo"
+                                                loading="lazy"
+                                            />
+                                        );
+                                    })()}
                         </a>
                     ))}
                 </div>
