@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { introSignupsApi, introParentSignupsApi } from '@/shared/lib/api/salvemundi';
@@ -36,6 +36,8 @@ export default function IntroPage() {
   const [error, setError] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [hasParentSignup, setHasParentSignup] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   // Check whether the logged-in user already signed up as a parent
   React.useEffect(() => {
@@ -61,6 +63,18 @@ export default function IntroPage() {
     check();
     return () => { mounted = false; };
   }, [user?.id]);
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setLightboxOpen(false);
+        setLightboxSrc(null);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [lightboxOpen]);
 
   const { data: siteSettings, isLoading: isSettingsLoading } = useSalvemundiSiteSettings('intro');
   const isIntroEnabled = siteSettings?.show ?? true;
@@ -160,7 +174,56 @@ export default function IntroPage() {
           <section className="px-4 sm:px-6 lg:px-10 py-8 lg:py-10">
             <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 max-w-7xl mx-auto">
               <div className="flex-1">
-                <p className="text-base lg:text-xl leading-relaxed text-theme">Meld je hieronder aan voor de introweek.</p>
+                <div className="text-theme">
+                  <h2 className="text-2xl lg:text-3xl font-bold mb-4">Klaar om je studententijd met een knal te beginnen?</h2>
+                  <p className="text-base lg:text-lg leading-relaxed mb-4">
+                    Voordat de boeken opengaan en de eerste regels code geschreven worden, is er maar één plek waar je moet zijn: de Salve Mundi Introductie!
+                  </p>
+
+                  <h3 className="font-semibold mb-2">Waarom je dit niet wilt missen</h3>
+                  <ul className="list-disc list-inside mb-4 text-base lg:text-lg">
+                    <li className="mb-1"><strong>Legendarische Feesten:</strong> Ontdek het Eindhovense nachtleven met mensen die dezelfde passie delen.</li>
+                    <li className="mb-1"><strong>Connecties:</strong> Leer de ouderejaars kennen; zij weten precies hoe je die lastige vakken straks haalt.</li>
+                    <li className="mb-1"><strong>Gezelligheid boven alles:</strong> Geen ontgroening, maar een warm welkom bij dé studievereniging van Fontys ICT.</li>
+                  </ul>
+
+                  <h3 className="font-semibold">Schrijf je nu in!</h3>
+                  <p className="text-base lg:text-lg leading-relaxed mb-2">Ben jij erbij? Vul het onderstaande formulier in om je plek te reserveren voor de gezelligste week van het jaar. Of je nu een hardcore gamer bent, een toekomstige developer of gewoon houdt van een goed feestje: bij Salve Mundi hoor je erbij.</p>
+                  <p className="text-sm text-theme-muted">Let op: De plaatsen zijn beperkt, dus wacht niet te lang met aanmelden!</p>
+                </div>
+
+                <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <img
+                    src="/img/backgrounds/homepage-banner.jpg"
+                    alt="polonaise"
+                    className="w-full h-32 object-cover rounded-lg cursor-pointer"
+                    onClick={() => { setLightboxSrc('/img/backgrounds/homepage-banner.jpg'); setLightboxOpen(true); }}
+                  />
+                  <img
+                    src="/img/intro-2-2025.jpg"
+                    alt="polonaise"
+                    className="w-full h-32 object-cover rounded-lg cursor-pointer"
+                    onClick={() => { setLightboxSrc('/img/intro-2-2025.jpg'); setLightboxOpen(true); }}
+                  />
+                  <img
+                    src="/img/intro-3-2025.jpg"
+                    alt="lasergame"
+                    className="w-full h-32 object-cover rounded-lg cursor-pointer"
+                    onClick={() => { setLightboxSrc('/img/intro-3-2025.jpg'); setLightboxOpen(true); }}
+                  />
+                  <img
+                    src="/img/intro-4-2025.jpg"
+                    alt="Groep"
+                    className="w-full h-32 object-cover rounded-lg cursor-pointer"
+                    onClick={() => { setLightboxSrc('/img/intro-4-2025.jpg'); setLightboxOpen(true); }}
+                  />
+                   <img
+                    src="/img/intro2025.jpg"
+                    alt="Groep"
+                    className="w-full h-32 object-cover rounded-lg cursor-pointer"
+                    onClick={() => { setLightboxSrc('/img/intro2025.jpg'); setLightboxOpen(true); }}
+                  />
+                </div>
               </div>
               <div className="flex-1 w-full">
                 {submitted ? (
@@ -323,6 +386,25 @@ export default function IntroPage() {
           </section>
         )}
       </main>
+
+      {lightboxOpen && lightboxSrc && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0,0,0,0.75)' }}
+          onClick={(e) => { if (e.target === e.currentTarget) { setLightboxOpen(false); setLightboxSrc(null); } }}
+        >
+          <div className="relative max-w-4xl w-full max-h-[90vh]">
+            <button
+              onClick={() => { setLightboxOpen(false); setLightboxSrc(null); }}
+              className="absolute top-2 right-2 z-50 bg-black/40 text-white rounded-full p-2 hover:bg-black/60"
+              aria-label="Sluiten"
+            >
+              ×
+            </button>
+            <img src={lightboxSrc} alt="Foto" className="w-full h-auto max-h-[90vh] object-contain rounded-lg shadow-2xl" />
+          </div>
+        </div>
+      )}
 
     </>
   );
