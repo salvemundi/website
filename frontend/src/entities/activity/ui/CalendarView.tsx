@@ -111,8 +111,9 @@ export default function CalendarView({
                             key={day.toString()}
                             onClick={() => onSelectDay(day)}
                             className={`min-h-[120px] p-2 flex flex-col gap-1 transition-colors cursor-pointer
-                                ${!isCurrentMonth ? 'bg-[var(--bg-soft)]/50 text-theme-muted' : 'bg-[var(--bg-card)] hover:bg-[var(--bg-soft)]'}
-                                ${isSelected ? 'ring-2 ring-inset ring-theme-purple bg-theme-purple/5' : ''}
+                                ${!isCurrentMonth ? 'bg-[var(--bg-soft)]/50 text-theme-muted' : 'bg-[var(--bg-card)]'}
+                                ${isSelected ? 'ring-2 ring-inset ring-purple-600 bg-theme-purple/5' : ''}
+                                hover:ring-2 hover:ring-inset hover:ring-purple-600/30
                             `}
                         >
                             <div className="flex justify-between items-start">
@@ -133,7 +134,7 @@ export default function CalendarView({
                                             e.stopPropagation();
                                             onEventClick(event);
                                         }}
-                                        className="text-left text-xs p-1.5 rounded bg-theme-purple/10 hover:bg-theme-purple/20 text-theme-purple font-medium truncate transition-all hover:scale-[1.02]"
+                                        className="w-full text-left text-xs p-1.5 rounded bg-theme-purple/10 hover:bg-theme-purple/20 text-theme-purple font-medium truncate transition-colors hover:ring-2 hover:ring-inset hover:ring-purple-600/30"
                                         title={`${format(parseISO(event.event_date), 'HH:mm')} - ${event.name}`}
                                     >
                                         <span className="opacity-75 mr-1">{format(parseISO(event.event_date), 'HH:mm')}</span>
