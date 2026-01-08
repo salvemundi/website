@@ -149,7 +149,7 @@ export default function AdminActiviteitenPage() {
                 <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                     <button
                         onClick={() => router.push('/admin/activiteiten/nieuw')}
-                        className="bg-theme-purple text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2"
+                        className="bg-theme-purple text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2 dark:bg-theme-purple dark:text-white dark:hover:shadow-xl dark:hover:-translate-y-0.5 dark:focus:ring-2 dark:focus:ring-theme-purple/30"
                     >
                         <Plus className="h-5 w-5" />
                         Nieuwe Activiteit
@@ -161,7 +161,7 @@ export default function AdminActiviteitenPage() {
                             className={`px-4 py-2 rounded-full font-medium transition ${
                                 filter === 'all'
                                     ? 'bg-theme-purple text-white'
-                                    : 'bg-white text-slate-600 hover:bg-slate-100'
+                                    : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-transparent dark:text-white/70 dark:hover:bg-white/5'
                             }`}
                         >
                             Alle
@@ -171,7 +171,7 @@ export default function AdminActiviteitenPage() {
                             className={`px-4 py-2 rounded-full font-medium transition ${
                                 filter === 'upcoming'
                                     ? 'bg-theme-purple text-white'
-                                    : 'bg-white text-slate-600 hover:bg-slate-100'
+                                    : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-transparent dark:text-white/70 dark:hover:bg-white/5'
                             }`}
                         >
                             Aankomend
@@ -181,7 +181,7 @@ export default function AdminActiviteitenPage() {
                             className={`px-4 py-2 rounded-full font-medium transition ${
                                 filter === 'past'
                                     ? 'bg-theme-purple text-white'
-                                    : 'bg-white text-slate-600 hover:bg-slate-100'
+                                    : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-transparent dark:text-white/70 dark:hover:bg-white/5'
                             }`}
                         >
                             Verleden

@@ -131,12 +131,12 @@ function ListCard({
     children: React.ReactNode;
 }) {
     return (
-        <div className="bg-white rounded-2xl shadow-lg p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg dark:shadow-slate-900/50 p-6">
             <div className="flex items-center gap-3 mb-4">
-                <div className="bg-theme-purple/10 p-2 rounded-xl text-theme-purple">
+                <div className="bg-theme-purple/10 dark:bg-theme-purple/20 p-2 rounded-xl text-theme-purple dark:text-theme-purple-light">
                     {icon}
                 </div>
-                <h3 className="text-lg font-bold text-slate-800">{title}</h3>
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">{title}</h3>
             </div>
             {children}
         </div>
@@ -552,14 +552,14 @@ export default function AdminDashboardPage() {
                 <div className="mb-8 flex flex-col sm:flex-row gap-4">
                     <button
                         onClick={() => router.push('/admin/activiteiten/nieuw')}
-                        className="bg-theme-purple text-white px-4 sm:px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2 w-full sm:w-auto justify-center"
+                        className="bg-theme-purple hover:bg-theme-purple-dark dark:bg-theme-purple-light dark:hover:bg-theme-purple text-white px-4 sm:px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2 w-full sm:w-auto justify-center"
                     >
                         <Plus className="h-5 w-5" />
                         Nieuwe Activiteit
                     </button>
                     <button
                         onClick={() => router.push('/admin/activiteiten')}
-                        className="bg-white text-theme-purple px-4 sm:px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2 w-full sm:w-auto justify-center"
+                        className="bg-white dark:bg-slate-800 text-theme-purple dark:text-theme-purple-light hover:bg-slate-50 dark:hover:bg-slate-700 px-4 sm:px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl dark:shadow-slate-900/50 transition-all hover:-translate-y-0.5 flex items-center gap-2 w-full sm:w-auto justify-center"
                     >
                         <FileText className="h-5 w-5" />
                         Beheer Activiteiten
@@ -721,23 +721,23 @@ export default function AdminDashboardPage() {
                                     <button
                                         key={event.id}
                                         onClick={() => router.push(`/activiteiten/${event.id}`)}
-                                        className="flex items-center justify-between p-3 bg-purple-50 rounded-xl w-full hover:bg-purple-100 transition"
+                                        className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl w-full hover:bg-purple-100 dark:hover:bg-purple-900/30 transition"
                                     >
                                         <div className="text-left">
-                                            <p className="font-semibold text-slate-800 line-clamp-1">
+                                            <p className="font-semibold text-slate-800 dark:text-slate-100 line-clamp-1">
                                                 {event.name}
                                             </p>
-                                            <p className="text-sm text-slate-500">{formatDate(event.event_date)}</p>
+                                            <p className="text-sm text-slate-500 dark:text-slate-400">{formatDate(event.event_date)}</p>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-lg font-bold text-purple-700">{event.signups}</span>
-                                            <UserCheck className="h-5 w-5 text-purple-600" />
+                                            <span className="text-lg font-bold text-purple-700 dark:text-purple-400">{event.signups}</span>
+                                            <UserCheck className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                                         </div>
                                     </button>
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-slate-500 text-center py-4">Geen aankomende events</p>
+                            <p className="text-slate-500 dark:text-slate-400 text-center py-4">Geen aankomende events</p>
                         )}
                     </ListCard>
 
@@ -749,19 +749,19 @@ export default function AdminDashboardPage() {
                         {stats.upcomingBirthdays.length > 0 ? (
                             <div className="space-y-3">
                                 {stats.upcomingBirthdays.map(person => (
-                                    <div key={person.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                                    <div key={person.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                                         <div>
-                                            <p className="font-semibold text-slate-800">
+                                            <p className="font-semibold text-slate-800 dark:text-slate-100">
                                                 {person.first_name} {person.last_name}
                                             </p>
-                                            <p className="text-sm text-slate-500">{formatDate(person.birthday)}</p>
+                                            <p className="text-sm text-slate-500 dark:text-slate-400">{formatDate(person.birthday)}</p>
                                         </div>
-                                        <Cake className="h-5 w-5 text-theme-purple" />
+                                        <Cake className="h-5 w-5 text-theme-purple dark:text-theme-purple-light" />
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-slate-500 text-center py-4">Geen jarigen deze week</p>
+                            <p className="text-slate-500 dark:text-slate-400 text-center py-4">Geen jarigen deze week</p>
                         )}
                     </ListCard>
 
@@ -773,29 +773,29 @@ export default function AdminDashboardPage() {
                         {stats.topStickers.length > 0 ? (
                             <div className="space-y-3">
                                 {stats.topStickers.map((person, index) => (
-                                    <div key={person.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                                    <div key={person.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                                         <div className="flex items-center gap-3">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${index === 0 ? 'bg-yellow-500' :
-                                                index === 1 ? 'bg-slate-400' :
-                                                    'bg-orange-600'
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${index === 0 ? 'bg-yellow-500 dark:bg-yellow-600' :
+                                                index === 1 ? 'bg-slate-400 dark:bg-slate-500' :
+                                                    'bg-orange-600 dark:bg-orange-700'
                                                 }`}>
                                                 {index + 1}
                                             </div>
                                             <div>
-                                                <p className="font-semibold text-slate-800">
+                                                <p className="font-semibold text-slate-800 dark:text-slate-100">
                                                     {person.first_name} {person.last_name}
                                                 </p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-2xl font-bold text-theme-purple">{person.count}</span>
-                                            <Award className="h-5 w-5 text-theme-purple" />
+                                            <span className="text-2xl font-bold text-theme-purple dark:text-theme-purple-light">{person.count}</span>
+                                            <Award className="h-5 w-5 text-theme-purple dark:text-theme-purple-light" />
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-slate-500 text-center py-4">Geen stickers gevonden</p>
+                            <p className="text-slate-500 dark:text-slate-400 text-center py-4">Geen stickers gevonden</p>
                         )}
                     </ListCard>
                 </div>
@@ -808,28 +808,28 @@ export default function AdminDashboardPage() {
                             icon={<Activity className="h-5 w-5" />}
                         >
                             <div className="space-y-3">
-                                <div className="flex items-center justify-between p-3 bg-green-50 rounded-xl">
+                                <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-xl">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
+                                        <div className="w-3 h-3 rounded-full bg-green-500 dark:bg-green-400 animate-pulse" />
                                         <div>
-                                            <p className="font-semibold text-slate-800">API Status</p>
-                                            <p className="text-sm text-slate-500">Operationeel</p>
+                                            <p className="font-semibold text-slate-800 dark:text-slate-100">API Status</p>
+                                            <p className="text-sm text-slate-500 dark:text-slate-400">Operationeel</p>
                                         </div>
                                     </div>
-                                    <span className="text-green-600 font-bold">✓</span>
+                                    <span className="text-green-600 dark:text-green-400 font-bold">✓</span>
                                 </div>
-                                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                                <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                                     <div className="flex items-center gap-3">
-                                        <AlertCircle className="h-5 w-5 text-slate-400" />
+                                        <AlertCircle className="h-5 w-5 text-slate-400 dark:text-slate-500" />
                                         <div>
-                                            <p className="font-semibold text-slate-800">Recente Fouten</p>
-                                            <p className="text-sm text-slate-500">Laatste 24 uur</p>
+                                            <p className="font-semibold text-slate-800 dark:text-slate-100">Recente Fouten</p>
+                                            <p className="text-sm text-slate-500 dark:text-slate-400">Laatste 24 uur</p>
                                         </div>
                                     </div>
-                                    <span className="text-2xl font-bold text-slate-600">{stats.systemErrors}</span>
+                                    <span className="text-2xl font-bold text-slate-600 dark:text-slate-300">{stats.systemErrors}</span>
                                 </div>
-                                <div className="p-3 bg-blue-50 rounded-xl">
-                                    <p className="text-sm text-blue-700">
+                                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                                    <p className="text-sm text-blue-700 dark:text-blue-300">
                                         <strong>ICT Dashboard:</strong> Alleen zichtbaar voor ICT commissieleden.
                                     </p>
                                 </div>
