@@ -200,28 +200,28 @@ export default function IntroPage() {
                     onClick={() => { setLightboxSrc('/img/backgrounds/homepage-banner.jpg'); setLightboxOpen(true); }}
                   />
                   <img
-                    src="/img/intro-2-2025.jpg"
+                    src="/img/Intro-2-2025.jpg"
                     alt="polonaise"
                     className="w-full h-32 object-cover rounded-lg cursor-pointer"
                     onClick={() => { setLightboxSrc('/img/intro-2-2025.jpg'); setLightboxOpen(true); }}
                   />
                   <img
-                    src="/img/intro-3-2025.jpg"
+                    src="/img/Intro-3-2025.jpg"
                     alt="lasergame"
                     className="w-full h-32 object-cover rounded-lg cursor-pointer"
-                    onClick={() => { setLightboxSrc('/img/intro-3-2025.jpg'); setLightboxOpen(true); }}
+                    onClick={() => { setLightboxSrc('/img/Intro-3-2025.jpg'); setLightboxOpen(true); }}
                   />
                   <img
-                    src="/img/intro-4-2025.jpg"
+                    src="/img/Intro-4-2025.jpg"
                     alt="Groep"
                     className="w-full h-32 object-cover rounded-lg cursor-pointer"
-                    onClick={() => { setLightboxSrc('/img/intro-4-2025.jpg'); setLightboxOpen(true); }}
+                    onClick={() => { setLightboxSrc('/img/Intro-4-2025.jpg'); setLightboxOpen(true); }}
                   />
                    <img
-                    src="/img/intro2025.jpg"
+                    src="/img/Intro2025.jpg"
                     alt="Groep"
                     className="w-full h-32 object-cover rounded-lg cursor-pointer"
-                    onClick={() => { setLightboxSrc('/img/intro2025.jpg'); setLightboxOpen(true); }}
+                    onClick={() => { setLightboxSrc('/img/Intro2025.jpg'); setLightboxOpen(true); }}
                   />
                 </div>
               </div>
