@@ -1,4 +1,10 @@
 /** @type {import('next').NextConfig} */
+
+// Enable bundle analyzer when ANALYZE env is true
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 const nextConfig = {
     // Enable React strict mode
     reactStrictMode: true,
@@ -6,8 +12,13 @@ const nextConfig = {
     // Enable standalone output for Docker
     output: 'standalone',
 
+    // Enable compression for better performance on slow connections
+    compress: true,
+
     // Configure image domains for Next.js Image optimization
     images: {
+        // Enable modern image formats
+        formats: ['image/webp', 'image/avif'],
         remotePatterns: [
             {
                 protocol: 'https',
@@ -26,9 +37,28 @@ const nextConfig = {
 
     // Enable experimental features for App Router
     experimental: {
+        // Optimize imports for common packages
+        optimizePackageImports: [
+            'lucide-react',
+            '@radix-ui/react-avatar',
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-popover',
+            '@radix-ui/react-scroll-area',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-tooltip',
+        ],
         serverActions: {
             bodySizeLimit: '10mb',
         },
+    },
+
+    // Compiler optimizations
+    compiler: {
+        // Remove console.log in production
+        removeConsole: process.env.NODE_ENV === 'production' ? {
+            exclude: ['error', 'warn'],
+        } : false,
     },
 
     // Environment variables that should be available client-side
@@ -83,4 +113,4 @@ const nextConfig = {
     },
 };
 
-export default nextConfig;
+module.exports = withBundleAnalyzer(nextConfig);

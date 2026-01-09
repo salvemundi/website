@@ -1,7 +1,22 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: "class",
-  content: ["./src/**/*.{js,ts,jsx,tsx}"],
+  content: [
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "./public/**/*.html",
+  ],
+  // Safelist for dynamically generated classes
+  safelist: [
+    'bg-theme-purple',
+    'bg-theme-purple-light',
+    'text-theme-purple',
+    'text-theme-purple-light',
+    'border-theme-purple',
+    {
+      pattern: /^(bg|text|border)-(theme|slate|purple|green|red|blue)-(50|100|200|300|400|500|600|700|800|900)/,
+      variants: ['hover', 'dark', 'dark:hover'],
+    },
+  ],
   theme: {
     extend: {
       colors: {
@@ -131,4 +146,8 @@ export default {
     },
   },
   plugins: [],
+  // Production optimizations
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
 };
