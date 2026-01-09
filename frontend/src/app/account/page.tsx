@@ -20,6 +20,7 @@ import {
   ExternalLink,
   ChevronRight,
   Lock,
+  Feather,
 } from "lucide-react";
 
 interface EventSignup {
@@ -446,6 +447,8 @@ export default function AccountPage() {
             </div>
           </Tile>
 
+          {/* Safe Haven Availability removed — link available in Snelle links */}
+
           {/* Quick links */}
           <Tile
             className="lg:col-span-8"
@@ -475,6 +478,13 @@ export default function AccountPage() {
                 href="https://salvemundi.sharepoint.com"
                 external
               />
+              {user.is_safe_haven ? (
+                <QuickLink
+                  label="Beschikbaarheid Safe Haven"
+                  icon={<Feather className="h-6 w-6" />}
+                  href="/account/safe-haven-availability"
+                />
+              ) : null}
               {user.entra_id ? (
                 <QuickLink
                   label="Admin panel"
@@ -524,7 +534,7 @@ export default function AccountPage() {
                   <button
                     key={signup.id}
                     type="button"
-                    onClick={() => router.push("/activiteiten")}
+                    onClick={() => router.push(`/activiteiten/${signup.event_id.id}`)}
                     className="group flex w-full gap-4 rounded-2xl bg-white/40 p-4 text-left transition hover:bg-white/60 focus:outline-none focus:ring-2 focus:ring-theme-purple/30 border border-transparent hover:border-theme-purple/10"
                   >
                     <div className="shrink-0">

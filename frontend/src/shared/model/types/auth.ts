@@ -14,6 +14,7 @@ export interface User {
     minecraft_username?: string;
     role?: string; // Optional Directus role id or name
     committees?: Array<{ id: string; name: string; is_leader?: boolean }>;
+    is_safe_haven?: boolean; // Flag to indicate if user is a safe haven
 }
 
 export interface SignupData {

@@ -172,30 +172,30 @@ export default function WhatsAppGroupsPage() {
                     </div>
 
                     {/* Additional Info */}
-                    <div className="mt-8 bg-white dark:bg-[#1f1921] dark:border dark:border-white/10 rounded-2xl p-6">
-                        <h3 className="font-semibold text-paars mb-3">Groepsregels</h3>
-                        <ul className="space-y-2 text-sm text-[#1A1A3C]">
+                    <div className="mt-8 bg-white dark:bg-[#1f1921] dark:border dark:border-white/10 rounded-2xl p-6 text-[#1A1A3C] dark:text-white">
+                        <h3 className="font-semibold text-paars dark:text-white mb-3">Groepsregels</h3>
+                        <ul className="space-y-2 text-sm">
                             <li className="flex items-start gap-2">
                                 <span className="text-geel mt-1">•</span>
-                                <span className="text-[#1A1A3C]">Wees respectvol naar alle leden</span>
+                                <span>Wees respectvol naar alle leden</span>
                             </li>
                             <li className="flex items-start gap-2">
                                 <span className="text-geel mt-1">•</span>
-                                <span className="text-[#1A1A3C]">Houd gesprekken relevant voor het groepsonderwerp</span>
+                                <span>Houd gesprekken relevant voor het groepsonderwerp</span>
                             </li>
                             <li className="flex items-start gap-2">
                                 <span className="text-geel mt-1">•</span>
-                                <span className="text-[#1A1A3C]">Geen spam of promotionele inhoud</span>
+                                <span>Geen spam of promotionele inhoud</span>
                             </li>
                             <li className="flex items-start gap-2">
                                 <span className="text-geel mt-1">•</span>
-                                <span className="text-[#1A1A3C]">
+                                <span>
                                     Volg de{' '}
                                     <a
                                         href="https://salvemundi.nl/gedragscode"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-oranje underline hover:text-paars transition-colors font-semibold"
+                                        className="text-oranje dark:text-oranje underline hover:text-paars transition-colors font-semibold"
                                     >
                                         gedragscode van Salve Mundi
                                     </a>
