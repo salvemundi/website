@@ -534,7 +534,7 @@ export default function AccountPage() {
                   <button
                     key={signup.id}
                     type="button"
-                    onClick={() => router.push("/activiteiten")}
+                    onClick={() => router.push(`/activiteiten/${signup.event_id.id}`)}
                     className="group flex w-full gap-4 rounded-2xl bg-white/40 p-4 text-left transition hover:bg-white/60 focus:outline-none focus:ring-2 focus:ring-theme-purple/30 border border-transparent hover:border-theme-purple/10"
                   >
                     <div className="shrink-0">
