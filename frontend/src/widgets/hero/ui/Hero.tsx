@@ -166,7 +166,7 @@ export default function Hero() {
 
     const calculatedSlides = useMemo(() => {
         return heroBanners?.length > 0
-            ? heroBanners.map(b => getImageUrl(b.image, { quality: 75, width: 1200, format: 'webp' }))
+            ? heroBanners.map(b => getImageUrl(b.image))
             : defaultBanners;
     }, [heroBanners]);
 
@@ -395,7 +395,7 @@ export default function Hero() {
                                                 alt="Salve Mundi"
                                                 fill
                                                 priority
-                                                quality={75}
+                                                unoptimized={true}
                                                 sizes="(max-width: 640px) 100vw, 0px"
                                                 className="object-cover object-center"
                                             />
@@ -426,7 +426,7 @@ export default function Hero() {
                                                         alt="Salve Mundi sfeerimpressie"
                                                         fill
                                                         priority={index === 0}
-                                                        quality={75}
+                                                        unoptimized={true}
                                                         sizes="(min-width: 640px) 50vw, 0px"
                                                         className="object-cover object-center"
                                                     />

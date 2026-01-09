@@ -78,6 +78,10 @@ const nextConfig = {
         return config;
     },
 
+    // Turbopack configuration (Next.js 16+)
+    // Empty config acknowledges webpack config above
+    turbopack: {},
+
     // Disable x-powered-by header
     poweredByHeader: false,
 
