@@ -19,7 +19,9 @@
     "generate:icons": "node scripts/generate-icons.mjs",
     "generate:og": "node scripts/generate-og-images.mjs",
     "og-server": "node server/og-server.mjs",
-    "compress:images": "node scripts/compress-images.js"
+    "compress:images": "node scripts/compress-images.js",
+    "analyze": "cross-env ANALYZE=true next build",
+    "lighthouse": "lhci autorun"
   },
   "dependencies": {
     "@azure/msal-browser": "^4.26.2",
@@ -88,12 +90,15 @@
   "devDependencies": {
     "@cloudflare/next-on-pages": "^1.13.5",
     "@eslint/js": "^9.9.1",
+    "@lhci/cli": "^0.13.0",
+    "@next/bundle-analyzer": "^15.0.0",
     "@playwright/test": "^1.56.1",
     "@types/node": "^20.19.27",
     "@types/react": "^18.3.5",
     "@types/react-datepicker": "^6.2.0",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.18",
+    "cross-env": "^7.0.3",
     "dotenv": "^17.2.3",
     "eslint": "^9.9.1",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
