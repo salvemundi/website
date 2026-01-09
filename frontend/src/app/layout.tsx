@@ -71,17 +71,13 @@ export default function RootLayout({
                 {/* Resource hints for better performance */}
                 <link rel="preconnect" href="https://admin.salvemundi.nl" />
                 <link rel="dns-prefetch" href="https://admin.salvemundi.nl" />
-                <link rel="preconnect" href="https://fonts.googleapis.com" />
-                <link rel="dns-prefetch" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
                 
                 {/* Preload critical assets */}
                 <link rel="preload" href="/logo_purple.svg" as="image" />
                 
-                {/* Load Material Symbols with display=swap for better performance */}
-                <link 
-                    rel="stylesheet" 
-                    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" 
-                />
+                {/* Preload self-hosted Material Symbols font */}
+                <link rel="preload" href="/fonts/material-symbols/MaterialSymbolsOutlined.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
             </head>
             <body className="min-h-screen bg-background dark:bg-background-darker text-ink dark:text-white relative transition-colors duration-300">
                 <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-oranje/10/80 via-transparent to-oranje/20/60 dark:from-oranje/5/40 dark:to-paars/10/40" aria-hidden="true" />
