@@ -173,24 +173,24 @@ export default function WhatsAppGroupsPage() {
                     </Card>
 
                     {/* Additional Info */}
-                    <Card variant="card" className="mt-8">
+                    <Card variant="card" className=" mt-8">
                         <h3 className="font-semibold text-paars mb-3">Groepsregels</h3>
-                        <ul className="space-y-2 text-sm text-[#1A1A3C]">
+                        <ul className="space-y-2 text-sm ">
                             <li className="flex items-start gap-2">
                                 <span className="text-geel mt-1">•</span>
-                                <span className="text-[#1A1A3C]">Wees respectvol naar alle leden</span>
+                                <span className="">Wees respectvol naar alle leden</span>
                             </li>
                             <li className="flex items-start gap-2">
                                 <span className="text-geel mt-1">•</span>
-                                <span className="text-[#1A1A3C]">Houd gesprekken relevant voor het groepsonderwerp</span>
+                                <span className="">Houd gesprekken relevant voor het groepsonderwerp</span>
                             </li>
                             <li className="flex items-start gap-2">
                                 <span className="text-geel mt-1">•</span>
-                                <span className="text-[#1A1A3C]">Geen spam of promotionele inhoud</span>
+                                <span className="">Geen spam of promotionele inhoud</span>
                             </li>
                             <li className="flex items-start gap-2">
                                 <span className="text-geel mt-1">•</span>
-                                <span className="text-[#1A1A3C]">
+                                <span className="">
                                     Volg de{' '}
                                     <a
                                         href="https://salvemundi.nl/gedragscode"
