@@ -1,9 +1,18 @@
 /** @type {import('next').NextConfig} */
 
-// Enable bundle analyzer when ANALYZE env is true
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
-});
+// Try to enable bundle analyzer when ANALYZE env is true. If the
+// package isn't installed, fall back to the plain config so the
+// dev server can run without the optional dependency.
+let withBundleAnalyzer: any = (config: any) => config;
+try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const _analyzer = require('@next/bundle-analyzer');
+    withBundleAnalyzer = _analyzer({ enabled: process.env.ANALYZE === 'true' });
+} catch (err) {
+    // Package not installed — continue without analyzer.
+    // This keeps local development working when the optional
+    // dependency is absent.
+}
 
 const nextConfig = {
     // Enable React strict mode
