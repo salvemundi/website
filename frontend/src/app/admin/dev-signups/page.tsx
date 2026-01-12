@@ -14,7 +14,7 @@ interface Signup {
     last_name?: string;
     product_name: string;
     amount: number;
-    approval_status: 'pending' | 'approved' | 'rejected';
+    approval_status: 'pending' | 'approved' | 'rejected' | 'auto_approved';
     payment_status: string;
 }
 
