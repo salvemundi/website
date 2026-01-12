@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { format } from 'date-fns';
-import { Shield, CheckCircle, XCircle, RefreshCw, Clock, AlertCircle } from 'lucide-react';
+import { Shield, CheckCircle, XCircle, RefreshCw, Clock } from 'lucide-react';
 
 interface Signup {
     id: string;
@@ -476,8 +476,8 @@ export default function DevSignupsPage() {
                                     key={tab.id}
                                     onClick={() => setFilterStatus(tab.id as any)}
                                     className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${filterStatus === tab.id
-                                            ? 'bg-theme-purple text-white shadow-lg'
-                                            : 'text-theme-purple-lighter/60 hover:text-theme-purple-lighter hover:bg-white/5'
+                                        ? 'bg-theme-purple text-white shadow-lg'
+                                        : 'text-theme-purple-lighter/60 hover:text-theme-purple-lighter hover:bg-white/5'
                                         }`}
                                 >
                                     {tab.label}
