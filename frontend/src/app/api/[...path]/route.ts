@@ -14,7 +14,7 @@ export async function GET(
     // (Though Next.js App Router should handle this automatically by precedence)
 
     const targetUrl = `${DIRECTUS_URL}/${path}${url.search}`;
-    console.log(`[Directus Proxy] GET ${path} -> ${targetUrl}`);
+    console.warn(`[Directus Proxy] GET ${path} -> ${targetUrl}`);
 
     try {
         const response = await fetch(targetUrl, {
@@ -42,7 +42,7 @@ export async function POST(
     const body = await request.json().catch(() => null);
 
     const targetUrl = `${DIRECTUS_URL}/${path}`;
-    console.log(`[Directus Proxy] POST ${path} -> ${targetUrl}`);
+    console.warn(`[Directus Proxy] POST ${path} -> ${targetUrl}`);
 
     try {
         const response = await fetch(targetUrl, {
@@ -71,6 +71,7 @@ export async function PATCH(
     const body = await request.json().catch(() => null);
 
     const targetUrl = `${DIRECTUS_URL}/${path}`;
+    console.warn(`[Directus Proxy] PATCH ${path} -> ${targetUrl}`);
 
     try {
         const response = await fetch(targetUrl, {
@@ -85,6 +86,34 @@ export async function PATCH(
         const data = await response.json().catch(() => null);
         return NextResponse.json(data, { status: response.status });
     } catch (error: any) {
-        return NextResponse.json({ error: 'Directus Proxy Error' }, { status: 500 });
+        console.error(`[Directus Proxy] PATCH ${path} failed:`, error.message);
+        return NextResponse.json({ error: 'Directus Proxy Error', details: error.message }, { status: 500 });
+    }
+}
+
+export async function DELETE(
+    request: NextRequest,
+    context: { params: Promise<{ path: string[] }> }
+) {
+    const params = await context.params;
+    const path = params.path.join('/');
+    const url = new URL(request.url);
+    const targetUrl = `${DIRECTUS_URL}/${path}${url.search}`;
+    console.warn(`[Directus Proxy] DELETE ${path} -> ${targetUrl}`);
+
+    try {
+        const response = await fetch(targetUrl, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': request.headers.get('Authorization') || '',
+                'Content-Type': 'application/json',
+            }
+        });
+
+        const data = await response.json().catch(() => null);
+        return NextResponse.json(data, { status: response.status });
+    } catch (error: any) {
+        console.error(`[Directus Proxy] DELETE ${path} failed:`, error.message);
+        return NextResponse.json({ error: 'Directus Proxy Error', details: error.message }, { status: 500 });
     }
 }
