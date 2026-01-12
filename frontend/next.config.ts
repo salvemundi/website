@@ -1,20 +1,6 @@
-/** @type {import('next').NextConfig} */
+import type { NextConfig } from 'next';
 
-// Try to enable bundle analyzer when ANALYZE env is true. If the
-// package isn't installed, fall back to the plain config so the
-// dev server can run without the optional dependency.
-let withBundleAnalyzer: any = (config: any) => config;
-try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const _analyzer = require('@next/bundle-analyzer');
-    withBundleAnalyzer = _analyzer({ enabled: process.env.ANALYZE === 'true' });
-} catch (err) {
-    // Package not installed — continue without analyzer.
-    // This keeps local development working when the optional
-    // dependency is absent.
-}
-
-const nextConfig = {
+const nextConfig: NextConfig = {
     // Enable React strict mode
     reactStrictMode: true,
 
@@ -86,7 +72,6 @@ const nextConfig = {
     },
 
     // Webpack configuration for compatibility
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     webpack: (config: any) => {
         config.resolve.fallback = {
             ...config.resolve.fallback,
@@ -98,39 +83,29 @@ const nextConfig = {
     },
 
     // Turbopack configuration (Next.js 16+)
-    // Empty config acknowledges webpack config above
     turbopack: {},
 
     // Disable x-powered-by header
     poweredByHeader: false,
 
-    // Configure rewrites for API proxy (development & production)
-    async rewrites() {
-        // Hardcoded as requested to ensure connection to production backend
-        const DIRECTUS_URL = 'https://admin.salvemundi.nl';
-        const PAYMENT_API_URL = process.env.PAYMENT_API_URL || process.env.NEXT_PUBLIC_PAYMENT_API_URL || 'http://payment-api:3002';
-
-        console.log('📍 Proxying /api requests to:', DIRECTUS_URL);
-        console.log('📍 Proxying /api/admin and /api/payments directly via rewrites to:', PAYMENT_API_URL);
-        console.log('📍 NOTE: /api/coupons is now handled via file-based API route for better debugging');
-
-        return [
-            // Payment API endpoints - must come FIRST to match before catch-all
-            {
-                source: '/api/admin/:path*',
-                destination: `${PAYMENT_API_URL}/api/admin/:path*`,
-            },
-            {
-                source: '/api/payments/:path*',
-                destination: `${PAYMENT_API_URL}/api/payments/:path*`,
-            },
-            // Directus endpoints - catch-all for everything else
-            {
-                source: '/api/:path*',
-                destination: `${DIRECTUS_URL}/:path*`,
-            },
-        ];
-    },
+    // IMPORTANT: Rewrites removed. 
+    // All /api/admin, /api/payments, and /api/coupons are now handled via file-based routes
+    // to allow for better debugging, logging, and consistency across environments.
+    // Catches for Directus should also be handled via src/app/api/[...path]/route.ts
 };
 
-module.exports = withBundleAnalyzer(nextConfig);
+// Handle bundle analyzer
+const finalConfig = async () => {
+    if (process.env.ANALYZE === 'true') {
+        try {
+            const withBundleAnalyzer = (await import('@next/bundle-analyzer')).default;
+            return withBundleAnalyzer({ enabled: true })(nextConfig);
+        } catch (e) {
+            console.warn('Bundle analyzer requested but failed to load:', e);
+            return nextConfig;
+        }
+    }
+    return nextConfig;
+};
+
+export default await finalConfig();
