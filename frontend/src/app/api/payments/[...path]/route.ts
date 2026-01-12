@@ -59,9 +59,10 @@ async function proxyRequest(
         }
 
     } catch (error: any) {
-        console.error(`[Payment Proxy][${traceId}] Failed:`, error.message);
+        console.error(`[Payment Proxy][${traceId}] Failed to fetch ${targetUrl}:`, error.message);
+        if (error.stack) console.error(error.stack);
         return NextResponse.json(
-            { error: 'Payment Proxy Error', details: error.message },
+            { error: 'Payment Proxy Error', details: error.message, target: targetUrl },
             { status: 500 }
         );
     }
