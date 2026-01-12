@@ -92,21 +92,33 @@ export default function SignUp() {
 
     const verifyCoupon = async () => {
         if (!form.coupon) return;
+        const traceId = Math.random().toString(36).substring(7);
+        console.info(`[Coupon][${traceId}] Verifying coupon: ${form.coupon}`);
+
         setVerifyingCoupon(true);
         setCouponStatus(null);
 
         try {
-            const response = await fetch('/api/coupons/validate', { // Proxy via next.config.ts 
-                // Wait, frontend doesn't have direct access to payment-api usually unless via Next.js API route or proxy. 
-                // The current codebase uses `/api/payments/create` which maps to `app/api/payments/create/route.ts` (Next.js backend)
-                // I need to create the Next.js API route for coupon validation too!
+            const startTime = Date.now();
+            const response = await fetch('/api/coupons/validate', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Trace-Id': traceId
+                },
                 body: JSON.stringify({ couponCode: form.coupon }),
             });
 
+            const duration = Date.now() - startTime;
             const data = await response.json();
+
+            console.group(`[Coupon][${traceId}] Result after ${duration}ms`);
+            console.log('Status:', response.status);
+            console.log('Payload:', data);
+            console.groupEnd();
+
             if (response.ok && data.valid) {
+                console.info(`[Coupon][${traceId}] Success! Applied discount: ${data.discount_value}`);
                 setCouponStatus({
                     valid: true,
                     message: `Korting toegepast: ${data.description}`,
@@ -114,22 +126,27 @@ export default function SignUp() {
                     type: data.discount_type
                 });
             } else {
+                console.warn(`[Coupon][${traceId}] Invalid/Failed:`, data.error || 'Unknown');
                 setCouponStatus({ valid: false, message: data.error || 'Ongeldige coupon code' });
             }
-        } catch (error) {
+        } catch (error: any) {
+            console.error(`[Coupon][${traceId}] Fatal Fetch Error:`, error.message);
             setCouponStatus({ valid: false, message: 'Kon coupon niet valideren' });
         } finally {
             setVerifyingCoupon(false);
         }
     };
 
-    const initiateContributionPayment = async () => {
+    const initiateContributionPayment = async (): Promise<boolean> => {
+        const traceId = Math.random().toString(36).substring(7);
+        console.info(`[Payment][${traceId}] Initiating payment process...`);
+
         try {
             const payload = {
                 amount: '20.00',
                 description: 'Contributie Salve Mundi',
                 redirectUrl: window.location.origin + '/lidmaatschap/bevestiging',
-                isContribution: true,
+                isContribution: true, // Make sure backend expects this boolean
                 userId: user ? user.id : null,
                 firstName: user ? undefined : form.voornaam,
                 lastName: user ? undefined : form.achternaam,
@@ -137,27 +154,40 @@ export default function SignUp() {
                 couponCode: couponStatus?.valid ? form.coupon : undefined
             };
 
+            console.log(`[Payment][${traceId}] Payload:`, payload);
+
             const response = await fetch('/api/payments/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-Trace-Id': traceId
                 },
                 body: JSON.stringify(payload),
             });
 
             const data = await response.json();
+            console.log(`[Payment][${traceId}] Response (${response.status}):`, data);
 
-            if (response.ok && data.checkoutUrl) {
-                window.location.href = data.checkoutUrl;
+            if (response.ok && (data.checkoutUrl || data.paymentId)) {
+                // If we get a checkoutUrl (Mollie) or just a paymentId (Free transaction), proceed
+                if (data.checkoutUrl) {
+                    console.info(`[Payment][${traceId}] Redirecting to Mollie: ${data.checkoutUrl}`);
+                    window.location.href = data.checkoutUrl;
+                } else {
+                    console.info(`[Payment][${traceId}] Free transaction completed. ID: ${data.paymentId}`);
+                }
+                return true;
             } else {
-                console.error('Payment creation failed:', data.error);
-                alert('Er ging iets mis bij het aanmaken van de betaling. Probeer het later opnieuw.');
+                console.error(`[Payment][${traceId}] Creation failed:`, data.error);
+                alert(`Er went iets mis: ${data.error || 'Onbekende fout'}`);
                 setIsProcessing(false);
+                return false;
             }
-        } catch (error) {
-            console.error('Error initiating payment:', error);
+        } catch (error: any) {
+            console.error(`[Payment][${traceId}] Connection error:`, error.message);
             alert('Er ging iets mis bij de verbinding voor de betaling.');
             setIsProcessing(false);
+            return false;
         }
     };
 
@@ -173,7 +203,11 @@ export default function SignUp() {
         setIsProcessing(true);
 
         try {
-            await initiateContributionPayment();
+            const success = await initiateContributionPayment();
+            if (!success) {
+                // initiateContributionPayment already handled alert regarding error
+                return;
+            }
 
             // Check if we're in development environment
             const isDev = typeof window !== 'undefined' && (
@@ -183,13 +217,19 @@ export default function SignUp() {
             );
 
             if (isDev && isGuest) {
-                // Development environment - show pending approval message
-                alert('✅ Bedankt voor je betaling!\n\nJe aanmelding is ontvangen en wacht op goedkeuring door een administrator.\n\nJe ontvangt een email zodra je account is aangemaakt.');
+                // Only show this if we didn't redirect (which happens for paid tx)
+                // But typically window.location.href kills the page so this won't show for paid.
+                // For free transactions (if we supported redirectUrl there properly), it might.
+                // safe to leave for now as "Success fallback"
             }
         } catch (error) {
             console.error('Payment initiation failed:', error);
             alert('Er is een fout opgetreden bij het initiëren van de betaling. Probeer het opnieuw.');
         } finally {
+            // Only stop processing if we are NOT redirecting (i.e. if it failed)
+            // But since we returned false on failure, we are here. 
+            // If it succeeded, we might be redirecting, so unmounting.
+            // But just in case:
             setIsProcessing(false);
         }
     };

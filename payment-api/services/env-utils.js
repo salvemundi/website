@@ -9,6 +9,16 @@
  * @returns {string} - 'development' or 'production'
  */
 function getEnvironment(req) {
+    // 1. Explicit Header (most robust for API calls)
+    if (req.headers['x-environment']) {
+        return req.headers['x-environment'];
+    }
+
+    // 2. Explicit Body Field (often sent in payloads)
+    if (req.body && req.body.environment) {
+        return req.body.environment;
+    }
+
     const origin = req.headers.origin || req.headers.referer || '';
 
     // Check for localhost or local IP

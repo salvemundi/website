@@ -8,12 +8,12 @@
     "dev": "nodemon server.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
+    "express": "^4.21.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
+    "dotenv": "^16.4.7",
     "@mollie/api-client": "^3.7.0",
-    "axios": "^1.6.2",
-    "qrcode": "^1.5.3"
+    "axios": "^1.7.9",
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
