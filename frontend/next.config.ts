@@ -37,7 +37,7 @@ const nextConfig = {
         localPatterns: [
             {
                 pathname: '/api/assets/**',
-                search: '**',
+                search: '',
             },
         ],
     },
