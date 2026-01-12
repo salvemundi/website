@@ -257,15 +257,22 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
     });
 
     router.post('/webhook', async (req, res) => {
+        const traceId = `hook-${Math.random().toString(36).substring(7)}`;
+        console.warn(`[Webhook][${traceId}] Incoming webhook request`);
+
         try {
             const paymentId = req.body.id;
 
             if (!paymentId) {
+                console.warn(`[Webhook][${traceId}] Missing payment ID`);
                 return res.status(400).send('Missing payment ID.');
             }
 
+            console.warn(`[Webhook][${traceId}] Processing payment: ${paymentId}`);
             const payment = await mollieClient.payments.get(paymentId);
             const { transactionRecordId, registrationId, notContribution, userId, firstName, lastName, email, couponId } = payment.metadata;
+
+            console.warn(`[Webhook][${traceId}] Metadata:`, JSON.stringify(payment.metadata));
 
             let internalStatus = 'open';
             if (payment.isPaid()) internalStatus = 'paid';
@@ -273,15 +280,19 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
             else if (payment.isCanceled()) internalStatus = 'canceled';
             else if (payment.isExpired()) internalStatus = 'expired';
 
+            console.warn(`[Webhook][${traceId}] Mollie Status: ${payment.status} -> Internal: ${internalStatus}`);
+
             if (transactionRecordId) {
+                console.warn(`[Webhook][${traceId}] Updating transaction ${transactionRecordId} to ${internalStatus}`);
                 await directusService.updateDirectusTransaction(
                     DIRECTUS_URL,
                     DIRECTUS_API_TOKEN,
                     transactionRecordId,
                     { payment_status: internalStatus }
                 );
+            } else {
+                console.warn(`[Webhook][${traceId}] No transactionRecordId in metadata!`);
             }
-
 
             if (payment.isPaid()) {
                 // Check approval status before proceeding with account creation
@@ -292,11 +303,13 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                         transactionRecordId
                     );
 
+                    console.warn(`[Webhook][${traceId}] Transaction fetched:`, JSON.stringify(transaction));
+
                     // Only proceed if approved (or auto-approved)
                     if (transaction &&
                         transaction.approval_status !== 'approved' &&
                         transaction.approval_status !== 'auto_approved') {
-                        console.log(`[Webhook] Payment ${paymentId} paid but approval pending. Transaction: ${transactionRecordId}, Status: ${transaction.approval_status}`);
+                        console.warn(`[Webhook][${traceId}] Payment paid but approval pending/rejected. Status: ${transaction.approval_status}. Stopping auto-provisioning.`);
                         return res.status(200).send('Payment recorded, awaiting approval');
                     }
                 }
@@ -326,36 +339,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
 
                         // Also increment coupon usage if applicable
                         if (couponId) {
-                            const coupon = await directusService.getCoupon(DIRECTUS_URL, DIRECTUS_API_TOKEN, null); // We don't have code here easily, but we have ID
-                            // Wait, getCoupon expects code. We need helper to update by ID directly.
-                            // updateCouponUsage works by ID. We need current count.
-                            // Wait, safely: we should probably fetch by ID. 
-                            // But my getCoupon is by Code.
-
-                            // Let's optimise: just fetch the coupon by ID via direct axios in service or just blindly increment?
-                            // Directus doesn't have atomic increment easily via API without extension.
-                            // We have to read-modify-write.
-                            // For now, let's skip re-fetching count here to save complexity and assume "getCoupon" or similar can help later.
-                            // Actually, let's just use updateCouponUsage and we need to know the current count.
-                            // Accessing directusService to get transaction or similar.
-
-                            // CORRECT FIX: We need to fetch the coupon to know 'usage_count'.
-                            try {
-                                // Quick hack: fetch via directusService.getTransaction or similar helper? No, need specific coupon fetch.
-                                // I'll add a simple fetch-by-id logic inline or extend service.
-                                // For now, to avoid breaking, I will just call updateCouponUsage with a hardcoded increment logic if I can.
-                                // But I can't without current value.
-
-                                // Let's request the coupon by ID.
-                                const usedCoupon = await directusService.getTransaction(DIRECTUS_URL, DIRECTUS_API_TOKEN, couponId).catch(() => null);
-                                // Wait, that's transaction.
-
-                                // I will skip the webhook increment for this iteration to avoid breaking without a 'getCouponById' helper.
-                                // Usage count is updated in the 0-flow above.
-                                // TODO: Add coupon usage increment for paid Mollie transactions. 
-                            } catch (e) {
-                                console.error("Failed to update coupon usage in webhook", e);
-                            }
+                            // Coupon increment logic skipped for now
                         }
                     } else if (firstName && lastName && email) {
                         const credentials = await membershipService.createMember(
@@ -384,7 +368,8 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
             res.status(200).send('OK');
 
         } catch (error) {
-            console.error('Webhook Error:', error.message);
+            console.error(`[Webhook][${traceId || 'err'}] Error:`, error.message);
+            if (error.stack) console.error(error.stack);
             res.status(200).send('Webhook processed with errors');
         }
     });
