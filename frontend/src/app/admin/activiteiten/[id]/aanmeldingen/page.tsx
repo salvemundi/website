@@ -100,7 +100,7 @@ export default function AanmeldingenPage() {
         switch (status) {
             case 'paid':
                 return (
-                    <span className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                    <span className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200 rounded-full text-sm font-medium">
                         <CheckCircle className="h-4 w-4" />
                         Betaald
                     </span>
@@ -108,7 +108,7 @@ export default function AanmeldingenPage() {
             case 'failed':
             case 'canceled':
                 return (
-                    <span className="flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
+                    <span className="flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200 rounded-full text-sm font-medium">
                         <XCircle className="h-4 w-4" />
                         Mislukt
                     </span>
@@ -116,7 +116,7 @@ export default function AanmeldingenPage() {
             case 'open':
             default:
                 return (
-                    <span className="flex items-center gap-1 px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
+                    <span className="flex items-center gap-1 px-3 py-1 bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200 rounded-full text-sm font-medium">
                         <Clock className="h-4 w-4" />
                         Open
                     </span>
@@ -163,26 +163,26 @@ export default function AanmeldingenPage() {
             <div className="container mx-auto px-4 py-8 max-w-7xl">
                 {/* Stats Cards */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <div className="bg-white rounded-xl shadow p-4">
-                        <p className="text-slate-600 text-sm mb-1">Totaal</p>
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-4">
+                        <p className="text-slate-600 dark:text-slate-300 text-sm mb-1">Totaal</p>
                         <p className="text-3xl font-bold text-theme-purple">{stats.total}</p>
                     </div>
-                    <div className="bg-white rounded-xl shadow p-4">
-                        <p className="text-slate-600 text-sm mb-1">Betaald</p>
-                        <p className="text-3xl font-bold text-green-600">{stats.paid}</p>
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-4">
+                        <p className="text-slate-600 dark:text-slate-300 text-sm mb-1">Betaald</p>
+                        <p className="text-3xl font-bold text-green-600 dark:text-green-300">{stats.paid}</p>
                     </div>
-                    <div className="bg-white rounded-xl shadow p-4">
-                        <p className="text-slate-600 text-sm mb-1">Open</p>
-                        <p className="text-3xl font-bold text-yellow-600">{stats.open}</p>
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-4">
+                        <p className="text-slate-600 dark:text-slate-300 text-sm mb-1">Open</p>
+                        <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-300">{stats.open}</p>
                     </div>
-                    <div className="bg-white rounded-xl shadow p-4">
-                        <p className="text-slate-600 text-sm mb-1">Mislukt</p>
-                        <p className="text-3xl font-bold text-red-600">{stats.failed}</p>
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-4">
+                        <p className="text-slate-600 dark:text-slate-300 text-sm mb-1">Mislukt</p>
+                        <p className="text-3xl font-bold text-red-600 dark:text-red-300">{stats.failed}</p>
                     </div>
                 </div>
 
                 {/* Search & Export */}
-                <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-6 mb-6">
                     <div className="flex flex-col sm:flex-row gap-4">
                         <div className="flex-1 relative">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
@@ -191,7 +191,7 @@ export default function AanmeldingenPage() {
                                 placeholder="Zoek op naam, email of telefoon..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                                className="w-full pl-12 pr-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
                             />
                         </div>
                         <button
@@ -210,15 +210,15 @@ export default function AanmeldingenPage() {
                         <div className="h-12 w-12 animate-spin rounded-full border-4 border-theme-purple/20 border-t-theme-purple" />
                     </div>
                 ) : filteredSignups.length === 0 ? (
-                    <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-                        <p className="text-slate-600 text-lg">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-12 text-center">
+                        <p className="text-slate-600 dark:text-slate-300 text-lg">
                             {searchQuery ? 'Geen aanmeldingen gevonden' : 'Nog geen aanmeldingen'}
                         </p>
                     </div>
                 ) : (
                     <>
                         {/* Desktop View */}
-                        <div className="hidden md:block bg-white rounded-2xl shadow-lg overflow-hidden">
+                        <div className="hidden md:block bg-white dark:bg-slate-900 rounded-2xl shadow-lg overflow-hidden">
                             <table className="w-full">
                                 <thead className="bg-gradient-to-r from-theme-purple to-paars text-white">
                                     <tr>
@@ -229,19 +229,19 @@ export default function AanmeldingenPage() {
                                         <th className="px-6 py-4 text-left text-sm font-bold uppercase">Datum</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-200">
+                                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                                     {filteredSignups.map((signup) => (
-                                        <tr key={signup.id} className="hover:bg-slate-50 transition">
-                                            <td className="px-6 py-4 font-medium text-slate-900">
+                                        <tr key={signup.id} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+                                            <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">
                                                 {getName(signup)}
                                             </td>
-                                            <td className="px-6 py-4 text-slate-600">
+                                            <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
                                                 <a href={`mailto:${getEmail(signup)}`} className="flex items-center gap-2 hover:text-theme-purple transition">
                                                     <Mail className="h-4 w-4" />
                                                     {getEmail(signup)}
                                                 </a>
                                             </td>
-                                            <td className="px-6 py-4 text-slate-600">
+                                            <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
                                                 {getPhone(signup) !== '-' ? (
                                                     <a href={`tel:${getPhone(signup)}`} className="flex items-center gap-2 hover:text-theme-purple transition">
                                                         <Phone className="h-4 w-4" />
@@ -254,7 +254,7 @@ export default function AanmeldingenPage() {
                                             <td className="px-6 py-4">
                                                 {getStatusBadge(signup.payment_status)}
                                             </td>
-                                            <td className="px-6 py-4 text-slate-600 text-sm">
+                                            <td className="px-6 py-4 text-slate-600 dark:text-slate-300 text-sm">
                                                 {format(new Date(signup.created_at), 'dd MMM yyyy HH:mm', { locale: nl })}
                                             </td>
                                         </tr>
@@ -266,23 +266,23 @@ export default function AanmeldingenPage() {
                         {/* Mobile View */}
                         <div className="md:hidden space-y-4">
                             {filteredSignups.map((signup) => (
-                                <div key={signup.id} className="bg-white rounded-xl shadow p-4">
+                                <div key={signup.id} className="bg-white dark:bg-slate-800 rounded-xl shadow p-4">
                                     <div className="flex items-start justify-between mb-3">
                                         <div>
-                                            <p className="font-bold text-slate-900">{getName(signup)}</p>
-                                            <p className="text-sm text-slate-500">
+                                            <p className="font-bold text-slate-900 dark:text-slate-100">{getName(signup)}</p>
+                                            <p className="text-sm text-slate-500 dark:text-slate-400">
                                                 {format(new Date(signup.created_at), 'dd MMM yyyy HH:mm', { locale: nl })}
                                             </p>
                                         </div>
                                         {getStatusBadge(signup.payment_status)}
                                     </div>
                                     <div className="space-y-2 text-sm">
-                                        <a href={`mailto:${getEmail(signup)}`} className="flex items-center gap-2 text-slate-600 hover:text-theme-purple">
+                                        <a href={`mailto:${getEmail(signup)}`} className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-theme-purple">
                                             <Mail className="h-4 w-4" />
                                             {getEmail(signup)}
                                         </a>
                                         {getPhone(signup) !== '-' && (
-                                            <a href={`tel:${getPhone(signup)}`} className="flex items-center gap-2 text-slate-600 hover:text-theme-purple">
+                                            <a href={`tel:${getPhone(signup)}`} className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-theme-purple">
                                                 <Phone className="h-4 w-4" />
                                                 {getPhone(signup)}
                                             </a>

@@ -315,7 +315,55 @@ export default function KroegentochtPage() {
                                         </div>
                                     )}
 
-                                    {/* Name */}
+                                {/* Name */}
+                                <label className="font-semibold text-white">
+                                    Naam
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={form.name}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder="Voor- en achternaam"
+                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
+                                    />
+                                </label>
+
+                                {/* Email */}
+                                <label className="font-semibold text-white">
+                                    E-mailadres
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={form.email}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder="jouw@email.nl"
+                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
+                                    />
+                                </label>
+
+                                {/* Association */}
+                                <label className="font-semibold text-white">
+                                    Vereniging
+                                    <select
+                                        name="association"
+                                        value={form.association}
+                                        onChange={handleChange}
+                                        required
+                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
+                                    >
+                                        <option value="">Selecteer een vereniging</option>
+                                        {ASSOCIATIONS.map((assoc) => (
+                                            <option key={assoc} value={assoc}>
+                                                {assoc}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+
+                                {/* Custom Association */}
+                                {form.association === 'Anders' && (
                                     <label className="font-semibold text-white">
                                         Naam
                                         <input
@@ -324,24 +372,65 @@ export default function KroegentochtPage() {
                                             value={form.name}
                                             onChange={handleChange}
                                             required
-                                            placeholder="Voor- en achternaam"
-                                            className="mt-1 p-2 rounded w-full bg-white text-theme-purple"
+                                            placeholder="Naam van je vereniging"
+                                            className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
                                         />
                                     </label>
 
-                                    {/* Email */}
-                                    <label className="font-semibold text-white">
-                                        E-mailadres
-                                        <input
-                                            type="email"
-                                            name="email"
-                                            value={form.email}
-                                            onChange={handleChange}
-                                            required
-                                            placeholder="jouw@email.nl"
-                                            className="mt-1 p-2 rounded w-full bg-white text-theme-purple"
-                                        />
-                                    </label>
+                                {/* Amount of Tickets */}
+                                <label className="font-semibold text-white">
+                                    Aantal tickets
+                                    <input
+                                        type="number"
+                                        name="amount_tickets"
+                                        value={form.amount_tickets}
+                                        onChange={handleChange}
+                                        required
+                                        min="1"
+                                        max="10"
+                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
+                                    />
+                                    <span className="text-sm text-white/80 mt-1 block">
+                                        Maximum 10 tickets per inschrijving
+                                    </span>
+                                </label>
+
+                                {/* Participant Names and Initials */}
+                                <div className="bg-white/10 rounded-lg p-4 space-y-3">
+                                    <h3 className="font-semibold text-white text-lg mb-2">
+                                        Deelnemers ({form.amount_tickets} {form.amount_tickets === 1 ? 'ticket' : 'tickets'})
+                                    </h3>
+                                    <p className="text-sm text-white/80 mb-3">
+                                        Vul voor elk ticket een naam en eerste letter van de achternaam in.
+                                    </p>
+                                    {participants.map((participant, index) => (
+                                        <div key={index} className="bg-white/10 rounded p-3 space-y-2">
+                                            <label className="block text-sm font-semibold text-white">
+                                                Ticket {index + 1} - Naam
+                                                <input
+                                                    type="text"
+                                                    value={participant.name}
+                                                    onChange={(e) => handleParticipantChange(index, 'name', e.target.value)}
+                                                    required
+                                                    placeholder="Voornaam + eventueel tussenvoegsel"
+                                                    className="mt-1 p-2 rounded w-full bg-white text-theme-purple text-sm dark:bg-gray-800 dark:text-theme"
+                                                />
+                                            </label>
+                                            <label className="block text-sm font-semibold text-white">
+                                                Eerste letter achternaam
+                                                <input
+                                                    type="text"
+                                                    value={participant.initial}
+                                                    onChange={(e) => handleParticipantChange(index, 'initial', e.target.value)}
+                                                    required
+                                                    placeholder="Bijv. S"
+                                                    maxLength={1}
+                                                    className="mt-1 p-2 rounded w-20 bg-white text-theme-purple text-sm uppercase dark:bg-gray-800 dark:text-theme"
+                                                />
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
 
                                     {/* Association */}
                                     <label className="font-semibold text-white">

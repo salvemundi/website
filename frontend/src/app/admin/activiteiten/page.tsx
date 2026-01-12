@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/features/auth/providers/auth-provider';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
@@ -26,6 +27,7 @@ interface Event {
 
 export default function AdminActiviteitenPage() {
     const router = useRouter();
+    const auth = useAuth();
     const [events, setEvents] = useState<Event[]>([]);
     const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -46,7 +48,7 @@ export default function AdminActiviteitenPage() {
         try {
             // Fetch all events with signup counts
             const eventsData = await directusFetch<Event[]>(
-                '/items/events?fields=id,name,event_date,description,location,max_sign_ups,price_members,price_non_members,inschrijf_deadline,contact,image.id&sort=-event_date&limit=-1'
+                '/items/events?fields=id,name,event_date,description,location,max_sign_ups,price_members,price_non_members,inschrijf_deadline,contact,image.id,committee_id&sort=-event_date&limit=-1'
             );
 
             // Get signup counts for each event
@@ -325,22 +327,38 @@ export default function AdminActiviteitenPage() {
                                             <Eye className="h-4 w-4" />
                                             <span className="inline">Aanmeldingen</span>
                                         </button>
-                                        <button
-                                            onClick={() => router.push(`/admin/activiteiten/${event.id}/bewerken`) }
-                                            className="flex items-center gap-1 px-3 py-2 w-auto text-sm bg-slate-50 text-slate-600 dark:bg-slate-800/30 dark:text-white dark:hover:bg-slate-700/30 rounded-lg hover:bg-slate-100 transition font-medium"
-                                            title="Bewerk activiteit"
-                                        >
-                                            <Edit className="h-4 w-4" />
-                                            <span className="inline">Bewerken</span>
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(event.id, event.name)}
-                                            className="flex items-center gap-1 px-3 py-2 w-auto text-sm bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-white dark:hover:bg-red-800/30 rounded-lg hover:bg-red-100 transition font-medium"
-                                            title="Verwijder activiteit"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                            <span className="hidden sm:inline">Verwijderen</span>
-                                        </button>
+                                        {(() => {
+                                            const eventCommitteeId = (event as any).committee_id ? String((event as any).committee_id) : null;
+                                            const memberships = auth.user?.committees || [];
+                                            const isMember = memberships.some((c: any) => String(c.id) === eventCommitteeId);
+                                            const hasPriv = memberships.some((c: any) => {
+                                                const name = (c?.name || '').toString().toLowerCase();
+                                                return name === 'bestuur' || name === 'ict';
+                                            });
+                                            if (isMember || hasPriv) {
+                                                return (
+                                                    <>
+                                                        <button
+                                                            onClick={() => router.push(`/admin/activiteiten/${event.id}/bewerken`) }
+                                                            className="flex items-center gap-1 px-3 py-2 w-auto text-sm bg-slate-50 text-slate-600 dark:bg-slate-800/30 dark:text-white dark:hover:bg-slate-700/30 rounded-lg hover:bg-slate-100 transition font-medium"
+                                                            title="Bewerk activiteit"
+                                                        >
+                                                            <Edit className="h-4 w-4" />
+                                                            <span className="inline">Bewerken</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDelete(event.id, event.name)}
+                                                            className="flex items-center gap-1 px-3 py-2 w-auto text-sm bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-white dark:hover:bg-red-800/30 rounded-lg hover:bg-red-100 transition font-medium"
+                                                            title="Verwijder activiteit"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                            <span className="hidden sm:inline">Verwijderen</span>
+                                                        </button>
+                                                    </>
+                                                );
+                                            }
+                                            return null;
+                                        })()}
                                     </div>
                                 </div>
                             </div>
