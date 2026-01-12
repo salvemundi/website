@@ -318,7 +318,7 @@ export default function KroegentochtPage() {
                                         onChange={handleChange}
                                         required
                                         placeholder="Voor- en achternaam"
-                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple"
+                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
                                     />
                                 </label>
 
@@ -332,7 +332,7 @@ export default function KroegentochtPage() {
                                         onChange={handleChange}
                                         required
                                         placeholder="jouw@email.nl"
-                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple"
+                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
                                     />
                                 </label>
 
@@ -344,7 +344,7 @@ export default function KroegentochtPage() {
                                         value={form.association}
                                         onChange={handleChange}
                                         required
-                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple"
+                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
                                     >
                                         <option value="">Selecteer een vereniging</option>
                                         {ASSOCIATIONS.map((assoc) => (
@@ -366,7 +366,7 @@ export default function KroegentochtPage() {
                                             onChange={handleChange}
                                             required
                                             placeholder="Naam van je vereniging"
-                                            className="mt-1 p-2 rounded w-full bg-white text-theme-purple"
+                                            className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
                                         />
                                     </label>
                                 )}
@@ -382,7 +382,7 @@ export default function KroegentochtPage() {
                                         required
                                         min="1"
                                         max="10"
-                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple"
+                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
                                     />
                                     <span className="text-sm text-white/80 mt-1 block">
                                         Maximum 10 tickets per inschrijving
@@ -407,7 +407,7 @@ export default function KroegentochtPage() {
                                                     onChange={(e) => handleParticipantChange(index, 'name', e.target.value)}
                                                     required
                                                     placeholder="Voornaam + eventueel tussenvoegsel"
-                                                    className="mt-1 p-2 rounded w-full bg-white text-theme-purple text-sm"
+                                                    className="mt-1 p-2 rounded w-full bg-white text-theme-purple text-sm dark:bg-gray-800 dark:text-theme"
                                                 />
                                             </label>
                                             <label className="block text-sm font-semibold text-white">
@@ -419,7 +419,7 @@ export default function KroegentochtPage() {
                                                     required
                                                     placeholder="Bijv. S"
                                                     maxLength={1}
-                                                    className="mt-1 p-2 rounded w-20 bg-white text-theme-purple text-sm uppercase"
+                                                    className="mt-1 p-2 rounded w-20 bg-white text-theme-purple text-sm uppercase dark:bg-gray-800 dark:text-theme"
                                                 />
                                             </label>
                                         </div>
