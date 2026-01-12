@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useAuth } from '@/features/auth/providers/auth-provider';
 import { useRouter } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
@@ -18,6 +19,7 @@ export default function NieuweActiviteitPage() {
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const auth = useAuth();
     
     const [formData, setFormData] = useState({
         name: '',
@@ -45,13 +47,25 @@ export default function NieuweActiviteitPage() {
     };
 
     useEffect(() => {
+        // Wait for auth to load and then load committees filtered by user's memberships
         loadCommittees();
     }, []);
 
     const loadCommittees = async () => {
         try {
             const data = await directusFetch<Committee[]>('/items/committees?fields=id,name&sort=name&limit=-1&filter[is_visible][_eq]=true');
-            setCommittees(data);
+            try {
+                const user = auth.user;
+                if (user?.committees && user.committees.length > 0) {
+                    const allowed = new Set(user.committees.map(c => String(c.id)));
+                    setCommittees(data.filter(c => allowed.has(String(c.id))));
+                } else {
+                    // No memberships, show empty list
+                    setCommittees([]);
+                }
+            } catch (e) {
+                setCommittees([]);
+            }
         } catch (error) {
             console.error('Failed to load committees:', error);
         }
@@ -403,6 +417,9 @@ export default function NieuweActiviteitPage() {
                                 </option>
                             ))}
                         </select>
+                        {committees.length === 0 && (
+                            <p className="text-sm text-yellow-600 mt-2">Je bent geen lid van een commissie, dus je kunt geen activiteiten aanmaken.</p>
+                        )}
                     </div>
 
                     <div>
@@ -503,7 +520,7 @@ export default function NieuweActiviteitPage() {
                     <div className="flex gap-4 pt-4">
                         <button
                             type="submit"
-                            disabled={isSaving}
+                            disabled={isSaving || committees.length === 0}
                             className="flex-1 bg-theme-purple text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isSaving ? (
