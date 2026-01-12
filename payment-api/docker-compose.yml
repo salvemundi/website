@@ -13,6 +13,7 @@ services:
       - DIRECTUS_API_TOKEN=${DIRECTUS_API_TOKEN}
       - EMAIL_SERVICE_URL=http://email-api-${TAG:-dev}:3001
       - MEMBERSHIP_API_URL=http://membership-api:8000/api/membership
+      - NODE_ENV=${NODE_ENV:-development}
 
 networks:
   proxy-network:
