@@ -94,18 +94,4 @@ const nextConfig: NextConfig = {
     // Catches for Directus should also be handled via src/app/api/[...path]/route.ts
 };
 
-// Handle bundle analyzer
-const finalConfig = async () => {
-    if (process.env.ANALYZE === 'true') {
-        try {
-            const withBundleAnalyzer = (await import('@next/bundle-analyzer')).default;
-            return withBundleAnalyzer({ enabled: true })(nextConfig);
-        } catch (e) {
-            console.warn('Bundle analyzer requested but failed to load:', e);
-            return nextConfig;
-        }
-    }
-    return nextConfig;
-};
-
-export default await finalConfig();
+export default nextConfig;
