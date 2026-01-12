@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import SafeHavenCard from '@/entities/safe-haven/ui/SafeHavenCard';
 import { useSalvemundiSafeHavens } from '@/shared/lib/hooks/useSalvemundiApi';
@@ -57,7 +56,7 @@ export default function SafeHavensPage() {
     <div className="min-h-screen">
       <PageHeader title="Safe Havens">
         <p className="mx-auto mt-4 max-w-3xl text-lg sm:text-xl text-white/90 leading-relaxed">
-          Een veilig aanspreekpunt waar je terechtkunt met zorgen, vragen of problemen. 
+          Een veilig aanspreekpunt waar je terechtkunt met zorgen, vragen of problemen.
           Wij luisteren zonder te oordelen.
         </p>
       </PageHeader>
@@ -66,7 +65,7 @@ export default function SafeHavensPage() {
         <div className="mx-auto max-w-7xl">
           {/* Bento grid */}
           <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-12 lg:auto-rows-[minmax(160px,auto)]">
-            
+
             {/* Intro section - spanning more space */}
             <BentoCard className="lg:col-span-8 lg:row-span-2">
               <div className="flex flex-col gap-6">
@@ -80,8 +79,8 @@ export default function SafeHavensPage() {
                       Wat zijn Safe Havens?
                     </h2>
                     <p className="mt-3 text-base sm:text-lg text-theme-muted leading-relaxed">
-                      Binnen Salve Mundi College vinden wij een veilige en respectvolle omgeving essentieel. 
-                      Safe Havens zijn zorgvuldig geselecteerde personen die voor jou klaarstaan: 
+                      Binnen Salve Mundi College vinden wij een veilige en respectvolle omgeving essentieel.
+                      Safe Havens zijn zorgvuldig geselecteerde personen die voor jou klaarstaan:
                       ze luisteren zonder te oordelen, denken met je mee, en helpen je een passende vervolgstap te vinden.
                     </p>
                   </div>
@@ -96,7 +95,7 @@ export default function SafeHavensPage() {
                           Volledige vertrouwelijkheid
                         </p>
                         <p className="mt-1.5 text-sm text-theme-muted leading-relaxed">
-                          Safe Havens hebben geheimhoudingsplicht. Wat je deelt blijft tussen jullie, 
+                          Safe Havens hebben geheimhoudingsplicht. Wat je deelt blijft tussen jullie,
                           tenzij jij expliciet toestemming geeft om informatie te delen.
                         </p>
                       </div>
@@ -111,7 +110,7 @@ export default function SafeHavensPage() {
                           Diverse achtergronden
                         </p>
                         <p className="mt-1.5 text-sm text-theme-muted leading-relaxed">
-                          We streven naar Safe Havens met verschillende geslachten en achtergronden, 
+                          We streven naar Safe Havens met verschillende geslachten en achtergronden,
                           zodat er sneller iemand is waarbij jij je comfortabel voelt.
                         </p>
                       </div>
@@ -151,7 +150,7 @@ export default function SafeHavensPage() {
 
                 <div className="mt-4 rounded-xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/30 p-3.5">
                   <p className="text-xs text-theme-muted leading-relaxed">
-                    <strong className="text-theme">Let op:</strong> Deze lijst is niet uitputtend. 
+                    <strong className="text-theme">Let op:</strong> Deze lijst is niet uitputtend.
                     Heb je een zorg die hier niet staat? Neem gerust contact op.
                   </p>
                 </div>
@@ -171,7 +170,7 @@ export default function SafeHavensPage() {
 
                     </p>
                   </div>
-                  
+
                   {safeHavens && safeHavens.length > 0 && (
                     <div className="px-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-600">
                       <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
@@ -218,7 +217,7 @@ export default function SafeHavensPage() {
                       Safe Havens worden binnenkort toegevoegd
                     </p>
                     <p className="mt-2 text-sm sm:text-base text-theme-muted max-w-md mx-auto">
-                      We zijn bezig met het samenstellen van ons Safe Haven team. 
+                      We zijn bezig met het samenstellen van ons Safe Haven team.
                       Check deze pagina binnenkort opnieuw of contacteer het bestuur voor vragen.
                     </p>
                   </div>
@@ -239,7 +238,7 @@ export default function SafeHavensPage() {
                   </h2>
 
                   <p className="mt-3 text-sm sm:text-base text-theme-muted leading-relaxed">
-                    Wil je liever met iemand buiten onze vereniging praten? 
+                    Wil je liever met iemand buiten onze vereniging praten?
                     Er zijn professionele instanties die je kunnen helpen.
                   </p>
                 </div>
@@ -286,7 +285,7 @@ export default function SafeHavensPage() {
                 <div className="mt-auto pt-6">
                   <div className="rounded-xl bg-slate-50 dark:bg-slate-900/20 border border-slate-200 dark:border-slate-700/30 p-4">
                     <p className="text-xs text-center text-theme-muted leading-relaxed">
-                      Alle gesprekken zijn vertrouwelijk en worden met respect behandeld. 
+                      Alle gesprekken zijn vertrouwelijk en worden met respect behandeld.
                       Jouw welzijn staat voorop.
                     </p>
                   </div>

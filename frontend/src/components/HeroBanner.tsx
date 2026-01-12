@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
@@ -63,11 +62,10 @@ export default function HeroBanner({
           {cta && (
             <Link
               href={cta.href}
-              className={`inline-flex items-center gap-2 px-6 py-3 lg:px-8 lg:py-4 text-sm lg:text-base font-semibold rounded-full transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 ${
-                cta.variant === 'secondary'
+              className={`inline-flex items-center gap-2 px-6 py-3 lg:px-8 lg:py-4 text-sm lg:text-base font-semibold rounded-full transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 ${cta.variant === 'secondary'
                   ? 'bg-white text-theme-purple hover:bg-gray-100'
                   : 'bg-gradient-theme text-white hover:brightness-110'
-              }`}
+                }`}
             >
               {cta.label}
               <ArrowRight className="w-4 h-4 lg:w-5 lg:h-5" />

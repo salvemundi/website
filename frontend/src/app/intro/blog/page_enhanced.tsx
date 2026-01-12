@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 // PageHeader removed for intro pages to avoid duplicate standard banner
 import HeroBanner from '@/components/HeroBanner';
 import AuthorCard from '@/components/AuthorCard';
@@ -140,11 +140,10 @@ export default function IntroBlogPage() {
                                     <Filter className="w-5 h-5 text-theme-purple flex-shrink-0" />
                                     <button
                                         onClick={() => setSelectedFilter(null)}
-                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
-                                            selectedFilter === null
+                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${selectedFilter === null
                                                 ? 'bg-gradient-theme text-white shadow-md'
                                                 : 'bg-theme-purple/10 text-theme-purple hover:bg-theme-purple/20'
-                                        }`}
+                                            }`}
                                     >
                                         Alles
                                     </button>
@@ -154,11 +153,10 @@ export default function IntroBlogPage() {
                                             <button
                                                 key={type}
                                                 onClick={() => setSelectedFilter(type)}
-                                                className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
-                                                    selectedFilter === type
+                                                className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${selectedFilter === type
                                                         ? 'bg-gradient-theme text-white shadow-md'
                                                         : 'bg-theme-purple/10 text-theme-purple hover:bg-theme-purple/20'
-                                                }`}
+                                                    }`}
                                             >
                                                 {typeConfig.label}
                                             </button>
@@ -176,7 +174,7 @@ export default function IntroBlogPage() {
                                 <div className="text-center py-12">
                                     <Newspaper className="w-16 h-16 text-theme-purple/30 mx-auto mb-4" />
                                     <p className="text-theme-muted text-lg">
-                                        {selectedFilter 
+                                        {selectedFilter
                                             ? `Geen ${getBlogTypeConfig(selectedFilter).label.toLowerCase()} updates gevonden.`
                                             : 'Er zijn nog geen updates beschikbaar. Check later terug!'}
                                     </p>
@@ -188,7 +186,7 @@ export default function IntroBlogPage() {
                                         const TypeIcon = typeConfig.icon;
                                         const displayedLikes = likesMap[blog.id] ?? blog.likes ?? 0;
                                         const isLiked = isAuthenticated && !!likedSet[blog.id];
-                                        
+
                                         return (
                                             <div
                                                 key={blog.id}

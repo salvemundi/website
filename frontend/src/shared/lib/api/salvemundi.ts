@@ -186,7 +186,7 @@ export const eventsApi = {
         });
         const event = await directusFetch<any>(`/items/events/${id}?${query}`);
 
-                if (event.committee_id) {
+        if (event.committee_id) {
             try {
                 const committee = await directusFetch<any>(`/items/committees/${event.committee_id}?fields=id,name,email`);
                 if (committee) {
@@ -304,7 +304,7 @@ export const eventsApi = {
                         if (eventDetails) {
                             committeeName = eventDetails.committee_name || undefined;
                             committeeEmail = eventDetails.committee_email || undefined;
-                            
+
                             if (eventDetails.contact) {
                                 if (typeof eventDetails.contact === 'string' && eventDetails.contact.includes('@')) {
                                     // Prefer explicit committee email (from committee record). Use event contact only as fallback.
@@ -313,7 +313,7 @@ export const eventsApi = {
                                     contactPhone = eventDetails.contact;
                                 }
                             }
-                            
+
                             // If no contactName found, try to get a leader name
                             if (!contactName && eventDetails.contact_name) {
                                 contactName = eventDetails.contact_name;
@@ -705,22 +705,29 @@ export const documentsApi = {
 export const siteSettingsApi = {
     // If `page` is provided, will filter settings for that page.
     get: async (page?: string): Promise<SiteSettings | null> => {
-        const params: any = {
-            fields: ['id', 'page', 'show', 'disabled_message'],
-            limit: 1
-        };
+        try {
+            const params: any = {
+                fields: ['id', 'page', 'show', 'disabled_message'],
+                limit: 1
+            };
 
-        if (page) {
-            params.filter = { page: { _eq: page } };
+            if (page) {
+                params.filter = { page: { _eq: page } };
+            }
+
+            const query = buildQueryString(params);
+
+            const data = await directusFetch<SiteSettings | SiteSettings[] | null>(`/items/site_settings?${query}`);
+            if (Array.isArray(data)) {
+                return data[0] || null;
+            }
+            return data ?? null;
+        } catch (error) {
+            // Silently handle errors - site_settings is optional
+            // This prevents console errors when the collection doesn't exist or is inaccessible
+            console.warn('[siteSettingsApi] Failed to fetch site settings, returning null:', error instanceof Error ? error.message : 'Unknown error');
+            return null;
         }
-
-        const query = buildQueryString(params);
-
-        const data = await directusFetch<SiteSettings | SiteSettings[] | null>(`/items/site_settings?${query}`);
-        if (Array.isArray(data)) {
-            return data[0] || null;
-        }
-        return data ?? null;
     }
 };
 
@@ -884,7 +891,7 @@ export function getImageUrl(imageId: string | undefined | any, options?: { quali
         : (process.env.NEXT_PUBLIC_DIRECTUS_URL || '/api');
 
     const cleanedToken = token && token !== 'null' && token !== 'undefined' ? token : null;
-    
+
     // Build query parameters for image optimization
     const params = new URLSearchParams();
     if (cleanedToken) {
@@ -902,9 +909,9 @@ export function getImageUrl(imageId: string | undefined | any, options?: { quali
     if (options?.format) {
         params.append('format', options.format);
     }
-    
+
     const queryString = params.toString();
-    const imageUrl = queryString 
+    const imageUrl = queryString
         ? `${baseUrl}/assets/${actualImageId}?${queryString}`
         : `${baseUrl}/assets/${actualImageId}`;
 
@@ -998,10 +1005,10 @@ export async function updateSafeHavenAvailability(
         console.log('[updateSafeHavenAvailability] Update successful');
     } catch (error: any) {
         console.error('[updateSafeHavenAvailability] Error updating safe haven availability:', error);
-        console.error('[updateSafeHavenAvailability] Error details:', { 
-            message: error?.message, 
+        console.error('[updateSafeHavenAvailability] Error details:', {
+            message: error?.message,
             status: error?.status,
-            response: error?.response 
+            response: error?.response
         });
         throw error;
     }

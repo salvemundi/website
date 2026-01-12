@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
@@ -274,7 +274,7 @@ export default function Hero() {
     // large empty area. On md+ we ensure the hero fills the viewport minus the header.
     return (
         <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full min-h-[600px] md:min-h-[500px] py-6 sm:py-10 md:py-16 lg:py-20 transition-colors duration-300">
-            
+
             {/* Mobile-only fallback image (shows ONLY on very small screens, for robustness)
                 This ensures even if Swiper fails or images don't load, we have a visual.
                 Hidden on sm+ where Swiper takes over fully. This is embedded as 
@@ -283,165 +283,165 @@ export default function Hero() {
 
             <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
                 <div className="relative w-full px-0">
-                <div className="grid gap-5 sm:gap-6 md:grid-cols-2 md:gap-10 lg:gap-16 xl:gap-20 md:items-center">
-                    <div className="space-y-5 sm:space-y-6 md:space-y-8 lg:space-y-10 min-w-0">
-                        <div className="space-y-3 sm:space-y-4 md:space-y-6">
-                            <h1 ref={titleRef} className="text-2xl font-black leading-tight sm:text-3xl md:text-5xl lg:text-6xl pb-1">
-                                <span className="text-gradient">Studievereniging</span>
-                                <br />
-                                <span className="inline-block w-full">Salve Mundi</span>
-                            </h1>
-                            <p ref={descriptionRef} className="text-xs leading-relaxed text-theme-muted sm:text-sm md:text-lg lg:max-w-xl">
-                                Dé studievereniging voor HBO-studenten in Eindhoven. Ontmoet nieuwe mensen, bouw aan je netwerk en maak het meeste van je studententijd met onze diverse activiteiten en gezellige commissies.
-                            </p>
-                        </div>
-
-
-
-                        <div className="w-full max-w-full">
-                        <div className="flex flex-wrap gap-3 sm:gap-4 min-h-[100px]">
-                            {showMembershipLink ? (
-                                <Link
-                                    href="/lidmaatschap"
-                                    className="block w-full transition-transform hover:scale-[1.02]"
-                                >
-                                    <div className="w-full max-w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-3 sm:p-4 md:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-3 sm:gap-4 min-h-[90px] sm:min-h-[100px] overflow-hidden">
-                                        <div className="flex-1 min-w-0 overflow-hidden">
-                                            <p className="text-[0.6rem] sm:text-xs font-semibold uppercase tracking-wide text-theme-white">
-                                                Word lid
-                                            </p>
-                                            <p className="mt-1 sm:mt-2 text-sm sm:text-base md:text-lg font-bold text-theme-white truncate">
-                                                Sluit je aan bij Salve Mundi
-                                            </p>
-                                            <p className="mt-0.5 sm:mt-1 text-[0.7rem] sm:text-xs md:text-sm text-theme-white line-clamp-2">
-                                                Ontdek alle voordelen van een lidmaatschap!
-                                            </p>
-                                        </div>
-                                        <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white text-theme-purple flex items-center justify-center shadow-md transition-transform group-hover:scale-110"
-                                             onMouseEnter={() => setHoverWordLid(true)}
-                                             onMouseLeave={() => setHoverWordLid(false)}
-                                        >
-                                            <ChevronRight width={20} height={20} strokeWidth={2} __active={hoverWordLid} />
-                                        </div>
-                                    </div>
-                                </Link>
-                            ) : nextEvent ? (
-                                <Link
-                                    href={`/activiteiten/${nextEvent.id}`}
-                                    className="block w-full transition-transform hover:scale-[1.02]"
-                                >
-                                    <div className="w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4 min-h-[90px] sm:min-h-[100px]">
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-white">
-                                                Volgende evenement
-                                            </p>
-                                            <p className="mt-2 text-base sm:text-lg font-bold text-theme-white truncate">
-                                                {nextEvent.name} • {formatEventDate(nextEvent.event_date)}
-                                            </p>
-                                            <p className="mt-1 text-xs sm:text-sm text-theme-white line-clamp-2">
-                                                {nextEvent.description || "Kom gezellig langs bij ons volgende evenement!"}
-                                            </p>
-                                        </div>
-                                        <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white text-theme-purple flex items-center justify-center shadow-md transition-transform group-hover:scale-110"
-                                             onMouseEnter={() => setHoverNextEvent(true)}
-                                             onMouseLeave={() => setHoverNextEvent(false)}
-                                        >
-                                            <ChevronRight width={20} height={20} strokeWidth={2} __active={hoverNextEvent} />
-                                        </div>
-                                    </div>
-                                </Link>
-                            ) : (
-                                <div className="w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur min-h-[90px] sm:min-h-[100px]">
-                                    <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-white">
-                                        Volgende evenement
-                                    </p>
-                                    {eventsLoading ? (
-                                        <div className="mt-2 space-y-2">
-                                            <div className="h-5 sm:h-6 w-3/4 animate-pulse rounded bg-theme-purple/20"></div>
-                                            <div className="h-3 sm:h-4 w-full animate-pulse rounded bg-theme-purple/20"></div>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <p className="mt-2 text-base sm:text-lg font-bold text-theme">
-                                                Binnenkort meer activiteiten
-                                            </p>
-                                            <p className="mt-1 text-xs sm:text-sm text-theme-muted line-clamp-2">
-                                                Check regelmatig onze agenda voor nieuwe evenementen en activiteiten.
-                                            </p>
-                                        </>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                        </div>
-                        
-                    </div>
-
-
-
-
-                    <div className="flex flex-wrap gap-3 sm:gap-4 min-w-0">
-                        <div ref={imageRef} className="relative w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/80 shadow-2xl backdrop-blur-xl overflow-hidden">
-                            <div className="h-[240px] sm:h-[280px] md:h-[350px] lg:h-[480px] xl:h-[540px]">
-                                {/* Mobile fallback: sometimes Swiper or remote assets misbehave on small devices.
-                                    Show a single static image for mobile (hidden on sm+). */}
-                                {/* Mobile fallback moved to top of section; keep the inner area clean */}
-
-                                {isMobile ? (
-                                    <div className="sm:hidden w-full h-full flex items-center justify-center relative">
-                                        {mobileSrc ? (
-                                            <Image
-                                                src={mobileSrc}
-                                                alt="Salve Mundi"
-                                                fill
-                                                priority
-                                                unoptimized={true}
-                                                sizes="(max-width: 640px) 100vw, 0px"
-                                                className="object-cover object-center"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-gradient-theme">
-                                                <div className="text-white text-center">
-                                                    <div className="text-4xl font-bold">Salve Mundi</div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <Swiper
-                                        modules={[Autoplay]}
-                                        autoplay={{
-                                            delay: 5000,
-                                            disableOnInteraction: false,
-                                        }}
-                                        loop={(resolvedSlides || localSlides).length > 1}
-                                        allowTouchMove={(resolvedSlides || localSlides).length > 1}
-                                        className="hidden sm:block h-full w-full"
-                                    >
-                                        {(resolvedSlides || localSlides).map((src, index) => (
-                                            <SwiperSlide key={index}>
-                                                <div className="w-full h-full flex items-center justify-center bg-[var(--bg-card)]/0 relative">
-                                                    <Image
-                                                        src={src}
-                                                        alt="Salve Mundi sfeerimpressie"
-                                                        fill
-                                                        priority={index === 0}
-                                                        unoptimized={true}
-                                                        sizes="(min-width: 640px) 50vw, 0px"
-                                                        className="object-cover object-center"
-                                                    />
-                                                </div>
-                                            </SwiperSlide>
-                                        ))}
-                                    </Swiper>
-                                )}
+                    <div className="grid gap-5 sm:gap-6 md:grid-cols-2 md:gap-10 lg:gap-16 xl:gap-20 md:items-center">
+                        <div className="space-y-5 sm:space-y-6 md:space-y-8 lg:space-y-10 min-w-0">
+                            <div className="space-y-3 sm:space-y-4 md:space-y-6">
+                                <h1 ref={titleRef} className="text-2xl font-black leading-tight sm:text-3xl md:text-5xl lg:text-6xl pb-1">
+                                    <span className="text-gradient">Studievereniging</span>
+                                    <br />
+                                    <span className="inline-block w-full">Salve Mundi</span>
+                                </h1>
+                                <p ref={descriptionRef} className="text-xs leading-relaxed text-theme-muted sm:text-sm md:text-lg lg:max-w-xl">
+                                    Dé studievereniging voor HBO-studenten in Eindhoven. Ontmoet nieuwe mensen, bouw aan je netwerk en maak het meeste van je studententijd met onze diverse activiteiten en gezellige commissies.
+                                </p>
                             </div>
 
 
+
+                            <div className="w-full max-w-full">
+                                <div className="flex flex-wrap gap-3 sm:gap-4 min-h-[100px]">
+                                    {showMembershipLink ? (
+                                        <Link
+                                            href="/lidmaatschap"
+                                            className="block w-full transition-transform hover:scale-[1.02]"
+                                        >
+                                            <div className="w-full max-w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-3 sm:p-4 md:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-3 sm:gap-4 min-h-[90px] sm:min-h-[100px] overflow-hidden">
+                                                <div className="flex-1 min-w-0 overflow-hidden">
+                                                    <p className="text-[0.6rem] sm:text-xs font-semibold uppercase tracking-wide text-theme-white">
+                                                        Word lid
+                                                    </p>
+                                                    <p className="mt-1 sm:mt-2 text-sm sm:text-base md:text-lg font-bold text-theme-white truncate">
+                                                        Sluit je aan bij Salve Mundi
+                                                    </p>
+                                                    <p className="mt-0.5 sm:mt-1 text-[0.7rem] sm:text-xs md:text-sm text-theme-white line-clamp-2">
+                                                        Ontdek alle voordelen van een lidmaatschap!
+                                                    </p>
+                                                </div>
+                                                <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white text-theme-purple flex items-center justify-center shadow-md transition-transform group-hover:scale-110"
+                                                    onMouseEnter={() => setHoverWordLid(true)}
+                                                    onMouseLeave={() => setHoverWordLid(false)}
+                                                >
+                                                    <ChevronRight width={20} height={20} strokeWidth={2} __active={hoverWordLid} />
+                                                </div>
+                                            </div>
+                                        </Link>
+                                    ) : nextEvent ? (
+                                        <Link
+                                            href={`/activiteiten/${nextEvent.id}`}
+                                            className="block w-full transition-transform hover:scale-[1.02]"
+                                        >
+                                            <div className="w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4 min-h-[90px] sm:min-h-[100px]">
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-white">
+                                                        Volgende evenement
+                                                    </p>
+                                                    <p className="mt-2 text-base sm:text-lg font-bold text-theme-white truncate">
+                                                        {nextEvent.name} • {formatEventDate(nextEvent.event_date)}
+                                                    </p>
+                                                    <p className="mt-1 text-xs sm:text-sm text-theme-white line-clamp-2">
+                                                        {nextEvent.description || "Kom gezellig langs bij ons volgende evenement!"}
+                                                    </p>
+                                                </div>
+                                                <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white text-theme-purple flex items-center justify-center shadow-md transition-transform group-hover:scale-110"
+                                                    onMouseEnter={() => setHoverNextEvent(true)}
+                                                    onMouseLeave={() => setHoverNextEvent(false)}
+                                                >
+                                                    <ChevronRight width={20} height={20} strokeWidth={2} __active={hoverNextEvent} />
+                                                </div>
+                                            </div>
+                                        </Link>
+                                    ) : (
+                                        <div className="w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur min-h-[90px] sm:min-h-[100px]">
+                                            <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-white">
+                                                Volgende evenement
+                                            </p>
+                                            {eventsLoading ? (
+                                                <div className="mt-2 space-y-2">
+                                                    <div className="h-5 sm:h-6 w-3/4 animate-pulse rounded bg-theme-purple/20"></div>
+                                                    <div className="h-3 sm:h-4 w-full animate-pulse rounded bg-theme-purple/20"></div>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <p className="mt-2 text-base sm:text-lg font-bold text-theme">
+                                                        Binnenkort meer activiteiten
+                                                    </p>
+                                                    <p className="mt-1 text-xs sm:text-sm text-theme-muted line-clamp-2">
+                                                        Check regelmatig onze agenda voor nieuwe evenementen en activiteiten.
+                                                    </p>
+                                                </>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                        </div>
+
+
+
+
+                        <div className="flex flex-wrap gap-3 sm:gap-4 min-w-0">
+                            <div ref={imageRef} className="relative w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/80 shadow-2xl backdrop-blur-xl overflow-hidden">
+                                <div className="h-[240px] sm:h-[280px] md:h-[350px] lg:h-[480px] xl:h-[540px]">
+                                    {/* Mobile fallback: sometimes Swiper or remote assets misbehave on small devices.
+                                        Show a single static image for mobile (hidden on sm+). */}
+                                    {/* Mobile fallback moved to top of section; keep the inner area clean */}
+
+                                    {isMobile ? (
+                                        <div className="sm:hidden w-full h-full flex items-center justify-center relative">
+                                            {mobileSrc ? (
+                                                <Image
+                                                    src={mobileSrc}
+                                                    alt="Salve Mundi"
+                                                    fill
+                                                    priority
+                                                    unoptimized={true}
+                                                    sizes="(max-width: 640px) 100vw, 0px"
+                                                    className="object-cover object-center"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-gradient-theme">
+                                                    <div className="text-white text-center">
+                                                        <div className="text-4xl font-bold">Salve Mundi</div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <Swiper
+                                            modules={[Autoplay]}
+                                            autoplay={{
+                                                delay: 5000,
+                                                disableOnInteraction: false,
+                                            }}
+                                            loop={(resolvedSlides || localSlides).length > 1}
+                                            allowTouchMove={(resolvedSlides || localSlides).length > 1}
+                                            className="hidden sm:block h-full w-full"
+                                        >
+                                            {(resolvedSlides || localSlides).map((src, index) => (
+                                                <SwiperSlide key={index}>
+                                                    <div className="w-full h-full flex items-center justify-center bg-[var(--bg-card)]/0 relative">
+                                                        <Image
+                                                            src={src}
+                                                            alt="Salve Mundi sfeerimpressie"
+                                                            fill
+                                                            priority={index === 0}
+                                                            unoptimized={true}
+                                                            sizes="(min-width: 640px) 50vw, 0px"
+                                                            className="object-cover object-center"
+                                                        />
+                                                    </div>
+                                                </SwiperSlide>
+                                            ))}
+                                        </Swiper>
+                                    )}
+                                </div>
+
+
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
             </div>
         </section>
     );

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { isValidPhoneNumber } from '@/shared/lib/phone';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';

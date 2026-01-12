@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from 'next/image';
 import { useAuth } from "@/features/auth/providers/auth-provider";
 // import AttendanceButton from "./AttendanceButton"; // TODO: Port AttendanceButton

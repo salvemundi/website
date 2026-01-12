@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { stripHtml } from '@/shared/lib/text';
 import ActiviteitCard from './ActiviteitCard';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';

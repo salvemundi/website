@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Users, Newspaper, Calendar } from 'lucide-react';
@@ -45,9 +45,8 @@ export default function IntroLayout({ children }: { children: React.ReactNode })
             <div className="relative">
                 {/* Desktop Sidebar Navigation - Always show, position based on page */}
                 <aside
-                    className={`hidden md:block fixed left-4 bg-[var(--bg-card)] border border-theme-purple/10 rounded-xl transition-all duration-300 z-40 shadow-lg ${
-                        isSidebarExpanded ? 'w-56' : 'w-14'
-                    }`}
+                    className={`hidden md:block fixed left-4 bg-[var(--bg-card)] border border-theme-purple/10 rounded-xl transition-all duration-300 z-40 shadow-lg ${isSidebarExpanded ? 'w-56' : 'w-14'
+                        }`}
                     style={isMainIntroPage ? { top: '50%', transform: 'translateY(-50%)' } : { top: '1rem' }}
                     onMouseEnter={() => setIsSidebarExpanded(true)}
                     onMouseLeave={() => setIsSidebarExpanded(false)}
@@ -55,14 +54,12 @@ export default function IntroLayout({ children }: { children: React.ReactNode })
                     <div className="flex flex-col py-4">
                         {/* Logo/Branding */}
                         <div className="px-3 mb-6 flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded-full bg-gradient-theme flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
-                                isSidebarExpanded ? 'scale-110' : ''
-                            }`}>
+                            <div className={`w-8 h-8 rounded-full bg-gradient-theme flex items-center justify-center transition-all duration-300 flex-shrink-0 ${isSidebarExpanded ? 'scale-110' : ''
+                                }`}>
                                 <img src="/logo_old.svg" alt="Intro" className="w-5 h-5" />
                             </div>
-                            <span className={`font-bold text-theme-purple text-sm transition-all duration-300 whitespace-nowrap ${
-                                isSidebarExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 w-0 overflow-hidden'
-                            }`}>
+                            <span className={`font-bold text-theme-purple text-sm transition-all duration-300 whitespace-nowrap ${isSidebarExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 w-0 overflow-hidden'
+                                }`}>
                                 Intro Week
                             </span>
                         </div>
@@ -72,23 +69,20 @@ export default function IntroLayout({ children }: { children: React.ReactNode })
                             {navItems.map((item) => {
                                 const Icon = item.icon;
                                 const active = isActive(item.href);
-                                
+
                                 return (
                                     <Link
                                         key={item.href}
                                         href={item.href}
-                                        className={`flex items-center gap-2 px-2 py-2.5 rounded-lg font-semibold transition-all duration-300 group ${
-                                            active
+                                        className={`flex items-center gap-2 px-2 py-2.5 rounded-lg font-semibold transition-all duration-300 group ${active
                                                 ? 'bg-gradient-theme text-white shadow-lg'
                                                 : 'text-theme hover:bg-theme-purple/10'
-                                        }`}
+                                            }`}
                                     >
-                                        <Icon className={`w-5 h-5 flex-shrink-0 ${
-                                            active ? '' : 'group-hover:scale-110 transition-transform'
-                                        }`} />
-                                        <span className={`whitespace-nowrap text-sm transition-all duration-300 ${
-                                            isSidebarExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 w-0 overflow-hidden'
-                                        }`}>
+                                        <Icon className={`w-5 h-5 flex-shrink-0 ${active ? '' : 'group-hover:scale-110 transition-transform'
+                                            }`} />
+                                        <span className={`whitespace-nowrap text-sm transition-all duration-300 ${isSidebarExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 w-0 overflow-hidden'
+                                            }`}>
                                             {item.label}
                                         </span>
                                     </Link>
@@ -100,7 +94,7 @@ export default function IntroLayout({ children }: { children: React.ReactNode })
 
                 {/* Mobile Navigation - Only on blog/planning pages */}
                 {isBlogOrPlanning && (
-                    <nav 
+                    <nav
                         className="md:hidden bg-[var(--bg-card)] border-b border-theme-purple/10 sticky z-40 backdrop-blur-lg bg-opacity-90"
                         style={{ top: '0' }}
                     >
@@ -109,16 +103,15 @@ export default function IntroLayout({ children }: { children: React.ReactNode })
                                 {navItems.map((item) => {
                                     const Icon = item.icon;
                                     const active = isActive(item.href);
-                                    
+
                                     return (
                                         <Link
                                             key={item.href}
                                             href={item.href}
-                                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-all duration-300 whitespace-nowrap text-sm ${
-                                                active
+                                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-all duration-300 whitespace-nowrap text-sm ${active
                                                     ? 'bg-gradient-theme text-white shadow-lg'
                                                     : 'bg-theme-purple/10 text-theme'
-                                            }`}
+                                                }`}
                                         >
                                             <Icon className="w-4 h-4" />
                                             {item.label}

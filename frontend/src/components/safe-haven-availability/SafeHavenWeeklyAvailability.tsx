@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Save, Info, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { getSafeHavenAvailability, updateSafeHavenAvailability } from '@/shared/lib/api/salvemundi';
@@ -13,7 +13,7 @@ type DayAvailability = {
   timeSlots: TimeSlot[];
 };
 
-const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const DAY_NAMES: Record<string, string> = {
   monday: 'Maandag',
   tuesday: 'Dinsdag',
@@ -42,13 +42,13 @@ export default function SafeHavenWeeklyAvailability({ userId }: { userId: string
       console.log('[SafeHavenWeeklyAvailability] Loading availability for user:', userId);
       const data = await getSafeHavenAvailability(userId);
       console.log('[SafeHavenWeeklyAvailability] Loaded data:', data);
-      
+
       let initialWeek = makeDefaultWeek();
       if (data && data.week) {
-        initialWeek = data.week.map((w: any) => ({ 
-          day: w.day, 
-          isAvailable: !!w.isAvailable, 
-          timeSlots: w.timeSlots && w.timeSlots.length > 0 ? w.timeSlots : [{ start: '09:00', end: '17:00' }] 
+        initialWeek = data.week.map((w: any) => ({
+          day: w.day,
+          isAvailable: !!w.isAvailable,
+          timeSlots: w.timeSlots && w.timeSlots.length > 0 ? w.timeSlots : [{ start: '09:00', end: '17:00' }]
         }));
       } else if (data && (data.timeSlots || data.isAvailableToday !== undefined)) {
         // Map legacy single-day to all days with same availability
@@ -113,7 +113,7 @@ export default function SafeHavenWeeklyAvailability({ userId }: { userId: string
 
       // Compute today's legacy fields for compatibility
       const today = new Date();
-      const dayNameMap = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+      const dayNameMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
       const todayName = dayNameMap[today.getDay()];
       const todayEntry = payloadWeek.find(w => w.day === todayName);
       const legacyIsAvailable = todayEntry ? todayEntry.isAvailable : false;
@@ -121,15 +121,15 @@ export default function SafeHavenWeeklyAvailability({ userId }: { userId: string
 
       console.log('[SafeHavenWeeklyAvailability] Today:', todayName, 'Legacy fields:', { legacyIsAvailable, legacyTimeSlots });
 
-      await updateSafeHavenAvailability(userId, { 
-        week: payloadWeek, 
-        isAvailableToday: legacyIsAvailable, 
-        timeSlots: legacyTimeSlots 
+      await updateSafeHavenAvailability(userId, {
+        week: payloadWeek,
+        isAvailableToday: legacyIsAvailable,
+        timeSlots: legacyTimeSlots
       }, token);
-      
+
       console.log('[SafeHavenWeeklyAvailability] Save successful');
       toast.success('Beschikbaarheid succesvol opgeslagen');
-      
+
       // Reload to confirm save
       await load();
     } catch (e: any) {
@@ -156,7 +156,7 @@ export default function SafeHavenWeeklyAvailability({ userId }: { userId: string
           <Info className="mt-0.5 h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0" />
           <div>
             <p className="text-sm font-medium text-blue-900 dark:text-blue-100 leading-relaxed">
-              Stel je beschikbaarheid in per dag. Schakel een dag in en voeg tijdslots toe voor de uren dat je bereikbaar bent. 
+              Stel je beschikbaarheid in per dag. Schakel een dag in en voeg tijdslots toe voor de uren dat je bereikbaar bent.
               Je contactgegevens worden altijd weergegeven.
             </p>
           </div>
@@ -165,8 +165,8 @@ export default function SafeHavenWeeklyAvailability({ userId }: { userId: string
 
       <div className="space-y-3">
         {week.map((day, dayIndex) => (
-          <div 
-            key={day.day} 
+          <div
+            key={day.day}
             className="rounded-2xl bg-white/40 dark:bg-white/5 border border-white/10 overflow-hidden transition-all"
           >
             <div className="p-4">
@@ -185,7 +185,7 @@ export default function SafeHavenWeeklyAvailability({ userId }: { userId: string
                   </button>
                   <h3 className="text-lg font-bold text-theme">{DAY_NAMES[day.day]}</h3>
                 </div>
-                
+
                 <label className="inline-flex items-center gap-3 cursor-pointer">
                   <span className="text-sm text-theme-muted">Beschikbaar</span>
                   <button
@@ -242,7 +242,7 @@ export default function SafeHavenWeeklyAvailability({ userId }: { userId: string
                       )}
                     </div>
                   ))}
-                  
+
                   <button
                     type="button"
                     onClick={() => addTimeSlot(dayIndex)}
@@ -262,8 +262,8 @@ export default function SafeHavenWeeklyAvailability({ userId }: { userId: string
         <p className="text-sm text-theme-muted">
           Wijzigingen worden direct opgeslagen bij alle gebruikers
         </p>
-        <button 
-          onClick={handleSave} 
+        <button
+          onClick={handleSave}
           disabled={saving}
           className="inline-flex items-center gap-2 rounded-xl bg-theme-purple px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-theme-purple/20 hover:bg-theme-purple-dark transition disabled:opacity-50 disabled:cursor-not-allowed"
         >

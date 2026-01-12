@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import HeroBanner from '@/components/HeroBanner';
 import AuthorCard from '@/components/AuthorCard';
 import TagList from '@/components/TagList';
@@ -73,7 +73,7 @@ export default function IntroBlogPage() {
                 const data = await resp.json();
                 const ids: Array<number | string> = data?.likedBlogIds || [];
                 setLikedBlogs(ids);
-                try { localStorage.setItem('likedBlogs', JSON.stringify(ids)); } catch (e) {}
+                try { localStorage.setItem('likedBlogs', JSON.stringify(ids)); } catch (e) { }
             } catch (err) {
                 // ignore
             }
@@ -226,8 +226,8 @@ export default function IntroBlogPage() {
                 typeof error === 'string'
                     ? error
                     : error instanceof Error
-                    ? error.message
-                    : String(error);
+                        ? error.message
+                        : String(error);
             console.error('Failed to send email:', errString);
             // If the error already produced a toast above, avoid double toast
             if (!errString || !errString.includes('Email API error')) {
@@ -262,7 +262,7 @@ export default function IntroBlogPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                         {/* Main Content */}
                         <div className="lg:col-span-2 space-y-6">
-     
+
 
                             {/* Filter Bar */}
                             {blogTypes.length > 0 && (
@@ -290,11 +290,10 @@ export default function IntroBlogPage() {
                                         <Filter className="w-5 h-5 text-theme-purple flex-shrink-0" />
                                         <button
                                             onClick={() => setSelectedFilter(null)}
-                                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
-                                                selectedFilter === null
+                                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${selectedFilter === null
                                                     ? 'bg-gradient-theme text-white shadow-md'
                                                     : 'bg-theme-purple/10 text-theme-purple hover:bg-theme-purple/20'
-                                            }`}
+                                                }`}
                                         >
                                             Alles
                                         </button>
@@ -304,11 +303,10 @@ export default function IntroBlogPage() {
                                                 <button
                                                     key={type}
                                                     onClick={() => setSelectedFilter(type)}
-                                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
-                                                        selectedFilter === type
+                                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${selectedFilter === type
                                                             ? 'bg-gradient-theme text-white shadow-md'
                                                             : 'bg-theme-purple/10 text-theme-purple hover:bg-theme-purple/20'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {typeConfig.label}
                                                 </button>
@@ -327,7 +325,7 @@ export default function IntroBlogPage() {
                                 <div className="text-center py-12">
                                     <Newspaper className="w-16 h-16 text-theme-purple/30 mx-auto mb-4" />
                                     <p className="text-theme-muted text-lg">
-                                        {selectedFilter 
+                                        {selectedFilter
                                             ? `Geen ${getBlogTypeConfig(selectedFilter).label.toLowerCase()} updates gevonden.`
                                             : 'Er zijn nog geen updates beschikbaar. Check later terug!'}
                                     </p>
@@ -340,7 +338,7 @@ export default function IntroBlogPage() {
                                         // Only show the "liked" icon/state if the current user is authenticated
                                         // and the server/local state indicates they liked this blog.
                                         const isUserLiked = isAuthenticated && likedBlogs.includes(blog.id);
-                                        
+
                                         return (
                                             <article
                                                 key={blog.id}
@@ -370,7 +368,7 @@ export default function IntroBlogPage() {
                                                 </div>
 
                                                 {/* Post Content */}
-                                                <div 
+                                                <div
                                                     onClick={() => setSelectedBlog(blog)}
                                                     className="cursor-pointer"
                                                 >
@@ -439,7 +437,7 @@ export default function IntroBlogPage() {
                                                                         next = Array.from(new Set([...likedBlogs, blog.id]));
                                                                     }
                                                                     setLikedBlogs(next);
-                                                                    try { localStorage.setItem('likedBlogs', JSON.stringify(next)); } catch (e) {}
+                                                                    try { localStorage.setItem('likedBlogs', JSON.stringify(next)); } catch (e) { }
 
                                                                     toast.success(isLiked ? 'Like verwijderd' : 'Bedankt voor je like!');
                                                                 } else {
@@ -459,11 +457,10 @@ export default function IntroBlogPage() {
                                                         }}
                                                         disabled={likeLoadingId === blog.id}
                                                         title={!isAuthenticated ? 'Log in om te liken' : (isUserLiked ? 'Klik om like te verwijderen' : 'Leuk vinden')}
-                                                        className={`flex items-center gap-2 transition-all duration-200 ${
-                                                            isUserLiked
+                                                        className={`flex items-center gap-2 transition-all duration-200 ${isUserLiked
                                                                 ? 'text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-full shadow-md'
                                                                 : 'text-theme-muted hover:text-red-500 hover:scale-110'
-                                                        } ${likeLoadingId === blog.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                                                            } ${likeLoadingId === blog.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                                     >
                                                         {likeLoadingId === blog.id ? (
                                                             <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
@@ -479,7 +476,7 @@ export default function IntroBlogPage() {
                                                     </button>
                                                     {/* Share button removed */}
                                                     {canSendEmails && (
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleSendEmail(blog)}
                                                             disabled={sendingEmail === String(blog.id)}
                                                             className="flex items-center gap-2 text-theme-muted hover:text-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ml-auto"
@@ -538,8 +535,8 @@ export default function IntroBlogPage() {
                     className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
                     onClick={() => setSelectedBlog(null)}
                 >
-                        <div
-                            className="bg-[var(--bg-card)] rounded-2xl lg:rounded-3xl max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl my-4"
+                    <div
+                        className="bg-[var(--bg-card)] rounded-2xl lg:rounded-3xl max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl my-4"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {selectedBlog.image && (
@@ -626,83 +623,82 @@ export default function IntroBlogPage() {
                                         const selectedIsUserLiked = isAuthenticated && likedBlogs.includes(selectedBlog.id);
                                         return (
                                             <button
-                                        onClick={async (e) => {
-                                            e.stopPropagation();
-                                            if (!isAuthenticated) {
-                                                setShowLoginModal(true);
-                                                return;
-                                            }
-                                            if (likeLoadingId) return;
-                                            setLikeLoadingId(selectedBlog.id);
-                                            const isLiked = likedBlogs.includes(selectedBlog.id);
-                                            let previous: IntroBlog[] | undefined;
-                                            try {
-                                                previous = queryClient.getQueryData<IntroBlog[]>(['intro-blogs']);
-                                                queryClient.setQueryData(['intro-blogs'], (old: IntroBlog[] | undefined) => {
-                                                    if (!old) return old;
-                                                    return old.map((b) => b.id === selectedBlog.id ? { ...b, likes: (b.likes || 0) + (isLiked ? -1 : 1) } : b);
-                                                });
-
-                                                const resp = await fetch(isLiked ? '/api/blog-unlike' : '/api/blog-like', {
-                                                    method: 'POST',
-                                                    headers: { 'Content-Type': 'application/json' },
-                                                    body: JSON.stringify({ blogId: selectedBlog.id, userId: user?.id }),
-                                                });
-
-                                                if (resp.ok) {
-                                                    const json = await resp.json();
-                                                    queryClient.setQueryData(['intro-blogs'], (old: IntroBlog[] | undefined) => {
-                                                        if (!old) return old;
-                                                        return old.map((b) => b.id === selectedBlog.id ? { ...b, likes: json.likes ?? (b.likes || 0) } : b);
-                                                    });
-
-                                                    setSelectedBlog({ ...selectedBlog, likes: json.likes ?? (selectedBlog.likes || 0) });
-
-                                                    let next: Array<number | string>;
-                                                    if (isLiked) {
-                                                        next = likedBlogs.filter(id => id !== selectedBlog.id);
-                                                    } else {
-                                                        next = Array.from(new Set([...likedBlogs, selectedBlog.id]));
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    if (!isAuthenticated) {
+                                                        setShowLoginModal(true);
+                                                        return;
                                                     }
-                                                    setLikedBlogs(next);
-                                                    try { localStorage.setItem('likedBlogs', JSON.stringify(next)); } catch (e) {}
+                                                    if (likeLoadingId) return;
+                                                    setLikeLoadingId(selectedBlog.id);
+                                                    const isLiked = likedBlogs.includes(selectedBlog.id);
+                                                    let previous: IntroBlog[] | undefined;
+                                                    try {
+                                                        previous = queryClient.getQueryData<IntroBlog[]>(['intro-blogs']);
+                                                        queryClient.setQueryData(['intro-blogs'], (old: IntroBlog[] | undefined) => {
+                                                            if (!old) return old;
+                                                            return old.map((b) => b.id === selectedBlog.id ? { ...b, likes: (b.likes || 0) + (isLiked ? -1 : 1) } : b);
+                                                        });
 
-                                                    toast.success(isLiked ? 'Like verwijderd' : 'Bedankt voor je like!');
-                                                } else {
-                                                    if (previous) queryClient.setQueryData(['intro-blogs'], previous as IntroBlog[] | undefined);
-                                                    const txt = await resp.text().catch(() => undefined);
-                                                    toast.error('Kon like niet registreren');
-                                                    console.error('Like API error', resp.status, txt);
-                                                }
-                                            } catch (err) {
-                                                if (previous) queryClient.setQueryData(['intro-blogs'], previous as IntroBlog[] | undefined);
-                                                console.error('Failed to call like API', err);
-                                                toast.error('Er ging iets mis bij liken');
-                                            } finally {
-                                                setLikeLoadingId(null);
-                                            }
-                                        }}
-                                        disabled={likeLoadingId === selectedBlog.id}
-                                        title={!isAuthenticated ? 'Log in om te liken' : (selectedIsUserLiked ? 'Klik om like te verwijderen' : 'Leuk vinden')}
-                                        className={`flex items-center gap-2 transition-all duration-200 ${
-                                            selectedIsUserLiked
-                                                ? 'text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-full shadow-md'
-                                                : 'text-theme-muted hover:text-red-500 hover:scale-110'
-                                        } ${likeLoadingId === selectedBlog.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                                    >
-                                        {likeLoadingId === selectedBlog.id ? (
-                                            <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                                        ) : selectedIsUserLiked ? (
-                                            <svg className="w-5 h-5 animate-[pulse_0.5s_ease-in-out]" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.41 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.41 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                                            </svg>
-                                        ) : (
-                                            <Heart className="w-5 h-5" />
-                                        )}
-                                        <span className="text-sm font-medium">{selectedIsUserLiked ? 'Geliked' : 'Leuk vinden'}</span>
-                                        <span className={`text-sm font-semibold ${selectedIsUserLiked ? 'text-white' : 'text-theme-muted'}`}>{selectedBlog.likes ?? 0}</span>
-                                    </button>
-                                );
+                                                        const resp = await fetch(isLiked ? '/api/blog-unlike' : '/api/blog-like', {
+                                                            method: 'POST',
+                                                            headers: { 'Content-Type': 'application/json' },
+                                                            body: JSON.stringify({ blogId: selectedBlog.id, userId: user?.id }),
+                                                        });
+
+                                                        if (resp.ok) {
+                                                            const json = await resp.json();
+                                                            queryClient.setQueryData(['intro-blogs'], (old: IntroBlog[] | undefined) => {
+                                                                if (!old) return old;
+                                                                return old.map((b) => b.id === selectedBlog.id ? { ...b, likes: json.likes ?? (b.likes || 0) } : b);
+                                                            });
+
+                                                            setSelectedBlog({ ...selectedBlog, likes: json.likes ?? (selectedBlog.likes || 0) });
+
+                                                            let next: Array<number | string>;
+                                                            if (isLiked) {
+                                                                next = likedBlogs.filter(id => id !== selectedBlog.id);
+                                                            } else {
+                                                                next = Array.from(new Set([...likedBlogs, selectedBlog.id]));
+                                                            }
+                                                            setLikedBlogs(next);
+                                                            try { localStorage.setItem('likedBlogs', JSON.stringify(next)); } catch (e) { }
+
+                                                            toast.success(isLiked ? 'Like verwijderd' : 'Bedankt voor je like!');
+                                                        } else {
+                                                            if (previous) queryClient.setQueryData(['intro-blogs'], previous as IntroBlog[] | undefined);
+                                                            const txt = await resp.text().catch(() => undefined);
+                                                            toast.error('Kon like niet registreren');
+                                                            console.error('Like API error', resp.status, txt);
+                                                        }
+                                                    } catch (err) {
+                                                        if (previous) queryClient.setQueryData(['intro-blogs'], previous as IntroBlog[] | undefined);
+                                                        console.error('Failed to call like API', err);
+                                                        toast.error('Er ging iets mis bij liken');
+                                                    } finally {
+                                                        setLikeLoadingId(null);
+                                                    }
+                                                }}
+                                                disabled={likeLoadingId === selectedBlog.id}
+                                                title={!isAuthenticated ? 'Log in om te liken' : (selectedIsUserLiked ? 'Klik om like te verwijderen' : 'Leuk vinden')}
+                                                className={`flex items-center gap-2 transition-all duration-200 ${selectedIsUserLiked
+                                                        ? 'text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-full shadow-md'
+                                                        : 'text-theme-muted hover:text-red-500 hover:scale-110'
+                                                    } ${likeLoadingId === selectedBlog.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                                            >
+                                                {likeLoadingId === selectedBlog.id ? (
+                                                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                                                ) : selectedIsUserLiked ? (
+                                                    <svg className="w-5 h-5 animate-[pulse_0.5s_ease-in-out]" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.41 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.41 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                                                    </svg>
+                                                ) : (
+                                                    <Heart className="w-5 h-5" />
+                                                )}
+                                                <span className="text-sm font-medium">{selectedIsUserLiked ? 'Geliked' : 'Leuk vinden'}</span>
+                                                <span className={`text-sm font-semibold ${selectedIsUserLiked ? 'text-white' : 'text-theme-muted'}`}>{selectedBlog.likes ?? 0}</span>
+                                            </button>
+                                        );
                                     })()}
                                 </div>
                             </div>

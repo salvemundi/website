@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, ReactNode } from 'react';
+import { useEffect, useRef, ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { scrollTriggerAnimation } from '@/shared/lib/gsap/gsapUtils';
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
