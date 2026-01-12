@@ -207,6 +207,7 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
      */
     router.post('/reject-signup/:id', requireAdmin, async (req, res) => {
         const transactionId = req.params.id;
+        console.log(`[AdminRoutes] POST /reject-signup/${transactionId} called`);
 
         try {
             const transaction = await directusService.getTransaction(
@@ -216,13 +217,17 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
             );
 
             if (!transaction) {
+                console.error(`[AdminRoutes] Transaction ${transactionId} not found`);
                 return res.status(404).json({ error: 'Transaction not found' });
             }
+
+            console.log(`[AdminRoutes] Transaction found. Status: ${transaction.approval_status}`);
 
             if (transaction.approval_status === 'rejected') {
                 return res.status(400).json({ error: 'Already rejected' });
             }
 
+            console.log(`[AdminRoutes] Updating transaction ${transactionId} to rejected...`);
             await directusService.updateDirectusTransaction(
                 DIRECTUS_URL,
                 DIRECTUS_API_TOKEN,
@@ -233,6 +238,7 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                     approved_at: new Date().toISOString()
                 }
             );
+            console.log(`[AdminRoutes] Transaction ${transactionId} rejected successfully`);
 
             res.json({
                 success: true,
