@@ -33,7 +33,7 @@ export default function SmartImage({ src, alt = '', className, fill, sizes, widt
                     <img
                         src={src}
                         alt={alt}
-                        className="object-cover h-full w-full"
+                        className={`${className ? className + ' ' : ''}h-full w-full`}
                         loading={loading || 'lazy'}
                         onError={(e) => {
                             if (onError) onError(e as unknown as React.SyntheticEvent<HTMLImageElement, Event>);
