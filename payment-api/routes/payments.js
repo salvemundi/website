@@ -91,9 +91,25 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
             const formattedAmount = finalAmount.toFixed(2);
             console.warn(`[Payment][${traceId}] Final Transaction Amount: ${formattedAmount}`);
 
-            // Detect environment
-            const environment = getEnvironment(req);
-            const approvalStatus = environment === 'development' ? 'pending' : 'auto_approved';
+            // Detect environment from request (what the client claims)
+            const requestEnvironment = getEnvironment(req);
+
+            // STRICT SERVER-SIDE ENFORCEMENT
+            // If the SERVER is not strictly 'production', we NEVER auto-approve.
+            // This prevents a dev server from auto-provisioning accounts even if the request claims to be production.
+            const serverEnv = process.env.NODE_ENV || 'development';
+            let approvalStatus = 'pending';
+
+            if (serverEnv === 'production') {
+                // In production, we trust the flow to auto-approve normal signups
+                approvalStatus = 'auto_approved';
+            } else {
+                // In dev/test, we FORCE pending.
+                if (requestEnvironment === 'production') {
+                    console.warn(`[Payment][${traceId}] SECURITY ALERT: Request claimed 'production' but server is '${serverEnv}'. Forcing status to 'pending'.`);
+                }
+                approvalStatus = 'pending';
+            }
 
             const transactionPayload = {
                 amount: formattedAmount,
@@ -103,7 +119,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 first_name: firstName || null,
                 last_name: lastName || null,
                 registration: registrationId || null,
-                environment: environment,
+                environment: requestEnvironment,
                 approval_status: approvalStatus,
                 coupon_code: couponCode || null,
             };
