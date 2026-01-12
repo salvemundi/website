@@ -42,6 +42,12 @@ const Header: React.FC = () => {
             }
 
             try {
+                // Prefer committees that were fetched during auth
+                if (Array.isArray((user as any).committees) && (user as any).committees.length > 0) {
+                    setIsCommitteeMember(true);
+                    return;
+                }
+
                 const query = new URLSearchParams({
                     'filter[user_id][_eq]': user.id,
                     'limit': '1',
@@ -55,7 +61,7 @@ const Header: React.FC = () => {
         };
 
         checkCommitteeMembership();
-    }, [user?.id]);
+    }, [user?.id, user?.committees]);
 
     // Measure header height and expose as CSS variable so other components
     // (like the Hero) can size themselves relative to the header. Use
