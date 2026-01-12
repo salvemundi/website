@@ -92,21 +92,33 @@ export default function SignUp() {
 
     const verifyCoupon = async () => {
         if (!form.coupon) return;
+        const traceId = Math.random().toString(36).substring(7);
+        console.info(`[Coupon][${traceId}] Verifying coupon: ${form.coupon}`);
+
         setVerifyingCoupon(true);
         setCouponStatus(null);
 
         try {
-            const response = await fetch('/api/coupons/validate', { // Proxy via next.config.ts 
-                // Wait, frontend doesn't have direct access to payment-api usually unless via Next.js API route or proxy. 
-                // The current codebase uses `/api/payments/create` which maps to `app/api/payments/create/route.ts` (Next.js backend)
-                // I need to create the Next.js API route for coupon validation too!
+            const startTime = Date.now();
+            const response = await fetch('/api/coupons/validate', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Trace-Id': traceId
+                },
                 body: JSON.stringify({ couponCode: form.coupon }),
             });
 
+            const duration = Date.now() - startTime;
             const data = await response.json();
+
+            console.group(`[Coupon][${traceId}] Result after ${duration}ms`);
+            console.log('Status:', response.status);
+            console.log('Payload:', data);
+            console.groupEnd();
+
             if (response.ok && data.valid) {
+                console.info(`[Coupon][${traceId}] Success! Applied discount: ${data.discount_value}`);
                 setCouponStatus({
                     valid: true,
                     message: `Korting toegepast: ${data.description}`,
@@ -114,9 +126,11 @@ export default function SignUp() {
                     type: data.discount_type
                 });
             } else {
+                console.warn(`[Coupon][${traceId}] Invalid/Failed:`, data.error || 'Unknown');
                 setCouponStatus({ valid: false, message: data.error || 'Ongeldige coupon code' });
             }
-        } catch (error) {
+        } catch (error: any) {
+            console.error(`[Coupon][${traceId}] Fatal Fetch Error:`, error.message);
             setCouponStatus({ valid: false, message: 'Kon coupon niet valideren' });
         } finally {
             setVerifyingCoupon(false);
@@ -124,6 +138,9 @@ export default function SignUp() {
     };
 
     const initiateContributionPayment = async () => {
+        const traceId = Math.random().toString(36).substring(7);
+        console.info(`[Payment][${traceId}] Initiating payment process...`);
+
         try {
             const payload = {
                 amount: '20.00',
@@ -137,25 +154,30 @@ export default function SignUp() {
                 couponCode: couponStatus?.valid ? form.coupon : undefined
             };
 
+            console.log(`[Payment][${traceId}] Payload:`, payload);
+
             const response = await fetch('/api/payments/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-Trace-Id': traceId
                 },
                 body: JSON.stringify(payload),
             });
 
             const data = await response.json();
+            console.log(`[Payment][${traceId}] Response (${response.status}):`, data);
 
             if (response.ok && data.checkoutUrl) {
+                console.info(`[Payment][${traceId}] Redirecting to Mollie: ${data.checkoutUrl}`);
                 window.location.href = data.checkoutUrl;
             } else {
-                console.error('Payment creation failed:', data.error);
+                console.error(`[Payment][${traceId}] Creation failed:`, data.error);
                 alert('Er ging iets mis bij het aanmaken van de betaling. Probeer het later opnieuw.');
                 setIsProcessing(false);
             }
-        } catch (error) {
-            console.error('Error initiating payment:', error);
+        } catch (error: any) {
+            console.error(`[Payment][${traceId}] Connection error:`, error.message);
             alert('Er ging iets mis bij de verbinding voor de betaling.');
             setIsProcessing(false);
         }

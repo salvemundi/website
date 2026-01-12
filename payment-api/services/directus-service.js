@@ -78,21 +78,23 @@ async function getTransaction(directusUrl, directusToken, id) {
 /**
  * Zoekt een coupon op basis van de coupon code.
  */
-async function getCoupon(directusUrl, directusToken, code) {
+async function getCoupon(directusUrl, directusToken, code, traceId = 'no-trace') {
     try {
         const query = new URLSearchParams({
             'filter[coupon_code][_eq]': code,
-            'filter[is_active][_in]': 'true,1'
+            'filter[is_active][_eq]': 'true'
         }).toString();
 
-        const response = await axios.get(
-            `${directusUrl}/items/coupons?${query}`,
-            getAuthConfig(directusToken)
-        );
+        const url = `${directusUrl}/items/coupons?${query}`;
+        console.warn(`[Coupon][${traceId}] Directus Fetch URL: ${url}`);
+
+        const response = await axios.get(url, getAuthConfig(directusToken));
+
+        console.warn(`[Coupon][${traceId}] Directus Raw Result:`, JSON.stringify(response.data.data));
 
         return response.data.data?.[0] || null;
     } catch (error) {
-        console.error(`Failed to fetch coupon ${code}:`, error.message);
+        console.error(`[Coupon][${traceId}] Directus Fetch Failed:`, error.response?.data || error.message);
         return null;
     }
 }
