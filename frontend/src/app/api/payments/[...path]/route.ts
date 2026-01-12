@@ -12,20 +12,20 @@ async function proxyRequest(
     const url = new URL(request.url);
     const traceId = request.headers.get('X-Trace-Id') || `proxy-${Math.random().toString(36).substring(7)}`;
 
-    // Target: http://payment-api:3002/api/payments/create (for example)
-    // Incoming path is 'create' (because file is in api/payments folder)
-    // So we append path to base
     const targetUrl = `${PAYMENT_API_URL}/api/payments/${path}${url.search}`;
-
     console.warn(`[Payment Proxy][${traceId}] ${method} /${path} -> ${targetUrl}`);
 
     try {
         const headers: HeadersInit = {
-            'Content-Type': request.headers.get('Content-Type') || 'application/json',
             'Authorization': request.headers.get('Authorization') || '',
             'X-Trace-Id': traceId,
             'X-Environment': process.env.NODE_ENV || 'development'
         };
+
+        // Forward important content headers
+        if (request.headers.get('Content-Type')) {
+            headers['Content-Type'] = request.headers.get('Content-Type')!;
+        }
 
         const fetchOptions: RequestInit = {
             method,
@@ -33,9 +33,10 @@ async function proxyRequest(
         };
 
         if (method !== 'GET' && method !== 'HEAD') {
-            const body = await request.json().catch(() => null);
-            if (body) {
-                fetchOptions.body = JSON.stringify(body);
+            // Read body as ArrayBuffer to handle both JSON and Form Data (Mollie)
+            const arrayBuffer = await request.arrayBuffer().catch(() => null);
+            if (arrayBuffer && arrayBuffer.byteLength > 0) {
+                fetchOptions.body = arrayBuffer;
             }
         }
 
@@ -45,8 +46,17 @@ async function proxyRequest(
             return new Response(null, { status: 204 });
         }
 
-        const data = await response.json().catch(() => null);
-        return NextResponse.json(data, { status: response.status });
+        // Return raw response to support non-JSON responses if needed, but usually APIs return JSON.
+        // However, if the backend returns text (like Mollie webhook response often is just 200 OK text),
+        // we should probably just stream it back or try text().
+        const contentType = response.headers.get('Content-Type');
+        if (contentType && contentType.includes('application/json')) {
+            const data = await response.json();
+            return NextResponse.json(data, { status: response.status });
+        } else {
+            const text = await response.text();
+            return new Response(text, { status: response.status, headers: { 'Content-Type': contentType || 'text/plain' } });
+        }
 
     } catch (error: any) {
         console.error(`[Payment Proxy][${traceId}] Failed:`, error.message);
