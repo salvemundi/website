@@ -59,40 +59,59 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
 
     /**
      * GET /api/admin/pending-signups
-     * Fetch all pending dev signups
+     * Fetch dev signups with filters
+     * Query Params:
+     * - status: 'pending' | 'approved' | 'rejected' | 'all' (default: 'pending')
+     * - show_failed: 'true' | 'false' (default: 'false')
      */
     router.get('/pending-signups', requireAdmin, async (req, res) => {
-        console.log('[AdminRoutes] GET /pending-signups called');
+        console.log('[AdminRoutes] GET /pending-signups called', req.query);
         try {
-            console.log('[AdminRoutes] Fetching from Directus:', {
-                url: `${DIRECTUS_URL}/items/transactions`,
-                usingToken: DIRECTUS_API_TOKEN ? 'Yes (length: ' + DIRECTUS_API_TOKEN.length + ')' : 'No'
-            });
+            const { status = 'pending', show_failed = 'false' } = req.query;
+
+            // Base params
+            const params = {
+                'filter[environment][_eq]': 'development',
+                'fields': 'id,created_at,product_name,amount,email,first_name,last_name,approval_status,payment_status,environment',
+                'sort': '-created_at',
+                'limit': 100
+            };
+
+            // 1. Status Filter
+            if (status !== 'all') {
+                // Allow comma separated or single status
+                params['filter[approval_status][_in]'] = status;
+            } else {
+                params['filter[approval_status][_in]'] = 'pending,rejected,approved,auto_approved';
+            }
+
+            // 2. Payment Status Filter
+            if (show_failed === 'true') {
+                // Show everything (failed, open, expired, paid)
+                // No filter needed on payment_status
+            } else {
+                // Default: Only paid
+                params['filter[payment_status][_eq]'] = 'paid';
+            }
+
+            console.log('[AdminRoutes] Fetching from Directus with params:', params);
 
             const response = await axios.get(
                 `${DIRECTUS_URL}/items/transactions`,
                 {
-                    params: {
-                        'filter[approval_status][_in]': 'pending,rejected,approved',
-                        'filter[payment_status][_eq]': 'paid',
-                        'filter[environment][_eq]': 'development',
-                        'fields': 'id,created_at,product_name,amount,email,first_name,last_name,approval_status,payment_status,environment',
-                        'sort': '-created_at',
-                        'limit': 100
-                    },
+                    params: params,
                     headers: { 'Authorization': `Bearer ${DIRECTUS_API_TOKEN}` }
                 }
             );
 
             res.json({ signups: response.data.data || [] });
         } catch (error) {
-            console.error('[AdminRoutes] Failed to fetch pending signups:', {
+            console.error('[AdminRoutes] Failed to fetch signups:', {
                 message: error.message,
                 status: error.response?.status,
-                statusText: error.response?.statusText,
-                directusErrorFull: JSON.stringify(error.response?.data, null, 2)
+                directusError: error.response?.data
             });
-            res.status(500).json({ error: 'Failed to fetch pending signups' });
+            res.status(500).json({ error: 'Failed to fetch signups' });
         }
     });
 
@@ -207,6 +226,7 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
      */
     router.post('/reject-signup/:id', requireAdmin, async (req, res) => {
         const transactionId = req.params.id;
+        console.log(`[AdminRoutes] POST /reject-signup/${transactionId} called`);
 
         try {
             const transaction = await directusService.getTransaction(
@@ -216,13 +236,17 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
             );
 
             if (!transaction) {
+                console.error(`[AdminRoutes] Transaction ${transactionId} not found`);
                 return res.status(404).json({ error: 'Transaction not found' });
             }
+
+            console.log(`[AdminRoutes] Transaction found. Status: ${transaction.approval_status}`);
 
             if (transaction.approval_status === 'rejected') {
                 return res.status(400).json({ error: 'Already rejected' });
             }
 
+            console.log(`[AdminRoutes] Updating transaction ${transactionId} to rejected...`);
             await directusService.updateDirectusTransaction(
                 DIRECTUS_URL,
                 DIRECTUS_API_TOKEN,
@@ -233,6 +257,7 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                     approved_at: new Date().toISOString()
                 }
             );
+            console.log(`[AdminRoutes] Transaction ${transactionId} rejected successfully`);
 
             res.json({
                 success: true,
@@ -283,6 +308,35 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
         } catch (error) {
             console.error('[AdminRoutes] Failed to fetch sync status:', error.message);
             res.status(500).json({ error: 'Status ophalen mislukt' });
+        }
+    });
+
+    // --- Payment Settings ---
+
+    router.get('/payment-settings', async (req, res) => {
+        const traceId = req.headers['x-trace-id'] || `adm-set-${Date.now()}`;
+        console.log(`[Admin][${traceId}] Fetching payment settings`);
+
+        try {
+            const settings = await directusService.getPaymentSettings(DIRECTUS_URL, DIRECTUS_API_TOKEN);
+            res.json(settings);
+        } catch (error) {
+            console.error(`[Admin][${traceId}] Error fetching settings:`, error);
+            res.status(500).json({ error: 'Failed to fetch settings' });
+        }
+    });
+
+    router.post('/payment-settings', async (req, res) => {
+        const traceId = req.headers['x-trace-id'] || `adm-set-${Date.now()}`;
+        console.log(`[Admin][${traceId}] Updating payment settings`, req.body);
+
+        try {
+            const settings = req.body;
+            const updated = await directusService.updatePaymentSettings(DIRECTUS_URL, DIRECTUS_API_TOKEN, settings);
+            res.json(updated);
+        } catch (error) {
+            console.error(`[Admin][${traceId}] Error updating settings:`, error);
+            res.status(500).json({ error: 'Failed to update settings' });
         }
     });
 

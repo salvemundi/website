@@ -7,7 +7,6 @@ import { pubCrawlSignupsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
 import { directusFetch } from '@/shared/lib/directus';
 import { useSalvemundiPubCrawlEvents, useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { format } from 'date-fns';
-import { sendEventSignupEmail } from '@/shared/lib/services/email-service';
 import { CheckCircle2 } from 'lucide-react';
 
 const ASSOCIATIONS = [
@@ -48,7 +47,7 @@ export default function KroegentochtPage() {
     const [error, setError] = useState<string | null>(null);
     const { data: pubCrawlEvents, isLoading: eventsLoading } = useSalvemundiPubCrawlEvents();
     const { data: siteSettings, isLoading: isSettingsLoading } = useSalvemundiSiteSettings('kroegentocht');
-    
+
     const isKroegentochtEnabled = siteSettings?.show ?? true;
     const kroegentochtDisabledMessage = siteSettings?.disabled_message || 'De inschrijvingen voor de kroegentocht zijn momenteel gesloten.';
 
@@ -115,9 +114,9 @@ export default function KroegentochtPage() {
             const parsed = parseInt(value, 10);
             const clamped = Number.isNaN(parsed) ? 1 : Math.min(10, Math.max(1, parsed));
             setForm({ ...form, amount_tickets: clamped });
-            
+
             // Update participants array based on ticket count
-            const newParticipants = Array.from({ length: clamped }, (_, i) => 
+            const newParticipants = Array.from({ length: clamped }, (_, i) =>
                 participants[i] || { name: '', initial: '' }
             );
             setParticipants(newParticipants);
@@ -182,7 +181,7 @@ export default function KroegentochtPage() {
             }
 
             // Create signup
-            await pubCrawlSignupsApi.create({
+            const signup = await pubCrawlSignupsApi.create({
                 name: form.name,
                 email: form.email,
                 association: finalAssociation,
@@ -191,35 +190,43 @@ export default function KroegentochtPage() {
                 name_initials: nameInitials,
             });
 
-            const eventDate = nextEvent.date || new Date().toISOString();
-            const eventPrice = Number(
-                (nextEvent as any).price ??
-                (nextEvent as any).ticket_price ??
-                (nextEvent as any).price_members ??
-                0
-            );
-            const contactName = (nextEvent as any).contact_name;
-            const contactPhone = (nextEvent as any).contact_phone;
+            if (!signup || !signup.id) {
+                throw new Error('Kon inschrijving niet aanmaken.');
+            }
 
-            // Send confirmation email asynchronously; don't await to avoid blocking signup
-            sendEventSignupEmail({
-                recipientEmail: form.email,
-                recipientName: form.name || 'Deelnemer',
-                eventName: nextEvent.name || 'Kroegentocht',
-                eventDate,
-                eventPrice,
-                phoneNumber: undefined,
-                userName: form.name || form.email,
-                committeeName: nextEvent.association || 'Salve Mundi',
-                committeeEmail: nextEvent.email,
-                contactName,
-                contactPhone,
-                // include participant details and ticket count for the email template
-                participants: participants.map(p => ({ name: p.name, initial: p.initial })),
-                amountTickets: form.amount_tickets,
-            }).catch((emailErr) => {
-                console.error('Kon kroegentocht bevestigingsmail niet versturen:', emailErr);
+            const totalPrice = (form.amount_tickets * 1).toFixed(2); // 1 euro per ticket
+            const traceId = Math.random().toString(36).substring(7);
+
+            const paymentPayload = {
+                amount: totalPrice,
+                description: `Kroegentocht Tickets - ${form.amount_tickets}x`,
+                redirectUrl: window.location.origin + '/kroegentocht/bevestiging',
+                registrationId: signup.id,
+                email: form.email,
+                firstName: form.name.split(' ')[0],
+                lastName: form.name.split(' ').slice(1).join(' '),
+                isContribution: false
+            };
+
+            const paymentRes = await fetch('/api/payments/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Trace-Id': traceId
+                },
+                body: JSON.stringify(paymentPayload),
             });
+
+            if (!paymentRes.ok) {
+                const errorData = await paymentRes.json();
+                throw new Error(errorData.details || errorData.error || 'Fout bij het aanmaken van de betaling.');
+            }
+
+            const paymentData = await paymentRes.json();
+            if (paymentData.checkoutUrl) {
+                window.location.href = paymentData.checkoutUrl;
+                return;
+            }
 
             setSubmitted(true);
         } catch (err: any) {
@@ -358,18 +365,17 @@ export default function KroegentochtPage() {
                                 {/* Custom Association */}
                                 {form.association === 'Anders' && (
                                     <label className="font-semibold text-white">
-                                        Andere vereniging
+                                        Naam
                                         <input
                                             type="text"
-                                            name="customAssociation"
-                                            value={form.customAssociation}
+                                            name="name"
+                                            value={form.name}
                                             onChange={handleChange}
                                             required
                                             placeholder="Naam van je vereniging"
                                             className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
                                         />
                                     </label>
-                                )}
 
                                 {/* Amount of Tickets */}
                                 <label className="font-semibold text-white">
@@ -426,134 +432,224 @@ export default function KroegentochtPage() {
                                     ))}
                                 </div>
 
-                                <button
-                                    type="submit"
-                                    disabled={loading || !canSignUp}
-                                    className="bg-white text-theme-purple font-bold py-3 px-6 rounded shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {loading
-                                        ? 'Bezig met inschrijven...'
-                                        : canSignUp
-                                            ? 'Inschrijven'
-                                            : 'Inschrijving nog niet beschikbaar'}
-                                </button>
-                            </form>
-                        )}
-                    </section>
+                                    {/* Association */}
+                                    <label className="font-semibold text-white">
+                                        Vereniging
+                                        <select
+                                            name="association"
+                                            value={form.association}
+                                            onChange={handleChange}
+                                            required
+                                            className="mt-1 p-2 rounded w-full bg-white text-theme-purple"
+                                        >
+                                            <option value="">Selecteer een vereniging</option>
+                                            {ASSOCIATIONS.map((assoc) => (
+                                                <option key={assoc} value={assoc}>
+                                                    {assoc}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </label>
 
-                    {/* Info Section */}
-                    <div className="w-full lg:w-1/2 flex flex-col gap-6">
-                        {/* Event Info */}
-                        <div className="bg-gradient-theme rounded-3xl p-6 shadow-lg">
-                            <h2 className="text-2xl font-bold text-white mb-4">
-                                🍻 Over de Kroegentocht
-                            </h2>
-                            <div className="text-white space-y-3">
-                                {eventsLoading ? (
-                                    <p>Evenementomschrijving wordt geladen...</p>
-                                ) : nextEvent?.description ? (
-                                    nextEvent.description.split('\n').map((paragraph: string, index: number) => (
-                                        <p key={index}>{paragraph}</p>
-                                    ))
-                                ) : (
-                                    <>
-                                        <p>
-                                            De jaarlijkse Kroegentocht is een van de grootste evenementen die tweemaal per jaar wordt georganiseerd!
-                                        </p>
-                                        <p>
-                                            Dit is een fantastische kans om verschillende kroegen te bezoeken, nieuwe mensen te ontmoeten
-                                            en een onvergetelijke avond te beleven met andere studenten en verenigingen.
-                                        </p>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Details */}
-                        <div className="bg-gradient-theme rounded-3xl p-6 shadow-lg">
-                            <h2 className="text-2xl font-bold text-white mb-4">
-                                📅 Evenement Details
-                            </h2>
-                            {eventsLoading ? (
-                                <div className="text-white">Evenementgegevens worden geladen...</div>
-                            ) : nextEvent ? (
-                                <div className="text-white space-y-4">
-                                    {nextEvent.image && (
-                                        <img
-                                            src={getImageUrl(nextEvent.image)}
-                                            alt={nextEvent.name}
-                                            role="button"
-                                            onClick={() => openImageModal(getImageUrl(nextEvent.image))}
-                                            className="w-full h-48 object-cover rounded-2xl cursor-zoom-in"
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.src = '/img/placeholder.svg';
-                                            }}
-                                        />
+                                    {/* Custom Association */}
+                                    {form.association === 'Anders' && (
+                                        <label className="font-semibold text-white">
+                                            Andere vereniging
+                                            <input
+                                                type="text"
+                                                name="customAssociation"
+                                                value={form.customAssociation}
+                                                onChange={handleChange}
+                                                required
+                                                placeholder="Naam van je vereniging"
+                                                className="mt-1 p-2 rounded w-full bg-white text-theme-purple"
+                                            />
+                                        </label>
                                     )}
 
-                                    <div className="space-y-2">
-                                        <div className="flex items-start gap-2">
-                                            <span className="font-semibold text-white/80">Evenement:</span>
-                                            <span>{nextEvent.name}</span>
-                                        </div>
-                                        <div className="flex items-start gap-2">
-                                            <span className="font-semibold text-white/80">Datum:</span>
-                                            <span>{formattedNextEventDate ?? 'Nog te bepalen'}</span>
-                                        </div>
-                                        <div className="flex items-start gap-2">
-                                            <span className="font-semibold text-white/80">Organisatie:</span>
-                                            <span>{nextEvent.association || 'Salve Mundi'}</span>
-                                        </div>
-                                        <div className="flex items-start gap-2">
-                                            <span className="font-semibold text-white/80">Contact:</span>
-                                            <a href={`mailto:${nextEvent.email}`} className="underline text-white break-all">
-                                                {nextEvent.email}
-                                            </a>
-                                        </div>
-                                        <div className="flex items-start gap-2">
-                                            <span className="font-semibold text-white/80">Locatie:</span>
-                                            <span>Verschillende locaties in Eindhoven</span>
+                                    {/* Amount of Tickets */}
+                                    <label className="font-semibold text-white">
+                                        Aantal tickets
+                                        <input
+                                            type="number"
+                                            name="amount_tickets"
+                                            value={form.amount_tickets}
+                                            onChange={handleChange}
+                                            required
+                                            min="1"
+                                            max="10"
+                                            className="mt-1 p-2 rounded w-full bg-white text-theme-purple"
+                                        />
+                                        <span className="text-sm text-white/80 mt-1 block">
+                                            Maximum 10 tickets per inschrijving
+                                        </span>
+                                    </label>
+
+                                    {/* Participant Names and Initials */}
+                                    <div className="bg-white/10 rounded-lg p-4 space-y-3">
+                                        <h3 className="font-semibold text-white text-lg mb-2">
+                                            Deelnemers ({form.amount_tickets} {form.amount_tickets === 1 ? 'ticket' : 'tickets'})
+                                        </h3>
+                                        <p className="text-sm text-white/80 mb-3">
+                                            Vul voor elk ticket een naam en eerste letter van de achternaam in.
+                                        </p>
+                                        {participants.map((participant, index) => (
+                                            <div key={index} className="bg-white/10 rounded p-3 space-y-2">
+                                                <label className="block text-sm font-semibold text-white">
+                                                    Ticket {index + 1} - Naam
+                                                    <input
+                                                        type="text"
+                                                        value={participant.name}
+                                                        onChange={(e) => handleParticipantChange(index, 'name', e.target.value)}
+                                                        required
+                                                        placeholder="Voornaam + eventueel tussenvoegsel"
+                                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple text-sm"
+                                                    />
+                                                </label>
+                                                <label className="block text-sm font-semibold text-white">
+                                                    Eerste letter achternaam
+                                                    <input
+                                                        type="text"
+                                                        value={participant.initial}
+                                                        onChange={(e) => handleParticipantChange(index, 'initial', e.target.value)}
+                                                        required
+                                                        placeholder="Bijv. S"
+                                                        maxLength={1}
+                                                        className="mt-1 p-2 rounded w-20 bg-white text-theme-purple text-sm uppercase"
+                                                    />
+                                                </label>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        disabled={loading || !canSignUp}
+                                        className="bg-white text-theme-purple font-bold py-3 px-6 rounded shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {loading
+                                            ? 'Bezig met inschrijven...'
+                                            : canSignUp
+                                                ? `Inschrijven (€${(form.amount_tickets * 1).toFixed(2).replace('.', ',')})`
+                                                : 'Inschrijving nog niet beschikbaar'}
+                                    </button>
+                                </form>
+                            )}
+                        </section>
+
+                        {/* Info Section */}
+                        <div className="w-full lg:w-1/2 flex flex-col gap-6">
+                            {/* Event Info */}
+                            <div className="bg-gradient-theme rounded-3xl p-6 shadow-lg">
+                                <h2 className="text-2xl font-bold text-white mb-4">
+                                    🍻 Over de Kroegentocht
+                                </h2>
+                                <div className="text-white space-y-3">
+                                    {eventsLoading ? (
+                                        <p>Evenementomschrijving wordt geladen...</p>
+                                    ) : nextEvent?.description ? (
+                                        nextEvent.description.split('\n').map((paragraph: string, index: number) => (
+                                            <p key={index}>{paragraph}</p>
+                                        ))
+                                    ) : (
+                                        <>
+                                            <p>
+                                                De jaarlijkse Kroegentocht is een van de grootste evenementen die tweemaal per jaar wordt georganiseerd!
+                                            </p>
+                                            <p>
+                                                Dit is een fantastische kans om verschillende kroegen te bezoeken, nieuwe mensen te ontmoeten
+                                                en een onvergetelijke avond te beleven met andere studenten en verenigingen.
+                                            </p>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Details */}
+                            <div className="bg-gradient-theme rounded-3xl p-6 shadow-lg">
+                                <h2 className="text-2xl font-bold text-white mb-4">
+                                    📅 Evenement Details
+                                </h2>
+                                {eventsLoading ? (
+                                    <div className="text-white">Evenementgegevens worden geladen...</div>
+                                ) : nextEvent ? (
+                                    <div className="text-white space-y-4">
+                                        {nextEvent.image && (
+                                            <img
+                                                src={getImageUrl(nextEvent.image)}
+                                                alt={nextEvent.name}
+                                                role="button"
+                                                onClick={() => openImageModal(getImageUrl(nextEvent.image))}
+                                                className="w-full h-48 object-cover rounded-2xl cursor-zoom-in"
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.src = '/img/placeholder.svg';
+                                                }}
+                                            />
+                                        )}
+
+                                        <div className="space-y-2">
+                                            <div className="flex items-start gap-2">
+                                                <span className="font-semibold text-white/80">Evenement:</span>
+                                                <span>{nextEvent.name}</span>
+                                            </div>
+                                            <div className="flex items-start gap-2">
+                                                <span className="font-semibold text-white/80">Datum:</span>
+                                                <span>{formattedNextEventDate ?? 'Nog te bepalen'}</span>
+                                            </div>
+                                            <div className="flex items-start gap-2">
+                                                <span className="font-semibold text-white/80">Organisatie:</span>
+                                                <span>{nextEvent.association || 'Salve Mundi'}</span>
+                                            </div>
+                                            <div className="flex items-start gap-2">
+                                                <span className="font-semibold text-white/80">Contact:</span>
+                                                <a href={`mailto:${nextEvent.email}`} className="underline text-white break-all">
+                                                    {nextEvent.email}
+                                                </a>
+                                            </div>
+                                            <div className="flex items-start gap-2">
+                                                <span className="font-semibold text-white/80">Locatie:</span>
+                                                <span>Verschillende locaties in Eindhoven</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ) : (
-                                <div className="text-white">
-                                    Er is momenteel geen kroegentocht gepland. Houd onze website in de gaten voor toekomstige aankondigingen!
-                                </div>
-                            )}
-                        </div>
+                                ) : (
+                                    <div className="text-white">
+                                        Er is momenteel geen kroegentocht gepland. Houd onze website in de gaten voor toekomstige aankondigingen!
+                                    </div>
+                                )}
+                            </div>
 
-                        {/* Important Info */}
-                        <div className="bg-gradient-theme rounded-3xl p-6 shadow-lg">
-                            <h2 className="text-2xl font-bold text-white mb-4">
-                                ℹ️ Belangrijke Informatie
-                            </h2>
-                            <div className="text-white space-y-2">
-                                <p className="flex items-start gap-2">
-                                    <span className="text-white/80">•</span>
-                                    <span>Je hoeft <strong>geen lid</strong> te zijn om deel te nemen</span>
-                                </p>
-                                <p className="flex items-start gap-2">
-                                    <span className="text-white/80">•</span>
-                                    <span>Je ontvangt een bevestigingsmail na inschrijving</span>
-                                </p>
-                                <p className="flex items-start gap-2">
-                                    <span className="text-white/80">•</span>
-                                    <span>Minimumleeftijd: 18 jaar</span>
-                                </p>
-                                <p className="flex items-start gap-2">
-                                    <span className="text-white/80">•</span>
-                                    <span>Tickets zijn overdraagbaar</span>
-                                </p>
-                                <p className="flex items-start gap-2">
-                                    <span className="text-white/80">•</span>
-                                    <span>Bij vragen? Neem contact op via <a href="/contact" className="text-white underline">onze contactpagina</a></span>
-                                </p>
+                            {/* Important Info */}
+                            <div className="bg-gradient-theme rounded-3xl p-6 shadow-lg">
+                                <h2 className="text-2xl font-bold text-white mb-4">
+                                    ℹ️ Belangrijke Informatie
+                                </h2>
+                                <div className="text-white space-y-2">
+                                    <p className="flex items-start gap-2">
+                                        <span className="text-white/80">•</span>
+                                        <span>Je hoeft <strong>geen lid</strong> te zijn om deel te nemen</span>
+                                    </p>
+                                    <p className="flex items-start gap-2">
+                                        <span className="text-white/80">•</span>
+                                        <span>Je ontvangt een bevestigingsmail na inschrijving</span>
+                                    </p>
+                                    <p className="flex items-start gap-2">
+                                        <span className="text-white/80">•</span>
+                                        <span>Minimumleeftijd: 18 jaar</span>
+                                    </p>
+                                    <p className="flex items-start gap-2">
+                                        <span className="text-white/80">•</span>
+                                        <span>Tickets zijn overdraagbaar</span>
+                                    </p>
+                                    <p className="flex items-start gap-2">
+                                        <span className="text-white/80">•</span>
+                                        <span>Bij vragen? Neem contact op via <a href="/contact" className="text-white underline">onze contactpagina</a></span>
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
                 )}
             </main>
             {modalOpen && modalSrc && (
