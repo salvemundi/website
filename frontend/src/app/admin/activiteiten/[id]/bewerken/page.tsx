@@ -83,8 +83,15 @@ export default function BewerkenActiviteitPage() {
             const committeesData = await directusFetch<Committee[]>('/items/committees?fields=id,name&sort=name&limit=-1&filter[is_visible][_eq]=true');
             try {
                 const user = auth.user;
-                if (user?.committees && user.committees.length > 0) {
-                    const allowed = new Set(user.committees.map(c => String(c.id)));
+                const memberships = user?.committees || [];
+                const hasPriv = memberships.some((c: any) => {
+                    const name = (c?.name || '').toString().toLowerCase();
+                    return name === 'bestuur' || name === 'ict';
+                });
+                if (hasPriv) {
+                    setCommittees(committeesData);
+                } else if (memberships.length > 0) {
+                    const allowed = new Set(memberships.map((c: any) => String(c.id)));
                     setCommittees(committeesData.filter(c => allowed.has(String(c.id))));
                 } else {
                     setCommittees([]);
@@ -125,8 +132,13 @@ export default function BewerkenActiviteitPage() {
             try {
                 const user = auth.user;
                 const eventCommitteeId = event.committee_id ? String(event.committee_id) : null;
-                const isMember = !!(user?.committees && user.committees.some((c: any) => String(c.id) === eventCommitteeId));
-                if (!isMember) {
+                const memberships = user?.committees || [];
+                const isMember = memberships.some((c: any) => String(c.id) === eventCommitteeId);
+                const hasPriv = memberships.some((c: any) => {
+                    const name = (c?.name || '').toString().toLowerCase();
+                    return name === 'bestuur' || name === 'ict';
+                });
+                if (!(isMember || hasPriv)) {
                     alert('Je bent geen lid van de commissie die deze activiteit organiseert. Je kunt deze niet bewerken.');
                     router.push('/admin/activiteiten');
                     return;
