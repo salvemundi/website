@@ -71,7 +71,7 @@ export default function HomePage() {
                         </h2>
                         <p className="text-lg text-theme-muted mb-8 max-w-2xl mx-auto">
                             Sluit je aan bij onze community van studenten en maak het meeste van je studententijd.
-                            Voor slechts €15 per jaar krijg je toegang tot alle activiteiten met korting!
+                            Voor slechts €20 per jaar krijg je toegang tot alle activiteiten met korting!
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <a
