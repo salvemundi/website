@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useAuth } from '@/features/auth/providers/auth-provider';
 import { useRouter, useParams } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
@@ -34,6 +35,8 @@ export default function BewerkenActiviteitPage() {
     const router = useRouter();
     const params = useParams();
     const eventId = params?.id as string;
+
+    const auth = useAuth();
 
     const [committees, setCommittees] = useState<Committee[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -69,15 +72,33 @@ export default function BewerkenActiviteitPage() {
     };
 
     useEffect(() => {
+        // Refresh when eventId or user changes
         loadData();
-    }, [eventId]);
+    }, [eventId, auth.user]);
 
     const loadData = async () => {
         setIsLoading(true);
         try {
-            // Load committees
+            // Load committees and filter by user's memberships
             const committeesData = await directusFetch<Committee[]>('/items/committees?fields=id,name&sort=name&limit=-1&filter[is_visible][_eq]=true');
-            setCommittees(committeesData);
+            try {
+                const user = auth.user;
+                const memberships = user?.committees || [];
+                const hasPriv = memberships.some((c: any) => {
+                    const name = (c?.name || '').toString().toLowerCase();
+                    return name === 'bestuur' || name === 'ict';
+                });
+                if (hasPriv) {
+                    setCommittees(committeesData);
+                } else if (memberships.length > 0) {
+                    const allowed = new Set(memberships.map((c: any) => String(c.id)));
+                    setCommittees(committeesData.filter(c => allowed.has(String(c.id))));
+                } else {
+                    setCommittees([]);
+                }
+            } catch (e) {
+                setCommittees([]);
+            }
 
             // Load event
             const event = await directusFetch<Event>(`/items/events/${eventId}?fields=*`);
@@ -106,6 +127,25 @@ export default function BewerkenActiviteitPage() {
                 contact: event.contact || '',
                 only_members: event.only_members || false,
             });
+
+            // Check membership: only allow editing if user is member of event's committee
+            try {
+                const user = auth.user;
+                const eventCommitteeId = event.committee_id ? String(event.committee_id) : null;
+                const memberships = user?.committees || [];
+                const isMember = memberships.some((c: any) => String(c.id) === eventCommitteeId);
+                const hasPriv = memberships.some((c: any) => {
+                    const name = (c?.name || '').toString().toLowerCase();
+                    return name === 'bestuur' || name === 'ict';
+                });
+                if (!(isMember || hasPriv)) {
+                    alert('Je bent geen lid van de commissie die deze activiteit organiseert. Je kunt deze niet bewerken.');
+                    router.push('/admin/activiteiten');
+                    return;
+                }
+            } catch (e) {
+                // if auth not ready, proceed and let server-side guard block if unauthorized
+            }
 
             // Set existing image if present
             if (event.image) {
