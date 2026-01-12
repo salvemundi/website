@@ -80,6 +80,7 @@ async function getTransaction(directusUrl, directusToken, id) {
  */
 async function getCoupon(directusUrl, directusToken, code, traceId = 'no-trace') {
     try {
+        // Step 1: Normal lookup with filters
         const query = new URLSearchParams({
             'filter[coupon_code][_eq]': code,
             'filter[is_active][_eq]': 'true'
@@ -89,10 +90,30 @@ async function getCoupon(directusUrl, directusToken, code, traceId = 'no-trace')
         console.warn(`[Coupon][${traceId}] Directus Fetch URL: ${url}`);
 
         const response = await axios.get(url, getAuthConfig(directusToken));
+        const results = response.data.data;
 
-        console.warn(`[Coupon][${traceId}] Directus Raw Result:`, JSON.stringify(response.data.data));
+        if (results && results.length > 0) {
+            console.warn(`[Coupon][${traceId}] Success! Found active coupon: ${results[0].id}`);
+            return results[0];
+        }
 
-        return response.data.data?.[0] || null;
+        // Step 2: Diagnostic lookup - find it even if inactive to see WHY it failed
+        console.warn(`[Coupon][${traceId}] No active coupon found. Running diagnostic lookup for code: "${code}"`);
+        const diagQuery = new URLSearchParams({
+            'filter[coupon_code][_eq]': code
+        }).toString();
+        const diagUrl = `${directusUrl}/items/coupons?${diagQuery}`;
+        const diagResponse = await axios.get(diagUrl, getAuthConfig(directusToken));
+        const diagResults = diagResponse.data.data;
+
+        if (diagResults && diagResults.length > 0) {
+            const c = diagResults[0];
+            console.warn(`[Coupon][${traceId}] DIAGNOSTIC: Coupon found but filtered out! is_active: ${c.is_active} (Type: ${typeof c.is_active}). ID: ${c.id}`);
+        } else {
+            console.warn(`[Coupon][${traceId}] DIAGNOSTIC: Coupon "${code}" NOT FOUND in Directus at all! (No filter check). URL: ${diagUrl}`);
+        }
+
+        return null;
     } catch (error) {
         console.error(`[Coupon][${traceId}] Directus Fetch Failed:`, error.response?.data || error.message);
         return null;

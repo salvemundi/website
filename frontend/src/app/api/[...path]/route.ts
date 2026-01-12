@@ -25,6 +25,9 @@ export async function GET(
             },
         });
 
+        if (response.status === 204) {
+            return new Response(null, { status: 204 });
+        }
         const data = await response.json().catch(() => null);
         return NextResponse.json(data, { status: response.status });
     } catch (error: any) {
@@ -49,11 +52,14 @@ export async function POST(
             method: 'POST',
             headers: {
                 'Authorization': request.headers.get('Authorization') || '',
-                'Content-Type': 'application/json',
+                'Content-Type': request.headers.get('Content-Type') || 'application/json',
             },
             body: body ? JSON.stringify(body) : undefined,
         });
 
+        if (response.status === 204) {
+            return new Response(null, { status: 204 });
+        }
         const data = await response.json().catch(() => null);
         return NextResponse.json(data, { status: response.status });
     } catch (error: any) {
@@ -78,11 +84,14 @@ export async function PATCH(
             method: 'PATCH',
             headers: {
                 'Authorization': request.headers.get('Authorization') || '',
-                'Content-Type': 'application/json',
+                'Content-Type': request.headers.get('Content-Type') || 'application/json',
             },
             body: body ? JSON.stringify(body) : undefined,
         });
 
+        if (response.status === 204) {
+            return new Response(null, { status: 204 });
+        }
         const data = await response.json().catch(() => null);
         return NextResponse.json(data, { status: response.status });
     } catch (error: any) {
@@ -106,10 +115,13 @@ export async function DELETE(
             method: 'DELETE',
             headers: {
                 'Authorization': request.headers.get('Authorization') || '',
-                'Content-Type': 'application/json',
+                'Content-Type': request.headers.get('Content-Type') || 'application/json',
             }
         });
 
+        if (response.status === 204) {
+            return new Response(null, { status: 204 });
+        }
         const data = await response.json().catch(() => null);
         return NextResponse.json(data, { status: response.status });
     } catch (error: any) {
