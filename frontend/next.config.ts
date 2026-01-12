@@ -2,7 +2,7 @@
 
 // Enable bundle analyzer when ANALYZE env is true
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
+    enabled: process.env.ANALYZE === 'true',
 });
 
 const nextConfig = {
@@ -31,6 +31,13 @@ const nextConfig = {
             {
                 protocol: 'http',
                 hostname: 'localhost',
+            },
+        ],
+        // Allow query strings for local /api/assets paths (for Directus access tokens)
+        localPatterns: [
+            {
+                pathname: '/api/assets/**',
+                search: '**',
             },
         ],
     },
