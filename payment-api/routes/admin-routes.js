@@ -59,40 +59,59 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
 
     /**
      * GET /api/admin/pending-signups
-     * Fetch all pending dev signups
+     * Fetch dev signups with filters
+     * Query Params:
+     * - status: 'pending' | 'approved' | 'rejected' | 'all' (default: 'pending')
+     * - show_failed: 'true' | 'false' (default: 'false')
      */
     router.get('/pending-signups', requireAdmin, async (req, res) => {
-        console.log('[AdminRoutes] GET /pending-signups called');
+        console.log('[AdminRoutes] GET /pending-signups called', req.query);
         try {
-            console.log('[AdminRoutes] Fetching from Directus:', {
-                url: `${DIRECTUS_URL}/items/transactions`,
-                usingToken: DIRECTUS_API_TOKEN ? 'Yes (length: ' + DIRECTUS_API_TOKEN.length + ')' : 'No'
-            });
+            const { status = 'pending', show_failed = 'false' } = req.query;
+
+            // Base params
+            const params = {
+                'filter[environment][_eq]': 'development',
+                'fields': 'id,created_at,product_name,amount,email,first_name,last_name,approval_status,payment_status,environment',
+                'sort': '-created_at',
+                'limit': 100
+            };
+
+            // 1. Status Filter
+            if (status !== 'all') {
+                // Allow comma separated or single status
+                params['filter[approval_status][_in]'] = status;
+            } else {
+                params['filter[approval_status][_in]'] = 'pending,rejected,approved,auto_approved';
+            }
+
+            // 2. Payment Status Filter
+            if (show_failed === 'true') {
+                // Show everything (failed, open, expired, paid)
+                // No filter needed on payment_status
+            } else {
+                // Default: Only paid
+                params['filter[payment_status][_eq]'] = 'paid';
+            }
+
+            console.log('[AdminRoutes] Fetching from Directus with params:', params);
 
             const response = await axios.get(
                 `${DIRECTUS_URL}/items/transactions`,
                 {
-                    params: {
-                        'filter[approval_status][_in]': 'pending,rejected,approved',
-                        'filter[payment_status][_eq]': 'paid',
-                        'filter[environment][_eq]': 'development',
-                        'fields': 'id,created_at,product_name,amount,email,first_name,last_name,approval_status,payment_status,environment',
-                        'sort': '-created_at',
-                        'limit': 100
-                    },
+                    params: params,
                     headers: { 'Authorization': `Bearer ${DIRECTUS_API_TOKEN}` }
                 }
             );
 
             res.json({ signups: response.data.data || [] });
         } catch (error) {
-            console.error('[AdminRoutes] Failed to fetch pending signups:', {
+            console.error('[AdminRoutes] Failed to fetch signups:', {
                 message: error.message,
                 status: error.response?.status,
-                statusText: error.response?.statusText,
-                directusErrorFull: JSON.stringify(error.response?.data, null, 2)
+                directusError: error.response?.data
             });
-            res.status(500).json({ error: 'Failed to fetch pending signups' });
+            res.status(500).json({ error: 'Failed to fetch signups' });
         }
     });
 
