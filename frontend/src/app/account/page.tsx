@@ -143,6 +143,8 @@ export default function AccountPage() {
   const { user, isAuthenticated, isLoading: authLoading, logout, refreshUser } =
     useAuth();
 
+  const isCommitteeMember = !!(user?.committees && user.committees.length > 0);
+
   const [eventSignups, setEventSignups] = useState<EventSignup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -485,7 +487,7 @@ export default function AccountPage() {
                   href="/account/safe-haven-availability"
                 />
               ) : null}
-              {user.entra_id ? (
+              {isCommitteeMember ? (
                 <QuickLink
                   label="Admin panel"
                   icon={<Shield className="h-6 w-6" />}

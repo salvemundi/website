@@ -56,8 +56,18 @@ export default function NieuweActiviteitPage() {
             const data = await directusFetch<Committee[]>('/items/committees?fields=id,name&sort=name&limit=-1&filter[is_visible][_eq]=true');
             try {
                 const user = auth.user;
-                if (user?.committees && user.committees.length > 0) {
-                    const allowed = new Set(user.committees.map(c => String(c.id)));
+                const memberships = user?.committees || [];
+                const hasPriv = memberships.some((c: any) => {
+                    const name = (c?.name || '').toString().toLowerCase();
+                    return name === 'bestuur' || name === 'ict';
+                });
+                if (hasPriv) {
+                    // privileged users can create events for any committee
+                    setCommittees(data);
+                    return;
+                }
+                if (memberships.length > 0) {
+                    const allowed = new Set(memberships.map((c: any) => String(c.id)));
                     setCommittees(data.filter(c => allowed.has(String(c.id))));
                 } else {
                     // No memberships, show empty list

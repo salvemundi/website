@@ -329,8 +329,13 @@ export default function AdminActiviteitenPage() {
                                         </button>
                                         {(() => {
                                             const eventCommitteeId = (event as any).committee_id ? String((event as any).committee_id) : null;
-                                            const isMember = !!(auth.user?.committees && auth.user.committees.some((c: any) => String(c.id) === eventCommitteeId));
-                                            if (isMember) {
+                                            const memberships = auth.user?.committees || [];
+                                            const isMember = memberships.some((c: any) => String(c.id) === eventCommitteeId);
+                                            const hasPriv = memberships.some((c: any) => {
+                                                const name = (c?.name || '').toString().toLowerCase();
+                                                return name === 'bestuur' || name === 'ict';
+                                            });
+                                            if (isMember || hasPriv) {
                                                 return (
                                                     <>
                                                         <button

@@ -81,9 +81,19 @@ export async function POST(
                 const memberCheckUrl = `${DIRECTUS_URL}/items/committee_members?filter[committee_id][_eq]=${encodeURIComponent(committeeId)}&filter[user_id][_eq]=${encodeURIComponent(userId)}&limit=1`;
                 const memberResp = await fetch(memberCheckUrl, { headers: { Authorization: auth } });
                 const memberJson = await memberResp.json().catch(() => null);
-                const isMember = Array.isArray(memberJson?.data) && memberJson.data.length > 0;
+                let isMember = Array.isArray(memberJson?.data) && memberJson.data.length > 0;
                 if (!isMember) {
-                    return NextResponse.json({ error: 'Forbidden', message: 'Not a member of selected committee' }, { status: 403 });
+                    // Allow members of privileged committees (bestuur, ict) to create for any committee
+                    const privResp = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name&limit=-1`, { headers: { Authorization: auth } });
+                    const privJson = await privResp.json().catch(() => null);
+                    const memberships = Array.isArray(privJson?.data) ? privJson.data : [];
+                    const privileged = memberships.some((m: any) => {
+                        const name = (m?.committee_id?.name || '').toString().toLowerCase();
+                        return name === 'bestuur' || name === 'ict';
+                    });
+                    if (!privileged) {
+                        return NextResponse.json({ error: 'Forbidden', message: 'Not a member of selected committee' }, { status: 403 });
+                    }
                 }
             } else {
                 // If no committee specified, deny to be safe
@@ -159,9 +169,19 @@ export async function PATCH(
                 const memberCheckUrl = `${DIRECTUS_URL}/items/committee_members?filter[committee_id][_eq]=${encodeURIComponent(committeeId)}&filter[user_id][_eq]=${encodeURIComponent(userId)}&limit=1`;
                 const memberResp = await fetch(memberCheckUrl, { headers: { Authorization: auth } });
                 const memberJson = await memberResp.json().catch(() => null);
-                const isMember = Array.isArray(memberJson?.data) && memberJson.data.length > 0;
+                let isMember = Array.isArray(memberJson?.data) && memberJson.data.length > 0;
                 if (!isMember) {
-                    return NextResponse.json({ error: 'Forbidden', message: 'Not a member of committee for this event' }, { status: 403 });
+                    // Allow privileged committee members (bestuur, ict) to edit any event
+                    const privResp = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name&limit=-1`, { headers: { Authorization: auth } });
+                    const privJson = await privResp.json().catch(() => null);
+                    const memberships = Array.isArray(privJson?.data) ? privJson.data : [];
+                    const privileged = memberships.some((m: any) => {
+                        const name = (m?.committee_id?.name || '').toString().toLowerCase();
+                        return name === 'bestuur' || name === 'ict';
+                    });
+                    if (!privileged) {
+                        return NextResponse.json({ error: 'Forbidden', message: 'Not a member of committee for this event' }, { status: 403 });
+                    }
                 }
             } else {
                 return NextResponse.json({ error: 'Forbidden', message: 'Committee for event not found' }, { status: 403 });
@@ -202,7 +222,17 @@ export async function PATCH(
             }
 
             if (!(isOfficer || isMember)) {
-                return NextResponse.json({ error: 'Forbidden', message: 'Not authorized to edit signups for this event' }, { status: 403 });
+                // Check privileged committees for full rights
+                const privResp2 = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name&limit=-1`, { headers: { Authorization: auth } });
+                const privJson2 = await privResp2.json().catch(() => null);
+                const memberships2 = Array.isArray(privJson2?.data) ? privJson2.data : [];
+                const privileged2 = memberships2.some((m: any) => {
+                    const name = (m?.committee_id?.name || '').toString().toLowerCase();
+                    return name === 'bestuur' || name === 'ict';
+                });
+                if (!(isOfficer || isMember || privileged2)) {
+                    return NextResponse.json({ error: 'Forbidden', message: 'Not authorized to edit signups for this event' }, { status: 403 });
+                }
             }
         }
 
