@@ -1,4 +1,5 @@
 FROM node:22-alpine AS builder
+RUN apk add --no-cache git
 WORKDIR /app
 ARG NEXT_PUBLIC_DIRECTUS_URL
 ARG NEXT_PUBLIC_AUTH_REDIRECT_URI
