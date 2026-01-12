@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const PAYMENT_API_URL = process.env.PAYMENT_API_URL || 'http://payment-api:3002';
+const PAYMENT_API_URL = process.env.PAYMENT_API_URL || process.env.NEXT_PUBLIC_PAYMENT_API_URL || 'http://payment-api:3002';
 
 export async function GET(
     request: NextRequest,

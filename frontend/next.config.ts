@@ -108,10 +108,11 @@ const nextConfig = {
     async rewrites() {
         // Hardcoded as requested to ensure connection to production backend
         const DIRECTUS_URL = 'https://admin.salvemundi.nl';
-        const PAYMENT_API_URL = process.env.NEXT_PUBLIC_PAYMENT_API_URL || 'http://payment-api:3002';
+        const PAYMENT_API_URL = process.env.PAYMENT_API_URL || process.env.NEXT_PUBLIC_PAYMENT_API_URL || 'http://payment-api:3002';
 
         console.log('📍 Proxying /api requests to:', DIRECTUS_URL);
-        console.log('📍 Proxying /api/admin, /api/payments, and /api/coupons to:', PAYMENT_API_URL);
+        console.log('📍 Proxying /api/admin and /api/payments directly via rewrites to:', PAYMENT_API_URL);
+        console.log('📍 NOTE: /api/coupons is now handled via file-based API route for better debugging');
 
         return [
             // Payment API endpoints - must come FIRST to match before catch-all
@@ -122,10 +123,6 @@ const nextConfig = {
             {
                 source: '/api/payments/:path*',
                 destination: `${PAYMENT_API_URL}/api/payments/:path*`,
-            },
-            {
-                source: '/api/coupons/:path*',
-                destination: `${PAYMENT_API_URL}/api/coupons/:path*`,
             },
             // Directus endpoints - catch-all for everything else
             {
