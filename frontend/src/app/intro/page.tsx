@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { introSignupsApi, introParentSignupsApi } from '@/shared/lib/api/salvemundi';
@@ -23,9 +23,9 @@ export default function IntroPage() {
   });
 
   // keep telefoonnummer in sync when user becomes available
-  React.useEffect(() => {
+  useEffect(() => {
     if (user?.phone_number) {
-  setForm(prev => ({ ...prev, telefoonnummer: user?.phone_number || '' }));
+      setForm(prev => ({ ...prev, telefoonnummer: user?.phone_number || '' }));
     }
   }, [user?.phone_number]);
 
@@ -40,7 +40,7 @@ export default function IntroPage() {
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   // Check whether the logged-in user already signed up as a parent
-  React.useEffect(() => {
+  useEffect(() => {
     let mounted = true;
     const check = async () => {
       if (user?.id) {
@@ -135,7 +135,7 @@ export default function IntroPage() {
           phoneNumber: form.telefoonnummer,
           dateOfBirth: form.geboortedatum || undefined,
           favoriteGif: form.favorieteGif || undefined,
-        }).catch(() => {});
+        }).catch(() => { });
       }
       setSubmitted(true);
     } catch (err: any) {
@@ -217,7 +217,7 @@ export default function IntroPage() {
                     className="w-full h-32 object-cover rounded-lg cursor-pointer"
                     onClick={() => { setLightboxSrc('/img/Intro-4-2025.jpg'); setLightboxOpen(true); }}
                   />
-                   <img
+                  <img
                     src="/img/Intro2025.jpg"
                     alt="Groep"
                     className="w-full h-32 object-cover rounded-lg cursor-pointer"

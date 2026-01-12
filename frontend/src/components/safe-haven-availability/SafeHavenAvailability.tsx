@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Clock, Save, Info, Feather } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateSafeHavenAvailability, getSafeHavenAvailability } from '@/shared/lib/api/salvemundi';
@@ -30,8 +30,8 @@ const SafeHavenAvailability: React.FC<SafeHavenAvailabilityProps> = ({ userId })
       const data = await getSafeHavenAvailability(userId);
       if (data) {
         setIsAvailableToday(data.isAvailableToday || false);
-        setTimeSlots(data.timeSlots && data.timeSlots.length > 0 
-          ? data.timeSlots 
+        setTimeSlots(data.timeSlots && data.timeSlots.length > 0
+          ? data.timeSlots
           : [{ start: '09:00', end: '17:00' }]
         );
       }
@@ -98,8 +98,8 @@ const SafeHavenAvailability: React.FC<SafeHavenAvailabilityProps> = ({ userId })
           <Info className="mt-0.5 h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0" />
           <div>
             <p className="text-sm font-medium text-blue-900 dark:text-blue-100 leading-relaxed">
-              Je contactgegevens worden altijd weergegeven op de Safe Havens pagina. 
-              Hier kun je aangeven op welke tijden je vandaag beschikbaar bent. 
+              Je contactgegevens worden altijd weergegeven op de Safe Havens pagina.
+              Hier kun je aangeven op welke tijden je vandaag beschikbaar bent.
               Deze tijden worden aan alle gebruikers getoond.
             </p>
           </div>

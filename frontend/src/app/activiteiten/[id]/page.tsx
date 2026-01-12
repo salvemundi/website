@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { useSalvemundiEvent } from '@/shared/lib/hooks/useSalvemundiApi';
@@ -192,10 +192,10 @@ export default function EventDetailPage() {
 
     // Treat an event as past only after the end of its calendar day (local timezone)
     const isPast = event ? isEventPast(event.event_date) : false;
-    
+
     // Check if registration deadline has passed
     const isDeadlinePassed = event?.inschrijf_deadline ? new Date(event.inschrijf_deadline) < new Date() : false;
-    
+
     const isPaidAndHasQR = signupStatus.isSignedUp && signupStatus.paymentStatus === 'paid' && !!signupStatus.qrToken;
 
     // Form handlers
@@ -219,13 +219,13 @@ export default function EventDetailPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         // Safety check: prevent submission if deadline has passed
         if (isDeadlinePassed) {
             setSubmitError('De inschrijfdeadline voor deze activiteit is verstreken.');
             return;
         }
-        
+
         if (!validateForm()) return;
 
         setIsSubmitting(true);
@@ -523,21 +523,21 @@ export default function EventDetailPage() {
                                     {event.contact_name && (
                                         <p className="text-base font-semibold text-white">{event.contact_name}</p>
                                     )}
-                                                {committeeEmail && (
-                                                    <a href={`mailto:${committeeEmail}`} className="text-sm text-white/80 hover:underline break-all">
-                                                        {committeeEmail}
-                                                    </a>
-                                                )}
-                                                {/* Show explicit contact email if set on the event */}
-                                                {event.contact && typeof event.contact === 'string' && event.contact.includes('@') && (
-                                                    <a href={`mailto:${event.contact}`} className="text-sm text-white/80 hover:underline break-all block mt-1">
-                                                        {event.contact}
-                                                    </a>
-                                                )}
-                                                {/* Fallback: show contact (e.g., phone) when it's not an email */}
-                                                {event.contact && typeof event.contact === 'string' && !event.contact.includes('@') && (
-                                                    <p className="text-sm text-white/80 break-all mt-1">{event.contact}</p>
-                                                )}
+                                    {committeeEmail && (
+                                        <a href={`mailto:${committeeEmail}`} className="text-sm text-white/80 hover:underline break-all">
+                                            {committeeEmail}
+                                        </a>
+                                    )}
+                                    {/* Show explicit contact email if set on the event */}
+                                    {event.contact && typeof event.contact === 'string' && event.contact.includes('@') && (
+                                        <a href={`mailto:${event.contact}`} className="text-sm text-white/80 hover:underline break-all block mt-1">
+                                            {event.contact}
+                                        </a>
+                                    )}
+                                    {/* Fallback: show contact (e.g., phone) when it's not an email */}
+                                    {event.contact && typeof event.contact === 'string' && !event.contact.includes('@') && (
+                                        <p className="text-sm text-white/80 break-all mt-1">{event.contact}</p>
+                                    )}
                                 </div>
                             </div>
                         )}

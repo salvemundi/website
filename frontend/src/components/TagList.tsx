@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { Tag } from 'lucide-react';
 
 export interface TagListProps {
@@ -42,11 +41,10 @@ export default function TagList({
             <button
               key={tag}
               onClick={() => onClick?.(tag)}
-              className={`px-3 py-1.5 rounded-full text-xs lg:text-sm font-medium transition-all ${
-                isSelected
+              className={`px-3 py-1.5 rounded-full text-xs lg:text-sm font-medium transition-all ${isSelected
                   ? 'bg-gradient-theme text-white shadow-md'
                   : 'bg-theme-purple/10 text-theme-purple hover:bg-theme-purple/20'
-              } ${onClick ? 'cursor-pointer' : 'cursor-default'}`}
+                } ${onClick ? 'cursor-pointer' : 'cursor-default'}`}
               disabled={!onClick}
             >
               {tag}

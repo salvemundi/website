@@ -42,6 +42,13 @@ const nextConfig = {
                 hostname: 'localhost',
             },
         ],
+        // Allow query strings for local /api/assets paths (for Directus access tokens)
+        localPatterns: [
+            {
+                pathname: '/api/assets/**',
+                search: '',
+            },
+        ],
     },
 
     // Enable experimental features for App Router

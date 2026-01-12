@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import Image from 'next/image';
 import { Mail, Phone } from 'lucide-react';
 
@@ -43,15 +42,13 @@ export default function AuthorCard({
 
   return (
     <div
-      className={`bg-[var(--bg-card)] rounded-xl lg:rounded-2xl shadow-lg p-4 lg:p-6 ${
-        compact ? 'max-w-sm' : 'max-w-md'
-      }`}
+      className={`bg-[var(--bg-card)] rounded-xl lg:rounded-2xl shadow-lg p-4 lg:p-6 ${compact ? 'max-w-sm' : 'max-w-md'
+        }`}
     >
       <div className={`flex ${compact ? 'items-center gap-3' : 'flex-col items-center text-center'}`}>
         {/* Avatar */}
         {avatar ? (
-          <div className={`relative ${
-              compact ? 'w-12 h-12 lg:w-16 lg:h-16' : 'w-20 h-20 lg:w-24 lg:h-24'
+          <div className={`relative ${compact ? 'w-12 h-12 lg:w-16 lg:h-16' : 'w-20 h-20 lg:w-24 lg:h-24'
             } rounded-full overflow-hidden border-2 border-theme-purple shadow-md`}>
             <Image
               src={avatar}
@@ -66,11 +63,9 @@ export default function AuthorCard({
           </div>
         ) : (
           <div
-            className={`${
-              compact ? 'w-12 h-12 lg:w-16 lg:h-16' : 'w-20 h-20 lg:w-24 lg:h-24'
-            } rounded-full bg-gradient-theme flex items-center justify-center text-white font-bold ${
-              compact ? 'text-lg lg:text-xl' : 'text-2xl lg:text-3xl'
-            } shadow-md`}
+            className={`${compact ? 'w-12 h-12 lg:w-16 lg:h-16' : 'w-20 h-20 lg:w-24 lg:h-24'
+              } rounded-full bg-gradient-theme flex items-center justify-center text-white font-bold ${compact ? 'text-lg lg:text-xl' : 'text-2xl lg:text-3xl'
+              } shadow-md`}
           >
             {name.charAt(0).toUpperCase()}
           </div>

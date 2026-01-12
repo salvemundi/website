@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Chrono } from 'react-chrono';
 import { Users } from 'lucide-react';
 
@@ -40,7 +40,7 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
         const checkDarkMode = () => {
             setIsDarkMode(document.documentElement.classList.contains('dark'));
         };
-        
+
         checkDarkMode();
 
         // Watch for theme changes

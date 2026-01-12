@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, Suspense } from 'react';
+import { useState, useMemo, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { stickersApi, calculateStickerStats, geocodeAddress, reverseGeocode, CreateStickerData, Sticker } from '@/shared/lib/api/salvemundi';
@@ -254,10 +254,10 @@ function StickersContent() {
                     />
                     {/* User filter: select to filter by specific user, fallback free-text search still supported */}
                     <div className="flex">
-                            <select
+                        <select
                             value={filterUserId}
                             onChange={(e) => setFilterUserId(e.target.value)}
-                                className="px-3 py-2 rounded-lg w-full bg-[var(--bg-card)] focus:ring-2 focus:ring-paars focus:border-transparent"
+                            className="px-3 py-2 rounded-lg w-full bg-[var(--bg-card)] focus:ring-2 focus:ring-paars focus:border-transparent"
                         >
                             <option value="">All users</option>
                             {Object.entries(stickersPerUser).map(([id, info]) => (
@@ -319,18 +319,18 @@ function StickersContent() {
                             <ol className="space-y-2">
                                 {leaderboard.slice(0, 50).map((c, idx) => {
                                     const isMe = user && c.id === user.id;
-                    return (
-                    <li key={c.id} className={`flex items-center justify-between p-3 rounded-xl ${isMe ? 'bg-oranje/10' : ''}`}>
+                                    return (
+                                        <li key={c.id} className={`flex items-center justify-between p-3 rounded-xl ${isMe ? 'bg-oranje/10' : ''}`}>
                                             <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${idx < 3 ? 'bg-geel text-paars' : 'bg-[var(--bg-soft)] text-theme-muted'}`}>
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${idx < 3 ? 'bg-geel text-paars' : 'bg-[var(--bg-soft)] text-theme-muted'}`}>
                                                     {idx + 1}
                                                 </div>
                                                 <div>
-                            <div className="font-semibold text-paars">{c.name}</div>
+                                                    <div className="font-semibold text-paars">{c.name}</div>
                                                     {/* <div className="text-xs text-gray-500">{c.id}</div> */}
                                                 </div>
                                             </div>
-                        <div className="text-xl font-bold text-paars">{c.count}</div>
+                                            <div className="text-xl font-bold text-paars">{c.count}</div>
                                         </li>
                                     );
                                 })}
@@ -385,7 +385,7 @@ function StickersContent() {
             </div>
 
             {/* Add Sticker Modal */}
-                {showAddModal && (
+            {showAddModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                     <div className="bg-[var(--bg-card)] rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
                         <div className="sticky top-0 bg-[var(--bg-card)] px-6 py-4 flex items-center justify-between z-10">

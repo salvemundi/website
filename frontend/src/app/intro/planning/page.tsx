@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import HeroBanner from '@/components/HeroBanner';
 import { introPlanningApi } from '@/shared/lib/api/salvemundi';
 import { useQuery } from '@tanstack/react-query';
@@ -20,7 +20,7 @@ export default function IntroPlanningPage() {
 
     // Define the order of days
     const dayOrder = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag'];
-    
+
     // Generate hours from 9:00 to 23:00
     const hours = Array.from({ length: 15 }, (_, i) => i + 9); // 9 to 23
 
@@ -33,9 +33,9 @@ export default function IntroPlanningPage() {
             acc[item.day].push(item);
             return acc;
         }, {} as Record<string, typeof introPlanning>);
-        
-    // grouped planning computed
-        
+
+        // grouped planning computed
+
         // Sort by day order
         return Object.keys(grouped)
             .sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b))
@@ -47,16 +47,16 @@ export default function IntroPlanningPage() {
 
     const planningByDay = groupPlanningByDay();
     const days = Object.keys(planningByDay);
-    
+
     // days and item counts computed
-    
+
     // Set first day as default if not selected and we're not showing all days
-    React.useEffect(() => {
+    useEffect(() => {
         if (selectedDay === null && days.length > 0) {
             // Don't auto-select, start with all days visible
         }
     }, [days.length, selectedDay]);
-    
+
     // Filter days based on selection (show all on desktop by default, selected on mobile)
     const displayDays = selectedDay ? [selectedDay] : days;
 
@@ -67,10 +67,10 @@ export default function IntroPlanningPage() {
             const startTime = parse(timeStart, 'HH:mm:ss', new Date());
             const startHour = startTime.getHours();
             const startMinute = startTime.getMinutes();
-            
+
             // Calculate top position (offset from 9:00)
             const top = ((startHour - 9) * 60 + startMinute);
-            
+
             // Calculate height
             let height = 60; // Default 1 hour
             if (timeEnd) {
@@ -79,7 +79,7 @@ export default function IntroPlanningPage() {
                 const endMinute = endTime.getMinutes();
                 height = ((endHour - 9) * 60 + endMinute) - top;
             }
-            
+
             return { top, height: Math.max(height, 30) }; // Minimum 30px height
         } catch (e) {
             return { top: 0, height: 60 };
@@ -161,7 +161,7 @@ export default function IntroPlanningPage() {
                         <p className="text-theme-muted text-base lg:text-lg mb-6">
                             Bekijk wat er allemaal op het programma staat
                         </p>
-                        
+
                         {/* Day Selector - Desktop: Buttons, Mobile: Dropdown */}
                         {days.length > 0 && (
                             <>
@@ -169,11 +169,10 @@ export default function IntroPlanningPage() {
                                 <div className="hidden md:flex flex-wrap gap-2 justify-center">
                                     <button
                                         onClick={() => setSelectedDay(null)}
-                                        className={`px-4 py-2 rounded-full font-semibold text-sm transition-all ${
-                                            selectedDay === null
-                                                ? 'bg-gradient-theme text-white shadow-lg'
-                                                : 'bg-theme-purple/10 text-theme hover:bg-theme-purple/20'
-                                        }`}
+                                        className={`px-4 py-2 rounded-full font-semibold text-sm transition-all ${selectedDay === null
+                                            ? 'bg-gradient-theme text-white shadow-lg'
+                                            : 'bg-theme-purple/10 text-theme hover:bg-theme-purple/20'
+                                            }`}
                                     >
                                         Alle dagen
                                     </button>
@@ -183,11 +182,10 @@ export default function IntroPlanningPage() {
                                             <button
                                                 key={day}
                                                 onClick={() => setSelectedDay(day)}
-                                                className={`px-4 py-2 rounded-full font-semibold text-sm transition-all ${
-                                                    selectedDay === day
-                                                        ? 'bg-gradient-theme text-white shadow-lg'
-                                                        : 'bg-theme-purple/10 text-theme hover:bg-theme-purple/20'
-                                                }`}
+                                                className={`px-4 py-2 rounded-full font-semibold text-sm transition-all ${selectedDay === day
+                                                    ? 'bg-gradient-theme text-white shadow-lg'
+                                                    : 'bg-theme-purple/10 text-theme hover:bg-theme-purple/20'
+                                                    }`}
                                             >
                                                 {day}
                                                 {items[0]?.date && (
@@ -241,8 +239,8 @@ export default function IntroPlanningPage() {
                             <div className="overflow-x-auto">
                                 <div className="min-w-full" style={{ minWidth: displayDays.length === 1 ? '100%' : '800px' }}>
                                     {/* Header with days */}
-                                    <div className="grid gap-0 border-b-2 border-theme-purple/20 sticky top-0 bg-[var(--bg-card)] z-20" 
-                                         style={{ gridTemplateColumns: displayDays.length === 1 ? '60px 1fr' : `60px repeat(${displayDays.length}, 1fr)` }}>
+                                    <div className="grid gap-0 border-b-2 border-theme-purple/20 sticky top-0 bg-[var(--bg-card)] z-20"
+                                        style={{ gridTemplateColumns: displayDays.length === 1 ? '60px 1fr' : `60px repeat(${displayDays.length}, 1fr)` }}>
                                         <div className="p-2 lg:p-3 font-bold text-theme border-r border-theme-purple/10 text-xs lg:text-sm flex items-center justify-center">
                                             Tijd
                                         </div>
@@ -273,7 +271,7 @@ export default function IntroPlanningPage() {
                                             <div
                                                 key={hour}
                                                 className="grid gap-0 border-b border-theme-purple/10"
-                                                style={{ 
+                                                style={{
                                                     gridTemplateColumns: displayDays.length === 1 ? '60px 1fr' : `60px repeat(${displayDays.length}, 1fr)`,
                                                     height: '60px'
                                                 }}
@@ -291,8 +289,8 @@ export default function IntroPlanningPage() {
                                         ))}
 
                                         {/* Events overlay */}
-                                        <div className="absolute inset-0 grid gap-0 pointer-events-none" 
-                                             style={{ gridTemplateColumns: displayDays.length === 1 ? '60px 1fr' : `60px repeat(${displayDays.length}, 1fr)` }}>
+                                        <div className="absolute inset-0 grid gap-0 pointer-events-none"
+                                            style={{ gridTemplateColumns: displayDays.length === 1 ? '60px 1fr' : `60px repeat(${displayDays.length}, 1fr)` }}>
                                             <div /> {/* Skip time column */}
                                             {displayDays.map((day, dayIndex) => {
                                                 const items = planningByDay[day];
@@ -303,7 +301,7 @@ export default function IntroPlanningPage() {
                                                             const { top, height } = getEventPosition(item.time_start, item.time_end);
                                                             const colorClasses = getEventColor(dayIndex, eventIndex);
                                                             // event position calculated
-                                                            
+
                                                             return (
                                                                 <button
                                                                     key={item.id}

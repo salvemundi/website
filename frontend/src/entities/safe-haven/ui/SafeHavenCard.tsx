@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import Image from 'next/image';
 import { Mail, Phone, Clock } from 'lucide-react';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
@@ -74,7 +73,7 @@ const SafeHavenCard: React.FC<SafeHavenCardProps> = ({ safeHaven }) => {
 
             {/* Availability Today (computed from weekly JSON when present, else legacy fields) */}
             {(() => {
-                const dayNameMap = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+                const dayNameMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
                 const todayName = dayNameMap[new Date().getDay()];
                 const week = (safeHaven as any).availability_week as any[] | undefined;
                 const todayEntry = week ? week.find(w => w.day === todayName) : undefined;

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import qrService from '@/shared/lib/qr-service';
@@ -77,9 +77,9 @@ export default function AttendancePage() {
             const { directusFetch } = await import('@/shared/lib/directus');
             await directusFetch(`/items/event_signups/${row.id}`, {
                 method: 'PATCH',
-                body: JSON.stringify({ 
-                    checked_in: target, 
-                    checked_in_at: target ? new Date().toISOString() : null 
+                body: JSON.stringify({
+                    checked_in: target,
+                    checked_in_at: target ? new Date().toISOString() : null
                 })
             });
 
@@ -100,13 +100,13 @@ export default function AttendancePage() {
     const handleScan = async (token: string) => {
         if (!token.trim()) return;
         const res = await qrService.checkInParticipant(token);
-        
+
         // Extract participant name from response
-        const participantName = res.signup?.participant_name || 
-                               (res.signup?.directus_relations?.first_name 
-                                   ? `${res.signup.directus_relations.first_name} ${res.signup.directus_relations.last_name || ''}`.trim()
-                                   : 'Deelnemer');
-        
+        const participantName = res.signup?.participant_name ||
+            (res.signup?.directus_relations?.first_name
+                ? `${res.signup.directus_relations.first_name} ${res.signup.directus_relations.last_name || ''}`.trim()
+                : 'Deelnemer');
+
         if (res.success) {
             setScanResult({
                 name: participantName,
@@ -121,7 +121,7 @@ export default function AttendancePage() {
                 message: res.message || 'Fout bij inchecken'
             });
         }
-        
+
         // Auto-hide popup after 3 seconds
         setTimeout(() => setScanResult(null), 3000);
     };
@@ -130,13 +130,13 @@ export default function AttendancePage() {
         try {
             setScannerError(null);
             setShowScanner(true);
-            
+
             // Dynamically import html5-qrcode
             const { Html5Qrcode } = await import('html5-qrcode');
-            
+
             if (videoRef.current && !scannerRef.current) {
                 scannerRef.current = new Html5Qrcode('qr-reader');
-                
+
                 await scannerRef.current.start(
                     { facingMode: 'environment' },
                     {
@@ -220,13 +220,12 @@ export default function AttendancePage() {
     return (
         <div className="min-h-screen bg-beige">
             <PageHeader title={eventTitle ? `Aanwezigheid: ${eventTitle}` : 'Aanwezigheid beheren'} backgroundImage="/img/backgrounds/Kroto2025.jpg" />
-            
+
             <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 {/* Message Toast */}
                 {message && (
-                    <div className={`mb-6 p-4 rounded-xl shadow-lg flex items-center gap-3 ${
-                        message.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-                    }`}>
+                    <div className={`mb-6 p-4 rounded-xl shadow-lg flex items-center gap-3 ${message.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                        }`}>
                         {message.type === 'success' ? <CheckCircle className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
                         <span className="font-semibold">{message.text}</span>
                     </div>
@@ -248,7 +247,7 @@ export default function AttendancePage() {
                                 </div>
                             </div>
                         </div>
-                        
+
                         {/* Attendance stats - side by side */}
                         <div className="grid grid-cols-2 gap-3">
                             <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-2xl p-3 shadow-lg">
@@ -262,7 +261,7 @@ export default function AttendancePage() {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div className="bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl p-3 shadow-lg">
                                 <div className="flex items-center gap-2">
                                     <div className="h-8 w-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
@@ -276,7 +275,7 @@ export default function AttendancePage() {
                             </div>
                         </div>
                     </div>
-                    
+
                     {/* Desktop: 3 cards in a row */}
                     <div className="hidden md:grid md:grid-cols-3 gap-4">
                         <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-3xl p-6 shadow-lg">
@@ -290,7 +289,7 @@ export default function AttendancePage() {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div className="bg-gradient-to-br from-orange-400 to-red-500 rounded-3xl p-6 shadow-lg">
                             <div className="flex items-center gap-3">
                                 <div className="h-12 w-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
@@ -302,7 +301,7 @@ export default function AttendancePage() {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div className="bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end rounded-3xl p-6 shadow-lg">
                             <div className="flex items-center gap-3">
                                 <div className="h-12 w-12 rounded-2xl bg-paars/10 flex items-center justify-center shrink-0">
@@ -328,7 +327,7 @@ export default function AttendancePage() {
                         <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
                         Ververs
                     </button>
-                    
+
                     <button
                         type="button"
                         onClick={() => exportEventSignups(signups, `aanmeldingen-${eventId}.csv`)}
@@ -337,13 +336,12 @@ export default function AttendancePage() {
                         <Download className="h-5 w-5" />
                         Exporteer CSV
                     </button>
-                    
+
                     <button
                         type="button"
                         onClick={showScanner ? stopScanner : startScanner}
-                        className={`inline-flex items-center gap-2 px-4 py-3 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 ${
-                            showScanner ? 'bg-red-500 text-white' : 'bg-theme-purple text-white'
-                        }`}
+                        className={`inline-flex items-center gap-2 px-4 py-3 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 ${showScanner ? 'bg-red-500 text-white' : 'bg-theme-purple text-white'
+                            }`}
                     >
                         {showScanner ? <X className="h-5 w-5" /> : <Camera className="h-5 w-5" />}
                         {showScanner ? 'Sluit Scanner' : 'Open Camera'}
@@ -363,18 +361,17 @@ export default function AttendancePage() {
                     <div className="mb-6 bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg relative">
                         <h3 className="text-lg md:text-xl font-bold text-theme-purple mb-3 md:mb-4">Scan QR Code</h3>
                         <p className="text-sm text-slate-600 mb-4">Houd de QR code voor de camera. De scanner blijft actief voor meerdere scans.</p>
-                        
+
                         <div className="relative">
                             <div id="qr-reader" ref={videoRef} className="rounded-xl overflow-hidden max-w-md mx-auto"></div>
-                            
+
                             {/* Scan Result Popup */}
                             {scanResult && (
                                 <div className="absolute top-0 left-0 right-0 mx-4 mt-4 z-10 animate-in slide-in-from-top duration-300">
-                                    <div className={`p-4 rounded-xl shadow-2xl backdrop-blur-sm ${
-                                        scanResult.status === 'success' 
-                                            ? 'bg-green-500/95 text-white' 
+                                    <div className={`p-4 rounded-xl shadow-2xl backdrop-blur-sm ${scanResult.status === 'success'
+                                            ? 'bg-green-500/95 text-white'
                                             : 'bg-red-500/95 text-white'
-                                    }`}>
+                                        }`}>
                                         <div className="flex items-start gap-3">
                                             {scanResult.status === 'success' ? (
                                                 <CheckCircle className="h-6 w-6 shrink-0 mt-0.5" />
@@ -390,7 +387,7 @@ export default function AttendancePage() {
                                 </div>
                             )}
                         </div>
-                        
+
                         <p className="text-xs text-slate-500 mt-4 text-center">
                             💡 Tip: Houd je telefoon stabiel en zorg voor goede verlichting
                         </p>
@@ -474,11 +471,10 @@ export default function AttendancePage() {
                                                 <button
                                                     type="button"
                                                     onClick={() => toggleCheckIn(s)}
-                                                    className={`px-4 py-2 rounded-lg font-semibold transition-all transform transition-transform duration-150 ${
-                                                        s.checked_in
+                                                    className={`px-4 py-2 rounded-lg font-semibold transition-all transform transition-transform duration-150 ${s.checked_in
                                                             ? 'bg-red-500 text-white hover:bg-red-600'
                                                             : 'bg-green-500 text-white hover:bg-green-600'
-                                                    } ${s._justToggled ? 'scale-105 shadow-2xl' : ''}`}
+                                                        } ${s._justToggled ? 'scale-105 shadow-2xl' : ''}`}
                                                 >
                                                     {s.checked_in ? 'Uitchecken' : 'Inchecken'}
                                                 </button>
@@ -509,7 +505,7 @@ export default function AttendancePage() {
                             const name = s.participant_name || (s.directus_relations?.first_name ? `${s.directus_relations.first_name} ${s.directus_relations.last_name || ''}` : '—');
                             const email = s.participant_email || s.directus_relations?.email || '—';
                             const phone = s.participant_phone || s.directus_relations?.phone_number || '—';
-                            
+
                             return (
                                 <div key={s.id} className="bg-white rounded-2xl shadow-lg p-4">
                                     <div className="flex items-start justify-between gap-3 mb-3">
@@ -525,11 +521,10 @@ export default function AttendancePage() {
                                         <button
                                             type="button"
                                             onClick={() => toggleCheckIn(s)}
-                                            className={`shrink-0 px-4 py-2 rounded-lg font-semibold text-sm transition-all active:scale-95 transform duration-150 ${
-                                                s.checked_in
+                                            className={`shrink-0 px-4 py-2 rounded-lg font-semibold text-sm transition-all active:scale-95 transform duration-150 ${s.checked_in
                                                     ? 'bg-red-500 text-white'
                                                     : 'bg-green-500 text-white'
-                                            } ${s._justToggled ? 'scale-105 shadow-2xl' : ''}`}
+                                                } ${s._justToggled ? 'scale-105 shadow-2xl' : ''}`}
                                         >
                                             {s.checked_in ? 'Uitchecken' : 'Inchecken'}
                                         </button>
