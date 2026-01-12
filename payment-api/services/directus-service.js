@@ -189,5 +189,71 @@ module.exports = {
     getTransaction,
     getCoupon,
     updateCouponUsage,
+    // --- Payment Settings (via Site Settings) ---
+
+    getPaymentSettings: async (directusUrl, token) => {
+        try {
+            // We piggyback on site_settings with page='payment_settings'
+            // The actual config is stored as JSON in 'disabled_message'
+            const query = new URLSearchParams({
+                'filter[page][_eq]': 'payment_settings',
+                'limit': '1'
+            }).toString();
+
+            const response = await axios.get(`${directusUrl}/items/site_settings?${query}`, getAuthConfig(token));
+
+            const data = response.data;
+            if (data.data && data.data.length > 0) {
+                const settingsStr = data.data[0].disabled_message;
+                try {
+                    return JSON.parse(settingsStr) || { manual_approval: false };
+                } catch (e) {
+                    return { manual_approval: false };
+                }
+            }
+
+            return { manual_approval: false };
+        } catch (error) {
+            console.error('Error fetching settings:', error.message);
+            // Non-critical, return default
+            return { manual_approval: false };
+        }
+    },
+
+    updatePaymentSettings: async (directusUrl, token, settings) => {
+        try {
+            // First check if it exists
+            const query = new URLSearchParams({
+                'filter[page][_eq]': 'payment_settings',
+                'limit': '1'
+            }).toString();
+
+            let existingId = null;
+            try {
+                const getRes = await axios.get(`${directusUrl}/items/site_settings?${query}`, getAuthConfig(token));
+                const getData = getRes.data;
+                existingId = (getData.data && getData.data.length > 0) ? getData.data[0].id : null;
+            } catch (err) {
+                console.warn('GET existing settings check failed, assuming distinct or error:', err.message);
+            }
+
+            const payload = {
+                page: 'payment_settings',
+                // We reuse disabled_message field to store our JSON config
+                disabled_message: JSON.stringify(settings)
+            };
+
+            if (existingId) {
+                await axios.patch(`${directusUrl}/items/site_settings/${existingId}`, payload, getAuthConfig(token));
+            } else {
+                await axios.post(`${directusUrl}/items/site_settings`, payload, getAuthConfig(token));
+            }
+            return settings;
+        } catch (error) {
+            console.error('Error updating settings FULL:', error.response?.data || error.message);
+            throw new Error(`Failed to update settings: ${error.message}`);
+        }
+    },
+
     checkUserCommittee
 };
