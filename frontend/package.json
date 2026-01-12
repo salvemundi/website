@@ -4,6 +4,12 @@
   "version": "1.0.1",
   "isolation_audit": "2025-12-31",
   "type": "module",
+  "overrides": {
+    "glob": "^11.0.0",
+    "rimraf": "^6.0.0",
+    "inflight": "lru-cache",
+    "whatwg-encoding": "github:exodusmovement/bytes"
+  },
   "scripts": {
     "dev": "infisical run --env=local -- next dev -p 5173",
     "build": "next build",
@@ -88,7 +94,7 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.5",
+    "@cloudflare/next-on-pages": "^1.13.16",
     "@eslint/js": "^9.9.1",
     "@lhci/cli": "^0.13.0",
     "@next/bundle-analyzer": "^16.1.1",
@@ -106,9 +112,9 @@
     "globals": "^15.9.0",
     "globby": "^16.0.0",
     "playwright": "^1.56.1",
-    "postcss": "^8.4.35",
+    "postcss": "^8.4.49",
     "sharp": "^0.34.5",
-    "tailwindcss": "^3.4.1",
+    "tailwindcss": "^3.4.17",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.3.0",
     "wrangler": "^4.47.0"
