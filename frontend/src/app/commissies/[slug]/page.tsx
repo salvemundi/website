@@ -42,6 +42,7 @@ export default function CommitteeDetailPage() {
     // we'll determine leader status after we have the visible members list
 
     const [membersModalOpen, setMembersModalOpen] = useState(false);
+    const [imageModalOpen, setImageModalOpen] = useState(false);
 
     if (isLoading) {
         return (
@@ -113,22 +114,28 @@ export default function CommitteeDetailPage() {
                 {/* Hero with Committee Image */}
                 <section className="relative overflow-hidden py-20">
                     <div className="absolute inset-0">
-                        <SmartImage
-                            src={committee.image ? getImageUrl(committee.image) : '/img/group-jump.gif'}
-                            alt={cleanName}
-                            fill
-                            sizes="100vw"
-                            className="object-cover"
-                            priority
-                            quality={75}
-                        />
+                        <button
+                            aria-label={`Bekijk afbeelding van ${cleanName}`}
+                            onClick={() => setImageModalOpen(true)}
+                            className="absolute inset-0 h-full w-full"
+                        >
+                            <SmartImage
+                                src={committee.image ? getImageUrl(committee.image) : '/img/group-jump.gif'}
+                                alt={cleanName}
+                                fill
+                                sizes="100vw"
+                                className="object-cover"
+                                priority
+                                quality={75}
+                            />
+                        </button>
                         {/* Semi-transparent gradient overlay with backdrop blur so the banner image is blurred underneath */}
                         <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-paars/60 to-oranje/40 backdrop-blur-md" />
                     </div>
                     <div className="relative mx-auto max-w-app px-4 sm:px-6 lg:px-8">
                         <Link
                             href="/commissies"
-                            className="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-white/90 transition hover:text-white"
+                            className="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white transition hover:text-paars dark:hover:text-white"
                         >
                             ← Terug naar commissies
                         </Link>
@@ -170,16 +177,22 @@ export default function CommitteeDetailPage() {
                                 {/* Committee image */}
                                 {committee.image && (
                                     <div className="rounded-3xl overflow-hidden bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 shadow-lg relative h-96">
-                                        <SmartImage
-                                            src={getImageUrl(committee.image)}
-                                            alt={cleanName}
-                                            width={720}
-                                            height={480}
-                                            className="object-contain w-full h-auto bg-white"
-                                            loading="lazy"
-                                            placeholder="blur"
-                                            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
-                                        />
+                                        <button
+                                            onClick={() => setImageModalOpen(true)}
+                                            aria-label={`Open afbeelding van ${cleanName}`}
+                                            className="absolute inset-0 h-full w-full"
+                                        >
+                                            <SmartImage
+                                                src={getImageUrl(committee.image)}
+                                                alt={cleanName}
+                                                width={720}
+                                                height={480}
+                                                className="object-contain w-full h-full bg-white dark:bg-[#0f1721]"
+                                                loading="lazy"
+                                                placeholder="blur"
+                                                blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
+                                            />
+                                        </button>
                                     </div>
                                 )}
 
@@ -361,6 +374,23 @@ export default function CommitteeDetailPage() {
                 </main>
 
             </div>
+            {imageModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-black/70" onClick={() => setImageModalOpen(false)} />
+                    <div className="relative z-10 max-w-screen-lg mx-4">
+                        <button onClick={() => setImageModalOpen(false)} className="absolute right-2 top-2 z-20 rounded-full bg-white/90 p-2">Sluiten</button>
+                        <div className="rounded-2xl overflow-hidden bg-black p-4 flex items-center justify-center">
+                            <SmartImage
+                                src={getImageUrl(committee.image)}
+                                alt={cleanName}
+                                className="max-h-[90vh] w-auto object-contain"
+                                loading="eager"
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {membersModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center">
                     <div className="absolute inset-0 bg-black/50" onClick={() => setMembersModalOpen(false)} />

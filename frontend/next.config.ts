@@ -42,11 +42,14 @@ const nextConfig = {
                 hostname: 'localhost',
             },
         ],
-        // Allow query strings for local /api/assets paths (for Directus access tokens)
+        // Allow local /api/assets paths (for Directus access tokens)
+        // Do not restrict `search` so query strings like access_token are accepted
         localPatterns: [
             {
                 pathname: '/api/assets/**',
-                search: '',
+            },
+            {
+                pathname: '/img/**',
             },
         ],
     },
