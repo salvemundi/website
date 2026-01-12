@@ -32,6 +32,10 @@ interface SyncStatus {
     lastRunSuccess?: boolean | null;
 }
 
+interface PaymentSettings {
+    manual_approval: boolean;
+}
+
 function Tile({
     title,
     icon,
@@ -101,6 +105,7 @@ export default function DevSignupsPage() {
     // Filters
     const [filterStatus, setFilterStatus] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
     const [showFailed, setShowFailed] = useState(false);
+    const [paymentSettings, setPaymentSettings] = useState<PaymentSettings>({ manual_approval: false });
 
     const syncFieldOptions = [
         { id: 'membership_expiry', label: 'Lidmaatschap vervaldatum' },
@@ -131,10 +136,59 @@ export default function DevSignupsPage() {
         }
     }, [user, router]);
 
+    const loadSettings = async () => {
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (!token) return;
+
+            const res = await fetch('/api/admin/payment-settings', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setPaymentSettings(data);
+            }
+        } catch (error) {
+            console.error('Failed to load settings:', error);
+        }
+    };
+
+    const toggleManualApproval = async () => {
+        const newValue = !paymentSettings.manual_approval;
+        // Optimistic update
+        setPaymentSettings({ ...paymentSettings, manual_approval: newValue });
+
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (!token) throw new Error('No auth token');
+
+            const response = await fetch('/api/admin/payment-settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ manual_approval: newValue })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update settings');
+            }
+        } catch (error) {
+            console.error('Failed to update settings:', error);
+            // Revert on failure
+            setPaymentSettings({ ...paymentSettings, manual_approval: !newValue });
+            alert('Fout bij bijwerken instellingen.');
+        }
+    };
+
     useEffect(() => {
         if (user?.entra_id) {
             loadSignups();
             fetchSyncStatus();
+            loadSettings();
         }
     }, [user, filterStatus, showFailed]); // Reload when filters change
 
@@ -343,46 +397,70 @@ export default function DevSignupsPage() {
                             Beheer inschrijvingen en synchroniseer gebruikers met Microsoft Entra ID.
                         </p>
                     </div>
-
-                    <div className="flex flex-col items-end gap-3">
-                        {/* Sync Controls */}
-                        <div className="flex flex-wrap gap-2 justify-end max-w-xl">
-                            {syncFieldOptions.map(option => (
-                                <button
-                                    key={option.id}
-                                    onClick={() => toggleField(option.id)}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${selectedSyncFields.includes(option.id)
-                                        ? 'bg-theme-purple/20 border-theme-purple/40 text-theme-purple-lighter'
-                                        : 'bg-white/5 border-white/10 text-theme-purple-lighter/40 hover:bg-white/10'
-                                        }`}
-                                >
-                                    {option.label}
-                                </button>
-                            ))}
-                        </div>
-                        <div className="flex gap-2">
-                            {syncStatus && !syncStatus.active && syncStatus.status !== 'idle' && (
-                                <button
-                                    onClick={() => setShowStatus(!showStatus)}
-                                    className="px-4 py-2 bg-white/5 hover:bg-white/10 text-theme-purple-lighter rounded-xl border border-white/10 transition-all text-sm font-medium"
-                                >
-                                    {showStatus ? 'Status Verbergen' : 'Laatste Sync'}
-                                </button>
-                            )}
-                            <button
-                                onClick={handleSyncUsers}
-                                disabled={isSyncing}
-                                className="flex items-center justify-center gap-2 px-4 py-2 bg-theme-purple/20 hover:bg-theme-purple/30 text-theme-purple-lighter rounded-xl border border-theme-purple/30 transition-all font-semibold disabled:opacity-50"
-                            >
-                                <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                                {isSyncing ? 'Synchroniseren...' : 'Sync Gebruikers'}
-                            </button>
-                        </div>
-                    </div>
+                    <button
+                        onClick={toggleManualApproval}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all shadow-sm ${paymentSettings.manual_approval
+                            ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30 hover:bg-orange-500/30'
+                            : 'bg-[var(--bg-highlight)] text-slate-400 border border-white/5 hover:border-white/10'
+                            }`}
+                        title={paymentSettings.manual_approval
+                            ? "Alle nieuwe aanmeldingen worden handmatig gecontroleerd (ook in productie)"
+                            : "Aanmeldingen worden automatisch goedgekeurd in productie"}
+                    >
+                        {paymentSettings.manual_approval ? (
+                            <>
+                                <Shield className="w-3.5 h-3.5" />
+                                Handmatige Goedkeuring: AAN
+                            </>
+                        ) : (
+                            <>
+                                <CheckCircle className="w-3.5 h-3.5" />
+                                Handmatige Goedkeuring: UIT
+                            </>
+                        )}
+                    </button>
                 </div>
 
-                {/* Sync Progress Tile */}
-                {showStatus && syncStatus && (
+                <div className="flex flex-col items-end gap-3">
+                    {/* Sync Controls */}
+                    <div className="flex flex-wrap gap-2 justify-end max-w-xl">
+                        {syncFieldOptions.map(option => (
+                            <button
+                                key={option.id}
+                                onClick={() => toggleField(option.id)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${selectedSyncFields.includes(option.id)
+                                    ? 'bg-theme-purple/20 border-theme-purple/40 text-theme-purple-lighter'
+                                    : 'bg-white/5 border-white/10 text-theme-purple-lighter/40 hover:bg-white/10'
+                                    }`}
+                            >
+                                {option.label}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="flex gap-2">
+                        {syncStatus && !syncStatus.active && syncStatus.status !== 'idle' && (
+                            <button
+                                onClick={() => setShowStatus(!showStatus)}
+                                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-theme-purple-lighter rounded-xl border border-white/10 transition-all text-sm font-medium"
+                            >
+                                {showStatus ? 'Status Verbergen' : 'Laatste Sync'}
+                            </button>
+                        )}
+                        <button
+                            onClick={handleSyncUsers}
+                            disabled={isSyncing}
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-theme-purple/20 hover:bg-theme-purple/30 text-theme-purple-lighter rounded-xl border border-theme-purple/30 transition-all font-semibold disabled:opacity-50"
+                        >
+                            <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                            {isSyncing ? 'Synchroniseren...' : 'Sync Gebruikers'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Sync Progress Tile */}
+            {
+                showStatus && syncStatus && (
                     <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
                         <Tile
                             title="Synchronisatie Status"
@@ -449,151 +527,151 @@ export default function DevSignupsPage() {
                             </div>
                         </Tile>
                     </div>
-                )}
+                )
+            }
 
-                {/* Filters & Content */}
-                <Tile
-                    title="Inschrijvingen"
-                    icon={<Clock className="h-5 w-5" />}
-                    actions={
-                        <button
-                            onClick={() => loadSignups()}
-                            disabled={isLoading}
-                            className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold text-theme-purple-lighter hover:bg-white/15 border border-white/10 transition disabled:opacity-50"
-                        >
-                            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                            Ververs
-                        </button>
-                    }
-                >
-                    {/* Filters Bar */}
-                    <div className="mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between border-b border-white/5 pb-6">
+            {/* Filters & Content */}
+            <Tile
+                title="Inschrijvingen"
+                icon={<Clock className="h-5 w-5" />}
+                actions={
+                    <button
+                        onClick={() => loadSignups()}
+                        disabled={isLoading}
+                        className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold text-theme-purple-lighter hover:bg-white/15 border border-white/10 transition disabled:opacity-50"
+                    >
+                        <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                        Ververs
+                    </button>
+                }
+            >
+                {/* Filters Bar */}
+                <div className="mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between border-b border-white/5 pb-6">
 
-                        {/* Filter Tabs */}
-                        <div className="flex p-1 bg-black/20 rounded-xl border border-white/5 overflow-hidden">
-                            {tabs.map((tab) => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setFilterStatus(tab.id as any)}
-                                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${filterStatus === tab.id
-                                        ? 'bg-theme-purple text-white shadow-lg'
-                                        : 'text-theme-purple-lighter/60 hover:text-theme-purple-lighter hover:bg-white/5'
-                                        }`}
-                                >
-                                    {tab.label}
-                                </button>
-                            ))}
-                        </div>
-
-                        {/* Toggle Failed */}
-                        <label className="flex items-center gap-3 cursor-pointer group select-none">
-                            <span className="text-sm font-medium text-theme-purple-lighter/70 group-hover:text-theme-purple-lighter transition-colors">
-                                Toon ook mislukte/open betalingen
-                            </span>
-                            <div className="relative">
-                                <input
-                                    type="checkbox"
-                                    className="sr-only peer"
-                                    checked={showFailed}
-                                    onChange={(e) => setShowFailed(e.target.checked)}
-                                />
-                                <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-theme-purple"></div>
-                            </div>
-                        </label>
+                    {/* Filter Tabs */}
+                    <div className="flex p-1 bg-black/20 rounded-xl border border-white/5 overflow-hidden">
+                        {tabs.map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setFilterStatus(tab.id as any)}
+                                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${filterStatus === tab.id
+                                    ? 'bg-theme-purple text-white shadow-lg'
+                                    : 'text-theme-purple-lighter/60 hover:text-theme-purple-lighter hover:bg-white/5'
+                                    }`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
                     </div>
 
-                    {isLoading ? (
-                        <div className="flex flex-col items-center justify-center py-10">
-                            <div className="h-8 w-8 animate-spin rounded-full border-4 border-theme-purple/20 border-t-theme-purple" />
-                            <p className="mt-4 text-theme-purple-lighter/60">Laden...</p>
+                    {/* Toggle Failed */}
+                    <label className="flex items-center gap-3 cursor-pointer group select-none">
+                        <span className="text-sm font-medium text-theme-purple-lighter/70 group-hover:text-theme-purple-lighter transition-colors">
+                            Toon ook mislukte/open betalingen
+                        </span>
+                        <div className="relative">
+                            <input
+                                type="checkbox"
+                                className="sr-only peer"
+                                checked={showFailed}
+                                onChange={(e) => setShowFailed(e.target.checked)}
+                            />
+                            <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-theme-purple"></div>
                         </div>
-                    ) : signups.length === 0 ? (
-                        <div className="rounded-2xl border-2 border-dashed border-theme-purple/10 bg-white/30 p-8 text-center">
-                            <p className="text-theme-purple-lighter font-medium">
-                                Geen inschrijvingen gevonden.
-                            </p>
-                            <p className="mt-2 text-sm text-theme-purple-lighter/60">
-                                Probeer andere filters.
-                            </p>
-                        </div>
-                    ) : (
-                        <>
-                            {/* Desktop Table (Updated with extra status badge logic if needed) */}
-                            <div className="hidden md:block overflow-x-auto">
-                                <table className="w-full">
-                                    <thead className="border-b border-white/10">
-                                        <tr className="border-b border-white/5 bg-white/5">
-                                            <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Datum</th>
-                                            <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Naam</th>
-                                            <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Email</th>
-                                            <th className="px-4 py-4 text-right text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Bedrag</th>
-                                            <th className="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Betaalstatus</th>
-                                            <th className="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Keuring</th>
-                                            <th className="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Acties</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-white/10">
-                                        {signups.map((signup) => (
-                                            <tr key={signup.id} className="hover:bg-white/5 transition-colors">
-                                                <td className="px-4 py-4 text-sm text-theme-purple-lighter">
-                                                    {signup.created_at ? format(new Date(signup.created_at), 'd MMM HH:mm') : '-'}
-                                                </td>
-                                                <td className="px-4 py-4 text-sm text-theme-purple-lighter font-medium">
-                                                    {signup.first_name} {signup.last_name}
-                                                </td>
-                                                <td className="px-4 py-4 text-sm text-theme-purple-lighter">{signup.email}</td>
-                                                <td className="px-4 py-4 text-right text-sm font-semibold text-theme-purple-lighter">
-                                                    {formatAmount(signup.amount)}
-                                                </td>
-                                                <td className="px-4 py-4 text-center">
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-semibold 
+                    </label>
+                </div>
+
+                {isLoading ? (
+                    <div className="flex flex-col items-center justify-center py-10">
+                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-theme-purple/20 border-t-theme-purple" />
+                        <p className="mt-4 text-theme-purple-lighter/60">Laden...</p>
+                    </div>
+                ) : signups.length === 0 ? (
+                    <div className="rounded-2xl border-2 border-dashed border-theme-purple/10 bg-white/30 p-8 text-center">
+                        <p className="text-theme-purple-lighter font-medium">
+                            Geen inschrijvingen gevonden.
+                        </p>
+                        <p className="mt-2 text-sm text-theme-purple-lighter/60">
+                            Probeer andere filters.
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                        {/* Desktop Table (Updated with extra status badge logic if needed) */}
+                        <div className="hidden md:block overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="border-b border-white/10">
+                                    <tr className="border-b border-white/5 bg-white/5">
+                                        <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Datum</th>
+                                        <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Naam</th>
+                                        <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Email</th>
+                                        <th className="px-4 py-4 text-right text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Bedrag</th>
+                                        <th className="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Betaalstatus</th>
+                                        <th className="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Keuring</th>
+                                        <th className="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Acties</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-white/10">
+                                    {signups.map((signup) => (
+                                        <tr key={signup.id} className="hover:bg-white/5 transition-colors">
+                                            <td className="px-4 py-4 text-sm text-theme-purple-lighter">
+                                                {signup.created_at ? format(new Date(signup.created_at), 'd MMM HH:mm') : '-'}
+                                            </td>
+                                            <td className="px-4 py-4 text-sm text-theme-purple-lighter font-medium">
+                                                {signup.first_name} {signup.last_name}
+                                            </td>
+                                            <td className="px-4 py-4 text-sm text-theme-purple-lighter">{signup.email}</td>
+                                            <td className="px-4 py-4 text-right text-sm font-semibold text-theme-purple-lighter">
+                                                {formatAmount(signup.amount)}
+                                            </td>
+                                            <td className="px-4 py-4 text-center">
+                                                <span className={`px-2 py-1 rounded-full text-xs font-semibold 
                                                         ${signup.payment_status === 'paid' ? 'bg-green-500/20 text-green-300' :
-                                                            signup.payment_status === 'open' ? 'bg-blue-500/20 text-blue-300' : 'bg-red-500/20 text-red-300'}`}>
-                                                        {signup.payment_status}
-                                                    </span>
-                                                </td>
-                                                <td className="px-4 py-4 text-center">
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-semibold 
+                                                        signup.payment_status === 'open' ? 'bg-blue-500/20 text-blue-300' : 'bg-red-500/20 text-red-300'}`}>
+                                                    {signup.payment_status}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-4 text-center">
+                                                <span className={`px-2 py-1 rounded-full text-xs font-semibold 
                                                         ${signup.approval_status === 'approved' || signup.approval_status === 'auto_approved' ? 'bg-green-500/20 text-green-300' :
-                                                            signup.approval_status === 'rejected' ? 'bg-red-500/20 text-red-300' : 'bg-yellow-500/20 text-yellow-300'}`}>
-                                                        {signup.approval_status}
-                                                    </span>
-                                                </td>
-                                                <td className="px-4 py-4 text-center">
-                                                    {signup.approval_status === 'pending' && (
-                                                        <div className="flex justify-center gap-2">
-                                                            <button
-                                                                onClick={() => handleApprove(signup.id)}
-                                                                disabled={isProcessing === signup.id}
-                                                                className="p-1.5 rounded-lg bg-green-600/20 text-green-400 hover:bg-green-600 hover:text-white transition"
-                                                                title="Goedkeuren"
-                                                            >
-                                                                <CheckCircle className="h-4 w-4" />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleReject(signup.id)}
-                                                                disabled={isProcessing === signup.id}
-                                                                className="p-1.5 rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white transition"
-                                                                title="Afwijzen"
-                                                            >
-                                                                <XCircle className="h-4 w-4" />
-                                                            </button>
-                                                        </div>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                            {/* Mobile Support (simplified for this update) */}
-                            <div className="md:hidden space-y-4">
-                                <p className="text-center text-sm text-theme-purple-lighter/50 italic">Switch naar desktop voor de beste weergave</p>
-                            </div>
-                        </>
-                    )}
-                </Tile>
-            </div>
+                                                        signup.approval_status === 'rejected' ? 'bg-red-500/20 text-red-300' : 'bg-yellow-500/20 text-yellow-300'}`}>
+                                                    {signup.approval_status}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-4 text-center">
+                                                {signup.approval_status === 'pending' && (
+                                                    <div className="flex justify-center gap-2">
+                                                        <button
+                                                            onClick={() => handleApprove(signup.id)}
+                                                            disabled={isProcessing === signup.id}
+                                                            className="p-1.5 rounded-lg bg-green-600/20 text-green-400 hover:bg-green-600 hover:text-white transition"
+                                                            title="Goedkeuren"
+                                                        >
+                                                            <CheckCircle className="h-4 w-4" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleReject(signup.id)}
+                                                            disabled={isProcessing === signup.id}
+                                                            className="p-1.5 rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white transition"
+                                                            title="Afwijzen"
+                                                        >
+                                                            <XCircle className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        {/* Mobile Support (simplified for this update) */}
+                        <div className="md:hidden space-y-4">
+                            <p className="text-center text-sm text-theme-purple-lighter/50 italic">Switch naar desktop voor de beste weergave</p>
+                        </div>
+                    </>
+                )}
+            </Tile>
         </div>
     );
 }

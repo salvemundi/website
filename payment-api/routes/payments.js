@@ -101,8 +101,22 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
             let approvalStatus = 'pending';
 
             if (serverEnv === 'production') {
-                // In production, we trust the flow to auto-approve normal signups
-                approvalStatus = 'auto_approved';
+                // In production, we trust the flow to auto-approve normal signups...
+                // UNLESS Manual Approval is triggered via site settings.
+
+                // Fetch settings
+                try {
+                    const settings = await directusService.getPaymentSettings(DIRECTUS_URL, DIRECTUS_API_TOKEN);
+                    if (settings && settings.manual_approval === true) {
+                        console.warn(`[Payment][${traceId}] Manual Approval Mode is ACTIVE. Forcing 'pending' status.`);
+                        approvalStatus = 'pending';
+                    } else {
+                        approvalStatus = 'auto_approved';
+                    }
+                } catch (err) {
+                    console.error(`[Payment][${traceId}] Failed to check manual approval settings, defaulting to auto_approved:`, err);
+                    approvalStatus = 'auto_approved';
+                }
             } else {
                 // In dev/test, we FORCE pending.
                 if (requestEnvironment === 'production') {
