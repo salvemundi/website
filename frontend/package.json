@@ -8,7 +8,7 @@
     "glob": "^11.0.0",
     "rimraf": "^6.0.0",
     "inflight": "lru-cache",
-    "whatwg-encoding": "github:exodusmovement/bytes"
+    "whatwg-encoding": "npm:@exodus/bytes@^1.0.0"
   },
   "scripts": {
     "dev": "infisical run --env=local -- next dev -p 5173",
