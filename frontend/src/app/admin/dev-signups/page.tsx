@@ -98,6 +98,10 @@ export default function DevSignupsPage() {
         'display_name'
     ]);
 
+    // Filters
+    const [filterStatus, setFilterStatus] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
+    const [showFailed, setShowFailed] = useState(false);
+
     const syncFieldOptions = [
         { id: 'membership_expiry', label: 'Lidmaatschap vervaldatum' },
         { id: 'first_name', label: 'Voornaam' },
@@ -129,10 +133,10 @@ export default function DevSignupsPage() {
 
     useEffect(() => {
         if (user?.entra_id) {
-            loadPendingSignups();
+            loadSignups();
             fetchSyncStatus();
         }
-    }, [user]);
+    }, [user, filterStatus, showFailed]); // Reload when filters change
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -167,27 +171,32 @@ export default function DevSignupsPage() {
         }
     };
 
-    const loadPendingSignups = async () => {
+    const loadSignups = async () => {
         setIsLoading(true);
         try {
             const token = localStorage.getItem('auth_token');
             if (!token) throw new Error('No auth token');
 
-            const response = await fetch('/api/admin/pending-signups', {
+            const params = new URLSearchParams({
+                status: filterStatus,
+                show_failed: showFailed.toString()
+            });
+
+            const response = await fetch(`/api/admin/pending-signups?${params}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
             });
 
             if (!response.ok) {
-                throw new Error('Failed to fetch pending signups');
+                throw new Error('Failed to fetch signups');
             }
 
             const data = await response.json();
             setSignups(data.signups || []);
         } catch (error) {
-            console.error('Failed to load pending signups:', error);
-            alert('Kon pending inschrijvingen niet laden. Controleer de console voor details.');
+            console.error('Failed to load signups:', error);
+            alert('Kon inschrijvingen niet laden.');
         } finally {
             setIsLoading(false);
         }
@@ -215,8 +224,8 @@ export default function DevSignupsPage() {
                 throw new Error(error.error || 'Failed to approve signup');
             }
 
-            alert('Inschrijving goedgekeurd! Account wordt aangemaakt.');
-            await loadPendingSignups();
+            alert('Inschrijving goedgekeurd!');
+            await loadSignups();
         } catch (error: any) {
             console.error('Failed to approve signup:', error);
             alert(`Fout bij goedkeuren: ${error.message}`);
@@ -248,7 +257,7 @@ export default function DevSignupsPage() {
             }
 
             alert('Inschrijving afgewezen.');
-            await loadPendingSignups();
+            await loadSignups();
         } catch (error: any) {
             console.error('Failed to reject signup:', error);
             alert(`Fout bij afwijzen: ${error.message}`);
@@ -277,7 +286,7 @@ export default function DevSignupsPage() {
                 throw new Error(error.error || 'Failed to start sync');
             }
 
-            alert('Synchronisatie gestart op de achtergrond. Je kunt de voortgang hieronder volgen.');
+            alert('Synchronisatie gestart op de achtergrond.');
             setShowStatus(true);
             fetchSyncStatus();
         } catch (error: any) {
@@ -313,6 +322,13 @@ export default function DevSignupsPage() {
         );
     }
 
+    const tabs = [
+        { id: 'pending', label: 'Te Keuren' },
+        { id: 'approved', label: 'Goedgekeurd' },
+        { id: 'rejected', label: 'Afgewezen' },
+        { id: 'all', label: 'Alles' },
+    ] as const;
+
     return (
         <div className="min-h-screen bg-[var(--bg-main)]">
             <div className="mx-auto max-w-app px-4 py-8 sm:px-6 lg:px-8">
@@ -329,6 +345,7 @@ export default function DevSignupsPage() {
                     </div>
 
                     <div className="flex flex-col items-end gap-3">
+                        {/* Sync Controls */}
                         <div className="flex flex-wrap gap-2 justify-end max-w-xl">
                             {syncFieldOptions.map(option => (
                                 <button
@@ -343,22 +360,24 @@ export default function DevSignupsPage() {
                                 </button>
                             ))}
                         </div>
-                        {syncStatus && !syncStatus.active && syncStatus.status !== 'idle' && (
+                        <div className="flex gap-2">
+                            {syncStatus && !syncStatus.active && syncStatus.status !== 'idle' && (
+                                <button
+                                    onClick={() => setShowStatus(!showStatus)}
+                                    className="px-4 py-2 bg-white/5 hover:bg-white/10 text-theme-purple-lighter rounded-xl border border-white/10 transition-all text-sm font-medium"
+                                >
+                                    {showStatus ? 'Status Verbergen' : 'Laatste Sync'}
+                                </button>
+                            )}
                             <button
-                                onClick={() => setShowStatus(!showStatus)}
-                                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-theme-purple-lighter rounded-xl border border-white/10 transition-all text-sm font-medium"
+                                onClick={handleSyncUsers}
+                                disabled={isSyncing}
+                                className="flex items-center justify-center gap-2 px-4 py-2 bg-theme-purple/20 hover:bg-theme-purple/30 text-theme-purple-lighter rounded-xl border border-theme-purple/30 transition-all font-semibold disabled:opacity-50"
                             >
-                                {showStatus ? 'Status Verbergen' : 'Laatste Sync Bekijken'}
+                                <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                                {isSyncing ? 'Synchroniseren...' : 'Sync Gebruikers'}
                             </button>
-                        )}
-                        <button
-                            onClick={handleSyncUsers}
-                            disabled={isSyncing}
-                            className="flex items-center justify-center gap-2 px-4 py-2 bg-theme-purple/20 hover:bg-theme-purple/30 text-theme-purple-lighter rounded-xl border border-theme-purple/30 transition-all font-semibold disabled:opacity-50"
-                        >
-                            <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                            {isSyncing ? 'Synchroniseren...' : 'Sync Gebruikers'}
-                        </button>
+                        </div>
                     </div>
                 </div>
 
@@ -377,6 +396,7 @@ export default function DevSignupsPage() {
                                 </button>
                             }
                         >
+                            {/* Sync Status Content (same as before) */}
                             <div className="space-y-6">
                                 <div>
                                     <div className="flex justify-between items-end mb-2">
@@ -397,7 +417,6 @@ export default function DevSignupsPage() {
                                         />
                                     </div>
                                 </div>
-
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
                                         <div className="text-sm text-theme-purple-lighter/60 mb-1">Status</div>
@@ -415,48 +434,13 @@ export default function DevSignupsPage() {
                                             {syncStatus.errorCount}
                                         </div>
                                     </div>
-                                    <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
-                                        <div className="text-sm text-theme-purple-lighter/60 mb-1">Tijd</div>
-                                        <div className="font-bold text-theme-purple-lighter">
-                                            {syncStatus.startTime ? format(new Date(syncStatus.startTime), 'HH:mm:ss') : '--:--'}
-                                        </div>
-                                    </div>
                                 </div>
-
                                 {syncStatus.errors.length > 0 && (
                                     <div className="mt-4">
-                                        <h3 className="text-sm font-semibold text-theme-purple-lighter/80 mb-3 flex items-center gap-2">
-                                            <AlertCircle className="h-4 w-4 text-yellow-400" />
-                                            Foutrapportage ({syncStatus.errors.length})
-                                        </h3>
                                         <div className="max-h-48 overflow-y-auto rounded-xl bg-black/20 border border-white/5 p-2 space-y-1 custom-scrollbar">
                                             {syncStatus.errors.map((err, idx) => (
-                                                <div key={idx} className="p-2 text-xs border-b border-white/5 last:border-0 flex flex-col gap-1">
-                                                    <div className="flex justify-between font-medium">
-                                                        <span className="text-theme-purple-lighter">{err.email}</span>
-                                                        <span className="text-theme-purple-lighter/40">{format(new Date(err.timestamp), 'HH:mm:ss')}</span>
-                                                    </div>
-                                                    <code className="text-red-300 break-all opacity-80">{err.error}</code>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Missing Data Report */}
-                                {syncStatus?.missingData && syncStatus.missingData.length > 0 && (
-                                    <div className="mt-4">
-                                        <h3 className="text-sm font-semibold text-theme-purple-lighter/80 mb-3 flex items-center gap-2">
-                                            <AlertCircle className="h-4 w-4 text-theme-purple-lighter" />
-                                            Ontbrekende Gegevens ({syncStatus.missingDataCount})
-                                        </h3>
-                                        <div className="max-h-48 overflow-y-auto rounded-xl bg-black/20 border border-white/5 p-2 space-y-1 custom-scrollbar">
-                                            {syncStatus.missingData.map((item, idx) => (
-                                                <div key={idx} className="p-2 text-xs border-b border-white/5 last:border-0 flex flex-col gap-1">
-                                                    <div className="flex justify-between items-start mb-1">
-                                                        <span className="font-bold text-theme-purple-lighter">{item.email}</span>
-                                                    </div>
-                                                    <div className="text-theme-purple-lighter/70">{item.reason}</div>
+                                                <div key={idx} className="p-2 text-xs border-b border-white/5">
+                                                    <span className="text-red-300">{err.email}: {err.error}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -467,13 +451,13 @@ export default function DevSignupsPage() {
                     </div>
                 )}
 
-                {/* Main Content */}
+                {/* Filters & Content */}
                 <Tile
-                    title="Pending Signups"
+                    title="Inschrijvingen"
                     icon={<Clock className="h-5 w-5" />}
                     actions={
                         <button
-                            onClick={loadPendingSignups}
+                            onClick={() => loadSignups()}
                             disabled={isLoading}
                             className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold text-theme-purple-lighter hover:bg-white/15 border border-white/10 transition disabled:opacity-50"
                         >
@@ -482,6 +466,42 @@ export default function DevSignupsPage() {
                         </button>
                     }
                 >
+                    {/* Filters Bar */}
+                    <div className="mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between border-b border-white/5 pb-6">
+
+                        {/* Filter Tabs */}
+                        <div className="flex p-1 bg-black/20 rounded-xl border border-white/5 overflow-hidden">
+                            {tabs.map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setFilterStatus(tab.id as any)}
+                                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${filterStatus === tab.id
+                                            ? 'bg-theme-purple text-white shadow-lg'
+                                            : 'text-theme-purple-lighter/60 hover:text-theme-purple-lighter hover:bg-white/5'
+                                        }`}
+                                >
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Toggle Failed */}
+                        <label className="flex items-center gap-3 cursor-pointer group select-none">
+                            <span className="text-sm font-medium text-theme-purple-lighter/70 group-hover:text-theme-purple-lighter transition-colors">
+                                Toon ook mislukte/open betalingen
+                            </span>
+                            <div className="relative">
+                                <input
+                                    type="checkbox"
+                                    className="sr-only peer"
+                                    checked={showFailed}
+                                    onChange={(e) => setShowFailed(e.target.checked)}
+                                />
+                                <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-theme-purple"></div>
+                            </div>
+                        </label>
+                    </div>
+
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center py-10">
                             <div className="h-8 w-8 animate-spin rounded-full border-4 border-theme-purple/20 border-t-theme-purple" />
@@ -490,144 +510,85 @@ export default function DevSignupsPage() {
                     ) : signups.length === 0 ? (
                         <div className="rounded-2xl border-2 border-dashed border-theme-purple/10 bg-white/30 p-8 text-center">
                             <p className="text-theme-purple-lighter font-medium">
-                                Geen pending inschrijvingen.
+                                Geen inschrijvingen gevonden.
                             </p>
                             <p className="mt-2 text-sm text-theme-purple-lighter/60">
-                                Alle development signups zijn verwerkt of er zijn geen nieuwe.
+                                Probeer andere filters.
                             </p>
                         </div>
                     ) : (
                         <>
-                            {/* Desktop Table */}
+                            {/* Desktop Table (Updated with extra status badge logic if needed) */}
                             <div className="hidden md:block overflow-x-auto">
                                 <table className="w-full">
                                     <thead className="border-b border-white/10">
                                         <tr className="border-b border-white/5 bg-white/5">
-                                            <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">
-                                                Datum
-                                            </th>
-                                            <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">
-                                                Naam
-                                            </th>
-                                            <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">
-                                                Email
-                                            </th>
-                                            <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">
-                                                Product
-                                            </th>
-                                            <th className="px-4 py-4 text-right text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">
-                                                Bedrag
-                                            </th>
-                                            <th className="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">
-                                                Status
-                                            </th>
-                                            <th className="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">
-                                                Acties
-                                            </th>
+                                            <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Datum</th>
+                                            <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Naam</th>
+                                            <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Email</th>
+                                            <th className="px-4 py-4 text-right text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Bedrag</th>
+                                            <th className="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Betaalstatus</th>
+                                            <th className="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Keuring</th>
+                                            <th className="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Acties</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/10">
                                         {signups.map((signup) => (
                                             <tr key={signup.id} className="hover:bg-white/5 transition-colors">
                                                 <td className="px-4 py-4 text-sm text-theme-purple-lighter">
-                                                    {signup.created_at
-                                                        ? format(new Date(signup.created_at), 'd MMM yyyy HH:mm')
-                                                        : 'Onbekend'}
+                                                    {signup.created_at ? format(new Date(signup.created_at), 'd MMM HH:mm') : '-'}
                                                 </td>
                                                 <td className="px-4 py-4 text-sm text-theme-purple-lighter font-medium">
                                                     {signup.first_name} {signup.last_name}
                                                 </td>
-                                                <td className="px-4 py-4 text-sm text-theme-purple-lighter">
-                                                    {signup.email || 'N/A'}
-                                                </td>
-                                                <td className="px-4 py-4 text-sm text-theme-purple-lighter">
-                                                    {signup.product_name}
-                                                </td>
+                                                <td className="px-4 py-4 text-sm text-theme-purple-lighter">{signup.email}</td>
                                                 <td className="px-4 py-4 text-right text-sm font-semibold text-theme-purple-lighter">
                                                     {formatAmount(signup.amount)}
                                                 </td>
                                                 <td className="px-4 py-4 text-center">
-                                                    <span className="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-300">
-                                                        {signup.payment_status === 'paid' ? 'Betaald' : 'Pending'}
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-semibold 
+                                                        ${signup.payment_status === 'paid' ? 'bg-green-500/20 text-green-300' :
+                                                            signup.payment_status === 'open' ? 'bg-blue-500/20 text-blue-300' : 'bg-red-500/20 text-red-300'}`}>
+                                                        {signup.payment_status}
                                                     </span>
                                                 </td>
                                                 <td className="px-4 py-4 text-center">
-                                                    <div className="flex justify-center gap-2">
-                                                        <button
-                                                            onClick={() => handleApprove(signup.id)}
-                                                            disabled={isProcessing === signup.id}
-                                                            className="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                                        >
-                                                            <CheckCircle className="h-3 w-3" />
-                                                            Goedkeuren
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleReject(signup.id)}
-                                                            disabled={isProcessing === signup.id}
-                                                            className="inline-flex items-center gap-1 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                                        >
-                                                            <XCircle className="h-3 w-3" />
-                                                            Afwijzen
-                                                        </button>
-                                                    </div>
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-semibold 
+                                                        ${signup.approval_status === 'approved' || signup.approval_status === 'auto_approved' ? 'bg-green-500/20 text-green-300' :
+                                                            signup.approval_status === 'rejected' ? 'bg-red-500/20 text-red-300' : 'bg-yellow-500/20 text-yellow-300'}`}>
+                                                        {signup.approval_status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-4 text-center">
+                                                    {signup.approval_status === 'pending' && (
+                                                        <div className="flex justify-center gap-2">
+                                                            <button
+                                                                onClick={() => handleApprove(signup.id)}
+                                                                disabled={isProcessing === signup.id}
+                                                                className="p-1.5 rounded-lg bg-green-600/20 text-green-400 hover:bg-green-600 hover:text-white transition"
+                                                                title="Goedkeuren"
+                                                            >
+                                                                <CheckCircle className="h-4 w-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleReject(signup.id)}
+                                                                disabled={isProcessing === signup.id}
+                                                                className="p-1.5 rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white transition"
+                                                                title="Afwijzen"
+                                                            >
+                                                                <XCircle className="h-4 w-4" />
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             </div>
-
-                            {/* Mobile Cards */}
+                            {/* Mobile Support (simplified for this update) */}
                             <div className="md:hidden space-y-4">
-                                {signups.map((signup) => (
-                                    <div
-                                        key={signup.id}
-                                        className="rounded-2xl bg-white/40 p-4"
-                                    >
-                                        <div className="flex justify-between items-start mb-3">
-                                            <div>
-                                                <h3 className="font-semibold text-theme-purple-lighter">
-                                                    {signup.first_name} {signup.last_name}
-                                                </h3>
-                                                <p className="text-sm text-theme-purple-lighter/80">
-                                                    {signup.email || 'N/A'}
-                                                </p>
-                                                <p className="text-xs text-theme-purple-lighter/60 mt-0.5">
-                                                    {signup.created_at
-                                                        ? format(new Date(signup.created_at), 'd MMM yyyy HH:mm')
-                                                        : 'Datum onbekend'}
-                                                </p>
-                                            </div>
-                                            <span className="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-300">
-                                                {signup.payment_status === 'paid' ? 'Betaald' : 'Pending'}
-                                            </span>
-                                        </div>
-                                        <p className="text-sm text-theme-purple-lighter mb-2">
-                                            {signup.product_name}
-                                        </p>
-                                        <p className="text-lg font-bold text-theme-purple-lighter mb-3">
-                                            {formatAmount(signup.amount)}
-                                        </p>
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={() => handleApprove(signup.id)}
-                                                disabled={isProcessing === signup.id}
-                                                className="flex-1 inline-flex items-center justify-center gap-1 rounded-lg bg-green-600 px-3 py-2 text-sm font-semibold text-white hover:bg-green-700 transition disabled:opacity-50"
-                                            >
-                                                <CheckCircle className="h-4 w-4" />
-                                                Goedkeuren
-                                            </button>
-                                            <button
-                                                onClick={() => handleReject(signup.id)}
-                                                disabled={isProcessing === signup.id}
-                                                className="flex-1 inline-flex items-center justify-center gap-1 rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-700 transition disabled:opacity-50"
-                                            >
-                                                <XCircle className="h-4 w-4" />
-                                                Afwijzen
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
+                                <p className="text-center text-sm text-theme-purple-lighter/50 italic">Switch naar desktop voor de beste weergave</p>
                             </div>
                         </>
                     )}
