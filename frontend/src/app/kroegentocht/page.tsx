@@ -7,7 +7,6 @@ import { pubCrawlSignupsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
 import { directusFetch } from '@/shared/lib/directus';
 import { useSalvemundiPubCrawlEvents, useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { format } from 'date-fns';
-import { sendEventSignupEmail } from '@/shared/lib/services/email-service';
 import { CheckCircle2 } from 'lucide-react';
 
 const ASSOCIATIONS = [
