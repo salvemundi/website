@@ -219,7 +219,7 @@ export default function KroegentochtPage() {
 
             if (!paymentRes.ok) {
                 const errorData = await paymentRes.json();
-                throw new Error(errorData.error || 'Fout bij het aanmaken van de betaling.');
+                throw new Error(errorData.details || errorData.error || 'Fout bij het aanmaken van de betaling.');
             }
 
             const paymentData = await paymentRes.json();
@@ -441,7 +441,7 @@ export default function KroegentochtPage() {
                                         {loading
                                             ? 'Bezig met inschrijven...'
                                             : canSignUp
-                                                ? 'Inschrijven'
+                                                ? `Inschrijven (€${(form.amount_tickets * 1).toFixed(2).replace('.', ',')})`
                                                 : 'Inschrijving nog niet beschikbaar'}
                                     </button>
                                 </form>
