@@ -4,8 +4,10 @@ module.exports = function (directusService, DIRECTUS_URL, DIRECTUS_API_TOKEN) {
     const router = express.Router();
 
     router.post('/validate', async (req, res) => {
+        const { couponCode } = req.body;
+        console.log(`[PaymentAPI] Coupon validation requested for: ${couponCode}`);
+
         try {
-            const { couponCode } = req.body;
 
             if (!couponCode) {
                 return res.status(400).json({ valid: false, error: 'Geen coupon code opgegeven' });
