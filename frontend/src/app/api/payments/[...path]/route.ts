@@ -23,7 +23,8 @@ async function proxyRequest(
         const headers: HeadersInit = {
             'Content-Type': request.headers.get('Content-Type') || 'application/json',
             'Authorization': request.headers.get('Authorization') || '',
-            'X-Trace-Id': traceId
+            'X-Trace-Id': traceId,
+            'X-Environment': process.env.NODE_ENV || 'development'
         };
 
         const fetchOptions: RequestInit = {
