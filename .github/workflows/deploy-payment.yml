@@ -116,9 +116,11 @@ jobs:
             if [[ "$TAG" == "latest" ]]; then
               printf "MOLLIE_API_KEY=%s\n" "$PROD_MOLLIE_API_KEY" >> .env
               printf "MOLLIE_WEBHOOK_URL=%s\n" "$PROD_MOLLIE_WEBHOOK_URL" >> .env
+              echo "NODE_ENV=production" >> .env
             else
               printf "MOLLIE_API_KEY=%s\n" "$DEV_MOLLIE_API_KEY" >> .env
               printf "MOLLIE_WEBHOOK_URL=%s\n" "$DEV_MOLLIE_WEBHOOK_URL" >> .env
+              echo "NODE_ENV=development" >> .env
             fi
             
             printf "DIRECTUS_URL=%s\n" "$DIRECTUS_URL" >> .env
