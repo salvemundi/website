@@ -60,10 +60,8 @@ const nextConfig: NextConfig = {
 
     // Compiler optimizations
     compiler: {
-        // Remove console.log in production
-        removeConsole: process.env.NODE_ENV === 'production' ? {
-            exclude: ['error', 'warn'],
-        } : false,
+        // Temporarily disable to see debug logs in production/dev environments
+        removeConsole: false,
     },
 
     // Environment variables that should be available client-side

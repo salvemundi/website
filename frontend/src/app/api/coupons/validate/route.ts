@@ -10,7 +10,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
     const correlationId = Math.random().toString(36).substring(7);
-    console.log(`[Proxy][${correlationId}] Incoming coupon validation request`);
+    console.warn(`[Proxy][${correlationId}] Incoming coupon validation POST request`);
 
     try {
         const body = await req.json();
@@ -18,69 +18,55 @@ export async function POST(req: NextRequest) {
 
         const targetUrl = `${PAYMENT_API_URL}/api/coupons/validate`;
 
-        console.log(`[Proxy][${correlationId}] Configured Payment API URL: ${PAYMENT_API_URL}`);
-        console.log(`[Proxy][${correlationId}] Forwarding to: ${targetUrl}`);
-        console.log(`[Proxy][${correlationId}] Payload:`, JSON.stringify(body));
+        console.warn(`[Proxy][${correlationId}] PAYMENT_API_URL: ${PAYMENT_API_URL}`);
+        console.warn(`[Proxy][${correlationId}] Forwarding to: ${targetUrl}`);
+        console.warn(`[Proxy][${correlationId}] Body:`, JSON.stringify(body));
 
-        // Basic connectivity check log
         try {
             const startTime = Date.now();
             const response = await fetch(targetUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-Proxy-Correlation-ID': correlationId
                 },
                 body: JSON.stringify(body),
-                // Add a timeout to avoid hanging if backend is unreachable
-                // @ts-ignore - signal might not be in all environments but works in modern Node/Edge
+                // @ts-ignore
                 signal: AbortSignal.timeout(5000)
             });
 
             const duration = Date.now() - startTime;
-            console.log(`[Proxy][${correlationId}] Backend response received in ${duration}ms. Status: ${response.status}`);
+            console.warn(`[Proxy][${correlationId}] Backend responded in ${duration}ms with status ${response.status}`);
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error(`[Proxy][${correlationId}] Backend returned error (${response.status}):`, errorText);
-
-                return NextResponse.json(
-                    {
-                        error: 'Backend validation failed',
-                        status: response.status,
-                        details: errorText,
-                        _debug: { target: targetUrl, correlationId }
-                    },
-                    { status: response.status }
-                );
+            const responseText = await response.text();
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (p) {
+                console.warn(`[Proxy][${correlationId}] Backend returned non-JSON!`, responseText);
+                return NextResponse.json({
+                    error: 'Invalid backend response',
+                    status: response.status,
+                    details: responseText,
+                    _proxied: true
+                }, { status: response.status === 200 ? 502 : response.status });
             }
 
-            const data = await response.json();
-            console.log(`[Proxy][${correlationId}] Successful response from backend:`, JSON.stringify(data));
+            if (!response.ok) {
+                console.warn(`[Proxy][${correlationId}] Backend error!`, data);
+                return NextResponse.json({ ...data, _proxied: true }, { status: response.status });
+            }
 
-            return NextResponse.json({
-                ...data,
-                _debug: { correlationId, proxied: true }
-            });
+            console.warn(`[Proxy][${correlationId}] Backend success!`, data);
+            return NextResponse.json({ ...data, _proxied: true });
 
         } catch (fetchError: any) {
-            console.error(`[Proxy][${correlationId}] Fetch operation failed:`, {
-                message: fetchError.message,
-                name: fetchError.name,
-                code: fetchError.code
-            });
-            throw fetchError;
+            console.error(`[Proxy][${correlationId}] Fetch Error:`, fetchError.message);
+            return NextResponse.json({ error: 'Backend unreachable', details: fetchError.message }, { status: 503 });
         }
-
     } catch (error: any) {
-        console.error(`[Proxy][${correlationId}] FATAL Proxy Error:`, error);
-        return NextResponse.json(
-            {
-                error: 'Proxy implementation error',
-                message: error.message,
-                _debug: { correlationId }
-            },
-            { status: 500 }
-        );
+        console.error(`[Proxy][${correlationId}] Internal Proxy error:`, error.message);
+        return NextResponse.json({ error: 'Proxy internal error', details: error.message }, { status: 500 });
     }
 }
