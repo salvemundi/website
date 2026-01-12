@@ -82,7 +82,7 @@ async function getCoupon(directusUrl, directusToken, code) {
     try {
         const query = new URLSearchParams({
             'filter[coupon_code][_eq]': code,
-            'filter[is_active][_eq]': 'true'
+            'filter[is_active][_in]': 'true,1'
         }).toString();
 
         const response = await axios.get(
