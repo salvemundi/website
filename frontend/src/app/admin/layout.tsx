@@ -21,19 +21,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             }
 
             try {
-                // Check if user is member of any committee
-                const query = new URLSearchParams({
-                    'filter[user_id][_eq]': user.id,
-                    'limit': '1',
-                }).toString();
-
-                const memberships = await directusFetch<any[]>(`/items/committee_members?${query}`);
-
-                if (memberships && memberships.length > 0) {
+                // Prefer using committees already fetched on login
+                if (Array.isArray((user as any).committees) && (user as any).committees.length > 0) {
                     setIsAuthorized(true);
                 } else {
-                    // Not a committee member
-                    router.push('/');
+                    // Fallback: Check if user is member of any committee via API
+                    const query = new URLSearchParams({
+                        'filter[user_id][_eq]': user.id,
+                        'limit': '1',
+                    }).toString();
+
+                    const memberships = await directusFetch<any[]>(`/items/committee_members?${query}`);
+
+                    if (memberships && memberships.length > 0) {
+                        setIsAuthorized(true);
+                    } else {
+                        // Not a committee member
+                        router.push('/');
+                    }
                 }
             } catch (error) {
                 console.error('Authorization check failed:', error);

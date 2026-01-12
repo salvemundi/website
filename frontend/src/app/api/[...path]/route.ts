@@ -17,16 +17,32 @@ export async function GET(
     console.log(`[Directus Proxy] GET ${path} -> ${targetUrl}`);
 
     try {
+        const forwardHeaders: Record<string, string> = {};
+        const auth = request.headers.get('Authorization');
+        if (auth) forwardHeaders['Authorization'] = auth;
+
+        const contentType = request.headers.get('Content-Type');
+        if (contentType) forwardHeaders['Content-Type'] = contentType;
+
         const response = await fetch(targetUrl, {
             method: 'GET',
-            headers: {
-                'Authorization': request.headers.get('Authorization') || '',
-                'Content-Type': request.headers.get('Content-Type') || 'application/json',
-            },
+            headers: forwardHeaders,
         });
 
-        const data = await response.json().catch(() => null);
-        return NextResponse.json(data, { status: response.status });
+        const respContentType = response.headers.get('content-type') || '';
+
+        // If the response is JSON, parse and return JSON.
+        if (respContentType.includes('application/json')) {
+            const data = await response.json().catch(() => null);
+            return NextResponse.json(data, { status: response.status });
+        }
+
+        // For binary/content responses (images, files), stream the body back.
+        const body = response.body;
+        const headers: Record<string, string> = {};
+        if (respContentType) headers['Content-Type'] = respContentType;
+        const forwarded = new NextResponse(body, { status: response.status, headers });
+        return forwarded;
     } catch (error: any) {
         console.error(`[Directus Proxy] GET ${path} failed:`, error.message);
         return NextResponse.json({ error: 'Directus Proxy Error', details: error.message }, { status: 500 });
@@ -45,17 +61,29 @@ export async function POST(
     console.log(`[Directus Proxy] POST ${path} -> ${targetUrl}`);
 
     try {
+        const forwardHeaders: Record<string, string> = {};
+        const auth = request.headers.get('Authorization');
+        if (auth) forwardHeaders['Authorization'] = auth;
+
+        // Default to JSON content-type for POST when body is present
+        forwardHeaders['Content-Type'] = 'application/json';
+
         const response = await fetch(targetUrl, {
             method: 'POST',
-            headers: {
-                'Authorization': request.headers.get('Authorization') || '',
-                'Content-Type': 'application/json',
-            },
+            headers: forwardHeaders,
             body: body ? JSON.stringify(body) : undefined,
         });
 
-        const data = await response.json().catch(() => null);
-        return NextResponse.json(data, { status: response.status });
+        const respContentType = response.headers.get('content-type') || '';
+        if (respContentType.includes('application/json')) {
+            const data = await response.json().catch(() => null);
+            return NextResponse.json(data, { status: response.status });
+        }
+
+        const bodyStream = response.body;
+        const headers: Record<string, string> = {};
+        if (respContentType) headers['Content-Type'] = respContentType;
+        return new NextResponse(bodyStream, { status: response.status, headers });
     } catch (error: any) {
         console.error(`[Directus Proxy] POST ${path} failed:`, error.message);
         return NextResponse.json({ error: 'Directus Proxy Error', details: error.message }, { status: 500 });
@@ -73,17 +101,27 @@ export async function PATCH(
     const targetUrl = `${DIRECTUS_URL}/${path}`;
 
     try {
+        const forwardHeaders: Record<string, string> = {};
+        const auth = request.headers.get('Authorization');
+        if (auth) forwardHeaders['Authorization'] = auth;
+        forwardHeaders['Content-Type'] = 'application/json';
+
         const response = await fetch(targetUrl, {
             method: 'PATCH',
-            headers: {
-                'Authorization': request.headers.get('Authorization') || '',
-                'Content-Type': 'application/json',
-            },
+            headers: forwardHeaders,
             body: body ? JSON.stringify(body) : undefined,
         });
 
-        const data = await response.json().catch(() => null);
-        return NextResponse.json(data, { status: response.status });
+        const respContentType = response.headers.get('content-type') || '';
+        if (respContentType.includes('application/json')) {
+            const data = await response.json().catch(() => null);
+            return NextResponse.json(data, { status: response.status });
+        }
+
+        const bodyStream = response.body;
+        const headers: Record<string, string> = {};
+        if (respContentType) headers['Content-Type'] = respContentType;
+        return new NextResponse(bodyStream, { status: response.status, headers });
     } catch (error: any) {
         return NextResponse.json({ error: 'Directus Proxy Error' }, { status: 500 });
     }
