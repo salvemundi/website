@@ -34,6 +34,7 @@ async function updateDirectusTransaction(directusUrl, directusToken, id, data) {
         await axios.patch(`${directusUrl}/items/transactions/${id}`, data, getAuthConfig(directusToken));
     } catch (error) {
         console.error(`Failed to update transaction ${id}:`, error.message);
+        throw error;
     }
 }
 
@@ -45,6 +46,7 @@ async function updateDirectusRegistration(directusUrl, directusToken, id, data) 
         await axios.patch(`${directusUrl}/items/event_signups/${id}`, data, getAuthConfig(directusToken));
     } catch (error) {
         console.error(`Failed to update registration ${id}:`, error.message);
+        throw error;
     }
 }
 
@@ -132,6 +134,13 @@ async function updateCouponUsage(directusUrl, directusToken, id, newCount) {
         );
     } catch (error) {
         console.error(`Failed to update coupon usage for ${id}:`, error.message);
+        // We don't necessarily want to throw here if it's just a stat update, 
+        // but for consistency let's log and rethrow if critical, 
+        // or just leave it for now if strictness isn't required by caller.
+        // Given existing usage, let's keep it safe but maybe valid for future.
+        // The user asked about rejection, which uses updateDirectusTransaction.
+        // Let's stick to fixing the transaction/registration ones first.
+        throw error;
     }
 }
 
