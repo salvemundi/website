@@ -137,7 +137,7 @@ export default function SignUp() {
         }
     };
 
-    const initiateContributionPayment = async () => {
+    const initiateContributionPayment = async (): Promise<boolean> => {
         const traceId = Math.random().toString(36).substring(7);
         console.info(`[Payment][${traceId}] Initiating payment process...`);
 
@@ -146,7 +146,7 @@ export default function SignUp() {
                 amount: '20.00',
                 description: 'Contributie Salve Mundi',
                 redirectUrl: window.location.origin + '/lidmaatschap/bevestiging',
-                isContribution: true,
+                isContribution: true, // Make sure backend expects this boolean
                 userId: user ? user.id : null,
                 firstName: user ? undefined : form.voornaam,
                 lastName: user ? undefined : form.achternaam,
@@ -168,18 +168,26 @@ export default function SignUp() {
             const data = await response.json();
             console.log(`[Payment][${traceId}] Response (${response.status}):`, data);
 
-            if (response.ok && data.checkoutUrl) {
-                console.info(`[Payment][${traceId}] Redirecting to Mollie: ${data.checkoutUrl}`);
-                window.location.href = data.checkoutUrl;
+            if (response.ok && (data.checkoutUrl || data.paymentId)) {
+                // If we get a checkoutUrl (Mollie) or just a paymentId (Free transaction), proceed
+                if (data.checkoutUrl) {
+                    console.info(`[Payment][${traceId}] Redirecting to Mollie: ${data.checkoutUrl}`);
+                    window.location.href = data.checkoutUrl;
+                } else {
+                    console.info(`[Payment][${traceId}] Free transaction completed. ID: ${data.paymentId}`);
+                }
+                return true;
             } else {
                 console.error(`[Payment][${traceId}] Creation failed:`, data.error);
-                alert('Er ging iets mis bij het aanmaken van de betaling. Probeer het later opnieuw.');
+                alert(`Er went iets mis: ${data.error || 'Onbekende fout'}`);
                 setIsProcessing(false);
+                return false;
             }
         } catch (error: any) {
             console.error(`[Payment][${traceId}] Connection error:`, error.message);
             alert('Er ging iets mis bij de verbinding voor de betaling.');
             setIsProcessing(false);
+            return false;
         }
     };
 
@@ -195,7 +203,11 @@ export default function SignUp() {
         setIsProcessing(true);
 
         try {
-            await initiateContributionPayment();
+            const success = await initiateContributionPayment();
+            if (!success) {
+                // initiateContributionPayment already handled alert regarding error
+                return;
+            }
 
             // Check if we're in development environment
             const isDev = typeof window !== 'undefined' && (
@@ -205,13 +217,19 @@ export default function SignUp() {
             );
 
             if (isDev && isGuest) {
-                // Development environment - show pending approval message
-                alert('✅ Bedankt voor je betaling!\n\nJe aanmelding is ontvangen en wacht op goedkeuring door een administrator.\n\nJe ontvangt een email zodra je account is aangemaakt.');
+                // Only show this if we didn't redirect (which happens for paid tx)
+                // But typically window.location.href kills the page so this won't show for paid.
+                // For free transactions (if we supported redirectUrl there properly), it might.
+                // safe to leave for now as "Success fallback"
             }
         } catch (error) {
             console.error('Payment initiation failed:', error);
             alert('Er is een fout opgetreden bij het initiëren van de betaling. Probeer het opnieuw.');
         } finally {
+            // Only stop processing if we are NOT redirecting (i.e. if it failed)
+            // But since we returned false on failure, we are here. 
+            // If it succeeded, we might be redirecting, so unmounting.
+            // But just in case:
             setIsProcessing(false);
         }
     };
