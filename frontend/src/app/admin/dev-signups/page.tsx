@@ -106,6 +106,7 @@ export default function DevSignupsPage() {
     const [filterStatus, setFilterStatus] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
     const [showFailed, setShowFailed] = useState(false);
     const [paymentSettings, setPaymentSettings] = useState<PaymentSettings>({ manual_approval: false });
+    const [isDevEnv, setIsDevEnv] = useState(false);
 
     const syncFieldOptions = [
         { id: 'membership_expiry', label: 'Lidmaatschap vervaldatum' },
@@ -126,6 +127,16 @@ export default function DevSignupsPage() {
     useEffect(() => {
         if (!authLoading && !user) {
             router.push('/login');
+        }
+
+        // Detect if we are in a "development" environment where the backend forces 'pending'.
+        // Backend logic: NODE_ENV !== 'production' -> FORCE PENDING.
+        // Frontend logic: If hostname is dev.* or localhost, or NODE_ENV is dev, treat as dev.
+        const isLocal = typeof window !== 'undefined' && (window.location.hostname.includes('localhost') || window.location.hostname.includes('dev.'));
+        const isNodeDev = process.env.NODE_ENV === 'development';
+
+        if (isLocal || isNodeDev) {
+            setIsDevEnv(true);
         }
     }, [user, authLoading, router]);
 
@@ -399,18 +410,23 @@ export default function DevSignupsPage() {
                     </div>
                     <button
                         onClick={toggleManualApproval}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all shadow-sm ${paymentSettings.manual_approval
-                            ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30 hover:bg-orange-500/30'
-                            : 'bg-[var(--bg-highlight)] text-slate-400 border border-white/5 hover:border-white/10'
+                        disabled={isDevEnv}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all shadow-sm ${isDevEnv
+                                ? 'bg-slate-800/50 text-slate-500 border border-slate-700/50 cursor-not-allowed'
+                                : paymentSettings.manual_approval
+                                    ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30 hover:bg-orange-500/30'
+                                    : 'bg-[var(--bg-highlight)] text-slate-400 border border-white/5 hover:border-white/10'
                             }`}
-                        title={paymentSettings.manual_approval
-                            ? "Alle nieuwe aanmeldingen worden handmatig gecontroleerd (ook in productie)"
-                            : "Aanmeldingen worden automatisch goedgekeurd in productie"}
+                        title={isDevEnv
+                            ? "Ontwikkelomgeving: Altijd 'Manual Approval' (Pending) forced door backend."
+                            : paymentSettings.manual_approval
+                                ? "Alle nieuwe aanmeldingen worden handmatig gecontroleerd (ook in productie)"
+                                : "Aanmeldingen worden automatisch goedgekeurd in productie"}
                     >
-                        {paymentSettings.manual_approval ? (
+                        {paymentSettings.manual_approval || isDevEnv ? (
                             <>
                                 <Shield className="w-3.5 h-3.5" />
-                                Handmatige Goedkeuring: AAN
+                                {isDevEnv ? 'Dev Force: PENDING' : 'Handmatige Goedkeuring: AAN'}
                             </>
                         ) : (
                             <>
