@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export async function GET() {
+    return NextResponse.json({
+        status: 'alive',
+        message: 'Coupon validation proxy is reachable',
+        usage: 'POST to this endpoint with { "couponCode": "YOUR_CODE" }'
+    });
+}
+
 export async function POST(req: NextRequest) {
     const correlationId = Math.random().toString(36).substring(7);
     console.log(`[Proxy][${correlationId}] Incoming coupon validation request`);

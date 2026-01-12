@@ -9,13 +9,10 @@ export async function GET(
     const params = await context.params;
     const path = params.path.join('/');
     const url = new URL(request.url);
+    const correlationId = Math.random().toString(36).substring(7);
 
-    console.log('[API Proxy] GET Request:', {
-        path,
-        search: url.search,
-        hasAuthHeader: !!request.headers.get('Authorization'),
-        targetURL: `${PAYMENT_API_URL}/api/admin/${path}${url.search}`
-    });
+    console.log(`[Admin Proxy][${correlationId}] GET /${path}`);
+    console.log(`[Admin Proxy][${correlationId}] Target: ${PAYMENT_API_URL}/api/admin/${path}${url.search}`);
 
     try {
         const authHeader = request.headers.get('Authorization');
