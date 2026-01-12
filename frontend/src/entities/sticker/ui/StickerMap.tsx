@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import Map, { Marker, Popup, NavigationControl } from 'react-map-gl/maplibre';
 import { Sticker, getImageUrl } from '@/shared/lib/api/salvemundi';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -95,7 +95,7 @@ const StickerMap: React.FC<StickerMapProps> = ({
             try {
                 if (mq.removeEventListener) mq.removeEventListener('change', mqHandler);
                 else mq.removeListener(mqHandler as unknown as (this: MediaQueryList, ev: MediaQueryListEvent) => void);
-            } catch (e) {}
+            } catch (e) { }
             mo.disconnect();
         };
     }, []);

@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import SafeHavenWeeklyAvailability from '@/components/safe-haven-availability/SafeHavenWeeklyAvailability';
 import { useAuth } from '@/features/auth/providers/auth-provider';

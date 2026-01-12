@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { X, Clock, MapPin } from 'lucide-react';
 import { format, isSameDay, parseISO } from 'date-fns';
 import { nl } from 'date-fns/locale';

@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { documentsApi } from '@/shared/lib/api/salvemundi';
@@ -171,7 +170,7 @@ export default function ContactPage() {
                                 {isAuthenticated && (
                                     <div className="flex items-start items-center gap-4">
                                         <div className="w-12 h-12 rounded-full bg-theme-purple-light flex items-center justify-center flex-shrink-0">
-                                        <span className="text-2xl">💬</span>
+                                            <span className="text-2xl">💬</span>
                                         </div>
                                         <div>
                                             <a

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Mail, CheckCircle2, Loader2 } from 'lucide-react';
 
 export interface NewsletterSignupProps {
@@ -23,7 +23,7 @@ export default function NewsletterSignup({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Basic email validation
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError('Voer een geldig e-mailadres in');
@@ -110,21 +110,19 @@ export default function NewsletterSignup({
             setError(null);
           }}
           disabled={isSubmitting}
-          className={`flex-1 px-4 py-2 lg:py-3 rounded-lg border ${
-            placement === 'hero'
+          className={`flex-1 px-4 py-2 lg:py-3 rounded-lg border ${placement === 'hero'
               ? 'bg-white/20 border-white/30 text-white placeholder-white/60'
               : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400'
-          } focus:outline-none focus:ring-2 focus:ring-theme-purple transition-all`}
+            } focus:outline-none focus:ring-2 focus:ring-theme-purple transition-all`}
           required
         />
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`px-6 py-2 lg:py-3 font-semibold rounded-lg transition-all ${
-            placement === 'hero'
+          className={`px-6 py-2 lg:py-3 font-semibold rounded-lg transition-all ${placement === 'hero'
               ? 'bg-white text-theme-purple hover:bg-gray-100'
               : 'bg-gradient-theme text-white hover:brightness-110'
-          } disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+            } disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
         >
           {isSubmitting ? (
             <>

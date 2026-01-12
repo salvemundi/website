@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import Image from 'next/image';
 import { Calendar, Clock } from 'lucide-react';
 import { format } from 'date-fns';
@@ -50,9 +49,8 @@ export default function FeaturedPosts({
           <article
             key={post.id}
             onClick={() => onPostClick?.(post)}
-            className={`bg-[var(--bg-card)] rounded-xl lg:rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 ${
-              onPostClick ? 'cursor-pointer' : ''
-            } ${layout === 'carousel' ? 'snap-start flex-shrink-0 w-80' : ''}`}
+            className={`bg-[var(--bg-card)] rounded-xl lg:rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 ${onPostClick ? 'cursor-pointer' : ''
+              } ${layout === 'carousel' ? 'snap-start flex-shrink-0 w-80' : ''}`}
           >
             {/* Image */}
             {post.image && (
