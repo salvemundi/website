@@ -11,7 +11,7 @@ export const contentType = 'image/png';
 export default async function Image() {
     return generateOGImage({
         title: 'Word Lid',
-        description: 'Voor slechts €20 per jaar krijg je toegang tot alle activiteiten met korting!',
+        description: "Al lid? Word 'parrent' tijdens de Introweek — begeleid nieuwe leden, scoor roem & pizza, en maak onvergetelijke verhalen.",
         category: 'Membership',
     });
 }
