@@ -14,8 +14,16 @@ export default function SponsorsSection() {
         const fetchSponsors = async () => {
             try {
                 setLoading(true);
-                const data = await directusFetch<Sponsor[]>('/items/sponsors');
-                setSponsors(data);
+                // Prefer server-side proxied public endpoint which uses a server API key
+                const resp = await fetch('/api/public-sponsors');
+                if (resp.ok) {
+                    const data = await resp.json();
+                    setSponsors(data || []);
+                } else {
+                    // Fallback to client directusFetch (for authenticated sessions)
+                    const data = await directusFetch<Sponsor[]>('/items/sponsors');
+                    setSponsors(data || []);
+                }
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to load sponsors');
                 console.error('Error fetching sponsors:', err);
