@@ -180,7 +180,7 @@ export default function KroegentochtPage() {
                 return;
             }
 
-            // Create signup
+            // Create signup with status 'open' (just like standard activity signups)
             const signup = await pubCrawlSignupsApi.create({
                 name: form.name,
                 email: form.email,
@@ -188,58 +188,50 @@ export default function KroegentochtPage() {
                 amount_tickets: form.amount_tickets,
                 pub_crawl_event_id: nextEvent.id,
                 name_initials: nameInitials,
+                payment_status: 'open',
             });
 
             if (!signup || !signup.id) {
                 throw new Error('Kon inschrijving niet aanmaken.');
             }
 
-            try {
-                const totalPrice = (form.amount_tickets * 1).toFixed(2); // 1 euro per ticket
-                const traceId = Math.random().toString(36).substring(7);
+            const totalPrice = (form.amount_tickets * 1).toFixed(2); // 1 euro per ticket
+            const traceId = Math.random().toString(36).substring(7);
 
-                const paymentPayload = {
-                    amount: totalPrice,
-                    description: `Kroegentocht Tickets - ${form.amount_tickets}x`,
-                    redirectUrl: window.location.origin + '/kroegentocht/bevestiging',
-                    registrationId: signup.id,
-                    email: form.email,
-                    firstName: form.name.split(' ')[0],
-                    lastName: form.name.split(' ').slice(1).join(' '),
-                    isContribution: false
-                };
+            const paymentPayload = {
+                amount: totalPrice,
+                description: `Kroegentocht Tickets - ${form.amount_tickets}x`,
+                redirectUrl: window.location.origin + '/kroegentocht/bevestiging',
+                registrationId: signup.id,
+                registrationType: 'pub_crawl_signup', // Tell backend which collection to update
+                email: form.email,
+                firstName: form.name.split(' ')[0],
+                lastName: form.name.split(' ').slice(1).join(' '),
+                isContribution: false
+            };
 
-                const paymentRes = await fetch('/api/payments/create', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Trace-Id': traceId
-                    },
-                    body: JSON.stringify(paymentPayload),
-                });
+            const paymentRes = await fetch('/api/payments/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Trace-Id': traceId
+                },
+                body: JSON.stringify(paymentPayload),
+            });
 
-                if (!paymentRes.ok) {
-                    const errorData = await paymentRes.json();
-                    console.error(`[Payment][${traceId}] Payment Creation Failed:`, errorData);
-                    throw new Error(`${errorData.details || errorData.error || 'Fout bij het aanmaken van de betaling.'} (Target: ${errorData.target || 'unknown'})`);
-                }
-
-                const paymentData = await paymentRes.json();
-                if (paymentData.checkoutUrl) {
-                    window.location.href = paymentData.checkoutUrl;
-                    return;
-                }
-
-                setSubmitted(true);
-            } catch (paymentErr: any) {
-                // IMPORTANT: If payment fails, we delete the signup record we just created
-                // so we don't have unpaid signups in the database.
-                console.warn('[Payment] Rollback: Deleting signup due to payment failure', signup.id);
-                await pubCrawlSignupsApi.delete(signup.id).catch(err => {
-                    console.error('[Payment] Rollback failed:', err);
-                });
-                throw paymentErr; // Re-throw to show error in UI
+            if (!paymentRes.ok) {
+                const errorData = await paymentRes.json();
+                console.error(`[Payment][${traceId}] Payment Creation Failed:`, errorData);
+                throw new Error(`${errorData.details || errorData.error || 'Fout bij het aanmaken van de betaling.'} (Target: ${errorData.target || 'unknown'})`);
             }
+
+            const paymentData = await paymentRes.json();
+            if (paymentData.checkoutUrl) {
+                window.location.href = paymentData.checkoutUrl;
+                return;
+            }
+
+            setSubmitted(true);
         } catch (err: any) {
             console.error('Error submitting kroegentocht signup:', err);
             const friendlyMessage = err?.message?.includes('RECORD_NOT_UNIQUE')

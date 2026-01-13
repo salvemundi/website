@@ -22,6 +22,7 @@ interface PubCrawlSignup {
     email: string;
     association: string;
     amount_tickets: number;
+    payment_status: string;
     name_initials: string | null; // JSON string
     created_at: string;
 }
@@ -88,7 +89,7 @@ export default function KroegentochtAanmeldingenPage() {
         setIsLoading(true);
         try {
             const signupsData = await directusFetch<PubCrawlSignup[]>(
-                `/items/pub_crawl_signups?filter[pub_crawl_event_id][_eq]=${eventId}&fields=id,name,email,association,amount_tickets,name_initials,created_at&sort=-created_at`
+                `/items/pub_crawl_signups?filter[pub_crawl_event_id][_eq]=${eventId}&fields=id,name,email,association,amount_tickets,payment_status,name_initials,created_at&sort=-created_at`
             );
             setSignups(signupsData);
         } catch (error) {
@@ -135,7 +136,7 @@ export default function KroegentochtAanmeldingenPage() {
 
         filteredSignups.forEach(signup => {
             const participants = parseParticipants(signup.name_initials);
-            
+
             if (participants.length > 0) {
                 // Add all participants with the same group number
                 participants.forEach(participant => {
@@ -155,7 +156,7 @@ export default function KroegentochtAanmeldingenPage() {
                     });
                 }
             }
-            
+
             groupNumber++;
         });
 
@@ -214,11 +215,10 @@ export default function KroegentochtAanmeldingenPage() {
                                     <button
                                         key={event.id}
                                         onClick={() => setSelectedEvent(event)}
-                                        className={`p-4 rounded-xl border-2 transition text-left ${
-                                            isSelected
+                                        className={`p-4 rounded-xl border-2 transition text-left ${isSelected
                                                 ? 'border-theme-purple bg-purple-50 dark:bg-purple-900/20'
                                                 : 'border-slate-200 dark:border-slate-700 hover:border-theme-purple dark:hover:border-theme-purple'
-                                        }`}
+                                            }`}
                                     >
                                         <div className="flex items-start justify-between mb-2">
                                             <h3 className="font-bold text-slate-800 dark:text-slate-100 line-clamp-1">
@@ -319,6 +319,9 @@ export default function KroegentochtAanmeldingenPage() {
                                                     Deelnemers
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                                                    Betaalstatus
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                                                     Aangemeld op
                                                 </th>
                                             </tr>
@@ -371,6 +374,14 @@ export default function KroegentochtAanmeldingenPage() {
                                                                 ) : (
                                                                     <span className="text-sm text-slate-400 dark:text-slate-500">Geen details</span>
                                                                 )}
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${signup.payment_status === 'paid'
+                                                                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                                                                        : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
+                                                                    }`}>
+                                                                    {signup.payment_status === 'paid' ? 'Betaald' : 'Open'}
+                                                                </span>
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                                                                 {format(new Date(signup.created_at), 'd MMM yyyy HH:mm', { locale: nl })}
