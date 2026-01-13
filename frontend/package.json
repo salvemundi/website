@@ -17,9 +17,6 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "pages:build": "npm run build && npx @cloudflare/next-on-pages",
-    "pages:deploy": "npm run pages:build && wrangler pages deploy .vercel/output/static",
-    "pages:dev": "npx @cloudflare/next-on-pages --watch",
     "sync:results": "node scripts/sync-results.js",
     "manage-admin": "node scripts/manage-admin.js",
     "generate:icons": "node scripts/generate-icons.mjs",
@@ -115,7 +112,6 @@
     "sharp": "^0.34.5",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.5.3",
-    "typescript-eslint": "^8.3.0",
-    "wrangler": "^4.47.0"
+    "typescript-eslint": "^8.3.0"
   }
 }
