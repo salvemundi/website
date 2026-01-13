@@ -493,6 +493,11 @@ export const pubCrawlSignupsApi = {
             method: 'POST',
             body: JSON.stringify(data)
         });
+    },
+    delete: async (id: number) => {
+        return directusFetch<void>(`/items/pub_crawl_signups/${id}`, {
+            method: 'DELETE'
+        });
     }
 };
 
