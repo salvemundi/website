@@ -75,7 +75,7 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
                 </div>
             `,
             attachments: attachments
-        });
+        }, { timeout: 10000 });
 
 
     } catch (error) {
@@ -107,7 +107,7 @@ async function sendWelcomeEmail(emailServiceUrl, email, firstName, credentials) 
                     <p style="margin-top: 0;"><strong>S.A. Salve Mundi</strong></p>
                 </div>
             `
-        });
+        }, { timeout: 10000 });
 
     } catch (error) {
         console.error("❌ Failed to send welcome email:", error.message);
