@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { Search, Download, Mail, Users, Beer, AlertCircle } from 'lucide-react';
+import { Search, Download, Mail, Users, Beer, AlertCircle, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
@@ -117,6 +117,21 @@ export default function KroegentochtAanmeldingenPage() {
         setFilteredSignups(filtered);
     };
 
+    const handleDelete = async (id: number) => {
+        if (!confirm('Weet je zeker dat je deze inschrijving wilt verwijderen?')) return;
+
+        try {
+            await directusFetch(`/items/pub_crawl_signups/${id}`, {
+                method: 'DELETE'
+            });
+            // Update local state
+            setSignups(prev => prev.filter(s => s.id !== id));
+        } catch (error) {
+            console.error('Failed to delete signup:', error);
+            alert('Fout bij het verwijderen van inschrijving.');
+        }
+    };
+
     const parseParticipants = (nameInitials: string | null): Participant[] => {
         if (!nameInitials) return [];
         try {
@@ -216,8 +231,8 @@ export default function KroegentochtAanmeldingenPage() {
                                         key={event.id}
                                         onClick={() => setSelectedEvent(event)}
                                         className={`p-4 rounded-xl border-2 transition text-left ${isSelected
-                                                ? 'border-theme-purple bg-purple-50 dark:bg-purple-900/20'
-                                                : 'border-slate-200 dark:border-slate-700 hover:border-theme-purple dark:hover:border-theme-purple'
+                                            ? 'border-theme-purple bg-purple-50 dark:bg-purple-900/20'
+                                            : 'border-slate-200 dark:border-slate-700 hover:border-theme-purple dark:hover:border-theme-purple'
                                             }`}
                                     >
                                         <div className="flex items-start justify-between mb-2">
@@ -324,6 +339,9 @@ export default function KroegentochtAanmeldingenPage() {
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                                                     Aangemeld op
                                                 </th>
+                                                <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                                                    Acties
+                                                </th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
@@ -377,14 +395,23 @@ export default function KroegentochtAanmeldingenPage() {
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap">
                                                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${signup.payment_status === 'paid'
-                                                                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                                                                        : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
+                                                                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                                                                    : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
                                                                     }`}>
                                                                     {signup.payment_status === 'paid' ? 'Betaald' : 'Open'}
                                                                 </span>
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                                                                 {format(new Date(signup.created_at), 'd MMM yyyy HH:mm', { locale: nl })}
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                                <button
+                                                                    onClick={() => handleDelete(signup.id)}
+                                                                    className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                                                    title="Verwijder inschrijving"
+                                                                >
+                                                                    <Trash2 className="h-5 w-5" />
+                                                                </button>
                                                             </td>
                                                         </tr>
                                                     );
