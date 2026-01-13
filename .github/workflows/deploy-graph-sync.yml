@@ -72,15 +72,18 @@ jobs:
           CLIENT_ID: ${{ secrets.GRAPH_SYNC_CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.GRAPH_SYNC_CLIENT_SECRET }}
           DIRECTUS_URL: ${{ secrets.DIRECTUS_URL }}
-          DIRECTUS_STATIC_TOKEN: ${{ secrets.GRAPH_SYNC_DIRECTUS_TOKEN }}
+          DIRECTUS_API_TOKEN: ${{ secrets.DIRECTUS_API_TOKEN }}
           DIRECTUS_DEFAULT_ROLE_ID: ${{ secrets.GRAPH_SYNC_DEFAULT_ROLE_ID }}
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,DEPLOY_PATH,TAG,TENANT_ID,CLIENT_ID,CLIENT_SECRET,DIRECTUS_URL,DIRECTUS_STATIC_TOKEN,DIRECTUS_DEFAULT_ROLE_ID
+          envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,DEPLOY_PATH,TAG,TENANT_ID,CLIENT_ID,CLIENT_SECRET,DIRECTUS_URL,DIRECTUS_API_TOKEN,DIRECTUS_DEFAULT_ROLE_ID
           script: |
             echo $GH_PASSWORD | docker login $GH_REGISTRY -u $GH_USERNAME --password-stdin
+
+            docker stop graph-sync || true
+            docker rm graph-sync || true
 
             mkdir -p $DEPLOY_PATH
             cd $DEPLOY_PATH
@@ -91,7 +94,7 @@ jobs:
             printf "CLIENT_ID=%s\n" "$CLIENT_ID" >> .env
             printf "CLIENT_SECRET=%s\n" "$CLIENT_SECRET" >> .env
             printf "DIRECTUS_URL=%s\n" "$DIRECTUS_URL" >> .env
-            printf "DIRECTUS_STATIC_TOKEN=%s\n" "$DIRECTUS_STATIC_TOKEN" >> .env
+            printf "DIRECTUS_API_TOKEN=%s\n" "$DIRECTUS_API_TOKEN" >> .env
             printf "DIRECTUS_DEFAULT_ROLE_ID=%s\n" "$DIRECTUS_DEFAULT_ROLE_ID" >> .env
 
             docker compose pull graph-sync
