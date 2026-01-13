@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { pubCrawlSignupsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
-import { directusFetch } from '@/shared/lib/directus';
+
 import { useSalvemundiPubCrawlEvents, useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { format } from 'date-fns';
 import { CheckCircle2 } from 'lucide-react';
