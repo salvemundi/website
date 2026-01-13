@@ -302,7 +302,7 @@ export default function EventDetailPage() {
         <>
             <PageHeader
                 title={event.name}
-                backgroundImage={event.image ? getImageUrl(event.image) : '/img/backgrounds/Kroto2025.jpg'}
+                backgroundImage={event.image ? getImageUrl(event.image) : undefined}
                 imageFilter={headerFilter}
             >
                 <div className="flex flex-col items-center gap-2">
