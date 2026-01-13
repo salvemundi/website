@@ -258,6 +258,12 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
             };
 
             console.warn(`[Payment][${traceId}] Creating Mollie Payment... Value: ${formattedAmount}`);
+
+            if (!mollieClient) {
+                console.error(`[Payment][${traceId}] Mollie Client not initialized. Check MOLLIE_API_KEY.`);
+                throw new Error('Betalingsprovider niet geconfigureerd in deze omgeving.');
+            }
+
             const payment = await mollieClient.payments.create({
                 amount: {
                     currency: 'EUR',
