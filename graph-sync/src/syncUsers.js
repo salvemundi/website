@@ -12,6 +12,7 @@ const PORT = process.env.PORT || 3001;
 
 // Define your known group IDs
 const GROUP_IDS = {
+    ACTIEVE_LEDEN: '82fe4735-4724-48af-9d37-ee85e1c5441e', // Managed by Nachtwacht script
     COMMISSIE_LEIDER: '91d77972-2695-4b7b-a0a0-df7d6523a087',
     BESTUUR: 'b16d93c7-42ef-412e-afb3-f6cbe487d0e0',
     ICT: 'a4aeb401-882d-4e1e-90ee-106b7fdb23cc',
@@ -702,10 +703,11 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
         }
 
         await syncCommitteesForUserFromGroups(directusUserId, groups);
-        // Ensure membership_status aligns with current memberships
+        // Membership status is determined by the "Actieve Leden" group, which is managed by the Nachtwacht script
+        // The Nachtwacht script checks membership_expiry and moves users between Actief/Verlopen groups
         try {
-            const has = (groups && groups.length > 0) || await userHasAnyMemberships(directusUserId);
-            await setDirectusMembershipStatus(directusUserId, has ? 'active' : 'none');
+            const isInActieveLeden = groups.some(g => g.id === GROUP_IDS.ACTIEVE_LEDEN);
+            await setDirectusMembershipStatus(directusUserId, isInActieveLeden ? 'active' : 'none');
         } catch (e) {
             console.error('❌ [SYNC] Error setting membership_status after committee sync:', e.response?.data || e.message);
         }
