@@ -586,6 +586,9 @@ export const transactionsApi = {
             sort: ['-created_at']
         });
         return directusFetch<Transaction[]>(`/items/transactions?${query}`);
+    },
+    getById: async (id: number | string) => {
+        return directusFetch<any>(`/items/transactions/${id}?fields=*`);
     }
 };
 
