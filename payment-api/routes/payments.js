@@ -239,6 +239,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
 
                 const successUrl = new URL(redirectUrl);
                 successUrl.searchParams.append('status', 'paid');
+                successUrl.searchParams.append('transaction_id', transactionRecordId);
 
                 return res.json({
                     checkoutUrl: successUrl.toString(),
@@ -268,13 +269,16 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 throw new Error('Betalingsprovider niet geconfigureerd in deze omgeving.');
             }
 
+            const finalRedirectUrl = new URL(redirectUrl);
+            finalRedirectUrl.searchParams.append('transaction_id', transactionRecordId);
+
             const payment = await mollieClient.payments.create({
                 amount: {
                     currency: 'EUR',
                     value: formattedAmount,
                 },
                 description: description,
-                redirectUrl: redirectUrl,
+                redirectUrl: finalRedirectUrl.toString(),
                 webhookUrl: process.env.MOLLIE_WEBHOOK_URL,
                 metadata: metadata
             });

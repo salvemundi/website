@@ -5,27 +5,36 @@ import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { motion } from 'framer-motion';
 import { CheckCircle, Home, XCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { useEffect, useState, Suspense } from 'react';
-import { pubCrawlSignupsApi } from '@/shared/lib/api/salvemundi';
+import { pubCrawlSignupsApi, transactionsApi } from '@/shared/lib/api/salvemundi';
 
 function KroegentochtConfirmationContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const signupId = searchParams.get('id');
+    const transactionId = searchParams.get('transaction_id');
     const [status, setStatus] = useState<'loading' | 'paid' | 'open' | 'failed' | 'error'>('loading');
     const [retryCount, setRetryCount] = useState(0);
 
     useEffect(() => {
-        if (!signupId) {
+        if (!transactionId && !signupId) {
             setStatus('error');
             return;
         }
 
         const checkStatus = async () => {
             try {
-                const signup = await pubCrawlSignupsApi.getById(signupId);
-                if (signup.payment_status === 'paid') {
+                let statusValue = 'open';
+                if (transactionId) {
+                    const transaction = await transactionsApi.getById(transactionId);
+                    statusValue = transaction.payment_status;
+                } else if (signupId) {
+                    const signup = await pubCrawlSignupsApi.getById(signupId);
+                    statusValue = signup.payment_status;
+                }
+
+                if (statusValue === 'paid') {
                     setStatus('paid');
-                } else if (signup.payment_status === 'failed' || signup.payment_status === 'canceled' || signup.payment_status === 'expired') {
+                } else if (statusValue === 'failed' || statusValue === 'canceled' || statusValue === 'expired') {
                     setStatus('failed');
                 } else if (retryCount < 5) {
                     // Still open, maybe webhook hasn't fired yet. Retry after 2 seconds.
@@ -40,7 +49,7 @@ function KroegentochtConfirmationContent() {
         };
 
         checkStatus();
-    }, [signupId, retryCount]);
+    }, [signupId, transactionId, retryCount]);
 
     const renderContent = () => {
         switch (status) {
