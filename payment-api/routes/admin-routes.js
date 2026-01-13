@@ -154,27 +154,35 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                 }
             );
 
-            // Extract metadata - stored as JSON string in transaction_id field or separate metadata field
-            let metadata = {};
-            try {
-                // Try parsing from transaction_id field (Mollie webhook stores it there)
-                if (transaction.transaction_id && typeof transaction.transaction_id === 'string') {
+            // Extract user info - Prioritize Directus transaction fields
+            let userId = transaction.user_id;
+            let firstName = transaction.first_name;
+            let lastName = transaction.last_name;
+            let email = transaction.email;
+
+            // Only fetch from Mollie if we ARE missing data and have a valid Mollie ID
+            if ((!userId && (!firstName || !lastName || !email)) &&
+                transaction.transaction_id &&
+                transaction.transaction_id.startsWith('tr_')) {
+
+                console.log(`[AdminRoutes] Missing data in Directus, fetching from Mollie: ${transaction.transaction_id}`);
+                try {
                     const molliePayment = await axios.get(
                         `https://api.mollie.com/v2/payments/${transaction.transaction_id}`,
-                        { headers: { 'Authorization': `Bearer ${process.env.MOLLIE_API_KEY}` } }
+                        {
+                            headers: { 'Authorization': `Bearer ${process.env.MOLLIE_API_KEY}` },
+                            timeout: 5000 // 5s timeout for Mollie
+                        }
                     );
-                    metadata = molliePayment.data.metadata || {};
+                    const metadata = molliePayment.data.metadata || {};
+                    userId = userId || metadata.userId;
+                    firstName = firstName || metadata.firstName;
+                    lastName = lastName || metadata.lastName;
+                    email = email || metadata.email;
+                } catch (error) {
+                    console.error('[AdminRoutes] Could not fetch Mollie payment metadata:', error.message);
                 }
-            } catch (error) {
-                console.error('[AdminRoutes] Could not fetch Mollie payment metadata:', error.message);
-                // Continue with empty metadata
             }
-
-            // Extract user info from transaction or metadata
-            const userId = metadata.userId || transaction.user_id;
-            const firstName = metadata.firstName || transaction.first_name;
-            const lastName = metadata.lastName || transaction.last_name;
-            const email = metadata.email || transaction.email;
 
             // Create account based on user type
             if (userId) {
@@ -193,19 +201,30 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
 
                 if (credentials) {
                     // Send welcome email with credentials
-                    await notificationService.sendWelcomeEmail(
-                        EMAIL_SERVICE_URL,
-                        email,
-                        firstName,
-                        credentials
-                    );
-                    console.log(`[AdminRoutes] Welcome email sent to: ${email}`);
+                    try {
+                        await notificationService.sendWelcomeEmail(
+                            EMAIL_SERVICE_URL,
+                            email,
+                            firstName,
+                            credentials
+                        );
+                        console.log(`[AdminRoutes] Welcome email sent to: ${email}`);
+                    } catch (emailErr) {
+                        console.error(`[AdminRoutes] Failed to send welcome email to ${email}:`, emailErr.message);
+                        // Don't fail the whole request if only email fails, the account is created.
+                    }
+                } else {
+                    console.error(`[AdminRoutes] Failed to create member account for ${email} (no credentials returned)`);
+                    return res.status(500).json({
+                        error: 'Account creation failed',
+                        message: 'Membership API did not return credentials.'
+                    });
                 }
             } else {
                 console.warn(`[AdminRoutes] Insufficient data to create account for transaction ${transactionId}`);
                 return res.status(400).json({
                     error: 'Insufficient user data',
-                    message: 'Cannot create account - missing user information'
+                    message: 'Cannot create account - missing user information (email/name)'
                 });
             }
 

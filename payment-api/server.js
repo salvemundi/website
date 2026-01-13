@@ -21,9 +21,9 @@ const DIRECTUS_URL = process.env.DIRECTUS_URL;
 const WEBHOOK_URL = process.env.MOLLIE_WEBHOOK_URL;
 const MOLLIE_API_KEY = process.env.MOLLIE_API_KEY;
 const DIRECTUS_API_TOKEN = process.env.DIRECTUS_API_TOKEN;
-const EMAIL_SERVICE_URL = process.env.EMAIL_SERVICE_URL || 'http://email-api:3001';
-const MEMBERSHIP_API_URL = process.env.MEMBERSHIP_API_URL || 'http://membership-api:8000/api/membership';
-const GRAPH_SYNC_URL = process.env.GRAPH_SYNC_URL || 'http://graph-sync:3001';
+const EMAIL_SERVICE_URL = process.env.EMAIL_SERVICE_URL;
+const MEMBERSHIP_API_URL = process.env.MEMBERSHIP_API_URL;
+const GRAPH_SYNC_URL = process.env.GRAPH_SYNC_URL;
 
 const isProduction = process.env.NODE_ENV === 'production';
 
