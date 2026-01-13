@@ -467,7 +467,7 @@ export const pubCrawlEventsApi = {
 export const pubCrawlSignupsApi = {
     getAll: async () => {
         const query = buildQueryString({
-            fields: ['id', 'pub_crawl_event_id', 'name', 'email', 'association', 'amount_tickets', 'payment_status', 'name_initials', 'created_at', 'updated_at'],
+            fields: ['id', 'pub_crawl_event_id', 'name', 'email', 'association', 'amount_tickets', 'name_initials', 'created_at', 'updated_at'],
             sort: ['-created_at']
         });
         return directusFetch<any[]>(`/items/pub_crawl_signups?${query}`);
