@@ -94,7 +94,6 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.16",
     "@eslint/js": "^9.9.1",
     "@lhci/cli": "^0.13.0",
     "@next/bundle-analyzer": "^16.1.1",
