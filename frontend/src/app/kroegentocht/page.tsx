@@ -376,6 +376,7 @@ export default function KroegentochtPage() {
                                             className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
                                         />
                                     </label>
+                                )}
 
                                 {/* Amount of Tickets */}
                                 <label className="font-semibold text-white">
