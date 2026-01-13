@@ -222,9 +222,12 @@ export default function KroegentochtPage() {
         } catch (err: any) {
             console.error('Error submitting kroegentocht signup:', err);
             let friendlyMessage = 'Er is een fout opgetreden bij het inschrijven. Probeer het opnieuw.';
+            const isProd = process.env.NODE_ENV === 'production';
 
-            if (err?.message) {
-                friendlyMessage = `Fout: ${err.message}`;
+            if (err?.message?.includes('RECORD_NOT_UNIQUE')) {
+                friendlyMessage = 'Dit e-mailadres staat al geregistreerd voor deze kroegentocht. Gebruik een ander e-mailadres.';
+            } else if (err?.message) {
+                friendlyMessage = isProd ? friendlyMessage : `Fout: ${err.message}`;
             }
 
             setError(friendlyMessage);
