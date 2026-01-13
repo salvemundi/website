@@ -785,6 +785,31 @@ app.post('/sync/initial', bodyParser.json(), async (req, res) => {
     res.status(202).json({ success: true, message: 'Bulk sync started in background' });
 });
 
+// Sync a single user by Azure AD user ID
+app.post('/sync/user', bodyParser.json(), async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({ error: 'Missing userId parameter' });
+        }
+
+        console.log(`[${new Date().toISOString()}] 🔄 [SYNC] Manual sync requested for user: ${userId}`);
+
+        // Sync this specific user from Entra to Directus
+        await updateDirectusUserFromGraph(userId);
+
+        console.log(`[${new Date().toISOString()}] ✅ [SYNC] Successfully synced user: ${userId}`);
+        res.json({ success: true, message: `User ${userId} synced successfully` });
+    } catch (error) {
+        console.error(`[${new Date().toISOString()}] ❌ [SYNC] Error syncing user:`, error.response?.data || error.message);
+        res.status(500).json({
+            error: 'Failed to sync user',
+            details: error.response?.data || error.message
+        });
+    }
+});
+
 async function runBulkSync(selectedFields = null) {
     console.log(`[${new Date().toISOString()}] 🚀 [INIT] Bulk sync STARTING... (Fields: ${selectedFields ? selectedFields.join(', ') : 'ALL'})`);
     syncStatus = {

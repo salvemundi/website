@@ -2,7 +2,7 @@ const express = require('express');
 const membershipService = require('../services/membership-service');
 const { getEnvironment } = require('../services/env-utils');
 
-module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, MEMBERSHIP_API_URL, directusService, notificationService) {
+module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, MEMBERSHIP_API_URL, directusService, notificationService, GRAPH_SYNC_URL) {
     const router = express.Router();
 
     router.post('/create', async (req, res) => {
@@ -211,11 +211,16 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                     if (isContribution) {
                         if (userId) {
                             await membershipService.provisionMember(MEMBERSHIP_API_URL, userId);
+                            // Trigger sync for existing user renewal
+                            await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, userId);
                         } else if (firstName && lastName && email) {
                             const credentials = await membershipService.createMember(
                                 MEMBERSHIP_API_URL, firstName, lastName, email
                             );
                             if (credentials) {
+                                // Trigger sync for newly created user to sync membership_expiry to Directus
+                                await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, credentials.user_id);
+
                                 await notificationService.sendWelcomeEmail(
                                     EMAIL_SERVICE_URL, email, firstName, credentials
                                 );
@@ -392,6 +397,8 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 if (notContribution === "false") {
                     if (userId) {
                         await membershipService.provisionMember(MEMBERSHIP_API_URL, userId);
+                        // Trigger sync for existing user renewal
+                        await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, userId);
 
                         if (registrationId) {
                             await notificationService.sendConfirmationEmail(
@@ -413,6 +420,9 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                         );
 
                         if (credentials) {
+                            // Trigger sync for newly created user to sync membership_expiry to Directus
+                            await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, credentials.user_id);
+
                             await notificationService.sendWelcomeEmail(
                                 EMAIL_SERVICE_URL, email, firstName, credentials
                             );
