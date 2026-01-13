@@ -10,7 +10,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
         console.warn(`[Payment][${traceId}] Incoming Payment Creation Request`);
 
         try {
-            const { amount, description, redirectUrl, userId, email, registrationId, isContribution, firstName, lastName, couponCode } = req.body;
+            const { amount, description, redirectUrl, userId, email, registrationId, registrationType, isContribution, firstName, lastName, couponCode } = req.body;
 
             console.warn(`[Payment][${traceId}] Payload:`, JSON.stringify({ amount, description, redirectUrl, userId, email, isContribution, couponCode }));
 
@@ -197,9 +197,11 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 // (Replicating Webhook Logic partially for paid status)
                 try {
                     if (registrationId) {
-                        await directusService.updateDirectusRegistration(
+                        const collection = registrationType === 'pub_crawl_signup' ? 'pub_crawl_signups' : 'event_signups';
+                        await directusService.updateDirectusItem(
                             DIRECTUS_URL,
                             DIRECTUS_API_TOKEN,
+                            collection,
                             registrationId,
                             { payment_status: 'paid' }
                         );
@@ -249,6 +251,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
             const metadata = {
                 transactionRecordId: transactionRecordId,
                 registrationId: registrationId,
+                registrationType: registrationType || 'event_signup', // Default to event_signup for safety
                 notContribution: isContribution ? "false" : "true",
                 email: email,
                 userId: userId || null,
@@ -357,9 +360,11 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 }
 
                 if (registrationId) {
-                    await directusService.updateDirectusRegistration(
+                    const collection = payment.metadata.registrationType === 'pub_crawl_signup' ? 'pub_crawl_signups' : 'event_signups';
+                    await directusService.updateDirectusItem(
                         DIRECTUS_URL,
                         DIRECTUS_API_TOKEN,
+                        collection,
                         registrationId,
                         { payment_status: 'paid' }
                     );

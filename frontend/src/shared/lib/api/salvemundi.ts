@@ -467,12 +467,12 @@ export const pubCrawlEventsApi = {
 export const pubCrawlSignupsApi = {
     getAll: async () => {
         const query = buildQueryString({
-            fields: ['id', 'pub_crawl_event_id', 'name', 'email', 'association', 'amount_tickets', 'name_initials', 'created_at', 'updated_at'],
+            fields: ['id', 'pub_crawl_event_id', 'name', 'email', 'association', 'amount_tickets', 'payment_status', 'name_initials', 'created_at', 'updated_at'],
             sort: ['-created_at']
         });
         return directusFetch<any[]>(`/items/pub_crawl_signups?${query}`);
     },
-    create: async (data: { name: string; email: string; association?: string; amount_tickets: number; pub_crawl_event_id: number; name_initials?: string }) => {
+    create: async (data: { name: string; email: string; association?: string; amount_tickets: number; pub_crawl_event_id: number; name_initials?: string; payment_status?: string }) => {
         const existingQuery = buildQueryString({
             filter: {
                 pub_crawl_event_id: { _eq: data.pub_crawl_event_id },
