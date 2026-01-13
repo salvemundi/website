@@ -341,27 +341,10 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
             }
 
             if (payment.isPaid()) {
-                // Check approval status before proceeding with account creation
-                if (transactionRecordId) {
-                    const transaction = await directusService.getTransaction(
-                        DIRECTUS_URL,
-                        DIRECTUS_API_TOKEN,
-                        transactionRecordId
-                    );
-
-                    console.warn(`[Webhook][${traceId}] Transaction fetched:`, JSON.stringify(transaction));
-
-                    // Only proceed if approved (or auto-approved)
-                    if (transaction &&
-                        transaction.approval_status !== 'approved' &&
-                        transaction.approval_status !== 'auto_approved') {
-                        console.warn(`[Webhook][${traceId}] Payment paid but approval pending/rejected. Status: ${transaction.approval_status}. Stopping auto-provisioning.`);
-                        return res.status(200).send('Payment recorded, awaiting approval');
-                    }
-                }
-
+                // 1. ALWAYS update the registration/signup status if we have a registrationId
                 if (registrationId) {
                     const collection = payment.metadata.registrationType === 'pub_crawl_signup' ? 'pub_crawl_signups' : 'event_signups';
+                    console.warn(`[Webhook][${traceId}] Updating ${collection} ${registrationId} to paid`);
                     await directusService.updateDirectusItem(
                         DIRECTUS_URL,
                         DIRECTUS_API_TOKEN,
@@ -371,6 +354,37 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                     );
                 }
 
+                // 2. ALWAYS send confirmation email if it's NOT a contribution (normal events/pub-crawl)
+                if (notContribution === "true" && registrationId) {
+                    console.warn(`[Webhook][${traceId}] Sending non-contribution confirmation email`);
+                    await notificationService.sendConfirmationEmail(
+                        DIRECTUS_URL,
+                        DIRECTUS_API_TOKEN,
+                        EMAIL_SERVICE_URL,
+                        payment.metadata,
+                        payment.description
+                    );
+                }
+
+                // 3. Check approval status ONLY for membership provisioning
+                if (transactionRecordId) {
+                    const transaction = await directusService.getTransaction(
+                        DIRECTUS_URL,
+                        DIRECTUS_API_TOKEN,
+                        transactionRecordId
+                    );
+
+                    console.warn(`[Webhook][${traceId}] Transaction fetched:`, JSON.stringify(transaction));
+
+                    if (transaction &&
+                        transaction.approval_status !== 'approved' &&
+                        transaction.approval_status !== 'auto_approved') {
+                        console.warn(`[Webhook][${traceId}] Payment paid but approval pending/rejected. Status: ${transaction.approval_status}. Stopping auto-provisioning.`);
+                        return res.status(200).send('Payment recorded, status updated, but approval pending for provisioning');
+                    }
+                }
+
+                // 4. Provisioning logic (only reached if approved/auto-approved)
                 if (notContribution === "false") {
                     if (userId) {
                         await membershipService.provisionMember(MEMBERSHIP_API_URL, userId);
