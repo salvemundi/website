@@ -36,7 +36,7 @@ export async function GET(
         try {
             data = await response.json();
         } catch (e) {
-            console.error('[API Proxy] Failed to parse upstream response as JSON:', e.message);
+            console.error('[API Proxy] Failed to parse upstream response as JSON:', e instanceof Error ? e.message : String(e));
             return NextResponse.json(
                 { error: 'Upstream returned invalid response', status: response.status },
                 { status: response.status === 200 ? 502 : response.status }
@@ -92,7 +92,7 @@ export async function POST(
         try {
             data = await response.json();
         } catch (e) {
-            console.error('[API Proxy] Failed to parse upstream response as JSON:', e.message);
+            console.error('[API Proxy] Failed to parse upstream response as JSON:', e instanceof Error ? e.message : String(e));
             return NextResponse.json(
                 { error: 'Upstream returned invalid response', status: response.status },
                 { status: response.status === 200 ? 502 : response.status }
