@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { Search, Download, Mail, Users, Beer, AlertCircle, Trash2 } from 'lucide-react';
+import { Search, Download, Mail, Users, Beer, AlertCircle, Trash2, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
@@ -40,6 +40,7 @@ export default function KroegentochtAanmeldingenPage() {
     const [filteredSignups, setFilteredSignups] = useState<PubCrawlSignup[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [showAllSignups, setShowAllSignups] = useState(false);
 
     useEffect(() => {
         loadEvents();
@@ -53,7 +54,7 @@ export default function KroegentochtAanmeldingenPage() {
 
     useEffect(() => {
         filterSignups();
-    }, [signups, searchQuery]);
+    }, [signups, searchQuery, showAllSignups]);
 
     const loadEvents = async () => {
         setIsLoading(true);
@@ -100,19 +101,24 @@ export default function KroegentochtAanmeldingenPage() {
     };
 
     const filterSignups = () => {
-        if (!searchQuery) {
-            setFilteredSignups(signups);
-            return;
+        let filtered = [...signups];
+
+        // 1. Filter by Paid status (unless showAllSignups is true)
+        if (!showAllSignups) {
+            filtered = filtered.filter(s => s.payment_status === 'paid');
         }
 
-        const query = searchQuery.toLowerCase();
-        const filtered = signups.filter(signup => {
-            return (
-                signup.name.toLowerCase().includes(query) ||
-                signup.email.toLowerCase().includes(query) ||
-                (signup.association && signup.association.toLowerCase().includes(query))
-            );
-        });
+        // 2. Filter by search query
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            filtered = filtered.filter(signup => {
+                return (
+                    signup.name.toLowerCase().includes(query) ||
+                    signup.email.toLowerCase().includes(query) ||
+                    (signup.association && signup.association.toLowerCase().includes(query))
+                );
+            });
+        }
 
         setFilteredSignups(filtered);
     };
@@ -195,9 +201,10 @@ export default function KroegentochtAanmeldingenPage() {
     };
 
     const stats = {
-        total: signups.length,
-        totalTickets: signups.reduce((sum, s) => sum + s.amount_tickets, 0),
-        associations: [...new Set(signups.map(s => s.association).filter(Boolean))].length,
+        total: signups.filter(s => s.payment_status === 'paid').length,
+        totalTickets: signups.filter(s => s.payment_status === 'paid').reduce((sum, s) => sum + s.amount_tickets, 0),
+        failedCount: signups.filter(s => s.payment_status !== 'paid').length,
+        associations: [...new Set(signups.filter(s => s.payment_status === 'paid').map(s => s.association).filter(Boolean))].length,
     };
 
     return (
@@ -257,42 +264,52 @@ export default function KroegentochtAanmeldingenPage() {
                     {selectedEvent ? (
                         <>
                             {/* Stats Cards */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                                <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg p-6 text-white">
-                                    <div className="flex items-center justify-between">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                                <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg p-6 text-white text-center sm:text-left">
+                                    <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2">
                                         <div>
-                                            <p className="text-purple-100 text-sm font-medium mb-1">Totaal Inschrijvingen</p>
+                                            <p className="text-purple-100 text-sm font-medium mb-1">Inschrijvingen (Betaald)</p>
                                             <p className="text-4xl font-bold">{stats.total}</p>
                                         </div>
-                                        <Users className="h-12 w-12 text-white/30" />
+                                        <Users className="h-12 w-12 text-white/30 hidden sm:block" />
                                     </div>
                                 </div>
 
-                                <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl shadow-lg p-6 text-white">
-                                    <div className="flex items-center justify-between">
+                                <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl shadow-lg p-6 text-white text-center sm:text-left">
+                                    <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2">
                                         <div>
-                                            <p className="text-orange-100 text-sm font-medium mb-1">Totaal Tickets</p>
+                                            <p className="text-orange-100 text-sm font-medium mb-1">Tickets (Betaald)</p>
                                             <p className="text-4xl font-bold">{stats.totalTickets}</p>
                                         </div>
-                                        <Beer className="h-12 w-12 text-white/30" />
+                                        <Beer className="h-12 w-12 text-white/30 hidden sm:block" />
                                     </div>
                                 </div>
 
-                                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-6 text-white">
-                                    <div className="flex items-center justify-between">
+                                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-6 text-white text-center sm:text-left">
+                                    <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2">
                                         <div>
-                                            <p className="text-blue-100 text-sm font-medium mb-1">Verenigingen</p>
+                                            <p className="text-blue-100 text-sm font-medium mb-1">Verenigingen (Betaald)</p>
                                             <p className="text-4xl font-bold">{stats.associations}</p>
                                         </div>
-                                        <Users className="h-12 w-12 text-white/30" />
+                                        <Users className="h-12 w-12 text-white/30 hidden sm:block" />
+                                    </div>
+                                </div>
+
+                                <div className="bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-6 text-slate-600 dark:text-slate-300 text-center sm:text-left">
+                                    <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2">
+                                        <div>
+                                            <p className="text-sm font-medium mb-1">Onbetaald / Open</p>
+                                            <p className="text-4xl font-bold">{stats.failedCount}</p>
+                                        </div>
+                                        <AlertCircle className="h-12 w-12 text-slate-400/30 hidden sm:block" />
                                     </div>
                                 </div>
                             </div>
 
                             {/* Search and Export */}
                             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 mb-6">
-                                <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-                                    <div className="relative flex-1 w-full">
+                                <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
+                                    <div className="relative flex-1 w-full lg:max-w-md">
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                                         <input
                                             type="text"
@@ -302,13 +319,28 @@ export default function KroegentochtAanmeldingenPage() {
                                             className="w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent dark:bg-slate-700 dark:text-slate-100"
                                         />
                                     </div>
-                                    <button
-                                        onClick={exportToExcel}
-                                        className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition whitespace-nowrap"
-                                    >
-                                        <Download className="h-5 w-5" />
-                                        Export naar Excel
-                                    </button>
+
+                                    <div className="flex flex-wrap items-center justify-center gap-4 w-full lg:w-auto">
+                                        {/* Toggle button for showing all signups */}
+                                        <button
+                                            onClick={() => setShowAllSignups(!showAllSignups)}
+                                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition whitespace-nowrap border-2 ${showAllSignups
+                                                ? 'bg-amber-100 border-amber-300 text-amber-700 dark:bg-amber-900/30 dark:border-amber-700 dark:text-amber-300'
+                                                : 'bg-slate-50 border-slate-200 text-slate-600 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 hover:border-theme-purple'
+                                                }`}
+                                        >
+                                            <AlertCircle size={20} />
+                                            {showAllSignups ? 'Verberg onbetaald' : 'Toon ook onbetaald'}
+                                        </button>
+
+                                        <button
+                                            onClick={exportToExcel}
+                                            className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition whitespace-nowrap"
+                                        >
+                                            <Download className="h-5 w-5" />
+                                            Export (Gefilterd)
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -321,20 +353,14 @@ export default function KroegentochtAanmeldingenPage() {
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                                                     Naam
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
-                                                    Email
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
-                                                    Vereniging
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider text-center">
                                                     Tickets
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
-                                                    Deelnemers
+                                                    Betaalstatus
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
-                                                    Betaalstatus
+                                                    Email & Vereniging
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                                                     Aangemeld op
@@ -347,7 +373,8 @@ export default function KroegentochtAanmeldingenPage() {
                                         <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                                             {isLoading ? (
                                                 <tr>
-                                                    <td colSpan={6} className="px-6 py-4 text-center text-slate-500 dark:text-slate-400">
+                                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                                                        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-theme-purple" />
                                                         Laden...
                                                     </td>
                                                 </tr>
@@ -356,60 +383,52 @@ export default function KroegentochtAanmeldingenPage() {
                                                     const participants = parseParticipants(signup.name_initials);
                                                     return (
                                                         <tr key={signup.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50">
-                                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                                <div className="font-medium text-slate-900 dark:text-slate-100">
+                                                            <td className="px-6 py-4">
+                                                                <div className="font-bold text-slate-900 dark:text-slate-100">
                                                                     {signup.name}
                                                                 </div>
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                                <a
-                                                                    href={`mailto:${signup.email}`}
-                                                                    className="text-theme-purple hover:underline flex items-center gap-1"
-                                                                >
-                                                                    <Mail className="h-4 w-4" />
-                                                                    {signup.email}
-                                                                </a>
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                                <span className="text-slate-700 dark:text-slate-300">
-                                                                    {signup.association || '-'}
-                                                                </span>
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                                <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium">
-                                                                    {signup.amount_tickets}
-                                                                </span>
-                                                            </td>
-                                                            <td className="px-6 py-4">
-                                                                {participants.length > 0 ? (
-                                                                    <div className="space-y-1">
+                                                                {participants.length > 0 && (
+                                                                    <div className="mt-2 text-xs space-y-0.5 border-l-2 border-purple-200 dark:border-purple-800 pl-2">
                                                                         {participants.map((p, idx) => (
-                                                                            <div key={idx} className="text-sm text-slate-600 dark:text-slate-400">
-                                                                                {p.name} {p.initial}.
+                                                                            <div key={idx} className="text-slate-500 dark:text-slate-400">
+                                                                                • {p.name} {p.initial}.
                                                                             </div>
                                                                         ))}
                                                                     </div>
-                                                                ) : (
-                                                                    <span className="text-sm text-slate-400 dark:text-slate-500">Geen details</span>
                                                                 )}
                                                             </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${signup.payment_status === 'paid'
-                                                                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                                                                    : signup.payment_status === 'open'
-                                                                        ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
-                                                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
-                                                                    }`}>
-                                                                    {signup.payment_status === 'paid' ? 'Betaald' : signup.payment_status === 'open' ? 'Open' : 'Onbekend'}
+                                                            <td className="px-6 py-4 text-center">
+                                                                <span className="inline-flex items-center justify-center w-8 h-8 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-bold">
+                                                                    {signup.amount_tickets}
                                                                 </span>
                                                             </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                                                                {format(new Date(signup.created_at), 'd MMM yyyy HH:mm', { locale: nl })}
+                                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                                <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${signup.payment_status === 'paid'
+                                                                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                                                                    : signup.payment_status === 'open'
+                                                                        ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
+                                                                        : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                                                                    }`}>
+                                                                    {signup.payment_status === 'paid' ? 'Betaald' : signup.payment_status === 'open' ? 'Open' : signup.payment_status || 'Fout'}
+                                                                </span>
                                                             </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                            <td className="px-6 py-4">
+                                                                <div className="text-sm">
+                                                                    <a href={`mailto:${signup.email}`} className="text-theme-purple hover:underline font-medium block">
+                                                                        {signup.email}
+                                                                    </a>
+                                                                    <div className="text-slate-500 dark:text-slate-400 mt-1">
+                                                                        {signup.association || '-'}
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                                                {format(new Date(signup.created_at), 'd MMM HH:mm', { locale: nl })}
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-right">
                                                                 <button
                                                                     onClick={() => handleDelete(signup.id)}
-                                                                    className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                                                    className="text-red-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                                                     title="Verwijder inschrijving"
                                                                 >
                                                                     <Trash2 className="h-5 w-5" />
@@ -420,10 +439,11 @@ export default function KroegentochtAanmeldingenPage() {
                                                 })
                                             ) : (
                                                 <tr>
-                                                    <td colSpan={6} className="px-6 py-8 text-center">
+                                                    <td colSpan={6} className="px-6 py-12 text-center">
                                                         <div className="flex flex-col items-center gap-2 text-slate-500 dark:text-slate-400">
-                                                            <AlertCircle className="h-12 w-12" />
-                                                            <p>Geen aanmeldingen gevonden</p>
+                                                            <AlertCircle className="h-12 w-12 opacity-20" />
+                                                            <p className="font-bold text-lg">Geen aanmeldingen gevonden</p>
+                                                            <p className="text-sm">Probeer een andere zoekopdracht of filter.</p>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -436,7 +456,7 @@ export default function KroegentochtAanmeldingenPage() {
                     ) : (
                         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-12 text-center">
                             <AlertCircle className="h-16 w-16 text-slate-400 mx-auto mb-4" />
-                            <p className="text-slate-600 dark:text-slate-400">Geen kroegentocht events gevonden</p>
+                            <p className="text-slate-600 dark:text-slate-400 italic">Selecteer een event hierboven om de aanmeldingen te bekijken.</p>
                         </div>
                     )}
                 </div>
