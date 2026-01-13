@@ -34,7 +34,7 @@ const ROLE_IDS = {
 };
 
 const DIRECTUS_HEADERS = {
-    Authorization: `Bearer ${process.env.DIRECTUS_STATIC_TOKEN}`,
+    Authorization: `Bearer ${process.env.DIRECTUS_API_TOKEN}`,
 };
 
 const EXCLUDED_EMAILS = [
