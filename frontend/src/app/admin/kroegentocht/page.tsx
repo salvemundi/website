@@ -22,7 +22,7 @@ interface PubCrawlSignup {
     email: string;
     association: string;
     amount_tickets: number;
-    payment_status?: string;
+    payment_status: string;
     name_initials: string | null; // JSON string
     created_at: string;
 }
@@ -89,27 +89,9 @@ export default function KroegentochtAanmeldingenPage() {
         setIsLoading(true);
         try {
             const signupsData = await directusFetch<PubCrawlSignup[]>(
-                `/items/pub_crawl_signups?filter[pub_crawl_event_id][_eq]=${eventId}&fields=id,name,email,association,amount_tickets,name_initials,created_at&sort=-created_at`
-            ).catch(err => {
-                // If it fails with payment_status error, try again without it
-                if (err.message.includes('payment_status')) {
-                    return directusFetch<PubCrawlSignup[]>(
-                        `/items/pub_crawl_signups?filter[pub_crawl_event_id][_eq]=${eventId}&fields=id,name,email,association,amount_tickets,name_initials,created_at&sort=-created_at`
-                    );
-                }
-                throw err;
-            });
-            // Also try to fetch payment_status if it exists, otherwise it will just be undefined
-            const signupsWithStatus = await directusFetch<PubCrawlSignup[]>(
-                `/items/pub_crawl_signups?filter[pub_crawl_event_id][_eq]=${eventId}&fields=id,payment_status`
-            ).catch(() => []);
-
-            // Merge status back in
-            const merged = signupsData.map(s => ({
-                ...s,
-                payment_status: signupsWithStatus.find(sws => sws.id === s.id)?.payment_status
-            }));
-            setSignups(merged);
+                `/items/pub_crawl_signups?filter[pub_crawl_event_id][_eq]=${eventId}&fields=id,name,email,association,amount_tickets,payment_status,name_initials,created_at&sort=-created_at`
+            );
+            setSignups(signupsData);
         } catch (error) {
             console.error('Failed to load signups:', error);
         } finally {
@@ -413,10 +395,10 @@ export default function KroegentochtAanmeldingenPage() {
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap">
                                                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${signup.payment_status === 'paid'
-                                                                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                                                                        : signup.payment_status === 'open'
-                                                                            ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
-                                                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                                                                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                                                                    : signup.payment_status === 'open'
+                                                                        ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
+                                                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
                                                                     }`}>
                                                                     {signup.payment_status === 'paid' ? 'Betaald' : signup.payment_status === 'open' ? 'Open' : 'Onbekend'}
                                                                 </span>

@@ -181,33 +181,15 @@ export default function KroegentochtPage() {
             }
 
             // Create signup with status 'open' (just like standard activity signups)
-            let signup;
-            try {
-                signup = await pubCrawlSignupsApi.create({
-                    name: form.name,
-                    email: form.email,
-                    association: finalAssociation,
-                    amount_tickets: form.amount_tickets,
-                    pub_crawl_event_id: nextEvent.id,
-                    name_initials: nameInitials,
-                    payment_status: 'open',
-                });
-            } catch (err: any) {
-                // If the field doesn't exist, try creating it without payment_status
-                if (err.message.includes('payment_status')) {
-                    console.warn('[Signup] payment_status field missing in Directus, retrying without it...');
-                    signup = await pubCrawlSignupsApi.create({
-                        name: form.name,
-                        email: form.email,
-                        association: finalAssociation,
-                        amount_tickets: form.amount_tickets,
-                        pub_crawl_event_id: nextEvent.id,
-                        name_initials: nameInitials,
-                    });
-                } else {
-                    throw err;
-                }
-            }
+            const signup = await pubCrawlSignupsApi.create({
+                name: form.name,
+                email: form.email,
+                association: finalAssociation,
+                amount_tickets: form.amount_tickets,
+                pub_crawl_event_id: nextEvent.id,
+                name_initials: nameInitials,
+                payment_status: 'open',
+            });
 
             if (!signup || !signup.id) {
                 throw new Error('Kon inschrijving niet aanmaken.');
