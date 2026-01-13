@@ -26,7 +26,26 @@ async function createMember(membershipApiUrl, firstName, lastName, email) {
     }
 }
 
+async function syncUserToDirectus(graphSyncUrl, azureUserId) {
+    if (!azureUserId || !graphSyncUrl) {
+        console.warn(`[MembershipService] Skipping sync - missing azureUserId or graphSyncUrl`);
+        return;
+    }
+
+    try {
+        console.log(`[MembershipService] Triggering graph-sync for user: ${azureUserId}`);
+        await axios.post(`${graphSyncUrl}/sync/user`, {
+            userId: azureUserId
+        }, { timeout: 10000 });
+        console.log(`[MembershipService] Successfully triggered sync for user: ${azureUserId}`);
+    } catch (error) {
+        console.error(`[MembershipService] Graph sync failed for ${azureUserId}: ${error.message}`);
+        // Don't throw - sync failure shouldn't break the main flow
+    }
+}
+
 module.exports = {
     provisionMember,
-    createMember
+    createMember,
+    syncUserToDirectus
 };

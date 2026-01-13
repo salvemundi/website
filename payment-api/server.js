@@ -77,7 +77,8 @@ app.use(
         EMAIL_SERVICE_URL,
         MEMBERSHIP_API_URL,
         directusService,
-        notificationService
+        notificationService,
+        GRAPH_SYNC_URL
     )
 );
 
