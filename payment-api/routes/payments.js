@@ -12,7 +12,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
         try {
             const { amount, description, redirectUrl, userId, email, registrationId, registrationType, isContribution, firstName, lastName, couponCode } = req.body;
 
-            console.warn(`[Payment][${traceId}] Payload:`, JSON.stringify({ amount, description, redirectUrl, userId, email, isContribution, couponCode }));
+            console.warn(`[Payment][${traceId}] Payload:`, JSON.stringify({ amount, description, redirectUrl, userId, email, registrationId, registrationType, isContribution, couponCode }));
 
             if (!amount || !description || !redirectUrl) {
                 console.warn(`[Payment][${traceId}] Missing required parameters`);

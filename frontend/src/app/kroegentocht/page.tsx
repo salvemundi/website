@@ -234,11 +234,17 @@ export default function KroegentochtPage() {
             setSubmitted(true);
         } catch (err: any) {
             console.error('Error submitting kroegentocht signup:', err);
-            const friendlyMessage = err?.message?.includes('RECORD_NOT_UNIQUE')
-                ? 'Dit e-mailadres staat al geregistreerd voor deze kroegentocht.'
-                : (err.message || 'Er is een fout opgetreden bij het inschrijven. Probeer het opnieuw.');
+            let friendlyMessage = 'Er is een fout opgetreden bij het inschrijven. Probeer het opnieuw.';
+
+            if (err?.message?.includes('RECORD_NOT_UNIQUE')) {
+                friendlyMessage = 'Dit e-mailadres staat al geregistreerd voor deze kroegentocht.';
+            } else if (err?.message) {
+                friendlyMessage = `Fout: ${err.message}`;
+            }
+
             setError(friendlyMessage);
-        } finally {
+        }
+        finally {
             setLoading(false);
         }
     };
