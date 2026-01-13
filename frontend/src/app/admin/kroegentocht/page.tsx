@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { Search, Download, Mail, Users, Beer, AlertCircle, Trash2, Loader2 } from 'lucide-react';
+import { Search, Download, Users, Beer, AlertCircle, Trash2, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
