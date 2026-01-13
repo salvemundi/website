@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { isValidPhoneNumber } from '@/shared/lib/phone';
 import { useAuth } from '@/features/auth/providers/auth-provider';
+import { User } from '@/shared/model/types/auth';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
@@ -52,7 +53,15 @@ const DeletionTimer = ({ expiryDateStr }: { expiryDateStr: string }) => {
 };
 
 export default function SignUp() {
-    const { user } = useAuth();
+    const { user: realUser } = useAuth();
+    const [isMockExpired, setIsMockExpired] = useState(false);
+
+    const user = isMockExpired
+        ? (realUser
+            ? { ...realUser, is_member: false, membership_expiry: realUser.membership_expiry || new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString() }
+            : { id: 'mock-id', first_name: 'Mock', last_name: 'Gebruiker', email: 'test@example.com', is_member: false, membership_expiry: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString() } as User
+        )
+        : realUser;
 
     const [form, setForm] = useState({
         voornaam: '',
@@ -260,6 +269,30 @@ export default function SignUp() {
             </div>
 
             <main className="">
+                {typeof window !== 'undefined' && (
+                    window.location.hostname.includes('dev.') ||
+                    window.location.hostname.includes('localhost') ||
+                    window.location.hostname.includes('127.0.0.1')
+                ) && (
+                        <div className="mx-6 sm:mx-10 mt-6 p-4 bg-theme-purple/20 border border-theme-purple/50 rounded-2xl flex flex-wrap gap-4 items-center justify-between shadow-lg backdrop-blur-sm">
+                            <div className="flex items-center gap-3">
+                                <span className="flex h-3 w-3 relative">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-theme-purple-lighter opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-theme-purple-lighter"></span>
+                                </span>
+                                <span className="text-theme-purple-lighter font-bold text-xs uppercase tracking-widest">Dev Mode</span>
+                            </div>
+                            <button
+                                onClick={() => setIsMockExpired(!isMockExpired)}
+                                className={`px-6 py-2 rounded-xl text-sm font-bold transition-all duration-200 border-2 ${isMockExpired
+                                    ? 'bg-theme-purple-lighter text-theme-purple border-theme-purple-lighter shadow-[0_0_15px_rgba(180,160,255,0.4)]'
+                                    : 'bg-transparent text-theme-purple-lighter border-theme-purple-lighter/50 hover:bg-theme-purple-lighter/10'
+                                    }`}
+                            >
+                                {isMockExpired ? '✅ Mocking Expired' : 'Simuleer Verlopen Account'}
+                            </button>
+                        </div>
+                    )}
                 <div className="flex flex-col sm:flex-row gap-6 p-6 sm:p-10">
                     <section className="w-full sm:w-1/2 bg-gradient-theme rounded-3xl shadow-lg p-6 sm:p-8">
                         <h1 className="text-3xl font-bold text-theme-white mb-6">
