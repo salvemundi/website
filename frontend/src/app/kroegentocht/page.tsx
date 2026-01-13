@@ -165,20 +165,7 @@ export default function KroegentochtPage() {
                 initial: p.initial
             })));
 
-            // Check for existing signup with same email for this event
-            const existingQuery = new URLSearchParams({
-                ['filter[pub_crawl_event_id][_eq]']: String(nextEvent.id),
-                ['filter[email][_eq]']: form.email,
-                limit: '1'
-            }).toString();
 
-            const existing = await directusFetch<any[]>(`/items/pub_crawl_signups?${existingQuery}`);
-            if (existing && existing.length > 0) {
-                // Don't add or update - keep form filled so user can change the email
-                setError('Dit e-mailadres staat al geregistreerd voor deze kroegentocht. Gebruik een ander e-mailadres.');
-                setLoading(false);
-                return;
-            }
 
             // Create signup with status 'open' (just like standard activity signups)
             const signup = await pubCrawlSignupsApi.create({
@@ -236,9 +223,7 @@ export default function KroegentochtPage() {
             console.error('Error submitting kroegentocht signup:', err);
             let friendlyMessage = 'Er is een fout opgetreden bij het inschrijven. Probeer het opnieuw.';
 
-            if (err?.message?.includes('RECORD_NOT_UNIQUE')) {
-                friendlyMessage = 'Dit e-mailadres staat al geregistreerd voor deze kroegentocht.';
-            } else if (err?.message) {
+            if (err?.message) {
                 friendlyMessage = `Fout: ${err.message}`;
             }
 
