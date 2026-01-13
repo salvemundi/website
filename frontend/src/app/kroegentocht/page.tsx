@@ -188,7 +188,7 @@ export default function KroegentochtPage() {
             const paymentPayload = {
                 amount: totalPrice,
                 description: `Kroegentocht Tickets - ${form.amount_tickets}x`,
-                redirectUrl: window.location.origin + '/kroegentocht/bevestiging',
+                redirectUrl: window.location.origin + `/kroegentocht/bevestiging?id=${signup.id}`,
                 registrationId: signup.id,
                 registrationType: 'pub_crawl_signup', // Tell backend which collection to update
                 email: form.email,
