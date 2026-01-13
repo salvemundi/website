@@ -139,6 +139,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 first_name: firstName || null,
                 last_name: lastName || null,
                 registration: registrationType === 'pub_crawl_signup' ? null : (registrationId || null),
+                pub_crawl_signup: registrationType === 'pub_crawl_signup' ? (registrationId || null) : null,
                 environment: effectiveEnvironment,
                 approval_status: approvalStatus,
                 coupon_code: couponCode || null,
