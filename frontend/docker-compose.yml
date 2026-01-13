@@ -7,7 +7,7 @@ services:
       # Server-side environment variable for email API endpoint
       - EMAIL_API_ENDPOINT=${EMAIL_API_ENDPOINT:-http://email-api-${TAG:-dev}:3001/send-email}
       # Publish payment API URL for client-side usage and server-side proxy
-      - NEXT_PUBLIC_PAYMENT_API_URL=${NEXT_PUBLIC_PAYMENT_API_URL:-http://payment-api:3002}
+      - NEXT_PUBLIC_PAYMENT_API_URL=${NEXT_PUBLIC_PAYMENT_API_URL:-http://payment-api-${TAG:-dev}:3002}
     networks:
       - proxy-network
 
