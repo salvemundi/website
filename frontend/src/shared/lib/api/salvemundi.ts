@@ -478,6 +478,9 @@ export const pubCrawlSignupsApi = {
             body: JSON.stringify(data)
         });
     },
+    getById: async (id: number | string) => {
+        return directusFetch<any>(`/items/pub_crawl_signups/${id}?fields=*`);
+    },
     delete: async (id: number) => {
         return directusFetch<void>(`/items/pub_crawl_signups/${id}`, {
             method: 'DELETE'
