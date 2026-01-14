@@ -560,7 +560,10 @@ export const stickersApi = {
     getAll: async () => {
         const query = buildQueryString({
             fields: ['*', 'user_created.*', 'created_by.*'],
-            sort: ['-date_created']
+            sort: ['-date_created'],
+            // Request all stickers (Directus defaults to 100 items per page)
+            // Use -1 to disable pagination and return all records
+            limit: -1
         });
         return directusFetch<any[]>(`/items/Stickers?${query}`);
     },
