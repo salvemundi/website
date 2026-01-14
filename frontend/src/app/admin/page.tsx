@@ -306,11 +306,23 @@ export default function AdminDashboardPage() {
 
             // Get all committee members for visible committees
             const committeeIds = committees.map(c => c.id);
+            // Fetch user ids for members and deduplicate so a user in multiple committees is counted once
             const members = await directusFetch<any[]>(
-                `/items/committee_members?fields=id&filter[committee_id][_in]=${committeeIds.join(',')}`
+                `/items/committee_members?fields=user_id.id,user_id&filter[committee_id][_in]=${committeeIds.join(',')}&limit=-1`
             );
 
-            return members.length;
+            const userIds = members
+                .map(m => {
+                    // directus may return expanded user object or just the id
+                    if (!m) return null;
+                    if (m.user_id && typeof m.user_id === 'object' && m.user_id.id) return m.user_id.id;
+                    if (m.user_id) return m.user_id;
+                    return null;
+                })
+                .filter(Boolean as any);
+
+            const unique = new Set(userIds);
+            return unique.size;
         } catch (error) {
             console.error('Failed to fetch visible committee members count:', error);
             return 0;
