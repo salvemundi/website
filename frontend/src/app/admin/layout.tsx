@@ -43,22 +43,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         setIsAuthorized(false);
                     }
                 } else {
-                    // Fallback: Check if user is member of any committee via API
+                    // Fallback: Check if user is member of any visible committee via API
                     console.log('[AdminLayout] Committees not loaded, checking via API');
-                    const query = new URLSearchParams({
-                        'filter[user_id][_eq]': user.id,
-                        'limit': '1',
-                    }).toString();
-
-                    const memberships = await directusFetch<any[]>(`/items/committee_members?${query}`);
+                    
+                    // Get user's committee memberships with committee details
+                    const memberships = await directusFetch<any[]>(
+                        `/items/committee_members?filter[user_id][_eq]=${user.id}&fields=committee_id.id,committee_id.is_visible`
+                    );
                     console.log('[AdminLayout] API response:', memberships);
 
-                    if (Array.isArray(memberships) && memberships.length > 0) {
-                        console.log('[AdminLayout] User authorized via API');
+                    // Check if user is member of at least one visible committee
+                    const hasVisibleCommittee = Array.isArray(memberships) && 
+                        memberships.some(m => m.committee_id?.is_visible !== false);
+
+                    if (hasVisibleCommittee) {
+                        console.log('[AdminLayout] User authorized via API - has visible committee');
                         setIsAuthorized(true);
                     } else {
-                        // Not a committee member - show no-access page
-                        console.log('[AdminLayout] User NOT authorized via API');
+                        // Not a member of any visible committee - show no-access page
+                        console.log('[AdminLayout] User NOT authorized via API - no visible committees');
                         setIsAuthorized(false);
                     }
                 }

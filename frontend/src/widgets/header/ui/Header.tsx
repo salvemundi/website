@@ -57,14 +57,16 @@ const Header: React.FC = () => {
 
                 // Fallback: fetch from API if committees not loaded yet
                 console.log('[Header] Committees not loaded, checking via API');
-                const query = new URLSearchParams({
-                    'filter[user_id][_eq]': user.id,
-                    'limit': '1',
-                }).toString();
-
-                const memberships = await directusFetch<any[]>(`/items/committee_members?${query}`);
+                
+                // Get user's committee memberships with committee details including is_visible
+                const memberships = await directusFetch<any[]>(
+                    `/items/committee_members?filter[user_id][_eq]=${user.id}&fields=committee_id.id,committee_id.is_visible`
+                );
                 console.log('[Header] API response:', memberships);
-                const isMember = Array.isArray(memberships) && memberships.length > 0;
+                
+                // Check if user is member of at least one visible committee
+                const isMember = Array.isArray(memberships) && 
+                    memberships.some(m => m.committee_id?.is_visible !== false);
                 console.log('[Header] User is committee member via API:', isMember);
                 setIsCommitteeMember(isMember);
             } catch (error) {

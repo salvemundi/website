@@ -361,10 +361,11 @@ export async function fetchAndPersistUserCommittees(userId: string, token?: stri
     try {
         // Build a query to get committee info via committee_members relation
         // We prefer using the Directus JWT when available for private collections
+        // Also fetch is_visible to filter out hidden committees
         const base = '/items/committee_members?';
         const params = new URLSearchParams({
             'filter[user_id][_eq]': userId,
-            'fields': 'committee_id.id,committee_id.name,is_leader',
+            'fields': 'committee_id.id,committee_id.name,committee_id.is_visible,is_leader',
         }).toString();
 
         const url = `${base}${params}`;
@@ -391,7 +392,8 @@ export async function fetchAndPersistUserCommittees(userId: string, token?: stri
         const committees: Array<{ id: string; name: string; is_leader?: boolean }> = [];
         for (const r of rows) {
             const c = r?.committee_id;
-            if (c && c.id) {
+            // Only include visible committees (is_visible !== false)
+            if (c && c.id && c.is_visible !== false) {
                 const id = String(c.id);
                 const name = String(c.name || '');
                 const isLeader = !!r?.is_leader;
