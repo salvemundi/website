@@ -12,25 +12,27 @@ const PORT = process.env.PORT || 3001;
 
 // Define your known group IDs
 const GROUP_IDS = {
-    COMMISSIE_LEIDER: '91d77972-2695-4b7b-a0a0-df7d6523a087',
+    COMMISSIE_LEIDER: 'fc3b226a-62f8-437a-a7fa-7c631e48aaff',
     BESTUUR: 'b16d93c7-42ef-412e-afb3-f6cbe487d0e0',
     ICT: 'a4aeb401-882d-4e1e-90ee-106b7fdb23cc',
+    CommitteeMember: '5848f0ed-59c4-4ae2-8683-3d9a221ac189'
+
     // add any others you care about
 };
 
 // Manual override mapping (optional) – if you want to force certain group IDs to specific names
 const GROUP_NAME_MAP = {
-    '91d77972-2695-4b7b-a0a0-df7d6523a087': 'Commissie Leider',
+    'fc3b226a-62f8-437a-a7fa-7c631e48aaff': 'Commissie Leider',
     'b16d93c7-42ef-412e-afb3-f6cbe487d0e0': 'Bestuur',
     'a4aeb401-882d-4e1e-90ee-106b7fdb23cc': 'ICTCommissie',
     // add more mapping entries as needed
 };
 
 const ROLE_IDS = {
-    ACTIEVE_LEDEN: '82fe4735-4724-48af-9d37-ee85e1c5441e',
     COMMISSIE_LEIDER: 'fc3b226a-62f8-437a-a7fa-7c631e48aaff',
     BESTUUR: 'a0e51e23-15ef-4e04-a188-5c483484b0be',
     ADMIN: 'd671fd7a-cfcb-4bdc-afb8-1a96bc2d5d50',
+    CommitteeMember: '5848f0ed-59c4-4ae2-8683-3d9a221ac189'
 };
 
 const DIRECTUS_HEADERS = {
@@ -185,10 +187,18 @@ async function buildGlobalGroupNameMap() {
 }
 
 function getRoleIdByGroupMembership(groupIds) {
-    if (groupIds.includes(GROUP_IDS.ICT)) return ROLE_IDS.ADMIN;
-    if (groupIds.includes(GROUP_IDS.BESTUUR)) return ROLE_IDS.BESTUUR;
-    if (groupIds.includes(GROUP_IDS.COMMISSIE_LEIDER)) return ROLE_IDS.COMMISSIE_LEIDER;
-    return ROLE_IDS.ACTIEVE_LEDEN;
+    // Preserve explicit special-group roles first
+    if (Array.isArray(groupIds) && groupIds.length > 0) {
+        if (groupIds.includes(GROUP_IDS.ICT)) return ROLE_IDS.ADMIN;
+        if (groupIds.includes(GROUP_IDS.BESTUUR)) return ROLE_IDS.BESTUUR;
+        if (groupIds.includes(GROUP_IDS.COMMISSIE_LEIDER)) return ROLE_IDS.COMMISSIE_LEIDER;
+
+        // If the user is member of any other Entra group, treat them as a committee member
+        return ROLE_IDS.CommitteeMember;
+    }
+
+    // No Entra groups found -> don't force a role change
+    return null;
 }
 
 function hasChanges(existing, newData, selectedFields = null) {
@@ -543,7 +553,8 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
             fontys_email: email.includes('@student.fontys.nl') ? email : null,
             phone_number: formatDutchMobile(u.mobilePhone),
             status: 'active',
-            role,
+            // Only include role when it was explicitly determined from Entra groups
+            ...(role ? { role } : {}),
             membership_expiry: membershipExpiry,
         };
 
