@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { pubCrawlSignupsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
-import { directusFetch } from '@/shared/lib/directus';
+
 import { useSalvemundiPubCrawlEvents, useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { format } from 'date-fns';
 import { CheckCircle2 } from 'lucide-react';
@@ -165,22 +165,9 @@ export default function KroegentochtPage() {
                 initial: p.initial
             })));
 
-            // Check for existing signup with same email for this event
-            const existingQuery = new URLSearchParams({
-                ['filter[pub_crawl_event_id][_eq]']: String(nextEvent.id),
-                ['filter[email][_eq]']: form.email,
-                limit: '1'
-            }).toString();
 
-            const existing = await directusFetch<any[]>(`/items/pub_crawl_signups?${existingQuery}`);
-            if (existing && existing.length > 0) {
-                // Don't add or update - keep form filled so user can change the email
-                setError('Dit e-mailadres staat al geregistreerd voor deze kroegentocht. Gebruik een ander e-mailadres.');
-                setLoading(false);
-                return;
-            }
 
-            // Create signup
+            // Create signup with status 'open' (just like standard activity signups)
             const signup = await pubCrawlSignupsApi.create({
                 name: form.name,
                 email: form.email,
@@ -188,6 +175,7 @@ export default function KroegentochtPage() {
                 amount_tickets: form.amount_tickets,
                 pub_crawl_event_id: nextEvent.id,
                 name_initials: nameInitials,
+                payment_status: 'open',
             });
 
             if (!signup || !signup.id) {
@@ -200,8 +188,9 @@ export default function KroegentochtPage() {
             const paymentPayload = {
                 amount: totalPrice,
                 description: `Kroegentocht Tickets - ${form.amount_tickets}x`,
-                redirectUrl: window.location.origin + '/kroegentocht/bevestiging',
+                redirectUrl: window.location.origin + `/kroegentocht/bevestiging?id=${signup.id}`,
                 registrationId: signup.id,
+                registrationType: 'pub_crawl_signup', // Tell backend which collection to update
                 email: form.email,
                 firstName: form.name.split(' ')[0],
                 lastName: form.name.split(' ').slice(1).join(' '),
@@ -219,7 +208,8 @@ export default function KroegentochtPage() {
 
             if (!paymentRes.ok) {
                 const errorData = await paymentRes.json();
-                throw new Error(errorData.details || errorData.error || 'Fout bij het aanmaken van de betaling.');
+                console.error(`[Payment][${traceId}] Payment Creation Failed:`, errorData);
+                throw new Error(`${errorData.details || errorData.error || 'Fout bij het aanmaken van de betaling.'} (Target: ${errorData.target || 'unknown'})`);
             }
 
             const paymentData = await paymentRes.json();
@@ -231,11 +221,18 @@ export default function KroegentochtPage() {
             setSubmitted(true);
         } catch (err: any) {
             console.error('Error submitting kroegentocht signup:', err);
-            const friendlyMessage = err?.message?.includes('RECORD_NOT_UNIQUE')
-                ? 'Dit e-mailadres staat al geregistreerd voor deze kroegentocht.'
-                : (err.message || 'Er is een fout opgetreden bij het inschrijven. Probeer het opnieuw.');
+            let friendlyMessage = 'Er is een fout opgetreden bij het inschrijven. Probeer het opnieuw.';
+            const isProd = process.env.NODE_ENV === 'production';
+
+            if (err?.message?.includes('RECORD_NOT_UNIQUE')) {
+                friendlyMessage = 'Dit e-mailadres staat al geregistreerd voor deze kroegentocht. Gebruik een ander e-mailadres.';
+            } else if (err?.message) {
+                friendlyMessage = isProd ? friendlyMessage : `Fout: ${err.message}`;
+            }
+
             setError(friendlyMessage);
-        } finally {
+        }
+        finally {
             setLoading(false);
         }
     };
@@ -315,55 +312,7 @@ export default function KroegentochtPage() {
                                         </div>
                                     )}
 
-                                {/* Name */}
-                                <label className="font-semibold text-white">
-                                    Naam
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        value={form.name}
-                                        onChange={handleChange}
-                                        required
-                                        placeholder="Voor- en achternaam"
-                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
-                                    />
-                                </label>
-
-                                {/* Email */}
-                                <label className="font-semibold text-white">
-                                    E-mailadres
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        value={form.email}
-                                        onChange={handleChange}
-                                        required
-                                        placeholder="jouw@email.nl"
-                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
-                                    />
-                                </label>
-
-                                {/* Association */}
-                                <label className="font-semibold text-white">
-                                    Vereniging
-                                    <select
-                                        name="association"
-                                        value={form.association}
-                                        onChange={handleChange}
-                                        required
-                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
-                                    >
-                                        <option value="">Selecteer een vereniging</option>
-                                        {ASSOCIATIONS.map((assoc) => (
-                                            <option key={assoc} value={assoc}>
-                                                {assoc}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </label>
-
-                                {/* Custom Association */}
-                                {form.association === 'Anders' && (
+                                    {/* Name */}
                                     <label className="font-semibold text-white">
                                         Naam
                                         <input
@@ -372,66 +321,114 @@ export default function KroegentochtPage() {
                                             value={form.name}
                                             onChange={handleChange}
                                             required
-                                            placeholder="Naam van je vereniging"
+                                            placeholder="Voor- en achternaam"
                                             className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
                                         />
                                     </label>
-                                )}
 
-                                {/* Amount of Tickets */}
-                                <label className="font-semibold text-white">
-                                    Aantal tickets
-                                    <input
-                                        type="number"
-                                        name="amount_tickets"
-                                        value={form.amount_tickets}
-                                        onChange={handleChange}
-                                        required
-                                        min="1"
-                                        max="10"
-                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
-                                    />
-                                    <span className="text-sm text-white/80 mt-1 block">
-                                        Maximum 10 tickets per inschrijving
-                                    </span>
-                                </label>
+                                    {/* Email */}
+                                    <label className="font-semibold text-white">
+                                        E-mailadres
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            value={form.email}
+                                            onChange={handleChange}
+                                            required
+                                            placeholder="jouw@email.nl"
+                                            className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
+                                        />
+                                    </label>
 
-                                {/* Participant Names and Initials */}
-                                <div className="bg-white/10 rounded-lg p-4 space-y-3">
-                                    <h3 className="font-semibold text-white text-lg mb-2">
-                                        Deelnemers ({form.amount_tickets} {form.amount_tickets === 1 ? 'ticket' : 'tickets'})
-                                    </h3>
-                                    <p className="text-sm text-white/80 mb-3">
-                                        Vul voor elk ticket een naam en eerste letter van de achternaam in.
-                                    </p>
-                                    {participants.map((participant, index) => (
-                                        <div key={index} className="bg-white/10 rounded p-3 space-y-2">
-                                            <label className="block text-sm font-semibold text-white">
-                                                Ticket {index + 1} - Naam
-                                                <input
-                                                    type="text"
-                                                    value={participant.name}
-                                                    onChange={(e) => handleParticipantChange(index, 'name', e.target.value)}
-                                                    required
-                                                    placeholder="Voornaam + eventueel tussenvoegsel"
-                                                    className="mt-1 p-2 rounded w-full bg-white text-theme-purple text-sm dark:bg-gray-800 dark:text-theme"
-                                                />
-                                            </label>
-                                            <label className="block text-sm font-semibold text-white">
-                                                Eerste letter achternaam
-                                                <input
-                                                    type="text"
-                                                    value={participant.initial}
-                                                    onChange={(e) => handleParticipantChange(index, 'initial', e.target.value)}
-                                                    required
-                                                    placeholder="Bijv. S"
-                                                    maxLength={1}
-                                                    className="mt-1 p-2 rounded w-20 bg-white text-theme-purple text-sm uppercase dark:bg-gray-800 dark:text-theme"
-                                                />
-                                            </label>
-                                        </div>
-                                    ))}
-                                </div>
+                                    {/* Association */}
+                                    <label className="font-semibold text-white">
+                                        Vereniging
+                                        <select
+                                            name="association"
+                                            value={form.association}
+                                            onChange={handleChange}
+                                            required
+                                            className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
+                                        >
+                                            <option value="">Selecteer een vereniging</option>
+                                            {ASSOCIATIONS.map((assoc) => (
+                                                <option key={assoc} value={assoc}>
+                                                    {assoc}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </label>
+
+                                    {/* Custom Association */}
+                                    {form.association === 'Anders' && (
+                                        <label className="font-semibold text-white">
+                                            Naam
+                                            <input
+                                                type="text"
+                                                name="name"
+                                                value={form.name}
+                                                onChange={handleChange}
+                                                required
+                                                placeholder="Naam van je vereniging"
+                                                className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
+                                            />
+                                        </label>
+                                    )}
+
+                                    {/* Amount of Tickets */}
+                                    <label className="font-semibold text-white">
+                                        Aantal tickets
+                                        <input
+                                            type="number"
+                                            name="amount_tickets"
+                                            value={form.amount_tickets}
+                                            onChange={handleChange}
+                                            required
+                                            min="1"
+                                            max="10"
+                                            className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
+                                        />
+                                        <span className="text-sm text-white/80 mt-1 block">
+                                            Maximum 10 tickets per inschrijving
+                                        </span>
+                                    </label>
+
+                                    {/* Participant Names and Initials */}
+                                    <div className="bg-white/10 rounded-lg p-4 space-y-3">
+                                        <h3 className="font-semibold text-white text-lg mb-2">
+                                            Deelnemers ({form.amount_tickets} {form.amount_tickets === 1 ? 'ticket' : 'tickets'})
+                                        </h3>
+                                        <p className="text-sm text-white/80 mb-3">
+                                            Vul voor elk ticket een naam en eerste letter van de achternaam in.
+                                        </p>
+                                        {participants.map((participant, index) => (
+                                            <div key={index} className="bg-white/10 rounded p-3 space-y-2">
+                                                <label className="block text-sm font-semibold text-white">
+                                                    Ticket {index + 1} - Naam
+                                                    <input
+                                                        type="text"
+                                                        value={participant.name}
+                                                        onChange={(e) => handleParticipantChange(index, 'name', e.target.value)}
+                                                        required
+                                                        placeholder="Voornaam + eventueel tussenvoegsel"
+                                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple text-sm dark:bg-gray-800 dark:text-theme"
+                                                    />
+                                                </label>
+                                                <label className="block text-sm font-semibold text-white">
+                                                    Eerste letter achternaam
+                                                    <input
+                                                        type="text"
+                                                        value={participant.initial}
+                                                        onChange={(e) => handleParticipantChange(index, 'initial', e.target.value)}
+                                                        required
+                                                        placeholder="Bijv. S"
+                                                        maxLength={1}
+                                                        className="mt-1 p-2 rounded w-20 bg-white text-theme-purple text-sm uppercase dark:bg-gray-800 dark:text-theme"
+                                                    />
+                                                </label>
+                                            </div>
+                                        ))}
+                                    </div>
 
 
                                     <button

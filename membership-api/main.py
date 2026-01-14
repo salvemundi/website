@@ -165,8 +165,9 @@ async def create_user_endpoint(request: CreateMemberRequest, background_tasks: B
     
     new_user_data = await create_azure_user(request, token)
     
-    # Patch de Entra ID attributes (lidmaatschapsdatum)
-    background_tasks.add_task(update_user_attributes, new_user_data["id"])
+    # Patch de Entra ID attributes (lidmaatschapsdatum) DIRECT (niet asynchroon)
+    # Dit zorgt ervoor dat de vervaldatum meteen beschikbaar is voor graph-sync
+    await update_user_attributes(new_user_data["id"])
     
     return {
         "status": "created",
@@ -179,7 +180,8 @@ async def create_user_endpoint(request: CreateMemberRequest, background_tasks: B
 async def register_member(request: MembershipRequest, background_tasks: BackgroundTasks):
     if not request.user_id:
         raise HTTPException(status_code=400, detail="Missing user_id")
-    background_tasks.add_task(update_user_attributes, request.user_id)
+    # Update attributes DIRECT (niet asynchroon) voor consistentie
+    await update_user_attributes(request.user_id)
     return {"status": "processing"}
 
 @router.get("/health")

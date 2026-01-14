@@ -2,7 +2,7 @@ const express = require('express');
 const membershipService = require('../services/membership-service');
 const { getEnvironment } = require('../services/env-utils');
 
-module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, MEMBERSHIP_API_URL, directusService, notificationService) {
+module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, MEMBERSHIP_API_URL, directusService, notificationService, GRAPH_SYNC_URL) {
     const router = express.Router();
 
     router.post('/create', async (req, res) => {
@@ -10,9 +10,9 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
         console.warn(`[Payment][${traceId}] Incoming Payment Creation Request`);
 
         try {
-            const { amount, description, redirectUrl, userId, email, registrationId, isContribution, firstName, lastName, couponCode } = req.body;
+            const { amount, description, redirectUrl, userId, email, registrationId, registrationType, isContribution, firstName, lastName, couponCode } = req.body;
 
-            console.warn(`[Payment][${traceId}] Payload:`, JSON.stringify({ amount, description, redirectUrl, userId, email, isContribution, couponCode }));
+            console.warn(`[Payment][${traceId}] Payload:`, JSON.stringify({ amount, description, redirectUrl, userId, email, registrationId, registrationType, isContribution, couponCode }));
 
             if (!amount || !description || !redirectUrl) {
                 console.warn(`[Payment][${traceId}] Missing required parameters`);
@@ -138,7 +138,8 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 email: email || null,
                 first_name: firstName || null,
                 last_name: lastName || null,
-                registration: registrationId || null,
+                registration: registrationType === 'pub_crawl_signup' ? null : (registrationId || null),
+                pub_crawl_signup: registrationType === 'pub_crawl_signup' ? (registrationId || null) : null,
                 environment: effectiveEnvironment,
                 approval_status: approvalStatus,
                 coupon_code: couponCode || null,
@@ -197,9 +198,11 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 // (Replicating Webhook Logic partially for paid status)
                 try {
                     if (registrationId) {
-                        await directusService.updateDirectusRegistration(
+                        const collection = registrationType === 'pub_crawl_signup' ? 'pub_crawl_signups' : 'event_signups';
+                        await directusService.updateDirectusItem(
                             DIRECTUS_URL,
                             DIRECTUS_API_TOKEN,
+                            collection,
                             registrationId,
                             { payment_status: 'paid' }
                         );
@@ -208,11 +211,16 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                     if (isContribution) {
                         if (userId) {
                             await membershipService.provisionMember(MEMBERSHIP_API_URL, userId);
+                            // Trigger sync for existing user renewal
+                            await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, userId);
                         } else if (firstName && lastName && email) {
                             const credentials = await membershipService.createMember(
                                 MEMBERSHIP_API_URL, firstName, lastName, email
                             );
                             if (credentials) {
+                                // Trigger sync for newly created user to sync membership_expiry to Directus
+                                await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, credentials.user_id);
+
                                 await notificationService.sendWelcomeEmail(
                                     EMAIL_SERVICE_URL, email, firstName, credentials
                                 );
@@ -236,6 +244,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
 
                 const successUrl = new URL(redirectUrl);
                 successUrl.searchParams.append('status', 'paid');
+                successUrl.searchParams.append('transaction_id', transactionRecordId);
 
                 return res.json({
                     checkoutUrl: successUrl.toString(),
@@ -249,6 +258,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
             const metadata = {
                 transactionRecordId: transactionRecordId,
                 registrationId: registrationId,
+                registrationType: registrationType || 'event_signup', // Default to event_signup for safety
                 notContribution: isContribution ? "false" : "true",
                 email: email,
                 userId: userId || null,
@@ -258,13 +268,22 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
             };
 
             console.warn(`[Payment][${traceId}] Creating Mollie Payment... Value: ${formattedAmount}`);
+
+            if (!mollieClient) {
+                console.error(`[Payment][${traceId}] Mollie Client not initialized. Check MOLLIE_API_KEY.`);
+                throw new Error('Betalingsprovider niet geconfigureerd in deze omgeving.');
+            }
+
+            const finalRedirectUrl = new URL(redirectUrl);
+            finalRedirectUrl.searchParams.append('transaction_id', transactionRecordId);
+
             const payment = await mollieClient.payments.create({
                 amount: {
                     currency: 'EUR',
                     value: formattedAmount,
                 },
                 description: description,
-                redirectUrl: redirectUrl,
+                redirectUrl: finalRedirectUrl.toString(),
                 webhookUrl: process.env.MOLLIE_WEBHOOK_URL,
                 metadata: metadata
             });
@@ -331,7 +350,32 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
             }
 
             if (payment.isPaid()) {
-                // Check approval status before proceeding with account creation
+                // 1. ALWAYS update the registration/signup status if we have a registrationId
+                if (registrationId) {
+                    const collection = payment.metadata.registrationType === 'pub_crawl_signup' ? 'pub_crawl_signups' : 'event_signups';
+                    console.warn(`[Webhook][${traceId}] Updating ${collection} ${registrationId} to paid`);
+                    await directusService.updateDirectusItem(
+                        DIRECTUS_URL,
+                        DIRECTUS_API_TOKEN,
+                        collection,
+                        registrationId,
+                        { payment_status: 'paid' }
+                    );
+                }
+
+                // 2. ALWAYS send confirmation email if it's NOT a contribution (normal events/pub-crawl)
+                if (notContribution === "true" && registrationId) {
+                    console.warn(`[Webhook][${traceId}] Sending non-contribution confirmation email`);
+                    await notificationService.sendConfirmationEmail(
+                        DIRECTUS_URL,
+                        DIRECTUS_API_TOKEN,
+                        EMAIL_SERVICE_URL,
+                        payment.metadata,
+                        payment.description
+                    );
+                }
+
+                // 3. Check approval status ONLY for membership provisioning
                 if (transactionRecordId) {
                     const transaction = await directusService.getTransaction(
                         DIRECTUS_URL,
@@ -341,27 +385,20 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
 
                     console.warn(`[Webhook][${traceId}] Transaction fetched:`, JSON.stringify(transaction));
 
-                    // Only proceed if approved (or auto-approved)
                     if (transaction &&
                         transaction.approval_status !== 'approved' &&
                         transaction.approval_status !== 'auto_approved') {
                         console.warn(`[Webhook][${traceId}] Payment paid but approval pending/rejected. Status: ${transaction.approval_status}. Stopping auto-provisioning.`);
-                        return res.status(200).send('Payment recorded, awaiting approval');
+                        return res.status(200).send('Payment recorded, status updated, but approval pending for provisioning');
                     }
                 }
 
-                if (registrationId) {
-                    await directusService.updateDirectusRegistration(
-                        DIRECTUS_URL,
-                        DIRECTUS_API_TOKEN,
-                        registrationId,
-                        { payment_status: 'paid' }
-                    );
-                }
-
+                // 4. Provisioning logic (only reached if approved/auto-approved)
                 if (notContribution === "false") {
                     if (userId) {
                         await membershipService.provisionMember(MEMBERSHIP_API_URL, userId);
+                        // Trigger sync for existing user renewal
+                        await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, userId);
 
                         if (registrationId) {
                             await notificationService.sendConfirmationEmail(
@@ -383,6 +420,9 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                         );
 
                         if (credentials) {
+                            // Trigger sync for newly created user to sync membership_expiry to Directus
+                            await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, credentials.user_id);
+
                             await notificationService.sendWelcomeEmail(
                                 EMAIL_SERVICE_URL, email, firstName, credentials
                             );

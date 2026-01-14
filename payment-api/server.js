@@ -21,16 +21,23 @@ const DIRECTUS_URL = process.env.DIRECTUS_URL;
 const WEBHOOK_URL = process.env.MOLLIE_WEBHOOK_URL;
 const MOLLIE_API_KEY = process.env.MOLLIE_API_KEY;
 const DIRECTUS_API_TOKEN = process.env.DIRECTUS_API_TOKEN;
-const EMAIL_SERVICE_URL = process.env.EMAIL_SERVICE_URL || 'http://email-api:3001';
-const MEMBERSHIP_API_URL = process.env.MEMBERSHIP_API_URL || 'http://membership-api:8000/api/membership';
-const GRAPH_SYNC_URL = process.env.GRAPH_SYNC_URL || 'http://graph-sync:3001';
+const EMAIL_SERVICE_URL = process.env.EMAIL_SERVICE_URL;
+const MEMBERSHIP_API_URL = process.env.MEMBERSHIP_API_URL;
+const GRAPH_SYNC_URL = process.env.GRAPH_SYNC_URL;
 
-if (!PORT || !DIRECTUS_URL || !WEBHOOK_URL || !MOLLIE_API_KEY || !DIRECTUS_API_TOKEN) {
-    console.error('FATAL ERROR: Missing environment variables');
+const isProduction = process.env.NODE_ENV === 'production';
+
+if (!PORT || !DIRECTUS_URL || !DIRECTUS_API_TOKEN) {
+    console.error('FATAL ERROR: Missing critical environment variables (PORT, DIRECTUS_URL, DIRECTUS_API_TOKEN)');
     process.exit(1);
 }
 
-const mollieClient = createMollieClient({ apiKey: MOLLIE_API_KEY });
+if (isProduction && (!WEBHOOK_URL || !MOLLIE_API_KEY)) {
+    console.error('FATAL ERROR: Missing production environment variables (MOLLIE_WEBHOOK_URL, MOLLIE_API_KEY)');
+    process.exit(1);
+}
+
+const mollieClient = MOLLIE_API_KEY ? createMollieClient({ apiKey: MOLLIE_API_KEY }) : null;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -70,7 +77,8 @@ app.use(
         EMAIL_SERVICE_URL,
         MEMBERSHIP_API_URL,
         directusService,
-        notificationService
+        notificationService,
+        GRAPH_SYNC_URL
     )
 );
 

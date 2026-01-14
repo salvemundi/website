@@ -36,7 +36,7 @@ const ROLE_IDS = {
 };
 
 const DIRECTUS_HEADERS = {
-    Authorization: `Bearer ${process.env.DIRECTUS_STATIC_TOKEN}`,
+    Authorization: `Bearer ${process.env.DIRECTUS_API_TOKEN}`,
 };
 
 const EXCLUDED_EMAILS = [
@@ -713,10 +713,11 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
         }
 
         await syncCommitteesForUserFromGroups(directusUserId, groups);
-        // Ensure membership_status aligns with current memberships
+        // Membership status is determined by the "Actieve Leden" group, which is managed by the Nachtwacht script
+        // The Nachtwacht script checks membership_expiry and moves users between Actief/Verlopen groups
         try {
-            const has = (groups && groups.length > 0) || await userHasAnyMemberships(directusUserId);
-            await setDirectusMembershipStatus(directusUserId, has ? 'active' : 'none');
+            const isInActieveLeden = groups.some(g => g.id === GROUP_IDS.ACTIEVE_LEDEN);
+            await setDirectusMembershipStatus(directusUserId, isInActieveLeden ? 'active' : 'none');
         } catch (e) {
             console.error('❌ [SYNC] Error setting membership_status after committee sync:', e.response?.data || e.message);
         }
@@ -792,6 +793,31 @@ app.post('/sync/initial', bodyParser.json(), async (req, res) => {
     runBulkSync(selectedFields);
 
     res.status(202).json({ success: true, message: 'Bulk sync started in background' });
+});
+
+// Sync a single user by Azure AD user ID
+app.post('/sync/user', bodyParser.json(), async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({ error: 'Missing userId parameter' });
+        }
+
+        console.log(`[${new Date().toISOString()}] 🔄 [SYNC] Manual sync requested for user: ${userId}`);
+
+        // Sync this specific user from Entra to Directus
+        await updateDirectusUserFromGraph(userId);
+
+        console.log(`[${new Date().toISOString()}] ✅ [SYNC] Successfully synced user: ${userId}`);
+        res.json({ success: true, message: `User ${userId} synced successfully` });
+    } catch (error) {
+        console.error(`[${new Date().toISOString()}] ❌ [SYNC] Error syncing user:`, error.response?.data || error.message);
+        res.status(500).json({
+            error: 'Failed to sync user',
+            details: error.response?.data || error.message
+        });
+    }
 });
 
 async function runBulkSync(selectedFields = null) {

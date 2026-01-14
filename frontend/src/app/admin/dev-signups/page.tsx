@@ -285,8 +285,14 @@ export default function DevSignupsPage() {
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Failed to approve signup');
+                let errorMessage = 'Failed to approve signup';
+                try {
+                    const error = await response.json();
+                    errorMessage = error.error || error.message || errorMessage;
+                } catch (e) {
+                    errorMessage = `Server Error (${response.status}): ${response.statusText || 'Gateway Timeout'}`;
+                }
+                throw new Error(errorMessage);
             }
 
             alert('Inschrijving goedgekeurd!');
@@ -317,8 +323,14 @@ export default function DevSignupsPage() {
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Failed to reject signup');
+                let errorMessage = 'Failed to reject signup';
+                try {
+                    const error = await response.json();
+                    errorMessage = error.error || error.message || errorMessage;
+                } catch (e) {
+                    errorMessage = `Server Error (${response.status}): ${response.statusText || 'Gateway Timeout'}`;
+                }
+                throw new Error(errorMessage);
             }
 
             alert('Inschrijving afgewezen.');
@@ -412,10 +424,10 @@ export default function DevSignupsPage() {
                         onClick={toggleManualApproval}
                         disabled={isDevEnv}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all shadow-sm ${isDevEnv
-                                ? 'bg-slate-800/50 text-slate-500 border border-slate-700/50 cursor-not-allowed'
-                                : paymentSettings.manual_approval
-                                    ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30 hover:bg-orange-500/30'
-                                    : 'bg-[var(--bg-highlight)] text-slate-400 border border-white/5 hover:border-white/10'
+                            ? 'bg-slate-800/50 text-slate-500 border border-slate-700/50 cursor-not-allowed'
+                            : paymentSettings.manual_approval
+                                ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30 hover:bg-orange-500/30'
+                                : 'bg-[var(--bg-highlight)] text-slate-400 border border-white/5 hover:border-white/10'
                             }`}
                         title={isDevEnv
                             ? "Ontwikkelomgeving: Altijd 'Manual Approval' (Pending) forced door backend."

@@ -472,26 +472,18 @@ export const pubCrawlSignupsApi = {
         });
         return directusFetch<any[]>(`/items/pub_crawl_signups?${query}`);
     },
-    create: async (data: { name: string; email: string; association?: string; amount_tickets: number; pub_crawl_event_id: number; name_initials?: string }) => {
-        const existingQuery = buildQueryString({
-            filter: {
-                pub_crawl_event_id: { _eq: data.pub_crawl_event_id },
-                email: { _eq: data.email }
-            },
-            fields: ['id'],
-            limit: 1
-        });
-        const existing = await directusFetch<any[]>(`/items/pub_crawl_signups?${existingQuery}`);
-        if (existing && existing.length > 0) {
-            return directusFetch<any>(`/items/pub_crawl_signups/${existing[0].id}`, {
-                method: 'PATCH',
-                body: JSON.stringify(data)
-            });
-        }
-
+    create: async (data: { name: string; email: string; association?: string; amount_tickets: number; pub_crawl_event_id: number; name_initials?: string; payment_status?: string }) => {
         return directusFetch<any>(`/items/pub_crawl_signups`, {
             method: 'POST',
             body: JSON.stringify(data)
+        });
+    },
+    getById: async (id: number | string) => {
+        return directusFetch<any>(`/items/pub_crawl_signups/${id}?fields=*`);
+    },
+    delete: async (id: number) => {
+        return directusFetch<void>(`/items/pub_crawl_signups/${id}`, {
+            method: 'DELETE'
         });
     }
 };
@@ -594,6 +586,9 @@ export const transactionsApi = {
             sort: ['-created_at']
         });
         return directusFetch<Transaction[]>(`/items/transactions?${query}`);
+    },
+    getById: async (id: number | string) => {
+        return directusFetch<any>(`/items/transactions/${id}?fields=*`);
     }
 };
 
