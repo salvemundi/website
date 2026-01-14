@@ -578,10 +578,13 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
             .get();
 
         const groups = groupResp.value || [];
-        // log removed
+        const groupIds = groups.map(g => g.id);
+        console.log(`[${new Date().toISOString()}] [SYNC] User ${u.mail || u.id} is in ${groups.length} groups:`, groupIds.join(', '));
+        console.log(`[${new Date().toISOString()}] [SYNC] COMMITTEE_GROUP_IDS configured:`, COMMITTEE_GROUP_IDS.join(', '));
 
         const email = (u.mail || u.userPrincipalName || '').toLowerCase();
-        const role = getRoleIdByGroupMembership(groups.map(g => g.id));
+        const role = getRoleIdByGroupMembership(groupIds);
+        console.log(`[${new Date().toISOString()}] [SYNC] Determined role for ${email}: ${role || 'null (no role assigned)')`);
 
         const existingRes = await axios.get(
             `${process.env.DIRECTUS_URL}/users?filter[email][_eq]=${encodeURIComponent(email)}&fields=id,email,first_name,last_name,phone_number,status,role,membership_expiry,fontys_email`,
@@ -590,6 +593,8 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
 
         const existingUser = existingRes.data?.data?.[0] || null;
 
+        console.log(`[${new Date().toISOString()}] [SYNC] Existing user role in Directus: ${existingUser?.role || 'null'}, Determined role from Entra: ${role || 'null'}`);
+
         const payload = {
             email,
             first_name: u.givenName || (u.displayName ? u.displayName.split(' ')[0] : 'Unknown'),
@@ -597,8 +602,8 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
             fontys_email: email.includes('@student.fontys.nl') ? email : null,
             phone_number: formatDutchMobile(u.mobilePhone),
             status: 'active',
-            // Only include role when it was explicitly determined from Entra groups
-            ...(role ? { role } : {}),
+            // Always include role when it was determined from Entra groups (even if null to clear it)
+            ...(role !== null ? { role } : {}),
             membership_expiry: membershipExpiry,
         };
 
