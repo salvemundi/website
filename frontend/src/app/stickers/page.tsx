@@ -119,6 +119,13 @@ function StickersContent() {
         return Object.entries(stickersPerUser).map(([id, info]) => ({ id, name: info.name || id }));
     }, [stickersPerUser]);
 
+    // Recent stickers: sort by creation date (newest first) and take the last 5
+    const recentStickers = useMemo<Sticker[]>(() => {
+        return [...stickers]
+            .sort((a, b) => new Date(b.date_created).getTime() - new Date(a.date_created).getTime())
+            .slice(0, 6);
+    }, [stickers]);
+
     // Handlers
     const handleMapClick = async (lat: number, lng: number) => {
         if (!user) return; // Only allow adding if logged in
@@ -488,7 +495,7 @@ function StickersContent() {
                 <div className="bg-[var(--bg-card)] rounded-2xl md:rounded-3xl shadow-lg p-4 md:p-6 mt-6 md:mt-8">
                     <h2 className="text-xl md:text-2xl font-bold mb-4 text-paars">Recent Sticker Locations</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {stickers.slice(0, 6).map((sticker) => (
+                        {recentStickers.map((sticker) => (
                             <div key={sticker.id} className="rounded-xl p-4 hover:shadow-md transition-shadow bg-[var(--bg-soft)] dark:bg-[var(--bg-card)]">
                                 <div className="flex items-start gap-3">
                                     {/* small pin: blue if current user's sticker */}
