@@ -51,7 +51,7 @@ const HARDCODE_COMMITTEE_GROUPS = [
 // Which Entra group IDs should cause a user to receive the "CommitteeMember" role in Directus.
 // You can also override this via the COMMITTEE_GROUP_IDS environment variable (comma separated list).
 // This variable may be replaced after building the global group name map if `HARDCODE_COMMITTEE_GROUPS` contains names.
-COMMITTEE_GROUP_IDS = (process.env.COMMITTEE_GROUP_IDS && process.env.COMMITTEE_GROUP_IDS.split(',').map(s => s.trim()).filter(Boolean)) || [GROUP_IDS.CommitteeMember];
+let COMMITTEE_GROUP_IDS = (process.env.COMMITTEE_GROUP_IDS && process.env.COMMITTEE_GROUP_IDS.split(',').map(s => s.trim()).filter(Boolean)) || [GROUP_IDS.CommitteeMember];
 
 const DIRECTUS_HEADERS = {
     Authorization: `Bearer ${process.env.DIRECTUS_API_TOKEN}`,
