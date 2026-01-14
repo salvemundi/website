@@ -231,8 +231,7 @@ function getRoleIdByGroupMembership(groupIds) {
     if (Array.isArray(groupIds) && groupIds.length > 0) {
         if (groupIds.includes(GROUP_IDS.ICT)) return ROLE_IDS.ADMIN;
         if (groupIds.includes(GROUP_IDS.BESTUUR)) return ROLE_IDS.BESTUUR;
-        if 
-        if (groupIds.includes(GROUP_IDS.COMMISSIE_LEIDER)) return ROLE_IDS.COMMISSIE_LEIDER;
+    if (groupIds.includes(GROUP_IDS.COMMISSIE_LEIDER)) return ROLE_IDS.COMMISSIE_LEIDER;
         // If the user is member of any configured committee group, treat them as a committee member
         for (const gid of groupIds) {
             if (COMMITTEE_GROUP_IDS.includes(gid)) return ROLE_IDS.CommitteeMember;
