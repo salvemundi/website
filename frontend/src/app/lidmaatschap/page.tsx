@@ -160,6 +160,7 @@ export default function SignUp() {
                 firstName: user ? undefined : form.voornaam,
                 lastName: user ? undefined : form.achternaam,
                 email: user ? user.email : form.email,
+                dateOfBirth: form.geboortedatum ? form.geboortedatum.toISOString().split('T')[0] : undefined,
                 couponCode: couponStatus?.valid ? form.coupon : undefined
             };
 

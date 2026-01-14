@@ -10,7 +10,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
         console.warn(`[Payment][${traceId}] Incoming Payment Creation Request`);
 
         try {
-            const { amount, description, redirectUrl, userId, email, registrationId, registrationType, isContribution, firstName, lastName, couponCode } = req.body;
+            const { amount, description, redirectUrl, userId, email, registrationId, registrationType, isContribution, firstName, lastName, couponCode, dateOfBirth } = req.body;
 
             console.warn(`[Payment][${traceId}] Payload:`, JSON.stringify({ amount, description, redirectUrl, userId, email, registrationId, registrationType, isContribution, couponCode }));
 
@@ -138,6 +138,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 email: email || null,
                 first_name: firstName || null,
                 last_name: lastName || null,
+                date_of_birth: dateOfBirth || null,
                 registration: registrationType === 'pub_crawl_signup' ? null : (registrationId || null),
                 pub_crawl_signup: registrationType === 'pub_crawl_signup' ? (registrationId || null) : null,
                 environment: effectiveEnvironment,
@@ -264,7 +265,8 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 userId: userId || null,
                 firstName: firstName || null,
                 lastName: lastName || null,
-                couponId: couponId
+                couponId: couponId,
+                dateOfBirth: dateOfBirth || null
             };
 
             console.warn(`[Payment][${traceId}] Creating Mollie Payment... Value: ${formattedAmount}`);
@@ -325,7 +327,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
 
             console.warn(`[Webhook][${traceId}] Processing payment: ${paymentId}`);
             const payment = await mollieClient.payments.get(paymentId);
-            const { transactionRecordId, registrationId, notContribution, userId, firstName, lastName, email, couponId } = payment.metadata;
+            const { transactionRecordId, registrationId, notContribution, userId, firstName, lastName, email, couponId, dateOfBirth } = payment.metadata;
 
             console.warn(`[Webhook][${traceId}] Metadata:`, JSON.stringify(payment.metadata));
 
@@ -414,10 +416,24 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                         if (couponId) {
                             // Coupon increment logic skipped for now
                         }
-                    } else if (firstName && lastName && email) {
-                        const credentials = await membershipService.createMember(
-                            MEMBERSHIP_API_URL, firstName, lastName, email
-                        );
+                        } else if (firstName && lastName && email) {
+                            // Try to create a Directus user so we have the date_of_birth set
+                            try {
+                                await directusService.createDirectusUser(DIRECTUS_URL, DIRECTUS_API_TOKEN, {
+                                    first_name: firstName,
+                                    last_name: lastName,
+                                    email: email,
+                                    date_of_birth: dateOfBirth || null,
+                                    status: 'active'
+                                });
+                                console.warn(`[Payment][${traceId}] Created Directus user for ${email}`);
+                            } catch (err) {
+                                console.error(`[Payment][${traceId}] Failed to create Directus user before membership create:`, err?.message || err);
+                            }
+
+                            const credentials = await membershipService.createMember(
+                                MEMBERSHIP_API_URL, firstName, lastName, email
+                            );
 
                         if (credentials) {
                             // Trigger sync for newly created user to sync membership_expiry to Directus
