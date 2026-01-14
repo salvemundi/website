@@ -27,6 +27,31 @@ async function createDirectusTransaction(directusUrl, directusToken, data) {
 }
 
 /**
+ * Create a user in Directus (server-side). Expects an object with at least
+ * `email`, `first_name`, `last_name`. Optionally `date_of_birth`, `phone_number`, `password`, `status`.
+ */
+async function createDirectusUser(directusUrl, directusToken, userData) {
+    try {
+        const payload = {
+            email: userData.email,
+            first_name: userData.first_name,
+            last_name: userData.last_name,
+            phone_number: userData.phone_number || null,
+            date_of_birth: userData.date_of_birth || null,
+            password: userData.password || (Math.random().toString(36).slice(-10)),
+            status: userData.status || 'active'
+        };
+
+        const response = await axios.post(`${directusUrl}/users`, payload, getAuthConfig(directusToken));
+        // Return full created object when possible
+        return response.data.data;
+    } catch (error) {
+        console.error(`Failed to create Directus user ${userData.email}:`, error.response?.data || error.message);
+        throw error;
+    }
+}
+
+/**
  * Werkt een bestaande transactie bij (bijv. de Mollie ID of status).
  */
 async function updateDirectusTransaction(directusUrl, directusToken, id, data) {
@@ -284,3 +309,4 @@ module.exports = {
 
     checkUserCommittee
 };
+    
