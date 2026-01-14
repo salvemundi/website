@@ -106,6 +106,52 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit):
         } catch (e) {
             // ignore logging errors
         }
+
+        // Add diagnostic logging for 403 Forbidden responses to help debug permission issues.
+        if (response.status === 403) {
+            (async () => {
+                try {
+                    // Prepare headers for diagnostic calls but avoid printing secret tokens
+                    const diagnosticHeaders: Record<string, string> = { ...headers };
+                    if (diagnosticHeaders.Authorization) {
+                        diagnosticHeaders.Authorization = usingSessionToken ? '[session token]' : apiKey ? '[api key]' : '[present]';
+                    }
+
+                    const details: any = { authType: usingSessionToken ? 'session' : apiKey ? 'apiKey' : 'none' };
+
+                    // Fetch current user info (users/me)
+                    try {
+                        const meResp = await fetch(`${directusUrl}/users/me`, { headers: diagnosticHeaders });
+                        const meText = await meResp.text();
+                        try {
+                            details.user = meResp.ok ? JSON.parse(meText).data : { status: meResp.status, body: meText };
+                        } catch (e) {
+                            details.user = { status: meResp.status, body: meText };
+                        }
+                    } catch (e) {
+                        details.userError = String(e);
+                    }
+
+                    // Fetch permissions for the `event_signups` collection to see what rights exist
+                    try {
+                        const permsResp = await fetch(`${directusUrl}/permissions?filter[collection][_eq]=event_signups`, { headers: diagnosticHeaders });
+                        const permsText = await permsResp.text();
+                        try {
+                            details.permissions = permsResp.ok ? JSON.parse(permsText).data : { status: permsResp.status, body: permsText };
+                        } catch (e) {
+                            details.permissions = { status: permsResp.status, body: permsText };
+                        }
+                    } catch (e) {
+                        details.permissionsError = String(e);
+                    }
+
+                    console.error('[directusFetch] 403 diagnostics', { url, details });
+                } catch (diagErr) {
+                    console.error('[directusFetch] Error fetching 403 diagnostic info', diagErr);
+                }
+            })();
+        }
+
         throw new Error(`Directus API error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
