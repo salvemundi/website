@@ -10,14 +10,13 @@ import 'isomorphic-fetch';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Define your known group IDs
+// Define your known group IDs (entra)
 const GROUP_IDS = {
     COMMISSIE_LEIDER: '91d77972-2695-4b7b-a0a0-df7d6523a087',
     BESTUUR: 'b16d93c7-42ef-412e-afb3-f6cbe487d0e0',
     ICT: 'a4aeb401-882d-4e1e-90ee-106b7fdb23cc',
+    Intro: '8516f03f9-be0a-4514-9da8-396415f59d0b',
     CommitteeMember: '5848f0ed-59c4-4ae2-8683-3d9a221ac189'
-
-    // add any others you care about
 };
 
 // Manual override mapping (optional) – if you want to force certain group IDs to specific names
@@ -31,6 +30,7 @@ const ROLE_IDS = {
     COMMISSIE_LEIDER: 'fc3b226a-62f8-437a-a7fa-7c631e48aaff',
     BESTUUR: 'a0e51e23-15ef-4e04-a188-5c483484b0be',
     ADMIN: 'd671fd7a-cfcb-4bdc-afb8-1a96bc2d5d50',
+    Intro: '877cbf0e-ed15-4d45-b164-8f251ffd278f',
     CommitteeMember: '5848f0ed-59c4-4ae2-8683-3d9a221ac189'
 };
 
@@ -54,11 +54,7 @@ const HARDCODE_COMMITTEE_GROUPS = [
 // Initialize with the hardcoded committee groups directly instead of just the default CommitteeMember group
 let COMMITTEE_GROUP_IDS = (process.env.COMMITTEE_GROUP_IDS && process.env.COMMITTEE_GROUP_IDS.split(',').map(s => s.trim()).filter(Boolean)) || HARDCODE_COMMITTEE_GROUPS;
 
-console.log(`[INIT] 🎯 COMMITTEE_GROUP_IDS initialized with ${COMMITTEE_GROUP_IDS.length} groups:`);
-COMMITTEE_GROUP_IDS.forEach((id, idx) => {
-    const comment = HARDCODE_COMMITTEE_GROUPS[idx] === id ? ` (${['activiteiten', 'feest', 'kamp', 'kas', 'marketing', 'media', 'reis', 'studie'][idx]} commissie)` : '';
-    console.log(`[INIT]   ${idx + 1}. ${id}${comment}`);
-});
+console.log(`[INIT] COMMITTEE_GROUP_IDS (${COMMITTEE_GROUP_IDS.length}): ${COMMITTEE_GROUP_IDS.join(',')}`);
 
 const DIRECTUS_HEADERS = {
     Authorization: `Bearer ${process.env.DIRECTUS_API_TOKEN}`,
@@ -234,31 +230,22 @@ async function buildGlobalGroupNameMap() {
 }
 
 function getRoleIdByGroupMembership(groupIds) {
-    console.log(`[ROLE] 🔍 getRoleIdByGroupMembership called with ${groupIds?.length || 0} groups:`, groupIds);
-    console.log(`[ROLE] 📋 COMMITTEE_GROUP_IDS contains ${COMMITTEE_GROUP_IDS.length} groups:`, COMMITTEE_GROUP_IDS);
+    // Minimal logging: only print a concise input summary
+    console.log(`[ROLE] groups=${groupIds?.length || 0}, committees=${COMMITTEE_GROUP_IDS.length}`);
     
     // Preserve explicit special-group roles first
     if (Array.isArray(groupIds) && groupIds.length > 0) {
-        if (groupIds.includes(GROUP_IDS.ICT)) {
-            console.log(`[ROLE] ✅ User is in ICT group (${GROUP_IDS.ICT}) -> Assigning ADMIN role`);
-            return ROLE_IDS.ADMIN;
-        }
-        if (groupIds.includes(GROUP_IDS.BESTUUR)) {
-            console.log(`[ROLE] ✅ User is in BESTUUR group (${GROUP_IDS.BESTUUR}) -> Assigning BESTUUR role`);
-            return ROLE_IDS.BESTUUR;
-        }
-        if (groupIds.includes(GROUP_IDS.COMMISSIE_LEIDER)) {
-            console.log(`[ROLE] ✅ User is in COMMISSIE_LEIDER group (${GROUP_IDS.COMMISSIE_LEIDER}) -> Assigning COMMISSIE_LEIDER role`);
-            return ROLE_IDS.COMMISSIE_LEIDER;
+    if (groupIds.includes(GROUP_IDS.ICT)) return ROLE_IDS.ADMIN;
+    if (groupIds.includes(GROUP_IDS.BESTUUR)) return ROLE_IDS.BESTUUR;
+    if (groupIds.includes(GROUP_IDS.COMMISSIE_LEIDER)) return ROLE_IDS.COMMISSIE_LEIDER;
+        if (groupIds.includes(GROUP_IDS.Intro)) {
+            console.log(`[ROLE] ✅ User is in Intro group (${GROUP_IDS.Intro}) -> Assigning Intro role`);
+            return ROLE_IDS.Intro;
         }
         // If the user is member of any configured committee group, treat them as a committee member
         for (const gid of groupIds) {
-            if (COMMITTEE_GROUP_IDS.includes(gid)) {
-                console.log(`[ROLE] ✅ User is in committee group (${gid}) -> Assigning CommitteeMember role`);
-                return ROLE_IDS.CommitteeMember;
-            }
+            if (COMMITTEE_GROUP_IDS.includes(gid)) return ROLE_IDS.CommitteeMember;
         }
-        console.log(`[ROLE] ⚠️ User is in ${groupIds.length} group(s) but none match special roles or committee groups`);
     } else {
         console.log(`[ROLE] ⚠️ No groups provided or empty array`);
     }
@@ -567,16 +554,14 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
             .get();
 
         const attributes = u.customSecurityAttributes?.SalveMundiLidmaatschap;
-        console.log(`[${new Date().toISOString()}] [SYNC] User keys for ${u.mail || u.id}:`, Object.keys(u).join(', '));
-        console.log(`[${new Date().toISOString()}] [SYNC] Full customSecurityAttributes for ${u.mail || u.id}:`, u.customSecurityAttributes ? JSON.stringify(u.customSecurityAttributes) : 'UNDEFINED');
-        console.log(`[${new Date().toISOString()}] [SYNC] SalveMundiLidmaatschap attributes:`, attributes ? JSON.stringify(attributes) : 'NULL');
+    // Minimal logging: expiry and missing fields summary
 
         let membershipExpiry = null;
         if (attributes?.VerloopdatumStr) {
             const v = attributes.VerloopdatumStr; // yyyyMMdd
             if (v && v.length === 8) {
                 membershipExpiry = `${v.substring(0, 4)}-${v.substring(4, 6)}-${v.substring(6, 8)}`;
-                console.log(`[${new Date().toISOString()}] [SYNC] Parsed expiry: ${membershipExpiry}`);
+                console.log(`[SYNC] ${u.mail || u.id} expiry=${membershipExpiry}`);
             }
         }
 
@@ -595,6 +580,7 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
                 email: (u.mail || u.userPrincipalName || 'Unknown').toLowerCase(),
                 reason: `Missende velden: ${missingFields.join(', ')}`
             });
+            console.log(`[SYNC] ${u.mail || u.id} missing=${missingFields.join(';')}`);
         }
 
         // log removed
@@ -604,13 +590,11 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
             .get();
 
         const groups = groupResp.value || [];
-        console.log(`[SYNC] 👥 User ${u.mail || userId} is member of ${groups.length} groups:`, groups.map(g => `${g.displayName || g.mailNickname} (${g.id})`));
-
-        const email = (u.mail || u.userPrincipalName || '').toLowerCase();
-        const groupIds = groups.map(g => g.id);
-        console.log(`[SYNC] 🔑 Calling getRoleIdByGroupMembership for user ${email} with ${groupIds.length} group IDs`);
-        const role = getRoleIdByGroupMembership(groupIds);
-        console.log(`[SYNC] 🎭 Role determined for ${email}: ${role || 'null (no role change)'}`);
+    // Concise per-user log: email, #groups, role decision
+    const email = (u.mail || u.userPrincipalName || '').toLowerCase();
+    const groupIds = groups.map(g => g.id);
+    const role = getRoleIdByGroupMembership(groupIds);
+    console.log(`[SYNC] ${email} groups=${groups.length} -> role=${role || 'none'}`);
 
 
         const existingRes = await axios.get(
