@@ -32,9 +32,18 @@ export async function GET(
             ok: response.ok
         });
 
-        const data = await response.json();
-        console.log('[API Proxy] Response data:', data);
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            console.error('[API Proxy] Failed to parse upstream response as JSON:', e instanceof Error ? e.message : String(e));
+            return NextResponse.json(
+                { error: 'Upstream returned invalid response', status: response.status },
+                { status: response.status === 200 ? 502 : response.status }
+            );
+        }
 
+        console.log('[API Proxy] Response data:', data);
         return NextResponse.json(data, { status: response.status });
     } catch (error) {
         console.error('[API Proxy] GET error:', error);
@@ -79,9 +88,18 @@ export async function POST(
             ok: response.ok
         });
 
-        const data = await response.json();
-        console.log('[API Proxy] Response data:', data);
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            console.error('[API Proxy] Failed to parse upstream response as JSON:', e instanceof Error ? e.message : String(e));
+            return NextResponse.json(
+                { error: 'Upstream returned invalid response', status: response.status },
+                { status: response.status === 200 ? 502 : response.status }
+            );
+        }
 
+        console.log('[API Proxy] Response data:', data);
         return NextResponse.json(data, { status: response.status });
     } catch (error) {
         console.error('[API Proxy] POST error:', error);

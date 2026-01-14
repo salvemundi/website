@@ -8,8 +8,8 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
     }
 
     try {
-        
-        
+
+
         let attachments = [];
         let qrHtml = '';
         let participantName = null;
@@ -19,14 +19,17 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
         }
 
         if (metadata.registrationId) {
-            const registration = await directusService.getDirectusRegistration(
-                directusUrl, 
-                directusToken, 
-                metadata.registrationId
+            const collection = metadata.registrationType === 'pub_crawl_signup' ? 'pub_crawl_signups' : 'event_signups';
+            const registration = await directusService.getDirectusItem(
+                directusUrl,
+                directusToken,
+                collection,
+                metadata.registrationId,
+                'qr_token,participant_name,name'
             );
-            
+
             if (registration) {
-                participantName = registration.participant_name;
+                participantName = registration.participant_name || registration.name;
 
                 if (registration.qr_token) {
                     const qrDataUrl = await QRCode.toDataURL(registration.qr_token, {
@@ -55,10 +58,10 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
         }
 
         const greetingName = participantName || 'deelnemer';
-        
+
         await axios.post(`${emailServiceUrl}/send-email`, {
             to: metadata.email,
-            subject: `Ticket: ${description}`, 
+            subject: `Ticket: ${description}`,
             html: `
                 <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
                     <h2 style="color: #7B2CBF;">Bedankt voor je inschrijving!</h2>
@@ -72,9 +75,9 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
                 </div>
             `,
             attachments: attachments
-        });
-        
-        
+        }, { timeout: 10000 });
+
+
     } catch (error) {
         console.error("❌ Failed to send confirmation email:", error.message);
     }
@@ -104,8 +107,8 @@ async function sendWelcomeEmail(emailServiceUrl, email, firstName, credentials) 
                     <p style="margin-top: 0;"><strong>S.A. Salve Mundi</strong></p>
                 </div>
             `
-        });
-        
+        }, { timeout: 10000 });
+
     } catch (error) {
         console.error("❌ Failed to send welcome email:", error.message);
     }

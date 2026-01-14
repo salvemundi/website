@@ -50,6 +50,18 @@ async function updateDirectusRegistration(directusUrl, directusToken, id, data) 
     }
 }
 
+/**
+ * Werkt een willekeurig item bij in Directus.
+ */
+async function updateDirectusItem(directusUrl, directusToken, collection, id, data) {
+    try {
+        await axios.patch(`${directusUrl}/items/${collection}/${id}`, data, getAuthConfig(directusToken));
+    } catch (error) {
+        console.error(`Failed to update ${collection} ${id}:`, error.message);
+        throw error;
+    }
+}
+
 // Functie om een registratie op te halen (nodig om de qr_token en de naam te lezen).
 async function getDirectusRegistration(directusUrl, directusToken, id) {
     try {
@@ -57,6 +69,19 @@ async function getDirectusRegistration(directusUrl, directusToken, id) {
         return response.data.data;
     } catch (error) {
         console.error(`Failed to fetch registration ${id}:`, error.message);
+        return null;
+    }
+}
+
+/**
+ * Haalt een willekeurig item op uit Directus.
+ */
+async function getDirectusItem(directusUrl, directusToken, collection, id, fields = '*') {
+    try {
+        const response = await axios.get(`${directusUrl}/items/${collection}/${id}?fields=${fields}`, getAuthConfig(directusToken));
+        return response.data.data;
+    } catch (error) {
+        console.error(`Failed to fetch ${collection} ${id}:`, error.message);
         return null;
     }
 }
@@ -185,7 +210,9 @@ module.exports = {
     createDirectusTransaction,
     updateDirectusTransaction,
     updateDirectusRegistration,
+    updateDirectusItem,
     getDirectusRegistration,
+    getDirectusItem,
     getTransaction,
     getCoupon,
     updateCouponUsage,

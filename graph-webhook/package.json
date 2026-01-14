@@ -8,6 +8,7 @@
         "start": "node src/server.js"
     },
     "dependencies": {
-        "express": "^4.19.2"
+        "express": "^4.19.2",
+        "axios": "^1.6.0"
     }
 }
