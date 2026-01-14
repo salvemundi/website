@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
+import NoAccessPage from './no-access/page';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -37,10 +38,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         console.log('[AdminLayout] User authorized - has committees:', committees.length);
                         setIsAuthorized(true);
                     } else {
-                        // User is explicitly NOT in any committee
-                        console.log('[AdminLayout] User NOT authorized - no committees, redirecting to home');
+                        // User is explicitly NOT in any committee - show no-access page
+                        console.log('[AdminLayout] User NOT authorized - no committees');
                         setIsAuthorized(false);
-                        router.push('/');
                     }
                 } else {
                     // Fallback: Check if user is member of any committee via API
@@ -57,16 +57,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         console.log('[AdminLayout] User authorized via API');
                         setIsAuthorized(true);
                     } else {
-                        // Not a committee member
-                        console.log('[AdminLayout] User NOT authorized via API, redirecting to home');
+                        // Not a committee member - show no-access page
+                        console.log('[AdminLayout] User NOT authorized via API');
                         setIsAuthorized(false);
-                        router.push('/');
                     }
                 }
             } catch (error) {
                 console.error('Authorization check failed:', error);
                 setIsAuthorized(false);
-                router.push('/');
             } finally {
                 setIsChecking(false);
             }
@@ -86,8 +84,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         );
     }
 
+    // If not authorized, show the no-access page
     if (!isAuthorized) {
-        return null;
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end">
+                <NoAccessPage />
+            </div>
+        );
     }
 
     return (
