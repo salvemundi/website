@@ -883,18 +883,12 @@ export function getImageUrl(imageId: string | undefined | any, options?: { quali
         token = process.env.NEXT_PUBLIC_DIRECTUS_API_KEY || null;
     }
 
-    const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
-    const baseUrl = isLocalhost
-        ? '/api'
-        : (process.env.NEXT_PUBLIC_DIRECTUS_URL || '/api');
+    // Always use /api proxy which handles authentication via headers
+    const baseUrl = '/api';
 
-    const cleanedToken = token && token !== 'null' && token !== 'undefined' ? token : null;
-
-    // Build query parameters for image optimization
+    // Build query parameters for image optimization only
+    // Note: Authentication is handled by the /api/assets proxy via Authorization header
     const params = new URLSearchParams();
-    if (cleanedToken) {
-        params.append('access_token', cleanedToken);
-    }
     if (options?.quality) {
         params.append('quality', options.quality.toString());
     }

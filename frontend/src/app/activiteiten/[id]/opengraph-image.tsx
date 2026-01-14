@@ -74,11 +74,28 @@ export default async function Image({ params }: { params: { id: string } }) {
             }
         }
 
-        // Get image URL
+        // Get image URL - fetch the image and convert to data URL for embedding
         let imageUrl = undefined;
         if (event.image) {
             const imageId = typeof event.image === 'object' ? event.image.id : event.image;
-            imageUrl = `${directusUrl}/assets/${imageId}?access_token=${apiKey}&width=1200&height=630&fit=cover`;
+            try {
+                const imageResponse = await fetch(
+                    `${directusUrl}/assets/${imageId}?width=1200&height=630&fit=cover`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${apiKey}`,
+                        }
+                    }
+                );
+                if (imageResponse.ok) {
+                    const imageBuffer = await imageResponse.arrayBuffer();
+                    const base64 = Buffer.from(imageBuffer).toString('base64');
+                    const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
+                    imageUrl = `data:${contentType};base64,${base64}`;
+                }
+            } catch (err) {
+                console.error('Failed to fetch event image:', err);
+            }
         }
 
         return generateEventOGImage({
