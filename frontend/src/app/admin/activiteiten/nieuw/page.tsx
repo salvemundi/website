@@ -221,7 +221,7 @@ export default function NieuweActiviteitPage() {
                 description="Maak een nieuwe activiteit aan"
             />
 
-            <div className="container mx-auto px-4 py-8 max-w-4xl">
+            <div className="container mx-auto px-4 py-8 max-w-4xl overflow-x-hidden">
                 <button
                     onClick={() => router.back()}
                     className="mb-6 flex items-center gap-2 text-white hover:text-white/80 transition"
@@ -230,7 +230,7 @@ export default function NieuweActiviteitPage() {
                     Terug
                 </button>
 
-                <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-8 space-y-6 text-slate-900 dark:text-slate-200">
+                <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-6 sm:p-8 space-y-6 text-slate-900 dark:text-slate-200">
                     {/* Basic Info */}
                     <div>
                         <label htmlFor="name" className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">
@@ -334,7 +334,7 @@ export default function NieuweActiviteitPage() {
                             value={formData.description}
                             onChange={handleChange}
                             rows={5}
-                            className={`w-full px-4 py-3 rounded-lg border ${errors.description ? 'border-red-500' : 'border-slate-300'} focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100`}
+                            className={`w-full px-4 py-3 rounded-lg border ${errors.description ? 'border-red-500' : 'border-slate-300'} focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 break-words`}
                             placeholder="Beschrijving van de activiteit"
                         />
                         {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
@@ -350,7 +350,7 @@ export default function NieuweActiviteitPage() {
                             value={formData.description_logged_in}
                             onChange={handleChange}
                             rows={3}
-                            className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                            className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 break-words"
                             placeholder="Extra informatie die alleen zichtbaar is voor ingelogde gebruikers"
                         />
                     </div>
