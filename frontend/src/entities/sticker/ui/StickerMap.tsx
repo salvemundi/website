@@ -144,8 +144,16 @@ const StickerMap: React.FC<StickerMapProps> = ({
                 )}
 
                 {popupInfo && (
-                    <Popup latitude={popupInfo.latitude!} longitude={popupInfo.longitude!} onClose={() => setPopupInfo(null)} closeButton anchor="bottom" className="map-popup-theme">
+                    <Popup latitude={popupInfo.latitude!} longitude={popupInfo.longitude!} onClose={() => setPopupInfo(null)} closeButton={false} anchor="bottom" className="map-popup-theme">
                         <div className="map-popup">
+                            <button
+                                type="button"
+                                aria-label="Close"
+                                className="map-popup__close"
+                                onClick={() => setPopupInfo(null)}
+                            >
+                                ×
+                            </button>
                             <div className="map-popup__head">
                                 <img src={popupInfo.user_created && typeof popupInfo.user_created !== 'string' && popupInfo.user_created.avatar ? getImageUrl(popupInfo.user_created.avatar) : '/img/Logo.png'} alt="avatar" className="map-popup__avatar" />
                                 <div>
@@ -165,6 +173,64 @@ const StickerMap: React.FC<StickerMapProps> = ({
 
             <style jsx>{`
                 @keyframes bounce { from { transform: translateY(0px); } to { transform: translateY(-10px); } }
+
+                .map-popup-theme .map-popup {
+                    position: relative;
+                    padding: 12px 14px;
+                    max-width: 340px;
+                }
+
+                .map-popup-theme .map-popup__avatar {
+                    width: 44px;
+                    height: 44px;
+                    border-radius: 8px;
+                    object-fit: cover;
+                    margin-right: 10px;
+                }
+
+                /* Custom close button */
+                .map-popup-theme .map-popup__close {
+                    position: absolute;
+                    top: 8px;
+                    right: 8px;
+                    width: 44px;
+                    height: 44px;
+                    padding: 0;
+                    border-radius: 10px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 24px;
+                    font-weight: 700;
+                    line-height: 1;
+                    cursor: pointer;
+                    box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+                    border: 1px solid transparent;
+                    transition: transform 0.12s ease, background-color 0.12s ease, opacity 0.12s ease;
+                    z-index: 2147483000; /* ensure above map overlays */
+                    opacity: 1;
+                }
+
+                /* Themed variants */
+                ${isDark ? `
+                .map-popup-theme .map-popup__close {
+                    background: rgba(0,0,0,0.78);
+                    color: #ffffff;
+                    border-color: rgba(255,255,255,0.12);
+                    text-shadow: 0 1px 0 rgba(0,0,0,0.6);
+                }
+                .map-popup-theme .map-popup__close:hover { background: rgba(0,0,0,0.9); transform: scale(1.06); }
+                ` : `
+                .map-popup-theme .map-popup__close {
+                    background: rgba(255,255,255,0.98);
+                    color: #0b0b0b;
+                    border-color: rgba(0,0,0,0.06);
+                    text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+                }
+                .map-popup-theme .map-popup__close:hover { background: rgba(255,255,255,1); transform: scale(1.06); }
+                `}
+
+                .map-popup-theme .map-popup__close { font-weight: 600; }
             `}</style>
         </div>
     );
