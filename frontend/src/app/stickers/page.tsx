@@ -194,11 +194,10 @@ function StickersContent() {
     return (
         <div className="">
             <PageHeader
-                title="Sticker World Map"
-                backgroundImage="/img/backgrounds/stickers-banner.jpg" // Assuming a banner exists or use a default
+                title="Stickers"
             >
                 <p className="text-lg sm:text-xl text-beige/90 max-w-3xl mx-auto mt-4">
-                    See where our members have placed association stickers around the world!
+                    Zie waar onze leden stickers hebben geplakt, of voeg je eigen locatie toe!
                 </p>
             </PageHeader>
 
@@ -330,6 +329,8 @@ function StickersContent() {
 
                 {/* Map - Hidden on mobile, shown on desktop */}
                 <div className="hidden md:block bg-[var(--bg-card)] rounded-3xl shadow-xl overflow-hidden mb-8 relative">
+                    {/* Purple gradient banner behind the top of the map */}
+                    <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-br from-theme-purple-darker to-theme-purple z-0" />
                     {isLoading ? (
                         <div className="h-[600px] flex items-center justify-center">
                             <Loader2 className="w-12 h-12 animate-spin text-paars" />
@@ -342,7 +343,7 @@ function StickersContent() {
                             </div>
                         </div>
                     ) : (
-                        <>
+                        <div className="relative z-10">
                             <StickerMap
                                 stickers={stickers}
                                 user={user}
@@ -363,7 +364,7 @@ function StickersContent() {
                                     <Plus className="w-6 h-6" />
                                 </button>
                             )}
-                        </>
+                        </div>
                     )}
                 </div>
 
