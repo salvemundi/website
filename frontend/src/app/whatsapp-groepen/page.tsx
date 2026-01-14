@@ -37,7 +37,7 @@ export default function WhatsAppGroupsPage() {
             <div className="">
                 <PageHeader
                     title="WhatsApp Groepen"
-                    backgroundImage="/img/backgrounds/whatsapp-banner.jpg" // Assuming a banner exists or use a default
+                    backgroundImage="/img/backgrounds/homepage-banner.jpg"
                 />
                 <div className="container mx-auto px-4 py-16">
                     <div className="max-w-4xl mx-auto">
@@ -65,7 +65,7 @@ export default function WhatsAppGroupsPage() {
         <div className="">
             <PageHeader
                 title="WhatsApp Groepen"
-                backgroundImage="/img/backgrounds/whatsapp-banner.jpg" // Assuming a banner exists or use a default
+                backgroundImage="/img/backgrounds/homepage-banner.jpg"
             >
                 <p className="text-lg sm:text-xl text-beige/90 max-w-3xl mx-auto mt-4">
                     Word lid van onze WhatsApp groepen om verbonden te blijven
