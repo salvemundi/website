@@ -34,6 +34,25 @@ const ROLE_IDS = {
     CommitteeMember: '5848f0ed-59c4-4ae2-8683-3d9a221ac189'
 };
 
+// Hardcode committee groups here (names or IDs). If you provide names, they will be
+// resolved to IDs after the global group map is built. Example:
+// const HARDCODE_COMMITTEE_GROUPS = ['Actieve Leden', '5848f0ed-59c4-4ae2-8683-3d9a221ac189'];
+const HARDCODE_COMMITTEE_GROUPS = [
+    'd4686b83-4679-46ed-9fd8-c6ff3c6a265f',   //activiteiten commissie
+    '0ac8627d-07f8-43fd-a629-808572e95098',   //feest commissie
+    'b907ae11-2067-49ac-b8a7-0ce166eabbcb',   //kamp commissie
+    '8d6c181e-3527-4a0b-aacb-5f758b4d14f5',   //kas commissie
+    '0140644c-be1e-438f-9db1-9c082283abf2',   //marketing commissie
+    '3ec890d7-93b7-416d-8470-c2cb8cbad8ba',   //media commissie
+    '4c027a6d-0307-4aee-b719-23d67bcd0959',   //reis commissie
+    'ee4c4407-6d61-483e-a98c-77c5e20bd7ba',   //studie commissie
+];
+
+// Which Entra group IDs should cause a user to receive the "CommitteeMember" role in Directus.
+// You can also override this via the COMMITTEE_GROUP_IDS environment variable (comma separated list).
+// This variable may be replaced after building the global group name map if `HARDCODE_COMMITTEE_GROUPS` contains names.
+let COMMITTEE_GROUP_IDS =  [ROLE_IDS.CommitteeMember];
+
 const DIRECTUS_HEADERS = {
     Authorization: `Bearer ${process.env.DIRECTUS_API_TOKEN}`,
 };
@@ -182,6 +201,28 @@ async function buildGlobalGroupNameMap() {
         if (name) groupIdByNameGlobal[name] = g.id;
     });
 
+    // If the user provided HARDCODE_COMMITTEE_GROUPS as names or ids, resolve them to ids now.
+    if (Array.isArray(HARDCODE_COMMITTEE_GROUPS) && HARDCODE_COMMITTEE_GROUPS.length > 0) {
+        const resolved = [];
+        for (const entry of HARDCODE_COMMITTEE_GROUPS) {
+            if (!entry) continue;
+            // If entry looks like a GUID, accept it as an id directly
+            if (/^[0-9a-fA-F-]{36}$/.test(entry)) {
+                resolved.push(entry);
+                continue;
+            }
+            // Try to resolve by name via the global map
+            const foundId = groupIdByNameGlobal[entry];
+            if (foundId) resolved.push(foundId);
+        }
+        if (resolved.length > 0) {
+            COMMITTEE_GROUP_IDS = resolved;
+            console.log(`[INIT] Resolved HARDCODE_COMMITTEE_GROUPS to ids: ${COMMITTEE_GROUP_IDS.join(',')}`);
+        } else {
+            console.log('[INIT] No HARDCODE_COMMITTEE_GROUPS resolved to ids; falling back to COMMITTEE_GROUP_IDS/env/default');
+        }
+    }
+
 
 }
 
@@ -190,10 +231,12 @@ function getRoleIdByGroupMembership(groupIds) {
     if (Array.isArray(groupIds) && groupIds.length > 0) {
         if (groupIds.includes(GROUP_IDS.ICT)) return ROLE_IDS.ADMIN;
         if (groupIds.includes(GROUP_IDS.BESTUUR)) return ROLE_IDS.BESTUUR;
+        if 
         if (groupIds.includes(GROUP_IDS.COMMISSIE_LEIDER)) return ROLE_IDS.COMMISSIE_LEIDER;
-
-        // If the user is member of any other Entra group, treat them as a committee member
-        return ROLE_IDS.CommitteeMember;
+        // If the user is member of any configured committee group, treat them as a committee member
+        for (const gid of groupIds) {
+            if (COMMITTEE_GROUP_IDS.includes(gid)) return ROLE_IDS.CommitteeMember;
+        }
     }
 
     // No Entra groups found -> don't force a role change
@@ -204,12 +247,15 @@ function hasChanges(existing, newData, selectedFields = null) {
     const defaultFields = ['first_name', 'last_name', 'phone_number', 'fontys_email', 'role', 'status', 'membership_expiry'];
     const fieldsToCheck = selectedFields ? selectedFields.filter(f => defaultFields.includes(f)) : defaultFields;
 
-    // Always include critical fields for initial sync check if no selection
-    if (!selectedFields) {
-        return defaultFields.some(field => existing[field] !== newData[field]);
-    }
+    // Only consider a field changed if the new payload actually contains that field.
+    // This avoids treating omitted fields (for example: role intentionally omitted when not determined)
+    // as a change for existing users.
+    const fieldChanged = (field) => {
+        if (!(field in newData)) return false; // skip comparison when newData doesn't provide the field
+        return existing[field] !== newData[field];
+    };
 
-    return fieldsToCheck.some(field => existing[field] !== newData[field]);
+    return fieldsToCheck.some(fieldChanged);
 }
 
 // Committee logic
