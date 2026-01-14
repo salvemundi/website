@@ -617,6 +617,16 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
 
         console.log(`[SYNC] 📦 Payload for ${email} includes role: ${role ? 'YES (' + role + ')' : 'NO (role field omitted)'}`);
 
+        // Temporary debug: if user has groups but role was not determined, log group details once
+        if ((!role || role === null) && Array.isArray(groups) && groups.length > 0) {
+            try {
+                const gsummary = groups.map(g => `${g.displayName || g.mailNickname || 'unknown'}(${g.id})`).join('; ');
+                console.log(`[DEBUG] ${email} groups present but no role determined: ${gsummary}`);
+            } catch (e) {
+                console.log('[DEBUG] Could not summarize groups for', email);
+            }
+        }
+
         let directusUserId;
 
         if (existingUser) {
