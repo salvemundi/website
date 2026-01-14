@@ -390,27 +390,29 @@ function StickersContent() {
                         onChange={(e) => setFilterCity(e.target.value)}
                         className="px-3 py-2 rounded-lg focus:ring-2 focus:ring-paars focus:border-transparent"
                     />
-                    {/* User filter: select to filter by specific user, fallback free-text search still supported */}
+                    {/* User filter: type or select a user (typing supported in the field) */}
                     <div className="flex">
-                        <select
-                            value={filterUserId}
-                            onChange={(e) => setFilterUserId(e.target.value)}
+                        <input
+                            list="users-datalist"
+                            placeholder="Filter by user"
+                            value={filterUser}
+                            onChange={(e) => {
+                                const v = e.target.value;
+                                setFilterUser(v);
+                                // try to resolve to an id when the user types/selects an exact match
+                                const match = usersList.find(u => (u.name || '').toLowerCase() === v.toLowerCase());
+                                setFilterUserId(match ? match.id : '');
+                            }}
                             className="px-3 py-2 rounded-lg w-full bg-[var(--bg-card)] focus:ring-2 focus:ring-paars focus:border-transparent"
-                        >
+                        />
+                        <datalist id="users-datalist">
                             <option value="">All users</option>
-                            {Object.entries(stickersPerUser).map(([id, info]) => (
-                                <option key={id} value={id}>{info.name || id} ({info.count})</option>
+                            {usersList.map(u => (
+                                <option key={u.id} value={u.name} />
                             ))}
-                        </select>
+                        </datalist>
                     </div>
                     <div className="flex gap-2">
-                        <input
-                            type="text"
-                            placeholder="Search user..."
-                            value={filterUser}
-                            onChange={(e) => setFilterUser(e.target.value)}
-                            className="px-3 py-2 rounded-lg flex-1 focus:ring-2 focus:ring-paars focus:border-transparent"
-                        />
                         <button
                             onClick={() => { setFilterCountry(''); setFilterCity(''); setFilterUser(''); setFilterUserId(''); }}
                             className="px-3 py-2 rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] hover:bg-[var(--bg-soft)] dark:bg-[var(--bg-soft-dark)] dark:hover:bg-[var(--bg-card-dark)] text-paars"
