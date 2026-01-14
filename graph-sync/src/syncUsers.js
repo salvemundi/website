@@ -619,7 +619,6 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
         );
 
         const existingUser = existingRes.data?.data?.[0] || null;
-
         const payload = {
             email,
             first_name: u.givenName || (u.displayName ? u.displayName.split(' ')[0] : 'Unknown'),
@@ -638,24 +637,45 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
 
         if (existingUser) {
             directusUserId = existingUser.id;
-            console.log(`[SYNC] 👤 Existing user ${email}: current role = ${existingUser.role || 'null'}, new role = ${role || 'null (no change)'}`);
-            const changes = hasChanges(existingUser, payload, selectedFields);
+            // Normalize existing role value (Directus may return object or id)
+            let existingRoleNormalized = null;
+            try {
+                if (existingUser.role && typeof existingUser.role === 'object') {
+                    existingRoleNormalized = existingUser.role.id || existingUser.role;
+                } else {
+                    existingRoleNormalized = existingUser.role || null;
+                }
+            } catch (e) {
+                existingRoleNormalized = existingUser.role || null;
+            }
+
+            console.log(`[SYNC] Existing user ${email}: current role = ${existingRoleNormalized || 'null'}, new role = ${role || 'null (no change)'}`);
+
+            // Build finalPayload early so we can force role inclusion when there's a mismatch
+            let finalPayload = payload;
+            if (selectedFields) {
+                finalPayload = { email }; // Always keep email for context
+                selectedFields.forEach(f => {
+                    if (payload[f] !== undefined) finalPayload[f] = payload[f];
+                });
+            }
+
+            // Detect role mismatch between Directus and Entra and force role in payload when needed
+            const existingRoleVal = existingRoleNormalized || null;
+            const roleMismatch = Boolean(role && existingRoleVal !== role);
+            if (roleMismatch) {
+                finalPayload.role = role;
+                console.log(`[SYNC] ⚠️ Role mismatch for ${email}: existing=${existingRoleVal}, new=${role}. Forcing role in payload.`);
+            }
+
+            const changes = hasChanges(existingUser, finalPayload, selectedFields) || roleMismatch;
             console.log(`[${new Date().toISOString()}] [SYNC] User ${email} exists (ID: ${directusUserId}). Has changes: ${changes}`);
 
             if (changes) {
-                // Only send selected fields in patch if we are being selective
-                let finalPayload = payload;
-                if (selectedFields) {
-                    finalPayload = { email }; // Always keep email for context
-                    selectedFields.forEach(f => {
-                        if (payload[f] !== undefined) finalPayload[f] = payload[f];
-                    });
-                }
-
                 try {
                     console.log(`[${new Date().toISOString()}] [SYNC] Patching user ${email} with:`, JSON.stringify(finalPayload));
-                    await axios.patch(`${process.env.DIRECTUS_URL}/users/${directusUserId}`, finalPayload, { headers: DIRECTUS_HEADERS });
-                    console.log(`[${new Date().toISOString()}] ✅ [SYNC] Successfully patched user ${email}`);
+                    const patchRes = await axios.patch(`${process.env.DIRECTUS_URL}/users/${directusUserId}`, finalPayload, { headers: DIRECTUS_HEADERS });
+                    console.log(`[${new Date().toISOString()}] ✅ [SYNC] Successfully patched user ${email}. Directus response:`, patchRes.data || '(no body)');
                 } catch (patchErr) {
                     console.error(`[${new Date().toISOString()}] ❌ [SYNC] Failed to patch user ${email}:`, patchErr.response?.data || patchErr.message);
                     throw patchErr;
