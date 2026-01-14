@@ -25,7 +25,6 @@ const GROUP_NAME_MAP = {
     'fc3b226a-62f8-437a-a7fa-7c631e48aaff': 'Commissie Leider',
     'b16d93c7-42ef-412e-afb3-f6cbe487d0e0': 'Bestuur',
     'a4aeb401-882d-4e1e-90ee-106b7fdb23cc': 'ICTCommissie',
-    // add more mapping entries as needed
 };
 
 const ROLE_IDS = {
