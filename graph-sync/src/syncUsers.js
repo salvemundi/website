@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3001;
 
 // Define your known group IDs
 const GROUP_IDS = {
-    COMMISSIE_LEIDER: 'fc3b226a-62f8-437a-a7fa-7c631e48aaff',
+    COMMISSIE_LEIDER: '91d77972-2695-4b7b-a0a0-df7d6523a087',
     BESTUUR: 'b16d93c7-42ef-412e-afb3-f6cbe487d0e0',
     ICT: 'a4aeb401-882d-4e1e-90ee-106b7fdb23cc',
     CommitteeMember: '5848f0ed-59c4-4ae2-8683-3d9a221ac189'
@@ -51,7 +51,8 @@ const HARDCODE_COMMITTEE_GROUPS = [
 // Which Entra group IDs should cause a user to receive the "CommitteeMember" role in Directus.
 // You can also override this via the COMMITTEE_GROUP_IDS environment variable (comma separated list).
 // This variable may be replaced after building the global group name map if `HARDCODE_COMMITTEE_GROUPS` contains names.
-let COMMITTEE_GROUP_IDS = (process.env.COMMITTEE_GROUP_IDS && process.env.COMMITTEE_GROUP_IDS.split(',').map(s => s.trim()).filter(Boolean)) || [GROUP_IDS.CommitteeMember];
+// Initialize with the hardcoded committee groups directly instead of just the default CommitteeMember group
+let COMMITTEE_GROUP_IDS = (process.env.COMMITTEE_GROUP_IDS && process.env.COMMITTEE_GROUP_IDS.split(',').map(s => s.trim()).filter(Boolean)) || HARDCODE_COMMITTEE_GROUPS;
 
 const DIRECTUS_HEADERS = {
     Authorization: `Bearer ${process.env.DIRECTUS_API_TOKEN}`,
@@ -578,13 +579,10 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
             .get();
 
         const groups = groupResp.value || [];
-        const groupIds = groups.map(g => g.id);
-        console.log(`[${new Date().toISOString()}] [SYNC] User ${u.mail || u.id} is in ${groups.length} groups:`, groupIds.join(', '));
-        console.log(`[${new Date().toISOString()}] [SYNC] COMMITTEE_GROUP_IDS configured:`, COMMITTEE_GROUP_IDS.join(', '));
+        // log removed
 
         const email = (u.mail || u.userPrincipalName || '').toLowerCase();
-        const role = getRoleIdByGroupMembership(groupIds);
-        console.log(`[${new Date().toISOString()}] [SYNC] Determined role for ${email}: ${role || 'null (no role assigned)')`);
+        const role = getRoleIdByGroupMembership(groups.map(g => g.id));
 
         const existingRes = await axios.get(
             `${process.env.DIRECTUS_URL}/users?filter[email][_eq]=${encodeURIComponent(email)}&fields=id,email,first_name,last_name,phone_number,status,role,membership_expiry,fontys_email`,
@@ -593,8 +591,6 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
 
         const existingUser = existingRes.data?.data?.[0] || null;
 
-        console.log(`[${new Date().toISOString()}] [SYNC] Existing user role in Directus: ${existingUser?.role || 'null'}, Determined role from Entra: ${role || 'null'}`);
-
         const payload = {
             email,
             first_name: u.givenName || (u.displayName ? u.displayName.split(' ')[0] : 'Unknown'),
@@ -602,8 +598,8 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
             fontys_email: email.includes('@student.fontys.nl') ? email : null,
             phone_number: formatDutchMobile(u.mobilePhone),
             status: 'active',
-            // Always include role when it was determined from Entra groups (even if null to clear it)
-            ...(role !== null ? { role } : {}),
+            // Only include role when it was explicitly determined from Entra groups
+            ...(role ? { role } : {}),
             membership_expiry: membershipExpiry,
         };
 
