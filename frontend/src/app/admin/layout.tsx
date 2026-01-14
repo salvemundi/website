@@ -13,6 +13,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     useEffect(() => {
         const checkAuthorization = async () => {
+            // Reset authorization when starting a new check
+            setIsAuthorized(false);
+            
             if (authLoading) return;
 
             if (!user) {
@@ -21,27 +24,48 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             }
 
             try {
-                // Prefer using committees already fetched on login
-                if (Array.isArray((user as any).committees) && (user as any).committees.length > 0) {
-                    setIsAuthorized(true);
+                // Check if user is member of any committee
+                const committees = (user as any).committees;
+                
+                console.log('[AdminLayout] Checking authorization for user:', user.id);
+                console.log('[AdminLayout] User committees:', committees);
+                
+                // First check if committees were already loaded during authentication
+                if (Array.isArray(committees)) {
+                    // User has committees data loaded - check if they're in any committee
+                    if (committees.length > 0) {
+                        console.log('[AdminLayout] User authorized - has committees:', committees.length);
+                        setIsAuthorized(true);
+                    } else {
+                        // User is explicitly NOT in any committee
+                        console.log('[AdminLayout] User NOT authorized - no committees, redirecting to home');
+                        setIsAuthorized(false);
+                        router.push('/');
+                    }
                 } else {
                     // Fallback: Check if user is member of any committee via API
+                    console.log('[AdminLayout] Committees not loaded, checking via API');
                     const query = new URLSearchParams({
                         'filter[user_id][_eq]': user.id,
                         'limit': '1',
                     }).toString();
 
                     const memberships = await directusFetch<any[]>(`/items/committee_members?${query}`);
+                    console.log('[AdminLayout] API response:', memberships);
 
-                    if (memberships && memberships.length > 0) {
+                    if (Array.isArray(memberships) && memberships.length > 0) {
+                        console.log('[AdminLayout] User authorized via API');
                         setIsAuthorized(true);
                     } else {
                         // Not a committee member
+                        console.log('[AdminLayout] User NOT authorized via API, redirecting to home');
+                        setIsAuthorized(false);
                         router.push('/');
                     }
                 }
             } catch (error) {
                 console.error('Authorization check failed:', error);
+                setIsAuthorized(false);
                 router.push('/');
             } finally {
                 setIsChecking(false);
