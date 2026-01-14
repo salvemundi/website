@@ -54,6 +54,12 @@ const HARDCODE_COMMITTEE_GROUPS = [
 // Initialize with the hardcoded committee groups directly instead of just the default CommitteeMember group
 let COMMITTEE_GROUP_IDS = (process.env.COMMITTEE_GROUP_IDS && process.env.COMMITTEE_GROUP_IDS.split(',').map(s => s.trim()).filter(Boolean)) || HARDCODE_COMMITTEE_GROUPS;
 
+console.log(`[INIT] 🎯 COMMITTEE_GROUP_IDS initialized with ${COMMITTEE_GROUP_IDS.length} groups:`);
+COMMITTEE_GROUP_IDS.forEach((id, idx) => {
+    const comment = HARDCODE_COMMITTEE_GROUPS[idx] === id ? ` (${['activiteiten', 'feest', 'kamp', 'kas', 'marketing', 'media', 'reis', 'studie'][idx]} commissie)` : '';
+    console.log(`[INIT]   ${idx + 1}. ${id}${comment}`);
+});
+
 const DIRECTUS_HEADERS = {
     Authorization: `Bearer ${process.env.DIRECTUS_API_TOKEN}`,
 };
@@ -228,18 +234,37 @@ async function buildGlobalGroupNameMap() {
 }
 
 function getRoleIdByGroupMembership(groupIds) {
+    console.log(`[ROLE] 🔍 getRoleIdByGroupMembership called with ${groupIds?.length || 0} groups:`, groupIds);
+    console.log(`[ROLE] 📋 COMMITTEE_GROUP_IDS contains ${COMMITTEE_GROUP_IDS.length} groups:`, COMMITTEE_GROUP_IDS);
+    
     // Preserve explicit special-group roles first
     if (Array.isArray(groupIds) && groupIds.length > 0) {
-        if (groupIds.includes(GROUP_IDS.ICT)) return ROLE_IDS.ADMIN;
-        if (groupIds.includes(GROUP_IDS.BESTUUR)) return ROLE_IDS.BESTUUR;
-        if (groupIds.includes(GROUP_IDS.COMMISSIE_LEIDER)) return ROLE_IDS.COMMISSIE_LEIDER;
+        if (groupIds.includes(GROUP_IDS.ICT)) {
+            console.log(`[ROLE] ✅ User is in ICT group (${GROUP_IDS.ICT}) -> Assigning ADMIN role`);
+            return ROLE_IDS.ADMIN;
+        }
+        if (groupIds.includes(GROUP_IDS.BESTUUR)) {
+            console.log(`[ROLE] ✅ User is in BESTUUR group (${GROUP_IDS.BESTUUR}) -> Assigning BESTUUR role`);
+            return ROLE_IDS.BESTUUR;
+        }
+        if (groupIds.includes(GROUP_IDS.COMMISSIE_LEIDER)) {
+            console.log(`[ROLE] ✅ User is in COMMISSIE_LEIDER group (${GROUP_IDS.COMMISSIE_LEIDER}) -> Assigning COMMISSIE_LEIDER role`);
+            return ROLE_IDS.COMMISSIE_LEIDER;
+        }
         // If the user is member of any configured committee group, treat them as a committee member
         for (const gid of groupIds) {
-            if (COMMITTEE_GROUP_IDS.includes(gid)) return ROLE_IDS.CommitteeMember;
+            if (COMMITTEE_GROUP_IDS.includes(gid)) {
+                console.log(`[ROLE] ✅ User is in committee group (${gid}) -> Assigning CommitteeMember role`);
+                return ROLE_IDS.CommitteeMember;
+            }
         }
+        console.log(`[ROLE] ⚠️ User is in ${groupIds.length} group(s) but none match special roles or committee groups`);
+    } else {
+        console.log(`[ROLE] ⚠️ No groups provided or empty array`);
     }
 
     // No Entra groups found -> don't force a role change
+    console.log(`[ROLE] ❌ No matching role found -> returning null (no role change)`);
     return null;
 }
 
@@ -579,10 +604,14 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
             .get();
 
         const groups = groupResp.value || [];
-        // log removed
+        console.log(`[SYNC] 👥 User ${u.mail || userId} is member of ${groups.length} groups:`, groups.map(g => `${g.displayName || g.mailNickname} (${g.id})`));
 
         const email = (u.mail || u.userPrincipalName || '').toLowerCase();
-        const role = getRoleIdByGroupMembership(groups.map(g => g.id));
+        const groupIds = groups.map(g => g.id);
+        console.log(`[SYNC] 🔑 Calling getRoleIdByGroupMembership for user ${email} with ${groupIds.length} group IDs`);
+        const role = getRoleIdByGroupMembership(groupIds);
+        console.log(`[SYNC] 🎭 Role determined for ${email}: ${role || 'null (no role change)'}`);
+
 
         const existingRes = await axios.get(
             `${process.env.DIRECTUS_URL}/users?filter[email][_eq]=${encodeURIComponent(email)}&fields=id,email,first_name,last_name,phone_number,status,role,membership_expiry,fontys_email`,
@@ -603,10 +632,13 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
             membership_expiry: membershipExpiry,
         };
 
+        console.log(`[SYNC] 📦 Payload for ${email} includes role: ${role ? 'YES (' + role + ')' : 'NO (role field omitted)'}`);
+
         let directusUserId;
 
         if (existingUser) {
             directusUserId = existingUser.id;
+            console.log(`[SYNC] 👤 Existing user ${email}: current role = ${existingUser.role || 'null'}, new role = ${role || 'null (no change)'}`);
             const changes = hasChanges(existingUser, payload, selectedFields);
             console.log(`[${new Date().toISOString()}] [SYNC] User ${email} exists (ID: ${directusUserId}). Has changes: ${changes}`);
 
