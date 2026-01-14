@@ -15,7 +15,7 @@ const GROUP_IDS = {
     COMMISSIE_LEIDER: '91d77972-2695-4b7b-a0a0-df7d6523a087',
     BESTUUR: 'b16d93c7-42ef-412e-afb3-f6cbe487d0e0',
     ICT: 'a4aeb401-882d-4e1e-90ee-106b7fdb23cc',
-    Intro: '8516f03f9-be0a-4514-9da8-396415f59d0b',
+    Intro: '516f03f9-be0a-4514-9da8-396415f59d0b',
     CommitteeMember: '5848f0ed-59c4-4ae2-8683-3d9a221ac189'
 };
 
