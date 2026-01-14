@@ -319,7 +319,7 @@ export default function BewerkenActiviteitPage() {
                 description={formData.name}
             />
 
-            <div className="container mx-auto px-4 py-8 max-w-4xl">
+            <div className="container mx-auto px-4 py-8 max-w-4xl overflow-x-hidden">
                 <button
                     onClick={() => router.back()}
                     className="mb-6 flex items-center gap-2 text-white hover:text-white/80 transition"
@@ -328,7 +328,7 @@ export default function BewerkenActiviteitPage() {
                     Terug
                 </button>
 
-                <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg p-8 space-y-6">
+                <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6">
                     {/* Basic Info */}
                     <div>
                         <label htmlFor="name" className="block text-sm font-bold text-slate-700 mb-2">
