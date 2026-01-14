@@ -43,25 +43,38 @@ const Header: React.FC = () => {
 
             try {
                 // Prefer committees that were fetched during auth
-                if (Array.isArray((user as any).committees) && (user as any).committees.length > 0) {
-                    setIsCommitteeMember(true);
+                const committees = (user as any).committees;
+                console.log('[Header] Checking committee membership for user:', user.id);
+                console.log('[Header] User committees:', committees);
+                
+                if (Array.isArray(committees)) {
+                    // User has committees data loaded
+                    const isMember = committees.length > 0;
+                    console.log('[Header] User is committee member:', isMember);
+                    setIsCommitteeMember(isMember);
                     return;
                 }
 
+                // Fallback: fetch from API if committees not loaded yet
+                console.log('[Header] Committees not loaded, checking via API');
                 const query = new URLSearchParams({
                     'filter[user_id][_eq]': user.id,
                     'limit': '1',
                 }).toString();
 
                 const memberships = await directusFetch<any[]>(`/items/committee_members?${query}`);
-                setIsCommitteeMember(memberships && memberships.length > 0);
+                console.log('[Header] API response:', memberships);
+                const isMember = Array.isArray(memberships) && memberships.length > 0;
+                console.log('[Header] User is committee member via API:', isMember);
+                setIsCommitteeMember(isMember);
             } catch (error) {
+                console.error('[Header] Error checking committee membership:', error);
                 setIsCommitteeMember(false);
             }
         };
 
         checkCommitteeMembership();
-    }, [user?.id, user?.committees]);
+    }, [user?.id, user]);
 
     // Measure header height and expose as CSS variable so other components
     // (like the Hero) can size themselves relative to the header. Use
