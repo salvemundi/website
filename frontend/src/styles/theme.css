@@ -391,6 +391,30 @@ input::placeholder, textarea::placeholder {
   display: inline-block;
 }
 
+/* ==============================================
+   BUTTON HELPERS
+   ============================================== */
+
+/* Add-sticker specific helper: in light mode make the button purple (solid) instead of orange->purple gradient
+   so it reads well on white backgrounds. In dark mode keep the gradient so it still matches the theme. */
+.btn-add-sticker {
+  /* fallback - keep existing gradient if available */
+  background-image: linear-gradient(90deg, var(--theme-gradient-light-start), var(--theme-gradient-light-end));
+  color: var(--theme-white);
+}
+
+/* Light mode override: prefer a solid purple button for better contrast on white */
+html:not(.dark) .btn-add-sticker {
+  background: var(--theme-purple);
+  box-shadow: 0 10px 30px rgba(102,50,101,0.12);
+  border: 1px solid rgba(102,50,101,0.08);
+}
+
+/* Dark mode: keep the gradient look (no change) */
+html.dark .btn-add-sticker {
+  background: linear-gradient(90deg, var(--theme-gradient-start), var(--theme-gradient-end));
+}
+
 @keyframes icon-rotate {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, Suspense } from 'react';
+import { useState, useMemo, Suspense, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { stickersApi, calculateStickerStats, geocodeAddress, reverseGeocode, CreateStickerData, Sticker } from '@/shared/lib/api/salvemundi';
@@ -23,6 +23,8 @@ function StickersContent() {
     const { user } = useAuth();
     const queryClient = useQueryClient();
     const [showAddModal, setShowAddModal] = useState(false);
+    const [showFullscreenMap, setShowFullscreenMap] = useState(false);
+    const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [searchAddress, setSearchAddress] = useState('');
     const [filterCountry, setFilterCountry] = useState('');
@@ -106,6 +108,11 @@ function StickersContent() {
             .sort((a, b) => b.count - a.count);
     }, [stickersPerUser]);
 
+    // Users list for people filter (used for the mobile people search)
+    const usersList = useMemo(() => {
+        return Object.entries(stickersPerUser).map(([id, info]) => ({ id, name: info.name || id }));
+    }, [stickersPerUser]);
+
     // Handlers
     const handleMapClick = async (lat: number, lng: number) => {
         if (!user) return; // Only allow adding if logged in
@@ -156,6 +163,25 @@ function StickersContent() {
         }
     };
 
+    // Prevent background/body scrolling when the fullscreen mobile map is open
+    useEffect(() => {
+        if (typeof document === 'undefined') return;
+        const html = document.documentElement;
+        const body = document.body;
+        if (showFullscreenMap) {
+            html.classList.add('overflow-hidden');
+            body.classList.add('overflow-hidden');
+        } else {
+            html.classList.remove('overflow-hidden');
+            body.classList.remove('overflow-hidden');
+        }
+
+        return () => {
+            html.classList.remove('overflow-hidden');
+            body.classList.remove('overflow-hidden');
+        };
+    }, [showFullscreenMap]);
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.latitude || !formData.longitude || formData.latitude === 0 || formData.longitude === 0) {
@@ -179,56 +205,76 @@ function StickersContent() {
             <div className="container mx-auto px-4 py-8">
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div className="bg-[var(--bg-card)] rounded-3xl shadow-lg p-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
+                    <div className="bg-[var(--bg-card)] rounded-2xl md:rounded-3xl shadow-lg p-4 md:p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-gray-500 text-sm font-medium">Total Stickers</p>
-                                <p className="text-3xl font-bold text-paars mt-1">{stats.total}</p>
+                                <p className="text-gray-500 text-xs md:text-sm font-medium">Total Stickers</p>
+                                <p className="text-2xl md:text-3xl font-bold text-paars mt-1">{stats.total}</p>
                             </div>
-                            <MapPin className="w-12 h-12 text-paars opacity-80" />
+                            <MapPin className="w-8 h-8 md:w-12 md:h-12 text-paars opacity-80" />
                         </div>
                     </div>
 
-                    <div className="bg-[var(--bg-card)] rounded-3xl shadow-lg p-6">
+                    <div className="bg-[var(--bg-card)] rounded-2xl md:rounded-3xl shadow-lg p-4 md:p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-gray-500 text-sm font-medium">Countries</p>
-                                <p className="text-3xl font-bold text-paars mt-1">{stats.countries}</p>
+                                <p className="text-gray-500 text-xs md:text-sm font-medium">Countries</p>
+                                <p className="text-2xl md:text-3xl font-bold text-paars mt-1">{stats.countries}</p>
                             </div>
-                            <Globe className="w-12 h-12 text-blue-500 opacity-80" />
+                            <Globe className="w-8 h-8 md:w-12 md:h-12 text-blue-500 opacity-80" />
                         </div>
                     </div>
 
-                    <div className="bg-[var(--bg-card)] rounded-3xl shadow-lg p-6">
+                    <div className="bg-[var(--bg-card)] rounded-2xl md:rounded-3xl shadow-lg p-4 md:p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-gray-500 text-sm font-medium">Cities</p>
-                                <p className="text-3xl font-bold text-paars mt-1">{stats.cities}</p>
+                                <p className="text-gray-500 text-xs md:text-sm font-medium">Cities</p>
+                                <p className="text-2xl md:text-3xl font-bold text-paars mt-1">{stats.cities}</p>
                             </div>
-                            <Award className="w-12 h-12 text-green-500 opacity-80" />
+                            <Award className="w-8 h-8 md:w-12 md:h-12 text-green-500 opacity-80" />
                         </div>
                     </div>
 
-                    <div className="bg-[var(--bg-card)] rounded-3xl shadow-lg p-6">
+                    <div className="bg-[var(--bg-card)] rounded-2xl md:rounded-3xl shadow-lg p-4 md:p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-gray-500 text-sm font-medium">Top Country</p>
-                                <p className="text-xl font-bold text-paars mt-1">
+                                <p className="text-gray-500 text-xs md:text-sm font-medium">Top Country</p>
+                                <p className="text-base md:text-xl font-bold text-paars mt-1">
                                     {stats.topCountry ? `${stats.topCountry.country} (${stats.topCountry.count})` : 'N/A'}
                                 </p>
                             </div>
-                            <TrendingUp className="w-12 h-12 text-oranje opacity-80" />
+                            <TrendingUp className="w-8 h-8 md:w-12 md:h-12 text-oranje opacity-80" />
                         </div>
                     </div>
                 </div>
 
-                {/* Filters and Add Sticker Button */}
-                {user && (
-                    <div className="mb-6 flex justify-end">
+                {/* Mobile: Button to show map fullscreen + Add button */}
+                <div className="md:hidden mb-6 flex gap-3">
+                    <button
+                        onClick={() => setShowFullscreenMap(true)}
+                        className="flex-1 bg-white dark:bg-[var(--bg-card)] text-paars px-4 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-md border-2 border-paars/30 hover:border-paars/50 hover:bg-paars/5 transition-all"
+                    >
+                        <MapPin className="w-5 h-5" />
+                        View Map
+                    </button>
+                    {user && (
                         <button
                             onClick={() => setShowAddModal(true)}
-                            className="bg-gradient-to-r from-oranje to-paars text-theme-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2 shadow-lg shadow-oranje/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl"
+                            className="bg-gradient-to-r from-oranje to-paars text-white btn-add-sticker px-4 py-3 rounded-xl font-semibold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all active:scale-95"
+                        >
+                            <Plus className="w-5 h-5" />
+                            Add
+                        </button>
+                    )}
+                </div>
+
+                {/* Desktop: Add Sticker Button */}
+                {user && (
+                    <div className="hidden md:flex mb-6 justify-end">
+                        <button
+                            onClick={() => setShowAddModal(true)}
+                            className="bg-gradient-to-r from-oranje to-paars text-theme-white btn-add-sticker px-6 py-3 rounded-xl font-semibold flex items-center gap-2 shadow-lg shadow-oranje/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl"
                         >
                             <Plus className="w-5 h-5" />
                             Add Sticker Location
@@ -236,8 +282,8 @@ function StickersContent() {
                     </div>
                 )}
 
-                {/* Filters */}
-                <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-3 bg-[var(--bg-card)] p-4 rounded-2xl shadow-md">
+                {/* Filters - Hidden on mobile, shown on desktop */}
+                <div className="hidden md:grid mb-6 grid-cols-1 md:grid-cols-4 gap-3 bg-[var(--bg-card)] p-4 rounded-2xl shadow-md">
                     <input
                         type="text"
                         placeholder="Filter by country"
@@ -282,8 +328,8 @@ function StickersContent() {
                     </div>
                 </div>
 
-                {/* Map */}
-                <div className="bg-[var(--bg-card)] rounded-3xl shadow-xl overflow-hidden mb-8">
+                {/* Map - Hidden on mobile, shown on desktop */}
+                <div className="hidden md:block bg-[var(--bg-card)] rounded-3xl shadow-xl overflow-hidden mb-8 relative">
                     {isLoading ? (
                         <div className="h-[600px] flex items-center justify-center">
                             <Loader2 className="w-12 h-12 animate-spin text-paars" />
@@ -296,22 +342,34 @@ function StickersContent() {
                             </div>
                         </div>
                     ) : (
-                        <StickerMap
-                            stickers={stickers}
-                            user={user}
-                            filterCountry={filterCountry}
-                            filterCity={filterCity}
-                            filterUserId={filterUserId}
-                            filterUser={filterUser}
-                            onLocationSelect={handleMapClick}
-                            selectedLocation={selectedLocation}
-                        />
+                        <>
+                            <StickerMap
+                                stickers={stickers}
+                                user={user}
+                                filterCountry={filterCountry}
+                                filterCity={filterCity}
+                                filterUserId={filterUserId}
+                                filterUser={filterUser}
+                                onLocationSelect={handleMapClick}
+                                selectedLocation={selectedLocation}
+                            />
+                            {/* Floating Add Button on Desktop Map */}
+                            {user && (
+                                <button
+                                    onClick={() => setShowAddModal(true)}
+                                    className="absolute bottom-6 right-6 bg-gradient-to-r from-oranje to-paars text-white p-4 rounded-full shadow-2xl hover:shadow-3xl transition-all hover:scale-110 z-[1000] border-2 border-white"
+                                    title="Add Sticker Location"
+                                >
+                                    <Plus className="w-6 h-6" />
+                                </button>
+                            )}
+                        </>
                     )}
                 </div>
 
                 {/* Contributors / Stats Panel */}
-                <div className="bg-[var(--bg-card)] rounded-3xl shadow-lg p-6 mt-6">
-                    <h2 className="text-2xl font-bold mb-4 text-paars">Leaderboard</h2>
+                <div className="bg-[var(--bg-card)] rounded-2xl md:rounded-3xl shadow-lg p-4 md:p-6 mt-6">
+                    <h2 className="text-xl md:text-2xl font-bold mb-4 text-paars">Leaderboard</h2>
                     {leaderboard.length === 0 ? (
                         <p className="text-sm text-theme-muted">No contributors yet</p>
                     ) : (
@@ -322,15 +380,15 @@ function StickersContent() {
                                     return (
                                         <li key={c.id} className={`flex items-center justify-between p-3 rounded-xl ${isMe ? 'bg-oranje/10' : ''}`}>
                                             <div className="flex items-center gap-3">
-                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${idx < 3 ? 'bg-geel text-paars' : 'bg-[var(--bg-soft)] text-theme-muted'}`}>
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${idx < 3 ? 'bg-geel text-paars' : 'bg-[var(--bg-soft)] text-theme-muted'}`}>
                                                     {idx + 1}
                                                 </div>
                                                 <div>
-                                                    <div className="font-semibold text-paars">{c.name}</div>
+                                                    <div className="font-semibold text-paars text-sm md:text-base">{c.name}</div>
                                                     {/* <div className="text-xs text-gray-500">{c.id}</div> */}
                                                 </div>
                                             </div>
-                                            <div className="text-xl font-bold text-paars">{c.count}</div>
+                                            <div className="text-lg md:text-xl font-bold text-paars">{c.count}</div>
                                         </li>
                                     );
                                 })}
@@ -340,8 +398,8 @@ function StickersContent() {
                 </div>
 
                 {/* Recent Stickers */}
-                <div className="bg-[var(--bg-card)] rounded-3xl shadow-lg p-6 mt-8">
-                    <h2 className="text-2xl font-bold mb-4 text-paars">Recent Sticker Locations</h2>
+                <div className="bg-[var(--bg-card)] rounded-2xl md:rounded-3xl shadow-lg p-4 md:p-6 mt-6 md:mt-8">
+                    <h2 className="text-xl md:text-2xl font-bold mb-4 text-paars">Recent Sticker Locations</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {stickers.slice(0, 6).map((sticker) => (
                             <div key={sticker.id} className="rounded-xl p-4 hover:shadow-md transition-shadow bg-[var(--bg-soft)] dark:bg-[var(--bg-card)]">
@@ -355,16 +413,16 @@ function StickersContent() {
                                         return <MapPin className={`w-5 h-5 ${isMine ? 'text-blue-500' : 'text-paars'} flex-shrink-0 mt-1`} />;
                                     })()}
                                     <div className="flex-1">
-                                        <h3 className="font-semibold text-paars">
+                                        <h3 className="font-semibold text-paars text-sm md:text-base">
                                             {sticker.location_name || 'Unknown Location'}
                                         </h3>
-                                        <p className="text-sm text-gray-600">
+                                        <p className="text-xs md:text-sm text-gray-600">
                                             {sticker.city && sticker.country
                                                 ? `${sticker.city}, ${sticker.country}`
                                                 : sticker.city || sticker.country || 'Location not specified'}
                                         </p>
                                         {sticker.description && (
-                                            <p className="text-sm text-gray-700 mt-2 line-clamp-2">{stripHtml(sticker.description)}</p>
+                                            <p className="text-xs md:text-sm text-gray-700 mt-2 line-clamp-2">{stripHtml(sticker.description)}</p>
                                         )}
                                         <p className="text-xs text-gray-400 mt-2">
                                             {new Date(sticker.date_created).toLocaleDateString()}
@@ -384,18 +442,150 @@ function StickersContent() {
                 </div>
             </div>
 
+            {/* Fullscreen Map Modal for Mobile */}
+            {showFullscreenMap && (
+                <div className="fixed inset-0 bg-[var(--bg-card)] z-[9999] flex flex-col pt-16 mobile-map-fullscreen">
+                    {/* Header - floating over map */}
+                    <div className="absolute top-16 left-0 right-0 flex items-center justify-between p-4 bg-[var(--bg-card)]/95 backdrop-blur-sm z-[1002] shadow-md">
+                        <h2 className="text-lg font-bold text-paars">Sticker Map</h2>
+                        <button
+                            onClick={() => setShowFullscreenMap(false)}
+                            className="text-theme-muted hover:text-paars transition-colors"
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
+                    </div>
+
+                    {/* mobile filters are shown as an overlay inside the map (see below) */}
+
+                    {/* Map - full screen */}
+                    {/* Floating action buttons (moved here so they are above the MapLibre layers) */}
+                    <div className="absolute bottom-6 left-6 z-[10050] flex flex-col gap-3">
+                        {user && (
+                            <button
+                                onClick={() => {
+                                    setShowFullscreenMap(false);
+                                    setShowAddModal(true);
+                                }}
+                                className="bg-gradient-to-r from-oranje to-paars text-white p-3 rounded-full shadow-xl hover:shadow-2xl transition-all active:scale-95 border-2 border-white"
+                                title="Add Sticker Location"
+                            >
+                                <Plus className="w-5 h-5" />
+                            </button>
+                        )}
+
+                        <button
+                            onClick={() => setMobileFiltersOpen((v) => !v)}
+                            className="bg-paars text-white p-3 rounded-full shadow-xl hover:shadow-2xl transition-all active:scale-95 border-2 border-white"
+                            title="Filters"
+                        >
+                            <Search className="w-5 h-5" />
+                        </button>
+                    </div>
+
+                    <div className="flex-1 w-full h-full relative">
+                        {isLoading ? (
+                            <div className="h-full flex items-center justify-center">
+                                <Loader2 className="w-12 h-12 animate-spin text-paars" />
+                            </div>
+                        ) : error ? (
+                            <div className="h-full flex items-center justify-center p-4">
+                                <div className="text-center">
+                                    <p className="text-paars font-semibold mb-2">Failed to load stickers</p>
+                                    <p className="text-theme-muted text-sm">Please try refreshing the page</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="h-full w-full">
+                                <StickerMap
+                                    stickers={stickers}
+                                    user={user}
+                                    filterCountry={filterCountry}
+                                    filterCity={filterCity}
+                                    filterUserId={filterUserId}
+                                    filterUser={filterUser}
+                                    onLocationSelect={handleMapClick}
+                                    selectedLocation={selectedLocation}
+                                    height="100%"
+                                />
+                                {/* Floating action buttons on Mobile Map - stacked bottom to top: Add button (bottom), Filter button (above) */}
+                                
+
+                                {/* Filters overlay */}
+                                {mobileFiltersOpen && (
+                                    <div className="absolute top-24 left-1/2 -translate-x-1/2 w-[94%] max-w-md bg-white dark:bg-[var(--bg-card)] rounded-2xl shadow-2xl p-4 z-[1100]">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <div className="font-semibold text-paars">Filters</div>
+                                            <button onClick={() => setMobileFiltersOpen(false)} className="text-theme-muted">Close</button>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <input
+                                                type="text"
+                                                placeholder="Filter by country"
+                                                value={filterCountry}
+                                                onChange={(e) => setFilterCountry(e.target.value)}
+                                                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-paars focus:border-transparent text-sm"
+                                            />
+                                            <input
+                                                type="text"
+                                                placeholder="Filter by city"
+                                                value={filterCity}
+                                                onChange={(e) => setFilterCity(e.target.value)}
+                                                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-paars focus:border-transparent text-sm"
+                                            />
+                                            {/* People filter as text search */}
+                                            <div>
+                                                <label className="text-xs text-theme-muted">People</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Search users..."
+                                                    value={filterUser}
+                                                    onChange={(e) => { setFilterUser(e.target.value); setFilterUserId(''); }}
+                                                    className="w-full px-3 py-2 mt-1 rounded-lg border border-gray-200 focus:ring-2 focus:ring-paars focus:border-transparent text-sm"
+                                                />
+                                                {filterUser && (
+                                                    <div className="mt-2 max-h-36 overflow-y-auto rounded-lg border border-gray-100 bg-white">
+                                                        {usersList.filter(u => u.name.toLowerCase().includes(filterUser.toLowerCase())).map(u => (
+                                                            <button key={u.id} onClick={() => { setFilterUserId(u.id); setFilterUser(u.name); setMobileFiltersOpen(false); }} className="w-full text-left px-3 py-2 hover:bg-paars/5">{u.name}</button>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => { setFilterCountry(''); setFilterCity(''); setFilterUser(''); setFilterUserId(''); setMobileFiltersOpen(false); }}
+                                                    className="flex-1 px-3 py-2 rounded-lg bg-[var(--bg-soft)] text-paars font-medium text-sm"
+                                                >
+                                                    Clear
+                                                </button>
+                                                <button
+                                                    onClick={() => setMobileFiltersOpen(false)}
+                                                    className="flex-1 px-3 py-2 rounded-lg bg-paars text-white font-medium text-sm"
+                                                >
+                                                    Apply
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
             {/* Add Sticker Modal */}
             {showAddModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-[var(--bg-card)] rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-                        <div className="sticky top-0 bg-[var(--bg-card)] px-6 py-4 flex items-center justify-between z-10">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[9999] pt-20">
+                    <div className="bg-white dark:bg-[var(--bg-card)] rounded-3xl max-w-4xl w-full max-h-[calc(100vh-6rem)] overflow-y-auto shadow-2xl">
+                        <div className="sticky top-0 bg-white dark:bg-[var(--bg-card)] px-6 py-4 flex items-center justify-between z-10 border-b border-gray-200 dark:border-[var(--border-color)]">
                             <h2 className="text-2xl font-bold text-paars">Add Sticker Location</h2>
                             <button
                                 onClick={() => {
                                     setShowAddModal(false);
                                     resetForm();
                                 }}
-                                className="text-theme-muted hover:text-paars transition-colors"
+                                className="text-gray-500 hover:text-paars transition-colors"
                             >
                                 <X className="w-6 h-6" />
                             </button>
@@ -404,7 +594,7 @@ function StickersContent() {
                         <form onSubmit={handleSubmit} className="p-6">
                             {/* Address Search */}
                             <div className="mb-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Search Address
                                 </label>
                                 <div className="flex gap-2">
@@ -413,7 +603,7 @@ function StickersContent() {
                                         value={searchAddress}
                                         onChange={(e) => setSearchAddress(e.target.value)}
                                         placeholder="Enter an address, city, or landmark..."
-                                        className="flex-1 px-4 py-2 rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
+                                        className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-paars focus:border-transparent"
                                         onKeyPress={(e) => {
                                             if (e.key === 'Enter') {
                                                 e.preventDefault();
@@ -425,7 +615,7 @@ function StickersContent() {
                                         type="button"
                                         onClick={handleSearchAddress}
                                         disabled={isGeocoding}
-                                        className="bg-gradient-theme hover:opacity-90 text-theme-white px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
+                                        className="bg-gradient-to-r from-oranje to-paars hover:opacity-90 text-white px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
                                     >
                                         {isGeocoding ? (
                                             <Loader2 className="w-5 h-5 animate-spin" />
@@ -434,17 +624,17 @@ function StickersContent() {
                                         )}
                                     </button>
                                 </div>
-                                <p className="text-sm text-gray-500 mt-1">
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                     Or click directly on the map to select a location
                                 </p>
                             </div>
 
                             {/* Mini Map */}
                             <div className="mb-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Select Location on Map
                                 </label>
-                                <div className="h-[300px] rounded-lg overflow-hidden">
+                                <div className="h-[300px] rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600">
                                     <StickerMap
                                         center={selectedLocation ? [selectedLocation.lat, selectedLocation.lng] : [51.5074, 0.1278]}
                                         zoom={selectedLocation ? 13 : 2}
@@ -458,7 +648,7 @@ function StickersContent() {
                             {/* Form Fields */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         Location Name
                                     </label>
                                     <input
@@ -466,12 +656,12 @@ function StickersContent() {
                                         value={formData.location_name}
                                         onChange={(e) => setFormData({ ...formData, location_name: e.target.value })}
                                         placeholder="e.g., Eiffel Tower"
-                                        className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-paars focus:border-transparent"
+                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-paars focus:border-transparent"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         City
                                     </label>
                                     <input
@@ -479,12 +669,12 @@ function StickersContent() {
                                         value={formData.city}
                                         onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                                         placeholder="Auto-filled or enter manually"
-                                        className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-paars focus:border-transparent"
+                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-paars focus:border-transparent"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         Country
                                     </label>
                                     <input
@@ -492,12 +682,12 @@ function StickersContent() {
                                         value={formData.country}
                                         onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                                         placeholder="Auto-filled or enter manually"
-                                        className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-paars focus:border-transparent"
+                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-paars focus:border-transparent"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         Address
                                     </label>
                                     <input
@@ -505,13 +695,13 @@ function StickersContent() {
                                         value={formData.address}
                                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                                         placeholder="Full address"
-                                        className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-paars focus:border-transparent"
+                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-paars focus:border-transparent"
                                     />
                                 </div>
                             </div>
 
                             <div className="mb-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Description (Optional)
                                 </label>
                                 <textarea
@@ -519,13 +709,13 @@ function StickersContent() {
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     placeholder="Any additional details about this sticker..."
                                     rows={3}
-                                    className="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-paars focus:border-transparent"
+                                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-paars focus:border-transparent"
                                 />
                             </div>
 
                             {selectedLocation && (
-                                <div className="mb-4 p-3 bg-green-50 rounded-lg">
-                                    <p className="text-sm text-green-800">
+                                <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                                    <p className="text-sm text-green-800 dark:text-green-300">
                                         ✓ Location selected: {selectedLocation.lat.toFixed(6)}, {selectedLocation.lng.toFixed(6)}
                                     </p>
                                 </div>
@@ -539,14 +729,14 @@ function StickersContent() {
                                         setShowAddModal(false);
                                         resetForm();
                                     }}
-                                    className="flex-1 px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-50"
+                                    className="flex-1 px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={createMutation.isPending || !selectedLocation}
-                                    className="flex-1 bg-gradient-to-r from-oranje to-paars text-white px-4 py-2 rounded-lg font-semibold disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-oranje/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl"
+                                    className="flex-1 bg-gradient-to-r from-oranje to-paars text-white px-4 py-2 rounded-lg font-semibold disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all disabled:cursor-not-allowed"
                                 >
                                     {createMutation.isPending ? (
                                         <>
@@ -562,6 +752,22 @@ function StickersContent() {
                     </div>
                 </div>
             )}
+
+            {/* Custom styles for mobile fullscreen map */}
+            <style jsx global>{`
+                /* Push MapLibre top-right controls below the header and below our floating buttons */
+                .mobile-map-fullscreen .maplibregl-ctrl-top-right {
+                    top: 96px !important; /* navbar (64px) + header bar (~32px) */
+                    z-index: 1100 !important; /* below our buttons (10050) but above the map layers */
+                    pointer-events: auto !important;
+                }
+
+                /* Ensure the control buttons are large enough to tap */
+                .mobile-map-fullscreen .maplibregl-ctrl button {
+                    min-width: 40px;
+                    min-height: 40px;
+                }
+            `}</style>
 
         </div>
     );
