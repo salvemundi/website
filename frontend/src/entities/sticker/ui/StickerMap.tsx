@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import Map, { Marker, Popup, NavigationControl } from 'react-map-gl/maplibre';
+import Map, { Marker, Popup, NavigationControl, GeolocateControl } from 'react-map-gl/maplibre';
 import { Sticker, getImageUrl } from '@/shared/lib/api/salvemundi';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -118,6 +118,8 @@ const StickerMap: React.FC<StickerMapProps> = ({
                 cursor={onLocationSelect ? 'crosshair' : 'grab'}
             >
                 <NavigationControl position="top-right" />
+                {/* GeolocateControl: lets the user center the map on their current location */}
+                <GeolocateControl position="top-right" trackUserLocation={false} />
 
                 {(filteredStickers || []).map((sticker) => {
                     const userObj = (sticker.created_by && typeof sticker.created_by !== 'string') ? (sticker.created_by as { id?: string | number; first_name?: string; last_name?: string; email?: string; avatar?: string }) : (sticker.user_created && typeof sticker.user_created !== 'string') ? (sticker.user_created as { id?: string | number; first_name?: string; last_name?: string; email?: string; avatar?: string }) : null;
