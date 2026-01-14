@@ -36,10 +36,7 @@ export default function WhatsAppGroupsPage() {
     if (user.membership_status !== 'active') {
         return (
             <div className="">
-                <PageHeader
-                    title="WhatsApp Groepen"
-                    backgroundImage="/img/backgrounds/homepage-banner.jpg"
-                />
+                <PageHeader title="WhatsApp Groepen" />
                 <div className="container mx-auto px-4 py-16">
                     <div className="max-w-4xl mx-auto">
                         <Card variant="card" padding="p-8" className="text-center">
@@ -64,10 +61,7 @@ export default function WhatsAppGroupsPage() {
 
     return (
         <div className="">
-            <PageHeader
-                title="WhatsApp Groepen"
-                backgroundImage="/img/backgrounds/homepage-banner.jpg"
-            >
+            <PageHeader title="WhatsApp Groepen">
                 <p className="text-lg sm:text-xl text-beige/90 max-w-3xl mx-auto mt-4">
                     Word lid van onze WhatsApp groepen om verbonden te blijven
                 </p>
