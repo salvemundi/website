@@ -631,6 +631,13 @@ export default function AdminDashboardPage() {
                         <FileText className="h-5 w-5" />
                         Beheer Activiteiten
                     </button>
+                    <button
+                        onClick={() => router.push('/admin/reis')}
+                        className="bg-white dark:bg-slate-800 text-theme-purple dark:text-theme-purple-light hover:bg-slate-50 dark:hover:bg-slate-700 px-4 sm:px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl dark:shadow-slate-900/50 transition-all hover:-translate-y-0.5 flex items-center gap-2 w-full sm:w-auto justify-center"
+                    >
+                        <Activity className="h-5 w-5" />
+                        Beheer Reis
+                    </button>
                 </div>
 
                 {/* Financieel & Beheer */}
