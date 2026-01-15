@@ -8,7 +8,7 @@ let API_BYPASS_USER_ID = process.env.DIRECTUS_API_USER_ID ?? null;
 
 // Detect a Directus API token used by server-side services or the frontend build.
 // Common envs: DIRECTUS_API_TOKEN (server), VITE_DIRECTUS_API_KEY (frontend build)
-const API_SERVICE_TOKEN = process.env.DIRECTUS_API_TOKEN ?? process.env.VITE_DIRECTUS_API_KEY ?? process.env.NEXT_PUBLIC_DIRECTUS_API_KEY ?? null;
+const API_SERVICE_TOKEN = process.env.DIRECTUS_API_TOKEN ?? process.env.VITE_DIRECTUS_API_KEY ?? null;
 
 async function isApiBypass(auth: string | null) {
     if (!auth) return false;

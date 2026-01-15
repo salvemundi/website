@@ -5,7 +5,8 @@ import { useAuth } from '@/features/auth/providers/auth-provider';
 import { useRouter } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { Save, ArrowLeft, Upload, X } from 'lucide-react';
+import { Save, ArrowLeft, Upload, X, ShieldAlert, Home } from 'lucide-react';
+import Link from 'next/link';
 
 interface Committee {
     id: number;
@@ -15,12 +16,14 @@ interface Committee {
 export default function NieuweActiviteitPage() {
     const router = useRouter();
     const [committees, setCommittees] = useState<Committee[]>([]);
+    const [isAuthorized, setIsAuthorized] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const auth = useAuth();
-    
+
     const [formData, setFormData] = useState({
         name: '',
         description: '',
@@ -48,8 +51,35 @@ export default function NieuweActiviteitPage() {
 
     useEffect(() => {
         // Wait for auth to load and then load committees filtered by user's memberships
-        loadCommittees();
-    }, []);
+        if (auth.user !== undefined) {
+            checkAuthAndLoadData();
+        }
+    }, [auth.user]);
+
+    const checkAuthAndLoadData = async () => {
+        setIsLoading(true);
+        try {
+            const user = auth.user;
+            if (!user) {
+                setIsAuthorized(false);
+                setIsLoading(false);
+                return;
+            }
+
+            const memberships = user?.committees || [];
+            if (memberships.length === 0) {
+                setIsAuthorized(false);
+                setIsLoading(false);
+                return;
+            }
+
+            await loadCommittees();
+        } catch (error) {
+            console.error('Auth check failed:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const loadCommittees = async () => {
         try {
@@ -84,12 +114,12 @@ export default function NieuweActiviteitPage() {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
         const checked = (e.target as HTMLInputElement).checked;
-        
+
         setFormData(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : value
         }));
-        
+
         // Clear error when user starts typing
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: '' }));
@@ -115,11 +145,11 @@ export default function NieuweActiviteitPage() {
 
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
-        
+
         if (!formData.name.trim()) newErrors.name = 'Naam is verplicht';
         if (!formData.event_date) newErrors.event_date = 'Datum is verplicht';
         if (!formData.description.trim()) newErrors.description = 'Beschrijving is verplicht';
-        
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -156,7 +186,7 @@ export default function NieuweActiviteitPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!validateForm()) {
             showToast('Controleer de verplichte velden', 'error');
             return;
@@ -213,6 +243,68 @@ export default function NieuweActiviteitPage() {
             setIsSaving(false);
         }
     };
+
+    if (isLoading) {
+        return (
+            <>
+                <PageHeader
+                    title="Nieuwe Activiteit"
+                    description="Laden..."
+                />
+                <div className="container mx-auto px-4 py-8 max-w-4xl">
+                    <div className="flex items-center justify-center py-20">
+                        <div className="h-12 w-12 animate-spin rounded-full border-4 border-theme-purple/20 border-t-theme-purple" />
+                    </div>
+                </div>
+            </>
+        );
+    }
+
+    if (!isAuthorized) {
+        return (
+            <>
+                <PageHeader
+                    title="Geen Toegang"
+                    description="Onvoldoende rechten"
+                />
+                <div className="container mx-auto px-4 py-12 max-w-2xl">
+                    <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-8 text-center ring-1 ring-slate-200 dark:ring-slate-700">
+                        <div className="mb-6 flex justify-center">
+                            <div className="rounded-full bg-red-100 dark:bg-red-900/30 p-6">
+                                <ShieldAlert className="h-16 w-16 text-red-600 dark:text-red-400" />
+                            </div>
+                        </div>
+
+                        <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-4">
+                            Toegang Geweigerd
+                        </h1>
+
+                        <p className="text-lg text-slate-600 dark:text-slate-300 mb-8">
+                            Je hebt geen rechten om een nieuwe activiteit aan te maken. Dit kan alleen als je lid bent van een commissie, het bestuur of de ICT-commissie.
+                        </p>
+
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                            <button
+                                onClick={() => router.back()}
+                                className="inline-flex items-center justify-center gap-2 rounded-full bg-theme-purple hover:bg-theme-purple-dark text-white px-8 py-3 font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+                            >
+                                <ArrowLeft className="h-5 w-5" />
+                                Terug
+                            </button>
+
+                            <Link
+                                href="/admin/activiteiten"
+                                className="inline-flex items-center justify-center gap-2 rounded-full bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 border-2 border-slate-200 dark:border-slate-600 px-8 py-3 font-semibold hover:bg-slate-50 dark:hover:bg-slate-600 transition-all"
+                            >
+                                <Home className="h-5 w-5" />
+                                Overzicht
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </>
+        );
+    }
 
     return (
         <>
@@ -559,9 +651,8 @@ export default function NieuweActiviteitPage() {
             {/* Toast Notification */}
             {toast && (
                 <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
-                    <div className={`px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 ${
-                        toast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-                    }`}>
+                    <div className={`px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 ${toast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                        }`}>
                         {toast.type === 'success' ? (
                             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
