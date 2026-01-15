@@ -96,6 +96,7 @@ export default function Footer() {
                                 { label: "Safe Havens", href: ROUTES.SAFE_HAVENS },
                                 { label: "Lidmaatschap", href: ROUTES.MEMBERSHIP },
                                 { label: "Kroegentocht", href: ROUTES.PUB_CRAWL },
+                                { label: "Reis", href: ROUTES.TRIP },
                                 { label: "Stickers", href: ROUTES.STICKERS },
                             ].map((link) => (
                                 <li key={link.href}>
