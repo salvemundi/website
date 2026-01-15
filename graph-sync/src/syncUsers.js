@@ -573,6 +573,10 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
             }
         }
 
+        const email = (u.mail || u.userPrincipalName || '').toLowerCase();
+        const firstName = u.givenName || (u.displayName ? u.displayName.split(' ')[0] : '').trim();
+        const lastName = u.surname || (u.displayName ? u.displayName.split(' ').slice(1).join(' ') : '').trim();
+
         const missingFields = [];
         const isSelected = (field) => !selectedFields || selectedFields.includes(field);
 
@@ -589,7 +593,7 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
         if (missingFields.length > 0) {
             syncStatus.missingDataCount++;
             syncStatus.missingData.push({
-                email: (u.mail || u.userPrincipalName || 'Unknown').toLowerCase(),
+                email: email || 'unknown',
                 reason: `Missende velden: ${missingFields.join(', ')}`
             });
             console.log(`[SYNC] ${u.mail || u.id} missing=${missingFields.join(';')}`);
@@ -603,7 +607,6 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
 
         const groups = groupResp.value || [];
         // Concise per-user log: email, #groups, role decision
-        const email = (u.mail || u.userPrincipalName || '').toLowerCase();
         const groupIds = groups.map(g => g.id);
         const role = getRoleIdByGroupMembership(groupIds);
         console.log(`[SYNC] ${email} groups=${groups.length} -> role=${role || 'none'}`);
@@ -615,8 +618,6 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
         );
 
         const existingUser = existingRes.data?.data?.[0] || null;
-        const firstName = u.givenName || (u.displayName ? u.displayName.split(' ')[0] : '').trim();
-        const lastName = u.surname || (u.displayName ? u.displayName.split(' ').slice(1).join(' ') : '').trim();
         const payload = {
             email,
             first_name: firstName || null,
