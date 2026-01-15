@@ -17,7 +17,7 @@ const GROUP_IDS = {
     ICT: 'a4aeb401-882d-4e1e-90ee-106b7fdb23cc',
     Intro: '516f03f9-be0a-4514-9da8-396415f59d0b',
     CommitteeMember: '5848f0ed-59c4-4ae2-8683-3d9a221ac189',
-    ACTIEVE_LEDEN: process.env.GROUP_ID_ACTIEF || '5848f0ed-59c4-4ae2-8683-3d9a221ac189',
+    ACTIEVE_LEDEN: process.env.GROUP_ID_ACTIEF || '2e17c12a-28d6-49ae-981a-8b5b8d88db8a',
 };
 
 // Manual override mapping (optional) – if you want to force certain group IDs to specific names
@@ -813,7 +813,9 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
             const isInActieveLeden = groups.some(g =>
                 g.id === GROUP_IDS.ACTIEVE_LEDEN ||
                 g.displayName === 'Actieve Leden' ||
-                g.mailNickname === 'Actieve Leden'
+                g.mailNickname === 'Actieve Leden' ||
+                g.displayName === 'Leden_Actief_Lidmaatschap' ||
+                g.mailNickname === 'Leden_Actief_Lidmaatschap'
             );
 
             // If expiry date is in the future, the user is active regardless of group sync status
