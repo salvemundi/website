@@ -104,6 +104,7 @@ export default function DevSignupsPage() {
 
     // Filters
     const [filterStatus, setFilterStatus] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
+    const [filterType, setFilterType] = useState<'all' | 'membership_new' | 'membership_renewal' | 'event' | 'pub_crawl' | 'trip'>('all');
     const [showFailed, setShowFailed] = useState(false);
     const [paymentSettings, setPaymentSettings] = useState<PaymentSettings>({ manual_approval: false });
     const [isDevEnv, setIsDevEnv] = useState(false);
@@ -201,7 +202,7 @@ export default function DevSignupsPage() {
             fetchSyncStatus();
             loadSettings();
         }
-    }, [user, filterStatus, showFailed]); // Reload when filters change
+    }, [user, filterStatus, filterType, showFailed]); // Reload when filters change
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -244,6 +245,7 @@ export default function DevSignupsPage() {
 
             const params = new URLSearchParams({
                 status: filterStatus,
+                type: filterType,
                 show_failed: showFailed.toString()
             });
 
@@ -404,6 +406,15 @@ export default function DevSignupsPage() {
         { id: 'approved', label: 'Goedgekeurd' },
         { id: 'rejected', label: 'Afgewezen' },
         { id: 'all', label: 'Alles' },
+    ] as const;
+
+    const typeTabs = [
+        { id: 'all', label: 'Alles' },
+        { id: 'membership_new', label: 'Leden Inschrijvingen' },
+        { id: 'membership_renewal', label: 'Lidmaatschap Verlengingen' },
+        { id: 'event', label: 'Events' },
+        { id: 'pub_crawl', label: 'Kroegentocht' },
+        { id: 'trip', label: 'Reis' },
     ] as const;
 
     return (
@@ -574,15 +585,48 @@ export default function DevSignupsPage() {
                 }
             >
                 {/* Filters Bar */}
-                <div className="mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between border-b border-white/5 pb-6">
+                <div className="mb-6 space-y-4 border-b border-white/5 pb-6">
+                    <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                        {/* Status Filter Tabs */}
+                        <div className="flex p-1 bg-black/20 rounded-xl border border-white/5 overflow-x-auto max-w-full custom-scrollbar">
+                            {tabs.map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setFilterStatus(tab.id as any)}
+                                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${filterStatus === tab.id
+                                        ? 'bg-theme-purple text-white shadow-lg'
+                                        : 'text-theme-purple-lighter/60 hover:text-theme-purple-lighter hover:bg-white/5'
+                                        }`}
+                                >
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
 
-                    {/* Filter Tabs */}
-                    <div className="flex p-1 bg-black/20 rounded-xl border border-white/5 overflow-hidden">
-                        {tabs.map((tab) => (
+                        {/* Toggle Failed */}
+                        <label className="flex items-center gap-3 cursor-pointer group select-none">
+                            <span className="text-sm font-medium text-theme-purple-lighter/70 group-hover:text-theme-purple-lighter transition-colors">
+                                Toon ook mislukte/open betalingen
+                            </span>
+                            <div className="relative">
+                                <input
+                                    type="checkbox"
+                                    className="sr-only peer"
+                                    checked={showFailed}
+                                    onChange={(e) => setShowFailed(e.target.checked)}
+                                />
+                                <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-theme-purple"></div>
+                            </div>
+                        </label>
+                    </div>
+
+                    {/* Type Filter Tabs */}
+                    <div className="flex p-1 bg-black/20 rounded-xl border border-white/5 overflow-x-auto max-w-full custom-scrollbar">
+                        {typeTabs.map((tab) => (
                             <button
                                 key={tab.id}
-                                onClick={() => setFilterStatus(tab.id as any)}
-                                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${filterStatus === tab.id
+                                onClick={() => setFilterType(tab.id as any)}
+                                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${filterType === tab.id
                                     ? 'bg-theme-purple text-white shadow-lg'
                                     : 'text-theme-purple-lighter/60 hover:text-theme-purple-lighter hover:bg-white/5'
                                     }`}
@@ -591,22 +635,6 @@ export default function DevSignupsPage() {
                             </button>
                         ))}
                     </div>
-
-                    {/* Toggle Failed */}
-                    <label className="flex items-center gap-3 cursor-pointer group select-none">
-                        <span className="text-sm font-medium text-theme-purple-lighter/70 group-hover:text-theme-purple-lighter transition-colors">
-                            Toon ook mislukte/open betalingen
-                        </span>
-                        <div className="relative">
-                            <input
-                                type="checkbox"
-                                className="sr-only peer"
-                                checked={showFailed}
-                                onChange={(e) => setShowFailed(e.target.checked)}
-                            />
-                            <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-theme-purple"></div>
-                        </div>
-                    </label>
                 </div>
 
                 {isLoading ? (

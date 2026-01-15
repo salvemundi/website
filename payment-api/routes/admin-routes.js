@@ -67,12 +67,12 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
     router.get('/pending-signups', requireAdmin, async (req, res) => {
         console.log('[AdminRoutes] GET /pending-signups called', req.query);
         try {
-            const { status = 'pending', show_failed = 'false' } = req.query;
+            const { status = 'pending', show_failed = 'false', type = 'all' } = req.query;
 
             // Base params
             const params = {
                 'filter[environment][_eq]': 'development',
-                'fields': 'id,created_at,product_name,amount,email,first_name,last_name,approval_status,payment_status,environment',
+                'fields': 'id,created_at,product_name,amount,email,first_name,last_name,approval_status,payment_status,environment,user_id,registration,pub_crawl_signup,trip_signup',
                 'sort': '-created_at',
                 'limit': 100
             };
@@ -92,6 +92,25 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
             } else {
                 // Default: Only paid
                 params['filter[payment_status][_eq]'] = 'paid';
+            }
+
+            // 3. Type Filter
+            if (type === 'membership_new') {
+                params['filter[registration][_null]'] = 'true';
+                params['filter[pub_crawl_signup][_null]'] = 'true';
+                params['filter[trip_signup][_null]'] = 'true';
+                params['filter[user_id][_null]'] = 'true';
+            } else if (type === 'membership_renewal') {
+                params['filter[registration][_null]'] = 'true';
+                params['filter[pub_crawl_signup][_null]'] = 'true';
+                params['filter[trip_signup][_null]'] = 'true';
+                params['filter[user_id][_nnull]'] = 'true';
+            } else if (type === 'event') {
+                params['filter[registration][_nnull]'] = 'true';
+            } else if (type === 'pub_crawl') {
+                params['filter[pub_crawl_signup][_nnull]'] = 'true';
+            } else if (type === 'trip') {
+                params['filter[trip_signup][_nnull]'] = 'true';
             }
 
             console.log('[AdminRoutes] Fetching from Directus with params:', params);
