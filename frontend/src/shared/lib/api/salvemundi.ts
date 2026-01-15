@@ -71,6 +71,7 @@ export interface PaymentRequest {
     email?: string;
     registrationId: number | string;
     isContribution?: boolean;
+    registrationType?: 'event_signup' | 'pub_crawl_signup' | 'trip_signup';
 }
 
 export interface PaymentResponse {
@@ -1014,6 +1015,23 @@ export const tripsApi = {
     getById: async (id: number) => {
         return directusFetch<Trip>(`/items/trips/${id}?fields=*`);
     },
+    create: async (data: Partial<Trip>) => {
+        return directusFetch<Trip>(`/items/trips`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    update: async (id: number, data: Partial<Trip>) => {
+        return directusFetch<Trip>(`/items/trips/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        });
+    },
+    delete: async (id: number) => {
+        return directusFetch(`/items/trips/${id}`, {
+            method: 'DELETE'
+        });
+    },
 };
 
 export const tripActivitiesApi = {
@@ -1023,6 +1041,31 @@ export const tripActivitiesApi = {
             sort: ['display_order', 'name']
         });
         return directusFetch<TripActivity[]>(`/items/trip_activities?${query}`);
+    },
+    getAllByTripId: async (tripId: number) => {
+        // Get all activities including inactive ones for admin purposes
+        const query = buildQueryString({
+            filter: { trip_id: { _eq: tripId } },
+            sort: ['display_order', 'name']
+        });
+        return directusFetch<TripActivity[]>(`/items/trip_activities?${query}`);
+    },
+    create: async (data: Partial<TripActivity>) => {
+        return directusFetch<TripActivity>(`/items/trip_activities`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    update: async (id: number, data: Partial<TripActivity>) => {
+        return directusFetch<TripActivity>(`/items/trip_activities/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        });
+    },
+    delete: async (id: number) => {
+        return directusFetch(`/items/trip_activities/${id}`, {
+            method: 'DELETE'
+        });
     },
 };
 

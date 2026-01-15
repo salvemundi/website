@@ -195,15 +195,12 @@ export default function AanbetalingPage() {
                 }
             }
 
-            // TODO: Create payment link for deposit
-            // For now, we'll just redirect to a confirmation or payment page
-            
             setSuccess(true);
             
-            // Simulate payment redirect
+            // Redirect to payment page
             setTimeout(() => {
                 router.push(`/reis/aanbetaling/${signupId}/betaling`);
-            }, 2000);
+            }, 1500);
 
         } catch (err: any) {
             console.error('Error submitting form:', err);

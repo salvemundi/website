@@ -106,6 +106,34 @@ app.use(
     )
 );
 
+// Trip email route
+app.post('/trip-email/send-bulk', async (req, res) => {
+    try {
+        const { emailServiceUrl, tripName, recipients, subject, message } = req.body;
+
+        if (!emailServiceUrl || !tripName || !recipients || !subject || !message) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        const result = await notificationService.sendTripBulkEmail(
+            emailServiceUrl,
+            recipients,
+            subject,
+            message,
+            tripName
+        );
+
+        if (result.success) {
+            return res.json({ success: true, count: result.count });
+        } else {
+            return res.status(500).json({ error: result.error });
+        }
+    } catch (error) {
+        console.error('Error in trip email bulk send:', error);
+        return res.status(500).json({ error: error.message || 'Failed to send bulk email' });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`[PaymentAPI] Server running on port ${PORT}`);
     console.log(`[PaymentAPI] Environment: DIRECTUS_URL=${DIRECTUS_URL ? 'Set' : 'Unset'}, MEMBERSHIP=${MEMBERSHIP_API_URL}`);
