@@ -3,14 +3,13 @@ services:
     image: ghcr.io/salvemundi/graph-webhook:${TAG:-latest}
     # build: .
     # Trigger dev deploy
-    container_name: graph-webhook
+    container_name: graph-webhook-${TAG:-dev}
     restart: unless-stopped
     env_file: .env
     environment:
       - GRAPH_SYNC_URL=http://graph-sync-${TAG:-dev}:3001
     networks:
       - proxy-network
-      - backend-network
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3008/healthz"]
       interval: 30s
@@ -18,6 +17,4 @@ services:
       retries: 3
 networks:
   proxy-network:
-    external: true
-  backend-network:
     external: true
