@@ -95,26 +95,6 @@ const nextConfig: NextConfig = {
     async headers() {
         return [
             {
-                // API routes: 2min cache, 1h stale-while-revalidate
-                source: '/api/:path*',
-                headers: [
-                    {
-                        key: 'Cache-Control',
-                        value: 'public, max-age=120, stale-while-revalidate=3600',
-                    },
-                ],
-            },
-            {
-                // Pages: 30s cache, 10min stale-while-revalidate
-                source: '/:path*',
-                headers: [
-                    {
-                        key: 'Cache-Control',
-                        value: 'public, max-age=30, stale-while-revalidate=600',
-                    },
-                ],
-            },
-            {
                 // Static images: 1h cache, 24h stale-while-revalidate
                 source: '/:path*.(jpg|jpeg|png|gif|webp|avif|svg|ico)',
                 headers: [
@@ -124,6 +104,7 @@ const nextConfig: NextConfig = {
                     },
                 ],
             },
+
             {
                 // Next.js optimized images: 1h cache, 24h stale-while-revalidate
                 source: '/_next/image/:path*',

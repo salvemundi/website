@@ -85,31 +85,45 @@ export async function GET(
         const contentType = request.headers.get('Content-Type');
         if (contentType) forwardHeaders['Content-Type'] = contentType;
 
-        // Extract collection name from path voor cache tagging
-        // Bijv: "items/events" -> tag "events", "items/committees/123" -> tag "committees"
+        // Determine if this request should be cached
+        // 1. Must be under /items/ (public data)
+        // 2. Must either have no Auth header OR use the public service token
         const pathParts = path.split('/');
+        const isItemsPath = pathParts[0] === 'items';
+        const isPublicToken = !auth || (API_SERVICE_TOKEN && (auth.startsWith('Bearer ') ? auth.slice(7) : auth) === String(API_SERVICE_TOKEN));
+        const shouldCache = isItemsPath && isPublicToken;
+
         const tags: string[] = [];
-        if (pathParts[0] === 'items' && pathParts[1]) {
+        if (isItemsPath && pathParts[1]) {
             tags.push(pathParts[1]);
         }
 
-        // Cache GET requests met 2 minuten revalidatie
-        // Mutations (POST/PATCH/DELETE) worden niet gecached
-        // Tags maken on-demand invalidation via webhooks mogelijk
-        const response = await fetch(targetUrl, {
+        const fetchOptions: RequestInit = {
             method: 'GET',
             headers: forwardHeaders,
-            next: {
-                revalidate: 120, // 2 minuten cache
+        };
+
+        // Alleen caching toepassen voor publieke data
+        // Dit voorkomt dat user-specifieke data (zoals /users/me or /items/event_signups) 
+        // in de globale server cache terecht komt.
+        if (shouldCache) {
+            (fetchOptions as any).next = {
+                revalidate: 120,
                 tags: tags.length > 0 ? tags : undefined,
-            },
-        });
+            };
+        } else {
+            // Forceer geen cache voor private/user data
+            (fetchOptions as any).cache = 'no-store';
+        }
+
+        const response = await fetch(targetUrl, fetchOptions);
 
         if (response.status === 204) {
             return new Response(null, { status: 204 });
         }
         const data = await response.json().catch(() => null);
         return NextResponse.json(data, { status: response.status });
+
     } catch (error: any) {
         console.error(`[Directus Proxy] GET ${path} failed:`, error.message);
         return NextResponse.json({ error: 'Directus Proxy Error', details: error.message }, { status: 500 });
