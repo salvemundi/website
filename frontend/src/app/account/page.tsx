@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useAuth } from "@/features/auth/providers/auth-provider";
 import { getUserEventSignups, updateMinecraftUsername } from "@/shared/lib/auth";
 import { getImageUrl } from "@/shared/lib/api/salvemundi";
-import { format } from "date-fns";
+import { format, startOfDay, isBefore } from "date-fns";
 import {
   LogOut,
   CreditCard,
@@ -148,6 +148,9 @@ export default function AccountPage() {
   const [eventSignups, setEventSignups] = useState<EventSignup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Show past events toggle (default: hide past events)
+  const [showPastEvents, setShowPastEvents] = useState(false);
+
   const [minecraftUsername, setMinecraftUsername] = useState("");
   const [isEditingMinecraft, setIsEditingMinecraft] = useState(false);
   const [isSavingMinecraft, setIsSavingMinecraft] = useState(false);
@@ -165,6 +168,23 @@ export default function AccountPage() {
     else setIsLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
+
+  const filteredSignups = useMemo(() => {
+    if (!eventSignups) return [];
+    if (showPastEvents) return eventSignups;
+
+    const todayStart = startOfDay(new Date());
+
+    return eventSignups.filter((s) => {
+      try {
+        if (!s?.event_id?.event_date) return true;
+        const eventDate = startOfDay(new Date(s.event_id.event_date));
+        return !isBefore(eventDate, todayStart);
+      } catch (e) {
+        return true;
+      }
+    });
+  }, [eventSignups, showPastEvents]);
 
   const loadEventSignups = async () => {
     if (!user?.id) return;
@@ -449,8 +469,6 @@ export default function AccountPage() {
             </div>
           </Tile>
 
-          {/* Safe Haven Availability removed — link available in Snelle links */}
-
           {/* Quick links */}
           <Tile
             className="lg:col-span-8"
@@ -503,12 +521,21 @@ export default function AccountPage() {
             title="Mijn inschrijvingen"
             icon={<Calendar className="h-5 w-5" />}
             actions={
-              <button
-                onClick={() => router.push("/activiteiten")}
-                className="inline-flex items-center gap-1 rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold text-theme-purple-lighter hover:bg-white/15 border border-white/10 transition"
-              >
-                Bekijk agenda <ChevronRight className="h-4 w-4" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowPastEvents((v) => !v)}
+                  className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold text-theme-purple-lighter hover:bg-white/15 border border-white/10 transition"
+                >
+                  {showPastEvents ? "Verberg oude" : "Toon oude"}
+                </button>
+
+                <button
+                  onClick={() => router.push("/activiteiten")}
+                  className="inline-flex items-center gap-1 rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold text-theme-purple-lighter hover:bg-white/15 border border-white/10 transition"
+                >
+                  Bekijk agenda <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
             }
           >
             {isLoading ? (
@@ -532,59 +559,76 @@ export default function AccountPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {eventSignups.map((signup) => (
-                  <button
-                    key={signup.id}
-                    type="button"
-                    onClick={() => router.push(`/activiteiten/${signup.event_id.id}`)}
-                    className="group flex w-full gap-4 rounded-2xl bg-white/40 p-4 text-left transition hover:bg-white/60 focus:outline-none focus:ring-2 focus:ring-theme-purple/30 border border-transparent hover:border-theme-purple/10"
-                  >
-                    <div className="shrink-0">
-                      {signup.event_id.image ? (
-                        <div className="relative h-20 w-20 rounded-xl overflow-hidden shadow-sm">
-                          <Image
-                            src={getImageUrl(signup.event_id.image)}
-                            alt={signup.event_id.name}
-                            fill
-                            sizes="80px"
-                            className="object-cover transition-transform duration-300 group-hover:scale-105"
-                            loading="lazy"
-                            placeholder="blur"
-                            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjZWVlIi8+PC9zdmc+"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = "/img/placeholder.svg";
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-theme-purple/10 text-theme-purple-lighter transition-transform duration-300 group-hover:scale-105">
-                          <Calendar className="h-8 w-8" />
-                        </div>
-                      )}
-                    </div>
+                {filteredSignups.map((signup) => {
+                  const isPast = (() => {
+                    try {
+                      if (!signup?.event_id?.event_date) return false;
+                      const eventDate = startOfDay(new Date(signup.event_id.event_date));
+                      return isBefore(eventDate, startOfDay(new Date()));
+                    } catch (e) {
+                      return false;
+                    }
+                  })();
 
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate text-lg font-bold text-theme-purple-lighter transition-colors group-hover:text-theme-purple-lighter-dark">
-                        {signup.event_id.name}
-                      </h3>
-
-                      <div className="mt-1 space-y-1">
-                        <p className="flex items-center gap-2 text-sm text-theme-purple-lighter/70">
-                          <Calendar className="h-3 w-3" />
-                          {format(new Date(signup.event_id.event_date), "d MMMM yyyy")}
-                        </p>
-                        <p className="text-xs text-theme-purple-lighter/50">
-                          Ingeschreven op: {format(new Date(signup.created_at), "d MMM yyyy")}
-                        </p>
+                  return (
+                    <button
+                      key={signup.id}
+                      type="button"
+                      onClick={() => router.push(`/activiteiten/${signup.event_id.id}`)}
+                      className={[
+                        "group flex w-full gap-4 rounded-2xl p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-theme-purple/30 border border-transparent",
+                        isPast
+                          ? "bg-white/20 text-theme-purple-lighter/60 hover:bg-white/20 border-theme-purple/5"
+                          : "bg-white/40 hover:bg-white/60 hover:border-theme-purple/10",
+                      ].join(" ")}
+                    >
+                      <div className="shrink-0">
+                        {signup.event_id.image ? (
+                          <div className="relative h-20 w-20 rounded-xl overflow-hidden shadow-sm">
+                            <Image
+                              src={getImageUrl(signup.event_id.image)}
+                              alt={signup.event_id.name}
+                              fill
+                              sizes="80px"
+                              className="object-cover transition-transform duration-300 group-hover:scale-105"
+                              loading="lazy"
+                              placeholder="blur"
+                              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjZWVlIi8+PC9zdmc+"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = "/img/placeholder.svg";
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-theme-purple/10 text-theme-purple-lighter transition-transform duration-300 group-hover:scale-105">
+                            <Calendar className="h-8 w-8" />
+                          </div>
+                        )}
                       </div>
-                    </div>
 
-                    <div className="flex items-center justify-center text-theme-purple-lighter/30 transition-transform group-hover:translate-x-1">
-                      <ChevronRight className="h-5 w-5" />
-                    </div>
-                  </button>
-                ))}
+                      <div className="min-w-0 flex-1">
+                        <h3 className={`truncate text-lg font-bold transition-colors ${isPast ? 'text-theme-purple-lighter/60' : 'text-theme-purple-lighter'}`}>
+                          {signup.event_id.name}
+                        </h3>
+
+                        <div className="mt-1 space-y-1">
+                          <p className={`flex items-center gap-2 text-sm ${isPast ? 'text-theme-purple-lighter/50' : 'text-theme-purple-lighter/70'}`}>
+                            <Calendar className="h-3 w-3" />
+                            {format(new Date(signup.event_id.event_date), "d MMMM yyyy")}
+                          </p>
+                          <p className="text-xs text-theme-purple-lighter/50">
+                            Ingeschreven op: {format(new Date(signup.created_at), "d MMM yyyy")}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-center text-theme-purple-lighter/30 transition-transform group-hover:translate-x-1">
+                        <ChevronRight className="h-5 w-5" />
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </Tile>
