@@ -259,6 +259,26 @@ export const eventsApi = {
                 // Dit zorgt ervoor dat de gebruiker opnieuw kan proberen te betalen
                 return existing;
             }
+        } else if (signupData.email) {
+            // Check bestaande inschrijving op basis van email (voor gasten)
+            const existingQuery = buildQueryString({
+                filter: {
+                    event_id: { _eq: signupData.event_id },
+                    participant_email: { _eq: signupData.email }
+                },
+                fields: ['id', 'payment_status', 'qr_token']
+            });
+
+            const existingSignups = await directusFetch<any[]>(`/items/event_signups?${existingQuery}`);
+
+            if (existingSignups && existingSignups.length > 0) {
+                const existing = existingSignups[0];
+
+                if (existing.payment_status === 'paid') {
+                    throw new Error('Er is al een inschrijving met dit emailadres voor deze activiteit.');
+                }
+                return existing;
+            }
         }
 
         // 2. Nieuwe inschrijving maken
