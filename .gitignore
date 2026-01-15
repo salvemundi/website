@@ -39,3 +39,6 @@ coverage/
 
 frontend/env
 RSA
+
+# Agent helper scripts
+.agent/
