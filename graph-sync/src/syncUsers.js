@@ -16,7 +16,8 @@ const GROUP_IDS = {
     BESTUUR: 'b16d93c7-42ef-412e-afb3-f6cbe487d0e0',
     ICT: 'a4aeb401-882d-4e1e-90ee-106b7fdb23cc',
     Intro: '516f03f9-be0a-4514-9da8-396415f59d0b',
-    CommitteeMember: '5848f0ed-59c4-4ae2-8683-3d9a221ac189'
+    CommitteeMember: '5848f0ed-59c4-4ae2-8683-3d9a221ac189',
+    ACTIEVE_LEDEN: process.env.GROUP_ID_ACTIEF || '5848f0ed-59c4-4ae2-8683-3d9a221ac189',
 };
 
 // Manual override mapping (optional) – if you want to force certain group IDs to specific names
@@ -232,12 +233,12 @@ async function buildGlobalGroupNameMap() {
 function getRoleIdByGroupMembership(groupIds) {
     // Minimal logging: only print a concise input summary
     console.log(`[ROLE] groups=${groupIds?.length || 0}, committees=${COMMITTEE_GROUP_IDS.length}`);
-    
+
     // Preserve explicit special-group roles first
     if (Array.isArray(groupIds) && groupIds.length > 0) {
-    if (groupIds.includes(GROUP_IDS.ICT)) return ROLE_IDS.ADMIN;
-    if (groupIds.includes(GROUP_IDS.BESTUUR)) return ROLE_IDS.BESTUUR;
-    if (groupIds.includes(GROUP_IDS.COMMISSIE_LEIDER)) return ROLE_IDS.COMMISSIE_LEIDER;
+        if (groupIds.includes(GROUP_IDS.ICT)) return ROLE_IDS.ADMIN;
+        if (groupIds.includes(GROUP_IDS.BESTUUR)) return ROLE_IDS.BESTUUR;
+        if (groupIds.includes(GROUP_IDS.COMMISSIE_LEIDER)) return ROLE_IDS.COMMISSIE_LEIDER;
         if (groupIds.includes(GROUP_IDS.Intro)) {
             console.log(`[ROLE] ✅ User is in Intro group (${GROUP_IDS.Intro}) -> Assigning Intro role`);
             return ROLE_IDS.Intro;
@@ -554,7 +555,7 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
             .get();
 
         const attributes = u.customSecurityAttributes?.SalveMundiLidmaatschap;
-    // Minimal logging: expiry and missing fields summary
+        // Minimal logging: expiry and missing fields summary
 
         let membershipExpiry = null;
         if (attributes?.VerloopdatumStr) {
@@ -590,11 +591,11 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
             .get();
 
         const groups = groupResp.value || [];
-    // Concise per-user log: email, #groups, role decision
-    const email = (u.mail || u.userPrincipalName || '').toLowerCase();
-    const groupIds = groups.map(g => g.id);
-    const role = getRoleIdByGroupMembership(groupIds);
-    console.log(`[SYNC] ${email} groups=${groups.length} -> role=${role || 'none'}`);
+        // Concise per-user log: email, #groups, role decision
+        const email = (u.mail || u.userPrincipalName || '').toLowerCase();
+        const groupIds = groups.map(g => g.id);
+        const role = getRoleIdByGroupMembership(groupIds);
+        console.log(`[SYNC] ${email} groups=${groups.length} -> role=${role || 'none'}`);
 
 
         const existingRes = await axios.get(
@@ -804,11 +805,24 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
         }
 
         await syncCommitteesForUserFromGroups(directusUserId, groups);
-        // Membership status is determined by the "Actieve Leden" group, which is managed by the Nachtwacht script
-        // The Nachtwacht script checks membership_expiry and moves users between Actief/Verlopen groups
+        // Membership status is determined by:
+        // 1. Being in the "Actieve Leden" group in Entra ID (managed by Nachtwacht script)
+        // 2. Having a future membership_expiry date (fallback for sync delays)
         try {
-            const isInActieveLeden = groups.some(g => g.id === GROUP_IDS.ACTIEVE_LEDEN);
-            await setDirectusMembershipStatus(directusUserId, isInActieveLeden ? 'active' : 'none');
+            const today = new Date().toISOString().split('T')[0];
+            const isInActieveLeden = groups.some(g =>
+                g.id === GROUP_IDS.ACTIEVE_LEDEN ||
+                g.displayName === 'Actieve Leden' ||
+                g.mailNickname === 'Actieve Leden'
+            );
+
+            // If expiry date is in the future, the user is active regardless of group sync status
+            const isExpiryActive = membershipExpiry && membershipExpiry >= today;
+            const isMember = isInActieveLeden || isExpiryActive;
+
+            console.log(`[SYNC] ${email} membership: active=${isMember} (group=${isInActieveLeden}, expiry=${isExpiryActive}, expiryDate=${membershipExpiry})`);
+
+            await setDirectusMembershipStatus(directusUserId, isMember ? 'active' : 'none');
         } catch (e) {
             console.error('❌ [SYNC] Error setting membership_status after committee sync:', e.response?.data || e.message);
         }
