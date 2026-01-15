@@ -221,6 +221,15 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                             await membershipService.provisionMember(MEMBERSHIP_API_URL, userId);
                             // Trigger sync for existing user renewal
                             await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, userId);
+
+                            // Send confirmation email for renewal (Zero Amount)
+                            const mockMetadata = {
+                                firstName, lastName, email, amount: '0.00'
+                            };
+                            await notificationService.sendConfirmationEmail(
+                                DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL,
+                                mockMetadata, description
+                            );
                         } else if (firstName && lastName && email) {
                             const credentials = await membershipService.createMember(
                                 MEMBERSHIP_API_URL, firstName, lastName, email
@@ -457,15 +466,14 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                         // Trigger sync for existing user renewal
                         await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, userId);
 
-                        if (registrationId) {
-                            await notificationService.sendConfirmationEmail(
-                                DIRECTUS_URL,
-                                DIRECTUS_API_TOKEN,
-                                EMAIL_SERVICE_URL,
-                                payment.metadata,
-                                payment.description
-                            );
-                        }
+                        // Always send confirmation for paid renewals
+                        await notificationService.sendConfirmationEmail(
+                            DIRECTUS_URL,
+                            DIRECTUS_API_TOKEN,
+                            EMAIL_SERVICE_URL,
+                            payment.metadata,
+                            payment.description
+                        );
 
                         // Also increment coupon usage if applicable
                         if (couponId) {
