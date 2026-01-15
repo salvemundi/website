@@ -63,9 +63,28 @@ app.post(PATH, async (req, res) => {
             const groupId = resource.split('/groups/')[1]?.split('/')[0];
             console.log(`[GraphWebhook] Group change detected: ${groupId} (${changeType})`);
 
-            // For group changes, we could trigger a full sync or handle group-specific logic
-            // For now, just log it - you can expand this later if needed
-            console.log(`[GraphWebhook] ℹ️ Group changes are logged but not yet processed`);
+            // Check if this is a group membership change (e.g. groups/{id}/members/{userId})
+            const resourceParts = resource.split('/');
+            const membersIndex = resourceParts.indexOf('members');
+            if (membersIndex !== -1 && resourceParts.length > membersIndex + 1) {
+                const userId = resourceParts[membersIndex + 1];
+                console.log(`[GraphWebhook] Group membership change for user detected: ${userId} (${changeType})`);
+
+                // Trigger sync for this user
+                try {
+                    await axios.post(`${GRAPH_SYNC_URL}/sync/user`, {
+                        userId: userId
+                    }, {
+                        timeout: 10000,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    console.log(`[GraphWebhook] ✅ Successfully triggered sync for user: ${userId} due to group change`);
+                } catch (error) {
+                    console.error(`[GraphWebhook] ❌ Failed to trigger sync for user ${userId} on group change:`, error.message);
+                }
+            } else {
+                console.log(`[GraphWebhook] ℹ️ Group change on ${resource} is not a member-specific change, skipping sync.`);
+            }
         } else {
             console.log(`[GraphWebhook] ℹ️ Non-user/group resource change: ${resource}`);
         }
