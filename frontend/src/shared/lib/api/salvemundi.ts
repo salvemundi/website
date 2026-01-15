@@ -950,6 +950,128 @@ export async function getSafeHavenAvailability(userId: string): Promise<SafeHave
     }
 }
 
+// Trip API
+export interface Trip {
+    id: number;
+    name: string;
+    description: string;
+    image?: string;
+    event_date: string;
+    registration_open: boolean;
+    max_participants: number;
+    base_price: number;
+    crew_discount: number;
+    deposit_amount: number;
+    is_bus_trip: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface TripActivity {
+    id: number;
+    trip_id: number;
+    name: string;
+    description: string;
+    price: number;
+    image?: string;
+    max_participants?: number;
+    is_active: boolean;
+    display_order: number;
+}
+
+export interface TripSignup {
+    id: number;
+    trip_id: number;
+    first_name: string;
+    middle_name?: string;
+    last_name: string;
+    email: string;
+    phone_number: string;
+    date_of_birth?: string;
+    id_document_type?: 'passport' | 'id_card';
+    allergies?: string;
+    special_notes?: string;
+    willing_to_drive?: boolean;
+    role: 'participant' | 'crew';
+    status: 'registered' | 'waitlist' | 'confirmed' | 'cancelled';
+    deposit_paid: boolean;
+    deposit_paid_at?: string;
+    full_payment_paid: boolean;
+    full_payment_paid_at?: string;
+    terms_accepted: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export const tripsApi = {
+    getAll: async () => {
+        const query = buildQueryString({
+            fields: ['id', 'name', 'description', 'image', 'event_date', 'registration_open', 'max_participants', 'base_price', 'crew_discount', 'deposit_amount', 'is_bus_trip', 'created_at', 'updated_at'],
+            sort: ['-event_date']
+        });
+        return directusFetch<Trip[]>(`/items/trips?${query}`);
+    },
+    getById: async (id: number) => {
+        return directusFetch<Trip>(`/items/trips/${id}?fields=*`);
+    },
+};
+
+export const tripActivitiesApi = {
+    getByTripId: async (tripId: number) => {
+        const query = buildQueryString({
+            filter: { trip_id: { _eq: tripId }, is_active: { _eq: true } },
+            sort: ['display_order', 'name']
+        });
+        return directusFetch<TripActivity[]>(`/items/trip_activities?${query}`);
+    },
+};
+
+export const tripSignupsApi = {
+    create: async (data: Partial<TripSignup>) => {
+        return directusFetch<TripSignup>(`/items/trip_signups`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    getById: async (id: number) => {
+        return directusFetch<TripSignup>(`/items/trip_signups/${id}?fields=*`);
+    },
+    update: async (id: number, data: Partial<TripSignup>) => {
+        return directusFetch<TripSignup>(`/items/trip_signups/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        });
+    },
+    getByTripId: async (tripId: number) => {
+        const query = buildQueryString({
+            filter: { trip_id: { _eq: tripId } },
+            sort: ['-created_at']
+        });
+        return directusFetch<TripSignup[]>(`/items/trip_signups?${query}`);
+    },
+};
+
+export const tripSignupActivitiesApi = {
+    create: async (data: { trip_signup_id: number; trip_activity_id: number }) => {
+        return directusFetch<any>(`/items/trip_signup_activities`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    delete: async (id: number) => {
+        return directusFetch<void>(`/items/trip_signup_activities/${id}`, {
+            method: 'DELETE'
+        });
+    },
+    getBySignupId: async (signupId: number) => {
+        const query = buildQueryString({
+            filter: { trip_signup_id: { _eq: signupId } },
+            fields: ['id', 'trip_activity_id.*']
+        });
+        return directusFetch<any[]>(`/items/trip_signup_activities?${query}`);
+    },
+};
+
 export async function updateSafeHavenAvailability(
     userId: string,
     availability: SafeHavenAvailability,

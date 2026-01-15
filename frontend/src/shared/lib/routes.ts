@@ -8,6 +8,7 @@ export const ROUTES = {
     CONTACT: '/contact',
     SAFE_HAVENS: '/safe-havens',
     PUB_CRAWL: '/kroegentocht',
+    TRIP: '/reis',
     STICKERS: '/stickers',
     LOGIN: '/login',
     ACCOUNT: '/account',
