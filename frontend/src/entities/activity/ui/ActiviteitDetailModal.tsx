@@ -6,7 +6,7 @@ import { useAuth } from "@/features/auth/providers/auth-provider";
 // import AttendanceButton from "./AttendanceButton"; // TODO: Port AttendanceButton
 // import { isUserAuthorizedForAttendance, getEventSignupsWithCheckIn } from "../lib/qr-service"; // TODO: Port qr-service
 // import exportEventSignups from "../lib/exportSignups"; // TODO: Port exportSignups
-// import QRDisplay from "./QRDisplay"; // TODO: Port QRDisplay
+import QRDisplay from "./QRDisplay";
 import {
     CalendarClock,
     Clock3,
@@ -320,8 +320,7 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                                 </p>
 
                                 <div className="flex justify-center">
-                                    {/* <QRDisplay qrToken={signupQrToken!} /> TODO: Port QRDisplay */}
-                                    <div className="text-center text-theme-white/70">QR Code Display Placeholder</div>
+                                    <QRDisplay qrToken={signupQrToken!} />
                                 </div>
 
                                 <p className="text-center text-sm text-theme-white/70 mt-4">
