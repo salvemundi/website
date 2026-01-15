@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
+import { sendActivityCancellationEmail } from '@/shared/lib/services/email-service';
+import { eventsApi } from '@/shared/lib/api/salvemundi';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { Search, Download, Mail, Phone, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Search, Download, Mail, Phone, CheckCircle, XCircle, Clock, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
@@ -32,6 +34,7 @@ export default function AanmeldingenPage() {
     const [signups, setSignups] = useState<Signup[]>([]);
     const [filteredSignups, setFilteredSignups] = useState<Signup[]>([]);
     const [eventName, setEventName] = useState<string>('');
+    const [eventData, setEventData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -46,9 +49,10 @@ export default function AanmeldingenPage() {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            // Load event name
-            const event = await directusFetch<any>(`/items/events/${eventId}?fields=name`);
+            // Load event name and details (including committee info via eventsApi)
+            const event = await eventsApi.getById(eventId);
             setEventName(event.name);
+            setEventData(event);
 
             // Load signups
             const signupsData = await directusFetch<Signup[]>(
@@ -59,6 +63,39 @@ export default function AanmeldingenPage() {
             console.error('Failed to load data:', error);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleDelete = async (signupId: number) => {
+        if (!confirm('Weet je zeker dat je deze aanmelding wilt verwijderen? Dit kan niet ongedaan worden gemaakt.')) {
+            return;
+        }
+
+        const signup = signups.find(s => s.id === signupId);
+
+        try {
+            // Send cancellation email if signup found
+            if (signup) {
+                const email = getEmail(signup);
+                if (email && email !== '-') {
+                    await sendActivityCancellationEmail({
+                        recipientEmail: email,
+                        recipientName: getName(signup),
+                        eventName: eventName,
+                        committeeName: eventData?.committee_name,
+                        committeeEmail: eventData?.committee_email
+                    });
+                }
+            }
+
+            await directusFetch(`/items/event_signups/${signupId}`, {
+                method: 'DELETE',
+            });
+            // Update local state
+            setSignups(prev => prev.filter(s => s.id !== signupId));
+        } catch (error) {
+            console.error('Failed to delete signup:', error);
+            alert('Kon aanmelding niet verwijderen. Probeer het later opnieuw.');
         }
     };
 
@@ -73,7 +110,7 @@ export default function AanmeldingenPage() {
             const name = getName(signup).toLowerCase();
             const email = getEmail(signup).toLowerCase();
             const phone = getPhone(signup).toLowerCase();
-            
+
             return name.includes(query) || email.includes(query) || phone.includes(query);
         });
 
@@ -227,6 +264,7 @@ export default function AanmeldingenPage() {
                                         <th className="px-6 py-4 text-left text-sm font-bold uppercase">Telefoon</th>
                                         <th className="px-6 py-4 text-left text-sm font-bold uppercase">Status</th>
                                         <th className="px-6 py-4 text-left text-sm font-bold uppercase">Datum</th>
+                                        <th className="px-6 py-4 text-left text-sm font-bold uppercase">Acties</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
@@ -257,6 +295,15 @@ export default function AanmeldingenPage() {
                                             <td className="px-6 py-4 text-slate-600 dark:text-slate-300 text-sm">
                                                 {format(new Date(signup.created_at), 'dd MMM yyyy HH:mm', { locale: nl })}
                                             </td>
+                                            <td className="px-6 py-4 text-slate-600 dark:text-slate-300 text-sm">
+                                                <button
+                                                    onClick={() => handleDelete(signup.id)}
+                                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                                                    title="Verwijder aanmelding"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -266,7 +313,7 @@ export default function AanmeldingenPage() {
                         {/* Mobile View */}
                         <div className="md:hidden space-y-4">
                             {filteredSignups.map((signup) => (
-                                <div key={signup.id} className="bg-white dark:bg-slate-800 rounded-xl shadow p-4">
+                                <div key={signup.id} className="bg-white dark:bg-slate-800 rounded-xl shadow p-4 relative">
                                     <div className="flex items-start justify-between mb-3">
                                         <div>
                                             <p className="font-bold text-slate-900 dark:text-slate-100">{getName(signup)}</p>
@@ -274,7 +321,16 @@ export default function AanmeldingenPage() {
                                                 {format(new Date(signup.created_at), 'dd MMM yyyy HH:mm', { locale: nl })}
                                             </p>
                                         </div>
-                                        {getStatusBadge(signup.payment_status)}
+                                        <div className="flex gap-2">
+                                            {getStatusBadge(signup.payment_status)}
+                                            <button
+                                                onClick={() => handleDelete(signup.id)}
+                                                className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                                                title="Verwijder aanmelding"
+                                            >
+                                                <Trash2 className="h-5 w-5" />
+                                            </button>
+                                        </div>
                                     </div>
                                     <div className="space-y-2 text-sm">
                                         <a href={`mailto:${getEmail(signup)}`} className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-theme-purple">

@@ -324,20 +324,24 @@ export const eventsApi = {
                         console.error('eventsApi.createSignup: failed to fetch event details for contact info', { eventId: signupData.event_id, error: e });
                     }
 
-                    await sendEventSignupEmail({
-                        recipientEmail: signupData.email,
-                        recipientName: signupData.name,
-                        eventName: signupData.event_name || '',
-                        eventDate: signupData.event_date || '',
-                        eventPrice: signupData.event_price || 0,
-                        phoneNumber: signupData.phone_number,
-                        userName: signupData.user_id || 'Gast',
-                        qrCodeDataUrl: qrDataUrl,
-                        committeeName,
-                        committeeEmail,
-                        contactName,
-                        contactPhone,
-                    });
+                    if (signupData.event_price === 0) {
+                        await sendEventSignupEmail({
+                            recipientEmail: signupData.email,
+                            recipientName: signupData.name,
+                            eventName: signupData.event_name || '',
+                            eventDate: signupData.event_date || '',
+                            eventPrice: signupData.event_price || 0,
+                            phoneNumber: signupData.phone_number,
+                            userName: signupData.user_id || 'Gast',
+                            qrCodeDataUrl: qrDataUrl,
+                            committeeName,
+                            committeeEmail,
+                            contactName,
+                            contactPhone,
+                        });
+                    } else {
+                        console.log('paymentApi.createSignup: skipping email for paid event (will be sent on payment confirmation)', { signupId: signup.id });
+                    }
                 } catch (e) {
                     console.error('eventsApi.createSignup: failed to send signup email', { signupId: signup.id, error: e });
                 }

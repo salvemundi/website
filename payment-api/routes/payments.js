@@ -231,7 +231,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                     } else {
                         if (registrationId) {
                             const mockMetadata = {
-                                firstName, lastName, email, registrationId
+                                firstName, lastName, email, registrationId, registrationType, amount: '0.00'
                             };
                             await notificationService.sendConfirmationEmail(
                                 DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL,
@@ -263,6 +263,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 registrationType: registrationType || 'event_signup', // Default to event_signup for safety
                 notContribution: isContribution ? "false" : "true",
                 email: email,
+                amount: formattedAmount,
                 userId: userId || null,
                 firstName: firstName || null,
                 lastName: lastName || null,
@@ -464,24 +465,24 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                         if (couponId) {
                             // Coupon increment logic skipped for now
                         }
-                        } else if (firstName && lastName && email) {
-                            // Try to create a Directus user so we have the date_of_birth set
-                            try {
-                                await directusService.createDirectusUser(DIRECTUS_URL, DIRECTUS_API_TOKEN, {
-                                    first_name: firstName,
-                                    last_name: lastName,
-                                    email: email,
-                                    date_of_birth: dateOfBirth || null,
-                                    status: 'active'
-                                });
-                                console.warn(`[Payment][${traceId}] Created Directus user for ${email}`);
-                            } catch (err) {
-                                console.error(`[Payment][${traceId}] Failed to create Directus user before membership create:`, err?.message || err);
-                            }
+                    } else if (firstName && lastName && email) {
+                        // Try to create a Directus user so we have the date_of_birth set
+                        try {
+                            await directusService.createDirectusUser(DIRECTUS_URL, DIRECTUS_API_TOKEN, {
+                                first_name: firstName,
+                                last_name: lastName,
+                                email: email,
+                                date_of_birth: dateOfBirth || null,
+                                status: 'active'
+                            });
+                            console.warn(`[Payment][${traceId}] Created Directus user for ${email}`);
+                        } catch (err) {
+                            console.error(`[Payment][${traceId}] Failed to create Directus user before membership create:`, err?.message || err);
+                        }
 
-                            const credentials = await membershipService.createMember(
-                                MEMBERSHIP_API_URL, firstName, lastName, email
-                            );
+                        const credentials = await membershipService.createMember(
+                            MEMBERSHIP_API_URL, firstName, lastName, email
+                        );
 
                         if (credentials) {
                             // Trigger sync for newly created user to sync membership_expiry to Directus
