@@ -124,7 +124,7 @@ jobs:
             echo "TAG=$TAG" > .env
 
             if [ "$TAG" = "latest" ]; then
-              echo "NEXT_PUBLIC_PAYMENT_API_URL=http://payment-api-prod:3002" >> .env
+              echo "NEXT_PUBLIC_PAYMENT_API_URL=http://payment-api-latest:3002" >> .env
               echo "NODE_ENV=production" >> .env
             elif [ "$TAG" = "dev" ]; then
               echo "NEXT_PUBLIC_PAYMENT_API_URL=http://payment-api-dev:3002" >> .env
