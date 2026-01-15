@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, ReactNode } from 'react';
+import { useEffect, useRef, useState, ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { scrollTriggerAnimation } from '@/shared/lib/gsap/gsapUtils';
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
@@ -35,9 +35,16 @@ export const ScrollTriggerWrapper: React.FC<ScrollTriggerWrapperProps> = ({
 }) => {
     const ref = useRef<HTMLDivElement>(null);
     const pathname = usePathname();
+    const [isMounted, setIsMounted] = useState(false);
+
+    // Ensure animations only run on client after mount
+    // Prevents issues with SSR and caching where animations might not initialize properly
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     useEffect(() => {
-        if (!ref.current) return;
+        if (!ref.current || !isMounted) return;
 
         let animationConfig: gsap.TweenVars = {};
 
@@ -97,7 +104,7 @@ export const ScrollTriggerWrapper: React.FC<ScrollTriggerWrapperProps> = ({
                 });
             }
         };
-    }, [animation, customAnimation, delay, duration, stagger, triggerStart, once, pathname]);
+    }, [animation, customAnimation, delay, duration, stagger, triggerStart, once, pathname, isMounted]);
 
     return (
         <div ref={ref} className={className}>

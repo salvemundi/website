@@ -17,8 +17,13 @@ export async function GET() {
             headers: {
                 'Authorization': `Bearer ${directusToken}`,
                 'Accept': 'application/json'
+            },
+            next: {
+                revalidate: 3600, // 1 uur cache, sponsors veranderen weinig
+                tags: ['sponsors'],
             }
         });
+
 
         if (!resp.ok) {
             const text = await resp.text().catch(() => null);

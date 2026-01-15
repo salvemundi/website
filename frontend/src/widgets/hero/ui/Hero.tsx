@@ -36,9 +36,15 @@ export default function Hero() {
         loadHeroBanners?.();
     }, [loadEvents, loadHeroBanners]);
 
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
     // GSAP Animations
     useEffect(() => {
-        if (!heroRef.current) return;
+        if (!heroRef.current || !isMounted) return;
 
         const ctx = gsap.context(() => {
             // Timeline for hero entrance
@@ -122,7 +128,8 @@ export default function Hero() {
         }, heroRef);
 
         return () => ctx.revert();
-    }, []);
+    }, [isMounted]);
+
 
     const nextEvent = useMemo(() => {
         if (!events?.length) return null;
