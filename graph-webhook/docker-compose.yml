@@ -3,11 +3,11 @@ services:
     image: ghcr.io/salvemundi/graph-webhook:${TAG:-latest}
     # build: .
     # Trigger dev deploy
-    container_name: graph-webhook-${TAG:-dev}
+    container_name: graph-webhook
     restart: unless-stopped
     env_file: .env
     environment:
-      - GRAPH_SYNC_URL=http://graph-sync-${TAG:-dev}:3001
+      - GRAPH_SYNC_URL=http://graph-sync:3001
     networks:
       - proxy-network
     healthcheck:
