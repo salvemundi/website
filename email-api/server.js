@@ -356,6 +356,39 @@ app.post('/send-email', async (req, res) => {
   }
 });
 
+// Lightweight debug endpoint to validate attachments locally without contacting Graph.
+// Useful during development: POST the same payload you would to /send-email and
+// the server will log attachment summaries and return success without performing any external calls.
+app.post('/send-email-debug', async (req, res) => {
+  try {
+    console.log('🔧 /send-email-debug called - will echo attachments and return success');
+    const { to, subject, html, from, fromName, attachments } = req.body || {};
+
+    if (!to || !subject || !html) {
+      return res.status(400).json({ error: 'Missing required fields: to, subject, html' });
+    }
+
+    if (attachments && Array.isArray(attachments) && attachments.length > 0) {
+      const summary = attachments.map(att => ({
+        name: att.name,
+        contentType: att.contentType,
+        isInline: Boolean(att.isInline),
+        contentId: att.contentId || null,
+        bytesLength: att.contentBytes ? String(att.contentBytes).length : 0,
+      }));
+      console.log('📎 Attachments summary (debug):', summary);
+    } else {
+      console.log('📎 No attachments received (debug)');
+    }
+
+    // Echo back the payload so callers can inspect server-side parsing
+    return res.json({ success: true, received: { to, subject, attachmentsCount: attachments ? attachments.length : 0 } });
+  } catch (err) {
+    console.error('Error in /send-email-debug:', err);
+    return res.status(500).json({ error: 'Internal error in debug endpoint' });
+  }
+});
+
 // Intro update notification endpoint
 // Now expects the frontend to provide the subscriber emails
 app.post('/send-intro-update', async (req, res) => {
