@@ -139,8 +139,9 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 first_name: firstName || null,
                 last_name: lastName || null,
                 date_of_birth: dateOfBirth || null,
-                registration: registrationType === 'pub_crawl_signup' ? null : (registrationId || null),
+                registration: registrationType === 'pub_crawl_signup' ? null : (registrationType === 'trip_signup' ? null : (registrationId || null)),
                 pub_crawl_signup: registrationType === 'pub_crawl_signup' ? (registrationId || null) : null,
+                trip_signup: registrationType === 'trip_signup' ? (registrationId || null) : null,
                 environment: effectiveEnvironment,
                 approval_status: approvalStatus,
                 coupon_code: couponCode || null,
@@ -355,27 +356,74 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
             if (payment.isPaid()) {
                 // 1. ALWAYS update the registration/signup status if we have a registrationId
                 if (registrationId) {
-                    const collection = payment.metadata.registrationType === 'pub_crawl_signup' ? 'pub_crawl_signups' : 'event_signups';
-                    console.warn(`[Webhook][${traceId}] Updating ${collection} ${registrationId} to paid`);
+                    let collection = 'event_signups';
+                    let updatePayload = { payment_status: 'paid' };
+
+                    if (payment.metadata.registrationType === 'pub_crawl_signup') {
+                        collection = 'pub_crawl_signups';
+                    } else if (payment.metadata.registrationType === 'trip_signup') {
+                        collection = 'trip_signups';
+                        // For trip signups, check description to determine if it's deposit or final payment
+                        if (payment.description.toLowerCase().includes('aanbetaling')) {
+                            updatePayload = { deposit_paid: new Date().toISOString() };
+                        } else if (payment.description.toLowerCase().includes('restbetaling')) {
+                            updatePayload = { full_payment_paid: new Date().toISOString() };
+                        }
+                    }
+
+                    console.warn(`[Webhook][${traceId}] Updating ${collection} ${registrationId} with payment status`);
                     await directusService.updateDirectusItem(
                         DIRECTUS_URL,
                         DIRECTUS_API_TOKEN,
                         collection,
                         registrationId,
-                        { payment_status: 'paid' }
+                        updatePayload
                     );
                 }
 
-                // 2. ALWAYS send confirmation email if it's NOT a contribution (normal events/pub-crawl)
+                // 2. ALWAYS send confirmation email if it's NOT a contribution (normal events/pub-crawl/trip)
                 if (notContribution === "true" && registrationId) {
                     console.warn(`[Webhook][${traceId}] Sending non-contribution confirmation email`);
-                    await notificationService.sendConfirmationEmail(
-                        DIRECTUS_URL,
-                        DIRECTUS_API_TOKEN,
-                        EMAIL_SERVICE_URL,
-                        payment.metadata,
-                        payment.description
-                    );
+                    
+                    // Send trip-specific email for trip signups
+                    if (payment.metadata.registrationType === 'trip_signup') {
+                        try {
+                            const tripSignup = await directusService.getDirectusItem(
+                                DIRECTUS_URL,
+                                DIRECTUS_API_TOKEN,
+                                'trip_signups',
+                                registrationId,
+                                'id,first_name,middle_name,last_name,email,role,trip_id'
+                            );
+                            
+                            const trip = await directusService.getDirectusItem(
+                                DIRECTUS_URL,
+                                DIRECTUS_API_TOKEN,
+                                'trips',
+                                tripSignup.trip_id,
+                                'id,name,event_date,base_price,deposit_amount,crew_discount,is_bus_trip'
+                            );
+                            
+                            const paymentType = payment.description.toLowerCase().includes('aanbetaling') ? 'deposit' : 'final';
+                            await notificationService.sendTripPaymentConfirmation(
+                                EMAIL_SERVICE_URL,
+                                tripSignup,
+                                trip,
+                                paymentType
+                            );
+                        } catch (err) {
+                            console.error(`[Webhook][${traceId}] Failed to send trip payment confirmation:`, err);
+                        }
+                    } else {
+                        // Regular confirmation email for events/pub-crawls
+                        await notificationService.sendConfirmationEmail(
+                            DIRECTUS_URL,
+                            DIRECTUS_API_TOKEN,
+                            EMAIL_SERVICE_URL,
+                            payment.metadata,
+                            payment.description
+                        );
+                    }
                 }
 
                 // 3. Check approval status ONLY for membership provisioning

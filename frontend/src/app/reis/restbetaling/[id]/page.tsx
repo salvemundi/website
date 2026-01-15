@@ -1,0 +1,625 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import { 
+    tripSignupsApi, 
+    tripActivitiesApi, 
+    tripSignupActivitiesApi,
+    tripsApi,
+    getImageUrl 
+} from '@/shared/lib/api/salvemundi';
+import { format } from 'date-fns';
+import { nl } from 'date-fns/locale';
+import { 
+    CheckCircle2, 
+    Loader2, 
+    AlertCircle, 
+    CreditCard,
+    Edit,
+    FileText,
+    Utensils,
+    Calculator
+} from 'lucide-react';
+import Image from 'next/image';
+
+interface TripSignup {
+    id: number;
+    trip_id: number;
+    first_name: string;
+    middle_name?: string;
+    last_name: string;
+    email: string;
+    phone_number: string;
+    date_of_birth?: string;
+    id_document_type?: 'passport' | 'id_card';
+    allergies?: string;
+    special_notes?: string;
+    willing_to_drive?: boolean;
+    role: 'participant' | 'crew';
+    status: string;
+    deposit_paid: boolean;
+    full_payment_paid: boolean;
+    full_payment_paid_at?: string;
+}
+
+interface Trip {
+    id: number;
+    name: string;
+    description: string;
+    image?: string;
+    event_date: string;
+    base_price: number;
+    crew_discount: number;
+    deposit_amount: number;
+}
+
+interface TripActivity {
+    id: number;
+    name: string;
+    description: string;
+    price: number;
+    image?: string;
+}
+
+export default function RestbetalingPage() {
+    const params = useParams();
+    const router = useRouter();
+    const signupId = parseInt(params.id as string);
+
+    const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
+    const [signup, setSignup] = useState<TripSignup | null>(null);
+    const [trip, setTrip] = useState<Trip | null>(null);
+    const [selectedActivities, setSelectedActivities] = useState<TripActivity[]>([]);
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState(false);
+    const [editMode, setEditMode] = useState(false);
+
+    const [form, setForm] = useState({
+        first_name: '',
+        middle_name: '',
+        last_name: '',
+        email: '',
+        phone_number: '',
+        date_of_birth: '',
+        id_document_type: '' as '' | 'passport' | 'id_card',
+        allergies: '',
+        special_notes: '',
+    });
+
+    useEffect(() => {
+        loadData();
+    }, [signupId]);
+
+    const loadData = async () => {
+        setLoading(true);
+        try {
+            // Load signup
+            const signupData = await tripSignupsApi.getById(signupId);
+            setSignup(signupData);
+
+            // Check if deposit is paid
+            if (!signupData.deposit_paid) {
+                router.push(`/reis/aanbetaling/${signupId}`);
+                return;
+            }
+
+            // Check if already paid full amount
+            if (signupData.full_payment_paid) {
+                setSuccess(true);
+            }
+
+            // Load trip
+            const tripData = await tripsApi.getById(signupData.trip_id);
+            setTrip(tripData);
+
+            // Load selected activities
+            const signupActivities = await tripSignupActivitiesApi.getBySignupId(signupId);
+            const activityIds = signupActivities.map((a: any) => a.trip_activity_id.id || a.trip_activity_id);
+            
+            // Load full activity details
+            const allActivities = await tripActivitiesApi.getByTripId(signupData.trip_id);
+            const selected = allActivities.filter(a => activityIds.includes(a.id));
+            setSelectedActivities(selected);
+
+            // Pre-fill form
+            setForm({
+                first_name: signupData.first_name,
+                middle_name: signupData.middle_name || '',
+                last_name: signupData.last_name,
+                email: signupData.email,
+                phone_number: signupData.phone_number,
+                date_of_birth: signupData.date_of_birth || '',
+                id_document_type: (signupData.id_document_type as 'passport' | 'id_card') || '',
+                allergies: signupData.allergies || '',
+                special_notes: signupData.special_notes || '',
+            });
+        } catch (err: any) {
+            console.error('Error loading data:', err);
+            setError('Er is een fout opgetreden bij het laden van de gegevens.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setForm({ ...form, [name]: value });
+        if (error) setError(null);
+    };
+
+    const handleSaveChanges = async () => {
+        setError(null);
+        setSubmitting(true);
+
+        try {
+            await tripSignupsApi.update(signupId, {
+                first_name: form.first_name,
+                middle_name: form.middle_name || undefined,
+                last_name: form.last_name,
+                email: form.email,
+                phone_number: form.phone_number,
+                date_of_birth: form.date_of_birth,
+                id_document_type: form.id_document_type || undefined,
+                allergies: form.allergies || undefined,
+                special_notes: form.special_notes || undefined,
+            });
+
+            setEditMode(false);
+            await loadData(); // Reload to get updated data
+        } catch (err: any) {
+            console.error('Error updating data:', err);
+            setError('Er is een fout opgetreden bij het opslaan van je wijzigingen.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handlePayment = async () => {
+        setError(null);
+        setSubmitting(true);
+
+        try {
+            // Redirect to payment page
+            router.push(`/reis/restbetaling/${signupId}/betaling`);
+        } catch (err: any) {
+            console.error('Error initiating payment:', err);
+            setError('Er is een fout opgetreden bij het starten van de betaling.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    // Calculate costs
+    const calculateTotal = () => {
+        if (!trip) return { basePrice: 0, activities: 0, discount: 0, total: 0, deposit: 0, remaining: 0 };
+
+        const basePrice = trip.base_price;
+        const activitiesTotal = selectedActivities.reduce((sum, a) => sum + a.price, 0);
+        const discount = signup?.role === 'crew' ? trip.crew_discount : 0;
+        const total = basePrice + activitiesTotal - discount;
+        const deposit = trip.deposit_amount;
+        const remaining = Math.max(0, total - deposit);
+
+        return {
+            basePrice,
+            activities: activitiesTotal,
+            discount,
+            total,
+            deposit,
+            remaining
+        };
+    };
+
+    const costs = calculateTotal();
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-50 to-white">
+                <div className="text-center">
+                    <Loader2 className="h-16 w-16 animate-spin text-purple-600 mx-auto mb-4" />
+                    <p className="text-gray-600">Gegevens laden...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!signup || !trip) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-50 to-white">
+                <div className="text-center">
+                    <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">Aanmelding niet gevonden</h1>
+                    <p className="text-gray-600 mb-6">De opgegeven aanmelding bestaat niet.</p>
+                    <button
+                        onClick={() => router.push('/reis')}
+                        className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                    >
+                        Terug naar reis pagina
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <>
+            <PageHeader
+                title={`Restbetaling - ${trip.name}`}
+                backgroundImage={trip.image ? getImageUrl(trip.image) : '/img/placeholder.svg'}
+            />
+
+            <div className="container mx-auto px-4 py-12 max-w-4xl">
+                {/* Progress indicator */}
+                <div className="mb-8">
+                    <div className="flex items-center justify-between max-w-md mx-auto">
+                        <div className="flex flex-col items-center">
+                            <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white mb-2">
+                                <CheckCircle2 className="h-6 w-6" />
+                            </div>
+                            <span className="text-xs font-semibold text-gray-700">Aanmelding</span>
+                        </div>
+                        <div className="flex-1 h-1 bg-green-500 mx-2"></div>
+                        <div className="flex flex-col items-center">
+                            <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white mb-2">
+                                <CheckCircle2 className="h-6 w-6" />
+                            </div>
+                            <span className="text-xs font-semibold text-gray-700">Aanbetaling</span>
+                        </div>
+                        <div className="flex-1 h-1 bg-purple-600 mx-2"></div>
+                        <div className="flex flex-col items-center">
+                            <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white mb-2">
+                                3
+                            </div>
+                            <span className="text-xs font-semibold text-purple-600">Restbetaling</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Success message */}
+                {success && (
+                    <div className="mb-8 bg-green-50 border-l-4 border-green-400 p-6 rounded-lg">
+                        <div className="flex items-start">
+                            <CheckCircle2 className="h-6 w-6 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
+                            <div>
+                                <h3 className="text-green-800 font-bold text-lg mb-2">Betaling voltooid!</h3>
+                                <p className="text-green-700">
+                                    Je hebt de volledige betaling voor de reis voldaan. We kijken ernaar uit om je te zien!
+                                </p>
+                                {signup.full_payment_paid_at && (
+                                    <p className="text-green-600 text-sm mt-2">
+                                        Betaald op: {format(new Date(signup.full_payment_paid_at), 'd MMMM yyyy HH:mm', { locale: nl })}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Error message */}
+                {error && (
+                    <div className="mb-8 bg-red-50 border-l-4 border-red-400 p-6 rounded-lg">
+                        <div className="flex items-start">
+                            <AlertCircle className="h-6 w-6 text-red-600 mr-3 flex-shrink-0 mt-0.5" />
+                            <p className="text-red-700">{error}</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Personal Information */}
+                <div className="bg-white rounded-xl shadow-lg p-8 border-t-4 border-purple-600 mb-8">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center">
+                            <FileText className="h-6 w-6 text-purple-600 mr-3" />
+                            <h2 className="text-2xl font-bold text-gray-900">Je gegevens</h2>
+                        </div>
+                        {!editMode && !success && (
+                            <button
+                                onClick={() => setEditMode(true)}
+                                className="flex items-center gap-2 px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition"
+                            >
+                                <Edit className="h-5 w-5" />
+                                Wijzigen
+                            </button>
+                        )}
+                    </div>
+
+                    {editMode ? (
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Voornaam</label>
+                                    <input
+                                        type="text"
+                                        name="first_name"
+                                        value={form.first_name}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Tussenvoegsel</label>
+                                    <input
+                                        type="text"
+                                        name="middle_name"
+                                        value={form.middle_name}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Achternaam</label>
+                                    <input
+                                        type="text"
+                                        name="last_name"
+                                        value={form.last_name}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={form.email}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Telefoon</label>
+                                    <input
+                                        type="tel"
+                                        name="phone_number"
+                                        value={form.phone_number}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Geboortedatum</label>
+                                    <input
+                                        type="date"
+                                        name="date_of_birth"
+                                        value={form.date_of_birth}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">ID Type</label>
+                                    <select
+                                        name="id_document_type"
+                                        value={form.id_document_type}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                    >
+                                        <option value="">Selecteer...</option>
+                                        <option value="passport">Paspoort</option>
+                                        <option value="id_card">ID Kaart</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Allergieën</label>
+                                <textarea
+                                    name="allergies"
+                                    value={form.allergies}
+                                    onChange={handleChange}
+                                    rows={2}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Bijzonderheden</label>
+                                <textarea
+                                    name="special_notes"
+                                    value={form.special_notes}
+                                    onChange={handleChange}
+                                    rows={2}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                />
+                            </div>
+
+                            <div className="flex gap-4 justify-end">
+                                <button
+                                    onClick={() => setEditMode(false)}
+                                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                                    disabled={submitting}
+                                >
+                                    Annuleren
+                                </button>
+                                <button
+                                    onClick={handleSaveChanges}
+                                    disabled={submitting}
+                                    className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50 flex items-center"
+                                >
+                                    {submitting ? (
+                                        <>
+                                            <Loader2 className="animate-spin h-5 w-5 mr-2" />
+                                            Opslaan...
+                                        </>
+                                    ) : (
+                                        'Wijzigingen opslaan'
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                            <div>
+                                <p className="text-gray-500 mb-1">Naam</p>
+                                <p className="font-semibold text-gray-900">
+                                    {form.first_name} {form.middle_name} {form.last_name}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-gray-500 mb-1">Geboortedatum</p>
+                                <p className="font-semibold text-gray-900">
+                                    {form.date_of_birth ? format(new Date(form.date_of_birth), 'd MMMM yyyy', { locale: nl }) : '-'}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-gray-500 mb-1">Email</p>
+                                <p className="font-semibold text-gray-900">{form.email}</p>
+                            </div>
+                            <div>
+                                <p className="text-gray-500 mb-1">Telefoon</p>
+                                <p className="font-semibold text-gray-900">{form.phone_number}</p>
+                            </div>
+                            <div>
+                                <p className="text-gray-500 mb-1">ID Type</p>
+                                <p className="font-semibold text-gray-900">
+                                    {form.id_document_type === 'passport' ? 'Paspoort' : form.id_document_type === 'id_card' ? 'ID Kaart' : '-'}
+                                </p>
+                            </div>
+                            {form.allergies && (
+                                <div className="md:col-span-2">
+                                    <p className="text-gray-500 mb-1">Allergieën</p>
+                                    <p className="font-semibold text-gray-900">{form.allergies}</p>
+                                </div>
+                            )}
+                            {form.special_notes && (
+                                <div className="md:col-span-2">
+                                    <p className="text-gray-500 mb-1">Bijzonderheden</p>
+                                    <p className="font-semibold text-gray-900">{form.special_notes}</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {/* Selected Activities */}
+                {selectedActivities.length > 0 && (
+                    <div className="bg-white rounded-xl shadow-lg p-8 border-t-4 border-blue-600 mb-8">
+                        <div className="flex items-center mb-6">
+                            <Utensils className="h-6 w-6 text-blue-600 mr-3" />
+                            <h2 className="text-2xl font-bold text-gray-900">Geselecteerde activiteiten</h2>
+                        </div>
+
+                        <div className="space-y-4">
+                            {selectedActivities.map(activity => (
+                                <div key={activity.id} className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
+                                    {activity.image && (
+                                        <Image
+                                            src={getImageUrl(activity.image)}
+                                            alt={activity.name}
+                                            width={80}
+                                            height={80}
+                                            className="rounded-lg object-cover"
+                                        />
+                                    )}
+                                    <div className="flex-1">
+                                        <h3 className="font-bold text-gray-900">{activity.name}</h3>
+                                        <p className="text-sm text-gray-600">{activity.description}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-lg font-bold text-blue-600">€{activity.price.toFixed(2)}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="mt-4 p-4 bg-blue-50 rounded-lg text-sm text-blue-700">
+                            <strong>Let op:</strong> Wijzigingen in activiteiten zijn niet meer mogelijk via deze pagina. 
+                            Neem contact op met de reiscommissie als je wijzigingen wilt doorvoeren.
+                        </div>
+                    </div>
+                )}
+
+                {/* Payment Calculation */}
+                <div className="bg-white rounded-xl shadow-lg p-8 border-t-4 border-green-600">
+                    <div className="flex items-center mb-6">
+                        <Calculator className="h-6 w-6 text-green-600 mr-3" />
+                        <h2 className="text-2xl font-bold text-gray-900">Kostenoverzicht</h2>
+                    </div>
+
+                    <div className="space-y-4 mb-6">
+                        <div className="flex justify-between items-center py-3 border-b">
+                            <span className="text-gray-700">Basisprijs reis</span>
+                            <span className="font-semibold text-gray-900">€{costs.basePrice.toFixed(2)}</span>
+                        </div>
+
+                        {costs.activities > 0 && (
+                            <div className="flex justify-between items-center py-3 border-b">
+                                <span className="text-gray-700">Activiteiten</span>
+                                <span className="font-semibold text-gray-900">€{costs.activities.toFixed(2)}</span>
+                            </div>
+                        )}
+
+                        {costs.discount > 0 && (
+                            <div className="flex justify-between items-center py-3 border-b">
+                                <span className="text-gray-700">Crew korting</span>
+                                <span className="font-semibold text-green-600">-€{costs.discount.toFixed(2)}</span>
+                            </div>
+                        )}
+
+                        <div className="flex justify-between items-center py-3 border-b border-gray-300">
+                            <span className="text-lg font-semibold text-gray-900">Totaal</span>
+                            <span className="text-lg font-bold text-gray-900">€{costs.total.toFixed(2)}</span>
+                        </div>
+
+                        <div className="flex justify-between items-center py-3 border-b">
+                            <span className="text-gray-700">Reeds betaald (aanbetaling)</span>
+                            <span className="font-semibold text-green-600">-€{costs.deposit.toFixed(2)}</span>
+                        </div>
+
+                        <div className="flex justify-between items-center py-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg px-4">
+                            <span className="text-xl font-bold text-gray-900">Restbedrag</span>
+                            <span className="text-3xl font-bold text-purple-600">€{costs.remaining.toFixed(2)}</span>
+                        </div>
+                    </div>
+
+                    {!success && costs.remaining > 0 && (
+                        <div className="space-y-4">
+                            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+                                <p className="text-sm text-yellow-800">
+                                    Controleer je gegevens goed voordat je de betaling voltooit. 
+                                    Na betaling ontvang je een bevestigingsmail met alle details.
+                                </p>
+                            </div>
+
+                            <button
+                                onClick={handlePayment}
+                                disabled={submitting || editMode}
+                                className="w-full py-4 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                            >
+                                {submitting ? (
+                                    <>
+                                        <Loader2 className="animate-spin h-6 w-6 mr-3" />
+                                        Bezig...
+                                    </>
+                                ) : (
+                                    <>
+                                        <CreditCard className="mr-3 h-6 w-6" />
+                                        Betaal restbedrag van €{costs.remaining.toFixed(2)}
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    )}
+
+                    {success && (
+                        <div className="text-center py-6">
+                            <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
+                            <p className="text-lg font-semibold text-gray-900">
+                                Je hebt alle betalingen voltooid. Tot ziens op de reis!
+                            </p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </>
+    );
+}
