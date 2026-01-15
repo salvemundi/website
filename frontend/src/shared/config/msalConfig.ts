@@ -1,4 +1,4 @@
-import { Configuration, RedirectRequest } from '@azure/msal-browser';
+import { Configuration, LogLevel, RedirectRequest } from '@azure/msal-browser';
 
 const redirectUri = process.env.NEXT_PUBLIC_AUTH_REDIRECT_URI || (typeof window !== 'undefined' ? window.location.origin : '');
 const postLogoutRedirectUri = process.env.NEXT_PUBLIC_AUTH_LOGOUT_REDIRECT_URI || redirectUri;
@@ -22,6 +22,30 @@ export const msalConfig: Configuration = {
     cache: {
         cacheLocation: 'localStorage',
         storeAuthStateInCookie: false,
+    },
+    system: {
+        loggerOptions: {
+            loggerCallback: (level: LogLevel, message: string, containsPii: boolean) => {
+                if (containsPii) {
+                    return;
+                }
+                switch (level) {
+                    case LogLevel.Error:
+                        console.error(message);
+                        return;
+                    case LogLevel.Info:
+                        return;
+                    case LogLevel.Verbose:
+                        return;
+                    case LogLevel.Warning:
+                        console.warn(message);
+                        return;
+                    default:
+                        return;
+                }
+            },
+            logLevel: LogLevel.Warning,
+        },
     },
 };
 

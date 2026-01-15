@@ -133,6 +133,8 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
             attachments: attachments
         }, { timeout: 10000 });
 
+        console.log(`[NotificationService] ✅ Confirmation email sent to ${metadata.email} for ${activityName}`);
+
         // 2. Notify Organization (Best effort)
         try {
             const orgEmail = process.env.EMAIL_FROM || 'noreply@salvemundi.nl';
@@ -152,6 +154,7 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
                     </div>
                 `
             }, { timeout: 10000 });
+            console.log(`[NotificationService] Organization notified for ${activityName}`);
         } catch (orgErr) {
             console.warn("[NotificationService] Failed to notify organization:", orgErr.message);
         }
@@ -186,6 +189,7 @@ async function sendWelcomeEmail(emailServiceUrl, email, firstName, credentials) 
                 </div>
             `
         }, { timeout: 10000 });
+        console.log(`[NotificationService] ✅ Welcome email sent to ${email}`);
 
     } catch (error) {
         console.error("❌ Failed to send welcome email:", error.message);
@@ -196,7 +200,7 @@ async function sendWelcomeEmail(emailServiceUrl, email, firstName, credentials) 
 async function sendTripSignupConfirmation(emailServiceUrl, tripSignup, trip) {
     try {
         const fullName = `${tripSignup.first_name} ${tripSignup.middle_name ? tripSignup.middle_name + ' ' : ''}${tripSignup.last_name}`;
-        
+
         await axios.post(`${emailServiceUrl}/send-email`, {
             to: tripSignup.email,
             subject: `Aanmelding ontvangen: ${trip.name}`,
@@ -251,7 +255,7 @@ async function sendTripPaymentRequest(emailServiceUrl, tripSignup, trip, payment
         const fullName = `${tripSignup.first_name} ${tripSignup.middle_name ? tripSignup.middle_name + ' ' : ''}${tripSignup.last_name}`;
         const amount = paymentType === 'deposit' ? trip.deposit_amount : 0; // Final amount calculated on frontend
         const paymentUrl = `${process.env.FRONTEND_URL || 'https://salvemundi.nl'}/reis/${paymentType === 'deposit' ? 'aanbetaling' : 'restbetaling'}/${tripSignup.id}`;
-        
+
         await axios.post(`${emailServiceUrl}/send-email`, {
             to: tripSignup.email,
             subject: `Betaalverzoek: ${trip.name}`,
@@ -305,7 +309,7 @@ async function sendTripPaymentRequest(emailServiceUrl, tripSignup, trip, payment
 async function sendTripPaymentConfirmation(emailServiceUrl, tripSignup, trip, paymentType = 'deposit') {
     try {
         const fullName = `${tripSignup.first_name} ${tripSignup.middle_name ? tripSignup.middle_name + ' ' : ''}${tripSignup.last_name}`;
-        
+
         await axios.post(`${emailServiceUrl}/send-email`, {
             to: tripSignup.email,
             subject: `Betaling ontvangen: ${trip.name}`,
@@ -355,7 +359,7 @@ async function sendTripStatusUpdate(emailServiceUrl, tripSignup, trip, newStatus
         };
 
         const statusInfo = statusMessages[newStatus] || { title: 'Status update', color: '#7B2CBF', message: `Je status is gewijzigd naar: ${newStatus}` };
-        
+
         await axios.post(`${emailServiceUrl}/send-email`, {
             to: tripSignup.email,
             subject: `Status update: ${trip.name}`,
@@ -388,7 +392,7 @@ async function sendTripStatusUpdate(emailServiceUrl, tripSignup, trip, newStatus
 async function sendTripBulkEmail(emailServiceUrl, recipients, subject, message, tripName) {
     try {
         const recipientEmails = recipients.map(r => r.email).filter(Boolean);
-        
+
         if (recipientEmails.length === 0) {
             console.warn('No valid recipient emails for bulk email');
             return { success: false, error: 'No valid recipients' };
