@@ -8,6 +8,7 @@ import { eventsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
 import { directusFetch } from '@/shared/lib/directus';
 import AttendanceButton from '@/entities/activity/ui/AttendanceButton';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import QRDisplay from '@/entities/activity/ui/QRDisplay';
 import {
     CalendarClock,
     Euro,
@@ -473,8 +474,7 @@ export default function EventDetailPage() {
                                     </p>
 
                                     <div className="flex justify-center bg-white p-4 rounded-xl border-2 border-dashed border-slate-300">
-                                        {/* Placeholder for QR Display */}
-                                        <div className="text-center text-slate-400 py-8">QR Code</div>
+                                        <QRDisplay qrToken={signupStatus.qrToken!} />
                                     </div>
 
                                     <p className="text-center text-sm text-slate-500 dark:text-white/70 mt-4">
