@@ -170,6 +170,43 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
     return;
   }
 
+    try {
+        // Ensure eventPrice is a number
+        const eventPrice = typeof data.eventPrice === 'number' ? data.eventPrice : Number(data.eventPrice) || 0;
+        
+        // Format the event date nicely
+        const formattedDate = new Date(data.eventDate).toLocaleDateString('nl-NL', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        // Prepare QR code attachment for email
+        let qrCodeAttachment: EmailAttachment | undefined;
+        let qrCodeCid = '';
+        if (data.qrCodeDataUrl) {
+            const base64Data = data.qrCodeDataUrl.includes(',')
+                ? data.qrCodeDataUrl.split(',')[1]
+                : data.qrCodeDataUrl;
+            // Use a unique content ID in an email-style format (include domain) for better
+            // compatibility with mail clients and Microsoft Graph inline attachments.
+            qrCodeCid = `qrcode-${Date.now()}@salvemundi`;
+            qrCodeAttachment = {
+                name: 'qr-code.png',
+                contentType: 'image/png',
+                contentBytes: base64Data,
+                isInline: true,
+                contentId: qrCodeCid,
+            };
+        }
+        // Prefer committee name from data, but sanitize as a fallback in case it still contains markers
+        const displayCommitteeName = sanitizeCommitteeDisplay(data.committeeName) || data.committeeName;
+        const committeeEmail = data.committeeEmail || buildCommitteeEmailFromName(displayCommitteeName);
+        const contactInfoSection = (data.contactName || data.contactPhone || committeeEmail || displayCommitteeName)
+            ? `
   try {
     // Ensure eventPrice is a number
     const eventPrice = typeof data.eventPrice === 'number' ? data.eventPrice : Number(data.eventPrice) || 0;
@@ -255,6 +292,12 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
                 <h3 style="color: #7B2CBF; margin-top: 0;">Jouw Toegangscode</h3>
                 <p style="margin-bottom: 15px;">Laat deze QR code zien bij de ingang van de activiteit:</p>
                 <img src="cid:${qrCodeCid}" alt="QR Code voor toegang" style="max-width: 250px; height: auto; border: 3px solid #7B2CBF; border-radius: 8px; display: block; margin: 0 auto;" />
+                ${data.qrCodeDataUrl ? `
+                  <!-- Fallback: inline data URL in case the mail client doesn't render cid: inline attachments -->
+                  <div style="margin-top:12px; text-align:center;">
+                    <img src="${data.qrCodeDataUrl}" alt="QR Code (fallback)" style="max-width: 250px; height: auto; border: 1px solid #ddd; border-radius:6px; display:block; margin:0 auto;" />
+                  </div>
+                ` : ''}
                 <p style="margin-top: 15px; font-size: 12px; color: #666;">
                   <em>Bewaar deze email of maak een screenshot van de QR code</em>
                 </p>
