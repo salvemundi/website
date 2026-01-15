@@ -182,9 +182,6 @@ export default function RestbetalingPage() {
         setSubmitting(true);
 
         try {
-            // TODO: Create payment link for remaining amount
-            // For now, simulate payment
-            
             // Redirect to payment page
             router.push(`/reis/restbetaling/${signupId}/betaling`);
         } catch (err: any) {

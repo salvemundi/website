@@ -114,7 +114,242 @@ async function sendWelcomeEmail(emailServiceUrl, email, firstName, credentials) 
     }
 }
 
+// Trip-specific email functions
+async function sendTripSignupConfirmation(emailServiceUrl, tripSignup, trip) {
+    try {
+        const fullName = `${tripSignup.first_name} ${tripSignup.middle_name ? tripSignup.middle_name + ' ' : ''}${tripSignup.last_name}`;
+        
+        await axios.post(`${emailServiceUrl}/send-email`, {
+            to: tripSignup.email,
+            subject: `Aanmelding ontvangen: ${trip.name}`,
+            html: `
+                <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #7B2CBF;">Bedankt voor je aanmelding!</h2>
+                    <p>Beste ${tripSignup.first_name},</p>
+                    <p>Je aanmelding voor <strong>${trip.name}</strong> is succesvol ontvangen${tripSignup.status === 'waitlist' ? ' en je staat op de <strong>wachtlijst</strong>' : ''}.</p>
+                    
+                    ${tripSignup.status === 'waitlist' ? `
+                        <div style="background-color: #FFF3CD; padding: 15px; border-radius: 8px; border-left: 4px solid #FFC107; margin: 20px 0;">
+                            <strong>⚠️ Wachtlijst</strong><br>
+                            Je staat momenteel op de wachtlijst. We laten je weten zodra er een plek vrijkomt!
+                        </div>
+                    ` : `
+                        <div style="background-color: #f3f3f3; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                            <h3 style="margin-top: 0;">Volgende stappen:</h3>
+                            <ol style="margin: 0; padding-left: 20px;">
+                                <li style="margin-bottom: 10px;">Je ontvangt binnenkort een betaalverzoek voor de aanbetaling van <strong>€${trip.deposit_amount.toFixed(2)}</strong></li>
+                                <li style="margin-bottom: 10px;">Na betaling van de aanbetaling kun je je voorkeuren opgeven en activiteiten selecteren</li>
+                                <li>De restbetaling volgt dichter bij de reisdatum</li>
+                            </ol>
+                        </div>
+                    `}
+                    
+                    <div style="background-color: #E8F5E9; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="margin-top: 0; color: #2E7D32;">Reisdetails:</h3>
+                        <p style="margin: 5px 0;"><strong>Reis:</strong> ${trip.name}</p>
+                        <p style="margin: 5px 0;"><strong>Datum:</strong> ${new Date(trip.event_date).toLocaleDateString('nl-NL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                        <p style="margin: 5px 0;"><strong>Totaalprijs:</strong> €${trip.base_price.toFixed(2)}${tripSignup.role === 'crew' ? ` (excl. crew korting van €${trip.crew_discount.toFixed(2)})` : ''}</p>
+                        <p style="margin: 5px 0;"><strong>Aanbetaling:</strong> €${trip.deposit_amount.toFixed(2)}</p>
+                    </div>
+
+                    <p style="color: #666; font-size: 14px; margin-top: 30px;">
+                        Heb je vragen? Neem dan contact met ons op via <a href="mailto:info@salvemundi.nl" style="color: #7B2CBF;">info@salvemundi.nl</a>
+                    </p>
+
+                    <p style="margin-top: 20px;">We kijken ernaar uit om samen met jou op reis te gaan!</p>
+                    <p style="margin-top: 10px;"><strong>Het Salve Mundi Reis Team</strong></p>
+                </div>
+            `
+        }, { timeout: 10000 });
+
+        console.log(`✅ Trip signup confirmation sent to ${tripSignup.email}`);
+    } catch (error) {
+        console.error("❌ Failed to send trip signup confirmation:", error.message);
+    }
+}
+
+async function sendTripPaymentRequest(emailServiceUrl, tripSignup, trip, paymentType = 'deposit') {
+    try {
+        const fullName = `${tripSignup.first_name} ${tripSignup.middle_name ? tripSignup.middle_name + ' ' : ''}${tripSignup.last_name}`;
+        const amount = paymentType === 'deposit' ? trip.deposit_amount : 0; // Final amount calculated on frontend
+        const paymentUrl = `${process.env.FRONTEND_URL || 'https://salvemundi.nl'}/reis/${paymentType === 'deposit' ? 'aanbetaling' : 'restbetaling'}/${tripSignup.id}`;
+        
+        await axios.post(`${emailServiceUrl}/send-email`, {
+            to: tripSignup.email,
+            subject: `Betaalverzoek: ${trip.name}`,
+            html: `
+                <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #7B2CBF;">Betaalverzoek voor ${trip.name}</h2>
+                    <p>Beste ${tripSignup.first_name},</p>
+                    <p>Het is tijd om ${paymentType === 'deposit' ? 'de aanbetaling' : 'de restbetaling'} te doen voor je deelname aan <strong>${trip.name}</strong>.</p>
+                    
+                    <div style="background-color: #f3f3f3; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+                        ${paymentType === 'deposit' ? `
+                            <p style="font-size: 16px; margin: 0 0 10px 0;">Aanbetalingsbedrag:</p>
+                            <p style="font-size: 32px; font-weight: bold; color: #7B2CBF; margin: 0;">€${amount.toFixed(2)}</p>
+                        ` : `
+                            <p style="font-size: 16px; margin: 0 0 10px 0;">Restbetaling</p>
+                            <p style="font-size: 14px; color: #666; margin: 0;">Het exacte bedrag zie je na het invullen van je activiteiten</p>
+                        `}
+                    </div>
+
+                    ${paymentType === 'deposit' ? `
+                        <p>Na betaling van de aanbetaling kun je:</p>
+                        <ul>
+                            <li>Je voorkeuren opgeven (allergieën, dieetwensen, etc.)</li>
+                            <li>Activiteiten selecteren</li>
+                            ${trip.is_bus_trip ? '<li>Aangeven of je wilt rijden (indien je een rijbewijs hebt)</li>' : ''}
+                        </ul>
+                    ` : ''}
+
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="${paymentUrl}" style="display: inline-block; background: linear-gradient(135deg, #7B2CBF 0%, #FF6B35 100%); color: white; text-decoration: none; padding: 15px 40px; border-radius: 25px; font-weight: bold; font-size: 16px;">
+                            Ga naar betalen
+                        </a>
+                    </div>
+
+                    <p style="color: #666; font-size: 14px;">
+                        <strong>Let op:</strong> Deze link is persoonlijk en alleen bedoeld voor jouw aanmelding.
+                    </p>
+
+                    <p style="margin-top: 20px;">Tot snel!</p>
+                    <p style="margin-top: 10px;"><strong>Het Salve Mundi Reis Team</strong></p>
+                </div>
+            `
+        }, { timeout: 10000 });
+
+        console.log(`✅ Trip payment request (${paymentType}) sent to ${tripSignup.email}`);
+    } catch (error) {
+        console.error(`❌ Failed to send trip payment request (${paymentType}):`, error.message);
+    }
+}
+
+async function sendTripPaymentConfirmation(emailServiceUrl, tripSignup, trip, paymentType = 'deposit') {
+    try {
+        const fullName = `${tripSignup.first_name} ${tripSignup.middle_name ? tripSignup.middle_name + ' ' : ''}${tripSignup.last_name}`;
+        
+        await axios.post(`${emailServiceUrl}/send-email`, {
+            to: tripSignup.email,
+            subject: `Betaling ontvangen: ${trip.name}`,
+            html: `
+                <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #2E7D32;">✓ Betaling ontvangen!</h2>
+                    <p>Beste ${tripSignup.first_name},</p>
+                    <p>We hebben je ${paymentType === 'deposit' ? 'aanbetaling' : 'restbetaling'} voor <strong>${trip.name}</strong> ontvangen. Bedankt!</p>
+                    
+                    ${paymentType === 'deposit' ? `
+                        <div style="background-color: #E3F2FD; padding: 15px; border-radius: 8px; border-left: 4px solid #2196F3; margin: 20px 0;">
+                            <strong>📋 Volgende stap:</strong><br>
+                            Je kunt nu je voorkeuren opgeven en activiteiten selecteren. We sturen je later een betaalverzoek voor de restbetaling.
+                        </div>
+                    ` : `
+                        <div style="background-color: #E8F5E9; padding: 15px; border-radius: 8px; border-left: 4px solid #4CAF50; margin: 20px 0;">
+                            <strong>🎉 Je bent helemaal klaar!</strong><br>
+                            Je hebt alle betalingen voldaan. We sturen je enkele weken voor vertrek meer informatie over de reis.
+                        </div>
+                    `}
+
+                    <div style="background-color: #f3f3f3; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="margin-top: 0;">Reisdetails:</h3>
+                        <p style="margin: 5px 0;"><strong>Reis:</strong> ${trip.name}</p>
+                        <p style="margin: 5px 0;"><strong>Datum:</strong> ${new Date(trip.event_date).toLocaleDateString('nl-NL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                        <p style="margin: 5px 0;"><strong>Deelnemer:</strong> ${fullName}</p>
+                    </div>
+
+                    <p>We kijken ernaar uit!</p>
+                    <p style="margin-top: 10px;"><strong>Het Salve Mundi Reis Team</strong></p>
+                </div>
+            `
+        }, { timeout: 10000 });
+
+        console.log(`✅ Trip payment confirmation (${paymentType}) sent to ${tripSignup.email}`);
+    } catch (error) {
+        console.error(`❌ Failed to send trip payment confirmation (${paymentType}):`, error.message);
+    }
+}
+
+async function sendTripStatusUpdate(emailServiceUrl, tripSignup, trip, newStatus, oldStatus) {
+    try {
+        const statusMessages = {
+            confirmed: { title: 'Je aanmelding is bevestigd! ✓', color: '#4CAF50', message: 'Je deelname aan de reis is bevestigd.' },
+            waitlist: { title: 'Je staat op de wachtlijst', color: '#FFC107', message: 'Je staat op de wachtlijst. We laten het je weten zodra er een plek vrijkomt.' },
+            cancelled: { title: 'Je aanmelding is geannuleerd', color: '#F44336', message: 'Je aanmelding is geannuleerd. Neem contact met ons op als dit niet klopt.' },
+        };
+
+        const statusInfo = statusMessages[newStatus] || { title: 'Status update', color: '#7B2CBF', message: `Je status is gewijzigd naar: ${newStatus}` };
+        
+        await axios.post(`${emailServiceUrl}/send-email`, {
+            to: tripSignup.email,
+            subject: `Status update: ${trip.name}`,
+            html: `
+                <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: ${statusInfo.color};">${statusInfo.title}</h2>
+                    <p>Beste ${tripSignup.first_name},</p>
+                    <p>${statusInfo.message}</p>
+                    
+                    <div style="background-color: #f3f3f3; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <p style="margin: 5px 0;"><strong>Reis:</strong> ${trip.name}</p>
+                        <p style="margin: 5px 0;"><strong>Datum:</strong> ${new Date(trip.event_date).toLocaleDateString('nl-NL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                        <p style="margin: 5px 0;"><strong>Status:</strong> ${newStatus}</p>
+                    </div>
+
+                    <p>Heb je vragen? Neem dan contact met ons op via <a href="mailto:info@salvemundi.nl" style="color: #7B2CBF;">info@salvemundi.nl</a></p>
+
+                    <p style="margin-top: 20px;">Met vriendelijke groet,</p>
+                    <p style="margin-top: 10px;"><strong>Het Salve Mundi Reis Team</strong></p>
+                </div>
+            `
+        }, { timeout: 10000 });
+
+        console.log(`✅ Trip status update sent to ${tripSignup.email}: ${oldStatus} → ${newStatus}`);
+    } catch (error) {
+        console.error("❌ Failed to send trip status update:", error.message);
+    }
+}
+
+async function sendTripBulkEmail(emailServiceUrl, recipients, subject, message, tripName) {
+    try {
+        const recipientEmails = recipients.map(r => r.email).filter(Boolean);
+        
+        if (recipientEmails.length === 0) {
+            console.warn('No valid recipient emails for bulk email');
+            return { success: false, error: 'No valid recipients' };
+        }
+
+        await axios.post(`${emailServiceUrl}/send-email`, {
+            to: recipientEmails.join(','), // Send to multiple recipients
+            subject: subject,
+            html: `
+                <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #7B2CBF;">${tripName}</h2>
+                    <div style="line-height: 1.6; color: #333;">
+                        ${message.replace(/\n/g, '<br>')}
+                    </div>
+                    
+                    <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 14px;">
+                        Dit bericht is verzonden naar alle deelnemers van ${tripName}.
+                    </p>
+
+                    <p style="margin-top: 20px;">Met vriendelijke groet,</p>
+                    <p style="margin-top: 10px;"><strong>Het Salve Mundi Reis Team</strong></p>
+                </div>
+            `
+        }, { timeout: 30000 });
+
+        console.log(`✅ Bulk email sent to ${recipientEmails.length} recipients for trip: ${tripName}`);
+        return { success: true, count: recipientEmails.length };
+    } catch (error) {
+        console.error("❌ Failed to send bulk email:", error.message);
+        return { success: false, error: error.message };
+    }
+}
+
 module.exports = {
     sendConfirmationEmail,
-    sendWelcomeEmail
+    sendWelcomeEmail,
+    sendTripSignupConfirmation,
+    sendTripPaymentRequest,
+    sendTripPaymentConfirmation,
+    sendTripStatusUpdate,
+    sendTripBulkEmail
 };
