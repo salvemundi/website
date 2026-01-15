@@ -7,16 +7,26 @@ const DIRECTUS_URL = 'https://admin.salvemundi.nl';
 let API_BYPASS_USER_ID = process.env.DIRECTUS_API_USER_ID ?? null;
 
 // Detect a Directus API token used by server-side services or the frontend build.
-// Common envs: DIRECTUS_API_TOKEN (server), VITE_DIRECTUS_API_KEY (frontend build)
-const API_SERVICE_TOKEN = process.env.DIRECTUS_API_TOKEN ?? process.env.VITE_DIRECTUS_API_KEY ?? null;
+// Common envs: DIRECTUS_API_TOKEN (server), VITE_DIRECTUS_API_KEY (frontend build), NEXT_PUBLIC_DIRECTUS_API_KEY (Next.js)
+const API_SERVICE_TOKEN = process.env.DIRECTUS_API_TOKEN ?? process.env.VITE_DIRECTUS_API_KEY ?? process.env.NEXT_PUBLIC_DIRECTUS_API_KEY ?? null;
 
 async function isApiBypass(auth: string | null) {
-    if (!auth) return false;
+    if (!auth) {
+        console.log('[isApiBypass] No auth header provided');
+        return false;
+    }
     // If the incoming Authorization header exactly matches the configured
     // service token, bypass immediately (this is the common website API token).
     if (API_SERVICE_TOKEN) {
         const normalized = auth.startsWith('Bearer ') ? auth.slice(7) : auth;
-        if (normalized === String(API_SERVICE_TOKEN)) return true;
+        const matches = normalized === String(API_SERVICE_TOKEN);
+        console.log('[isApiBypass] Token comparison:', {
+            hasServiceToken: !!API_SERVICE_TOKEN,
+            serviceTokenLength: API_SERVICE_TOKEN?.length,
+            incomingTokenLength: normalized.length,
+            matches
+        });
+        if (matches) return true;
     }
 
     // If a bypass user id was provided explicitly, compare by user id.
