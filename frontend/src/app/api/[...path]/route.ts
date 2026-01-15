@@ -74,9 +74,6 @@ export async function GET(
     const path = params.path.join('/');
     const url = new URL(request.url);
 
-    // Explicitly ignore certain paths that should be handled by their own files
-    // (Though Next.js App Router should handle this automatically by precedence)
-
     const targetUrl = `${DIRECTUS_URL}/${path}${url.search}`;
     console.warn(`[Directus Proxy] GET ${path} -> ${targetUrl}`);
 
@@ -88,9 +85,24 @@ export async function GET(
         const contentType = request.headers.get('Content-Type');
         if (contentType) forwardHeaders['Content-Type'] = contentType;
 
+        // Extract collection name from path voor cache tagging
+        // Bijv: "items/events" -> tag "events", "items/committees/123" -> tag "committees"
+        const pathParts = path.split('/');
+        const tags: string[] = [];
+        if (pathParts[0] === 'items' && pathParts[1]) {
+            tags.push(pathParts[1]);
+        }
+
+        // Cache GET requests met 2 minuten revalidatie
+        // Mutations (POST/PATCH/DELETE) worden niet gecached
+        // Tags maken on-demand invalidation via webhooks mogelijk
         const response = await fetch(targetUrl, {
             method: 'GET',
             headers: forwardHeaders,
+            next: {
+                revalidate: 120, // 2 minuten cache
+                tags: tags.length > 0 ? tags : undefined,
+            },
         });
 
         if (response.status === 204) {
