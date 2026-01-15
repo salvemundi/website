@@ -449,7 +449,7 @@ export default function EventDetailPage() {
                                 <div className="space-y-6 text-slate-900 dark:text-white h-full flex flex-col justify-center">
                                     <h3 className="text-2xl font-extrabold text-theme-purple-dark text-center">🎉 Inschrijving Definitief!</h3>
                                     <p className="text-center text-lg text-slate-600 dark:text-white/90">
-                                        Je bent succesvol ingeschreven en betaald voor {event.name}.
+                                        Je bent succesvol ingeschreven voor {event.name} en je betaling is ontvangen.
                                     </p>
 
                                     <div className="flex justify-center bg-white p-4 rounded-xl border-2 border-dashed border-slate-300">

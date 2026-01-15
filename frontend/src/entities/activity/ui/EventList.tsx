@@ -5,6 +5,8 @@ import ActiviteitCard from './ActiviteitCard';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { isEventPast } from '@/shared/lib/utils/date';
 
+import { useAuth } from '@/features/auth/providers/auth-provider';
+
 interface EventListProps {
     events: any[];
     onEventClick: (event: any) => void;
@@ -12,6 +14,8 @@ interface EventListProps {
 }
 
 export default function EventList({ events, onEventClick, variant = 'list' }: EventListProps) {
+    const { user } = useAuth();
+
     if (events.length === 0) {
         return (
             <div className="text-center py-12 bg-white rounded-3xl shadow-sm">
@@ -34,7 +38,7 @@ export default function EventList({ events, onEventClick, variant = 'list' }: Ev
                         startTime={event.event_time}
                         endTime={event.event_time_end || event.time_end}
                         location={event.location}
-                        price={event.price}
+                        price={user?.is_member ? event.price_members : event.price_non_members}
                         image={getImageUrl(event.image)}
                         isPast={isEventPast(event.event_date)}
                         variant="grid"
@@ -62,7 +66,7 @@ export default function EventList({ events, onEventClick, variant = 'list' }: Ev
                     startTime={event.event_time}
                     endTime={event.event_time_end || event.time_end}
                     location={event.location}
-                    price={event.price}
+                    price={user?.is_member ? event.price_members : event.price_non_members}
                     image={getImageUrl(event.image)}
                     isPast={isEventPast(event.event_date)}
                     variant="list"
