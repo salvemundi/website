@@ -123,28 +123,30 @@ export async function POST(
                 const meJson = await meResp.json().catch(() => null);
                 const userId = meJson?.data?.id;
 
-                const committeeId = body?.committee_id ?? null;
-                if (committeeId) {
-                    const memberCheckUrl = `${DIRECTUS_URL}/items/committee_members?filter[committee_id][_eq]=${encodeURIComponent(committeeId)}&filter[user_id][_eq]=${encodeURIComponent(userId)}&limit=1`;
-                    const memberResp = await fetch(memberCheckUrl, { headers: { Authorization: auth } });
-                    const memberJson = await memberResp.json().catch(() => null);
-                    let isMember = Array.isArray(memberJson?.data) && memberJson.data.length > 0;
-                    if (!isMember) {
-                        // Allow members of privileged committees (bestuur, ict) to create for any committee
-                        const privResp = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name&limit=-1`, { headers: { Authorization: auth } });
-                        const privJson = await privResp.json().catch(() => null);
-                        const memberships = Array.isArray(privJson?.data) ? privJson.data : [];
-                        const privileged = memberships.some((m: any) => {
-                            const name = (m?.committee_id?.name || '').toString().toLowerCase();
-                            return name === 'bestuur' || name === 'ict';
+                // Get user's committees once for both membership and privilege checks
+                const membershipsResp = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.id,committee_id.name&limit=-1`, { headers: { Authorization: auth } });
+                const membershipsJson = await membershipsResp.json().catch(() => null);
+                const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
+
+                const isPrivileged = memberships.some((m: any) => {
+                    const name = (m?.committee_id?.name || '').toString().toLowerCase();
+                    return name === 'bestuur' || name === 'ict';
+                });
+
+                if (!isPrivileged) {
+                    const committeeId = body?.committee_id ?? null;
+                    if (committeeId) {
+                        const isMember = memberships.some((m: any) => {
+                            const mId = m?.committee_id?.id ?? m?.committee_id;
+                            return String(mId) === String(committeeId);
                         });
-                        if (!privileged) {
+                        if (!isMember) {
                             return NextResponse.json({ error: 'Forbidden', message: 'Not a member of selected committee' }, { status: 403 });
                         }
+                    } else {
+                        // If no committee specified and not privileged, deny
+                        return NextResponse.json({ error: 'Forbidden', message: 'Committee required' }, { status: 403 });
                     }
-                } else {
-                    // If no committee specified, deny to be safe
-                    return NextResponse.json({ error: 'Forbidden', message: 'Committee required' }, { status: 403 });
                 }
             }
         }
@@ -201,39 +203,41 @@ export async function PATCH(
                 const meJson = await meResp.json().catch(() => null);
                 const userId = meJson?.data?.id;
 
-                // Extract event id from path: items/events/{id}
-                const parts = path.split('/');
-                const eventId = parts.length >= 3 ? parts[2] : null;
+                // Get user's committees once
+                const membershipsResp = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.id,committee_id.name&limit=-1`, { headers: { Authorization: auth } });
+                const membershipsJson = await membershipsResp.json().catch(() => null);
+                const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
 
-                // Determine committee_id to check: prefer body.committee_id if provided, otherwise fetch existing event
-                let committeeId = body?.committee_id ?? null;
-                if (!committeeId && eventId) {
-                    const evResp = await fetch(`${DIRECTUS_URL}/items/events/${encodeURIComponent(eventId)}?fields=committee_id`, { headers: { Authorization: auth } });
-                    if (!evResp.ok) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-                    const evJson = await evResp.json().catch(() => null);
-                    committeeId = evJson?.data?.committee_id ?? null;
-                }
+                const isPrivileged = memberships.some((m: any) => {
+                    const name = (m?.committee_id?.name || '').toString().toLowerCase();
+                    return name === 'bestuur' || name === 'ict';
+                });
 
-                if (committeeId) {
-                    const memberCheckUrl = `${DIRECTUS_URL}/items/committee_members?filter[committee_id][_eq]=${encodeURIComponent(committeeId)}&filter[user_id][_eq]=${encodeURIComponent(userId)}&limit=1`;
-                    const memberResp = await fetch(memberCheckUrl, { headers: { Authorization: auth } });
-                    const memberJson = await memberResp.json().catch(() => null);
-                    let isMember = Array.isArray(memberJson?.data) && memberJson.data.length > 0;
-                    if (!isMember) {
-                        // Allow privileged committee members (bestuur, ict) to edit any event
-                        const privResp = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name&limit=-1`, { headers: { Authorization: auth } });
-                        const privJson = await privResp.json().catch(() => null);
-                        const memberships = Array.isArray(privJson?.data) ? privJson.data : [];
-                        const privileged = memberships.some((m: any) => {
-                            const name = (m?.committee_id?.name || '').toString().toLowerCase();
-                            return name === 'bestuur' || name === 'ict';
+                if (!isPrivileged) {
+                    // Extract event id from path: items/events/{id}
+                    const parts = path.split('/');
+                    const eventId = parts.length >= 3 ? parts[2] : null;
+
+                    // Determine committee_id to check: prefer body.committee_id if provided, otherwise fetch existing event
+                    let committeeId = body?.committee_id ?? null;
+                    if (!committeeId && eventId) {
+                        const evResp = await fetch(`${DIRECTUS_URL}/items/events/${encodeURIComponent(eventId)}?fields=committee_id`, { headers: { Authorization: auth } });
+                        if (!evResp.ok) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+                        const evJson = await evResp.json().catch(() => null);
+                        committeeId = evJson?.data?.committee_id ?? null;
+                    }
+
+                    if (committeeId) {
+                        const isMember = memberships.some((m: any) => {
+                            const mId = m?.committee_id?.id ?? m?.committee_id;
+                            return String(mId) === String(committeeId);
                         });
-                        if (!privileged) {
+                        if (!isMember) {
                             return NextResponse.json({ error: 'Forbidden', message: 'Not a member of committee for this event' }, { status: 403 });
                         }
+                    } else {
+                        return NextResponse.json({ error: 'Forbidden', message: 'Committee for event not found' }, { status: 403 });
                     }
-                } else {
-                    return NextResponse.json({ error: 'Forbidden', message: 'Committee for event not found' }, { status: 403 });
                 }
             }
         }
