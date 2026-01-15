@@ -183,12 +183,18 @@ export default function EventDetailPage() {
     // Calculate price based on membership (if we knew it) or just display both/one
     // The modal used `activity.price`, but our event object has `price_members` and `price_non_members`
     // We'll try to be smart about it
+    const applicablePrice = useMemo(() => {
+        if (!event) return 0;
+        return user?.is_member ? Number(event.price_members) : Number(event.price_non_members);
+    }, [event, user]);
+
     const displayPrice = useMemo(() => {
         if (!event) return 'Loading...';
         if (event.price_members === 0 && event.price_non_members === 0) return 'Gratis';
-        if (event.price_members === event.price_non_members) return `€${Number(event.price_members).toFixed(2)}`;
-        return `€${Number(event.price_members).toFixed(2)} (leden) / €${Number(event.price_non_members).toFixed(2)}`;
-    }, [event]);
+
+        const price = applicablePrice;
+        return `€${price.toFixed(2).replace('.', ',')}`;
+    }, [event, applicablePrice]);
 
     // Treat an event as past only after the end of its calendar day (local timezone)
     const isPast = event ? isEventPast(event.event_date) : false;
@@ -232,7 +238,7 @@ export default function EventDetailPage() {
         setSubmitError(null);
 
         try {
-            await eventsApi.createSignup({
+            const signup = await eventsApi.createSignup({
                 event_id: Number(eventId),
                 email: formData.email,
                 name: formData.name,
@@ -240,20 +246,124 @@ export default function EventDetailPage() {
                 user_id: user?.id,
                 event_name: event.name,
                 event_date: event.event_date,
-                // Use member price if user is logged in (assumption), or non-member price
-                // Ideally backend handles this logic or we check membership status
-                event_price: Number(user ? event.price_members : event.price_non_members) || 0
+                event_price: applicablePrice
             });
 
-            // Refresh status
+            if (!signup || !signup.id) {
+                throw new Error('Kon inschrijving niet aanmaken.');
+            }
+
+            // If it's a paid activity, initiate payment
+            if (applicablePrice > 0) {
+                const traceId = Math.random().toString(36).substring(7);
+                const paymentPayload = {
+                    amount: applicablePrice.toFixed(2),
+                    description: `Inschrijving - ${event.name}`,
+                    redirectUrl: window.location.origin + `/activiteiten/${eventId}?status=paid`,
+                    registrationId: signup.id,
+                    registrationType: 'event_signup',
+                    email: formData.email,
+                    firstName: formData.name.split(' ')[0],
+                    lastName: formData.name.split(' ').slice(1).join(' '),
+                    userId: user?.id,
+                    isContribution: false
+                };
+
+                const paymentRes = await fetch('/api/payments/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Trace-Id': traceId
+                    },
+                    body: JSON.stringify(paymentPayload),
+                });
+
+                if (!paymentRes.ok) {
+                    const errorData = await paymentRes.json();
+                    throw new Error(errorData.details || errorData.error || 'Fout bij het aanmaken van de betaling.');
+                }
+
+                const paymentData = await paymentRes.json();
+                if (paymentData.checkoutUrl) {
+                    window.location.href = paymentData.checkoutUrl;
+                    return;
+                }
+            }
+
+            // Refresh status for free activity
             setSignupStatus({
                 isSignedUp: true,
-                paymentStatus: 'open', // Default to open for new signups
+                paymentStatus: applicablePrice > 0 ? 'open' : 'paid',
             });
 
         } catch (error: any) {
             console.error('Signup error:', error);
             setSubmitError(error?.message || 'Er is iets misgegaan tijdens het inschrijven.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handlePayAgain = async () => {
+        if (!signupStatus.isSignedUp || applicablePrice <= 0) return;
+
+        setIsSubmitting(true);
+        setSubmitError(null);
+
+        try {
+            // Find the signup ID (we should ideally have it in signupStatus)
+            const query = new URLSearchParams({
+                filter: JSON.stringify({
+                    event_id: { _eq: eventId },
+                    directus_relations: { _eq: user?.id },
+                    participant_email: { _eq: formData.email }
+                }),
+                fields: 'id'
+            });
+
+            const signups = await directusFetch<any[]>(`/items/event_signups?${query}`);
+            if (!signups || signups.length === 0) {
+                throw new Error('Inschrijving niet gevonden.');
+            }
+
+            const signupId = signups[0].id;
+
+            const traceId = Math.random().toString(36).substring(7);
+            const paymentPayload = {
+                amount: applicablePrice.toFixed(2),
+                description: `Betaling Inschrijving - ${event.name}`,
+                redirectUrl: window.location.origin + `/activiteiten/${eventId}?status=paid`,
+                registrationId: signupId,
+                registrationType: 'event_signup',
+                email: formData.email,
+                firstName: formData.name.split(' ')[0],
+                lastName: formData.name.split(' ').slice(1).join(' '),
+                userId: user?.id,
+                isContribution: false
+            };
+
+            const paymentRes = await fetch('/api/payments/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Trace-Id': traceId
+                },
+                body: JSON.stringify(paymentPayload),
+            });
+
+            if (!paymentRes.ok) {
+                const errorData = await paymentRes.json();
+                throw new Error(errorData.details || errorData.error || 'Fout bij het aanmaken van de betaling.');
+            }
+
+            const paymentData = await paymentRes.json();
+            if (paymentData.checkoutUrl) {
+                window.location.href = paymentData.checkoutUrl;
+                return;
+            }
+        } catch (error: any) {
+            console.error('Retry payment error:', error);
+            setSubmitError(error?.message || 'Fout bij het herstarten van de betaling.');
         } finally {
             setIsSubmitting(false);
         }
@@ -359,9 +469,22 @@ export default function EventDetailPage() {
                                     </div>
                                     <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Je bent ingeschreven!</h3>
                                     {signupStatus.paymentStatus === 'open' ? (
-                                        <p className="text-slate-600 dark:text-white/80">
-                                            Je inschrijving is in afwachting van betaling. Controleer je e-mail voor de betaallink.
-                                        </p>
+                                        <div className="space-y-4">
+                                            <p className="text-slate-600 dark:text-white/80">
+                                                Je inschrijving is in afwachting van betaling.
+                                            </p>
+                                            <button
+                                                onClick={handlePayAgain}
+                                                disabled={isSubmitting}
+                                                className="w-full bg-paars text-white font-bold py-3 px-6 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-md disabled:opacity-70 flex items-center justify-center gap-2"
+                                            >
+                                                {isSubmitting ? (
+                                                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                                ) : (
+                                                    `BETAAL NU (€${applicablePrice.toFixed(2).replace('.', ',')})`
+                                                )}
+                                            </button>
+                                        </div>
                                     ) : (
                                         <p className="text-slate-600 dark:text-white/80">
                                             We zien je graag op {formattedDate}.
@@ -446,7 +569,7 @@ export default function EventDetailPage() {
                                                         Bezig...
                                                     </>
                                                 ) : (
-                                                    'AANMELDEN'
+                                                    `AANMELDEN (${displayPrice})`
                                                 )}
                                             </button>
                                         </div>
