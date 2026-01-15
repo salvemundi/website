@@ -66,12 +66,29 @@ export default function EventDetailPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
 
-    // Check for existing signup
+    // Check for existing signup or payment return from URL
     useEffect(() => {
         const checkSignupStatus = async () => {
+            // Priority 1: Check URL params for payment status (works for guests too)
+            // Note: We use window.location because searchParams hook might not be reactive enough for instant feedback 
+            // or we want to be explicit about reading the browser URL.
+            const urlParams = new URLSearchParams(window.location.search);
+            const statusParam = urlParams.get('status');
+
+            if (statusParam === 'paid') {
+                setSignupStatus({
+                    isSignedUp: true,
+                    paymentStatus: 'paid',
+                    // We might not have the QR token here for guests without a fetch, 
+                    // but we can at least show the "Paid" state.
+                    qrToken: 'status-verified'
+                });
+                // Continue to check DB if user is logged in, to get real QR token if possible
+                if (!user) return;
+            }
+
+            // Priority 2: Check backend if logged in
             if (!user || !eventId) return;
-
-
 
             try {
                 // We need to query event_signups for this user and event
@@ -94,7 +111,10 @@ export default function EventDetailPage() {
                         qrToken: signup.qr_token
                     });
                 } else {
-                    setSignupStatus({ isSignedUp: false });
+                    // Only reset if we didn't just find a paid status in URL
+                    if (statusParam !== 'paid') {
+                        setSignupStatus({ isSignedUp: false });
+                    }
                 }
             } catch (err) {
                 console.error('Error checking signup status:', err);

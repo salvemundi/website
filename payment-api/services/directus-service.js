@@ -202,22 +202,16 @@ async function checkUserCommittee(directusUrl, directusToken, userId, committeeN
     if (!userId) return false;
 
     try {
-        let filter = {
-            'user_id': { '_eq': userId }
-        };
+        const params = new URLSearchParams();
+        params.append('filter[user_id][_eq]', userId);
 
         if (committeeName) {
-            // We moeten eerst de committee ID vinden op basis van de naam, 
-            // of we gaan er vanuit dat de caller de ID weet. 
-            // Voor nu, makkelijker: we checken of de opgehaalde rows een user hebben.
-            // Complexere query: filter[committee_id][name][_eq] = committeeName
-            filter['committee_id'] = { 'name': { '_eq': committeeName } };
+            params.append('filter[committee_id][name][_eq]', committeeName);
         }
 
-        const query = new URLSearchParams({
-            'filter': JSON.stringify(filter),
-            'fields': 'id'
-        }).toString();
+        params.append('fields', 'id');
+
+        const query = params.toString();
 
         const response = await axios.get(
             `${directusUrl}/items/committee_members?${query}`,
@@ -309,4 +303,3 @@ module.exports = {
 
     checkUserCommittee
 };
-    
