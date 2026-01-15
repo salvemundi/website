@@ -26,6 +26,23 @@ export async function POST(request: NextRequest) {
 
         console.log('📧 Sending email request to:', emailApiEndpoint);
 
+        // Debug: log attachments summary so we can verify QR payloads are forwarded
+        if (attachments && Array.isArray(attachments) && attachments.length > 0) {
+            try {
+                const summary = attachments.map((a: any) => ({
+                    name: a.name,
+                    contentType: a.contentType,
+                    isInline: Boolean(a.isInline),
+                    contentId: a.contentId || null,
+                    bytesLength: a.contentBytes ? String(a.contentBytes).length : 0,
+                    preview: a.contentBytes ? String(a.contentBytes).slice(0, 40) + (String(a.contentBytes).length > 40 ? '...' : '') : null,
+                }));
+                console.log('📎 Attachments summary (proxy):', summary);
+            } catch (e) {
+                console.warn('Unable to summarize attachments for debug:', e);
+            }
+        }
+
         // Call the actual email service from the backend (no CORS issues here)
         const response = await fetch(emailApiEndpoint, {
             method: 'POST',
