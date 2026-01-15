@@ -55,11 +55,12 @@ const DeletionTimer = ({ expiryDateStr }: { expiryDateStr: string }) => {
 export default function SignUp() {
     const { user: realUser } = useAuth();
     const [isMockExpired, setIsMockExpired] = useState(false);
+    const [isMockCommittee, setIsMockCommittee] = useState(false);
 
     const user = isMockExpired
         ? (realUser
-            ? { ...realUser, is_member: false, membership_expiry: realUser.membership_expiry || new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString() }
-            : { id: 'mock-id', first_name: 'Mock', last_name: 'Gebruiker', email: 'test@example.com', is_member: false, membership_expiry: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString() } as User
+            ? { ...realUser, is_member: false, membership_expiry: realUser.membership_expiry || new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(), committees: isMockCommittee ? [{ id: 'mock', name: 'Mock Committee' }] : realUser.committees }
+            : { id: 'mock-id', first_name: 'Mock', last_name: 'Gebruiker', email: 'test@example.com', is_member: false, membership_expiry: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(), committees: isMockCommittee ? [{ id: 'mock', name: 'Mock Committee' }] : [] } as User
         )
         : realUser;
 
@@ -82,6 +83,8 @@ export default function SignUp() {
     const isGuest = !user;
     const isValidMember = user && user.is_member;
     const isExpired = user && !user.is_member;
+    const isCommitteeMember = user?.committees && user.committees.length > 0;
+    const baseAmount = isCommitteeMember ? 10.00 : 20.00;
 
     let pageTitle = "WORD LID!";
     let formTitle = "Inschrijfformulier";
@@ -152,7 +155,7 @@ export default function SignUp() {
 
         try {
             const payload = {
-                amount: '20.00',
+                amount: baseAmount.toFixed(2),
                 description: 'Contributie Salve Mundi',
                 redirectUrl: window.location.origin + '/lidmaatschap/bevestiging',
                 isContribution: true, // Make sure backend expects this boolean
@@ -283,15 +286,26 @@ export default function SignUp() {
                                 </span>
                                 <span className="text-theme-purple-lighter font-bold text-xs uppercase tracking-widest">Dev Mode</span>
                             </div>
-                            <button
-                                onClick={() => setIsMockExpired(!isMockExpired)}
-                                className={`px-6 py-2 rounded-xl text-sm font-bold transition-all duration-200 border-2 ${isMockExpired
-                                    ? 'bg-theme-purple-lighter text-theme-purple border-theme-purple-lighter shadow-[0_0_15px_rgba(180,160,255,0.4)]'
-                                    : 'bg-transparent text-theme-purple-lighter border-theme-purple-lighter/50 hover:bg-theme-purple-lighter/10'
-                                    }`}
-                            >
-                                {isMockExpired ? '✅ Mocking Expired' : 'Simuleer Verlopen Account'}
-                            </button>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setIsMockCommittee(!isMockCommittee)}
+                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 border-2 ${isMockCommittee
+                                        ? 'bg-theme-purple-lighter text-theme-purple border-theme-purple-lighter shadow-[0_0_15px_rgba(180,160,255,0.4)]'
+                                        : 'bg-transparent text-theme-purple-lighter border-theme-purple-lighter/50 hover:bg-theme-purple-lighter/10'
+                                        }`}
+                                >
+                                    {isMockCommittee ? '✅ Committee' : 'Simuleer Commissie'}
+                                </button>
+                                <button
+                                    onClick={() => setIsMockExpired(!isMockExpired)}
+                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 border-2 ${isMockExpired
+                                        ? 'bg-theme-purple-lighter text-theme-purple border-theme-purple-lighter shadow-[0_0_15px_rgba(180,160,255,0.4)]'
+                                        : 'bg-transparent text-theme-purple-lighter border-theme-purple-lighter/50 hover:bg-theme-purple-lighter/10'
+                                        }`}
+                                >
+                                    {isMockExpired ? '✅ Mocking Expired' : 'Simuleer Verlopen Account'}
+                                </button>
+                            </div>
                         </div>
                     )}
                 <div className="flex flex-col sm:flex-row gap-6 p-6 sm:p-10">
@@ -344,7 +358,7 @@ export default function SignUp() {
                                     disabled={isProcessing}
                                     className="w-full bg-theme-purple-lighter text-theme-purple-darker font-bold py-3 px-6 rounded-xl shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    {isProcessing ? 'Verwerken...' : 'Nu Verlengen (€20,00)'}
+                                    {isProcessing ? 'Verwerken...' : `Nu Verlengen (€${baseAmount.toFixed(2).replace('.', ',')})`}
                                 </button>
                             </div>
                         )}
