@@ -27,17 +27,23 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
             console.warn(`[Payment][${traceId}] Initial Amount: ${finalAmount}`);
 
             // 1. Automatic Committee Discount Check
-            if (userId && isContribution) {
-                console.warn(`[Payment][${traceId}] Checking committee status for user ${userId}`);
-                const isCommitteeMember = await directusService.checkUserCommittee(DIRECTUS_URL, DIRECTUS_API_TOKEN, userId);
-                if (isCommitteeMember) {
-                    // Force logic: if committee member, price is 10.
-                    if (finalAmount > 10.00) {
-                        finalAmount = 10.00;
-                        appliedDiscount = 'Committee Discount';
-                        console.warn(`[Payment][${traceId}] Committee discount applied. New Amount: ${finalAmount}`);
+            // 1. Automatic Committee Discount Check & Price Enforcement
+            if (isContribution) {
+                // Default to standard price
+                let standardPrice = 20.00;
+
+                if (userId) {
+                    console.warn(`[Payment][${traceId}] Checking committee status for user ${userId}`);
+                    const isCommitteeMember = await directusService.checkUserCommittee(DIRECTUS_URL, DIRECTUS_API_TOKEN, userId);
+                    if (isCommitteeMember) {
+                        standardPrice = 10.00;
+                        console.warn(`[Payment][${traceId}] Committee member detected. Base price set to 10.00`);
                     }
                 }
+
+                // Enforce the standard price, ignoring Client's 'amount' request for the base value
+                finalAmount = standardPrice;
+                console.warn(`[Payment][${traceId}] Contribution enforced amount: ${finalAmount}`);
             }
 
             // 2. Coupon Code Application (Manual)
@@ -215,6 +221,15 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                             await membershipService.provisionMember(MEMBERSHIP_API_URL, userId);
                             // Trigger sync for existing user renewal
                             await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, userId);
+
+                            // Send confirmation email for renewal (Zero Amount)
+                            const mockMetadata = {
+                                firstName, lastName, email, amount: '0.00'
+                            };
+                            await notificationService.sendConfirmationEmail(
+                                DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL,
+                                mockMetadata, description
+                            );
                         } else if (firstName && lastName && email) {
                             const credentials = await membershipService.createMember(
                                 MEMBERSHIP_API_URL, firstName, lastName, email
@@ -384,7 +399,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 // 2. ALWAYS send confirmation email if it's NOT a contribution (normal events/pub-crawl/trip)
                 if (notContribution === "true" && registrationId) {
                     console.warn(`[Webhook][${traceId}] Sending non-contribution confirmation email`);
-                    
+
                     // Send trip-specific email for trip signups
                     if (payment.metadata.registrationType === 'trip_signup') {
                         try {
@@ -395,7 +410,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                                 registrationId,
                                 'id,first_name,middle_name,last_name,email,role,trip_id'
                             );
-                            
+
                             const trip = await directusService.getDirectusItem(
                                 DIRECTUS_URL,
                                 DIRECTUS_API_TOKEN,
@@ -403,7 +418,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                                 tripSignup.trip_id,
                                 'id,name,event_date,base_price,deposit_amount,crew_discount,is_bus_trip'
                             );
-                            
+
                             const paymentType = payment.description.toLowerCase().includes('aanbetaling') ? 'deposit' : 'final';
                             await notificationService.sendTripPaymentConfirmation(
                                 EMAIL_SERVICE_URL,
@@ -451,15 +466,14 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                         // Trigger sync for existing user renewal
                         await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, userId);
 
-                        if (registrationId) {
-                            await notificationService.sendConfirmationEmail(
-                                DIRECTUS_URL,
-                                DIRECTUS_API_TOKEN,
-                                EMAIL_SERVICE_URL,
-                                payment.metadata,
-                                payment.description
-                            );
-                        }
+                        // Always send confirmation for paid renewals
+                        await notificationService.sendConfirmationEmail(
+                            DIRECTUS_URL,
+                            DIRECTUS_API_TOKEN,
+                            EMAIL_SERVICE_URL,
+                            payment.metadata,
+                            payment.description
+                        );
 
                         // Also increment coupon usage if applicable
                         if (couponId) {
