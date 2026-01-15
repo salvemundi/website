@@ -11,8 +11,9 @@ export async function POST(request: NextRequest) {
         const revalidatedPaths: string[] = [];
 
         // Tag-based revalidation: invalideer alle pages die deze collection data gebruiken
+        // Next.js 16 vereist tweede parameter: "max" = stale-while-revalidate strategie
         if (tag) {
-            revalidateTag(tag);
+            revalidateTag(tag, 'max');
             revalidatedTags.push(tag);
             console.log('[revalidate] Revalidated tag:', tag);
         }
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
         if (Array.isArray(tags)) {
             tags.forEach((t) => {
                 if (typeof t === 'string') {
-                    revalidateTag(t);
+                    revalidateTag(t, 'max');
                     revalidatedTags.push(t);
                 }
             });
