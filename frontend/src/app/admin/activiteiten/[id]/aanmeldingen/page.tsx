@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
 import { sendActivityCancellationEmail } from '@/shared/lib/services/email-service';
+import { eventsApi } from '@/shared/lib/api/salvemundi';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Search, Download, Mail, Phone, CheckCircle, XCircle, Clock, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -48,8 +49,8 @@ export default function AanmeldingenPage() {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            // Load event name
-            const event = await directusFetch<any>(`/items/events/${eventId}?fields=name,committee_name,committee_email`);
+            // Load event name and details (including committee info via eventsApi)
+            const event = await eventsApi.getById(eventId);
             setEventName(event.name);
             setEventData(event);
 
