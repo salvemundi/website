@@ -14,6 +14,8 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
         let activityName = description;
         if (activityName.startsWith('Inschrijving ')) {
             activityName = activityName.substring('Inschrijving '.length);
+        } else if (activityName.startsWith('Betaling Inschrijving - ')) {
+            activityName = activityName.substring('Betaling Inschrijving - '.length);
         }
 
         let eventDetails = null;
