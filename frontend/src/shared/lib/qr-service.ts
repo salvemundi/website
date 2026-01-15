@@ -30,10 +30,19 @@ export async function generateQRCode(data: string): Promise<string> {
 
 export async function updateSignupWithQRToken(signupId: number, token: string) {
     try {
+        // Use the API service token to update the QR token field, bypassing user-level authorization checks.
+        // This is necessary because the QR token is set automatically during signup creation,
+        // and the user may not have permission to edit their own signup record.
+        const apiKey = process.env.NEXT_PUBLIC_DIRECTUS_API_KEY || '';
+        console.log('[updateSignupWithQRToken] Using API key, length:', apiKey.length, 'signupId:', signupId);
         await directusFetch(`/items/event_signups/${signupId}`, {
             method: 'PATCH',
-            body: JSON.stringify({ qr_token: token })
+            body: JSON.stringify({ qr_token: token }),
+            headers: {
+                Authorization: `Bearer ${apiKey}`
+            }
         });
+        console.log('[updateSignupWithQRToken] Successfully updated QR token for signup', signupId);
     } catch (err) {
         console.error('Error updating signup with QR token:', err);
         throw err;
