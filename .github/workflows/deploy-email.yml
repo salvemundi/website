@@ -16,6 +16,7 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 20  # Prevent infinite runs
     permissions:
       contents: read
       packages: write

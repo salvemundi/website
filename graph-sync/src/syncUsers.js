@@ -564,14 +564,25 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
                 membershipExpiry = `${v.substring(0, 4)}-${v.substring(4, 6)}-${v.substring(6, 8)}`;
                 console.log(`[SYNC] ${u.mail || u.id} expiry=${membershipExpiry}`);
             }
+        } else if (attributes?.Verloopdatum) {
+            // Fallback attribute without the 'Str' suffix
+            const v = attributes.Verloopdatum; // yyyyMMdd
+            if (v && v.length === 8) {
+                membershipExpiry = `${v.substring(0, 4)}-${v.substring(4, 6)}-${v.substring(6, 8)}`;
+                console.log(`[SYNC] ${u.mail || u.id} expiry (fallback)=${membershipExpiry}`);
+            }
         }
 
         const missingFields = [];
         const isSelected = (field) => !selectedFields || selectedFields.includes(field);
 
+        // Use derived names for missing‑field checks
+        const derivedFirstName = firstName;
+        const derivedLastName = lastName;
+
         if (isSelected('membership_expiry') && !membershipExpiry) missingFields.push('Lidmaatschap vervaldatum');
-        if (isSelected('first_name') && !u.givenName) missingFields.push('Voornaam');
-        if (isSelected('last_name') && !u.surname) missingFields.push('Achternaam');
+        if (isSelected('first_name') && !derivedFirstName) missingFields.push('Voornaam');
+        if (isSelected('last_name') && !derivedLastName) missingFields.push('Achternaam');
         if (isSelected('display_name') && !u.displayName) missingFields.push('Display naam');
         if (isSelected('phone_number') && !u.mobilePhone) missingFields.push('Mobiel nummer');
 
@@ -604,14 +615,15 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
         );
 
         const existingUser = existingRes.data?.data?.[0] || null;
+        const firstName = u.givenName || (u.displayName ? u.displayName.split(' ')[0] : '').trim();
+        const lastName = u.surname || (u.displayName ? u.displayName.split(' ').slice(1).join(' ') : '').trim();
         const payload = {
             email,
-            first_name: u.givenName || (u.displayName ? u.displayName.split(' ')[0] : 'Unknown'),
-            last_name: u.surname || (u.displayName ? u.displayName.split(' ').slice(-1).join(' ') : 'Unknown'),
+            first_name: firstName || null,
+            last_name: lastName || null,
             fontys_email: email.includes('@student.fontys.nl') ? email : null,
             phone_number: formatDutchMobile(u.mobilePhone),
             status: 'active',
-            // Only include role when it was explicitly determined from Entra groups
             ...(role ? { role } : {}),
             membership_expiry: membershipExpiry,
         };
