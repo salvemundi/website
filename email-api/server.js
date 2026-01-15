@@ -168,6 +168,22 @@ app.post('/send-email', async (req, res) => {
       });
     }
 
+    // Debug: log attachments summary received from proxy
+    if (attachments && Array.isArray(attachments) && attachments.length > 0) {
+      try {
+        const summary = attachments.map(att => ({
+          name: att.name,
+          contentType: att.contentType,
+          isInline: Boolean(att.isInline),
+          contentId: att.contentId || null,
+          bytesLength: att.contentBytes ? String(att.contentBytes).length : 0,
+        }));
+        console.log('📎 Attachments summary (email-api):', summary);
+      } catch (e) {
+        console.warn('Unable to summarize attachments at email-api:', e && e.message ? e.message : e);
+      }
+    }
+
     console.log('📧 Sending email to:', to);
 
     // Step 1: Validate required environment variables

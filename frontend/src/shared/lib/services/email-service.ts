@@ -207,42 +207,6 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
         const committeeEmail = data.committeeEmail || buildCommitteeEmailFromName(displayCommitteeName);
         const contactInfoSection = (data.contactName || data.contactPhone || committeeEmail || displayCommitteeName)
             ? `
-  try {
-    // Ensure eventPrice is a number
-    const eventPrice = typeof data.eventPrice === 'number' ? data.eventPrice : Number(data.eventPrice) || 0;
-
-    // Format the event date nicely
-    const formattedDate = new Date(data.eventDate).toLocaleDateString('nl-NL', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-
-    // Prepare QR code attachment for email
-    let qrCodeAttachment: EmailAttachment | undefined;
-    let qrCodeCid = '';
-    if (data.qrCodeDataUrl) {
-      const base64Data = data.qrCodeDataUrl.includes(',')
-        ? data.qrCodeDataUrl.split(',')[1]
-        : data.qrCodeDataUrl;
-      // Use a unique content ID without special characters
-      qrCodeCid = `qrcode${Date.now()}`;
-      qrCodeAttachment = {
-        name: 'qr-code.png',
-        contentType: 'image/png',
-        contentBytes: base64Data,
-        isInline: true,
-        contentId: qrCodeCid,
-      };
-    }
-    // Prefer committee name from data, but sanitize as a fallback in case it still contains markers
-    const displayCommitteeName = sanitizeCommitteeDisplay(data.committeeName) || data.committeeName;
-    const committeeEmail = data.committeeEmail || buildCommitteeEmailFromName(displayCommitteeName);
-    const contactInfoSection = (data.contactName || data.contactPhone || committeeEmail || displayCommitteeName)
-      ? `
         <div style="background-color: #F5F5DC; padding: 15px; border-radius: 8px; margin: 20px 0;">
           <h3 style="color: #FF6B35; margin-top: 0;">Contactinformatie</h3>
           ${displayCommitteeName ? `<p><strong>Commissie:</strong> ${displayCommitteeName}</p>` : ''}
