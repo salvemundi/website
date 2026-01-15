@@ -315,7 +315,8 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
 
     // Send emails sequentially to avoid race conditions
     try {
-      await sendEmail(
+            console.log('sendEventSignupEmail: qrCodeAttachment summary:', qrCodeAttachment ? { name: qrCodeAttachment.name, contentType: qrCodeAttachment.contentType, isInline: qrCodeAttachment.isInline, contentId: qrCodeAttachment.contentId, bytesLength: qrCodeAttachment.contentBytes ? qrCodeAttachment.contentBytes.length : 0 } : null);
+            await sendEmail(
         config,
         data.recipientEmail,
         `Bevestiging aanmelding: ${data.eventName}`,

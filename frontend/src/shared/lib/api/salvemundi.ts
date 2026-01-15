@@ -325,6 +325,7 @@ export const eventsApi = {
                     }
 
                     if (signupData.event_price === 0) {
+                        console.log('eventsApi.createSignup: qrDataUrl present?', !!qrDataUrl, qrDataUrl ? `len=${qrDataUrl.length}` : 'none');
                         await sendEventSignupEmail({
                             recipientEmail: signupData.email,
                             recipientName: signupData.name,
