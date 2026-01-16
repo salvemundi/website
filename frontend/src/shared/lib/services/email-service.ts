@@ -252,18 +252,11 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
             ${data.amountTickets ? `<p><strong>Aantal tickets:</strong> ${data.amountTickets}</p>` : ''}
             ${ticketsHtml}
             ${qrCodeAttachment ? `
-              <div style="background-color: #F5F5DC; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
-                <h3 style="color: #7B2CBF; margin-top: 0;">Jouw Toegangscode</h3>
-                <p style="margin-bottom: 15px;">Laat deze QR code zien bij de ingang van de activiteit:</p>
-                <img src="cid:${qrCodeCid}" alt="QR Code voor toegang" style="max-width: 250px; height: auto; border: 3px solid #7B2CBF; border-radius: 8px; display: block; margin: 0 auto;" />
-                ${data.qrCodeDataUrl ? `
-                  <!-- Fallback: inline data URL in case the mail client doesn't render cid: inline attachments -->
-                  <div style="margin-top:12px; text-align:center;">
-                    <img src="${data.qrCodeDataUrl}" alt="QR Code (fallback)" style="max-width: 250px; height: auto; border: 1px solid #ddd; border-radius:6px; display:block; margin:0 auto;" />
-                  </div>
-                ` : ''}
-                <p style="margin-top: 15px; font-size: 12px; color: #666;">
-                  <em>Bewaar deze email of maak een screenshot van de QR code</em>
+              <div style="margin: 20px 0; text-align: center; background-color: #f9f9f9; padding: 20px; border-radius: 12px; border: 2px dashed #7B2CBF;">
+                <p style="font-weight: bold; color: #7B2CBF; margin-top: 0;">Jouw Toegangsticket</p>
+                <img src="cid:${qrCodeCid}" alt="QR Ticket" style="width: 200px; height: 200px; border-radius: 8px;" />
+                <p style="font-size: 11px; color: #999; margin-top: 10px; margin-bottom: 0;">
+                  <em>Laat deze scannen bij de commissieleden voor toegang</em>
                 </p>
               </div>
             ` : ''}
