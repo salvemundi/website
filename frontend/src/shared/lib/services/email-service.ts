@@ -188,9 +188,11 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
         let qrCodeAttachment: EmailAttachment | undefined;
         let qrCodeCid = '';
         if (data.qrCodeDataUrl) {
+            console.log('📧 email-service: QR code data URL received, length:', data.qrCodeDataUrl.length);
             const base64Data = data.qrCodeDataUrl.includes(',')
                 ? data.qrCodeDataUrl.split(',')[1]
                 : data.qrCodeDataUrl;
+            console.log('📧 email-service: Base64 data extracted, length:', base64Data.length);
             // Use a unique content ID in an email-style format (include domain) for better
             // compatibility with mail clients and Microsoft Graph inline attachments.
             qrCodeCid = `qrcode-${Date.now()}@salvemundi`;
@@ -201,6 +203,9 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
                 isInline: true,
                 contentId: qrCodeCid,
             };
+            console.log('📧 email-service: QR attachment created with contentId:', qrCodeCid);
+        } else {
+            console.warn('⚠️ email-service: No QR code data URL provided');
         }
         // Prefer committee name from data, but sanitize as a fallback in case it still contains markers
         const displayCommitteeName = sanitizeCommitteeDisplay(data.committeeName) || data.committeeName;
