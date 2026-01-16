@@ -202,7 +202,7 @@ export default function DevSignupsPage() {
             fetchSyncStatus();
             loadSettings();
         }
-    }, [user, filterStatus, filterType, showFailed]); // Reload when filters change
+    }, [user, filterStatus, filterType, showFailed]);
 
     useEffect(() => {
         let interval: NodeJS.Timeout;

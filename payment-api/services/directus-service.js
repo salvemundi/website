@@ -2,9 +2,7 @@
 
 const axios = require('axios');
 
-/**
- * Genereert de authenticatieheader voor Directus
- */
+
 function getAuthConfig(directusToken) {
     return {
         headers: {
@@ -14,9 +12,7 @@ function getAuthConfig(directusToken) {
     };
 }
 
-/**
- * Maakt een nieuwe transactie aan in Directus.
- */
+
 async function createDirectusTransaction(directusUrl, directusToken, data) {
     try {
         const response = await axios.post(`${directusUrl}/items/transactions`, data, getAuthConfig(directusToken));
@@ -26,10 +22,7 @@ async function createDirectusTransaction(directusUrl, directusToken, data) {
     }
 }
 
-/**
- * Create a user in Directus (server-side). Expects an object with at least
- * `email`, `first_name`, `last_name`. Optionally `date_of_birth`, `phone_number`, `password`, `status`.
- */
+
 async function createDirectusUser(directusUrl, directusToken, userData) {
     try {
         const payload = {
@@ -51,9 +44,7 @@ async function createDirectusUser(directusUrl, directusToken, userData) {
     }
 }
 
-/**
- * Werkt een bestaande transactie bij (bijv. de Mollie ID of status).
- */
+
 async function updateDirectusTransaction(directusUrl, directusToken, id, data) {
     try {
         await axios.patch(`${directusUrl}/items/transactions/${id}`, data, getAuthConfig(directusToken));
@@ -63,9 +54,7 @@ async function updateDirectusTransaction(directusUrl, directusToken, id, data) {
     }
 }
 
-/**
- * Werkt een registratie bij (bijv. payment_status).
- */
+
 async function updateDirectusRegistration(directusUrl, directusToken, id, data) {
     try {
         await axios.patch(`${directusUrl}/items/event_signups/${id}`, data, getAuthConfig(directusToken));
@@ -75,9 +64,7 @@ async function updateDirectusRegistration(directusUrl, directusToken, id, data) 
     }
 }
 
-/**
- * Werkt een willekeurig item bij in Directus.
- */
+
 async function updateDirectusItem(directusUrl, directusToken, collection, id, data) {
     try {
         await axios.patch(`${directusUrl}/items/${collection}/${id}`, data, getAuthConfig(directusToken));
@@ -87,7 +74,7 @@ async function updateDirectusItem(directusUrl, directusToken, collection, id, da
     }
 }
 
-// Functie om een registratie op te halen (nodig om de qr_token en de naam te lezen).
+
 async function getDirectusRegistration(directusUrl, directusToken, id) {
     try {
         const response = await axios.get(`${directusUrl}/items/event_signups/${id}?fields=qr_token,participant_name`, getAuthConfig(directusToken));
@@ -98,9 +85,7 @@ async function getDirectusRegistration(directusUrl, directusToken, id) {
     }
 }
 
-/**
- * Haalt een willekeurig item op uit Directus.
- */
+
 async function getDirectusItem(directusUrl, directusToken, collection, id, fields = '*') {
     try {
         const response = await axios.get(`${directusUrl}/items/${collection}/${id}?fields=${fields}`, getAuthConfig(directusToken));
@@ -111,9 +96,7 @@ async function getDirectusItem(directusUrl, directusToken, collection, id, field
     }
 }
 
-/**
- * Haalt een systeemgebruiker op uit Directus (endpoint /users).
- */
+
 async function getUser(directusUrl, directusToken, userId, fields = '*') {
     try {
         const response = await axios.get(`${directusUrl}/users/${userId}?fields=${fields}`, getAuthConfig(directusToken));
@@ -124,9 +107,7 @@ async function getUser(directusUrl, directusToken, userId, fields = '*') {
     }
 }
 
-/**
- * Haalt een transactie op uit Directus.
- */
+
 async function getTransaction(directusUrl, directusToken, id) {
     try {
         const response = await axios.get(

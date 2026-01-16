@@ -1,5 +1,4 @@
 FROM node:24-alpine
-# Deployment retry trigger: 2026-01-16T16:13
 
 # Security update (Best Practice: update OS packages immediately)
 RUN apk update && \ 
