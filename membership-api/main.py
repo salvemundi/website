@@ -150,14 +150,17 @@ async def update_user_attributes(user_id: str):
             payload = {
                 "customSecurityAttributes": {
                     ATTRIBUTE_SET_NAME: {
+                        "@odata.type": "#microsoft.graph.customSecurityAttributeValue",
                         "OrigineleBetaalDatumStr": betaal_datum,
                         "VerloopdatumStr": verloop_datum
                     }
                 }
             }
             
-            print(f"DEBUG: Sending PATCH to {url} with payload: {payload}")
-            res = await client.patch(url, json=payload, headers=headers)
+            # Using v1.0 with the @odata.type hint often resolves 'Invalid property' errors
+            update_url = f"https://graph.microsoft.com/v1.0/users/{user_id}"
+            print(f"DEBUG: Sending PATCH to {update_url} with payload: {payload}")
+            res = await client.patch(update_url, json=payload, headers=headers)
             
             if res.status_code not in [200, 204]:
                 print(f"Graph Patch Error: {res.status_code} - {res.text}")
