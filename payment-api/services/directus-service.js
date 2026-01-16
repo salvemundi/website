@@ -112,6 +112,19 @@ async function getDirectusItem(directusUrl, directusToken, collection, id, field
 }
 
 /**
+ * Haalt een systeemgebruiker op uit Directus (endpoint /users).
+ */
+async function getUser(directusUrl, directusToken, userId, fields = '*') {
+    try {
+        const response = await axios.get(`${directusUrl}/users/${userId}?fields=${fields}`, getAuthConfig(directusToken));
+        return response.data.data;
+    } catch (error) {
+        console.error(`Failed to fetch user ${userId}:`, error.message);
+        return null;
+    }
+}
+
+/**
  * Haalt een transactie op uit Directus.
  */
 async function getTransaction(directusUrl, directusToken, id) {
@@ -301,5 +314,6 @@ module.exports = {
         }
     },
 
-    checkUserCommittee
+    checkUserCommittee,
+    getUser
 };

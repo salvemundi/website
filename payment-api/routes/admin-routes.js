@@ -209,13 +209,27 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
             // Create account based on user type
             if (userId) {
                 // Existing user - just provision membership
-                console.log(`[AdminRoutes] Provisioning membership for EXISTING user: ${userId}`);
+                console.log(`[AdminRoutes] Provisioning membership for EXISTING user (Directus ID): ${userId}`);
                 try {
-                    await membershipService.provisionMember(MEMBERSHIP_API_URL, userId);
-                    console.log(`[AdminRoutes] Provisioning call completed for ${userId}`);
+                    // Resolve Directus ID to Entra ID
+                    const userData = await directusService.getUser(DIRECTUS_URL, DIRECTUS_API_TOKEN, userId, 'entra_id');
+                    let targetEntraId = null;
+
+                    if (userData && userData.entra_id) {
+                        targetEntraId = userData.entra_id;
+                        console.log(`[AdminRoutes] Resolved Entra ID for ${userId}: ${targetEntraId}`);
+                    } else {
+                        console.warn(`[AdminRoutes] WARNING: Could not resolve Entra ID for user ${userId}. Assuming user is not linked to Azure correctly.`);
+                        // We could throw here, but maybe we try with the ID we have or fail?
+                        // membership-api REQUIRES an Object ID for Azure calls. Using Directus ID will fail.
+                        throw new Error(`User ${userId} has no entra_id linked. Cannot update Azure attributes.`);
+                    }
+
+                    await membershipService.provisionMember(MEMBERSHIP_API_URL, targetEntraId);
+                    console.log(`[AdminRoutes] Provisioning call completed for ${targetEntraId}`);
 
                     // Trigger sync to update Directus immediately
-                    await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, userId);
+                    await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, targetEntraId);
                 } catch (provError) {
                     console.error(`[AdminRoutes] Provisioning FAILED for ${userId}:`, provError.message);
                     throw new Error(`Provisioning failed: ${provError.message}`);
