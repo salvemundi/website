@@ -138,7 +138,7 @@ async def update_user_attributes(user_id: str):
         betaal_datum = vandaag.strftime("%Y%m%d")
         verloop_datum = volgend_jaar.strftime("%Y%m%d")
         
-        # We use the beta endpoint because customSecurityAttributes often fail or are not recognized on v1.0 in this tenant
+        # We use /beta because the v1.0 endpoint often returns 'Invalid property' for customSecurityAttributes in this tenant's configuration.
         url = f"https://graph.microsoft.com/beta/users/{user_id}"
         payload = {
             "customSecurityAttributes": {
