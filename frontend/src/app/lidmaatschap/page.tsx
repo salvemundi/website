@@ -157,7 +157,7 @@ export default function SignUp() {
             const payload = {
                 amount: baseAmount.toFixed(2),
                 description: 'Contributie Salve Mundi',
-                redirectUrl: window.location.origin + '/lidmaatschap/bevestiging',
+                redirectUrl: window.location.origin + '/lidmaatschap/bevestiging' + (isExpired ? '?type=renewal' : ''),
                 isContribution: true, // Make sure backend expects this boolean
                 userId: user ? user.id : null,
                 firstName: user ? undefined : form.voornaam,
