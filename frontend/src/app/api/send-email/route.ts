@@ -8,11 +8,22 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function POST(request: NextRequest) {
     try {
+        console.log('📧 /api/send-email: Request received');
         const body = await request.json();
 
         const { to, from, fromName, subject, html, attachments } = body;
 
+        console.log('📧 /api/send-email: Email details:', {
+            to,
+            from: from || 'default',
+            subject,
+            hasHtml: !!html,
+            htmlLength: html ? html.length : 0,
+            attachmentsCount: attachments?.length || 0
+        });
+
         if (!to || !subject || !html) {
+            console.error('❌ /api/send-email: Missing required fields');
             return NextResponse.json(
                 { error: 'Missing required fields: to, subject, html' },
                 { status: 400 }
@@ -24,10 +35,11 @@ export async function POST(request: NextRequest) {
         // Prioritize the server-side internal Docker URL, then public URL, then localhost fallback
         const emailApiEndpoint = process.env.EMAIL_API_ENDPOINT || process.env.NEXT_PUBLIC_EMAIL_API_URL || 'http://localhost:3001/send-email';
 
-        console.log('📧 Sending email request to:', emailApiEndpoint);
+        console.log('📧 /api/send-email: Forwarding to email-api:', emailApiEndpoint);
 
         // Debug: log attachments summary so we can verify QR payloads are forwarded
         if (attachments && Array.isArray(attachments) && attachments.length > 0) {
+            console.log('📎 /api/send-email: Processing', attachments.length, 'attachment(s)');
             try {
                 const summary = attachments.map((a: any) => ({
                     name: a.name,
@@ -37,10 +49,12 @@ export async function POST(request: NextRequest) {
                     bytesLength: a.contentBytes ? String(a.contentBytes).length : 0,
                     preview: a.contentBytes ? String(a.contentBytes).slice(0, 40) + (String(a.contentBytes).length > 40 ? '...' : '') : null,
                 }));
-                console.log('📎 Attachments summary (proxy):', summary);
+                console.log('📎 /api/send-email: Attachments summary:', JSON.stringify(summary, null, 2));
             } catch (e) {
-                console.warn('Unable to summarize attachments for debug:', e);
+                console.warn('⚠️ /api/send-email: Unable to summarize attachments:', e);
             }
+        } else {
+            console.log('📎 /api/send-email: No attachments to process');
         }
 
         // Call the actual email service from the backend (no CORS issues here)
@@ -63,7 +77,7 @@ export async function POST(request: NextRequest) {
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('❌ Email API error:', {
+            console.error('❌ /api/send-email: Email API returned error:', {
                 status: response.status,
                 statusText: response.statusText,
                 endpoint: emailApiEndpoint,
@@ -75,11 +89,13 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        console.log('✅ Email sent successfully');
-        return NextResponse.json({ success: true });
+        const responseData = await response.json().catch(() => ({ success: true }));
+        console.log('✅ /api/send-email: Email sent successfully via email-api');
+        console.log('📧 /api/send-email: Response from email-api:', responseData);
+        return NextResponse.json({ success: true, data: responseData });
 
     } catch (error: any) {
-        console.error('❌ Email API route error:', {
+        console.error('❌ /api/send-email: Unexpected error:', {
             message: error.message,
             name: error.name,
             cause: error.cause,
