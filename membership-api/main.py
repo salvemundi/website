@@ -133,29 +133,36 @@ async def create_azure_user(data: CreateMemberRequest, token: str):
 async def update_user_attributes(user_id: str):
     try:
         token = await get_graph_token()
+        headers = { "Authorization": f"Bearer {token}", "Content-Type": "application/json" }
+        
         vandaag = datetime.date.today()
         volgend_jaar = vandaag.replace(year=vandaag.year + 1)
         betaal_datum = vandaag.strftime("%Y%m%d")
         verloop_datum = volgend_jaar.strftime("%Y%m%d")
         
-        # We use /beta because the v1.0 endpoint often returns 'Invalid property' for customSecurityAttributes in this tenant's configuration.
         url = f"https://graph.microsoft.com/beta/users/{user_id}"
-        payload = {
-            "customSecurityAttributes": {
-                ATTRIBUTE_SET_NAME: {
-                    "OrigineleBetaalDatumStr": betaal_datum,
-                    "VerloopdatumStr": verloop_datum
+        
+        # We perform a GET first to verify how Azure sees the current attributes (helps debug Invalid Property errors)
+        async with httpx.AsyncClient() as client:
+            check_res = await client.get(f"{url}?$select=customSecurityAttributes", headers=headers)
+            print(f"DEBUG: Current attributes in Azure for {user_id}: {check_res.text}")
+
+            payload = {
+                "customSecurityAttributes": {
+                    ATTRIBUTE_SET_NAME: {
+                        "OrigineleBetaalDatumStr": betaal_datum,
+                        "VerloopdatumStr": verloop_datum
+                    }
                 }
             }
-        }
-        headers = { "Authorization": f"Bearer {token}", "Content-Type": "application/json" }
-
-        async with httpx.AsyncClient() as client:
+            
+            print(f"DEBUG: Sending PATCH to {url} with payload: {payload}")
             res = await client.patch(url, json=payload, headers=headers)
+            
             if res.status_code not in [200, 204]:
-                print(f"Graph Patch Error: {res.text}")
+                print(f"Graph Patch Error: {res.status_code} - {res.text}")
             else:
-                print(f"Attributes updated for {user_id}")
+                print(f"Attributes successfully updated for {user_id}")
     except Exception as e:
         print(f"Attribute update error: {e}")
 
