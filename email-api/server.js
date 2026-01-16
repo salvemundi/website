@@ -264,6 +264,19 @@ app.post('/send-email', async (req, res) => {
     const senderName = process.env.MS_GRAPH_SENDER_NAME || fromName || 'Salve Mundi';
     console.log('Using sender for Graph API:', { senderEmail, senderName });
 
+    // Handle multiple recipients (comma-separated string or array)
+    let recipientAddresses = [];
+    if (typeof to === 'string') {
+      // Split comma-separated string and trim whitespace
+      recipientAddresses = to.split(',').map(addr => addr.trim()).filter(addr => addr.length > 0);
+    } else if (Array.isArray(to)) {
+      recipientAddresses = to.filter(addr => addr && addr.trim().length > 0);
+    } else {
+      recipientAddresses = [to];
+    }
+
+    console.log('📧 [email-api] Recipient addresses:', recipientAddresses);
+
     const emailPayload = {
       message: {
         subject: subject,
@@ -271,13 +284,11 @@ app.post('/send-email', async (req, res) => {
           contentType: 'HTML',
           content: appendContactFooterToHtml(ensureAdaptiveEmailHtml(html)),
         },
-        toRecipients: [
-          {
-            emailAddress: {
-              address: to,
-            },
+        toRecipients: recipientAddresses.map(address => ({
+          emailAddress: {
+            address: address,
           },
-        ],
+        })),
         // Explicitly set the 'from' in the message body to the configured sender
         from: {
           emailAddress: {
