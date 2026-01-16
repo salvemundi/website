@@ -4,15 +4,14 @@ import secrets
 import string
 import re
 import unidecode
-# Membership API
-# Environment Isolation Audit: 2025-12-31 (Permission Fix Re-run)
+
 from fastapi import FastAPI, HTTPException, Request, BackgroundTasks, APIRouter
 from pydantic import BaseModel
 import httpx
 
 app = FastAPI()
 
-# Microsoft Graph Secrets
+
 TENANT_ID = os.getenv("MS_GRAPH_TENANT_ID")
 CLIENT_ID = os.getenv("MS_GRAPH_CLIENT_ID")
 CLIENT_SECRET = os.getenv("MS_GRAPH_CLIENT_SECRET")
@@ -139,7 +138,8 @@ async def update_user_attributes(user_id: str):
         betaal_datum = vandaag.strftime("%Y%m%d")
         verloop_datum = volgend_jaar.strftime("%Y%m%d")
         
-        url = f"https://graph.microsoft.com/v1.0/users/{user_id}"
+        # We use the beta endpoint because customSecurityAttributes often fail or are not recognized on v1.0 in this tenant
+        url = f"https://graph.microsoft.com/beta/users/{user_id}"
         payload = {
             "customSecurityAttributes": {
                 ATTRIBUTE_SET_NAME: {
