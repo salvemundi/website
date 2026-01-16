@@ -220,6 +220,17 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
           ${committeeEmail ? `<p><strong>E-mail:</strong> <a href="mailto:${committeeEmail}" style="color: #7B2CBF; font-weight: bold;">${committeeEmail}</a></p>` : ''}
         </div>
       ` : '';
+        // Organization contact block (slightly different heading, reused fields)
+        const orgContactInfoSection = (data.contactName || data.contactPhone || committeeEmail || displayCommitteeName)
+          ? `
+            <div style="background-color: #F0F8FF; padding: 12px; border-radius: 8px; margin: 16px 0;">
+              <h3 style="color: #7B2CBF; margin-top: 0;">Activiteit &amp; Contact</h3>
+              ${displayCommitteeName ? `<p><strong>Commissie:</strong> ${displayCommitteeName}</p>` : ''}
+              ${data.contactName ? `<p><strong>Contactpersoon:</strong> ${data.contactName}</p>` : ''}
+              ${data.contactPhone ? `<p><strong>Telefoon:</strong> ${data.contactPhone}</p>` : ''}
+              ${committeeEmail ? `<p><strong>E-mail:</strong> <a href="mailto:${committeeEmail}" style="color: #7B2CBF; font-weight: bold;">${committeeEmail}</a></p>` : ''}
+            </div>
+          ` : '';
     // Build ticket HTML if participants were provided
     const ticketsHtml = (data.participants && data.participants.length > 0)
       ? data.participants.map((p, idx) => `
@@ -304,6 +315,7 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
               <p><strong>Prijs:</strong> €${eventPrice.toFixed(2)}</p>
               <p><strong>Aangemeld door:</strong> ${data.userName}</p>
             </div>
+            ${orgContactInfoSection}
             ${data.amountTickets ? `<p><strong>Aantal tickets:</strong> ${data.amountTickets}</p>` : ''}
             ${orgParticipantsList}
           </div>
@@ -327,7 +339,14 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
     }
 
     try {
-      await sendEmail(config, config.fromEmail, `Nieuwe aanmelding: ${data.eventName} - ${data.recipientName}`, orgEmailBody);
+      // If we have a committee email, notify them directly and also send a copy to the default org address
+      if (committeeEmail) {
+        await sendEmail(config, committeeEmail, `Nieuwe aanmelding: ${data.eventName} - ${data.recipientName}`, orgEmailBody);
+        // also send a copy to the central address for record-keeping
+        await sendEmail(config, config.fromEmail, `Kopie: Nieuwe aanmelding: ${data.eventName} - ${data.recipientName}`, orgEmailBody);
+      } else {
+        await sendEmail(config, config.fromEmail, `Nieuwe aanmelding: ${data.eventName} - ${data.recipientName}`, orgEmailBody);
+      }
 
     } catch (err) {
       console.error('❌ Failed to send organization email:', err);
