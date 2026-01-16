@@ -209,11 +209,20 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
             // Create account based on user type
             if (userId) {
                 // Existing user - just provision membership
-                console.log(`[AdminRoutes] Provisioning membership for existing user: ${userId}`);
-                await membershipService.provisionMember(MEMBERSHIP_API_URL, userId);
+                console.log(`[AdminRoutes] Provisioning membership for EXISTING user: ${userId}`);
+                try {
+                    await membershipService.provisionMember(MEMBERSHIP_API_URL, userId);
+                    console.log(`[AdminRoutes] Provisioning call completed for ${userId}`);
+
+                    // Trigger sync to update Directus immediately
+                    await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, userId);
+                } catch (provError) {
+                    console.error(`[AdminRoutes] Provisioning FAILED for ${userId}:`, provError.message);
+                    throw new Error(`Provisioning failed: ${provError.message}`);
+                }
             } else if (firstName && lastName && email) {
                 // New user - create Entra ID account
-                console.log(`[AdminRoutes] Creating new member account for: ${email}`);
+                console.log(`[AdminRoutes] Creating NEW member account for: ${email}`);
                 const credentials = await membershipService.createMember(
                     MEMBERSHIP_API_URL,
                     firstName,
@@ -222,6 +231,13 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                 );
 
                 if (credentials) {
+                    console.log(`[AdminRoutes] Account created. User ID: ${credentials.user_id}`);
+
+                    // Trigger sync for newly created user
+                    if (credentials.user_id) {
+                        await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, credentials.user_id);
+                    }
+
                     // Send welcome email with credentials
                     try {
                         await notificationService.sendWelcomeEmail(
@@ -243,7 +259,7 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                     });
                 }
             } else {
-                console.warn(`[AdminRoutes] Insufficient data to create account for transaction ${transactionId}`);
+                console.warn(`[AdminRoutes] Insufficient data to create account for transaction ${transactionId}. Missing userId AND (name/email).`);
                 return res.status(400).json({
                     error: 'Insufficient user data',
                     message: 'Cannot create account - missing user information (email/name)'
