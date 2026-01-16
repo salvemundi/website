@@ -109,11 +109,19 @@ app.use(
 // Trip email route
 app.post('/trip-email/send-bulk', async (req, res) => {
     try {
-        const { emailServiceUrl, tripName, recipients, subject, message } = req.body;
+    let { emailServiceUrl, tripName, recipients, subject, message } = req.body;
 
-        if (!emailServiceUrl || !tripName || !recipients || !subject || !message) {
+    // Prefer server-side configured EMAIL_SERVICE_URL when available.
+    // Some callers (like the frontend) may forward a URL that points to localhost
+    // which is unreachable from this service in production. Use the environment
+    // value as a reliable default.
+    emailServiceUrl = emailServiceUrl || EMAIL_SERVICE_URL || 'http://localhost:3001';
+
+    if (!emailServiceUrl || !tripName || !recipients || !subject || !message) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
+
+    console.log(`[PaymentAPI] trip-email: forwarding to email service at ${emailServiceUrl}`);
 
         const result = await notificationService.sendTripBulkEmail(
             emailServiceUrl,
