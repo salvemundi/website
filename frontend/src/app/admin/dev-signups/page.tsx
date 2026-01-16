@@ -262,7 +262,7 @@ export default function DevSignupsPage() {
 
             const data = await response.json();
             setSignups(data.signups || []);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to load signups:', error);
             alert(`Kon inschrijvingen niet laden: ${error.message}`);
         } finally {
