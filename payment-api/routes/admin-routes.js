@@ -77,7 +77,7 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                 'limit': 100
             };
 
-            // 1. Status Filter
+
             if (status !== 'all') {
                 // Allow comma separated or single status
                 params['filter[approval_status][_in]'] = status;
@@ -85,7 +85,7 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                 params['filter[approval_status][_in]'] = 'pending,rejected,approved,auto_approved';
             }
 
-            // 2. Payment Status Filter
+
             if (show_failed === 'true') {
                 // Show everything (failed, open, expired, paid)
                 // No filter needed on payment_status
@@ -94,7 +94,7 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                 params['filter[payment_status][_eq]'] = 'paid';
             }
 
-            // 3. Type Filter
+
             if (type === 'membership_new') {
                 params['filter[registration][_null]'] = 'true';
                 params['filter[pub_crawl_signup][_null]'] = 'true';
@@ -164,7 +164,6 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                 return res.status(400).json({ error: 'Payment not completed yet' });
             }
 
-            // Update approval status first
             await directusService.updateDirectusTransaction(
                 DIRECTUS_URL,
                 DIRECTUS_API_TOKEN,
@@ -208,7 +207,6 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
 
             // Create account based on user type
             if (userId) {
-                // Existing user - just provision membership
                 console.log(`[AdminRoutes] Provisioning membership for EXISTING user (Directus ID): ${userId}`);
                 try {
                     // Resolve Directus ID to Entra ID
@@ -235,7 +233,6 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                     throw new Error(`Provisioning failed: ${provError.message}`);
                 }
             } else if (firstName && lastName && email) {
-                // New user - create Entra ID account
                 console.log(`[AdminRoutes] Creating NEW member account for: ${email}`);
                 const credentials = await membershipService.createMember(
                     MEMBERSHIP_API_URL,
