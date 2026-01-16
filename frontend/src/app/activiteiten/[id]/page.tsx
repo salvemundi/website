@@ -287,7 +287,8 @@ export default function EventDetailPage() {
                     firstName: formData.name.split(' ')[0],
                     lastName: formData.name.split(' ').slice(1).join(' '),
                     userId: user?.id,
-                    isContribution: false
+                    isContribution: false,
+                    qrToken: signup.qr_token // Add QR token to payment metadata
                 };
 
                 const paymentRes = await fetch('/api/payments/create', {
@@ -339,7 +340,7 @@ export default function EventDetailPage() {
                     directus_relations: { _eq: user?.id },
                     participant_email: { _eq: formData.email }
                 }),
-                fields: 'id'
+                fields: 'id,qr_token'
             });
 
             const signups = await directusFetch<any[]>(`/items/event_signups?${query}`);
@@ -348,6 +349,7 @@ export default function EventDetailPage() {
             }
 
             const signupId = signups[0].id;
+            const qrToken = signups[0].qr_token;
 
             const traceId = Math.random().toString(36).substring(7);
             const paymentPayload = {
@@ -360,7 +362,8 @@ export default function EventDetailPage() {
                 firstName: formData.name.split(' ')[0],
                 lastName: formData.name.split(' ').slice(1).join(' '),
                 userId: user?.id,
-                isContribution: false
+                isContribution: false,
+                qrToken: qrToken // Add QR token to payment metadata
             };
 
             const paymentRes = await fetch('/api/payments/create', {

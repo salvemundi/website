@@ -4,8 +4,12 @@ const directusService = require('./directus-service');
 
 async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl, metadata, description) {
     if (!metadata || !metadata.email || metadata.email === 'null') {
+        console.log('[NotificationService] Skipping email: no valid email address');
         return;
     }
+
+    console.log('[NotificationService] Starting sendConfirmationEmail for:', metadata.email);
+    console.log('[NotificationService] Metadata:', JSON.stringify(metadata, null, 2));
 
     try {
         let attachments = [];
@@ -21,6 +25,7 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
         let eventDetails = null;
 
         if (metadata.registrationId) {
+            console.log('[NotificationService] Fetching registration with ID:', metadata.registrationId);
             // Determine collection based on registration type
             const collection = metadata.registrationType === 'pub_crawl_signup' ? 'pub_crawl_signups' : 'event_signups';
 
@@ -33,8 +38,22 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
                 'qr_token,participant_name,name,event_id,pub_crawl_event_id'
             );
 
+            console.log('[NotificationService] Registration fetched:', {
+                hasRegistration: !!registration,
+                qr_token: registration?.qr_token || 'MISSING',
+                participant_name: registration?.participant_name || registration?.name || 'unknown'
+            });
+
             if (registration) {
                 participantName = registration.participant_name || registration.name;
+
+                // Use QR token from metadata if available (preferred), otherwise from registration
+                const qrTokenToUse = metadata.qrToken || registration.qr_token;
+                console.log('[NotificationService] QR Token source:', {
+                    fromMetadata: !!metadata.qrToken,
+                    fromRegistration: !!registration.qr_token,
+                    using: qrTokenToUse ? 'FOUND' : 'NONE'
+                });
 
                 // Try to fetch event details (either from 'events' or 'pub_crawl_events')
                 const eventId = registration.event_id || registration.pub_crawl_event_id;
@@ -56,12 +75,17 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
                     }
                 }
 
-                if (registration.qr_token) {
-                    const qrDataUrl = await QRCode.toDataURL(registration.qr_token, {
+                // Use qrTokenToUse instead of registration.qr_token
+                if (qrTokenToUse) {
+                    console.log('[NotificationService] ✅ QR token found:', qrTokenToUse);
+                    console.log('[NotificationService] Generating QR code...');
+                    const qrDataUrl = await QRCode.toDataURL(qrTokenToUse, {
                         color: { dark: '#7B2CBF', light: '#FFFFFF' },
                         width: 300
                     });
                     const base64Data = qrDataUrl.split(',')[1];
+
+                    console.log('[NotificationService] QR code generated, base64 length:', base64Data.length);
 
                     attachments.push({
                         name: 'ticket-qr.png',
@@ -71,18 +95,66 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
                         contentId: 'qrcode-image'
                     });
 
+                    console.log('[NotificationService] ✅ QR attachment added to attachments array');
+
                     qrHtml = `
                         <div style="margin: 20px 0; text-align: center; background-color: #f9f9f9; padding: 20px; border-radius: 12px; border: 2px dashed #7B2CBF;">
                             <p style="font-weight: bold; color: #7B2CBF; margin-top: 0;">Jouw Toegangsticket</p>
                             <img src="cid:qrcode-image" alt="QR Ticket" style="width: 200px; height: 200px; border-radius: 8px;" />
-                            <p style="font-size: 11px; color: #999; margin-bottom: 0;">Ticket ID: ${registration.qr_token}</p>
+                            <p style="font-size: 11px; color: #999; margin-bottom: 0;">Ticket ID: ${qrTokenToUse}</p>
                         </div>
                     `;
+                } else {
+                    console.warn('[NotificationService] ⚠️ No QR token found in metadata or registration!');
+                }
+            } else {
+                // No registration found, but we might still have QR token in metadata
+                if (metadata.qrToken) {
+                    console.log('[NotificationService] ✅ QR token found in metadata (no registration):', metadata.qrToken);
+                    console.log('[NotificationService] Generating QR code...');
+                    const qrDataUrl = await QRCode.toDataURL(metadata.qrToken, {
+                        color: { dark: '#7B2CBF', light: '#FFFFFF' },
+                        width: 300
+                    });
+                    const base64Data = qrDataUrl.split(',')[1];
+
+                    console.log('[NotificationService] QR code generated, base64 length:', base64Data.length);
+
+                    attachments.push({
+                        name: 'ticket-qr.png',
+                        contentType: 'image/png',
+                        contentBytes: base64Data,
+                        isInline: true,
+                        contentId: 'qrcode-image'
+                    });
+
+                    console.log('[NotificationService] ✅ QR attachment added to attachments array (from metadata)');
+
+                    qrHtml = `
+                        <div style="margin: 20px 0; text-align: center; background-color: #f9f9f9; padding: 20px; border-radius: 12px; border: 2px dashed #7B2CBF;">
+                            <p style="font-weight: bold; color: #7B2CBF; margin-top: 0;">Jouw Toegangsticket</p>
+                            <img src="cid:qrcode-image" alt="QR Ticket" style="width: 200px; height: 200px; border-radius: 8px;" />
+                            <p style="font-size: 11px; color: #999; margin-bottom: 0;">Ticket ID: ${metadata.qrToken}</p>
+                        </div>
+                    `;
+                } else {
+                    console.warn('[NotificationService] ⚠️ No registration found and no QR token in metadata!');
                 }
             }
         }
 
         const greetingName = participantName || 'deelnemer';
+
+        console.log('[NotificationService] Preparing to send email with', attachments.length, 'attachment(s)');
+        if (attachments.length > 0) {
+            console.log('[NotificationService] Attachments:', attachments.map(a => ({
+                name: a.name,
+                contentType: a.contentType,
+                isInline: a.isInline,
+                contentId: a.contentId,
+                bytesLength: a.contentBytes?.length || 0
+            })));
+        }
 
         // Build extra details if event details were found
         let detailsHtml = '';
@@ -107,6 +179,13 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
         }
 
         // 1. Send Email to Participant
+        console.log('[NotificationService] Sending confirmation email to participant...');
+        console.log('[NotificationService] Email details:', {
+            to: metadata.email,
+            subject: `Ticket: ${activityName}`,
+            attachmentsCount: attachments.length
+        });
+
         await axios.post(`${emailServiceUrl}/send-email`, {
             to: metadata.email,
             subject: `Ticket: ${activityName}`,
