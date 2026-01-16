@@ -224,7 +224,10 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                     }
 
                     await membershipService.provisionMember(MEMBERSHIP_API_URL, targetEntraId);
-                    console.log(`[AdminRoutes] Provisioning call completed for ${targetEntraId}`);
+                    console.log(`[AdminRoutes] Provisioning call completed for ${targetEntraId}. Waiting 2s for Azure propagation...`);
+
+                    // Small delay to ensure Azure has propagated the custom attributes before we sync back
+                    await new Promise(resolve => setTimeout(resolve, 2000));
 
                     // Trigger sync to update Directus immediately
                     await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, targetEntraId);
