@@ -10,9 +10,9 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
         console.warn(`[Payment][${traceId}] Incoming Payment Creation Request`);
 
         try {
-            const { amount, description, redirectUrl, userId, email, registrationId, registrationType, isContribution, firstName, lastName, couponCode, dateOfBirth } = req.body;
+            const { amount, description, redirectUrl, userId, email, registrationId, registrationType, isContribution, firstName, lastName, couponCode, dateOfBirth, qrToken } = req.body;
 
-            console.warn(`[Payment][${traceId}] Payload:`, JSON.stringify({ amount, description, redirectUrl, userId, email, registrationId, registrationType, isContribution, couponCode }));
+            console.warn(`[Payment][${traceId}] Payload:`, JSON.stringify({ amount, description, redirectUrl, userId, email, registrationId, registrationType, isContribution, couponCode, qrToken: qrToken ? 'provided' : 'missing' }));
 
             if (!amount || !description || !redirectUrl) {
                 console.warn(`[Payment][${traceId}] Missing required parameters`);
@@ -283,10 +283,12 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 firstName: firstName || null,
                 lastName: lastName || null,
                 couponId: couponId,
-                dateOfBirth: dateOfBirth || null
+                dateOfBirth: dateOfBirth || null,
+                qrToken: qrToken || null // Add QR token to Mollie metadata
             };
 
             console.warn(`[Payment][${traceId}] Creating Mollie Payment... Value: ${formattedAmount}`);
+            console.warn(`[Payment][${traceId}] QR Token in metadata:`, qrToken ? 'YES' : 'NO');
 
             if (!mollieClient) {
                 console.error(`[Payment][${traceId}] Mollie Client not initialized. Check MOLLIE_API_KEY.`);
@@ -344,9 +346,10 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
 
             console.warn(`[Webhook][${traceId}] Processing payment: ${paymentId}`);
             const payment = await mollieClient.payments.get(paymentId);
-            const { transactionRecordId, registrationId, notContribution, userId, firstName, lastName, email, couponId, dateOfBirth } = payment.metadata;
+            const { transactionRecordId, registrationId, notContribution, userId, firstName, lastName, email, couponId, dateOfBirth, qrToken } = payment.metadata;
 
             console.warn(`[Webhook][${traceId}] Metadata:`, JSON.stringify(payment.metadata));
+            console.warn(`[Webhook][${traceId}] QR Token in metadata:`, qrToken ? 'YES' : 'NO');
 
             let internalStatus = 'open';
             if (payment.isPaid()) internalStatus = 'paid';
