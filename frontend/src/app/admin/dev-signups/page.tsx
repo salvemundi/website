@@ -256,14 +256,15 @@ export default function DevSignupsPage() {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to fetch signups');
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.message || errData.error || 'Failed to fetch signups');
             }
 
             const data = await response.json();
             setSignups(data.signups || []);
         } catch (error) {
             console.error('Failed to load signups:', error);
-            alert('Kon inschrijvingen niet laden.');
+            alert(`Kon inschrijvingen niet laden: ${error.message}`);
         } finally {
             setIsLoading(false);
         }

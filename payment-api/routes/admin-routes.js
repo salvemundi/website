@@ -130,7 +130,10 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                 status: error.response?.status,
                 directusError: error.response?.data
             });
-            res.status(500).json({ error: 'Failed to fetch signups' });
+            res.status(500).json({
+                error: 'Failed to fetch signups',
+                message: error.response?.data?.errors?.[0]?.message || error.message
+            });
         }
     });
 
