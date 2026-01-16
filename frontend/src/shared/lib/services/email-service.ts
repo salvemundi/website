@@ -188,9 +188,11 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
         let qrCodeAttachment: EmailAttachment | undefined;
         let qrCodeCid = '';
         if (data.qrCodeDataUrl) {
+            console.log('📧 email-service: QR code data URL received, length:', data.qrCodeDataUrl.length);
             const base64Data = data.qrCodeDataUrl.includes(',')
                 ? data.qrCodeDataUrl.split(',')[1]
                 : data.qrCodeDataUrl;
+            console.log('📧 email-service: Base64 data extracted, length:', base64Data.length);
             // Use a unique content ID in an email-style format (include domain) for better
             // compatibility with mail clients and Microsoft Graph inline attachments.
             qrCodeCid = `qrcode-${Date.now()}@salvemundi`;
@@ -201,6 +203,9 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
                 isInline: true,
                 contentId: qrCodeCid,
             };
+            console.log('📧 email-service: QR attachment created with contentId:', qrCodeCid);
+        } else {
+            console.warn('⚠️ email-service: No QR code data URL provided');
         }
         // Prefer committee name from data, but sanitize as a fallback in case it still contains markers
         const displayCommitteeName = sanitizeCommitteeDisplay(data.committeeName) || data.committeeName;
@@ -215,6 +220,17 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
           ${committeeEmail ? `<p><strong>E-mail:</strong> <a href="mailto:${committeeEmail}" style="color: #7B2CBF; font-weight: bold;">${committeeEmail}</a></p>` : ''}
         </div>
       ` : '';
+        // Organization contact block (slightly different heading, reused fields)
+        const orgContactInfoSection = (data.contactName || data.contactPhone || committeeEmail || displayCommitteeName)
+          ? `
+            <div style="background-color: #F0F8FF; padding: 12px; border-radius: 8px; margin: 16px 0;">
+              <h3 style="color: #7B2CBF; margin-top: 0;">Activiteit &amp; Contact</h3>
+              ${displayCommitteeName ? `<p><strong>Commissie:</strong> ${displayCommitteeName}</p>` : ''}
+              ${data.contactName ? `<p><strong>Contactpersoon:</strong> ${data.contactName}</p>` : ''}
+              ${data.contactPhone ? `<p><strong>Telefoon:</strong> ${data.contactPhone}</p>` : ''}
+              ${committeeEmail ? `<p><strong>E-mail:</strong> <a href="mailto:${committeeEmail}" style="color: #7B2CBF; font-weight: bold;">${committeeEmail}</a></p>` : ''}
+            </div>
+          ` : '';
     // Build ticket HTML if participants were provided
     const ticketsHtml = (data.participants && data.participants.length > 0)
       ? data.participants.map((p, idx) => `
@@ -252,18 +268,11 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
             ${data.amountTickets ? `<p><strong>Aantal tickets:</strong> ${data.amountTickets}</p>` : ''}
             ${ticketsHtml}
             ${qrCodeAttachment ? `
-              <div style="background-color: #F5F5DC; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
-                <h3 style="color: #7B2CBF; margin-top: 0;">Jouw Toegangscode</h3>
-                <p style="margin-bottom: 15px;">Laat deze QR code zien bij de ingang van de activiteit:</p>
-                <img src="cid:${qrCodeCid}" alt="QR Code voor toegang" style="max-width: 250px; height: auto; border: 3px solid #7B2CBF; border-radius: 8px; display: block; margin: 0 auto;" />
-                ${data.qrCodeDataUrl ? `
-                  <!-- Fallback: inline data URL in case the mail client doesn't render cid: inline attachments -->
-                  <div style="margin-top:12px; text-align:center;">
-                    <img src="${data.qrCodeDataUrl}" alt="QR Code (fallback)" style="max-width: 250px; height: auto; border: 1px solid #ddd; border-radius:6px; display:block; margin:0 auto;" />
-                  </div>
-                ` : ''}
-                <p style="margin-top: 15px; font-size: 12px; color: #666;">
-                  <em>Bewaar deze email of maak een screenshot van de QR code</em>
+              <div style="margin: 20px 0; text-align: center; background-color: #f9f9f9; padding: 20px; border-radius: 12px; border: 2px dashed #7B2CBF;">
+                <p style="font-weight: bold; color: #7B2CBF; margin-top: 0;">Jouw Toegangsticket</p>
+                <img src="cid:${qrCodeCid}" alt="QR Ticket" style="width: 200px; height: 200px; border-radius: 8px;" />
+                <p style="font-size: 11px; color: #999; margin-top: 10px; margin-bottom: 0;">
+                  <em>Laat deze scannen bij de commissieleden voor toegang</em>
                 </p>
               </div>
             ` : ''}
@@ -306,6 +315,7 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
               <p><strong>Prijs:</strong> €${eventPrice.toFixed(2)}</p>
               <p><strong>Aangemeld door:</strong> ${data.userName}</p>
             </div>
+            ${orgContactInfoSection}
             ${data.amountTickets ? `<p><strong>Aantal tickets:</strong> ${data.amountTickets}</p>` : ''}
             ${orgParticipantsList}
           </div>
@@ -329,7 +339,14 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
     }
 
     try {
-      await sendEmail(config, config.fromEmail, `Nieuwe aanmelding: ${data.eventName} - ${data.recipientName}`, orgEmailBody);
+      // If we have a committee email, notify them directly and also send a copy to the default org address
+      if (committeeEmail) {
+        await sendEmail(config, committeeEmail, `Nieuwe aanmelding: ${data.eventName} - ${data.recipientName}`, orgEmailBody);
+        // also send a copy to the central address for record-keeping
+        await sendEmail(config, config.fromEmail, `Kopie: Nieuwe aanmelding: ${data.eventName} - ${data.recipientName}`, orgEmailBody);
+      } else {
+        await sendEmail(config, config.fromEmail, `Nieuwe aanmelding: ${data.eventName} - ${data.recipientName}`, orgEmailBody);
+      }
 
     } catch (err) {
       console.error('❌ Failed to send organization email:', err);

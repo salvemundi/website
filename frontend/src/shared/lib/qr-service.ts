@@ -18,8 +18,8 @@ export async function generateQRCode(data: string): Promise<string> {
             errorCorrectionLevel: 'M',
             type: 'image/png',
             margin: 1,
-            width: 250,
-            color: { dark: '#7B2CBF', light: '#F5F5DC' }
+            width: 300,
+            color: { dark: '#7B2CBF', light: '#FFFFFF' }
         });
         return dataUrl;
     } catch (err) {
