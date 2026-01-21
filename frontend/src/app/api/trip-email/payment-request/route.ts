@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
     try {
+        console.log('[trip-email/payment-request] Received request');
         const body = await request.json();
+        console.log('[trip-email/payment-request] Request body:', body);
         const { signupId, tripId, paymentType } = body;
 
         if (!signupId || !tripId || !paymentType) {
+            console.log('[trip-email/payment-request] Missing required fields');
             return NextResponse.json(
                 { error: 'Missing required fields' },
                 { status: 400 }
@@ -32,6 +35,7 @@ export async function POST(request: NextRequest) {
         console.log(`[trip-email/payment-request] Loading signup ${signupId} and trip ${tripId}`);
 
         // Fetch signup data from Directus
+        console.log(`[trip-email/payment-request] Fetching from: ${directusUrl}/items/trip_signups/${signupId}`);
         const signupResponse = await fetch(`${directusUrl}/items/trip_signups/${signupId}?fields=id,first_name,middle_name,last_name,email,role,status,deposit_paid,full_payment_paid`, {
             headers: {
                 'Authorization': `Bearer ${directusToken}`,
@@ -39,6 +43,8 @@ export async function POST(request: NextRequest) {
         });
 
         if (!signupResponse.ok) {
+            const errorText = await signupResponse.text();
+            console.error(`[trip-email/payment-request] Failed to fetch signup: ${signupResponse.status} ${signupResponse.statusText}`, errorText);
             throw new Error(`Failed to fetch signup: ${signupResponse.statusText}`);
         }
 
@@ -88,9 +94,10 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({ success: true });
     } catch (error: any) {
-        console.error('Error sending payment request email:', error);
+        console.error('[trip-email/payment-request] Error:', error);
+        console.error('[trip-email/payment-request] Error stack:', error.stack);
         return NextResponse.json(
-            { error: error.message || 'Failed to send email' },
+            { error: error.message || 'Failed to send email', details: error.toString() },
             { status: 500 }
         );
     }

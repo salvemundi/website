@@ -45,9 +45,9 @@ export interface IntroSignupEmailData {
 
 // Get email configuration from environment variables
 function getEmailConfig(): EmailConfig {
-  // Use local Next.js API route to avoid CORS issues
-  // The API route (/api/send-email) will proxy to the actual email service
-  const apiEndpoint = '/api/send-email';
+  // Use fixed public email API host for all environments
+  // Always call the central email host so dev and prod behave the same
+  const apiEndpoint = 'https://api.salvemundi.nl/send-email';
   const fromEmail = process.env.NEXT_PUBLIC_EMAIL_FROM || 'noreply@salvemundi.nl';
   const fromName = process.env.NEXT_PUBLIC_EMAIL_FROM_NAME || 'Salve Mundi';
 
