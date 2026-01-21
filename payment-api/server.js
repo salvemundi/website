@@ -142,6 +142,122 @@ app.post('/trip-email/send-bulk', async (req, res) => {
     }
 });
 
+// Trip status update email route
+app.post('/trip-email/status-update', async (req, res) => {
+    try {
+        let { emailServiceUrl, directusUrl, signupId, tripId, newStatus, oldStatus } = req.body;
+
+        emailServiceUrl = emailServiceUrl || EMAIL_SERVICE_URL || 'http://localhost:3001';
+        directusUrl = directusUrl || DIRECTUS_URL;
+
+        if (!emailServiceUrl || !directusUrl || !signupId || !tripId || !newStatus) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        console.log(`[PaymentAPI] trip-email status-update: loading signup ${signupId} and trip ${tripId}`);
+
+        // Fetch signup and trip data
+        const tripSignup = await directusService.getDirectusItem(
+            directusUrl,
+            DIRECTUS_API_TOKEN,
+            'trip_signups',
+            signupId,
+            'id,first_name,middle_name,last_name,email,role,status'
+        );
+
+        const trip = await directusService.getDirectusItem(
+            directusUrl,
+            DIRECTUS_API_TOKEN,
+            'trips',
+            tripId,
+            'id,name,event_date,base_price,deposit_amount,crew_discount'
+        );
+
+        if (!tripSignup || !trip) {
+            return res.status(404).json({ error: 'Signup or trip not found' });
+        }
+
+        console.log(`[PaymentAPI] Sending status update email to ${tripSignup.email}`);
+
+        await notificationService.sendTripStatusUpdate(
+            emailServiceUrl,
+            tripSignup,
+            trip,
+            newStatus,
+            oldStatus
+        );
+
+        return res.json({ success: true });
+    } catch (error) {
+        console.error('Error in trip status update email:', error);
+        return res.status(500).json({ error: error.message || 'Failed to send status update email' });
+    }
+});
+
+// Trip payment request email route (aanbetaling/restbetaling)
+app.post('/trip-email/payment-request', async (req, res) => {
+    try {
+        let { emailServiceUrl, directusUrl, signupId, tripId, paymentType } = req.body;
+
+        emailServiceUrl = emailServiceUrl || EMAIL_SERVICE_URL || 'http://localhost:3001';
+        directusUrl = directusUrl || DIRECTUS_URL;
+
+        if (!emailServiceUrl || !directusUrl || !signupId || !tripId || !paymentType) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        if (!['deposit', 'final'].includes(paymentType)) {
+            return res.status(400).json({ error: 'Invalid payment type. Must be "deposit" or "final"' });
+        }
+
+        console.log(`[PaymentAPI] trip-email payment-request: loading signup ${signupId} and trip ${tripId}`);
+
+        // Fetch signup and trip data
+        const tripSignup = await directusService.getDirectusItem(
+            directusUrl,
+            DIRECTUS_API_TOKEN,
+            'trip_signups',
+            signupId,
+            'id,first_name,middle_name,last_name,email,role,status,deposit_paid,full_payment_paid'
+        );
+
+        const trip = await directusService.getDirectusItem(
+            directusUrl,
+            DIRECTUS_API_TOKEN,
+            'trips',
+            tripId,
+            'id,name,event_date,base_price,deposit_amount,crew_discount,is_bus_trip'
+        );
+
+        if (!tripSignup || !trip) {
+            return res.status(404).json({ error: 'Signup or trip not found' });
+        }
+
+        // Validate payment status
+        if (paymentType === 'deposit' && tripSignup.deposit_paid) {
+            return res.status(400).json({ error: 'Deposit already paid' });
+        }
+
+        if (paymentType === 'final' && (!tripSignup.deposit_paid || tripSignup.full_payment_paid)) {
+            return res.status(400).json({ error: 'Cannot request final payment: deposit not paid or already fully paid' });
+        }
+
+        console.log(`[PaymentAPI] Sending ${paymentType} payment request email to ${tripSignup.email}`);
+
+        await notificationService.sendTripPaymentRequest(
+            emailServiceUrl,
+            tripSignup,
+            trip,
+            paymentType
+        );
+
+        return res.json({ success: true });
+    } catch (error) {
+        console.error('Error in trip payment request email:', error);
+        return res.status(500).json({ error: error.message || 'Failed to send payment request email' });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`[PaymentAPI] Server running on port ${PORT}`);
     console.log(`[PaymentAPI] Environment: DIRECTUS_URL=${DIRECTUS_URL ? 'Set' : 'Unset'}, MEMBERSHIP=${MEMBERSHIP_API_URL}`);

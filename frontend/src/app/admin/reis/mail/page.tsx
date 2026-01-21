@@ -40,6 +40,9 @@ export default function ReisMailPage() {
     const [filterRole, setFilterRole] = useState<string>('all');
     const [filterPayment, setFilterPayment] = useState<string>('all');
     
+    // Email type: 'custom' | 'deposit_request' | 'final_request'
+    const [emailType, setEmailType] = useState<string>('custom');
+    
     // Form
     const [subject, setSubject] = useState('');
     const [message, setMessage] = useState('');
@@ -103,14 +106,81 @@ export default function ReisMailPage() {
     };
 
     const handleSendEmail = async () => {
-        if (!selectedTripId || !subject.trim() || !message.trim()) {
-            setError('Vul alle velden in');
+        if (!selectedTripId) {
+            setError('Selecteer een reis');
             return;
         }
 
         const recipients = getFilteredRecipients();
         if (recipients.length === 0) {
             setError('Geen ontvangers gevonden met de huidige filters');
+            return;
+        }
+
+        // For payment requests, no subject/message needed
+        if (emailType === 'deposit_request' || emailType === 'final_request') {
+            if (!confirm(`Je staat op het punt om een ${emailType === 'deposit_request' ? 'aanbetaling' : 'restbetaling'} verzoek te sturen naar ${recipients.length} deelnemer(s). Weet je het zeker?`)) {
+                return;
+            }
+
+            setSending(true);
+            setError(null);
+            setSuccess(false);
+
+            try {
+                const trip = trips.find(t => t.id === selectedTripId);
+                if (!trip) throw new Error('Trip not found');
+
+                const paymentType = emailType === 'deposit_request' ? 'deposit' : 'final';
+
+                // Send individual payment requests
+                let successCount = 0;
+                let failCount = 0;
+
+                for (const recipient of recipients) {
+                    try {
+                        const response = await fetch('/api/trip-email/payment-request', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                signupId: recipient.id,
+                                tripId: selectedTripId,
+                                paymentType
+                            })
+                        });
+
+                        if (response.ok) {
+                            successCount++;
+                        } else {
+                            failCount++;
+                            console.error(`Failed to send payment request to ${recipient.email}`);
+                        }
+                    } catch (err) {
+                        failCount++;
+                        console.error(`Error sending payment request to ${recipient.email}:`, err);
+                    }
+                }
+
+                if (failCount === 0) {
+                    setSuccess(true);
+                    setError(null);
+                } else {
+                    setError(`${successCount} emails verstuurd, ${failCount} mislukt`);
+                }
+
+                setTimeout(() => setSuccess(false), 5000);
+            } catch (err: any) {
+                console.error('Error sending payment requests:', err);
+                setError(err?.message || 'Fout bij het versturen van betalingsverzoeken');
+            } finally {
+                setSending(false);
+            }
+            return;
+        }
+
+        // Custom email
+        if (!subject.trim() || !message.trim()) {
+            setError('Vul alle velden in');
             return;
         }
 
@@ -277,45 +347,94 @@ export default function ReisMailPage() {
                     </div>
 
                     <div className="space-y-6">
+                        {/* Email Type Selector */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Onderwerp *
+                                Type Email *
                             </label>
-                            <input
-                                type="text"
-                                value={subject}
-                                onChange={(e) => setSubject(e.target.value)}
+                            <select
+                                value={emailType}
+                                onChange={(e) => setEmailType(e.target.value)}
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                placeholder="Bijv. Belangrijke update over de reis"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Bericht *
-                            </label>
-                            <textarea
-                                value={message}
-                                onChange={(e) => setMessage(e.target.value)}
-                                rows={10}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                placeholder="Typ hier je bericht...&#10;&#10;De naam van de reis wordt automatisch toegevoegd aan de email."
-                            />
+                            >
+                                <option value="custom">Aangepast bericht</option>
+                                <option value="deposit_request">Aanbetaling verzoek</option>
+                                <option value="final_request">Restbetaling verzoek</option>
+                            </select>
                             <p className="mt-2 text-sm text-gray-500">
-                                Tip: Gebruik enters voor alinea's. De layout wordt automatisch toegepast.
+                                {emailType === 'deposit_request' && 'Stuurt een automatisch gegenereerde aanbetaling verzoek email naar geselecteerde deelnemers.'}
+                                {emailType === 'final_request' && 'Stuurt een automatisch gegenereerde restbetaling verzoek email naar geselecteerde deelnemers.'}
+                                {emailType === 'custom' && 'Stuur een aangepast bericht naar geselecteerde deelnemers.'}
                             </p>
                         </div>
+
+                        {emailType === 'custom' && (
+                            <>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Onderwerp *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={subject}
+                                        onChange={(e) => setSubject(e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                        placeholder="Bijv. Belangrijke update over de reis"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Bericht *
+                                    </label>
+                                    <textarea
+                                        value={message}
+                                        onChange={(e) => setMessage(e.target.value)}
+                                        rows={10}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                        placeholder="Typ hier je bericht...&#10;&#10;De naam van de reis wordt automatisch toegevoegd aan de email."
+                                    />
+                                    <p className="mt-2 text-sm text-gray-500">
+                                        Tip: Gebruik enters voor alinea's. De layout wordt automatisch toegepast.
+                                    </p>
+                                </div>
+                            </>
+                        )}
+
+                        {(emailType === 'deposit_request' || emailType === 'final_request') && (
+                            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                                <p className="text-sm text-blue-700">
+                                    <strong>ℹ️ Automatische Email:</strong> Deze email wordt automatisch gegenereerd en bevat:
+                                </p>
+                                <ul className="mt-2 text-sm text-blue-700 list-disc list-inside">
+                                    {emailType === 'deposit_request' && (
+                                        <>
+                                            <li>Het aanbetalingsbedrag</li>
+                                            <li>Een link naar de aanbetalingspagina</li>
+                                            <li>Informatie over wat te doen na betaling</li>
+                                        </>
+                                    )}
+                                    {emailType === 'final_request' && (
+                                        <>
+                                            <li>Informatie over de restbetaling</li>
+                                            <li>Een link naar de restbetalingspagina</li>
+                                            <li>Overzicht van geselecteerde activiteiten</li>
+                                        </>
+                                    )}
+                                </ul>
+                            </div>
+                        )}
 
                         <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
                             <p className="text-sm text-blue-700">
                                 <strong>Let op:</strong> Deze email wordt verzonden naar {filteredRecipients.length} deelnemer(s) van {selectedTrip?.name}.
-                                Controleer je bericht goed voordat je verstuurt.
+                                Controleer je selectie goed voordat je verstuurt.
                             </p>
                         </div>
 
                         <button
                             onClick={handleSendEmail}
-                            disabled={sending || !subject.trim() || !message.trim() || filteredRecipients.length === 0}
+                            disabled={sending || (emailType === 'custom' && (!subject.trim() || !message.trim())) || filteredRecipients.length === 0}
                             className="w-full py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white font-bold rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                         >
                             {sending ? (
@@ -326,7 +445,9 @@ export default function ReisMailPage() {
                             ) : (
                                 <>
                                     <Send className="h-5 w-5 mr-2" />
-                                    Email Versturen naar {filteredRecipients.length} Deelnemer(s)
+                                    {emailType === 'deposit_request' ? 'Aanbetaling Verzoek Versturen' : 
+                                     emailType === 'final_request' ? 'Restbetaling Verzoek Versturen' : 
+                                     `Email Versturen naar ${filteredRecipients.length} Deelnemer(s)`}
                                 </>
                             )}
                         </button>
