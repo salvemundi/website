@@ -197,7 +197,7 @@ export default function ReisMailPage() {
             if (!trip) throw new Error('Trip not found');
 
             // Call backend to send bulk email
-            const response = await fetch('/api/trip-email/send-bulk', {
+            const response = await fetch('https://api.salvemundi.nl/trip-email/send-bulk', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

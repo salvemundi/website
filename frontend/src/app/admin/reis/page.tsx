@@ -219,7 +219,7 @@ export default function ReisAanmeldingenPage() {
             // Send email notification to participant
             if (signup && selectedTrip && oldStatus !== newStatus) {
                 try {
-                    await fetch('/api/trip-email/status-update', {
+                    await fetch('https://api.salvemundi.nl/trip-email/status-update', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
