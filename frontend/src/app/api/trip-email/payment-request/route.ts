@@ -104,7 +104,7 @@ async function sendTripPaymentRequestEmail(emailServiceUrl: string, tripSignup: 
     const emailHtml = `
         <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #7B2CBF;">Betaalverzoek voor ${trip.name}</h2>
-            <p>Beste ${tripSignup.first_name},</p>
+            <p>Beste ${fullName},</p>
             <p>Het is tijd om ${paymentType === 'deposit' ? 'de aanbetaling' : 'de restbetaling'} te doen voor je deelname aan <strong>${trip.name}</strong>.</p>
             
             <div style="background-color: #f3f3f3; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
