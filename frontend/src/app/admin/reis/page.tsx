@@ -206,6 +206,9 @@ export default function ReisAanmeldingenPage() {
 
     const handleStatusChange = async (id: number, newStatus: string) => {
         try {
+            const signup = signups.find(s => s.id === id);
+            const oldStatus = signup?.status;
+
             await directusFetch(`/items/trip_signups/${id}`, {
                 method: 'PATCH',
                 body: JSON.stringify({ status: newStatus })
@@ -213,7 +216,23 @@ export default function ReisAanmeldingenPage() {
             
             setSignups(signups.map(s => s.id === id ? { ...s, status: newStatus } : s));
             
-            // TODO: Send email notification to participant
+            // Send email notification to participant
+            if (signup && selectedTrip && oldStatus !== newStatus) {
+                try {
+                    await fetch('/api/trip-email/status-update', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            signupId: id,
+                            tripId: selectedTrip.id,
+                            newStatus,
+                            oldStatus
+                        })
+                    });
+                } catch (emailErr) {
+                    console.warn('Failed to send status update email:', emailErr);
+                }
+            }
         } catch (error) {
             console.error('Failed to update status:', error);
             alert('Er is een fout opgetreden bij het updaten van de status.');
