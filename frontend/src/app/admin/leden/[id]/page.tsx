@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
@@ -9,9 +9,10 @@ import {
     Calendar,
     Phone,
     Shield,
-    Users,
     Clock,
-    Award
+    Award,
+    Hash,
+    Layers
 } from 'lucide-react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 
@@ -64,13 +65,8 @@ export default function MemberDetailPage() {
                 directusFetch<CommitteeMembership[]>(`/items/committee_members?filter[user_id][_eq]=${id}&fields=id,is_leader,committee_id.id,committee_id.name`)
             ]);
 
-            const EXCLUDED_GROUPS = ['Alle gebruikers', 'Leden_Actief_Lidmaatschap', 'Leden_Verlopen_Lidmaatschap'];
-            const filteredCommittees = committeesData.filter(cm =>
-                cm.committee_id?.name && !EXCLUDED_GROUPS.includes(cm.committee_id.name)
-            );
-
             setMember(memberData);
-            setCommittees(filteredCommittees);
+            setCommittees(committeesData);
         } catch (error) {
             console.error('Failed to load member data:', error);
         } finally {
@@ -83,6 +79,46 @@ export default function MemberDetailPage() {
             loadData();
         }
     }, [authUser, id]);
+
+    const cleanName = (name: string) => {
+        return name
+            .replace(/\s*(\|\||\||–|-)\s*Salve\s*Mundi/gi, '')
+            .replace(/\s*SaMu\s*(\|\||\|)\s*/gi, '')
+            .trim();
+    };
+
+    const { realCommittees, otherGroups } = useMemo(() => {
+        const EXCLUDED_GROUPS = ['Alle gebruikers', 'Leden_Actief_Lidmaatschap', 'Leden_Verlopen_Lidmaatschap'];
+
+        const OTHER_GROUP_MARKERS = [
+            'Informatie',
+            'Teams',
+            'Jaarclub',
+            'Gala',
+            'Agenda',
+            'Commissieleiders'
+        ];
+
+        const real: CommitteeMembership[] = [];
+        const groups: CommitteeMembership[] = [];
+
+        committees.forEach(cm => {
+            const rawName = cm.committee_id?.name || '';
+            if (!rawName || EXCLUDED_GROUPS.includes(rawName)) return;
+
+            const isOtherGroup = OTHER_GROUP_MARKERS.some(marker =>
+                rawName.toLowerCase().includes(marker.toLowerCase())
+            );
+
+            if (isOtherGroup) {
+                groups.push(cm);
+            } else {
+                real.push(cm);
+            }
+        });
+
+        return { realCommittees: real, otherGroups: groups };
+    }, [committees]);
 
     const formatDate = (dateString: string | null) => {
         if (!dateString) return 'Onbekend';
@@ -188,14 +224,14 @@ export default function MemberDetailPage() {
                         <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-8 border border-slate-50 dark:border-slate-700">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="h-10 w-10 rounded-xl bg-orange-100 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400 flex items-center justify-center">
-                                    <Users className="h-5 w-5" />
+                                    <Award className="h-5 w-5" />
                                 </div>
                                 <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Commissies</h3>
                             </div>
 
-                            {committees.length > 0 ? (
+                            {realCommittees.length > 0 ? (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {committees.map((membership) => (
+                                    {realCommittees.map((membership: CommitteeMembership) => (
                                         <div
                                             key={membership.id}
                                             className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-700 flex items-center justify-between"
@@ -205,7 +241,7 @@ export default function MemberDetailPage() {
                                                     <Shield className="h-5 w-5" />
                                                 </div>
                                                 <div>
-                                                    <p className="font-bold text-slate-800 dark:text-slate-100">{membership.committee_id?.name || 'Onbekend'}</p>
+                                                    <p className="font-bold text-slate-800 dark:text-slate-100">{cleanName(membership.committee_id?.name || 'Onbekend')}</p>
                                                     {membership.is_leader && (
                                                         <span className="inline-flex items-center gap-1 text-[10px] font-bold text-orange-500 uppercase tracking-wider">
                                                             <Award className="h-3 w-3" />
@@ -224,8 +260,42 @@ export default function MemberDetailPage() {
                             )}
                         </div>
 
-                        {/* Additional Sections could go here (e.g., event signups, stickers, etc.) */}
+                        {/* Other Groups Card */}
+                        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-8 border border-slate-50 dark:border-slate-700">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="h-10 w-10 rounded-xl bg-blue-100 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 flex items-center justify-center">
+                                    <Layers className="h-5 w-5" />
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Teams & Groepen</h3>
+                            </div>
+
+                            {otherGroups.length > 0 ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {otherGroups.map((membership: CommitteeMembership) => (
+                                        <div
+                                            key={membership.id}
+                                            className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-700 flex items-center justify-between"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
+                                                    <Hash className="h-4 w-4" />
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-slate-800 dark:text-slate-100 text-sm">{cleanName(membership.committee_id?.name || 'Onbekend')}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="py-10 text-center border-2 border-dashed border-slate-100 dark:border-slate-700 rounded-2xl">
+                                    <p className="text-slate-400 font-medium italic">Geen overige groepen</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
+
+                    {/* Additional Sections could go here (e.g., event signups, stickers, etc.) */}
                 </div>
             </div>
         </div>
