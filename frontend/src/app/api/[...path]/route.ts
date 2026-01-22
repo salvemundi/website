@@ -78,9 +78,9 @@ export async function GET(
     console.warn(`[Directus Proxy] GET ${path} -> ${targetUrl}`);
 
     try {
-        const forwardHeaders: Record<string, string> = {};
-        const auth = request.headers.get('Authorization');
-        if (auth) forwardHeaders['Authorization'] = auth;
+    const forwardHeaders: Record<string, string> = {};
+    const auth = request.headers.get('Authorization');
+    if (auth) forwardHeaders['Authorization'] = auth;
 
         const contentType = request.headers.get('Content-Type');
         if (contentType) forwardHeaders['Content-Type'] = contentType;
@@ -190,10 +190,23 @@ export async function POST(
         // Default to JSON content-type for POST when body is present
         forwardHeaders['Content-Type'] = 'application/json';
 
+        // If the client didn't provide an Authorization header, allow certain
+        // safe collection writes (intro signups) to be performed using the
+        // server-side API service token so forms can submit without exposing
+        // the service token to the browser. We only enable this for the
+        // specific intro signup collections to limit blast radius.
+        let outgoingAuth = request.headers.get('Authorization') || '';
+        if (!outgoingAuth && API_SERVICE_TOKEN) {
+            const isIntroSignup = path.startsWith('items/intro_signups') || path.startsWith('items/intro_parent_signups');
+            if (isIntroSignup) {
+                outgoingAuth = `Bearer ${API_SERVICE_TOKEN}`;
+            }
+        }
+
         const response = await fetch(targetUrl, {
             method: 'POST',
             headers: {
-                'Authorization': request.headers.get('Authorization') || '',
+                'Authorization': outgoingAuth,
                 'Content-Type': request.headers.get('Content-Type') || 'application/json',
             },
             body: body ? JSON.stringify(body) : undefined,

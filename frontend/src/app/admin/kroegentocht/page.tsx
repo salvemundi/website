@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { Search, Download, Users, Beer, AlertCircle, Trash2, Loader2 } from 'lucide-react';
+import { Search, Download, Users, Beer, AlertCircle, Trash2, Loader2, Edit } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
@@ -426,13 +426,23 @@ export default function KroegentochtAanmeldingenPage() {
                                                                 {format(new Date(signup.created_at), 'd MMM HH:mm', { locale: nl })}
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-right">
-                                                                <button
-                                                                    onClick={() => handleDelete(signup.id)}
-                                                                    className="text-red-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                                                                    title="Verwijder inschrijving"
-                                                                >
-                                                                    <Trash2 className="h-5 w-5" />
-                                                                </button>
+                                                                <div className="inline-flex items-center space-x-2">
+                                                                    <button
+                                                                        onClick={() => router.push(`/admin/kroegentocht/deelnemer/${signup.id}`)}
+                                                                        className="text-slate-600 hover:text-slate-800 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/20 transition-colors"
+                                                                        title="Bewerk inschrijving"
+                                                                    >
+                                                                        <Edit className="h-5 w-5" />
+                                                                    </button>
+
+                                                                    <button
+                                                                        onClick={() => handleDelete(signup.id)}
+                                                                        className="text-red-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                                                        title="Verwijder inschrijving"
+                                                                    >
+                                                                        <Trash2 className="h-5 w-5" />
+                                                                    </button>
+                                                                </div>
                                                             </td>
                                                         </tr>
                                                     );
