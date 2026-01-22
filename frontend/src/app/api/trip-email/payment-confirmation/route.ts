@@ -107,7 +107,7 @@ async function sendTripPaymentConfirmationEmail(emailServiceUrl: string, tripSig
             </div>
 
             <p>We kijken ernaar uit!</p>
-            <p style="margin-top: 10px;"><strong>Het Salve Mundi Reis Team</strong></p>
+            <p style="margin-top: 10px;"><strong>De ReisCommissie</strong></p>
         </div>
     `;
 

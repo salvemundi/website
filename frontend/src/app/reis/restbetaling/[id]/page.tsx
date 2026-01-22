@@ -200,9 +200,10 @@ export default function RestbetalingPage() {
         const activitiesTotal = selectedActivities.reduce((sum, a) => sum + (Number(a.price) || 0), 0);
         const discount = signup?.role === 'crew' ? (Number(trip.crew_discount) || 0) : 0;
         const total = basePrice + activitiesTotal - discount;
-    const deposit = Number(trip.deposit_amount) || 0;
-    // For rest payment we do NOT subtract the already paid deposit from the displayed remaining amount
-    const remaining = Math.max(0, total);
+        const deposit = Number(trip.deposit_amount) || 0;
+        // For rest payment: the remaining amount is the full total (base + activities - crew discount)
+        // We do NOT subtract the deposit from the amount to be paid
+        const remaining = Math.max(0, total);
 
         return {
             basePrice,
@@ -566,18 +567,8 @@ export default function RestbetalingPage() {
                             </div>
                         )}
 
-                        <div className="flex justify-between items-center py-3 border-b border-gray-300">
-                            <span className="text-lg font-semibold text-gray-900">Totaal</span>
-                            <span className="text-lg font-bold text-gray-900">€{costs.total.toFixed(2)}</span>
-                        </div>
-
-                        <div className="flex justify-between items-center py-3 border-b">
-                            <span className="text-gray-700">Reeds betaald (aanbetaling)</span>
-                            <span className="font-semibold text-green-600">-€{costs.deposit.toFixed(2)}</span>
-                        </div>
-
-                        <div className="flex justify-between items-center py-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg px-4">
-                            <span className="text-xl font-bold text-gray-900">Restbedrag</span>
+                        <div className="flex justify-between items-center py-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg px-4 mt-4">
+                            <span className="text-xl font-bold text-gray-900">Te betalen</span>
                             <span className="text-3xl font-bold text-purple-600">€{costs.remaining.toFixed(2)}</span>
                         </div>
                     </div>

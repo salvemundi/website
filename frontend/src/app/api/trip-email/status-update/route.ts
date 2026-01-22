@@ -99,7 +99,7 @@ async function sendTripStatusUpdateEmail(emailServiceUrl: string, tripSignup: an
             <p>Heb je vragen? Neem dan contact met ons op via <a href="mailto:info@salvemundi.nl" style="color: #7B2CBF;">info@salvemundi.nl</a></p>
 
             <p style="margin-top: 20px;">Met vriendelijke groet,</p>
-            <p style="margin-top: 10px;"><strong>Het Salve Mundi Reis Team</strong></p>
+            <p style="margin-top: 10px;"><strong>De ReisCommissie</strong></p>
         </div>
     `;
 
