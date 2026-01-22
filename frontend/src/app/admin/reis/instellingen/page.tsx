@@ -21,6 +21,8 @@ export default function ReisInstellingenPage() {
         description: '',
         image: '',
         event_date: '',
+        start_date: '',
+        end_date: '',
         registration_open: true,
         max_participants: 0,
         base_price: 0,
@@ -55,6 +57,8 @@ export default function ReisInstellingenPage() {
             description: '',
             image: '',
             event_date: '',
+            start_date: '',
+            end_date: '',
             registration_open: true,
             max_participants: 30,
             base_price: 0,
@@ -72,6 +76,8 @@ export default function ReisInstellingenPage() {
             description: trip.description || '',
             image: trip.image || '',
             event_date: trip.event_date ? trip.event_date.split('T')[0] : '',
+            start_date: trip.start_date ? String(trip.start_date).split('T')[0] : (trip.event_date ? String(trip.event_date).split('T')[0] : ''),
+            end_date: trip.end_date ? String(trip.end_date).split('T')[0] : '',
             registration_open: trip.registration_open,
             max_participants: trip.max_participants,
             base_price: trip.base_price,
@@ -89,6 +95,8 @@ export default function ReisInstellingenPage() {
             description: '',
             image: '',
             event_date: '',
+            start_date: '',
+            end_date: '',
             registration_open: true,
             max_participants: 0,
             base_price: 0,
@@ -103,8 +111,13 @@ export default function ReisInstellingenPage() {
             setError('Naam is verplicht');
             return;
         }
-        if (!form.event_date) {
-            setError('Datum is verplicht');
+        if (!form.start_date) {
+            setError('Start datum is verplicht');
+            return;
+        }
+
+        if (form.end_date && form.start_date && new Date(form.end_date) < new Date(form.start_date)) {
+            setError('Einddatum mag niet vóór de startdatum liggen');
             return;
         }
 
@@ -116,7 +129,11 @@ export default function ReisInstellingenPage() {
                 name: form.name,
                 description: form.description || undefined,
                 image: form.image || undefined,
-                event_date: form.event_date,
+                // Prefer explicit start/end dates for multi-day events.
+                start_date: form.start_date || undefined,
+                end_date: form.end_date || undefined,
+                // Keep event_date for backward compatibility when present
+                event_date: form.event_date || undefined,
                 registration_open: form.registration_open,
                 max_participants: form.max_participants,
                 base_price: form.base_price,
@@ -251,14 +268,27 @@ export default function ReisInstellingenPage() {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Datum *
+                                    Start Datum *
                                 </label>
                                 <input
                                     type="date"
-                                    value={form.event_date}
-                                    onChange={(e) => setForm({ ...form, event_date: e.target.value })}
+                                    value={form.start_date}
+                                    onChange={(e) => setForm({ ...form, start_date: e.target.value })}
                                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                 />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Eind Datum
+                                </label>
+                                <input
+                                    type="date"
+                                    value={form.end_date}
+                                    onChange={(e) => setForm({ ...form, end_date: e.target.value })}
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Laat leeg voor eendaagse reis</p>
                             </div>
 
                             <div>
@@ -425,7 +455,23 @@ export default function ReisInstellingenPage() {
                                                     <div className="flex items-center gap-4 text-sm text-gray-600">
                                                         <span className="flex items-center">
                                                             <Calendar className="h-4 w-4 mr-1" />
-                                                            {format(new Date(trip.event_date), 'd MMMM yyyy', { locale: nl })}
+                                                            {(() => {
+                                                                const sd = trip.start_date || trip.event_date;
+                                                                const ed = trip.end_date || null;
+                                                                try {
+                                                                    if (!sd) return 'Onbekende datum';
+                                                                    const start = new Date(sd);
+                                                                    if (ed) {
+                                                                        const end = new Date(ed);
+                                                                        const fStart = format(start, 'd MMMM yyyy', { locale: nl });
+                                                                        const fEnd = format(end, 'd MMMM yyyy', { locale: nl });
+                                                                        return fStart === fEnd ? fStart : `${fStart} — ${fEnd}`;
+                                                                    }
+                                                                    return format(start, 'd MMMM yyyy', { locale: nl });
+                                                                } catch (e) {
+                                                                    return 'Onbekende datum';
+                                                                }
+                                                            })()}
                                                         </span>
                                                         <span className="flex items-center">
                                                             <Users className="h-4 w-4 mr-1" />
