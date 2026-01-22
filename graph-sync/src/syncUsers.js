@@ -542,7 +542,7 @@ async function updateGraphUserFromDirectusById(directusUserId) {
     await updateGraphUserFromDirectusByEmail(dUser.email);
 }
 
-async function updateDirectusUserFromGraph(userId, selectedFields = null) {
+async function updateDirectusUserFromGraph(userId, selectedFields = null, forceLink = false) {
     const lockKey = `entra-${userId}`;
     if (!acquireLock(lockKey)) {
         return;
@@ -675,10 +675,16 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
             syncStatus.warningCount++;
             syncStatus.warnings.push(warning);
             console.log(`[SYNC] ⚠️ Warning for ${email}: ${warning.message}`);
-            // If no linked account exists and we have a warning, we skip to prevent creating a duplicate
+            // If no linked account exists and we have a warning, we skip to prevent further duplication
+            // UNLESS forceLink is true and it's a LINK_REQUIRED case (single email match with no entra_id)
             if (!existingUser) {
-                console.log(`[SYNC] Skipping ${email} to prevent further duplication. Manual resolution required.`);
-                return;
+                if (forceLink && warning?.type === 'LINK_REQUIRED' && existingByEmail.length === 1) {
+                    console.log(`[SYNC] 🔗 Force linking ${email} (ID: ${existingByEmail[0].id}) to Entra ID ${userId}`);
+                    existingUser = existingByEmail[0];
+                } else {
+                    console.log(`[SYNC] Skipping ${email} to prevent further duplication. Manual resolution required.`);
+                    return;
+                }
             }
         }
         const payload = {
@@ -972,9 +978,10 @@ app.post('/sync/initial', bodyParser.json(), async (req, res) => {
     }
 
     const selectedFields = req.body?.fields || null;
+    const forceLink = req.body?.forceLink || false;
 
     // Start in background
-    runBulkSync(selectedFields);
+    runBulkSync(selectedFields, forceLink);
 
     res.status(202).json({ success: true, message: 'Bulk sync started in background' });
 });
@@ -1004,7 +1011,7 @@ app.post('/sync/user', bodyParser.json(), async (req, res) => {
     }
 });
 
-async function runBulkSync(selectedFields = null) {
+async function runBulkSync(selectedFields = null, forceLink = false) {
     console.log(`[${new Date().toISOString()}] 🚀 [INIT] Bulk sync STARTING... (Fields: ${selectedFields ? selectedFields.join(', ') : 'ALL'})`);
     syncStatus = {
         active: true,
@@ -1055,7 +1062,7 @@ async function runBulkSync(selectedFields = null) {
                 }
 
                 try {
-                    await updateDirectusUserFromGraph(u.id, selectedFields);
+                    await updateDirectusUserFromGraph(u.id, selectedFields, forceLink);
                     syncStatus.processed++;
                 } catch (err) {
                     syncStatus.errorCount++;

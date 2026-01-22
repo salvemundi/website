@@ -104,6 +104,7 @@ export default function DevSignupsPage() {
         'display_name',
         'committees'
     ]);
+    const [forceLink, setForceLink] = useState(false);
 
     // Filters
     const [filterStatus, setFilterStatus] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
@@ -363,7 +364,7 @@ export default function DevSignupsPage() {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ fields: selectedSyncFields }),
+                body: JSON.stringify({ fields: selectedSyncFields, forceLink }),
             });
 
             if (!response.ok) {
@@ -481,6 +482,19 @@ export default function DevSignupsPage() {
                                 {option.label}
                             </button>
                         ))}
+                    </div>
+                    {/* Force Link Checkbox */}
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="checkbox"
+                            id="forceLink"
+                            checked={forceLink}
+                            onChange={(e) => setForceLink(e.target.checked)}
+                            className="w-4 h-4 rounded border-white/20 bg-white/5 text-theme-purple focus:ring-theme-purple focus:ring-offset-0"
+                        />
+                        <label htmlFor="forceLink" className="text-xs text-theme-purple-lighter/70 cursor-pointer">
+                            🔗 Koppel bestaande accounts op e-mail (eenmalige migratie)
+                        </label>
                     </div>
                     <div className="flex gap-2">
                         {syncStatus && !syncStatus.active && syncStatus.status !== 'idle' && (
