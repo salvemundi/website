@@ -18,8 +18,9 @@ function BetalingContent() {
     const [signup, setSignup] = useState<any>(null);
     const [trip, setTrip] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
-    const [paymentStatus, setPaymentStatus] = useState<'pending' | 'success' | 'failed'>('pending');
+    const [paymentStatus, setPaymentStatus] = useState<'pending' | 'success' | 'failed' | 'checking'>('pending');
     const [checkingPayment, setCheckingPayment] = useState(false);
+    const [showManualRefresh, setShowManualRefresh] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -28,12 +29,14 @@ function BetalingContent() {
     // Poll for payment status after returning from Mollie
     useEffect(() => {
         if (!loading && signup && !signup.deposit_paid && !checkingPayment) {
-            // Check if we're returning from payment (page was loaded recently)
-            const isReturningFromPayment = document.referrer.includes('mollie.com') || 
-                                          window.performance?.navigation?.type === 1; // Type 1 = reload
+            // Check URL parameters or referrer to detect return from payment
+            const urlParams = new URLSearchParams(window.location.search);
+            const hasPaymentReturn = urlParams.toString().length > 0 || 
+                                    document.referrer.includes('mollie.com');
             
-            if (isReturningFromPayment) {
+            if (hasPaymentReturn) {
                 console.log('[betaling] Detected return from payment, checking status...');
+                setPaymentStatus('checking');
                 setCheckingPayment(true);
                 checkPaymentStatus();
             }
@@ -42,7 +45,7 @@ function BetalingContent() {
 
     const checkPaymentStatus = async () => {
         let attempts = 0;
-        const maxAttempts = 10; // Check for up to 20 seconds
+        const maxAttempts = 10; // Check for up to 40 seconds
         
         const interval = setInterval(async () => {
             attempts++;
@@ -57,17 +60,42 @@ function BetalingContent() {
                     setSignup(signupData);
                     setPaymentStatus('success');
                     setCheckingPayment(false);
+                    setShowManualRefresh(false);
                 }
                 
                 if (attempts >= maxAttempts) {
-                    console.log('[betaling] Max attempts reached, stopping check');
+                    console.log('[betaling] Max attempts reached, showing manual refresh option');
                     clearInterval(interval);
                     setCheckingPayment(false);
+                    setShowManualRefresh(true);
                 }
             } catch (err) {
                 console.error('[betaling] Error checking payment status:', err);
             }
         }, 2000); // Check every 2 seconds
+    };
+
+    const manualRefresh = async () => {
+        setShowManualRefresh(false);
+        setCheckingPayment(true);
+        setPaymentStatus('checking');
+        
+        try {
+            const signupData = await tripSignupsApi.getById(signupId);
+            setSignup(signupData);
+            
+            if (signupData.deposit_paid) {
+                setPaymentStatus('success');
+            } else {
+                // Still not paid, show pending state
+                setPaymentStatus('pending');
+            }
+        } catch (err) {
+            console.error('[betaling] Error during manual refresh:', err);
+            setError('Er ging iets fout bij het controleren van de betaling');
+        } finally {
+            setCheckingPayment(false);
+        }
     };
 
     const loadData = async () => {
@@ -133,13 +161,39 @@ function BetalingContent() {
         );
     }
 
-    if (checkingPayment) {
+    if (checkingPayment || showManualRefresh) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-50 to-white px-4">
                 <div className="text-center max-w-md">
-                    <Loader2 className="h-16 w-16 animate-spin text-purple-600 mx-auto mb-4" />
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Betaling controleren...</h2>
-                    <p className="text-gray-600">We controleren of je betaling is verwerkt. Dit duurt enkele seconden.</p>
+                    {!showManualRefresh ? (
+                        <>
+                            <Loader2 className="h-16 w-16 animate-spin text-purple-600 mx-auto mb-4" />
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Betaling controleren...</h2>
+                            <p className="text-gray-600">We controleren of je betaling is verwerkt. Dit duurt enkele seconden.</p>
+                        </>
+                    ) : (
+                        <>
+                            <AlertCircle className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Betaling wordt nog verwerkt</h2>
+                            <p className="text-gray-600 mb-6">
+                                De betaling wordt nog verwerkt door onze systemen. Dit kan soms wat langer duren.
+                            </p>
+                            <div className="space-y-3">
+                                <button
+                                    onClick={manualRefresh}
+                                    className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium"
+                                >
+                                    Opnieuw controleren
+                                </button>
+                                <button
+                                    onClick={() => router.push(`/reis/aanbetaling/${signupId}`)}
+                                    className="w-full px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium"
+                                >
+                                    Terug naar overzicht
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         );
