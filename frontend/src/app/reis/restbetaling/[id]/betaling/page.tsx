@@ -118,7 +118,10 @@ function BetalingContent() {
 
             // Load selected activities
             const signupActivities = await tripSignupActivitiesApi.getBySignupId(signupId);
-            const activityIds = signupActivities.map((sa: any) => sa.activity_id);
+            // Support different shapes returned by API: some records reference `trip_activity_id` (object or id) or `activity_id`.
+            const activityIds = signupActivities
+                .map((a: any) => (a.trip_activity_id && a.trip_activity_id.id) ? a.trip_activity_id.id : (a.trip_activity_id || a.activity_id || null))
+                .filter(Boolean);
             const activities = await tripActivitiesApi.getByTripId(signupData.trip_id);
             const selected = activities.filter((a: any) => activityIds.includes(a.id));
             setSelectedActivities(selected);
