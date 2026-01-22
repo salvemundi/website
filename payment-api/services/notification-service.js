@@ -386,8 +386,16 @@ async function sendTripPaymentRequest(emailServiceUrl, tripSignup, trip, payment
 }
 
 async function sendTripPaymentConfirmation(emailServiceUrl, tripSignup, trip, paymentType = 'deposit') {
+    console.log('[NotificationService] Starting sendTripPaymentConfirmation');
+    console.log('[NotificationService] Trip signup:', { id: tripSignup.id, email: tripSignup.email });
+    console.log('[NotificationService] Trip:', { id: trip.id, name: trip.name });
+    console.log('[NotificationService] Payment type:', paymentType);
+    
     try {
         const fullName = `${tripSignup.first_name} ${tripSignup.middle_name ? tripSignup.middle_name + ' ' : ''}${tripSignup.last_name}`;
+
+        console.log('[NotificationService] Sending email to:', tripSignup.email);
+        console.log('[NotificationService] Email service URL:', emailServiceUrl);
 
         await axios.post(`${emailServiceUrl}/send-email`, {
             to: tripSignup.email,
@@ -423,9 +431,14 @@ async function sendTripPaymentConfirmation(emailServiceUrl, tripSignup, trip, pa
             `
         }, { timeout: 10000 });
 
-        console.log(`✅ Trip payment confirmation (${paymentType}) sent to ${tripSignup.email}`);
+        console.log(`✅ [NotificationService] Trip payment confirmation (${paymentType}) sent successfully to ${tripSignup.email}`);
     } catch (error) {
-        console.error(`❌ Failed to send trip payment confirmation (${paymentType}):`, error.message);
+        console.error(`❌ [NotificationService] Failed to send trip payment confirmation (${paymentType}):`, error.message);
+        if (error.response) {
+            console.error(`❌ [NotificationService] Response status:`, error.response.status);
+            console.error(`❌ [NotificationService] Response data:`, error.response.data);
+        }
+        throw error; // Re-throw to let caller know it failed
     }
 }
 

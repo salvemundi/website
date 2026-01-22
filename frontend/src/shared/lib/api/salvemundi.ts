@@ -72,6 +72,8 @@ export interface PaymentRequest {
     registrationId: number | string;
     isContribution?: boolean;
     registrationType?: 'event_signup' | 'pub_crawl_signup' | 'trip_signup';
+    firstName?: string;
+    lastName?: string;
 }
 
 export interface PaymentResponse {
