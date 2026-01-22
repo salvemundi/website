@@ -42,6 +42,14 @@
   /* blue-600 */
   --sticker-mine-light: #60a5fa;
   /* blue-400 for light accents */
+
+  /* Admin-specific colors - Light mode */
+  --theme-admin-card: #ffffff;
+  --theme-admin-card-soft: #f8f9fa;
+  --theme-admin-text: #1e293b;
+  --theme-admin-text-muted: #64748b;
+  --theme-admin-border: #e2e8f0;
+  --theme-admin-hover: #f1f5f9;
 }
 
 /* Dark mode overrides */
@@ -74,6 +82,14 @@
   --sticker-mine: #60a5fa;
   /* lighter blue on dark bg */
   --sticker-mine-light: #93c5fd;
+
+  /* Admin-specific colors - Dark mode */
+  --theme-admin-card: #1e293b;
+  --theme-admin-card-soft: #334155;
+  --theme-admin-text: #f1f5f9;
+  --theme-admin-text-muted: #94a3b8;
+  --theme-admin-border: #475569;
+  --theme-admin-hover: #334155;
 }
 
 /* ==============================================
@@ -341,6 +357,31 @@ textarea::placeholder {
       var(--theme-purple),
       var(--theme-purple-darker),
       var(--theme-purple-dark));
+}
+
+/* Admin-specific utilities */
+.bg-admin-card {
+  background-color: var(--theme-admin-card);
+}
+
+.bg-admin-card-soft {
+  background-color: var(--theme-admin-card-soft);
+}
+
+.text-admin {
+  color: var(--theme-admin-text);
+}
+
+.text-admin-muted {
+  color: var(--theme-admin-text-muted);
+}
+
+.border-admin {
+  border-color: var(--theme-admin-border);
+}
+
+.hover\\:bg-admin-hover:hover {
+  background-color: var(--theme-admin-hover);
 }
 
 /* ==============================================
