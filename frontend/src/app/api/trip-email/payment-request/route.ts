@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
 
 async function sendTripPaymentRequestEmail(emailServiceUrl: string, tripSignup: any, trip: any, paymentType: string, frontendUrl: string) {
     const fullName = `${tripSignup.first_name} ${tripSignup.middle_name ? tripSignup.middle_name + ' ' : ''}${tripSignup.last_name}`;
-    const amount = paymentType === 'deposit' ? trip.deposit_amount : 0; // Final amount calculated on frontend
+    const amount = paymentType === 'deposit' ? Number(trip.deposit_amount) || 0 : 0; // Final amount calculated on frontend
     const paymentUrl = `${frontendUrl}/reis/${paymentType === 'deposit' ? 'aanbetaling' : 'restbetaling'}/${tripSignup.id}`;
 
     const emailHtml = `
