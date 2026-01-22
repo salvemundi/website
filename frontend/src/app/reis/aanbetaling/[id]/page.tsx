@@ -429,13 +429,13 @@ export default function AanbetalingPage() {
 
                     {/* Activities Selection */}
                     {activities.length > 0 && (
-                        <div className="bg-purple-50 rounded-xl shadow-lg p-8 border-t-4 border-blue-600">
+                        <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border-t-4 border-blue-600">
                             <div className="flex items-center mb-6">
                                 <Utensils className="h-6 w-6 text-blue-600 mr-3" />
-                                <h2 className="text-2xl font-bold text-gray-900">Activiteiten tijdens de reis</h2>
+                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Activiteiten tijdens de reis</h2>
                             </div>
                             
-                            <p className="text-gray-600 mb-6">
+                            <p className="text-gray-600 dark:text-[var(--text-muted-dark)] mb-6">
                                 Selecteer de activiteiten waar je aan wilt deelnemen. 
                                 De kosten worden meegenomen in de restbetaling.
                             </p>
@@ -445,11 +445,11 @@ export default function AanbetalingPage() {
                                     <div
                                         key={activity.id}
                                         onClick={() => toggleActivity(activity.id)}
-                                        className={`cursor-pointer border-2 rounded-lg p-4 transition-all ${
-                                            selectedActivities.includes(activity.id)
-                                                ? 'border-purple-600 bg-purple-50'
-                                                : 'border-gray-200 hover:border-purple-300'
-                                        }`}
+                                            className={`cursor-pointer border-2 rounded-lg p-4 transition-all ${
+                                                selectedActivities.includes(activity.id)
+                                                ? 'border-purple-600 bg-purple-50 dark:bg-[var(--bg-card-dark)]'
+                                                : 'border-gray-200 hover:border-purple-300 dark:border-gray-700 dark:hover:border-purple-300 dark:bg-[var(--bg-card-dark)]'
+                                            }`}
                                     >
                                         <div className="flex items-start">
                                             <input
@@ -470,13 +470,13 @@ export default function AanbetalingPage() {
                                                         />
                                                     </div>
                                                 )}
-                                                <h3 className="font-bold text-gray-900 mb-1">{activity.name}</h3>
-                                                <p className="text-sm text-gray-600 mb-2">{activity.description}</p>
+                                                <h3 className="font-bold text-gray-900 dark:text-white mb-1">{activity.name}</h3>
+                                                <p className="text-sm text-gray-600 dark:text-[var(--text-muted-dark)] mb-2">{activity.description}</p>
                                                 <p className="text-lg font-bold text-purple-600">
                                                     €{Number(activity.price).toFixed(2)}
                                                 </p>
                                                 {activity.max_participants && (
-                                                    <p className="text-xs text-gray-500 mt-1">
+                                                    <p className="text-xs text-gray-500 dark:text-[var(--text-muted-dark)] mt-1">
                                                         Max. {activity.max_participants} deelnemers
                                                     </p>
                                                 )}
@@ -487,8 +487,8 @@ export default function AanbetalingPage() {
                             </div>
 
                             {selectedActivities.length > 0 && (
-                                <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                                    <p className="text-sm text-gray-700">
+                                <div className="mt-6 p-4 bg-gray-50 dark:bg-[var(--bg-card-dark)] rounded-lg">
+                                    <p className="text-sm text-gray-700 dark:text-[var(--text-muted-dark)]">
                                         <strong>Let op:</strong> De kosten voor de geselecteerde activiteiten 
                                         (totaal €{totalActivitiesPrice.toFixed(2)}) worden meegenomen in je restbetaling.
                                     </p>
@@ -498,15 +498,15 @@ export default function AanbetalingPage() {
                     )}
 
                     {/* Payment Summary */}
-                    <div className="bg-purple-50 rounded-xl shadow-lg p-8 border-t-4 border-green-600">
+                    <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border-t-4 border-green-600">
                         <div className="flex items-center mb-6">
                             <CreditCard className="h-6 w-6 text-green-600 mr-3" />
-                            <h2 className="text-2xl font-bold text-gray-900">Aanbetaling</h2>
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Aanbetaling</h2>
                         </div>
 
-                        <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6 mb-6">
+                        <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-[var(--bg-card-dark)] dark:to-[var(--bg-card-dark)] rounded-lg p-6 mb-6">
                             <div className="flex justify-between items-center">
-                                <span className="text-lg font-semibold text-gray-700">Aanbetalingsbedrag:</span>
+                                <span className="text-lg font-semibold text-gray-700 dark:text-[var(--text-muted-dark)]">Aanbetalingsbedrag:</span>
                                 <span className="text-3xl font-bold text-purple-600">
                                     €{Number(trip.deposit_amount).toFixed(2)}
                                 </span>
