@@ -147,9 +147,23 @@ async function sendTripPaymentRequestEmail(emailServiceUrl: string, tripSignup: 
             ` : ''}
 
             <div style="text-align: center; margin: 30px 0;">
-                <a href="${paymentUrl}" style="display: inline-block; background: linear-gradient(135deg, #7B2CBF 0%, #FF6B35 100%); color: white; text-decoration: none; padding: 15px 40px; border-radius: 25px; font-weight: bold; font-size: 16px;">
-                    Ga naar betalen
-                </a>
+                <!--[if mso]>
+                <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${paymentUrl}" style="height:48px;v-text-anchor:middle;width:220px;" arcsize="10%" strokecolor="#7B2CBF" fillcolor="#7B2CBF">
+                    <w:anchorlock/>
+                    <center style="color:#ffffff;font-weight:bold;font-size:16px;font-family:sans-serif;">Ga naar betalen</center>
+                </v:roundrect>
+                <![endif]-->
+                <!--[if !mso]><!-- -->
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:separate;">
+                    <tr>
+                        <td align="center" bgcolor="#7B2CBF" style="border-radius: 25px;">
+                            <a href="${paymentUrl}" target="_blank" style="display: inline-block; padding: 15px 40px; font-weight: bold; font-size: 16px; color: #ffffff !important; text-decoration: none !important; background: linear-gradient(135deg, #7B2CBF 0%, #FF6B35 100%); border-radius:25px; border: 1px solid #7B2CBF;">
+                                Ga naar betalen
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+                <!--<![endif]-->
             </div>
 
             <p style="color: #666; font-size: 14px;">
