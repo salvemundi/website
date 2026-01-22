@@ -413,7 +413,7 @@ export default function AdminDashboardPage() {
                 const likes = typeof blog.likes === 'string' ? parseInt(blog.likes, 10) : (blog.likes || 0);
                 return sum + (isNaN(likes) ? 0 : likes);
             }, 0);
-            
+
             const mostLiked = blogsData.length > 0
                 ? blogsData.reduce((max: any, blog: any) => {
                     const blogLikes = typeof blog.likes === 'string' ? parseInt(blog.likes, 10) : (blog.likes || 0);
@@ -638,6 +638,13 @@ export default function AdminDashboardPage() {
                         <Activity className="h-5 w-5" />
                         Beheer Reis
                     </button>
+                    <button
+                        onClick={() => router.push('/admin/leden')}
+                        className="bg-white dark:bg-slate-800 text-theme-purple dark:text-theme-purple-light hover:bg-slate-50 dark:hover:bg-slate-700 px-4 sm:px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl dark:shadow-slate-900/50 transition-all hover:-translate-y-0.5 flex items-center gap-2 w-full sm:w-auto justify-center"
+                    >
+                        <Users className="h-5 w-5" />
+                        Beheer Leden
+                    </button>
                 </div>
 
                 {/* Financieel & Beheer */}
@@ -776,6 +783,15 @@ export default function AdminDashboardPage() {
 
                         {/* Members - Green Theme */}
                         <div className="grid grid-cols-2 gap-4">
+                            <StatCard
+                                title="Alle Leden"
+                                value="Overzicht"
+                                icon={<Users className="h-6 w-6" />}
+                                subtitle="Beheer gebruikers & lidmaatschappen"
+                                onClick={() => router.push('/admin/leden')}
+                                colorClass="green"
+                            />
+
                             <StatCard
                                 title="Commissieleden"
                                 value={stats.totalCommitteeMembers}
