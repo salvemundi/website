@@ -82,19 +82,17 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Validate payment status
+        // Log payment status warnings (but don't block the email)
         if (paymentType === 'deposit' && tripSignup.deposit_paid) {
-            return NextResponse.json(
-                { error: 'Deposit already paid' },
-                { status: 400 }
-            );
+            console.warn(`[trip-email/payment-request] Warning: Sending deposit request to ${tripSignup.email} who already paid deposit`);
         }
 
-        if (paymentType === 'final' && (!tripSignup.deposit_paid || tripSignup.full_payment_paid)) {
-            return NextResponse.json(
-                { error: 'Cannot request final payment: deposit not paid or already fully paid' },
-                { status: 400 }
-            );
+        if (paymentType === 'final' && !tripSignup.deposit_paid) {
+            console.warn(`[trip-email/payment-request] Warning: Sending final payment request to ${tripSignup.email} who hasn't paid deposit yet`);
+        }
+
+        if (paymentType === 'final' && tripSignup.full_payment_paid) {
+            console.warn(`[trip-email/payment-request] Warning: Sending final payment request to ${tripSignup.email} who already paid in full`);
         }
 
         console.log(`[trip-email/payment-request] Sending ${paymentType} payment request email to ${tripSignup.email}`);
