@@ -141,22 +141,22 @@ export default function ReisAanmeldingenPage() {
 
     const getPaymentStatus = (signup: TripSignup) => {
         if (signup.full_payment_paid) {
-            return { label: 'Volledig betaald', color: 'bg-green-100 text-green-800' };
+            return { label: 'Volledig betaald', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' };
         } else if (signup.deposit_paid) {
-            return { label: 'Aanbetaling voldaan', color: 'bg-yellow-100 text-yellow-800' };
+            return { label: 'Aanbetaling voldaan', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' };
         } else {
-            return { label: 'Nog geen betaling', color: 'bg-red-100 text-red-800' };
+            return { label: 'Nog geen betaling', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' };
         }
     };
 
     const getStatusBadge = (status: string) => {
         const statusMap: Record<string, { label: string; color: string }> = {
-            registered: { label: 'Geregistreerd', color: 'bg-blue-100 text-blue-800' },
-            waitlist: { label: 'Wachtlijst', color: 'bg-orange-100 text-orange-800' },
-            confirmed: { label: 'Bevestigd', color: 'bg-green-100 text-green-800' },
-            cancelled: { label: 'Geannuleerd', color: 'bg-gray-100 text-gray-800' },
+            registered: { label: 'Geregistreerd', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' },
+            waitlist: { label: 'Wachtlijst', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300' },
+            confirmed: { label: 'Bevestigd', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' },
+            cancelled: { label: 'Geannuleerd', color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' },
         };
-        return statusMap[status] || { label: status, color: 'bg-gray-100 text-gray-800' };
+        return statusMap[status] || { label: status, color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' };
     };
 
     const downloadExcel = () => {
@@ -462,7 +462,7 @@ export default function ReisAanmeldingenPage() {
                     <div className="flex flex-wrap gap-4 mt-4">
                         <button
                             onClick={() => router.push('/admin/reis/instellingen')}
-                            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                            className="flex items-center gap-2 px-4 py-2 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition"
                         >
                             <Edit className="h-5 w-5" />
                             Reis Instellingen
@@ -499,7 +499,7 @@ export default function ReisAanmeldingenPage() {
                 <div className="bg-admin-card rounded-lg shadow overflow-hidden">
                     {isLoading ? (
                         <div className="flex items-center justify-center py-12">
-                            <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+                            <Loader2 className="h-8 w-8 animate-spin text-theme-purple" />
                         </div>
                     ) : filteredSignups.length === 0 ? (
                         <div className="text-center py-12">
@@ -551,7 +551,7 @@ export default function ReisAanmeldingenPage() {
                                                             : '-'}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
-                                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${signup.role === 'crew' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>
+                                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${signup.role === 'crew' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'}`}>
                                                             {signup.role === 'crew' ? 'Crew' : 'Deelnemer'}
                                                         </span>
                                                     </td>
@@ -576,13 +576,13 @@ export default function ReisAanmeldingenPage() {
                                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); router.push(`/admin/reis/deelnemer/${signup.id}`); }}
-                                                            className="text-purple-600 hover:text-purple-900 mr-4"
+                                                            className="text-theme-purple hover:text-theme-purple-dark mr-4"
                                                         >
                                                             <Edit className="h-5 w-5" />
                                                         </button>
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); handleDelete(signup.id); }}
-                                                            className="text-red-600 hover:text-red-900"
+                                                            className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
                                                         >
                                                             <Trash2 className="h-5 w-5" />
                                                         </button>

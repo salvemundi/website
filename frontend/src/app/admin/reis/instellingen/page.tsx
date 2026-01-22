@@ -176,7 +176,7 @@ export default function ReisInstellingenPage() {
 
         const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
         const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_API_URL;
-        
+
         const formData = new FormData();
         formData.append('file', file);
 
@@ -189,11 +189,11 @@ export default function ReisInstellingenPage() {
                 body: formData,
                 headers
             });
-            
+
             if (!response.ok) throw new Error('Upload failed');
             const json = await response.json();
             const fileId = json?.data?.id || json?.data;
-            
+
             setForm({ ...form, image: fileId });
         } catch (err) {
             console.error('Error uploading image:', err);
@@ -211,10 +211,10 @@ export default function ReisInstellingenPage() {
     return (
         <>
             <PageHeader title="Reis Instellingen" />
-            
+
             <div className="container mx-auto px-4 py-8">
                 {error && (
-                    <div className="mb-6 bg-red-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-red-400 p-4 rounded">
+                    <div className="mb-6 bg-red-50 dark:bg-red-900/30 border-l-4 border-red-400 dark:border-red-600 p-4 rounded">
                         <p className="text-red-700 dark:text-red-300">{error}</p>
                     </div>
                 )}
@@ -224,7 +224,7 @@ export default function ReisInstellingenPage() {
                     <div className="mb-6">
                         <button
                             onClick={handleAdd}
-                            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center"
+                            className="px-6 py-3 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition flex items-center shadow-md hover:shadow-lg"
                         >
                             <Plus className="h-5 w-5 mr-2" />
                             Nieuwe Reis Toevoegen
@@ -234,77 +234,77 @@ export default function ReisInstellingenPage() {
 
                 {/* Add/Edit Form */}
                 {(addingNew || editingId) && (
-                    <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-lg shadow-md p-6 mb-6">
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                    <div className="bg-admin-card rounded-lg shadow-md p-6 mb-6">
+                        <h2 className="text-xl font-bold text-admin mb-4">
                             {addingNew ? 'Nieuwe Reis' : 'Reis Bewerken'}
                         </h2>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-admin-muted mb-2">
                                     Naam *
                                 </label>
                                 <input
                                     type="text"
                                     value={form.name}
                                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                     placeholder="Bijv. Salvemundi Skiereis 2025"
                                 />
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-admin-muted mb-2">
                                     Beschrijving
                                 </label>
                                 <textarea
                                     value={form.description}
                                     onChange={(e) => setForm({ ...form, description: e.target.value })}
                                     rows={4}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                     placeholder="Korte beschrijving van de reis..."
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-admin-muted mb-2">
                                     Start Datum *
                                 </label>
                                 <input
                                     type="date"
                                     value={form.start_date}
                                     onChange={(e) => setForm({ ...form, start_date: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-admin-muted mb-2">
                                     Eind Datum
                                 </label>
                                 <input
                                     type="date"
                                     value={form.end_date}
                                     onChange={(e) => setForm({ ...form, end_date: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
-                                <p className="text-xs text-gray-500 mt-1">Laat leeg voor eendaagse reis</p>
+                                <p className="text-xs text-admin-muted mt-1">Laat leeg voor eendaagse reis</p>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-admin-muted mb-2">
                                     Max. Deelnemers *
                                 </label>
                                 <input
                                     type="number"
                                     value={form.max_participants}
                                     onChange={(e) => setForm({ ...form, max_participants: parseInt(e.target.value) || 0 })}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-admin-muted mb-2">
                                     Basisprijs (€) *
                                 </label>
                                 <input
@@ -312,12 +312,12 @@ export default function ReisInstellingenPage() {
                                     step="0.01"
                                     value={form.base_price}
                                     onChange={(e) => setForm({ ...form, base_price: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-admin-muted mb-2">
                                     Crew Korting (€)
                                 </label>
                                 <input
@@ -325,12 +325,12 @@ export default function ReisInstellingenPage() {
                                     step="0.01"
                                     value={form.crew_discount}
                                     onChange={(e) => setForm({ ...form, crew_discount: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-admin-muted mb-2">
                                     Aanbetalingsbedrag (€) *
                                 </label>
                                 <input
@@ -338,12 +338,12 @@ export default function ReisInstellingenPage() {
                                     step="0.01"
                                     value={form.deposit_amount}
                                     onChange={(e) => setForm({ ...form, deposit_amount: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-admin-muted mb-2">
                                     Banner Afbeelding
                                 </label>
                                 <div className="flex items-center gap-4">
@@ -354,7 +354,7 @@ export default function ReisInstellingenPage() {
                                             className="w-32 h-32 object-cover rounded-lg"
                                         />
                                     )}
-                                    <label className="px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 flex items-center">
+                                    <label className="px-4 py-2 border border-admin rounded-lg cursor-pointer hover:bg-admin-hover flex items-center bg-admin-card text-admin-muted">
                                         <Upload className="h-5 w-5 mr-2" />
                                         Upload Afbeelding
                                         <input
@@ -373,9 +373,9 @@ export default function ReisInstellingenPage() {
                                         type="checkbox"
                                         checked={form.registration_open}
                                         onChange={(e) => setForm({ ...form, registration_open: e.target.checked })}
-                                        className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                                        className="h-4 w-4 text-theme-purple focus:ring-theme-purple border-admin rounded bg-admin-card"
                                     />
-                                    <span className="ml-2 text-sm text-gray-700">Inschrijving open</span>
+                                    <span className="ml-2 text-sm text-admin-muted">Inschrijving open</span>
                                 </label>
 
                                 <label className="flex items-center">
@@ -383,9 +383,9 @@ export default function ReisInstellingenPage() {
                                         type="checkbox"
                                         checked={form.is_bus_trip}
                                         onChange={(e) => setForm({ ...form, is_bus_trip: e.target.checked })}
-                                        className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                                        className="h-4 w-4 text-theme-purple focus:ring-theme-purple border-admin rounded bg-admin-card"
                                     />
-                                    <span className="ml-2 text-sm text-gray-700">Busreis (vraag rijbewijs en bereidheid om te rijden)</span>
+                                    <span className="ml-2 text-sm text-admin-muted">Busreis (vraag rijbewijs en bereidheid om te rijden)</span>
                                 </label>
                             </div>
                         </div>
@@ -410,7 +410,7 @@ export default function ReisInstellingenPage() {
                             </button>
                             <button
                                 onClick={handleCancel}
-                                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition flex items-center"
+                                className="px-6 py-2 border border-admin text-admin-muted rounded-lg hover:bg-admin-hover transition flex items-center hover:text-admin"
                             >
                                 <X className="h-5 w-5 mr-2" />
                                 Annuleren
@@ -422,17 +422,17 @@ export default function ReisInstellingenPage() {
                 {/* Trips List */}
                 {loading ? (
                     <div className="flex justify-center items-center py-12">
-                        <Loader2 className="animate-spin h-12 w-12 text-purple-600" />
+                        <Loader2 className="animate-spin h-12 w-12 text-theme-purple" />
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 gap-6">
                         {trips.length === 0 ? (
-                            <div className="text-center py-12 text-gray-500">
+                            <div className="text-center py-12 text-admin-muted">
                                 Nog geen reizen aangemaakt
                             </div>
                         ) : (
                             trips.map((trip) => (
-                                <div key={trip.id} className="bg-purple-50 rounded-lg shadow-md overflow-hidden">
+                                <div key={trip.id} className="bg-admin-card rounded-lg shadow-md overflow-hidden">
                                     <div className="md:flex">
                                         {trip.image ? (
                                             <div className="md:w-1/3">
@@ -443,16 +443,16 @@ export default function ReisInstellingenPage() {
                                                 />
                                             </div>
                                         ) : (
-                                            <div className="md:w-1/3 bg-gray-200 h-64 md:h-full flex items-center justify-center">
-                                                <Calendar className="h-16 w-16 text-gray-400" />
+                                            <div className="md:w-1/3 bg-admin-card-soft h-64 md:h-full flex items-center justify-center">
+                                                <Calendar className="h-16 w-16 text-admin-muted" />
                                             </div>
                                         )}
-                                        
+
                                         <div className="md:w-2/3 p-6">
                                             <div className="flex justify-between items-start mb-4">
                                                 <div>
-                                                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{trip.name}</h3>
-                                                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                                                    <h3 className="text-2xl font-bold text-admin mb-2">{trip.name}</h3>
+                                                    <div className="flex items-center gap-4 text-sm text-admin-muted">
                                                         <span className="flex items-center">
                                                             <Calendar className="h-4 w-4 mr-1" />
                                                             {(() => {
@@ -485,56 +485,56 @@ export default function ReisInstellingenPage() {
                                                 </div>
                                                 <div className="flex gap-2">
                                                     {trip.registration_open ? (
-                                                        <span className="px-3 py-1 bg-green-100 text-green-700 text-sm rounded">Open</span>
+                                                        <span className="px-3 py-1 bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 text-sm rounded">Open</span>
                                                     ) : (
-                                                        <span className="px-3 py-1 bg-red-100 text-red-700 text-sm rounded">Gesloten</span>
+                                                        <span className="px-3 py-1 bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 text-sm rounded">Gesloten</span>
                                                     )}
                                                     {trip.is_bus_trip && (
-                                                        <span className="px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded">Busreis</span>
+                                                        <span className="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 text-sm rounded">Busreis</span>
                                                     )}
                                                 </div>
                                             </div>
-                                            
+
                                             {trip.description && (
-                                                <p className="text-gray-600 mb-4 line-clamp-2">{trip.description}</p>
+                                                <p className="text-admin-muted mb-4 line-clamp-2">{trip.description}</p>
                                             )}
-                                            
+
                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
                                                 <div>
-                                                    <span className="text-gray-500">Aanbetaling:</span>
-                                                    <p className="font-semibold">€{fmt(trip.deposit_amount)}</p>
+                                                    <span className="text-admin-muted">Aanbetaling:</span>
+                                                    <p className="font-semibold text-admin">€{fmt(trip.deposit_amount)}</p>
                                                 </div>
                                                 {trip.crew_discount > 0 && (
                                                     <div>
-                                                        <span className="text-gray-500">Crew Korting:</span>
+                                                        <span className="text-admin-muted">Crew Korting:</span>
                                                         <p className="font-semibold text-green-600">-€{fmt(trip.crew_discount)}</p>
                                                     </div>
                                                 )}
                                             </div>
-                                            
+
                                             <div className="flex gap-2 flex-wrap">
                                                 <button
                                                     onClick={() => router.push(`/admin/reis?trip=${trip.id}`)}
-                                                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm"
+                                                    className="px-4 py-2 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition text-sm"
                                                 >
                                                     Bekijk Aanmeldingen
                                                 </button>
                                                 <button
                                                     onClick={() => router.push(`/admin/reis/activiteiten`)}
-                                                    className="px-4 py-2 border border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50 transition text-sm"
+                                                    className="px-4 py-2 border border-theme-purple text-theme-purple rounded-lg hover:bg-admin-card-soft transition text-sm"
                                                 >
                                                     Activiteiten
                                                 </button>
                                                 <button
                                                     onClick={() => handleEdit(trip)}
-                                                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm flex items-center"
+                                                    className="px-4 py-2 border border-admin text-admin-muted rounded-lg hover:bg-admin-hover hover:text-admin transition text-sm flex items-center"
                                                 >
                                                     <Edit2 className="h-4 w-4 mr-1" />
                                                     Bewerken
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(trip.id)}
-                                                    className="px-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-50 transition text-sm flex items-center"
+                                                    className="px-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition text-sm flex items-center"
                                                 >
                                                     <Trash2 className="h-4 w-4 mr-1" />
                                                     Verwijderen

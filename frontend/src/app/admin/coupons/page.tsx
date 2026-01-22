@@ -77,47 +77,47 @@ export default function AdminCouponsPage() {
                     </button>
                 </div>
 
-                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg overflow-hidden border border-slate-100 dark:border-slate-800">
+                <div className="bg-admin-card rounded-2xl shadow-lg overflow-hidden border border-admin">
                     <div className="overflow-x-auto">
                         <table className="w-full">
-                            <thead className="bg-slate-50 dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700">
+                            <thead className="bg-admin-card-soft border-b border-admin">
                                 <tr>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Code</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Korting</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Gebruik</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Geldigheid</th>
-                                    <th className="px-6 py-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-4 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Acties</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-admin-muted uppercase tracking-wider">Code</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-admin-muted uppercase tracking-wider">Korting</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-admin-muted uppercase tracking-wider">Gebruik</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-admin-muted uppercase tracking-wider">Geldigheid</th>
+                                    <th className="px-6 py-4 text-center text-xs font-semibold text-admin-muted uppercase tracking-wider">Status</th>
+                                    <th className="px-6 py-4 text-right text-xs font-semibold text-admin-muted uppercase tracking-wider">Acties</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-900">
+                            <tbody className="divide-y divide-admin bg-admin-card">
                                 {isLoading ? (
                                     <tr>
-                                        <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                                        <td colSpan={5} className="px-6 py-12 text-center text-admin-muted">
                                             Laden...
                                         </td>
                                     </tr>
                                 ) : coupons.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                                        <td colSpan={5} className="px-6 py-12 text-center text-admin-muted">
                                             Geen coupons gevonden.
                                         </td>
                                     </tr>
                                 ) : (
                                     coupons.map((coupon) => (
-                                        <tr key={coupon.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <tr key={coupon.id} className="hover:bg-admin-hover transition-colors">
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-theme-purple dark:text-purple-400">
+                                                    <div className="p-2 bg-admin-card-soft rounded-lg text-theme-purple">
                                                         <Ticket className="h-5 w-5" />
                                                     </div>
-                                                    <span className="font-bold text-slate-800 dark:text-slate-200 font-mono tracking-wide">{coupon.coupon_code}</span>
+                                                    <span className="font-bold text-admin font-mono tracking-wide">{coupon.coupon_code}</span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
+                                                <div className="flex items-center gap-2 text-admin font-medium">
                                                     {coupon.discount_type === 'percentage' ? (
-                                                        <><Percent className="h-4 w-4 text-slate-400" /> {coupon.discount_value}%</>
+                                                        <><Percent className="h-4 w-4 text-admin-muted" /> {coupon.discount_value}%</>
                                                     ) : (
                                                         formatCurrency(coupon.discount_value)
                                                     )}
@@ -125,9 +125,9 @@ export default function AdminCouponsPage() {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm">
-                                                    <span className="font-bold text-slate-800 dark:text-slate-200">{coupon.usage_count}</span>
-                                                    <span className="text-slate-400"> / </span>
-                                                    <span className="text-slate-600 dark:text-slate-400">{coupon.usage_limit ?? '∞'}</span>
+                                                    <span className="font-bold text-admin">{coupon.usage_count}</span>
+                                                    <span className="text-admin-muted"> / </span>
+                                                    <span className="text-admin-muted">{coupon.usage_limit ?? '∞'}</span>
                                                 </div>
                                                 {coupon.usage_limit && coupon.usage_count >= coupon.usage_limit && (
                                                     <span className="text-xs text-red-500 font-medium">Vol</span>
@@ -135,13 +135,13 @@ export default function AdminCouponsPage() {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex flex-col text-sm">
-                                                    {coupon.valid_from && <span className="text-slate-600 dark:text-slate-400">Van: {new Date(coupon.valid_from).toLocaleDateString('nl-NL')}</span>}
+                                                    {coupon.valid_from && <span className="text-admin-muted">Van: {new Date(coupon.valid_from).toLocaleDateString('nl-NL')}</span>}
                                                     {coupon.valid_until ? (
-                                                        <span className={`${new Date(coupon.valid_until) < new Date() ? 'text-red-500' : 'text-slate-600 dark:text-slate-400'}`}>
+                                                        <span className={`${new Date(coupon.valid_until) < new Date() ? 'text-red-500' : 'text-admin-muted'}`}>
                                                             Tot: {new Date(coupon.valid_until).toLocaleDateString('nl-NL')}
                                                         </span>
                                                     ) : (
-                                                        <span className="text-slate-400">Geen einddatum</span>
+                                                        <span className="text-admin-muted">Geen einddatum</span>
                                                     )}
                                                 </div>
                                             </td>
@@ -159,7 +159,7 @@ export default function AdminCouponsPage() {
                                             <td className="px-6 py-4 whitespace-nowrap text-right">
                                                 <button
                                                     onClick={() => handleDelete(coupon.id)}
-                                                    className="text-slate-400 hover:text-red-500 transition-colors p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                                                    className="text-admin-muted hover:text-red-500 transition-colors p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
                                                     title="Verwijderen"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
