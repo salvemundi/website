@@ -105,6 +105,7 @@ export default function DevSignupsPage() {
         'committees'
     ]);
     const [forceLink, setForceLink] = useState(false);
+    const [syncResultFilter, setSyncResultFilter] = useState<'all' | 'warnings' | 'missing' | 'errors'>('all');
 
     // Filters
     const [filterStatus, setFilterStatus] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
@@ -584,7 +585,28 @@ export default function DevSignupsPage() {
                                         </div>
                                     </div>
                                 </div>
-                                {syncStatus.warnings && syncStatus.warnings.length > 0 && (
+                                {/* Sync Result Filter Tabs */}
+                                <div className="flex p-1 bg-black/20 rounded-xl border border-white/5 overflow-x-auto max-w-full custom-scrollbar">
+                                    {[
+                                        { id: 'all' as const, label: 'Alles', count: syncStatus.processed },
+                                        { id: 'warnings' as const, label: 'Waarschuwingen', count: syncStatus.warningCount || 0 },
+                                        { id: 'missing' as const, label: 'Missende Data', count: syncStatus.missingDataCount || 0 },
+                                        { id: 'errors' as const, label: 'Fouten', count: syncStatus.errorCount },
+                                    ].map((tab) => (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => setSyncResultFilter(tab.id)}
+                                            className={`px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${syncResultFilter === tab.id
+                                                    ? 'bg-theme-purple/20 text-theme-purple-lighter border border-theme-purple/30'
+                                                    : 'text-theme-purple-lighter/60 hover:text-theme-purple-lighter hover:bg-white/5'
+                                                }`}
+                                        >
+                                            {tab.label} ({tab.count})
+                                        </button>
+                                    ))}
+                                </div>
+                                {/* Filtered Results */}
+                                {(syncResultFilter === 'all' || syncResultFilter === 'warnings') && syncStatus.warnings && syncStatus.warnings.length > 0 && (
                                     <div className="mt-4">
                                         <div className="text-xs font-medium text-amber-400/80 mb-2 px-1">⚠️ Aandacht vereist (Mogelijke duplicaten)</div>
                                         <div className="max-h-48 overflow-y-auto rounded-xl bg-amber-400/5 border border-amber-400/10 p-2 space-y-1 custom-scrollbar">
@@ -597,7 +619,20 @@ export default function DevSignupsPage() {
                                         </div>
                                     </div>
                                 )}
-                                {syncStatus.errors.length > 0 && (
+                                {(syncResultFilter === 'all' || syncResultFilter === 'missing') && syncStatus.missingData && syncStatus.missingData.length > 0 && (
+                                    <div className="mt-4">
+                                        <div className="text-xs font-medium text-blue-400/80 mb-2 px-1">ℹ️ Missende velden in Entra ID</div>
+                                        <div className="max-h-48 overflow-y-auto rounded-xl bg-blue-400/5 border border-blue-400/10 p-2 space-y-1 custom-scrollbar">
+                                            {syncStatus.missingData.map((item, idx) => (
+                                                <div key={idx} className="p-2 text-xs border-b border-blue-400/10 last:border-0">
+                                                    <div className="font-bold text-blue-300">{item.email}</div>
+                                                    <div className="text-blue-200/70">{item.reason}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                {(syncResultFilter === 'all' || syncResultFilter === 'errors') && syncStatus.errors.length > 0 && (
                                     <div className="mt-4">
                                         <div className="text-xs font-medium text-red-400/80 mb-2 px-1">❌ Fouten tijdens synchronisatie</div>
                                         <div className="max-h-48 overflow-y-auto rounded-xl bg-red-400/5 border border-red-400/10 p-2 space-y-1 custom-scrollbar">
