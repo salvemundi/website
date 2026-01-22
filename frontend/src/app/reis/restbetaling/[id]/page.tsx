@@ -200,8 +200,9 @@ export default function RestbetalingPage() {
         const activitiesTotal = selectedActivities.reduce((sum, a) => sum + (Number(a.price) || 0), 0);
         const discount = signup?.role === 'crew' ? (Number(trip.crew_discount) || 0) : 0;
         const total = basePrice + activitiesTotal - discount;
-        const deposit = Number(trip.deposit_amount) || 0;
-        const remaining = Math.max(0, total - deposit);
+    const deposit = Number(trip.deposit_amount) || 0;
+    // For rest payment we do NOT subtract the already paid deposit from the displayed remaining amount
+    const remaining = Math.max(0, total);
 
         return {
             basePrice,
