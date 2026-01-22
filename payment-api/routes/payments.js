@@ -46,6 +46,48 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 console.warn(`[Payment][${traceId}] Contribution enforced amount: ${finalAmount}`);
             }
 
+            // --- Server-side safety: if this is a trip final/rest payment, re-calc final amount
+            // from authoritative Directus data so the deposit cannot be accidentally subtracted
+            // by a client. We detect by registrationType and description containing 'restbetaling'.
+            try {
+                if (registrationType === 'trip_signup' && description && description.toLowerCase().includes('rest')) {
+                    console.warn(`[Payment][${traceId}] Detected trip restpayment request - recalculating authoritative final amount`);
+                    // Fetch trip signup and trip data
+                    const tripSignup = registrationId ? await directusService.getDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'trip_signups', registrationId, 'id,trip_id,role,deposit_paid,full_payment_paid') : null;
+                    if (tripSignup) {
+                        const trip = await directusService.getDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'trips', tripSignup.trip_id, 'id,base_price,crew_discount');
+                        if (trip) {
+                            // Get selected activities for signup
+                            const signupActivities = await directusService.getTripSignupActivities(DIRECTUS_URL, DIRECTUS_API_TOKEN, registrationId);
+                            const activityIds = signupActivities.map(a => (a.trip_activity_id && a.trip_activity_id.id) ? a.trip_activity_id.id : (a.trip_activity_id || a.activity_id || null)).filter(Boolean);
+                            let activitiesTotal = 0;
+                            if (activityIds.length > 0) {
+                                // Fetch activity details
+                                const activityQuery = activityIds.map(id => `filter[id][_in]=${id}`).join('&');
+                                // Use Directus generic item fetch per id (simpler loop)
+                                for (const aid of activityIds) {
+                                    try {
+                                        const act = await directusService.getDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'trip_activities', aid, 'id,price');
+                                        if (act && act.price) activitiesTotal += Number(act.price) || 0;
+                                    } catch (e) {
+                                        console.warn(`[Payment][${traceId}] Failed to fetch activity ${aid}:`, e.message || e);
+                                    }
+                                }
+                            }
+
+                            const base = Number(trip.base_price) || 0;
+                            const discount = tripSignup.role === 'crew' ? (Number(trip.crew_discount) || 0) : 0;
+                            const authoritativeTotal = base + activitiesTotal - discount;
+                            finalAmount = authoritativeTotal;
+                            console.warn(`[Payment][${traceId}] Recalculated authoritative amount: ${finalAmount}`);
+                        }
+                    }
+                }
+            } catch (recalcErr) {
+                console.error(`[Payment][${traceId}] Error during authoritative amount recalculation:`, recalcErr.message || recalcErr);
+                // Continue with original finalAmount if recalc failed
+            }
+
             // 2. Coupon Code Application (Manual)
             if (couponCode) {
                 console.warn(`[Payment][${traceId}] Validating coupon code: ${couponCode}`);
