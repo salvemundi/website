@@ -7,7 +7,6 @@ import { directusFetch } from '@/shared/lib/directus';
 import {
     Users,
     Search,
-    Filter,
     UserCheck,
     UserMinus,
     ChevronRight,
@@ -143,8 +142,8 @@ export default function LedenOverzichtPage() {
                         <button
                             onClick={() => setActiveTab('active')}
                             className={`flex-1 md:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'active'
-                                    ? 'bg-white dark:bg-slate-700 text-theme-purple shadow-sm'
-                                    : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                ? 'bg-white dark:bg-slate-700 text-theme-purple shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                                 }`}
                         >
                             <UserCheck className="h-4 w-4" />
@@ -153,8 +152,8 @@ export default function LedenOverzichtPage() {
                         <button
                             onClick={() => setActiveTab('inactive')}
                             className={`flex-1 md:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'inactive'
-                                    ? 'bg-white dark:bg-slate-700 text-theme-purple shadow-sm'
-                                    : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                ? 'bg-white dark:bg-slate-700 text-theme-purple shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                                 }`}
                         >
                             <UserMinus className="h-4 w-4" />
@@ -227,8 +226,8 @@ export default function LedenOverzichtPage() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${member.membership_expiry && new Date(member.membership_expiry) > new Date()
-                                                ? 'bg-green-100 text-green-600 dark:bg-green-500/10 dark:text-green-400'
-                                                : 'bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400'
+                                            ? 'bg-green-100 text-green-600 dark:bg-green-500/10 dark:text-green-400'
+                                            : 'bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400'
                                             }`}>
                                             {formatDate(member.membership_expiry)}
                                         </span>
@@ -271,8 +270,8 @@ export default function LedenOverzichtPage() {
                                     </div>
                                 </div>
                                 <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${member.membership_expiry && new Date(member.membership_expiry) > new Date()
-                                        ? 'bg-green-100 text-green-600 dark:bg-green-500/10 dark:text-green-400'
-                                        : 'bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400'
+                                    ? 'bg-green-100 text-green-600 dark:bg-green-500/10 dark:text-green-400'
+                                    : 'bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400'
                                     }`}>
                                     {member.membership_expiry && new Date(member.membership_expiry) > new Date() ? 'Actief' : 'Niet Actief'}
                                 </span>
