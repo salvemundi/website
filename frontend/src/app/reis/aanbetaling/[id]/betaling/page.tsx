@@ -28,11 +28,19 @@ function BetalingContent() {
 
     // Poll for payment status after returning from Mollie
     useEffect(() => {
-        if (!loading && signup && !signup.deposit_paid && !checkingPayment) {
+        if (!loading && signup && !checkingPayment) {
             // Check URL parameters or referrer to detect return from payment
             const urlParams = new URLSearchParams(window.location.search);
             const hasPaymentReturn = urlParams.toString().length > 0 || 
-                                    document.referrer.includes('mollie.com');
+                                    document.referrer.includes('mollie.com') ||
+                                    document.referrer.includes('mollie.nl');
+            
+            // If deposit is already paid, show success immediately
+            if (signup.deposit_paid) {
+                console.log('[betaling] Deposit already paid, showing success');
+                setPaymentStatus('success');
+                return;
+            }
             
             if (hasPaymentReturn) {
                 console.log('[betaling] Detected return from payment, checking status...');
@@ -45,7 +53,7 @@ function BetalingContent() {
 
     const checkPaymentStatus = async () => {
         let attempts = 0;
-        const maxAttempts = 10; // Check for up to 40 seconds
+        const maxAttempts = 20; // Check for up to 60 seconds (increased from 40)
         
         const interval = setInterval(async () => {
             attempts++;
@@ -53,26 +61,33 @@ function BetalingContent() {
             
             try {
                 const signupData = await tripSignupsApi.getById(signupId);
+                console.log('[betaling] Signup data:', {
+                    id: signupData.id,
+                    deposit_paid: signupData.deposit_paid,
+                    has_deposit_paid: !!signupData.deposit_paid
+                });
                 
                 if (signupData.deposit_paid) {
-                    console.log('[betaling] Payment confirmed! Showing success page');
+                    console.log('[betaling] ✅ Payment confirmed! Deposit paid at:', signupData.deposit_paid);
                     clearInterval(interval);
                     setSignup(signupData);
                     setPaymentStatus('success');
                     setCheckingPayment(false);
                     setShowManualRefresh(false);
+                    return; // Exit early
                 }
                 
                 if (attempts >= maxAttempts) {
-                    console.log('[betaling] Max attempts reached, showing manual refresh option');
+                    console.log('[betaling] ⏱️ Max attempts reached, showing manual refresh option');
                     clearInterval(interval);
                     setCheckingPayment(false);
                     setShowManualRefresh(true);
                 }
             } catch (err) {
-                console.error('[betaling] Error checking payment status:', err);
+                console.error('[betaling] ❌ Error checking payment status:', err);
+                // Don't stop checking on error, webhook might still be processing
             }
-        }, 2000); // Check every 2 seconds
+        }, 3000); // Check every 3 seconds (increased from 2)
     };
 
     const manualRefresh = async () => {
@@ -131,6 +146,16 @@ function BetalingContent() {
             const description = `Aanbetaling ${trip.name} - ${signup.first_name} ${signup.last_name}`;
             const redirectUrl = `${window.location.origin}/reis/aanbetaling/${signupId}/betaling`;
 
+            console.log('[betaling] Creating payment with data:', {
+                amount,
+                description,
+                registrationId: signupId,
+                registrationType: 'trip_signup',
+                email: signup.email,
+                firstName: signup.first_name,
+                lastName: signup.last_name
+            });
+
             const paymentResponse = await paymentApi.create({
                 amount,
                 description,
@@ -139,7 +164,11 @@ function BetalingContent() {
                 email: signup.email,
                 registrationId: signupId,
                 registrationType: 'trip_signup',
+                firstName: signup.first_name,
+                lastName: signup.last_name,
             });
+
+            console.log('[betaling] Payment created, redirecting to:', paymentResponse.checkoutUrl);
 
             // Redirect to Mollie checkout
             window.location.href = paymentResponse.checkoutUrl;
@@ -234,9 +263,14 @@ function BetalingContent() {
                         <p className="text-base sm:text-lg text-gray-700 mb-4 sm:mb-6 px-2">
                             Bedankt voor je aanbetaling van <strong className="whitespace-nowrap">€{Number(trip.deposit_amount).toFixed(2)}</strong> voor {trip.name}!
                         </p>
+                        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded mb-6 sm:mb-8 mx-2">
+                            <p className="text-sm sm:text-base text-blue-700">
+                                <strong>📧 Email bevestiging:</strong> Je ontvangt binnen enkele minuten een bevestigingsmail met je reisdetails en een overzicht van je betaling.
+                            </p>
+                        </div>
                         <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8 px-2">
-                            Je ontvangt binnenkort een bevestigingsmail met alle details. 
-                            We zullen je informeren wanneer je de restbetaling kunt voldoen.
+                            We zullen je informeren wanneer je de restbetaling kunt voldoen. 
+                            Let op: controleer ook je spam/ongewenste e-mail folder als je de bevestiging niet direct ontvangt.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-2">
                             <button

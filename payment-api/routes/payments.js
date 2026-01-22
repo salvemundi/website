@@ -405,6 +405,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
 
                     // Send trip-specific email for trip signups
                     if (payment.metadata.registrationType === 'trip_signup') {
+                        console.warn(`[Webhook][${traceId}] Detected trip_signup, fetching trip data for email...`);
                         try {
                             const tripSignup = await directusService.getDirectusItem(
                                 DIRECTUS_URL,
@@ -413,6 +414,11 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                                 registrationId,
                                 'id,first_name,middle_name,last_name,email,role,trip_id'
                             );
+                            console.warn(`[Webhook][${traceId}] Trip signup fetched:`, { 
+                                id: tripSignup.id, 
+                                email: tripSignup.email,
+                                trip_id: tripSignup.trip_id 
+                            });
 
                             const trip = await directusService.getDirectusItem(
                                 DIRECTUS_URL,
@@ -421,18 +427,28 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                                 tripSignup.trip_id,
                                 'id,name,event_date,base_price,deposit_amount,crew_discount,is_bus_trip'
                             );
+                            console.warn(`[Webhook][${traceId}] Trip fetched:`, { 
+                                id: trip.id, 
+                                name: trip.name 
+                            });
 
                             const paymentType = payment.description.toLowerCase().includes('aanbetaling') ? 'deposit' : 'final';
+                            console.warn(`[Webhook][${traceId}] Payment type detected: ${paymentType}`);
+                            console.warn(`[Webhook][${traceId}] Calling sendTripPaymentConfirmation...`);
+                            
                             await notificationService.sendTripPaymentConfirmation(
                                 EMAIL_SERVICE_URL,
                                 tripSignup,
                                 trip,
                                 paymentType
                             );
+                            console.warn(`[Webhook][${traceId}] ✅ Trip payment confirmation email sent successfully!`);
                         } catch (err) {
-                            console.error(`[Webhook][${traceId}] Failed to send trip payment confirmation:`, err);
+                            console.error(`[Webhook][${traceId}] ❌ Failed to send trip payment confirmation:`, err);
+                            console.error(`[Webhook][${traceId}] Error details:`, err.message, err.stack);
                         }
                     } else {
+                        console.warn(`[Webhook][${traceId}] Not a trip_signup, sending regular confirmation email`);
                         // Regular confirmation email for events/pub-crawls
                         await notificationService.sendConfirmationEmail(
                             DIRECTUS_URL,
