@@ -515,7 +515,7 @@ export default function DeelnemerDetailPage() {
                                             />
                                             <span className="ml-3 font-semibold text-gray-900">{activity.name}</span>
                                         </div>
-                                        <span className="text-purple-600 font-bold">€{activity.price.toFixed(2)}</span>
+                                        <span className="text-purple-600 font-bold">€{Number(activity.price).toFixed(2)}</span>
                                     </div>
                                 </div>
                             ))}

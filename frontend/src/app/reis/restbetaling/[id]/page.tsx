@@ -196,11 +196,11 @@ export default function RestbetalingPage() {
     const calculateTotal = () => {
         if (!trip) return { basePrice: 0, activities: 0, discount: 0, total: 0, deposit: 0, remaining: 0 };
 
-        const basePrice = trip.base_price;
-        const activitiesTotal = selectedActivities.reduce((sum, a) => sum + a.price, 0);
-        const discount = signup?.role === 'crew' ? trip.crew_discount : 0;
+        const basePrice = Number(trip.base_price) || 0;
+        const activitiesTotal = selectedActivities.reduce((sum, a) => sum + (Number(a.price) || 0), 0);
+        const discount = signup?.role === 'crew' ? (Number(trip.crew_discount) || 0) : 0;
         const total = basePrice + activitiesTotal - discount;
-        const deposit = trip.deposit_amount;
+        const deposit = Number(trip.deposit_amount) || 0;
         const remaining = Math.max(0, total - deposit);
 
         return {
@@ -525,7 +525,7 @@ export default function RestbetalingPage() {
                                         <p className="text-sm text-gray-600">{activity.description}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-lg font-bold text-blue-600">€{activity.price.toFixed(2)}</p>
+                                        <p className="text-lg font-bold text-blue-600">€{Number(activity.price).toFixed(2)}</p>
                                     </div>
                                 </div>
                             ))}

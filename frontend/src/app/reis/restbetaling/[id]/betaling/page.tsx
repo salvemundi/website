@@ -62,10 +62,10 @@ function BetalingContent() {
             setSelectedActivities(selected);
 
             // Calculate costs
-            const basePrice = tripData.base_price;
-            const activitiesTotal = selected.reduce((sum: number, a: any) => sum + a.price, 0);
-            const crewDiscount = signupData.role === 'crew' ? tripData.crew_discount : 0;
-            const deposit = tripData.deposit_amount;
+            const basePrice = Number(tripData.base_price) || 0;
+            const activitiesTotal = selected.reduce((sum: number, a: any) => sum + (Number(a.price) || 0), 0);
+            const crewDiscount = signupData.role === 'crew' ? (Number(tripData.crew_discount) || 0) : 0;
+            const deposit = Number(tripData.deposit_amount) || 0;
             const totalCost = basePrice + activitiesTotal - crewDiscount;
             const remaining = totalCost - deposit;
 
@@ -300,7 +300,7 @@ function BetalingContent() {
                                     {selectedActivities.map((activity) => (
                                         <div key={activity.id} className="flex justify-between items-center text-sm pl-4">
                                             <span className="text-gray-600">• {activity.name}</span>
-                                            <span className="text-gray-600">€{activity.price.toFixed(2)}</span>
+                                            <span className="text-gray-600">€{Number(activity.price).toFixed(2)}</span>
                                         </div>
                                     ))}
                                 </div>

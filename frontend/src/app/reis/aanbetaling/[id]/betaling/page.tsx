@@ -126,7 +126,7 @@ function BetalingContent() {
                         </div>
                         <h1 className="text-3xl font-bold text-gray-900 mb-4">Aanbetaling Geslaagd!</h1>
                         <p className="text-lg text-gray-700 mb-6">
-                            Bedankt voor je aanbetaling van <strong>€{trip.deposit_amount.toFixed(2)}</strong> voor {trip.name}!
+                            Bedankt voor je aanbetaling van <strong>€{Number(trip.deposit_amount).toFixed(2)}</strong> voor {trip.name}!
                         </p>
                         <p className="text-gray-600 mb-8">
                             Je ontvangt binnenkort een bevestigingsmail met alle details. 
@@ -242,7 +242,7 @@ function BetalingContent() {
                         <div className="flex justify-between items-center">
                             <span className="text-xl font-bold text-gray-900">Aanbetalingsbedrag</span>
                             <span className="text-3xl font-bold text-purple-600">
-                                €{trip.deposit_amount.toFixed(2)}
+                                €{Number(trip.deposit_amount).toFixed(2)}
                             </span>
                         </div>
                     </div>
