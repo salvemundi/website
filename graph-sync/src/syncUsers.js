@@ -102,8 +102,10 @@ let syncStatus = {
     processed: 0,
     errorCount: 0,
     missingDataCount: 0,
+    warningCount: 0,
     errors: [], // [{ email: string, error: string, timestamp: string }]
     missingData: [], // [{ email: string, reason: string }]
+    warnings: [], // [{ type: string, email: string, message: string }]
     startTime: null,
     endTime: null,
     lastRunSuccess: null
@@ -624,14 +626,64 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
         console.log(`[SYNC] ${email} groups=${groups.length} -> role=${role || 'none'}`);
 
 
-        const existingRes = await axios.get(
-            `${process.env.DIRECTUS_URL}/users?filter[email][_eq]=${encodeURIComponent(email)}&fields=id,email,first_name,last_name,phone_number,status,role,membership_expiry,fontys_email,date_of_birth,title`,
+        // Priority 1: Search by entra_id
+        const entraIdRes = await axios.get(
+            `${process.env.DIRECTUS_URL}/users?filter[entra_id][_eq]=${encodeURIComponent(userId)}&fields=id,email,first_name,last_name,phone_number,status,role,membership_expiry,fontys_email,date_of_birth,title,entra_id`,
             { headers: DIRECTUS_HEADERS }
         );
+        const existingByEntra = entraIdRes.data?.data?.[0] || null;
 
-        const existingUser = existingRes.data?.data?.[0] || null;
+        // Priority 2: Search by email (for warnings/manual linking)
+        const emailRes = await axios.get(
+            `${process.env.DIRECTUS_URL}/users?filter[email][_eq]=${encodeURIComponent(email)}&fields=id,email,first_name,last_name,phone_number,status,role,membership_expiry,fontys_email,date_of_birth,title,entra_id`,
+            { headers: DIRECTUS_HEADERS }
+        );
+        const existingByEmail = emailRes.data?.data || [];
+
+        let existingUser = existingByEntra;
+        let warning = null;
+
+        if (!existingUser && existingByEmail.length > 0) {
+            // Case: Found by email but not by entra_id
+            if (existingByEmail.length === 1) {
+                const user = existingByEmail[0];
+                if (!user.entra_id) {
+                    warning = {
+                        type: 'LINK_REQUIRED',
+                        email: email,
+                        directusId: user.id,
+                        message: `Account gevonden op e-mail, maar heeft nog geen Entra ID gekoppeld.`
+                    };
+                } else {
+                    warning = {
+                        type: 'CONFLICT',
+                        email: email,
+                        directusId: user.id,
+                        message: `E-mail match gevonden, maar dit account is al gekoppeld aan een andere Entra ID: ${user.entra_id}`
+                    };
+                }
+            } else {
+                warning = {
+                    type: 'MULTIPLE_ACCOUNTS',
+                    email: email,
+                    message: `Meerdere Directus accounts gevonden voor dit e-mailadres.`
+                };
+            }
+        }
+
+        if (warning) {
+            syncStatus.warningCount++;
+            syncStatus.warnings.push(warning);
+            console.log(`[SYNC] ⚠️ Warning for ${email}: ${warning.message}`);
+            // If no linked account exists and we have a warning, we skip to prevent creating a duplicate
+            if (!existingUser) {
+                console.log(`[SYNC] Skipping ${email} to prevent further duplication. Manual resolution required.`);
+                return;
+            }
+        }
         const payload = {
             email,
+            entra_id: userId,
             first_name: firstName || null,
             last_name: lastName || null,
             fontys_email: email.includes('@student.fontys.nl') ? email : null,
@@ -961,8 +1013,10 @@ async function runBulkSync(selectedFields = null) {
         processed: 0,
         errorCount: 0,
         missingDataCount: 0,
+        warningCount: 0,
         errors: [],
         missingData: [],
+        warnings: [],
         selectedFields: selectedFields,
         startTime: new Date().toISOString(),
         endTime: null,
