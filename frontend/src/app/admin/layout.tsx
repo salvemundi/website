@@ -80,9 +80,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (authLoading || isChecking) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end">
-                <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-8 max-w-md mx-4 text-center">
+                <div className="bg-admin-card rounded-3xl shadow-xl p-8 max-w-md mx-4 text-center">
                     <div className="h-12 w-12 animate-spin rounded-full border-4 border-theme-purple/20 border-t-theme-purple mx-auto mb-4" />
-                    <p className="text-slate-600 dark:text-slate-300">Toegang controleren...</p>
+                    <p className="text-admin-muted">Toegang controleren...</p>
                 </div>
             </div>
         );
