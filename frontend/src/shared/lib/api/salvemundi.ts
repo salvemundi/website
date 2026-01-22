@@ -986,7 +986,7 @@ export interface Trip {
     image?: string;
     // For compatibility with single-day trips we keep `event_date`.
     // New multi-day support uses `start_date` and optional `end_date`.
-    event_date?: string;
+    event_date: string;
     start_date?: string;
     end_date?: string;
     registration_open: boolean;
