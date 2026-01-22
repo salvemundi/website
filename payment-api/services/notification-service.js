@@ -408,12 +408,16 @@ async function sendTripPaymentConfirmation(emailServiceUrl, tripSignup, trip, pa
                     const names = selected.map(s => {
                         const a = s.trip_activity_id;
                         return a ? (a.name || a.title || `Activiteit ${a.id || ''}`) : 'Onbekende activiteit';
-                    });
+                    }).map(n => (n || '').trim()).filter(Boolean);
+
+                    // Remove duplicates while preserving order
+                    const uniqueNames = Array.from(new Set(names));
+
                     activitiesHtml = `
                         <div style="background-color: #FFF7E6; padding: 12px; border-radius: 8px; margin: 20px 0;">
                             <h4 style="margin: 0 0 8px 0;">Geselecteerde activiteiten</h4>
                             <ul style="margin:0; padding-left: 18px;">
-                                ${names.map(n => `<li>${n}</li>`).join('')}
+                                ${uniqueNames.map(n => `<li>${n}</li>`).join('')}
                             </ul>
                         </div>
                     `;
