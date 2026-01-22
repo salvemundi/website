@@ -193,7 +193,7 @@ export default function ReisInstellingenPage() {
 
     return (
         <>
-            <PageHeader title="Reis Instellingen" backgroundImage="/img/backgrounds/committee.jpg" />
+            <PageHeader title="Reis Instellingen" />
             
             <div className="container mx-auto px-4 py-8">
                 {error && (

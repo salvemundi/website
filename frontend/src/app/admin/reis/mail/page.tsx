@@ -233,7 +233,7 @@ export default function ReisMailPage() {
 
     return (
         <>
-            <PageHeader title="Reis Email Verzenden" backgroundImage="/img/backgrounds/committee.jpg" />
+            <PageHeader title="Reis Email Verzenden" />
             
             <div className="container mx-auto px-4 py-8 max-w-4xl">
                 {error && (
