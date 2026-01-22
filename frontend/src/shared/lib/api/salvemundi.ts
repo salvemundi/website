@@ -984,7 +984,11 @@ export interface Trip {
     name: string;
     description: string;
     image?: string;
-    event_date: string;
+    // For compatibility with single-day trips we keep `event_date`.
+    // New multi-day support uses `start_date` and optional `end_date`.
+    event_date?: string;
+    start_date?: string;
+    end_date?: string;
     registration_open: boolean;
     max_participants: number;
     base_price: number;
@@ -1034,7 +1038,7 @@ export interface TripSignup {
 export const tripsApi = {
     getAll: async () => {
         const query = buildQueryString({
-            fields: ['id', 'name', 'description', 'image', 'event_date', 'registration_open', 'max_participants', 'base_price', 'crew_discount', 'deposit_amount', 'is_bus_trip', 'created_at', 'updated_at'],
+            fields: ['id', 'name', 'description', 'image', 'event_date', 'start_date', 'end_date', 'registration_open', 'max_participants', 'base_price', 'crew_discount', 'deposit_amount', 'is_bus_trip', 'created_at', 'updated_at'],
             sort: ['-event_date']
         });
         return directusFetch<Trip[]>(`/items/trips?${query}`);

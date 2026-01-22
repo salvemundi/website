@@ -261,7 +261,7 @@ function BetalingContent() {
                     backgroundImage={trip.image ? getImageUrl(trip.image) : '/img/placeholder.svg'}
                 />
                 <div className="container mx-auto px-4 py-12 max-w-2xl">
-                    <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+                    <div className="bg-purple-50 rounded-xl shadow-lg p-8 text-center">
                         <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                             <CheckCircle2 className="h-12 w-12 text-green-600" />
                         </div>
@@ -312,7 +312,7 @@ function BetalingContent() {
                     backgroundImage={trip.image ? getImageUrl(trip.image) : '/img/placeholder.svg'}
                 />
                 <div className="container mx-auto px-4 py-12 max-w-2xl">
-                    <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+                    <div className="bg-purple-50 rounded-xl shadow-lg p-8 text-center">
                         <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
                             <XCircle className="h-12 w-12 text-red-600" />
                         </div>
@@ -348,7 +348,7 @@ function BetalingContent() {
                 backgroundImage={trip.image ? getImageUrl(trip.image) : '/img/placeholder.svg'}
             />
             <div className="container mx-auto px-4 py-12 max-w-2xl">
-                <div className="bg-white rounded-xl shadow-lg p-8">
+                <div className="bg-purple-50 rounded-xl shadow-lg p-8">
                     <div className="text-center mb-8">
                         <div className="w-24 h-24 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
                             <CreditCard className="h-12 w-12 text-purple-600" />
