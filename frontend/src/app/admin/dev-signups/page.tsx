@@ -99,7 +99,8 @@ export default function DevSignupsPage() {
         'first_name',
         'last_name',
         'phone_number',
-        'display_name'
+        'display_name',
+        'committees'
     ]);
 
     // Filters
@@ -115,6 +116,7 @@ export default function DevSignupsPage() {
         { id: 'last_name', label: 'Achternaam' },
         { id: 'display_name', label: 'Display naam' },
         { id: 'phone_number', label: 'Mobiel nummer (Entra → Directus)' },
+        { id: 'committees', label: 'Commissies (Entra → Directus)' },
     ];
 
     const toggleField = (fieldId: string) => {
