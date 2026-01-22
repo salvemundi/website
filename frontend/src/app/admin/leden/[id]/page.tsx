@@ -34,6 +34,7 @@ interface CommitteeMembership {
     committee_id: {
         id: string;
         name: string;
+        is_visible: boolean;
     };
 }
 
@@ -62,7 +63,7 @@ export default function MemberDetailPage() {
         try {
             const [memberData, committeesData] = await Promise.all([
                 directusFetch<Member>(`/users/${id}?fields=id,first_name,last_name,email,date_of_birth,membership_expiry,status,phone_number,avatar`),
-                directusFetch<CommitteeMembership[]>(`/items/committee_members?filter[user_id][_eq]=${id}&fields=id,is_leader,committee_id.id,committee_id.name`)
+                directusFetch<CommitteeMembership[]>(`/items/committee_members?filter[user_id][_eq]=${id}&fields=id,is_leader,committee_id.id,committee_id.name,committee_id.is_visible`)
             ]);
 
             setMember(memberData);
@@ -90,15 +91,6 @@ export default function MemberDetailPage() {
     const { realCommittees, otherGroups } = useMemo(() => {
         const EXCLUDED_GROUPS = ['Alle gebruikers', 'Leden_Actief_Lidmaatschap', 'Leden_Verlopen_Lidmaatschap'];
 
-        const OTHER_GROUP_MARKERS = [
-            'Informatie',
-            'Teams',
-            'Jaarclub',
-            'Gala',
-            'Agenda',
-            'Commissieleiders'
-        ];
-
         const real: CommitteeMembership[] = [];
         const groups: CommitteeMembership[] = [];
 
@@ -106,14 +98,11 @@ export default function MemberDetailPage() {
             const rawName = cm.committee_id?.name || '';
             if (!rawName || EXCLUDED_GROUPS.includes(rawName)) return;
 
-            const isOtherGroup = OTHER_GROUP_MARKERS.some(marker =>
-                rawName.toLowerCase().includes(marker.toLowerCase())
-            );
-
-            if (isOtherGroup) {
-                groups.push(cm);
-            } else {
+            // Items shown on website (is_visible === true) are the "real" committees
+            if (cm.committee_id?.is_visible === true) {
                 real.push(cm);
+            } else {
+                groups.push(cm);
             }
         });
 
