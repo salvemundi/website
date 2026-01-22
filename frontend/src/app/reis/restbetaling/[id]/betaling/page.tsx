@@ -129,9 +129,8 @@ function BetalingContent() {
             const crewDiscount = signupData.role === 'crew' ? (Number(tripData.crew_discount) || 0) : 0;
             const deposit = Number(tripData.deposit_amount) || 0;
             const totalCost = basePrice + activitiesTotal - crewDiscount;
-            // NOTE: For the restpayment flow we should NOT subtract the already paid deposit
-            // from the displayed / charged remaining amount. Keep deposit shown but charge the
-            // full remaining total (i.e., totalCost) when creating the restpayment.
+            // For restbetaling: the remaining amount is the full total (base + activities - crew discount)
+            // We do NOT subtract the deposit from the amount to be paid
             const remaining = totalCost;
 
             setCosts({
@@ -422,18 +421,7 @@ function BetalingContent() {
                                 </div>
                             )}
                             
-                            <div className="border-t border-gray-200 pt-3">
-                                <div className="flex justify-between items-center mb-2">
-                                    <span className="text-gray-700">Totaal</span>
-                                    <span className="text-gray-900">€{costs.total.toFixed(2)}</span>
-                                </div>
-                                <div className="flex justify-between items-center text-purple-600">
-                                    <span>Reeds betaald (aanbetaling)</span>
-                                    <span>-€{costs.deposit.toFixed(2)}</span>
-                                </div>
-                            </div>
-                            
-                            <div className="border-t border-gray-300 pt-3">
+                            <div className="border-t border-gray-300 pt-3 mt-3">
                                 <div className="flex justify-between items-center">
                                     <span className="text-xl font-bold text-gray-900">Te betalen</span>
                                     <span className="text-3xl font-bold text-purple-600">
