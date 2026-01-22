@@ -698,6 +698,39 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null, forceL
                 console.log(`[SYNC] ⚠️ Warning for ${email}: ${warning.message}`);
             }
         }
+
+        // Check for duplicate accounts AFTER linking (case-insensitive email check)
+        // This catches cases like "Ruben.Dijs@..." and "ruben.dijs@..." existing simultaneously
+        if (existingUser && existingByEmail.length > 1) {
+            const duplicateWarning = {
+                type: 'DUPLICATE_DETECTED',
+                email: email,
+                message: `Meerdere accounts gevonden voor ${email}. Handmatig opschonen vereist. IDs: ${existingByEmail.map(u => u.id).join(', ')}`
+            };
+            syncStatus.warningCount++;
+            syncStatus.warnings.push(duplicateWarning);
+            console.log(`[SYNC] ⚠️ Duplicate accounts detected for ${email}: ${existingByEmail.length} accounts found`);
+        }
+
+        // Check if multiple Directus accounts share the same entra_id
+        if (existingByEntra && userId) {
+            const multipleEntraRes = await axios.get(
+                `${process.env.DIRECTUS_URL}/users?filter[entra_id][_eq]=${encodeURIComponent(userId)}&fields=id,email`,
+                { headers: DIRECTUS_HEADERS }
+            );
+            const accountsWithSameEntra = multipleEntraRes.data?.data || [];
+
+            if (accountsWithSameEntra.length > 1) {
+                const entraIdWarning = {
+                    type: 'DUPLICATE_ENTRA_ID',
+                    email: email,
+                    message: `Meerdere accounts gekoppeld aan Entra ID ${userId}. Emails: ${accountsWithSameEntra.map(u => u.email).join(', ')}`
+                };
+                syncStatus.warningCount++;
+                syncStatus.warnings.push(entraIdWarning);
+                console.log(`[SYNC] ⚠️ Multiple accounts with same entra_id ${userId}: ${accountsWithSameEntra.length} accounts`);
+            }
+        }
         const payload = {
             email,
             entra_id: userId,
