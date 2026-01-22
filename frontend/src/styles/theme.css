@@ -380,7 +380,7 @@ textarea::placeholder {
   border-color: var(--theme-admin-border);
 }
 
-.hover\\:bg-admin-hover:hover {
+.hover\:bg-admin-hover:hover {
   background-color: var(--theme-admin-hover);
 }
 
