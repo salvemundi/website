@@ -76,11 +76,12 @@ jobs:
           CLIENT_ID: ${{ secrets.GRAPH_SYNC_CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.GRAPH_SYNC_CLIENT_SECRET }}
           WEBHOOK_CLIENT_STATE: ${{ secrets.GRAPH_WEBHOOK_CLIENT_STATE }}
+          PUBLIC_WEBHOOK_URL: "https://entra-webhook.salvemundi.nl/webhooks/graph"
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,DEPLOY_PATH,TAG,TENANT_ID,CLIENT_ID,CLIENT_SECRET,WEBHOOK_CLIENT_STATE
+          envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,DEPLOY_PATH,TAG,TENANT_ID,CLIENT_ID,CLIENT_SECRET,WEBHOOK_CLIENT_STATE,PUBLIC_WEBHOOK_URL
           script: |
             echo $GH_PASSWORD | docker login $GH_REGISTRY -u $GH_USERNAME --password-stdin
 
@@ -93,6 +94,7 @@ jobs:
             printf "CLIENT_ID=%s\n" "$CLIENT_ID" >> .env
             printf "CLIENT_SECRET=%s\n" "$CLIENT_SECRET" >> .env
             printf "WEBHOOK_CLIENT_STATE=%s\n" "$WEBHOOK_CLIENT_STATE" >> .env
+            printf "PUBLIC_WEBHOOK_URL=%s\n" "$PUBLIC_WEBHOOK_URL" >> .env
             
             docker compose pull graph-webhook
             docker compose up -d graph-webhook --force-recreate --remove-orphans

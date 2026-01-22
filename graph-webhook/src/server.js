@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3008;
 const PATH = process.env.WEBHOOK_PATH || "/webhooks/graph";
 const SECRET = process.env.WEBHOOK_CLIENT_STATE || "";
 const GRAPH_SYNC_URL = process.env.GRAPH_SYNC_URL || "http://graph-sync:3001";
-const PUBLIC_WEBHOOK_URL = "https://admin.salvemundi.nl/graph-webhook/webhooks/graph";
+const PUBLIC_WEBHOOK_URL = process.env.PUBLIC_WEBHOOK_URL || "https://entra-webhook.salvemundi.nl/webhooks/graph";
 
 // Azure Auth Config
 const TENANT_ID = process.env.TENANT_ID;
