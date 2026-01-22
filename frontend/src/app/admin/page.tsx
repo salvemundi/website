@@ -619,7 +619,7 @@ export default function AdminDashboardPage() {
                 <div className="mb-8 flex flex-col sm:flex-row gap-4">
                     <button
                         onClick={() => router.push('/admin/activiteiten/nieuw')}
-                        className="bg-theme-purple hover:bg-theme-purple-dark text-white px-4 sm:px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2 w-full sm:w-auto justify-center"
+                        className="bg-admin-card text-theme-purple hover:bg-admin-card-soft hover:text-theme-purple-dark px-4 sm:px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2 w-full sm:w-auto justify-center"
                     >
                         <Plus className="h-5 w-5" />
                         Nieuwe Activiteit
