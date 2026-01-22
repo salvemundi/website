@@ -129,7 +129,10 @@ function BetalingContent() {
             const crewDiscount = signupData.role === 'crew' ? (Number(tripData.crew_discount) || 0) : 0;
             const deposit = Number(tripData.deposit_amount) || 0;
             const totalCost = basePrice + activitiesTotal - crewDiscount;
-            const remaining = totalCost - deposit;
+            // NOTE: For the restpayment flow we should NOT subtract the already paid deposit
+            // from the displayed / charged remaining amount. Keep deposit shown but charge the
+            // full remaining total (i.e., totalCost) when creating the restpayment.
+            const remaining = totalCost;
 
             setCosts({
                 base: basePrice,
