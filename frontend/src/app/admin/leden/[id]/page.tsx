@@ -6,7 +6,6 @@ import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
 import {
     ChevronLeft,
-    Mail,
     Calendar,
     Phone,
     Shield,
@@ -148,15 +147,6 @@ export default function MemberDetailPage() {
                             </div>
 
                             <div className="mt-8 space-y-4">
-                                <div className="flex items-center gap-3 text-slate-600 dark:text-slate-300">
-                                    <div className="h-8 w-8 rounded-lg bg-slate-50 dark:bg-slate-700 flex items-center justify-center text-slate-400">
-                                        <Mail className="h-4 w-4" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-[10px] uppercase font-bold text-slate-400">Email Adres</p>
-                                        <p className="text-sm truncate font-medium">{member.email}</p>
-                                    </div>
-                                </div>
 
                                 <div className="flex items-center gap-3 text-slate-600 dark:text-slate-300">
                                     <div className="h-8 w-8 rounded-lg bg-slate-50 dark:bg-slate-700 flex items-center justify-center text-slate-400">
