@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { tripSignupsApi, tripsApi, paymentApi, getImageUrl } from '@/shared/lib/api/salvemundi';
 import { format } from 'date-fns';
@@ -11,7 +11,6 @@ import { CheckCircle2, Loader2, AlertCircle, CreditCard, XCircle } from 'lucide-
 function BetalingContent() {
     const params = useParams();
     const router = useRouter();
-    const searchParams = useSearchParams();
     const signupId = parseInt(params.id as string);
 
     const [loading, setLoading] = useState(true);
@@ -21,20 +20,9 @@ function BetalingContent() {
     const [error, setError] = useState<string | null>(null);
     const [paymentStatus, setPaymentStatus] = useState<'pending' | 'success' | 'failed'>('pending');
 
-    // Check if returning from payment
-    const status = searchParams.get('status');
-
     useEffect(() => {
         loadData();
     }, [signupId]);
-
-    useEffect(() => {
-        if (status === 'success') {
-            setPaymentStatus('success');
-        } else if (status === 'failed' || status === 'canceled' || status === 'expired') {
-            setPaymentStatus('failed');
-        }
-    }, [status]);
 
     const loadData = async () => {
         setLoading(true);
@@ -44,6 +32,12 @@ function BetalingContent() {
 
             const tripData = await tripsApi.getById(signupData.trip_id);
             setTrip(tripData);
+
+            // Check if deposit is already paid (returning from successful payment)
+            if (signupData.deposit_paid) {
+                console.log('[betaling] Deposit already paid, showing success');
+                setPaymentStatus('success');
+            }
         } catch (err: any) {
             console.error('Error loading data:', err);
             setError('Er is een fout opgetreden bij het laden van de gegevens.');
