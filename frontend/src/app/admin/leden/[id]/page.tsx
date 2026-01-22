@@ -64,7 +64,7 @@ export default function MemberDetailPage() {
                 directusFetch<CommitteeMembership[]>(`/items/committee_members?filter[user_id][_eq]=${id}&fields=id,is_leader,committee_id.id,committee_id.name`)
             ]);
 
-            const EXCLUDED_GROUPS = ['Alle gebruikers', 'Leden_Actief_Lidmaatschap'];
+            const EXCLUDED_GROUPS = ['Alle gebruikers', 'Leden_Actief_Lidmaatschap', 'Leden_Verlopen_Lidmaatschap'];
             const filteredCommittees = committeesData.filter(cm =>
                 cm.committee_id?.name && !EXCLUDED_GROUPS.includes(cm.committee_id.name)
             );
