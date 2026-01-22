@@ -538,7 +538,7 @@ export default function DevSignupsPage() {
                                         />
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                                     <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
                                         <div className="text-sm text-theme-purple-lighter/60 mb-1">Status</div>
                                         <div className={`font-bold capitalize ${syncStatus.status === 'completed' ? 'text-green-400' :
@@ -550,17 +550,43 @@ export default function DevSignupsPage() {
                                         </div>
                                     </div>
                                     <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                                        <div className="text-sm text-theme-purple-lighter/60 mb-1">Waarschuwingen</div>
+                                        <div className={`font-bold ${syncStatus.warningCount > 0 ? 'text-amber-400' : 'text-theme-purple-lighter'}`}>
+                                            {syncStatus.warningCount || 0}
+                                        </div>
+                                    </div>
+                                    <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                                        <div className="text-sm text-theme-purple-lighter/60 mb-1">Missende Data</div>
+                                        <div className={`font-bold ${syncStatus.missingDataCount > 0 ? 'text-blue-400' : 'text-theme-purple-lighter'}`}>
+                                            {syncStatus.missingDataCount}
+                                        </div>
+                                    </div>
+                                    <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
                                         <div className="text-sm text-theme-purple-lighter/60 mb-1">Fouten</div>
-                                        <div className={`font-bold ${syncStatus.errorCount > 0 ? 'text-yellow-400' : 'text-theme-purple-lighter'}`}>
+                                        <div className={`font-bold ${syncStatus.errorCount > 0 ? 'text-red-500' : 'text-theme-purple-lighter'}`}>
                                             {syncStatus.errorCount}
                                         </div>
                                     </div>
                                 </div>
+                                {syncStatus.warnings && syncStatus.warnings.length > 0 && (
+                                    <div className="mt-4">
+                                        <div className="text-xs font-medium text-amber-400/80 mb-2 px-1">⚠️ Aandacht vereist (Mogelijke duplicaten)</div>
+                                        <div className="max-h-48 overflow-y-auto rounded-xl bg-amber-400/5 border border-amber-400/10 p-2 space-y-1 custom-scrollbar">
+                                            {syncStatus.warnings.map((warn, idx) => (
+                                                <div key={idx} className="p-2 text-xs border-b border-amber-400/10 last:border-0">
+                                                    <div className="font-bold text-amber-300">{warn.email}</div>
+                                                    <div className="text-amber-200/70">{warn.message}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                                 {syncStatus.errors.length > 0 && (
                                     <div className="mt-4">
-                                        <div className="max-h-48 overflow-y-auto rounded-xl bg-black/20 border border-white/5 p-2 space-y-1 custom-scrollbar">
+                                        <div className="text-xs font-medium text-red-400/80 mb-2 px-1">❌ Fouten tijdens synchronisatie</div>
+                                        <div className="max-h-48 overflow-y-auto rounded-xl bg-red-400/5 border border-red-400/10 p-2 space-y-1 custom-scrollbar">
                                             {syncStatus.errors.map((err, idx) => (
-                                                <div key={idx} className="p-2 text-xs border-b border-white/5">
+                                                <div key={idx} className="p-2 text-xs border-b border-red-400/10 last:border-0">
                                                     <span className="text-red-300">{err.email}: {err.error}</span>
                                                 </div>
                                             ))}
