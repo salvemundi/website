@@ -59,7 +59,8 @@ export default function LedenOverzichtPage() {
 
     useEffect(() => {
         if (!authLoading && !user) {
-            router.push('/login');
+            const returnTo = window.location.pathname + window.location.search;
+            router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
         }
         if (user && !user.entra_id) {
             router.push('/admin/no-access');

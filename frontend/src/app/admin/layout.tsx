@@ -16,21 +16,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         const checkAuthorization = async () => {
             // Reset authorization when starting a new check
             setIsAuthorized(false);
-            
+
             if (authLoading) return;
 
             if (!user) {
-                router.push('/login');
+                const returnTo = window.location.pathname + window.location.search;
+                router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
                 return;
             }
 
             try {
                 // Check if user is member of any committee
                 const committees = (user as any).committees;
-                
+
                 console.log('[AdminLayout] Checking authorization for user:', user.id);
                 console.log('[AdminLayout] User committees:', committees);
-                
+
                 // First check if committees were already loaded during authentication
                 if (Array.isArray(committees)) {
                     // User has committees data loaded - check if they're in any committee
@@ -45,7 +46,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 } else {
                     // Fallback: Check if user is member of any visible committee via API
                     console.log('[AdminLayout] Committees not loaded, checking via API');
-                    
+
                     // Get user's committee memberships with committee details
                     const memberships = await directusFetch<any[]>(
                         `/items/committee_members?filter[user_id][_eq]=${user.id}&fields=committee_id.id,committee_id.is_visible`
@@ -53,7 +54,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     console.log('[AdminLayout] API response:', memberships);
 
                     // Check if user is member of at least one visible committee
-                    const hasVisibleCommittee = Array.isArray(memberships) && 
+                    const hasVisibleCommittee = Array.isArray(memberships) &&
                         memberships.some(m => m.committee_id?.is_visible !== false);
 
                     if (hasVisibleCommittee) {
