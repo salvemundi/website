@@ -55,7 +55,7 @@ async function sendTripBulkEmail(emailServiceUrl: string, recipients: any[], sub
                 </p>
 
                 <p style="margin-top: 20px;">Met vriendelijke groet,</p>
-                <p style="margin-top: 10px;"><strong>Het Salve Mundi Reis Team</strong></p>
+                <p style="margin-top: 10px;"><strong>De ReisCommissie</strong></p>
             </div>
         `;
 

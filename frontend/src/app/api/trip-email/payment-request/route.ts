@@ -157,7 +157,7 @@ async function sendTripPaymentRequestEmail(emailServiceUrl: string, tripSignup: 
             </p>
 
             <p style="margin-top: 20px;">Tot snel!</p>
-            <p style="margin-top: 10px;"><strong>Het Salve Mundi Reis Team</strong></p>
+            <p style="margin-top: 10px;"><strong>De ReisCommissie</strong></p>
         </div>
     `;
 

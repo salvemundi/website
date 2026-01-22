@@ -318,7 +318,7 @@ async function sendTripSignupConfirmation(emailServiceUrl, tripSignup, trip) {
                     </p>
 
                     <p style="margin-top: 20px;">We kijken ernaar uit om samen met jou op reis te gaan!</p>
-                    <p style="margin-top: 10px;"><strong>Het Salve Mundi Reis Team</strong></p>
+                    <p style="margin-top: 10px;"><strong>De ReisCommissie</strong></p>
                 </div>
             `
         }, { timeout: 10000 });
@@ -374,7 +374,7 @@ async function sendTripPaymentRequest(emailServiceUrl, tripSignup, trip, payment
                     </p>
 
                     <p style="margin-top: 20px;">Tot snel!</p>
-                    <p style="margin-top: 10px;"><strong>Het Salve Mundi Reis Team</strong></p>
+                    <p style="margin-top: 10px;"><strong>De ReisCommissie</strong></p>
                 </div>
             `
         }, { timeout: 10000 });
@@ -452,7 +452,7 @@ async function sendTripPaymentConfirmation(emailServiceUrl, tripSignup, trip, pa
 
                     ${activitiesHtml}
                     <p>We kijken ernaar uit!</p>
-                    <p style="margin-top: 10px;"><strong>Het Salve Mundi Reis Team</strong></p>
+                    <p style="margin-top: 10px;"><strong>De ReisCommissie</strong></p>
                 </div>
             `
         }, { timeout: 10000 });
@@ -496,7 +496,7 @@ async function sendTripStatusUpdate(emailServiceUrl, tripSignup, trip, newStatus
                     <p>Heb je vragen? Neem dan contact met ons op via <a href="mailto:info@salvemundi.nl" style="color: #7B2CBF;">info@salvemundi.nl</a></p>
 
                     <p style="margin-top: 20px;">Met vriendelijke groet,</p>
-                    <p style="margin-top: 10px;"><strong>Het Salve Mundi Reis Team</strong></p>
+                    <p style="margin-top: 10px;"><strong>De ReisCommissie</strong></p>
                 </div>
             `
         }, { timeout: 10000 });
@@ -531,7 +531,7 @@ async function sendTripBulkEmail(emailServiceUrl, recipients, subject, message, 
                     </p>
 
                     <p style="margin-top: 20px;">Met vriendelijke groet,</p>
-                    <p style="margin-top: 10px;"><strong>Het Salve Mundi Reis Team</strong></p>
+                    <p style="margin-top: 10px;"><strong>De ReisCommissie</strong></p>
                 </div>
             `
         }, { timeout: 30000 });
