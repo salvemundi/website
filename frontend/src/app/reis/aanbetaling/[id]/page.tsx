@@ -10,6 +10,7 @@ import {
     tripsApi,
     getImageUrl 
 } from '@/shared/lib/api/salvemundi';
+import type { Trip, TripActivity, TripSignup } from '@/shared/lib/api/salvemundi';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { 
@@ -24,43 +25,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 
-interface TripSignup {
-    id: number;
-    trip_id: number;
-    first_name: string;
-    middle_name?: string;
-    last_name: string;
-    email: string;
-    phone_number: string;
-    date_of_birth?: string;
-    id_document_type?: 'passport' | 'id_card';
-    allergies?: string;
-    special_notes?: string;
-    willing_to_drive?: boolean;
-    role: 'participant' | 'crew';
-    status: string;
-    deposit_paid: boolean;
-    deposit_paid_at?: string;
-}
-
-interface Trip {
-    id: number;
-    name: string;
-    description: string;
-    image?: string;
-    event_date: string;
-    deposit_amount: number;
-    is_bus_trip: boolean;
-}
-
-interface TripActivity {
-    id: number;
-    name: string;
-    description: string;
-    price: number;
-    image?: string;
-    max_participants?: number;
-}
+// Use shared Trip, TripActivity and TripSignup types from the API module
 
 export default function AanbetalingPage() {
     const params = useParams();

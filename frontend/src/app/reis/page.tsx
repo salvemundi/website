@@ -8,7 +8,7 @@ import { useSalvemundiTrips, useSalvemundiSiteSettings, useSalvemundiTripSignups
 import { fetchUserDetails } from '@/shared/lib/auth';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { CheckCircle2, Plane, Users, Calendar } from 'lucide-react';
+import { CheckCircle2, Calendar } from 'lucide-react';
 
 export default function ReisPage() {
     const [form, setForm] = useState({
@@ -67,11 +67,9 @@ export default function ReisPage() {
 
     const nextTripEndDate = nextTrip?.end_date
         ? new Date(nextTrip.end_date)
-        : nextTrip?.event_end_date
-            ? new Date(nextTrip.event_end_date)
-            : nextTrip?.event_date
-                ? new Date(nextTrip.event_date)
-                : null;
+        : nextTrip?.event_date
+            ? new Date(nextTrip.event_date)
+            : null;
 
     const formattedFromDate =
         nextTripStartDate && !isNaN(nextTripStartDate.getTime())
@@ -90,7 +88,6 @@ export default function ReisPage() {
 
     // Calculate participants stats
     const participantsCount = signups?.filter(s => s.status === 'confirmed' || s.status === 'registered').length || 0;
-    const waitlistCount = signups?.filter(s => s.status === 'waitlist').length || 0;
     const spotsLeft = nextTrip ? Math.max(0, nextTrip.max_participants - participantsCount) : 0;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
