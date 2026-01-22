@@ -160,7 +160,10 @@ export default function AccountPage() {
   }, [user]);
 
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) router.push("/login");
+    if (!authLoading && !isAuthenticated) {
+      const returnTo = window.location.pathname + window.location.search;
+      router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+    }
   }, [isAuthenticated, authLoading, router]);
 
   useEffect(() => {

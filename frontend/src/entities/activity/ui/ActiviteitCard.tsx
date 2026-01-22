@@ -51,7 +51,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     const router = useRouter();
     const alreadySignedUp = Boolean(isSignedUp);
     const isListVariant = variant === 'list';
-    
+
     // Check if registration deadline has passed
     const isDeadlinePassed = inschrijfDeadline ? new Date(inschrijfDeadline) < new Date() : false;
     const cannotSignUp = alreadySignedUp || isDeadlinePassed;
@@ -64,7 +64,8 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
         }
 
         if (requiresLogin && !isAuthenticated) {
-            router.push('/login');
+            const returnTo = window.location.pathname + window.location.search;
+            router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
             return;
         }
 
@@ -72,14 +73,14 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     };
 
     const safePrice = (Number(price) || 0).toFixed(2);
-    
+
     // Strip organization suffix from committee name
     const cleanCommitteeName = (name?: string) => {
         if (!name) return 'Algemene Activiteit';
         // Remove both "|| SALVE MUNDI" and " - Salve Mundi" suffixes
         return name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || name;
     };
-    
+
     const committeeLabel = cleanCommitteeName(committeeName);
 
     const formatDate = (value?: string) => {

@@ -14,6 +14,10 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: salvemundi/graph-webhook
 
+concurrency:
+  group: deploy-graph-webhook-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -47,6 +51,8 @@ jobs:
           context: ./graph-webhook
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
+          provenance: false
+          no-cache: true
 
       - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.7
@@ -66,12 +72,16 @@ jobs:
           GH_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
           DEPLOY_PATH: ${{ env.DEPLOY_PATH }}
           TAG: ${{ env.TAG }}
+          TENANT_ID: ${{ secrets.AUTH_MICROSOFT_TENANT_ID }}
+          CLIENT_ID: ${{ secrets.GRAPH_SYNC_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.GRAPH_SYNC_CLIENT_SECRET }}
           WEBHOOK_CLIENT_STATE: ${{ secrets.GRAPH_WEBHOOK_CLIENT_STATE }}
+          PUBLIC_WEBHOOK_URL: "https://entra-webhook.salvemundi.nl/webhooks/graph"
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,DEPLOY_PATH,TAG,WEBHOOK_CLIENT_STATE
+          envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,DEPLOY_PATH,TAG,TENANT_ID,CLIENT_ID,CLIENT_SECRET,WEBHOOK_CLIENT_STATE,PUBLIC_WEBHOOK_URL
           script: |
             echo $GH_PASSWORD | docker login $GH_REGISTRY -u $GH_USERNAME --password-stdin
 
@@ -80,7 +90,11 @@ jobs:
 
             # Generate .env safely
             echo "TAG=$TAG" > .env
+            printf "TENANT_ID=%s\n" "$TENANT_ID" >> .env
+            printf "CLIENT_ID=%s\n" "$CLIENT_ID" >> .env
+            printf "CLIENT_SECRET=%s\n" "$CLIENT_SECRET" >> .env
             printf "WEBHOOK_CLIENT_STATE=%s\n" "$WEBHOOK_CLIENT_STATE" >> .env
+            printf "PUBLIC_WEBHOOK_URL=%s\n" "$PUBLIC_WEBHOOK_URL" >> .env
             
             docker compose pull graph-webhook
             docker compose up -d graph-webhook --force-recreate --remove-orphans
