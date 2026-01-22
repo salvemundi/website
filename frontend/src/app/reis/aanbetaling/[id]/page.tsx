@@ -212,7 +212,7 @@ export default function AanbetalingPage() {
 
     const totalActivitiesPrice = activities
         .filter(a => selectedActivities.includes(a.id))
-        .reduce((sum, a) => sum + a.price, 0);
+        .reduce((sum, a) => sum + (Number(a.price) || 0), 0);
 
     if (loading) {
         return (
@@ -314,7 +314,7 @@ export default function AanbetalingPage() {
                             </p>
                             <p className="text-blue-700 text-sm mt-2">
                                 Om je aanmelding definitief te maken, hebben we nog wat extra informatie nodig en 
-                                vragen we je om een aanbetaling van <strong>€{trip.deposit_amount.toFixed(2)}</strong> te doen.
+                                vragen we je om een aanbetaling van <strong>€{Number(trip.deposit_amount).toFixed(2)}</strong> te doen.
                             </p>
                         </div>
                     </div>
@@ -460,7 +460,7 @@ export default function AanbetalingPage() {
                                                 <h3 className="font-bold text-gray-900 mb-1">{activity.name}</h3>
                                                 <p className="text-sm text-gray-600 mb-2">{activity.description}</p>
                                                 <p className="text-lg font-bold text-purple-600">
-                                                    €{activity.price.toFixed(2)}
+                                                    €{Number(activity.price).toFixed(2)}
                                                 </p>
                                                 {activity.max_participants && (
                                                     <p className="text-xs text-gray-500 mt-1">
@@ -495,7 +495,7 @@ export default function AanbetalingPage() {
                             <div className="flex justify-between items-center">
                                 <span className="text-lg font-semibold text-gray-700">Aanbetalingsbedrag:</span>
                                 <span className="text-3xl font-bold text-purple-600">
-                                    €{trip.deposit_amount.toFixed(2)}
+                                    €{Number(trip.deposit_amount).toFixed(2)}
                                 </span>
                             </div>
                         </div>
