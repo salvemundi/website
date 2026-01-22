@@ -8,6 +8,7 @@ import { Search, Download, Users, Plane, Mail, Edit, Trash2, Loader2, AlertCircl
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
+import { tripSignupActivitiesApi } from '@/shared/lib/api/salvemundi';
 
 interface Trip {
     id: number;
@@ -48,6 +49,8 @@ export default function ReisAanmeldingenPage() {
     const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
     const [signups, setSignups] = useState<TripSignup[]>([]);
     const [filteredSignups, setFilteredSignups] = useState<TripSignup[]>([]);
+    const [expandedIds, setExpandedIds] = useState<number[]>([]);
+    const [signupActivitiesMap, setSignupActivitiesMap] = useState<Record<number, { id: number; name: string; price: number }[]>>({});
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -245,6 +248,32 @@ export default function ReisAanmeldingenPage() {
         waitlist: signups.filter(s => s.status === 'waitlist').length,
         depositPaid: signups.filter(s => s.deposit_paid).length,
         fullPaid: signups.filter(s => s.full_payment_paid).length,
+    };
+
+    const toggleExpand = async (signup: TripSignup) => {
+        // collapse if already expanded
+        if (expandedIds.includes(signup.id)) {
+            setExpandedIds(prev => prev.filter(id => id !== signup.id));
+            return;
+        }
+
+        // expand
+        setExpandedIds(prev => [...prev, signup.id]);
+
+        // load activities for this signup if not loaded yet
+        if (!signupActivitiesMap[signup.id]) {
+            try {
+                const items = await tripSignupActivitiesApi.getBySignupId(signup.id);
+                const activities = items.map((it: any) => {
+                    const a = it.trip_activity_id && it.trip_activity_id.id ? it.trip_activity_id : it.trip_activity_id;
+                    return { id: a.id || a, name: a.name || '', price: a.price || 0 };
+                });
+                setSignupActivitiesMap(prev => ({ ...prev, [signup.id]: activities }));
+            } catch (err) {
+                console.error('Failed to load signup activities:', err);
+                setSignupActivitiesMap(prev => ({ ...prev, [signup.id]: [] }));
+            }
+        }
     };
 
     return (
@@ -456,7 +485,8 @@ export default function ReisAanmeldingenPage() {
                                         const statusBadge = getStatusBadge(signup.status);
                                         
                                         return (
-                                            <tr key={signup.id} className="hover:bg-gray-50">
+                                            <>
+                                            <tr key={signup.id} onClick={() => toggleExpand(signup)} className="hover:bg-gray-50 cursor-pointer">
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="text-sm font-medium text-gray-900">
                                                         {signup.first_name} {signup.middle_name} {signup.last_name}
@@ -476,6 +506,7 @@ export default function ReisAanmeldingenPage() {
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <select
                                                         value={signup.status}
+                                                        onClick={(e) => e.stopPropagation()}
                                                         onChange={(e) => handleStatusChange(signup.id, e.target.value)}
                                                         className={`px-2 py-1 text-xs font-semibold rounded-full border-0 ${statusBadge.color}`}
                                                     >
@@ -492,19 +523,63 @@ export default function ReisAanmeldingenPage() {
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                     <button
-                                                        onClick={() => router.push(`/admin/reis/deelnemer/${signup.id}`)}
+                                                        onClick={(e) => { e.stopPropagation(); router.push(`/admin/reis/deelnemer/${signup.id}`); }}
                                                         className="text-purple-600 hover:text-purple-900 mr-4"
                                                     >
                                                         <Edit className="h-5 w-5" />
                                                     </button>
                                                     <button
-                                                        onClick={() => handleDelete(signup.id)}
+                                                        onClick={(e) => { e.stopPropagation(); handleDelete(signup.id); }}
                                                         className="text-red-600 hover:text-red-900"
                                                     >
                                                         <Trash2 className="h-5 w-5" />
                                                     </button>
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); toggleExpand(signup); }}
+                                                        className="ml-3 text-gray-600 hover:text-gray-900"
+                                                        title="Toon details"
+                                                    >
+                                                        {expandedIds.includes(signup.id) ? '▲' : '▼'}
+                                                    </button>
                                                 </td>
                                             </tr>
+                                            {expandedIds.includes(signup.id) && (
+                                                <tr key={`details-${signup.id}`} className="bg-gray-50">
+                                                    <td colSpan={6} className="px-6 py-4">
+                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                            <div>
+                                                                <p className="text-sm font-semibold text-gray-700">Contact</p>
+                                                                <p className="text-sm text-gray-900">{signup.email}</p>
+                                                                <p className="text-sm text-gray-900">{signup.phone_number || '-'}</p>
+                                                                <p className="text-sm text-gray-900">ID Type: {signup.id_document_type ? (signup.id_document_type === 'passport' ? 'Paspoort' : signup.id_document_type === 'id_card' ? 'ID Kaart' : signup.id_document_type) : '-'}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-semibold text-gray-700">Extra informatie</p>
+                                                                <p className="text-sm text-gray-900">Allergieën: {signup.allergies || '-'}</p>
+                                                                <p className="text-sm text-gray-900">Bijzonderheden: {signup.special_notes || '-'}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-semibold text-gray-700">Activiteiten</p>
+                                                                {signupActivitiesMap[signup.id] ? (
+                                                                    signupActivitiesMap[signup.id].length > 0 ? (
+                                                                        signupActivitiesMap[signup.id].map(a => (
+                                                                            <div key={a.id} className="flex items-center justify-between text-sm text-gray-900">
+                                                                                <span>{a.name}</span>
+                                                                                <span className="font-semibold">€{Number(a.price).toFixed(2)}</span>
+                                                                            </div>
+                                                                        ))
+                                                                    ) : (
+                                                                        <p className="text-sm text-gray-600">Geen activiteiten</p>
+                                                                    )
+                                                                ) : (
+                                                                    <p className="text-sm text-gray-600">Laden...</p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                            </>
                                         );
                                     })}
                                 </tbody>

@@ -434,8 +434,7 @@ async function sendTripPaymentConfirmation(emailServiceUrl, tripSignup, trip, pa
                     
                     ${paymentType === 'deposit' ? `
                         <div style="background-color: #E3F2FD; padding: 15px; border-radius: 8px; border-left: 4px solid #2196F3; margin: 20px 0;">
-                            <strong>📋 Volgende stap:</strong><br>
-                            Je kunt je voorkeuren beheren. Hieronder zie je de activiteiten die je tijdens de aanmelding hebt geselecteerd.
+                             Hieronder zie je de activiteiten die je tijdens de aanmelding hebt geselecteerd.
                         </div>
                     ` : `
                         <div style="background-color: #E8F5E9; padding: 15px; border-radius: 8px; border-left: 4px solid #4CAF50; margin: 20px 0;">
