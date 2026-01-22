@@ -27,10 +27,12 @@ interface SyncStatus {
     warningCount?: number;
     missingDataCount?: number;
     successCount?: number;
+    excludedCount?: number;
     errors: { email: string; error: string; timestamp: string }[];
     warnings?: { email: string; message: string }[];
     missingData?: { email: string; reason: string }[];
     successfulUsers?: { email: string }[];
+    excludedUsers?: { email: string }[];
     startTime?: string;
     endTime?: string;
     lastRunSuccess?: boolean | null;
@@ -107,7 +109,7 @@ export default function DevSignupsPage() {
         'committees'
     ]);
     const [forceLink, setForceLink] = useState(false);
-    const [syncResultFilter, setSyncResultFilter] = useState<'all' | 'success' | 'warnings' | 'missing' | 'errors'>('all');
+    const [syncResultFilter, setSyncResultFilter] = useState<'all' | 'success' | 'warnings' | 'missing' | 'errors' | 'excluded'>('all');
 
     // Filters
     const [filterStatus, setFilterStatus] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
@@ -595,6 +597,7 @@ export default function DevSignupsPage() {
                                         { id: 'warnings' as const, label: 'Waarschuwingen', count: syncStatus.warningCount || 0 },
                                         { id: 'missing' as const, label: 'Missende Data', count: syncStatus.missingDataCount || 0 },
                                         { id: 'errors' as const, label: 'Fouten', count: syncStatus.errorCount },
+                                        { id: 'excluded' as const, label: 'Uitgesloten', count: syncStatus.excludedCount || 0 },
                                     ].map((tab) => (
                                         <button
                                             key={tab.id}
@@ -642,6 +645,18 @@ export default function DevSignupsPage() {
                                                 <div key={idx} className="p-2 text-xs border-b border-blue-400/10 last:border-0">
                                                     <div className="font-bold text-blue-300">{item.email}</div>
                                                     <div className="text-blue-200/70">{item.reason}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                {(syncResultFilter === 'all' || syncResultFilter === 'excluded') && syncStatus.excludedUsers && syncStatus.excludedUsers.length > 0 && (
+                                    <div className="mt-4">
+                                        <div className="text-xs font-medium text-gray-400/80 mb-2 px-1">⛔ Uitgesloten van synchronisatie</div>
+                                        <div className="max-h-48 overflow-y-auto rounded-xl bg-gray-400/5 border border-gray-400/10 p-2 space-y-1 custom-scrollbar">
+                                            {syncStatus.excludedUsers.map((user, idx) => (
+                                                <div key={idx} className="p-2 text-xs border-b border-gray-400/10 last:border-0">
+                                                    <div className="text-gray-300">{user.email}</div>
                                                 </div>
                                             ))}
                                         </div>

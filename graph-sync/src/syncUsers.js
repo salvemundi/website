@@ -104,10 +104,12 @@ let syncStatus = {
     missingDataCount: 0,
     warningCount: 0,
     successCount: 0,
+    excludedCount: 0,
     errors: [], // [{ email: string, error: string, timestamp: string }]
     missingData: [], // [{ email: string, reason: string }]
     warnings: [], // [{ type: string, email: string, message: string }]
     successfulUsers: [], // [{ email: string }]
+    excludedUsers: [], // [{ email: string }]
     startTime: null,
     endTime: null,
     lastRunSuccess: null
@@ -1034,10 +1036,12 @@ async function runBulkSync(selectedFields = null, forceLink = false) {
         missingDataCount: 0,
         warningCount: 0,
         successCount: 0,
+        excludedCount: 0,
         errors: [],
         missingData: [],
         warnings: [],
         successfulUsers: [],
+        excludedUsers: [],
         selectedFields: selectedFields,
         startTime: new Date().toISOString(),
         endTime: null,
@@ -1071,10 +1075,11 @@ async function runBulkSync(selectedFields = null, forceLink = false) {
                 const userEmail = (u.mail || u.userPrincipalName || 'Unknown').toLowerCase();
 
                 if (shouldExcludeUser(userEmail)) {
-                    // console.log(`[${new Date().toISOString()}] ⏭️ [INIT] Skipping excluded user: ${userEmail}`);
+                    syncStatus.excludedCount++;
+                    syncStatus.excludedUsers.push({ email: userEmail });
+                    syncStatus.processed++;
                     return;
                 }
-
                 try {
                     await updateDirectusUserFromGraph(u.id, selectedFields, forceLink);
                     syncStatus.processed++;
