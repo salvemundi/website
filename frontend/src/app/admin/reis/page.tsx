@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import { useRouter } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { Search, Download, Users, Plane, Mail, Edit, Trash2, Loader2, AlertCircle, UserCheck, UserX } from 'lucide-react';
+import { Search, Download, Users, Plane, Mail, Edit, Trash2, Loader2, AlertCircle, UserCheck, UserX, Send } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
@@ -55,6 +55,7 @@ export default function ReisAanmeldingenPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [roleFilter, setRoleFilter] = useState<string>('all');
+    const [sendingEmailTo, setSendingEmailTo] = useState<{ signupId: number; type: string } | null>(null);
 
     useEffect(() => {
         loadTrips();
@@ -204,6 +205,57 @@ export default function ReisAanmeldingenPage() {
         } catch (error) {
             console.error('Failed to delete signup:', error);
             alert('Er is een fout opgetreden bij het verwijderen van de aanmelding.');
+        }
+    };
+
+    const handleResendPaymentEmail = async (signupId: number, paymentType: 'deposit' | 'final') => {
+        if (!selectedTrip) return;
+
+        const signup = signups.find(s => s.id === signupId);
+        if (!signup) return;
+
+        // Validation checks
+        if (paymentType === 'deposit' && signup.deposit_paid) {
+            if (!confirm('Deze persoon heeft de aanbetaling al betaald. Wil je toch een betaalverzoek sturen?')) {
+                return;
+            }
+        }
+
+        if (paymentType === 'final' && !signup.deposit_paid) {
+            alert('Deze persoon heeft de aanbetaling nog niet betaald. Stuur eerst een aanbetalingsverzoek.');
+            return;
+        }
+
+        if (paymentType === 'final' && signup.full_payment_paid) {
+            if (!confirm('Deze persoon heeft al volledig betaald. Wil je toch een betaalverzoek sturen?')) {
+                return;
+            }
+        }
+
+        setSendingEmailTo({ signupId, type: paymentType });
+
+        try {
+            const response = await fetch('/api/trip-email/payment-request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    signupId: signupId,
+                    tripId: selectedTrip.id,
+                    paymentType: paymentType
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to send email');
+            }
+
+            alert(`${paymentType === 'deposit' ? 'Aanbetaling' : 'Restbetaling'}sverzoek is succesvol verzonden naar ${signup.email}`);
+        } catch (error: any) {
+            console.error('Failed to send payment email:', error);
+            alert(`Er is een fout opgetreden bij het verzenden van de email: ${error.message}`);
+        } finally {
+            setSendingEmailTo(null);
         }
     };
 
@@ -485,8 +537,8 @@ export default function ReisAanmeldingenPage() {
                                         const statusBadge = getStatusBadge(signup.status);
                                         
                                         return (
-                                            <>
-                                            <tr key={signup.id} onClick={() => toggleExpand(signup)} className="hover:bg-gray-50 cursor-pointer">
+                                                                    <Fragment key={signup.id}>
+                                                                    <tr key={signup.id} onClick={() => toggleExpand(signup)} className="hover:bg-gray-50 cursor-pointer">
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="text-sm font-medium text-gray-900">
                                                         {signup.first_name} {signup.middle_name} {signup.last_name}
@@ -546,7 +598,7 @@ export default function ReisAanmeldingenPage() {
                                             {expandedIds.includes(signup.id) && (
                                                 <tr key={`details-${signup.id}`} className="bg-gray-50">
                                                     <td colSpan={6} className="px-6 py-4">
-                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                                             <div>
                                                                 <p className="text-sm font-semibold text-gray-700">Contact</p>
                                                                 <p className="text-sm text-gray-900">{signup.email}</p>
@@ -576,10 +628,47 @@ export default function ReisAanmeldingenPage() {
                                                                 )}
                                                             </div>
                                                         </div>
+                                                        
+                                                        {/* Email buttons */}
+                                                        <div className="border-t pt-4 mt-4">
+                                                            <p className="text-sm font-semibold text-gray-700 mb-2">Betaalverzoek versturen</p>
+                                                            <div className="flex gap-2">
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleResendPaymentEmail(signup.id, 'deposit');
+                                                                    }}
+                                                                    disabled={sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'deposit'}
+                                                                    className="flex items-center gap-2 px-4 py-2 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                >
+                                                                    {sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'deposit' ? (
+                                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                                    ) : (
+                                                                        <Send className="h-4 w-4" />
+                                                                    )}
+                                                                    Aanbetaling
+                                                                </button>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleResendPaymentEmail(signup.id, 'final');
+                                                                    }}
+                                                                    disabled={sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'final'}
+                                                                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                >
+                                                                    {sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'final' ? (
+                                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                                    ) : (
+                                                                        <Send className="h-4 w-4" />
+                                                                    )}
+                                                                    Restbetaling
+                                                                </button>
+                                                            </div>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             )}
-                                            </>
+                                            </Fragment>
                                         );
                                     })}
                                 </tbody>
