@@ -74,12 +74,17 @@ function BetalingContent() {
                     setPaymentStatus('success');
                     setCheckingPayment(false);
                     setShowManualRefresh(false);
-                    // Clean up URL (remove query params Mollie added) and replace history so the page shows success state
+                    // Navigate to the overview page with a success flag so the user reliably sees the success screen
                     try {
-                        const cleanUrl = window.location.origin + window.location.pathname;
-                        window.history.replaceState({}, document.title, cleanUrl);
+                        router.push(`/reis/aanbetaling/${signupId}?status=success`);
                     } catch (e) {
-                        // ignore
+                        // Fallback: attempt to clean the URL if navigation fails
+                        try {
+                            const cleanUrl = window.location.origin + window.location.pathname;
+                            window.history.replaceState({}, document.title, cleanUrl);
+                        } catch (e2) {
+                            // ignore
+                        }
                     }
                     return; // Exit early
                 }
@@ -262,16 +267,16 @@ function BetalingContent() {
                     backgroundImage={trip.image ? getImageUrl(trip.image) : '/img/placeholder.svg'}
                 />
                     <div className="container mx-auto px-4 py-8 sm:py-12 max-w-3xl">
-                    <div className="bg-purple-50 rounded-xl shadow-lg p-6 sm:p-8 text-center">
-                        <div className="w-20 h-20 sm:w-24 sm:h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                    <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-6 sm:p-8 text-center">
+                        <div className="w-20 h-20 sm:w-24 sm:h-24 bg-green-100 dark:bg-[var(--bg-soft-dark)] rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
                             <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12 text-green-600" />
                         </div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">Aanbetaling Geslaagd!</h1>
-                        <p className="text-base sm:text-lg text-gray-700 mb-4 sm:mb-6 px-2">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4 px-2">Aanbetaling Geslaagd!</h1>
+                        <p className="text-base sm:text-lg text-gray-700 dark:text-[var(--text-muted-dark)] mb-4 sm:mb-6 px-2">
                             Bedankt voor je aanbetaling van <strong className="whitespace-nowrap">€{Number(trip.deposit_amount).toFixed(2)}</strong> voor {trip.name}!
                         </p>
-                        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded mb-6 sm:mb-8 mx-2">
-                            <p className="text-sm sm:text-base text-blue-700">
+                        <div className="bg-blue-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-blue-400 p-4 rounded mb-6 sm:mb-8 mx-2">
+                            <p className="text-sm sm:text-base text-blue-700 dark:text-blue-200">
                                 <strong>📧 Email bevestiging:</strong> Je ontvangt binnen enkele minuten een bevestigingsmail met je reisdetails en een overzicht van je betaling.
                             </p>
                         </div>
@@ -308,12 +313,12 @@ function BetalingContent() {
                     backgroundImage={trip.image ? getImageUrl(trip.image) : '/img/placeholder.svg'}
                 />
                 <div className="container mx-auto px-4 py-8 sm:py-12 max-w-2xl">
-                    <div className="bg-purple-50 rounded-xl shadow-lg p-6 sm:p-8 text-center">
-                        <div className="w-20 h-20 sm:w-24 sm:h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                    <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-6 sm:p-8 text-center">
+                        <div className="w-20 h-20 sm:w-24 sm:h-24 bg-red-100 dark:bg-[var(--bg-soft-dark)] rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
                             <XCircle className="h-10 w-10 sm:h-12 sm:w-12 text-red-600" />
                         </div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">Betaling Mislukt</h1>
-                        <p className="text-base sm:text-lg text-gray-700 mb-4 sm:mb-6 px-2">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4 px-2">Betaling Mislukt</h1>
+                        <p className="text-base sm:text-lg text-gray-700 dark:text-[var(--text-muted-dark)] mb-4 sm:mb-6 px-2">
                             Helaas is je betaling niet gelukt. Dit kan verschillende oorzaken hebben.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-2">
@@ -344,13 +349,13 @@ function BetalingContent() {
                 backgroundImage={trip.image ? getImageUrl(trip.image) : '/img/placeholder.svg'}
             />
                 <div className="container mx-auto px-4 py-8 sm:py-12 max-w-2xl">
-                <div className="bg-purple-50 rounded-xl shadow-lg p-6 sm:p-8">
+                <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-6 sm:p-8">
                     <div className="text-center mb-6 sm:mb-8">
-                        <div className="w-20 h-20 sm:w-24 sm:h-24 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                        <div className="w-20 h-20 sm:w-24 sm:h-24 bg-purple-100 dark:bg-[var(--bg-soft-dark)] rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
                             <CreditCard className="h-10 w-10 sm:h-12 sm:w-12 text-purple-600" />
                         </div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">Aanbetaling</h1>
-                        <p className="text-base sm:text-lg text-gray-700 px-2">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4 px-2">Aanbetaling</h1>
+                        <p className="text-base sm:text-lg text-gray-700 dark:text-[var(--text-muted-dark)] px-2">
                             Je staat op het punt om de aanbetaling te doen voor <strong>{trip.name}</strong>
                         </p>
                     </div>
@@ -364,38 +369,38 @@ function BetalingContent() {
                         </div>
                     )}
 
-                    <div className="bg-gray-50 rounded-lg p-4 sm:p-6 mb-6 sm:mb-8">
+                    <div className="bg-gray-50 dark:bg-[var(--bg-card-dark)] rounded-lg p-4 sm:p-6 mb-6 sm:mb-8">
                         <div className="flex justify-between items-start mb-3 sm:mb-4">
-                            <span className="text-sm sm:text-base text-gray-700">Naam</span>
-                            <span className="text-sm sm:text-base font-semibold text-gray-900 text-right break-words ml-4">
+                            <span className="text-sm sm:text-base text-gray-700 dark:text-[var(--text-muted-dark)]">Naam</span>
+                            <span className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white text-right break-words ml-4">
                                 {signup.first_name} {signup.middle_name} {signup.last_name}
                             </span>
                         </div>
                         <div className="flex justify-between items-start mb-3 sm:mb-4">
-                            <span className="text-sm sm:text-base text-gray-700">Email</span>
-                            <span className="text-sm sm:text-base font-semibold text-gray-900 text-right break-all ml-4">{signup.email}</span>
+                            <span className="text-sm sm:text-base text-gray-700 dark:text-[var(--text-muted-dark)]">Email</span>
+                            <span className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white text-right break-all ml-4">{signup.email}</span>
                         </div>
                         <div className="flex justify-between items-start mb-3 sm:mb-4">
-                            <span className="text-sm sm:text-base text-gray-700">Reis</span>
-                            <span className="text-sm sm:text-base font-semibold text-gray-900 text-right break-words ml-4">{trip.name}</span>
+                            <span className="text-sm sm:text-base text-gray-700 dark:text-[var(--text-muted-dark)]">Reis</span>
+                            <span className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white text-right break-words ml-4">{trip.name}</span>
                         </div>
                         <div className="flex justify-between items-start mb-3 sm:mb-4">
-                            <span className="text-sm sm:text-base text-gray-700">Datum</span>
-                            <span className="text-sm sm:text-base font-semibold text-gray-900 text-right ml-4">
+                            <span className="text-sm sm:text-base text-gray-700 dark:text-[var(--text-muted-dark)]">Datum</span>
+                            <span className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white text-right ml-4">
                                 {format(new Date(trip.event_date), 'd MMMM yyyy', { locale: nl })}
                             </span>
                         </div>
-                        <div className="border-t border-gray-300 my-3 sm:my-4"></div>
+                        <div className="border-t border-gray-300 dark:border-gray-700 my-3 sm:my-4"></div>
                         <div className="flex justify-between items-center">
-                            <span className="text-base sm:text-xl font-bold text-gray-900">Aanbetalingsbedrag</span>
+                            <span className="text-base sm:text-xl font-bold text-gray-900 dark:text-white">Aanbetalingsbedrag</span>
                             <span className="text-2xl sm:text-3xl font-bold text-purple-600">
                                 €{Number(trip.deposit_amount).toFixed(2)}
                             </span>
                         </div>
                     </div>
 
-                    <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded mb-6 sm:mb-8">
-                        <p className="text-xs sm:text-sm text-blue-700">
+                    <div className="bg-blue-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-blue-400 p-4 rounded mb-6 sm:mb-8">
+                        <p className="text-xs sm:text-sm text-blue-700 dark:text-blue-200">
                             <strong>Let op:</strong> Na het voltooien van de betaling ontvang je een bevestigingsmail. 
                             De restbetaling volgt later en wordt apart gefactureerd.
                         </p>
@@ -419,7 +424,7 @@ function BetalingContent() {
                         )}
                     </button>
 
-                    <p className="text-center text-xs sm:text-sm text-gray-500 mt-4 px-2">
+                    <p className="text-center text-xs sm:text-sm text-gray-500 dark:text-[var(--text-muted-dark)] mt-4 px-2">
                         Je wordt doorgestuurd naar een beveiligde betaalomgeving
                     </p>
                 </div>

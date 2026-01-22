@@ -201,8 +201,7 @@ export default function RestbetalingPage() {
         const discount = signup?.role === 'crew' ? (Number(trip.crew_discount) || 0) : 0;
         const total = basePrice + activitiesTotal - discount;
         const deposit = Number(trip.deposit_amount) || 0;
-        // For rest payment: the remaining amount is the full total (base + activities - crew discount)
-        // We do NOT subtract the deposit from the amount to be paid
+        // For rest payment: show the camp price + activities (do NOT subtract the deposit here)
         const remaining = Math.max(0, total);
 
         return {
@@ -566,6 +565,8 @@ export default function RestbetalingPage() {
                                 <span className="font-semibold text-green-600">-€{costs.discount.toFixed(2)}</span>
                             </div>
                         )}
+
+                        
 
                         <div className="flex justify-between items-center py-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg px-4 mt-4">
                             <span className="text-xl font-bold text-gray-900">Te betalen</span>
