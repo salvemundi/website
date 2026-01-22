@@ -24,8 +24,10 @@ interface SyncStatus {
     total: number;
     processed: number;
     errorCount: number;
+    warningCount?: number;
     missingDataCount?: number;
     errors: { email: string; error: string; timestamp: string }[];
+    warnings?: { email: string; message: string }[];
     missingData?: { email: string; reason: string }[];
     startTime?: string;
     endTime?: string;
@@ -551,13 +553,13 @@ export default function DevSignupsPage() {
                                     </div>
                                     <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
                                         <div className="text-sm text-theme-purple-lighter/60 mb-1">Waarschuwingen</div>
-                                        <div className={`font-bold ${syncStatus.warningCount > 0 ? 'text-amber-400' : 'text-theme-purple-lighter'}`}>
+                                        <div className={`font-bold ${(syncStatus.warningCount || 0) > 0 ? 'text-amber-400' : 'text-theme-purple-lighter'}`}>
                                             {syncStatus.warningCount || 0}
                                         </div>
                                     </div>
                                     <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
                                         <div className="text-sm text-theme-purple-lighter/60 mb-1">Missende Data</div>
-                                        <div className={`font-bold ${syncStatus.missingDataCount > 0 ? 'text-blue-400' : 'text-theme-purple-lighter'}`}>
+                                        <div className={`font-bold ${(syncStatus.missingDataCount || 0) > 0 ? 'text-blue-400' : 'text-theme-purple-lighter'}`}>
                                             {syncStatus.missingDataCount}
                                         </div>
                                     </div>
