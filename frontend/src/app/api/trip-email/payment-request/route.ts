@@ -161,9 +161,14 @@ async function sendTripPaymentRequestEmail(emailServiceUrl: string, tripSignup: 
         </div>
     `;
 
-    console.log(`[sendTripPaymentRequestEmail] Sending to email service: ${emailServiceUrl}/send-email`);
+    // Build the email service URL, avoiding double /send-email
+    const emailUrl = emailServiceUrl.endsWith('/send-email') 
+        ? emailServiceUrl 
+        : `${emailServiceUrl}/send-email`;
     
-    const response = await fetch(`${emailServiceUrl}/send-email`, {
+    console.log(`[sendTripPaymentRequestEmail] Sending to email service: ${emailUrl}`);
+    
+    const response = await fetch(emailUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -175,7 +180,7 @@ async function sendTripPaymentRequestEmail(emailServiceUrl: string, tripSignup: 
         })
     }).catch(err => {
         console.error(`[sendTripPaymentRequestEmail] Fetch error:`, err);
-        console.error(`[sendTripPaymentRequestEmail] Attempted URL: ${emailServiceUrl}/send-email`);
+        console.error(`[sendTripPaymentRequestEmail] Attempted URL: ${emailUrl}`);
         throw new Error(`Network error connecting to email service: ${err.message}`);
     });
 
