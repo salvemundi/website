@@ -95,26 +95,6 @@ export default function AanbetalingPage() {
         const status = searchParams.get('status');
         if (status === 'success') {
             setPaymentSuccess(true);
-            // Trigger server-side confirmation email
-            (async () => {
-                try {
-                    console.log('[aanbetaling page] Triggering payment confirmation email');
-                    const resp = await fetch('/api/trip-email/payment-confirmation', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ signupId, tripId: undefined, paymentType: 'deposit' })
-                    });
-
-                    if (!resp.ok) {
-                        const txt = await resp.text();
-                        console.error('[aanbetaling page] Confirmation API error:', resp.status, txt);
-                    } else {
-                        console.log('[aanbetaling page] Confirmation email triggered');
-                    }
-                } catch (err) {
-                    console.error('[aanbetaling page] Failed to trigger confirmation email:', err);
-                }
-            })();
             // Scroll to top to show success message
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
