@@ -261,8 +261,8 @@ function BetalingContent() {
                     title="Betaling Geslaagd"
                     backgroundImage={trip.image ? getImageUrl(trip.image) : '/img/placeholder.svg'}
                 />
-                <div className="container mx-auto px-4 py-8 sm:py-12 max-w-2xl">
-                    <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 text-center">
+                    <div className="container mx-auto px-4 py-8 sm:py-12 max-w-3xl">
+                    <div className="bg-purple-50 rounded-xl shadow-lg p-6 sm:p-8 text-center">
                         <div className="w-20 h-20 sm:w-24 sm:h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
                             <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12 text-green-600" />
                         </div>
@@ -308,7 +308,7 @@ function BetalingContent() {
                     backgroundImage={trip.image ? getImageUrl(trip.image) : '/img/placeholder.svg'}
                 />
                 <div className="container mx-auto px-4 py-8 sm:py-12 max-w-2xl">
-                    <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 text-center">
+                    <div className="bg-purple-50 rounded-xl shadow-lg p-6 sm:p-8 text-center">
                         <div className="w-20 h-20 sm:w-24 sm:h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
                             <XCircle className="h-10 w-10 sm:h-12 sm:w-12 text-red-600" />
                         </div>
@@ -343,8 +343,8 @@ function BetalingContent() {
                 title={`Aanbetaling - ${trip.name}`}
                 backgroundImage={trip.image ? getImageUrl(trip.image) : '/img/placeholder.svg'}
             />
-            <div className="container mx-auto px-4 py-8 sm:py-12 max-w-2xl">
-                <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8">
+                <div className="container mx-auto px-4 py-8 sm:py-12 max-w-2xl">
+                <div className="bg-purple-50 rounded-xl shadow-lg p-6 sm:p-8">
                     <div className="text-center mb-6 sm:mb-8">
                         <div className="w-20 h-20 sm:w-24 sm:h-24 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
                             <CreditCard className="h-10 w-10 sm:h-12 sm:w-12 text-purple-600" />

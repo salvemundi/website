@@ -197,8 +197,8 @@ export default function ReisInstellingenPage() {
             
             <div className="container mx-auto px-4 py-8">
                 {error && (
-                    <div className="mb-6 bg-red-50 border-l-4 border-red-400 p-4 rounded">
-                        <p className="text-red-700">{error}</p>
+                    <div className="mb-6 bg-red-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-red-400 p-4 rounded">
+                        <p className="text-red-700 dark:text-red-300">{error}</p>
                     </div>
                 )}
 
@@ -217,8 +217,8 @@ export default function ReisInstellingenPage() {
 
                 {/* Add/Edit Form */}
                 {(addingNew || editingId) && (
-                    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                        <h2 className="text-xl font-bold text-gray-900 mb-4">
+                    <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-lg shadow-md p-6 mb-6">
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
                             {addingNew ? 'Nieuwe Reis' : 'Reis Bewerken'}
                         </h2>
                         
@@ -231,7 +231,7 @@ export default function ReisInstellingenPage() {
                                     type="text"
                                     value={form.name}
                                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                     placeholder="Bijv. Salvemundi Skiereis 2025"
                                 />
                             </div>
@@ -244,7 +244,7 @@ export default function ReisInstellingenPage() {
                                     value={form.description}
                                     onChange={(e) => setForm({ ...form, description: e.target.value })}
                                     rows={4}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                     placeholder="Korte beschrijving van de reis..."
                                 />
                             </div>
@@ -257,7 +257,7 @@ export default function ReisInstellingenPage() {
                                     type="date"
                                     value={form.event_date}
                                     onChange={(e) => setForm({ ...form, event_date: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                 />
                             </div>
 
@@ -269,7 +269,7 @@ export default function ReisInstellingenPage() {
                                     type="number"
                                     value={form.max_participants}
                                     onChange={(e) => setForm({ ...form, max_participants: parseInt(e.target.value) || 0 })}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                 />
                             </div>
 
@@ -282,7 +282,7 @@ export default function ReisInstellingenPage() {
                                     step="0.01"
                                     value={form.base_price}
                                     onChange={(e) => setForm({ ...form, base_price: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                 />
                             </div>
 
@@ -295,7 +295,7 @@ export default function ReisInstellingenPage() {
                                     step="0.01"
                                     value={form.crew_discount}
                                     onChange={(e) => setForm({ ...form, crew_discount: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                 />
                             </div>
 
@@ -308,7 +308,7 @@ export default function ReisInstellingenPage() {
                                     step="0.01"
                                     value={form.deposit_amount}
                                     onChange={(e) => setForm({ ...form, deposit_amount: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                 />
                             </div>
 
@@ -402,7 +402,7 @@ export default function ReisInstellingenPage() {
                             </div>
                         ) : (
                             trips.map((trip) => (
-                                <div key={trip.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                                <div key={trip.id} className="bg-purple-50 rounded-lg shadow-md overflow-hidden">
                                     <div className="md:flex">
                                         {trip.image ? (
                                             <div className="md:w-1/3">
