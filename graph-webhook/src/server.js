@@ -8,6 +8,82 @@ const PORT = process.env.PORT || 3008;
 const PATH = process.env.WEBHOOK_PATH || "/webhooks/graph";
 const SECRET = process.env.WEBHOOK_CLIENT_STATE || "";
 const GRAPH_SYNC_URL = process.env.GRAPH_SYNC_URL || "http://graph-sync:3001";
+const PUBLIC_WEBHOOK_URL = process.env.PUBLIC_WEBHOOK_URL || "https://entra-webhook.salvemundi.nl/webhooks/graph";
+
+// Azure Auth Config
+const TENANT_ID = process.env.TENANT_ID;
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
+
+async function getGraphToken() {
+    const response = await axios.post(
+        `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token`,
+        new URLSearchParams({
+            client_id: CLIENT_ID,
+            client_secret: CLIENT_SECRET,
+            scope: 'https://graph.microsoft.com/.default',
+            grant_type: 'client_credentials',
+        }),
+        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+    );
+    return response.data.access_token;
+}
+
+async function manageSubscriptions() {
+    if (!PUBLIC_WEBHOOK_URL || !TENANT_ID || !CLIENT_ID || !CLIENT_SECRET) {
+        console.warn("[GraphWebhook] ⚠️ Missing config for auto-subscription (PUBLIC_WEBHOOK_URL, TENANT_ID, etc.)");
+        return;
+    }
+
+    try {
+        const token = await getGraphToken();
+        const headers = { Authorization: `Bearer ${token}` };
+
+        // 1. Get current subscriptions
+        const subsRes = await axios.get('https://graph.microsoft.com/v1.0/subscriptions', { headers });
+        const currentSubs = subsRes.data.value || [];
+
+        const resources = ['users', 'groups'];
+
+        for (const resource of resources) {
+            const existing = currentSubs.find(s => s.resource === resource && s.notificationUrl === PUBLIC_WEBHOOK_URL);
+
+            if (existing) {
+                // Check if it expires soon (within 24 hours)
+                const expiry = new Date(existing.expirationDateTime);
+                const soon = new Date();
+                soon.setHours(soon.getHours() + 24);
+
+                if (expiry < soon) {
+                    console.log(`[GraphWebhook] 🔄 Renewing subscription for ${resource}...`);
+                    const newExpiry = new Date();
+                    newExpiry.setMinutes(newExpiry.getMinutes() + 4230); // ~3 days
+                    await axios.patch(`https://graph.microsoft.com/v1.0/subscriptions/${existing.id}`, {
+                        expirationDateTime: newExpiry.toISOString()
+                    }, { headers });
+                    console.log(`[GraphWebhook] ✅ Renewed ${resource}`);
+                } else {
+                    console.log(`[GraphWebhook] ℹ️ Subscription for ${resource} is still valid until ${existing.expirationDateTime}`);
+                }
+            } else {
+                // Create new
+                console.log(`[GraphWebhook] 🆕 Creating new subscription for ${resource}...`);
+                const newExpiry = new Date();
+                newExpiry.setMinutes(newExpiry.getMinutes() + 4230);
+                await axios.post('https://graph.microsoft.com/v1.0/subscriptions', {
+                    changeType: 'updated,deleted',
+                    notificationUrl: PUBLIC_WEBHOOK_URL,
+                    resource: resource,
+                    expirationDateTime: newExpiry.toISOString(),
+                    clientState: SECRET || 'secret'
+                }, { headers });
+                console.log(`[GraphWebhook] ✅ Created ${resource}`);
+            }
+        }
+    } catch (error) {
+        console.error("[GraphWebhook] ❌ Subscription management error:", error.response?.data || error.message);
+    }
+}
 
 // Combined handler for validation handshake and notifications
 app.post(PATH, async (req, res) => {
@@ -110,4 +186,8 @@ app.listen(PORT, () => {
     console.log(`[GraphWebhook] Webhook path: ${PATH}`);
     console.log(`[GraphWebhook] Graph Sync URL: ${GRAPH_SYNC_URL}`);
     console.log(`[GraphWebhook] Client State: ${SECRET ? 'Configured' : 'Not configured'}`);
+
+    // Initial check and periodic renewal (every 12 hours)
+    manageSubscriptions();
+    setInterval(manageSubscriptions, 12 * 60 * 60 * 1000);
 });

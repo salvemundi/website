@@ -15,7 +15,8 @@ export default function WhatsAppGroupsPage() {
 
     useEffect(() => {
         if (!authLoading && !user) {
-            router.push('/login');
+            const returnTo = window.location.pathname + window.location.search;
+            router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
         }
     }, [user, authLoading, router]);
 

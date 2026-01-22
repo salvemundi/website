@@ -1,28 +1,46 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 
-export default function LoginPage() {
+function LoginContent() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { loginWithMicrosoft, isLoading, isAuthenticated } = useAuth();
+    const [error, setError] = useState('');
 
-    // If the user is already authenticated, redirect to the account page.
+    // Get the returnTo URL from query parameters, fallback to '/account'
+    const returnTo = searchParams.get('returnTo') || '/account';
+
+    // If the user is already authenticated, redirect to the intended page.
     useEffect(() => {
         if (!isLoading && isAuthenticated) {
-            router.replace('/account');
-        }
-    }, [isLoading, isAuthenticated, router]);
+            // Priority: URL query param (if not default) -> localStorage -> default /account
+            const stored = localStorage.getItem('auth_return_to');
+            let target = returnTo;
 
-    const [error, setError] = useState('');
+            if (target === '/account' && stored) {
+                target = stored;
+            }
+
+            // Clear stored URL to avoid unexpected redirects later
+            localStorage.removeItem('auth_return_to');
+
+            // Ensure target is an internal path
+            const safeTarget = target.startsWith('/') ? target : '/account';
+            router.replace(safeTarget);
+        }
+    }, [isLoading, isAuthenticated, router, returnTo]);
 
     const handleMicrosoftLogin = async () => {
         setError('');
 
         try {
+            // Store the returnTo URL in localStorage to persist across MSAL redirect
+            localStorage.setItem('auth_return_to', returnTo);
             await loginWithMicrosoft();
-            router.push('/account');
+            // Note: MSAL redirect will happen, handleRedirectPromise is in AuthProvider.
         } catch (err) {
             setError('Microsoft login failed. Please try again.');
             console.error(err);
@@ -31,7 +49,6 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen bg-[var(--bg-main)]">
-
             <div className="container mx-auto px-4 py-16">
                 <div className="max-w-md mx-auto">
                     <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl shadow-2xl p-8">
@@ -64,11 +81,21 @@ export default function LoginPage() {
                                 {isLoading ? 'Logging in...' : 'Login with Microsoft'}
                             </span>
                         </button>
-
                     </div>
                 </div>
             </div>
-
         </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
+                <div className="h-12 w-12 animate-spin rounded-full border-4 border-theme-purple/20 border-t-theme-purple" />
+            </div>
+        }>
+            <LoginContent />
+        </Suspense>
     );
 }

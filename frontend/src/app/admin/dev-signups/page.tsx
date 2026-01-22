@@ -127,7 +127,8 @@ export default function DevSignupsPage() {
 
     useEffect(() => {
         if (!authLoading && !user) {
-            router.push('/login');
+            const returnTo = window.location.pathname + window.location.search;
+            router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
         }
 
         // Detect if we are in a "development" environment where the backend forces 'pending'.
