@@ -17,7 +17,7 @@ const GROUP_IDS = {
     ICT: 'a4aeb401-882d-4e1e-90ee-106b7fdb23cc',
     Intro: '516f03f9-be0a-4514-9da8-396415f59d0b',
     CommitteeMember: '5848f0ed-59c4-4ae2-8683-3d9a221ac189',
-    ACTIEVE_LEDEN: process.env.GROUP_ID_ACTIEF || '2e17c12a-28d6-49ae-981a-8b5b8d88db8a',
+    ACTIEVE_LEDEN: process.env.GROUP_ID_ACTIEF || '2e17c12a-28d6-49ae-981a-8b5b8d88db8a', // Leden_Actief_Lidmaatschap
 };
 
 // Manual override mapping (optional) – if you want to force certain group IDs to specific names
@@ -37,7 +37,7 @@ const ROLE_IDS = {
 
 // Hardcode committee groups here (names or IDs). If you provide names, they will be
 // resolved to IDs after the global group map is built. Example:
-// const HARDCODE_COMMITTEE_GROUPS = ['Actieve Leden', '5848f0ed-59c4-4ae2-8683-3d9a221ac189'];
+// const HARDCODE_COMMITTEE_GROUPS = ['Leden_Actief_Lidmaatschap', '5848f0ed-59c4-4ae2-8683-3d9a221ac189'];
 const HARDCODE_COMMITTEE_GROUPS = [
     'd4686b83-4679-46ed-9fd8-c6ff3c6a265f',   //activiteiten commissie
     '0ac8627d-07f8-43fd-a629-808572e95098',   //feest commissie
@@ -551,13 +551,15 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
 
         const u = await client.api(`/users/${userId}`)
             .version('beta')
-            .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,customSecurityAttributes')
+            .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,customSecurityAttributes,jobTitle,birthday')
             .get();
 
         const attributes = u.customSecurityAttributes?.SalveMundiLidmaatschap;
         // Minimal logging: expiry and missing fields summary
 
         let membershipExpiry = null;
+        let dateOfBirth = null;
+
         if (attributes?.VerloopdatumStr) {
             const v = attributes.VerloopdatumStr; // yyyyMMdd
             if (v && v.length === 8) {
@@ -570,6 +572,16 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
             if (v && v.length === 8) {
                 membershipExpiry = `${v.substring(0, 4)}-${v.substring(4, 6)}-${v.substring(6, 8)}`;
                 console.log(`[SYNC] ${u.mail || u.id} expiry (fallback)=${membershipExpiry}`);
+            }
+        }
+
+        // Try to get birthday from Entra
+        if (u.birthday) {
+            dateOfBirth = new Date(u.birthday).toISOString().split('T')[0];
+        } else if (attributes?.Geboortedatum) {
+            const v = attributes.Geboortedatum; // Assuming yyyyMMdd if it's a string
+            if (v && v.length === 8) {
+                dateOfBirth = `${v.substring(0, 4)}-${v.substring(4, 6)}-${v.substring(6, 8)}`;
             }
         }
 
@@ -613,7 +625,7 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
 
 
         const existingRes = await axios.get(
-            `${process.env.DIRECTUS_URL}/users?filter[email][_eq]=${encodeURIComponent(email)}&fields=id,email,first_name,last_name,phone_number,status,role,membership_expiry,fontys_email`,
+            `${process.env.DIRECTUS_URL}/users?filter[email][_eq]=${encodeURIComponent(email)}&fields=id,email,first_name,last_name,phone_number,status,role,membership_expiry,fontys_email,date_of_birth,title`,
             { headers: DIRECTUS_HEADERS }
         );
 
@@ -627,6 +639,8 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
             status: 'active',
             ...(role ? { role } : {}),
             membership_expiry: membershipExpiry,
+            date_of_birth: dateOfBirth,
+            title: u.jobTitle || null,
         };
 
         console.log(`[SYNC] 📦 Payload for ${email} includes role: ${role ? 'YES (' + role + ')' : 'NO (role field omitted)'}`);
@@ -819,14 +833,12 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
 
         await syncCommitteesForUserFromGroups(directusUserId, groups);
         // Membership status is determined by:
-        // 1. Being in the "Actieve Leden" group in Entra ID (managed by Nachtwacht script)
+        // 1. Being in the "Leden_Actief_Lidmaatschap" group in Entra ID (managed by Nachtwacht script)
         // 2. Having a future membership_expiry date (fallback for sync delays)
         try {
             const today = new Date().toISOString().split('T')[0];
             const isInActieveLeden = groups.some(g =>
                 g.id === GROUP_IDS.ACTIEVE_LEDEN ||
-                g.displayName === 'Actieve Leden' ||
-                g.mailNickname === 'Actieve Leden' ||
                 g.displayName === 'Leden_Actief_Lidmaatschap' ||
                 g.mailNickname === 'Leden_Actief_Lidmaatschap'
             );
