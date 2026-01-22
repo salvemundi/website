@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { 
     tripSignupsApi, 
@@ -65,6 +65,7 @@ interface TripActivity {
 export default function AanbetalingPage() {
     const params = useParams();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const signupId = parseInt(params.id as string);
 
     const [loading, setLoading] = useState(true);
@@ -75,6 +76,7 @@ export default function AanbetalingPage() {
     const [selectedActivities, setSelectedActivities] = useState<number[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+    const [paymentSuccess, setPaymentSuccess] = useState(false);
 
     const [form, setForm] = useState({
         date_of_birth: '',
@@ -87,6 +89,36 @@ export default function AanbetalingPage() {
     useEffect(() => {
         loadData();
     }, [signupId]);
+
+    useEffect(() => {
+        // Check if returning from successful payment
+        const status = searchParams.get('status');
+        if (status === 'success') {
+            setPaymentSuccess(true);
+            // Trigger server-side confirmation email
+            (async () => {
+                try {
+                    console.log('[aanbetaling page] Triggering payment confirmation email');
+                    const resp = await fetch('/api/trip-email/payment-confirmation', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ signupId, tripId: undefined, paymentType: 'deposit' })
+                    });
+
+                    if (!resp.ok) {
+                        const txt = await resp.text();
+                        console.error('[aanbetaling page] Confirmation API error:', resp.status, txt);
+                    } else {
+                        console.log('[aanbetaling page] Confirmation email triggered');
+                    }
+                } catch (err) {
+                    console.error('[aanbetaling page] Failed to trigger confirmation email:', err);
+                }
+            })();
+            // Scroll to top to show success message
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [searchParams]);
 
     const loadData = async () => {
         setLoading(true);
@@ -277,6 +309,39 @@ export default function AanbetalingPage() {
                     </div>
                 </div>
 
+                {/* Payment Success message */}
+                {paymentSuccess && (
+                    <div className="mb-8 bg-green-50 border-l-4 border-green-400 p-6 rounded-lg">
+                        <div className="flex items-start">
+                            <CheckCircle2 className="h-8 w-8 text-green-600 mr-4 flex-shrink-0" />
+                            <div className="flex-1">
+                                <h3 className="text-green-800 font-bold text-xl mb-2">Betaling geslaagd!</h3>
+                                <p className="text-green-700 mb-3">
+                                    Bedankt voor je aanbetaling van <strong>€{trip && Number(trip.deposit_amount).toFixed(2)}</strong> voor {trip?.name}!
+                                </p>
+                                <p className="text-green-700 text-sm">
+                                    Je ontvangt binnenkort een bevestigingsmail met alle details. 
+                                    We zullen je informeren wanneer je de restbetaling kunt voldoen.
+                                </p>
+                                <div className="mt-4 flex flex-wrap gap-3">
+                                    <button
+                                        onClick={() => router.push('/reis')}
+                                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm"
+                                    >
+                                        Terug naar reis pagina
+                                    </button>
+                                    <button
+                                        onClick={() => router.push('/')}
+                                        className="px-4 py-2 border border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition text-sm"
+                                    >
+                                        Naar homepagina
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Success message */}
                 {success && (
                     <div className="mb-8 bg-green-50 border-l-4 border-green-400 p-6 rounded-lg">
@@ -302,11 +367,14 @@ export default function AanbetalingPage() {
                     </div>
                 )}
 
-                {/* Info card */}
-                <div className="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-lg mb-8">
-                    <div className="flex items-start">
-                        <User className="h-6 w-6 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />
-                        <div>
+                {/* Show form only if payment is not successful yet */}
+                {!paymentSuccess && (
+                    <>
+                        {/* Info card */}
+                        <div className="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-lg mb-8">
+                            <div className="flex items-start">
+                                <User className="h-6 w-6 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />
+                                <div>
                             <h3 className="text-blue-800 font-bold mb-2">Welkom, {signup.first_name}!</h3>
                             <p className="text-blue-700 text-sm">
                                 Je hebt je succesvol aangemeld voor <strong>{trip.name}</strong> op{' '}
@@ -531,6 +599,8 @@ export default function AanbetalingPage() {
                         </button>
                     </div>
                 </form>
+                    </>
+                )}
             </div>
         </>
     );

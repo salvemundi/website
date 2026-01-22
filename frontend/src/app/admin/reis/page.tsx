@@ -251,7 +251,7 @@ export default function ReisAanmeldingenPage() {
         <>
             <PageHeader
                 title="Reis Aanmeldingen"
-                backgroundImage="/img/backgrounds/committees-bg.jpg"
+                    // backgroundImage="/img/backgrounds/committees-bg.jpg"
             />
 
             <div className="container mx-auto px-4 py-8 max-w-7xl">

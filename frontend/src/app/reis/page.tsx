@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { getImageUrl, tripSignupsApi } from '@/shared/lib/api/salvemundi';
 import { useSalvemundiTrips, useSalvemundiSiteSettings, useSalvemundiTripSignups } from '@/shared/lib/hooks/useSalvemundiApi';
+import { fetchUserDetails } from '@/shared/lib/auth';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { CheckCircle2, Plane, Users, Calendar } from 'lucide-react';
@@ -82,6 +83,35 @@ export default function ReisPage() {
         }
         if (error) setError(null);
     };
+
+    // Prefill form when user is logged in (session token in localStorage)
+    useEffect(() => {
+        try {
+            if (typeof window === 'undefined') return;
+            const token = localStorage.getItem('auth_token');
+            if (!token) return;
+
+            // fetchUserDetails will throw or return null if token invalid
+            fetchUserDetails(token)
+                .then((user) => {
+                    if (!user) return;
+                    setForm((prev) => ({
+                        ...prev,
+                        first_name: prev.first_name || user.first_name || '',
+                        middle_name: prev.middle_name || '',
+                        last_name: prev.last_name || user.last_name || '',
+                        email: prev.email || user.email || '',
+                        phone_number: prev.phone_number || user.phone_number || '',
+                    }));
+                })
+                .catch(() => {
+                    // ignore failures - user may not be logged in
+                    // console.debug('No logged-in user to prefill signup form', e);
+                });
+        } catch (e) {
+            // ignore
+        }
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

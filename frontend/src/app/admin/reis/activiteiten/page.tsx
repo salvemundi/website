@@ -195,7 +195,7 @@ export default function ActiviteitenBeheerPage() {
 
     return (
         <>
-            <PageHeader title="Activiteiten Beheer" backgroundImage="/img/backgrounds/committee.jpg" />
+            <PageHeader title="Activiteiten Beheer" />
             
             <div className="container mx-auto px-4 py-8">
                 {error && (
