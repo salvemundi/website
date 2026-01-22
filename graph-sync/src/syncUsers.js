@@ -1040,9 +1040,10 @@ app.post('/sync/initial', bodyParser.json(), async (req, res) => {
 
     const selectedFields = req.body?.fields || null;
     const forceLink = req.body?.forceLink || false;
+    const activeOnly = req.body?.activeOnly || false;
 
     // Start in background
-    runBulkSync(selectedFields, forceLink);
+    runBulkSync(selectedFields, forceLink, activeOnly);
 
     res.status(202).json({ success: true, message: 'Bulk sync started in background' });
 });
@@ -1072,8 +1073,8 @@ app.post('/sync/user', bodyParser.json(), async (req, res) => {
     }
 });
 
-async function runBulkSync(selectedFields = null, forceLink = false) {
-    console.log(`[${new Date().toISOString()}] 🚀 [INIT] Bulk sync STARTING... (Fields: ${selectedFields ? selectedFields.join(', ') : 'ALL'})`);
+async function runBulkSync(selectedFields = null, forceLink = false, activeOnly = false) {
+    console.log(`[${new Date().toISOString()}] 🚀 [INIT] Bulk sync STARTING... (Fields: ${selectedFields ? selectedFields.join(', ') : 'ALL'}, ActiveOnly: ${activeOnly})`);
     syncStatus = {
         active: true,
         status: 'running',
@@ -1101,14 +1102,29 @@ async function runBulkSync(selectedFields = null, forceLink = false) {
 
         const client = await getGraphClient();
         let users = [];
-        let nextLink = '/users?$select=id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,customSecurityAttributes&$top=100';
 
-        console.log(`[${new Date().toISOString()}] 📥 [INIT] Fetching users from Microsoft Graph...`);
-        while (nextLink) {
-            const response = await client.api(nextLink).version('beta').get();
-            users = users.concat(response.value);
-            nextLink = response['@odata.nextLink'] ? response['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0', '') : null;
-            console.log(`[${new Date().toISOString()}] 📥 [INIT] Fetched batch. Total users so far: ${users.length}`);
+        if (activeOnly) {
+            // Fetch only members of the Leden_Actief_Lidmaatschap group
+            console.log(`[${new Date().toISOString()}] 📥 [INIT] Fetching ACTIVE members only from group ${GROUP_IDS.ACTIEVE_LEDEN}...`);
+            let nextLink = `/groups/${GROUP_IDS.ACTIEVE_LEDEN}/members?$select=id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone&$top=100`;
+
+            while (nextLink) {
+                const response = await client.api(nextLink).version('beta').get();
+                users = users.concat(response.value);
+                nextLink = response['@odata.nextLink'] ? response['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0', '').replace('https://graph.microsoft.com/beta', '') : null;
+                console.log(`[${new Date().toISOString()}] 📥 [INIT] Fetched batch. Total active members so far: ${users.length}`);
+            }
+        } else {
+            // Fetch all users
+            let nextLink = '/users?$select=id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,customSecurityAttributes&$top=100';
+
+            console.log(`[${new Date().toISOString()}] 📥 [INIT] Fetching users from Microsoft Graph...`);
+            while (nextLink) {
+                const response = await client.api(nextLink).version('beta').get();
+                users = users.concat(response.value);
+                nextLink = response['@odata.nextLink'] ? response['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0', '') : null;
+                console.log(`[${new Date().toISOString()}] 📥 [INIT] Fetched batch. Total users so far: ${users.length}`);
+            }
         }
 
         syncStatus.total = users.length;
