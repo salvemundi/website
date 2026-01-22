@@ -33,13 +33,19 @@ export async function POST(request: NextRequest) {
         }
 
         console.log(`[trip-email/payment-request] Loading signup ${signupId} and trip ${tripId}`);
+        console.log(`[trip-email/payment-request] Using directusUrl: ${directusUrl}`);
+        console.log(`[trip-email/payment-request] Using emailServiceUrl: ${emailServiceUrl}`);
+        console.log(`[trip-email/payment-request] Using frontendUrl: ${frontendUrl}`);
 
-        // Fetch signup data from Directus
-        console.log(`[trip-email/payment-request] Fetching from: ${directusUrl}/items/trip_signups/${signupId}`);
-        const signupResponse = await fetch(`${directusUrl}/items/trip_signups/${signupId}?fields=id,first_name,middle_name,last_name,email,role,status,deposit_paid,full_payment_paid`, {
+        // Fetch signup data from Directus using internal API proxy with token
+        console.log(`[trip-email/payment-request] Fetching signup via internal API`);
+        const signupResponse = await fetch(`${frontendUrl}/api/items/trip_signups/${signupId}?fields=id,first_name,middle_name,last_name,email,role,status,deposit_paid,full_payment_paid`, {
             headers: {
                 'Authorization': `Bearer ${directusToken}`,
             }
+        }).catch(err => {
+            console.error(`[trip-email/payment-request] Fetch error for signup:`, err);
+            throw err;
         });
 
         if (!signupResponse.ok) {
@@ -51,8 +57,9 @@ export async function POST(request: NextRequest) {
         const signupData = await signupResponse.json();
         const tripSignup = signupData.data;
 
-        // Fetch trip data from Directus
-        const tripResponse = await fetch(`${directusUrl}/items/trips/${tripId}?fields=id,name,event_date,base_price,deposit_amount,crew_discount,is_bus_trip`, {
+        // Fetch trip data from Directus using internal API proxy with token
+        console.log(`[trip-email/payment-request] Fetching trip via internal API`);
+        const tripResponse = await fetch(`${frontendUrl}/api/items/trips/${tripId}?fields=id,name,event_date,base_price,deposit_amount,crew_discount,is_bus_trip`, {
             headers: {
                 'Authorization': `Bearer ${directusToken}`,
             }
@@ -64,6 +71,9 @@ export async function POST(request: NextRequest) {
 
         const tripData = await tripResponse.json();
         const trip = tripData.data;
+
+        console.log(`[trip-email/payment-request] Signup loaded:`, tripSignup?.email);
+        console.log(`[trip-email/payment-request] Trip loaded:`, trip?.name);
 
         if (!tripSignup || !trip) {
             return NextResponse.json(
@@ -90,7 +100,12 @@ export async function POST(request: NextRequest) {
         console.log(`[trip-email/payment-request] Sending ${paymentType} payment request email to ${tripSignup.email}`);
 
         // Send email via email service
-        await sendTripPaymentRequestEmail(emailServiceUrl, tripSignup, trip, paymentType, frontendUrl);
+        try {
+            await sendTripPaymentRequestEmail(emailServiceUrl, tripSignup, trip, paymentType, frontendUrl);
+        } catch (emailError: any) {
+            console.error(`[trip-email/payment-request] Email service error:`, emailError);
+            throw new Error(`Failed to send email via email service: ${emailError.message}`);
+        }
 
         return NextResponse.json({ success: true });
     } catch (error: any) {
@@ -148,6 +163,8 @@ async function sendTripPaymentRequestEmail(emailServiceUrl: string, tripSignup: 
         </div>
     `;
 
+    console.log(`[sendTripPaymentRequestEmail] Sending to email service: ${emailServiceUrl}/send-email`);
+    
     const response = await fetch(`${emailServiceUrl}/send-email`, {
         method: 'POST',
         headers: {
@@ -158,6 +175,10 @@ async function sendTripPaymentRequestEmail(emailServiceUrl: string, tripSignup: 
             subject: `Betaalverzoek: ${trip.name}`,
             html: emailHtml
         })
+    }).catch(err => {
+        console.error(`[sendTripPaymentRequestEmail] Fetch error:`, err);
+        console.error(`[sendTripPaymentRequestEmail] Attempted URL: ${emailServiceUrl}/send-email`);
+        throw new Error(`Network error connecting to email service: ${err.message}`);
     });
 
     if (!response.ok) {
