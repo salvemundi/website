@@ -48,7 +48,8 @@ export default function MemberDetailPage() {
 
     useEffect(() => {
         if (!authLoading && !authUser) {
-            router.push('/login');
+            const returnTo = window.location.pathname + window.location.search;
+            router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
         }
         if (authUser && !authUser.entra_id) {
             router.push('/admin/no-access');
