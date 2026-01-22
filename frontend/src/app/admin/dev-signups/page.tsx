@@ -26,9 +26,11 @@ interface SyncStatus {
     errorCount: number;
     warningCount?: number;
     missingDataCount?: number;
+    successCount?: number;
     errors: { email: string; error: string; timestamp: string }[];
     warnings?: { email: string; message: string }[];
     missingData?: { email: string; reason: string }[];
+    successfulUsers?: { email: string }[];
     startTime?: string;
     endTime?: string;
     lastRunSuccess?: boolean | null;
@@ -105,7 +107,7 @@ export default function DevSignupsPage() {
         'committees'
     ]);
     const [forceLink, setForceLink] = useState(false);
-    const [syncResultFilter, setSyncResultFilter] = useState<'all' | 'warnings' | 'missing' | 'errors'>('all');
+    const [syncResultFilter, setSyncResultFilter] = useState<'all' | 'success' | 'warnings' | 'missing' | 'errors'>('all');
 
     // Filters
     const [filterStatus, setFilterStatus] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
@@ -589,6 +591,7 @@ export default function DevSignupsPage() {
                                 <div className="flex p-1 bg-black/20 rounded-xl border border-white/5 overflow-x-auto max-w-full custom-scrollbar">
                                     {[
                                         { id: 'all' as const, label: 'Alles', count: syncStatus.processed },
+                                        { id: 'success' as const, label: 'Geslaagd', count: syncStatus.successCount || 0 },
                                         { id: 'warnings' as const, label: 'Waarschuwingen', count: syncStatus.warningCount || 0 },
                                         { id: 'missing' as const, label: 'Missende Data', count: syncStatus.missingDataCount || 0 },
                                         { id: 'errors' as const, label: 'Fouten', count: syncStatus.errorCount },
@@ -606,6 +609,18 @@ export default function DevSignupsPage() {
                                     ))}
                                 </div>
                                 {/* Filtered Results */}
+                                {(syncResultFilter === 'all' || syncResultFilter === 'success') && syncStatus.successfulUsers && syncStatus.successfulUsers.length > 0 && (
+                                    <div className="mt-4">
+                                        <div className="text-xs font-medium text-green-400/80 mb-2 px-1">✅ Succesvol gesynchroniseerd</div>
+                                        <div className="max-h-48 overflow-y-auto rounded-xl bg-green-400/5 border border-green-400/10 p-2 space-y-1 custom-scrollbar">
+                                            {syncStatus.successfulUsers.map((user, idx) => (
+                                                <div key={idx} className="p-2 text-xs border-b border-green-400/10 last:border-0">
+                                                    <div className="text-green-300">{user.email}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                                 {(syncResultFilter === 'all' || syncResultFilter === 'warnings') && syncStatus.warnings && syncStatus.warnings.length > 0 && (
                                     <div className="mt-4">
                                         <div className="text-xs font-medium text-amber-400/80 mb-2 px-1">⚠️ Aandacht vereist (Mogelijke duplicaten)</div>

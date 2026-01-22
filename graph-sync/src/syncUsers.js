@@ -103,9 +103,11 @@ let syncStatus = {
     errorCount: 0,
     missingDataCount: 0,
     warningCount: 0,
+    successCount: 0,
     errors: [], // [{ email: string, error: string, timestamp: string }]
     missingData: [], // [{ email: string, reason: string }]
     warnings: [], // [{ type: string, email: string, message: string }]
+    successfulUsers: [], // [{ email: string }]
     startTime: null,
     endTime: null,
     lastRunSuccess: null
@@ -911,6 +913,16 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null, forceL
         } catch (e) {
             console.error('❌ [SYNC] Error setting membership_status after committee sync:', e.response?.data || e.message);
         }
+
+        // Track successful sync if no errors, warnings, or missing data for this user
+        const hasIssues = syncStatus.errors.some(err => err.email === email) ||
+            syncStatus.warnings.some(warn => warn.email === email) ||
+            syncStatus.missingData.some(item => item.email === email);
+
+        if (!hasIssues) {
+            syncStatus.successCount++;
+            syncStatus.successfulUsers.push({ email });
+        }
     } catch (error) {
         console.error(`❌ [SYNC] Error syncing Entra user ${userId}:`, error.response?.data || error.message);
         throw error;
@@ -1021,9 +1033,11 @@ async function runBulkSync(selectedFields = null, forceLink = false) {
         errorCount: 0,
         missingDataCount: 0,
         warningCount: 0,
+        successCount: 0,
         errors: [],
         missingData: [],
         warnings: [],
+        successfulUsers: [],
         selectedFields: selectedFields,
         startTime: new Date().toISOString(),
         endTime: null,
