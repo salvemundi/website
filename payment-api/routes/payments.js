@@ -383,20 +383,36 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                         collection = 'trip_signups';
                         // For trip signups, check description to determine if it's deposit or final payment
                         if (payment.description.toLowerCase().includes('aanbetaling')) {
-                            updatePayload = { deposit_paid: new Date().toISOString() };
+                            updatePayload = { 
+                                deposit_paid: true,
+                                deposit_paid_at: new Date().toISOString() 
+                            };
                         } else if (payment.description.toLowerCase().includes('restbetaling')) {
-                            updatePayload = { full_payment_paid: new Date().toISOString() };
+                            updatePayload = { 
+                                full_payment_paid: true,
+                                full_payment_paid_at: new Date().toISOString() 
+                            };
                         }
                     }
 
-                    console.warn(`[Webhook][${traceId}] Updating ${collection} ${registrationId} with payment status`);
-                    await directusService.updateDirectusItem(
-                        DIRECTUS_URL,
-                        DIRECTUS_API_TOKEN,
-                        collection,
-                        registrationId,
-                        updatePayload
-                    );
+                    console.warn(`[Webhook][${traceId}] Updating ${collection} ${registrationId} with payload:`, JSON.stringify(updatePayload));
+                    try {
+                        await directusService.updateDirectusItem(
+                            DIRECTUS_URL,
+                            DIRECTUS_API_TOKEN,
+                            collection,
+                            registrationId,
+                            updatePayload
+                        );
+                        console.warn(`[Webhook][${traceId}] ✅ Successfully updated ${collection} ${registrationId}`);
+                    } catch (updateErr) {
+                        console.error(`[Webhook][${traceId}] ❌ Failed to update ${collection} ${registrationId}:`, updateErr.message);
+                        console.error(`[Webhook][${traceId}] Update payload was:`, JSON.stringify(updatePayload));
+                        if (updateErr.response?.data) {
+                            console.error(`[Webhook][${traceId}] Directus error response:`, JSON.stringify(updateErr.response.data));
+                        }
+                        throw updateErr; // Re-throw to prevent email from being sent if update fails
+                    }
                 }
 
                 // 2. ALWAYS send confirmation email if it's NOT a contribution (normal events/pub-crawl/trip)
