@@ -219,10 +219,10 @@ export default function RestbetalingPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-50 to-white">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-50 to-white dark:from-[var(--bg-soft-dark)] dark:to-[var(--bg-main-dark)]">
                 <div className="text-center">
                     <Loader2 className="h-16 w-16 animate-spin text-purple-600 mx-auto mb-4" />
-                    <p className="text-gray-600">Gegevens laden...</p>
+                    <p className="text-gray-600 dark:text-[var(--text-muted-dark)]">Gegevens laden...</p>
                 </div>
             </div>
         );
@@ -230,11 +230,11 @@ export default function RestbetalingPage() {
 
     if (!signup || !trip) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-50 to-white">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-50 to-white dark:from-[var(--bg-soft-dark)] dark:to-[var(--bg-main-dark)]">
                 <div className="text-center">
                     <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-                    <h1 className="text-2xl font-bold text-gray-900 mb-2">Aanmelding niet gevonden</h1>
-                    <p className="text-gray-600 mb-6">De opgegeven aanmelding bestaat niet.</p>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Aanmelding niet gevonden</h1>
+                    <p className="text-gray-600 dark:text-[var(--text-muted-dark)] mb-6">De opgegeven aanmelding bestaat niet.</p>
                     <button
                         onClick={() => router.push('/reis')}
                         className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
@@ -253,7 +253,7 @@ export default function RestbetalingPage() {
                 backgroundImage={trip.image ? getImageUrl(trip.image) : '/img/placeholder.svg'}
             />
 
-            <div className="container mx-auto px-4 py-12 max-w-4xl">
+            <div className="container mx-auto px-4 py-12 max-w-3xl">
                 {/* Progress indicator */}
                 <div className="mb-8">
                     <div className="flex items-center justify-between max-w-md mx-auto">
@@ -261,7 +261,7 @@ export default function RestbetalingPage() {
                             <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white mb-2">
                                 <CheckCircle2 className="h-6 w-6" />
                             </div>
-                            <span className="text-xs font-semibold text-gray-700">Aanmelding</span>
+                            <span className="text-xs font-semibold text-gray-700 dark:text-[var(--text-muted-dark)]">Aanmelding</span>
                         </div>
                         <div className="flex-1 h-1 bg-green-500 mx-2"></div>
                         <div className="flex flex-col items-center">
@@ -282,12 +282,12 @@ export default function RestbetalingPage() {
 
                 {/* Success message */}
                 {success && (
-                    <div className="mb-8 bg-green-50 border-l-4 border-green-400 p-6 rounded-lg">
+                        <div className="mb-8 bg-green-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-green-400 p-6 rounded-lg">
                         <div className="flex items-start">
                             <CheckCircle2 className="h-6 w-6 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
                             <div>
-                                <h3 className="text-green-800 font-bold text-lg mb-2">Betaling voltooid!</h3>
-                                <p className="text-green-700">
+                                <h3 className="text-green-800 dark:text-green-300 font-bold text-lg mb-2">Betaling voltooid!</h3>
+                                <p className="text-green-700 dark:text-green-200">
                                     Je hebt de volledige betaling voor de reis voldaan. We kijken ernaar uit om je te zien!
                                 </p>
                                 {signup.full_payment_paid_at && (
@@ -302,20 +302,20 @@ export default function RestbetalingPage() {
 
                 {/* Error message */}
                 {error && (
-                    <div className="mb-8 bg-red-50 border-l-4 border-red-400 p-6 rounded-lg">
+                    <div className="mb-8 bg-red-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-red-400 p-6 rounded-lg">
                         <div className="flex items-start">
                             <AlertCircle className="h-6 w-6 text-red-600 mr-3 flex-shrink-0 mt-0.5" />
-                            <p className="text-red-700">{error}</p>
+                            <p className="text-red-700 dark:text-red-300">{error}</p>
                         </div>
                     </div>
                 )}
 
                 {/* Personal Information */}
-                <div className="bg-white rounded-xl shadow-lg p-8 border-t-4 border-purple-600 mb-8">
+                <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border-t-4 border-purple-600 mb-8">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center">
                             <FileText className="h-6 w-6 text-purple-600 mr-3" />
-                            <h2 className="text-2xl font-bold text-gray-900">Je gegevens</h2>
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Je gegevens</h2>
                         </div>
                         {!editMode && !success && (
                             <button
@@ -332,13 +332,13 @@ export default function RestbetalingPage() {
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Voornaam</label>
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Voornaam</label>
                                     <input
                                         type="text"
                                         name="first_name"
                                         value={form.first_name}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                                     />
                                 </div>
                                 <div>
@@ -437,7 +437,7 @@ export default function RestbetalingPage() {
                             <div className="flex gap-4 justify-end">
                                 <button
                                     onClick={() => setEditMode(false)}
-                                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                                    className="px-6 py-3 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-[var(--text-muted-dark)] rounded-lg hover:bg-gray-50 dark:hover:bg-[var(--bg-soft-dark)] transition"
                                     disabled={submitting}
                                 >
                                     Annuleren
@@ -504,7 +504,7 @@ export default function RestbetalingPage() {
 
                 {/* Selected Activities */}
                 {selectedActivities.length > 0 && (
-                    <div className="bg-white rounded-xl shadow-lg p-8 border-t-4 border-blue-600 mb-8">
+                    <div className="bg-purple-50 rounded-xl shadow-lg p-8 border-t-4 border-blue-600 mb-8">
                         <div className="flex items-center mb-6">
                             <Utensils className="h-6 w-6 text-blue-600 mr-3" />
                             <h2 className="text-2xl font-bold text-gray-900">Geselecteerde activiteiten</h2>
@@ -541,7 +541,7 @@ export default function RestbetalingPage() {
                 )}
 
                 {/* Payment Calculation */}
-                <div className="bg-white rounded-xl shadow-lg p-8 border-t-4 border-green-600">
+                <div className="bg-purple-50 rounded-xl shadow-lg p-8 border-t-4 border-green-600">
                     <div className="flex items-center mb-6">
                         <Calculator className="h-6 w-6 text-green-600 mr-3" />
                         <h2 className="text-2xl font-bold text-gray-900">Kostenoverzicht</h2>

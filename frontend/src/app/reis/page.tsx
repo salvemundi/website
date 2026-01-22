@@ -174,7 +174,7 @@ export default function ReisPage() {
 
     if (tripsLoading || isSettingsLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-50 to-white">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-50 to-white dark:from-[var(--bg-soft-dark)] dark:to-[var(--bg-main-dark)]">
                 <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-purple-600"></div>
             </div>
         );
@@ -187,10 +187,10 @@ export default function ReisPage() {
                 backgroundImage={headerBackgroundImage}
             />
 
-            <div className="container mx-auto px-4 py-12 max-w-6xl">
+            <div className="container mx-auto px-4 py-12 max-w-4xl">
                 {/* Disabled message */}
                 {!isReisEnabled && (
-                    <div className="mb-8 bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-lg">
+                    <div className="mb-8 bg-yellow-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-yellow-400 p-6 rounded-lg">
                         <div className="flex items-center">
                             <div className="flex-shrink-0">
                                 <svg className="h-6 w-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
@@ -198,7 +198,7 @@ export default function ReisPage() {
                                 </svg>
                             </div>
                             <div className="ml-4">
-                                <p className="text-yellow-800 font-medium">{reisDisabledMessage}</p>
+                                <p className="text-yellow-800 dark:text-yellow-200 font-medium">{reisDisabledMessage}</p>
                             </div>
                         </div>
                     </div>
@@ -209,31 +209,31 @@ export default function ReisPage() {
                     <div className="mb-12">
                         {/* Stats cards */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                            <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-600">
+                            <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-xl shadow-md p-6 border-l-4 border-purple-600">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-gray-500 text-sm font-medium">Datum</p>
-                                        <p className="text-2xl font-bold text-gray-900 mt-1">{formattedNextTripDate}</p>
+                                            <p className="text-gray-500 dark:text-[var(--text-muted-dark)] text-sm font-medium">Datum</p>
+                                            <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{formattedNextTripDate}</p>
                                     </div>
                                     <Calendar className="h-12 w-12 text-purple-600 opacity-80" />
                                 </div>
                             </div>
 
-                            <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-600">
+                            <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-xl shadow-md p-6 border-l-4 border-blue-600">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-gray-500 text-sm font-medium">Deelnemers</p>
-                                        <p className="text-2xl font-bold text-gray-900 mt-1">{participantsCount} / {nextTrip.max_participants}</p>
+                                        <p className="text-gray-500 dark:text-[var(--text-muted-dark)] text-sm font-medium">Deelnemers</p>
+                                        <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{participantsCount} / {nextTrip.max_participants}</p>
                                     </div>
                                     <Users className="h-12 w-12 text-blue-600 opacity-80" />
                                 </div>
                             </div>
 
-                            <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-600">
+                            <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-xl shadow-md p-6 border-l-4 border-green-600">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-gray-500 text-sm font-medium">Plekken over</p>
-                                        <p className="text-2xl font-bold text-gray-900 mt-1">{spotsLeft > 0 ? spotsLeft : 'Vol'}</p>
+                                        <p className="text-gray-500 dark:text-[var(--text-muted-dark)] text-sm font-medium">Plekken over</p>
+                                        <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{spotsLeft > 0 ? spotsLeft : 'Vol'}</p>
                                         {waitlistCount > 0 && (
                                             <p className="text-sm text-gray-600 mt-1">({waitlistCount} op wachtlijst)</p>
                                         )}
@@ -245,10 +245,10 @@ export default function ReisPage() {
 
                         {/* Description */}
                         {nextTrip.description && (
-                            <div className="bg-white rounded-xl shadow-md p-8 mb-8">
-                                <h2 className="text-2xl font-bold text-gray-900 mb-4">Over de reis</h2>
+                            <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-xl shadow-md p-8 mb-8">
+                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Over de reis</h2>
                                 <div 
-                                    className="prose prose-lg max-w-none text-gray-700"
+                                    className="prose prose-lg max-w-none text-gray-700 dark:text-[var(--text-muted-dark)]"
                                     dangerouslySetInnerHTML={{ __html: nextTrip.description }}
                                 />
                             </div>
@@ -258,12 +258,12 @@ export default function ReisPage() {
 
                 {/* Success message */}
                 {submitted && (
-                    <div className="mb-8 bg-green-50 border-l-4 border-green-400 p-6 rounded-lg">
+                    <div className="mb-8 bg-green-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-green-400 p-6 rounded-lg">
                         <div className="flex items-start">
                             <CheckCircle2 className="h-6 w-6 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
                             <div>
-                                <h3 className="text-green-800 font-bold text-lg mb-2">Aanmelding succesvol!</h3>
-                                <p className="text-green-700">
+                                <h3 className="text-green-800 dark:text-green-300 font-bold text-lg mb-2">Aanmelding succesvol!</h3>
+                                <p className="text-green-700 dark:text-green-200">
                                     {spotsLeft > 1 
                                         ? 'Je bent succesvol ingeschreven voor de reis. Je ontvangt binnenkort een bevestigingsmail met meer informatie.'
                                         : 'Je bent succesvol ingeschreven en op de wachtlijst geplaatst. Je ontvangt een mail zodra er een plek vrijkomt.'}
@@ -275,16 +275,16 @@ export default function ReisPage() {
 
                 {/* Registration form */}
                 {nextTrip && isReisEnabled && canSignUp && !submitted && (
-                    <div className="bg-white rounded-xl shadow-lg p-8 border-t-4 border-purple-600">
-                        <h2 className="text-3xl font-bold text-gray-900 mb-6">Inschrijven</h2>
-                        <p className="text-gray-600 mb-8">
+                    <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border-t-4 border-purple-600">
+                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Inschrijven</h2>
+                        <p className="text-gray-600 dark:text-[var(--text-muted-dark)] mb-8">
                             Vul het formulier in om je aan te melden voor de reis. Let op: dit is een vrijblijvende aanmelding. 
                             De daadwerkelijke betaling volgt later.
                         </p>
 
                         {error && (
-                            <div className="mb-6 bg-red-50 border-l-4 border-red-400 p-4 rounded">
-                                <p className="text-red-700">{error}</p>
+                            <div className="mb-6 bg-red-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-red-400 p-4 rounded">
+                                <p className="text-red-700 dark:text-red-300">{error}</p>
                             </div>
                         )}
 
@@ -299,7 +299,7 @@ export default function ReisPage() {
                                         name="first_name"
                                         value={form.first_name}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent transition"
+                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent transition"
                                         placeholder="Volledige voornaam (incl. doopnamen)"
                                         required
                                     />
@@ -317,7 +317,7 @@ export default function ReisPage() {
                                         name="middle_name"
                                         value={form.middle_name}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent transition"
+                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent transition"
                                         placeholder="bijv. van, de"
                                     />
                                 </div>
@@ -379,7 +379,7 @@ export default function ReisPage() {
                                     className="mt-1 h-5 w-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                                     required
                                 />
-                                <label className="ml-3 text-sm text-gray-700">
+                                    <label className="ml-3 text-sm text-gray-700 dark:text-[var(--text-muted-dark)]">
                                     Ik accepteer de{' '}
                                     <Link href="/algemene-voorwaarden" className="text-purple-600 hover:text-purple-700 font-semibold underline">
                                         algemene voorwaarden

@@ -232,7 +232,7 @@ export default function DeelnemerDetailPage() {
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-                    <h1 className="text-2xl font-bold text-gray-900">Deelnemer niet gevonden</h1>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Deelnemer niet gevonden</h1>
                 </div>
             </div>
         );
@@ -257,41 +257,41 @@ export default function DeelnemerDetailPage() {
 
                 {/* Success message */}
                 {success && (
-                    <div className="mb-6 bg-green-50 border-l-4 border-green-400 p-4 rounded">
-                        <p className="text-green-700 font-semibold">Wijzigingen succesvol opgeslagen!</p>
+                    <div className="mb-6 bg-green-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-green-400 p-4 rounded">
+                        <p className="text-green-700 dark:text-green-200 font-semibold">Wijzigingen succesvol opgeslagen!</p>
                     </div>
                 )}
 
                 {/* Error message */}
                 {error && (
-                    <div className="mb-6 bg-red-50 border-l-4 border-red-400 p-4 rounded">
-                        <p className="text-red-700">{error}</p>
+                    <div className="mb-6 bg-red-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-red-400 p-4 rounded">
+                        <p className="text-red-700 dark:text-red-300">{error}</p>
                     </div>
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Personal Information */}
-                    <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-lg shadow p-6">
                         <div className="flex items-center mb-6">
                             <User className="h-6 w-6 text-purple-600 mr-3" />
-                            <h2 className="text-xl font-bold text-gray-900">Persoonlijke gegevens</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Persoonlijke gegevens</h2>
                         </div>
 
                         <div className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Voornaam</label>
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Voornaam</label>
                                     <input
                                         type="text"
                                         name="first_name"
                                         value={form.first_name}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600"
+                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600"
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Tussenvoegsel</label>
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Tussenvoegsel</label>
                                     <input
                                         type="text"
                                         name="middle_name"
@@ -301,7 +301,7 @@ export default function DeelnemerDetailPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Achternaam</label>
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Achternaam</label>
                                     <input
                                         type="text"
                                         name="last_name"
@@ -315,7 +315,7 @@ export default function DeelnemerDetailPage() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Email</label>
                                     <input
                                         type="email"
                                         name="email"
@@ -326,7 +326,7 @@ export default function DeelnemerDetailPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Telefoon</label>
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Telefoon</label>
                                     <input
                                         type="tel"
                                         name="phone_number"
@@ -340,7 +340,7 @@ export default function DeelnemerDetailPage() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Geboortedatum</label>
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Geboortedatum</label>
                                     <input
                                         type="date"
                                         name="date_of_birth"
@@ -350,12 +350,12 @@ export default function DeelnemerDetailPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">ID Type</label>
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">ID Type</label>
                                     <select
                                         name="id_document_type"
                                         value={form.id_document_type}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600"
+                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600"
                                     >
                                         <option value="">Selecteer...</option>
                                         <option value="passport">Paspoort</option>
@@ -400,7 +400,7 @@ export default function DeelnemerDetailPage() {
                     </div>
 
                     {/* Status and Role */}
-                    <div className="bg-white rounded-lg shadow p-6">
+                    <div className="bg-purple-50 rounded-lg shadow p-6">
                         <div className="flex items-center mb-6">
                             <Calendar className="h-6 w-6 text-purple-600 mr-3" />
                             <h2 className="text-xl font-bold text-gray-900">Status en rol</h2>
@@ -442,7 +442,7 @@ export default function DeelnemerDetailPage() {
                     </div>
 
                     {/* Payment Status */}
-                    <div className="bg-white rounded-lg shadow p-6">
+                    <div className="bg-purple-50 rounded-lg shadow p-6">
                         <div className="flex items-center mb-6">
                             <CreditCard className="h-6 w-6 text-purple-600 mr-3" />
                             <h2 className="text-xl font-bold text-gray-900">Betalingsstatus</h2>
@@ -488,7 +488,7 @@ export default function DeelnemerDetailPage() {
                     </div>
 
                     {/* Activities */}
-                    <div className="bg-white rounded-lg shadow p-6">
+                    <div className="bg-purple-50 rounded-lg shadow p-6">
                         <div className="flex items-center mb-6">
                             <Utensils className="h-6 w-6 text-purple-600 mr-3" />
                             <h2 className="text-xl font-bold text-gray-900">Activiteiten</h2>
@@ -523,7 +523,7 @@ export default function DeelnemerDetailPage() {
                     </div>
 
                     {/* Metadata */}
-                    <div className="bg-white rounded-lg shadow p-6">
+                    <div className="bg-purple-50 rounded-lg shadow p-6">
                         <div className="flex items-center mb-4">
                             <FileText className="h-6 w-6 text-purple-600 mr-3" />
                             <h2 className="text-xl font-bold text-gray-900">Metadata</h2>

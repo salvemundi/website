@@ -235,34 +235,34 @@ export default function ReisMailPage() {
         <>
             <PageHeader title="Reis Email Verzenden" />
             
-            <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
                 {error && (
-                    <div className="mb-6 bg-red-50 border-l-4 border-red-400 p-4 rounded">
+            <div className="mb-6 bg-red-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-red-400 p-4 rounded">
                         <div className="flex items-center">
                             <XCircle className="h-6 w-6 text-red-600 mr-3" />
-                            <p className="text-red-700">{error}</p>
+                <p className="text-red-700 dark:text-red-300">{error}</p>
                         </div>
                     </div>
                 )}
 
                 {success && (
-                    <div className="mb-6 bg-green-50 border-l-4 border-green-400 p-4 rounded">
+                    <div className="mb-6 bg-green-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-green-400 p-4 rounded">
                         <div className="flex items-center">
                             <CheckCircle2 className="h-6 w-6 text-green-600 mr-3" />
-                            <p className="text-green-700">Email succesvol verzonden naar {filteredRecipients.length} deelnemer(s)!</p>
+                            <p className="text-green-700 dark:text-green-200">Email succesvol verzonden naar {filteredRecipients.length} deelnemer(s)!</p>
                         </div>
                     </div>
                 )}
 
                 {/* Trip Selector */}
-                <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-lg shadow-md p-6 mb-6">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                         Selecteer Reis
                     </label>
                     <select
                         value={selectedTripId || ''}
                         onChange={(e) => setSelectedTripId(parseInt(e.target.value))}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     >
                         {trips.map((trip) => (
                             <option key={trip.id} value={trip.id}>
@@ -273,10 +273,10 @@ export default function ReisMailPage() {
                 </div>
 
                 {/* Filters */}
-                <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-lg shadow-md p-6 mb-6">
                     <div className="flex items-center mb-4">
                         <Filter className="h-5 w-5 text-purple-600 mr-2" />
-                        <h2 className="text-lg font-bold text-gray-900">Ontvangers Filteren</h2>
+                        <h2 className="text-lg font-bold text-gray-900 dark:text-white">Ontvangers Filteren</h2>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -287,7 +287,7 @@ export default function ReisMailPage() {
                             <select
                                 value={filterStatus}
                                 onChange={(e) => setFilterStatus(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             >
                                 <option value="all">Alle statussen</option>
                                 <option value="registered">Geregistreerd</option>
@@ -304,7 +304,7 @@ export default function ReisMailPage() {
                             <select
                                 value={filterRole}
                                 onChange={(e) => setFilterRole(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             >
                                 <option value="all">Alle rollen</option>
                                 <option value="participant">Deelnemers</option>
@@ -319,7 +319,7 @@ export default function ReisMailPage() {
                             <select
                                 value={filterPayment}
                                 onChange={(e) => setFilterPayment(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             >
                                 <option value="all">Alle betalingen</option>
                                 <option value="unpaid">Nog niet betaald</option>
@@ -329,10 +329,10 @@ export default function ReisMailPage() {
                         </div>
                     </div>
 
-                    <div className="mt-4 p-4 bg-purple-50 rounded-lg">
+                    <div className="mt-4 p-4 bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-lg">
                         <div className="flex items-center">
                             <Users className="h-5 w-5 text-purple-600 mr-2" />
-                            <span className="text-sm font-medium text-purple-900">
+                            <span className="text-sm font-medium text-purple-900 dark:text-purple-200">
                                 {loading ? 'Laden...' : `${filteredRecipients.length} ontvanger(s) geselecteerd`}
                             </span>
                         </div>
@@ -340,10 +340,10 @@ export default function ReisMailPage() {
                 </div>
 
                 {/* Email Form */}
-                <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-lg shadow-md p-6">
                     <div className="flex items-center mb-6">
                         <Mail className="h-6 w-6 text-purple-600 mr-2" />
-                        <h2 className="text-xl font-bold text-gray-900">Email Opstellen</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Email Opstellen</h2>
                     </div>
 
                     <div className="space-y-6">
@@ -355,7 +355,7 @@ export default function ReisMailPage() {
                             <select
                                 value={emailType}
                                 onChange={(e) => setEmailType(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             >
                                 <option value="custom">Aangepast bericht</option>
                                 <option value="deposit_request">Aanbetaling verzoek</option>
@@ -378,7 +378,7 @@ export default function ReisMailPage() {
                                         type="text"
                                         value={subject}
                                         onChange={(e) => setSubject(e.target.value)}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                         placeholder="Bijv. Belangrijke update over de reis"
                                     />
                                 </div>
@@ -391,7 +391,7 @@ export default function ReisMailPage() {
                                         value={message}
                                         onChange={(e) => setMessage(e.target.value)}
                                         rows={10}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                         placeholder="Typ hier je bericht...&#10;&#10;De naam van de reis wordt automatisch toegevoegd aan de email."
                                     />
                                     <p className="mt-2 text-sm text-gray-500">
@@ -402,7 +402,7 @@ export default function ReisMailPage() {
                         )}
 
                         {(emailType === 'deposit_request' || emailType === 'final_request') && (
-                            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                            <div className="bg-blue-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-blue-400 p-4 rounded">
                                 <p className="text-sm text-blue-700">
                                     <strong>ℹ️ Automatische Email:</strong> Deze email wordt automatisch gegenereerd en bevat:
                                 </p>
