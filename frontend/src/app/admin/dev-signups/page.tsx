@@ -494,7 +494,7 @@ export default function DevSignupsPage() {
                             className="w-4 h-4 rounded border-white/20 bg-white/5 text-theme-purple focus:ring-theme-purple focus:ring-offset-0"
                         />
                         <label htmlFor="forceLink" className="text-xs text-theme-purple-lighter/70 cursor-pointer">
-                            🔗 Koppel bestaande accounts op e-mail (eenmalige migratie)
+                            Koppel bestaande accounts op e-mail (eenmalige migratie)
                         </label>
                     </div>
                     <div className="flex gap-2">
@@ -597,8 +597,8 @@ export default function DevSignupsPage() {
                                             key={tab.id}
                                             onClick={() => setSyncResultFilter(tab.id)}
                                             className={`px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${syncResultFilter === tab.id
-                                                    ? 'bg-theme-purple/20 text-theme-purple-lighter border border-theme-purple/30'
-                                                    : 'text-theme-purple-lighter/60 hover:text-theme-purple-lighter hover:bg-white/5'
+                                                ? 'bg-theme-purple/20 text-theme-purple-lighter border border-theme-purple/30'
+                                                : 'text-theme-purple-lighter/60 hover:text-theme-purple-lighter hover:bg-white/5'
                                                 }`}
                                         >
                                             {tab.label} ({tab.count})
