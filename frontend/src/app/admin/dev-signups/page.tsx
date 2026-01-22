@@ -109,6 +109,7 @@ export default function DevSignupsPage() {
         'committees'
     ]);
     const [forceLink, setForceLink] = useState(false);
+    const [activeOnly, setActiveOnly] = useState(false);
     const [syncResultFilter, setSyncResultFilter] = useState<'all' | 'success' | 'warnings' | 'missing' | 'errors' | 'excluded'>('all');
 
     // Filters
@@ -369,7 +370,7 @@ export default function DevSignupsPage() {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ fields: selectedSyncFields, forceLink }),
+                body: JSON.stringify({ fields: selectedSyncFields, forceLink, activeOnly }),
             });
 
             if (!response.ok) {
@@ -499,6 +500,19 @@ export default function DevSignupsPage() {
                         />
                         <label htmlFor="forceLink" className="text-xs text-theme-purple-lighter/70 cursor-pointer">
                             Koppel bestaande accounts op e-mail (eenmalige migratie)
+                        </label>
+                    </div>
+                    {/* Active Only Checkbox */}
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="checkbox"
+                            id="activeOnly"
+                            checked={activeOnly}
+                            onChange={(e) => setActiveOnly(e.target.checked)}
+                            className="w-4 h-4 rounded border-white/20 bg-white/5 text-theme-purple focus:ring-theme-purple focus:ring-offset-0"
+                        />
+                        <label htmlFor="activeOnly" className="text-xs text-theme-purple-lighter/70 cursor-pointer">
+                            Alleen actieve leden synchroniseren (sneller)
                         </label>
                     </div>
                     <div className="flex gap-2">
