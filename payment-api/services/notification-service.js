@@ -397,6 +397,32 @@ async function sendTripPaymentConfirmation(emailServiceUrl, tripSignup, trip, pa
         console.log('[NotificationService] Sending email to:', tripSignup.email);
         console.log('[NotificationService] Email service URL:', emailServiceUrl);
 
+        // Try to fetch selected activities for this signup so we can include them in the email
+        let activitiesHtml = '';
+        try {
+            if (tripSignup.id) {
+                const selected = await directusService.getTripSignupActivities(process.env.DIRECTUS_URL, process.env.DIRECTUS_API_TOKEN, tripSignup.id);
+                console.log('[NotificationService] Selected activities count:', selected.length);
+                if (selected && selected.length > 0) {
+                    // Map activity objects to readable list. trip_activity_id may be expanded object
+                    const names = selected.map(s => {
+                        const a = s.trip_activity_id;
+                        return a ? (a.name || a.title || `Activiteit ${a.id || ''}`) : 'Onbekende activiteit';
+                    });
+                    activitiesHtml = `
+                        <div style="background-color: #FFF7E6; padding: 12px; border-radius: 8px; margin: 20px 0;">
+                            <h4 style="margin: 0 0 8px 0;">Geselecteerde activiteiten</h4>
+                            <ul style="margin:0; padding-left: 18px;">
+                                ${names.map(n => `<li>${n}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+            }
+        } catch (actErr) {
+            console.warn('[NotificationService] Failed to fetch selected activities:', actErr.message || actErr);
+        }
+
         await axios.post(`${emailServiceUrl}/send-email`, {
             to: tripSignup.email,
             subject: `Betaling ontvangen: ${trip.name}`,
@@ -409,7 +435,7 @@ async function sendTripPaymentConfirmation(emailServiceUrl, tripSignup, trip, pa
                     ${paymentType === 'deposit' ? `
                         <div style="background-color: #E3F2FD; padding: 15px; border-radius: 8px; border-left: 4px solid #2196F3; margin: 20px 0;">
                             <strong>📋 Volgende stap:</strong><br>
-                            Je kunt nu je voorkeuren opgeven en activiteiten selecteren. We sturen je later een betaalverzoek voor de restbetaling.
+                            Je kunt je voorkeuren beheren. Hieronder zie je de activiteiten die je tijdens de aanmelding hebt geselecteerd.
                         </div>
                     ` : `
                         <div style="background-color: #E8F5E9; padding: 15px; border-radius: 8px; border-left: 4px solid #4CAF50; margin: 20px 0;">
@@ -425,6 +451,7 @@ async function sendTripPaymentConfirmation(emailServiceUrl, tripSignup, trip, pa
                         <p style="margin: 5px 0;"><strong>Deelnemer:</strong> ${fullName}</p>
                     </div>
 
+                    ${activitiesHtml}
                     <p>We kijken ernaar uit!</p>
                     <p style="margin-top: 10px;"><strong>Het Salve Mundi Reis Team</strong></p>
                 </div>

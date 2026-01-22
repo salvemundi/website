@@ -74,6 +74,13 @@ function BetalingContent() {
                     setPaymentStatus('success');
                     setCheckingPayment(false);
                     setShowManualRefresh(false);
+                    // Clean up URL (remove query params Mollie added) and replace history so the page shows success state
+                    try {
+                        const cleanUrl = window.location.origin + window.location.pathname;
+                        window.history.replaceState({}, document.title, cleanUrl);
+                    } catch (e) {
+                        // ignore
+                    }
                     return; // Exit early
                 }
                 

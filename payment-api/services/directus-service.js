@@ -129,6 +129,24 @@ async function getTransaction(directusUrl, directusToken, id) {
 }
 
 /**
+ * Fetch selected activities for a trip signup
+ */
+async function getTripSignupActivities(directusUrl, directusToken, signupId) {
+    try {
+        const params = new URLSearchParams();
+        params.append('filter[trip_signup_id][_eq]', String(signupId));
+        params.append('fields', 'id,trip_activity_id.*');
+
+        const url = `${directusUrl}/items/trip_signup_activities?${params.toString()}`;
+        const response = await axios.get(url, getAuthConfig(directusToken));
+        return response.data.data;
+    } catch (error) {
+        console.error(`Failed to fetch trip_signup_activities for ${signupId}:`, error.response?.data || error.message);
+        return [];
+    }
+}
+
+/**
  * Zoekt een coupon op basis van de coupon code.
  */
 async function getCoupon(directusUrl, directusToken, code, traceId = 'no-trace') {
@@ -234,6 +252,7 @@ module.exports = {
     getDirectusRegistration,
     getDirectusItem,
     getTransaction,
+    getTripSignupActivities,
     getCoupon,
     updateCouponUsage,
     // --- Payment Settings (via Site Settings) ---
