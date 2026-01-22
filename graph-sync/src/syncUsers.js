@@ -676,19 +676,26 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null, forceL
         }
 
         if (warning) {
-            syncStatus.warningCount++;
-            syncStatus.warnings.push(warning);
-            console.log(`[SYNC] ⚠️ Warning for ${email}: ${warning.message}`);
             // If no linked account exists and we have a warning, we skip to prevent further duplication
             // UNLESS forceLink is true and it's a LINK_REQUIRED case (single email match with no entra_id)
             if (!existingUser) {
                 if (forceLink && warning?.type === 'LINK_REQUIRED' && existingByEmail.length === 1) {
                     console.log(`[SYNC] 🔗 Force linking ${email} (ID: ${existingByEmail[0].id}) to Entra ID ${userId}`);
                     existingUser = existingByEmail[0];
+                    // Don't add warning since we're successfully linking
                 } else {
+                    // Only add warning if we're NOT force linking
+                    syncStatus.warningCount++;
+                    syncStatus.warnings.push(warning);
+                    console.log(`[SYNC] ⚠️ Warning for ${email}: ${warning.message}`);
                     console.log(`[SYNC] Skipping ${email} to prevent further duplication. Manual resolution required.`);
                     return;
                 }
+            } else {
+                // User already exists by entra_id but has a warning (e.g., email mismatch)
+                syncStatus.warningCount++;
+                syncStatus.warnings.push(warning);
+                console.log(`[SYNC] ⚠️ Warning for ${email}: ${warning.message}`);
             }
         }
         const payload = {
@@ -752,8 +759,15 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null, forceL
                 console.log(`[SYNC] ⚠️ Role mismatch for ${email}: existing=${existingRoleVal}, new=${role}. Forcing role in payload.`);
             }
 
-            const changes = hasChanges(existingUser, finalPayload, selectedFields) || roleMismatch;
-            console.log(`[${new Date().toISOString()}] [SYNC] User ${email} exists (ID: ${directusUserId}). Has changes: ${changes}`);
+            // Force update if we're adding entra_id to an existing user (linking)
+            const entraIdMissing = !existingUser.entra_id && payload.entra_id;
+            if (entraIdMissing) {
+                finalPayload.entra_id = payload.entra_id;
+                console.log(`[SYNC] 🔗 Adding entra_id to existing user ${email}: ${payload.entra_id}`);
+            }
+
+            const changes = hasChanges(existingUser, finalPayload, selectedFields) || roleMismatch || entraIdMissing;
+            console.log(`[${new Date().toISOString()}] [SYNC] User ${email} exists (ID: ${directusUserId}). Has changes: ${changes}${entraIdMissing ? ' (entra_id linking)' : ''}`);
 
             if (changes) {
                 try {
