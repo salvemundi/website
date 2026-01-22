@@ -20,6 +20,8 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
             }
 
             // Start with base amount
+            // Log the raw incoming amount and its type to help debug mismatches
+            console.warn(`[Payment][${traceId}] Raw incoming amount type: ${typeof amount}, value: ${JSON.stringify(amount)}`);
             let finalAmount = parseFloat(amount);
             let couponId = null;
             let appliedDiscount = null;
