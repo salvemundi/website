@@ -3,6 +3,9 @@
 import { useEffect, useState, Fragment } from 'react';
 import { useRouter } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
+import { useAuth } from '@/features/auth/providers/auth-provider';
+import NoAccessPage from '@/app/admin/no-access/page';
+import { isUserAuthorizedForReis } from '@/shared/lib/committee-utils';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Search, Download, Users, Plane, Mail, Edit, Trash2, Loader2, AlertCircle, UserCheck, UserX, Send } from 'lucide-react';
 import { format } from 'date-fns';
@@ -45,6 +48,8 @@ interface TripSignup {
 
 export default function ReisAanmeldingenPage() {
     const router = useRouter();
+    const { user, isLoading: authLoading } = useAuth();
+    const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
     const [trips, setTrips] = useState<Trip[]>([]);
     const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
     const [signups, setSignups] = useState<TripSignup[]>([]);
@@ -60,6 +65,12 @@ export default function ReisAanmeldingenPage() {
     useEffect(() => {
         loadTrips();
     }, []);
+
+    // Authorization: only allow members of reiscommissie, ict commissie or bestuur
+    useEffect(() => {
+        if (authLoading) return;
+        setIsAuthorized(isUserAuthorizedForReis(user));
+    }, [user, authLoading]);
 
     useEffect(() => {
         if (selectedTrip) {
@@ -327,6 +338,18 @@ export default function ReisAanmeldingenPage() {
             }
         }
     };
+
+    if (authLoading || isAuthorized === null) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="h-12 w-12 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600" />
+            </div>
+        );
+    }
+
+    if (!isAuthorized) {
+        return <NoAccessPage />;
+    }
 
     return (
         <>
