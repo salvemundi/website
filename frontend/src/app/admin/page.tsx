@@ -32,7 +32,7 @@ function cleanCommitteeName(name: string): string {
 
 interface DashboardStats {
     totalSignups: number;
-    upcomingBirthdays: Array<{ id: string; first_name: string; last_name: string; birthday: string }>;
+    upcomingBirthdays: Array<{ id: string; first_name: string; last_name: string; birthday: string; isToday?: boolean }>;
     topStickers: Array<{ id: string; first_name: string; last_name: string; count: number }>;
     totalCommitteeMembers: number;
     upcomingEvents: number;
@@ -65,7 +65,7 @@ function StatCard({
     icon: React.ReactNode;
     subtitle?: string;
     onClick?: () => void;
-    colorClass?: 'purple' | 'orange' | 'blue' | 'green' | 'red';
+    colorClass?: 'purple' | 'orange' | 'blue' | 'green' | 'red' | 'amber' | 'teal';
 }) {
     const Component = onClick ? 'button' : 'div';
 
@@ -81,6 +81,18 @@ function StatCard({
             iconBg: 'bg-white/20',
             text: 'text-white',
             subtitleText: 'text-orange-100'
+        },
+        amber: {
+            gradient: 'from-amber-500 to-amber-600',
+            iconBg: 'bg-white/20',
+            text: 'text-white',
+            subtitleText: 'text-amber-100'
+        },
+        teal: {
+            gradient: 'from-teal-500 to-teal-600',
+            iconBg: 'bg-white/20',
+            text: 'text-white',
+            subtitleText: 'text-teal-100'
         },
         blue: {
             gradient: 'from-blue-500 to-blue-600',
@@ -271,24 +283,63 @@ export default function AdminDashboardPage() {
             const users = await directusFetch<any[]>('/users?fields=id,first_name,last_name,date_of_birth&filter[date_of_birth][_nnull]=true');
 
             const today = new Date();
-            const nextWeek = new Date();
-            nextWeek.setDate(today.getDate() + 7);
+            today.setHours(0, 0, 0, 0);
+            const nextSevenDays = new Date(today);
+            nextSevenDays.setDate(today.getDate() + 7);
+            nextSevenDays.setHours(23, 59, 59, 999);
 
-            const upcoming = users.filter(user => {
-                if (!user.date_of_birth) return false;
+            type BirthdayItem = {
+                id: string;
+                first_name: string;
+                last_name: string;
+                birthday: string;
+                nextBirthday: Date;
+                isToday: boolean;
+            };
 
-                const birthday = new Date(user.date_of_birth);
-                const thisYearBirthday = new Date(today.getFullYear(), birthday.getMonth(), birthday.getDate());
+            const upcomingItems = users
+                .map(user => {
+                    const dob = user.date_of_birth;
+                    if (!dob) return null;
 
-                return thisYearBirthday >= today && thisYearBirthday <= nextWeek;
-            }).map(user => ({
-                id: user.id,
-                first_name: user.first_name,
-                last_name: user.last_name,
-                birthday: user.date_of_birth
-            }));
+                    // Parse date_of_birth defensively (prefer YYYY-MM-DD or ISO-like strings)
+                    let month = 0;
+                    let day = 0;
 
-            return upcoming.slice(0, 5); // Top 5
+                    const isoMatch = String(dob).match(/(\d{4})-(\d{2})-(\d{2})/);
+                    if (isoMatch) {
+                        month = parseInt(isoMatch[2], 10) - 1;
+                        day = parseInt(isoMatch[3], 10);
+                    } else {
+                        // Fallback to Date parsing, then extract month/day
+                        const parsed = new Date(dob);
+                        if (isNaN(parsed.getTime())) return null;
+                        month = parsed.getMonth();
+                        day = parsed.getDate();
+                    }
+
+                    // Next occurrence of birthday
+                    const nextBirthday = new Date(today.getFullYear(), month, day);
+                    nextBirthday.setHours(0, 0, 0, 0);
+                    if (nextBirthday.getTime() < today.getTime()) {
+                        nextBirthday.setFullYear(nextBirthday.getFullYear() + 1);
+                    }
+
+                    return {
+                        id: user.id,
+                        first_name: user.first_name,
+                        last_name: user.last_name,
+                        birthday: user.date_of_birth,
+                        nextBirthday,
+                        isToday: nextBirthday.getTime() === today.getTime()
+                    } as BirthdayItem;
+                })
+                .filter((u): u is BirthdayItem => u !== null)
+                .filter(u => u.nextBirthday.getTime() >= today.getTime() && u.nextBirthday.getTime() <= nextSevenDays.getTime())
+                .sort((a, b) => a.nextBirthday.getTime() - b.nextBirthday.getTime())
+                .map(u => ({ id: u.id, first_name: u.first_name, last_name: u.last_name, birthday: u.birthday, isToday: u.isToday }));
+
+            return upcomingItems.slice(0, 10);
         } catch (error) {
             console.error('Failed to fetch birthdays:', error);
             return [];
@@ -617,39 +668,48 @@ export default function AdminDashboardPage() {
             />
 
             <div className="container mx-auto px-4 py-8 max-w-7xl">
-                {/* Quick Actions */}
-                <div className="mb-8 flex flex-col sm:flex-row gap-4">
-                    <button
-                        onClick={() => router.push('/admin/activiteiten/nieuw')}
-                        className="bg-admin-card text-theme-purple hover:bg-admin-card-soft hover:text-theme-purple-dark px-4 sm:px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2 w-full sm:w-auto justify-center"
-                    >
-                        <Plus className="h-5 w-5" />
-                        Nieuwe Activiteit
-                    </button>
-                    <button
-                        onClick={() => router.push('/admin/activiteiten')}
-                        className="bg-admin-card text-theme-purple hover:bg-admin-card-soft hover:text-theme-purple-dark px-4 sm:px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2 w-full sm:w-auto justify-center"
-                    >
-                        <FileText className="h-5 w-5" />
-                        Beheer Activiteiten
-                    </button>
-                    {canManageReis && (
-                        <button
-                            onClick={() => router.push('/admin/reis')}
-                            className="bg-white dark:bg-slate-800 text-theme-purple dark:text-theme-purple-light hover:bg-slate-50 dark:hover:bg-slate-700 px-4 sm:px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl dark:shadow-slate-900/50 transition-all hover:-translate-y-0.5 flex items-center gap-2 w-full sm:w-auto justify-center"
-                        >
-                            <Activity className="h-5 w-5" />
-                            Beheer Reis
-                        </button>
-                    )}
-                    <button
-                        onClick={() => router.push('/admin/leden')}
-                        className="bg-admin-card text-theme-purple hover:bg-admin-card-soft hover:text-theme-purple-dark px-4 sm:px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2 w-full sm:w-auto justify-center"
-                    >
-                        <Users className="h-5 w-5" />
-                        Beheer Leden
-                    </button>
+                {/* Quick Actions - Now as StatCards */}
+                <div className="mb-8">
+                    <h2 className="text-2xl font-bold text-admin mb-4">Snelle Acties</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <StatCard
+                            title="Nieuwe"
+                            value="Activiteit"
+                            icon={<Plus className="h-6 w-6" />}
+                            subtitle="Maak een nieuwe activiteit aan"
+                            onClick={() => router.push('/admin/activiteiten/nieuw')}
+                            colorClass="purple"
+                        />
+                        <StatCard
+                            title="Overzicht"
+                            value="Activiteiten"
+                            icon={<FileText className="h-6 w-6" />}
+                            subtitle="Bekijk en bewerk alle activiteiten"
+                            onClick={() => router.push('/admin/activiteiten')}
+                            colorClass="purple"
+                        />
+                        {canManageReis && (
+                            <StatCard
+                                title="Beheer Reis"
+                                value="Reis"
+                                icon={<Activity className="h-6 w-6" />}
+                                subtitle="Beheer reisactiviteiten"
+                                onClick={() => router.push('/admin/reis')}
+                                colorClass="teal"
+                            />
+                        )}
+                        <StatCard
+                            title="Beheer Leden"
+                            value="Leden"
+                            icon={<Users className="h-6 w-6" />}
+                            subtitle="Beheer gebruikers & lidmaatschappen"
+                            onClick={() => router.push('/admin/leden')}
+                            colorClass="green"
+                        />
+                    </div>
                 </div>
+
+              
 
                 {/* Financieel & Beheer */}
                 <div className="mb-8">
@@ -660,17 +720,17 @@ export default function AdminDashboardPage() {
                             icon={<Ticket className="h-6 w-6" />}
                             subtitle="Actieve coupons"
                             onClick={() => router.push('/admin/coupons')}
-                            colorClass="green"
+                            colorClass="amber"
                         />
 
                         {user?.entra_id && (
                             <StatCard
-                                title="Signups"
+                                title="Aanmeldingen"
                                 value="Beheer"
                                 icon={<Shield className="h-6 w-6" />}
                                 subtitle="Alle aanmeldingen"
                                 onClick={() => router.push('/admin/dev-signups')}
-                                colorClass="red"
+                                colorClass="amber"
                             />
                         )}
 
@@ -681,10 +741,16 @@ export default function AdminDashboardPage() {
                                 icon={<Ticket className="h-6 w-6" />}
                                 subtitle={`${stats.upcomingPubCrawl.name} • ${stats.pubCrawlGroups ?? 0} groepen`}
                                 onClick={() => router.push('/admin/kroegentocht')}
-                                colorClass="purple"
+                                colorClass="orange"
                             />
                         )}
                     </div>
+                </div>
+
+                {/* Separatie: Statistieken */}
+                <div className="mb-6 mt-4">
+                    <h3 className="text-xl font-semibold text-admin mb-2">Stats</h3>
+                    <div className="h-px bg-admin-divider mb-4" />
                 </div>
 
                 {/* Grouped Cards - Horizontal Layout */}
@@ -693,24 +759,6 @@ export default function AdminDashboardPage() {
                     <div className="space-y-6">
                         {/* Events & Activiteiten - Purple Theme */}
                         <div className="grid grid-cols-2 gap-4">
-                            <StatCard
-                                title="Aankomende Events"
-                                value={stats.upcomingEvents}
-                                icon={<Calendar className="h-6 w-6" />}
-                                subtitle={`Van ${stats.totalEvents} totaal`}
-                                onClick={() => router.push('/admin/activiteiten')}
-                                colorClass="purple"
-                            />
-
-                            <StatCard
-                                title="Totaal Inschrijvingen"
-                                value={stats.totalSignups}
-                                icon={<UserCheck className="h-6 w-6" />}
-                                subtitle="Alle activiteiten"
-                                onClick={() => router.push('/activiteiten')}
-                                colorClass="purple"
-                            />
-
                             <div className="col-span-2 w-full">
                                 <StatCard
                                     title="Meeste Activiteiten"
@@ -731,7 +779,7 @@ export default function AdminDashboardPage() {
                                 icon={<Sticker className="h-6 w-6" />}
                                 subtitle="Alle verzamelde stickers"
                                 onClick={() => router.push('/stickers')}
-                                colorClass="orange"
+                                colorClass="red"
                             />
 
                             <StatCard
@@ -740,7 +788,7 @@ export default function AdminDashboardPage() {
                                 icon={<TrendingUp className="h-6 w-6" />}
                                 subtitle="Laatste 7 dagen"
                                 onClick={() => router.push('/stickers')}
-                                colorClass="orange"
+                                colorClass="red"
                             />
                         </div>
                     </div>
@@ -749,21 +797,6 @@ export default function AdminDashboardPage() {
                     <div className="space-y-6">
                         {/* Intro - Blue Theme */}
                         <div className="grid grid-cols-2 gap-4">
-                            {stats.mostLikedPost && (
-                                <div className="col-span-2 w-full">
-                                    <div className="w-full h-full">
-                                        <StatCard
-                                            title="Populairste Post"
-                                            value={stats.mostLikedPost.title}
-                                            icon={<Heart className="h-6 w-6" />}
-                                            subtitle={`${stats.mostLikedPost.likes} likes`}
-                                            onClick={() => router.push('/intro/blog')}
-                                            colorClass="blue"
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
                             <StatCard
                                 title="Intro Aanmeldingen"
                                 value={stats.introSignups}
@@ -783,8 +816,6 @@ export default function AdminDashboardPage() {
                             />
                         </div>
 
-                        {/* Kroegentocht stat moved to top row */}
-
                         {/* Members - Green Theme */}
                         <div className="grid grid-cols-2 gap-4">
                             <StatCard
@@ -802,14 +833,6 @@ export default function AdminDashboardPage() {
                                 icon={<Users className="h-6 w-6" />}
                                 subtitle="Actieve leden"
                                 onClick={() => router.push('/commissies')}
-                                colorClass="green"
-                            />
-
-                            <StatCard
-                                title="Jarigen Komende Week"
-                                value={stats.upcomingBirthdays.length}
-                                icon={<Cake className="h-6 w-6" />}
-                                subtitle="Vergeet niet te feliciteren!"
                                 colorClass="green"
                             />
                         </div>
@@ -850,25 +873,39 @@ export default function AdminDashboardPage() {
 
                     {/* Upcoming Birthdays */}
                     <ListCard
-                        title="Aankomende Jarigen"
+                        title="Aankomende Jarigen (7 dagen)"
                         icon={<Cake className="h-5 w-5" />}
                     >
                         {stats.upcomingBirthdays.length > 0 ? (
                             <div className="space-y-3">
                                 {stats.upcomingBirthdays.map(person => (
-                                    <div key={person.id} className="flex items-center justify-between p-3 bg-admin-card-soft rounded-xl">
+                                    <div 
+                                        key={person.id} 
+                                        className={`flex items-center justify-between p-3 rounded-xl ${
+                                            person.isToday 
+                                                ? 'bg-gradient-to-r from-yellow-100 to-yellow-50 dark:from-yellow-900/40 dark:to-yellow-900/20 border-2 border-yellow-400 dark:border-yellow-600' 
+                                                : 'bg-admin-card-soft'
+                                        }`}
+                                    >
                                         <div>
-                                            <p className="font-semibold text-admin">
+                                            <p className={`font-semibold ${person.isToday ? 'text-yellow-900 dark:text-yellow-100' : 'text-admin'}`}>
                                                 {person.first_name} {person.last_name}
+                                                {person.isToday && (
+                                                    <span className="ml-2 text-xs font-bold bg-yellow-500 text-white px-2 py-0.5 rounded-full">
+                                                        VANDAAG! 🎉
+                                                    </span>
+                                                )}
                                             </p>
-                                            <p className="text-sm text-admin-muted">{formatDate(person.birthday)}</p>
+                                            <p className={`text-sm ${person.isToday ? 'text-yellow-700 dark:text-yellow-300' : 'text-admin-muted'}`}>
+                                                {formatDate(person.birthday)}
+                                            </p>
                                         </div>
-                                        <Cake className="h-5 w-5 text-theme-purple" />
+                                        <Cake className={`h-5 w-5 ${person.isToday ? 'text-yellow-600 dark:text-yellow-400' : 'text-theme-purple'}`} />
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-admin-muted text-center py-4">Geen jarigen deze week</p>
+                            <p className="text-admin-muted text-center py-4">Geen jarigen in de komende 7 dagen</p>
                         )}
                     </ListCard>
 
