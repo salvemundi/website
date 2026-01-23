@@ -569,14 +569,16 @@ export interface SafeHavenAvailability {
 export const safeHavensApi = {
     getAll: async () => {
         const query = buildQueryString({
-            fields: ['id', 'user_id.id', 'user_id.first_name', 'user_id.last_name', 'contact_name', 'phone_number', 'email', 'image', 'is_available_today', 'availability_times', 'availability_week', 'created_at'],
+            // availability fields removed from Directus schema -- do not request them
+            fields: ['id', 'user_id.id', 'user_id.first_name', 'user_id.last_name', 'contact_name', 'phone_number', 'email', 'image', 'created_at'],
             sort: ['contact_name']
         });
         return directusFetch<SafeHaven[]>(`/items/safe_havens?${query}`);
     },
     getByUserId: async (userId: string) => {
         const query = buildQueryString({
-            fields: ['id', 'user_id.id', 'user_id.first_name', 'user_id.last_name', 'contact_name', 'phone_number', 'email', 'image', 'is_available_today', 'availability_times', 'availability_week', 'created_at'],
+            // availability fields removed from Directus schema -- do not request them
+            fields: ['id', 'user_id.id', 'user_id.first_name', 'user_id.last_name', 'contact_name', 'phone_number', 'email', 'image', 'created_at'],
             filter: { 'user_id': { _eq: userId } }
         });
         const results = await directusFetch<SafeHaven[]>(`/items/safe_havens?${query}`);
@@ -1084,25 +1086,11 @@ export const heroBannersApi = {
 
 // Safe Haven Availability Functions
 export async function getSafeHavenAvailability(userId: string): Promise<SafeHavenAvailability | null> {
-    try {
-        const safeHaven = await safeHavensApi.getByUserId(userId);
-        if (!safeHaven) return null;
-
-        // If Directus stores weekly availability in `availability_week`, return that
-        const rawWeek: any = (safeHaven as any).availability_week;
-        if (rawWeek && Array.isArray(rawWeek)) {
-            return { week: rawWeek };
-        }
-
-        // Fallback to legacy fields
-        return {
-            isAvailableToday: !!safeHaven.is_available_today,
-            timeSlots: safeHaven.availability_times || [],
-        };
-    } catch (error) {
-        console.error('Error fetching safe haven availability:', error);
-        return null;
-    }
+    // Availability fields were removed from the Directus schema.
+    // To prevent runtime errors, this helper no longer attempts to read availability fields
+    // and returns null to indicate availability data is not available.
+    console.warn('[getSafeHavenAvailability] Availability support removed; returning null for userId:', userId);
+    return null;
 }
 
 // Trip API
@@ -1275,56 +1263,11 @@ export const tripSignupActivitiesApi = {
 
 export async function updateSafeHavenAvailability(
     userId: string,
-    availability: SafeHavenAvailability,
-    token: string
+    _availability: SafeHavenAvailability,
+    _token: string
 ): Promise<void> {
-    try {
-        console.log('[updateSafeHavenAvailability] Starting update for userId:', userId);
-        console.log('[updateSafeHavenAvailability] Availability data:', availability);
-
-        const safeHaven = await safeHavensApi.getByUserId(userId);
-        if (!safeHaven) {
-            console.error('[updateSafeHavenAvailability] Safe haven record not found for userId:', userId);
-            throw new Error('Safe haven record not found');
-        }
-
-        console.log('[updateSafeHavenAvailability] Found safe haven record:', { id: safeHaven.id, contact_name: safeHaven.contact_name });
-
-        // Prepare payload. Prefer weekly structure if provided.
-        let payload: any = {};
-        if (availability.week) {
-            payload.availability_week = availability.week;
-        }
-
-        // Backwards-compatible legacy fields
-        if (availability.isAvailableToday !== undefined) {
-            payload.is_available_today = !!availability.isAvailableToday;
-        }
-        if (availability.timeSlots) {
-            payload.availability_times = availability.timeSlots;
-        }
-
-        console.log('[updateSafeHavenAvailability] PATCH payload:', payload);
-        console.log('[updateSafeHavenAvailability] Endpoint:', `/items/safe_havens/${safeHaven.id}`);
-
-        const response = await directusFetch(`/items/safe_havens/${safeHaven.id}`, {
-            method: 'PATCH',
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload),
-        });
-
-        console.log('[updateSafeHavenAvailability] PATCH response:', response);
-        console.log('[updateSafeHavenAvailability] Update successful');
-    } catch (error: any) {
-        console.error('[updateSafeHavenAvailability] Error updating safe haven availability:', error);
-        console.error('[updateSafeHavenAvailability] Error details:', {
-            message: error?.message,
-            status: error?.status,
-            response: error?.response
-        });
-        throw error;
-    }
+    // Availability editing has been removed. Do not attempt to PATCH Directus.
+    // Keep a no-op implementation so callers won't cause network errors.
+    console.warn('[updateSafeHavenAvailability] Availability updates disabled for userId:', userId);
+    return Promise.resolve();
 }
