@@ -728,8 +728,8 @@ export default function AdminDashboardPage() {
 
                         {user?.entra_id && (
                             <StatCard
-                                title="Aanmeldingen"
-                                value="Beheer"
+                                title="Beheer"
+                                value="Inschrijvingen"
                                 icon={<Shield className="h-6 w-6" />}
                                 subtitle="Alle aanmeldingen"
                                 onClick={() => router.push('/admin/dev-signups')}
@@ -739,10 +739,10 @@ export default function AdminDashboardPage() {
 
                         {stats.upcomingPubCrawl && (
                             <StatCard
-                                title="Kroegentocht Aanmeldingen"
-                                value={stats.pubCrawlTickets ?? 0}
+                                title="Beheer"
+                                value="Kroegentocht" 
                                 icon={<Ticket className="h-6 w-6" />}
-                                subtitle={`${stats.upcomingPubCrawl.name} • ${stats.pubCrawlGroups ?? 0} groepen`}
+                                subtitle={`${stats.upcomingPubCrawl.name} • ${stats.pubCrawlGroups ?? 0} groepen • ${stats.pubCrawlTickets ?? 0} tickets `}
                                 onClick={() => router.push('/admin/kroegentocht')}
                                 colorClass="orange"
                             />
