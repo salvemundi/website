@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import { siteSettingsMutations } from '@/shared/lib/api/salvemundi';
+import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { Search, Download, Users, Beer, AlertCircle, Trash2, Loader2, Edit } from 'lucide-react';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { isUserAuthorizedForReis } from '@/shared/lib/committee-utils';
@@ -45,6 +47,8 @@ export default function KroegentochtAanmeldingenPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [showAllSignups, setShowAllSignups] = useState(false);
+    // site visibility for kroegentocht
+    const { data: kroegentochtSettings, refetch: refetchKroegSettings } = useSalvemundiSiteSettings('kroegentocht');
 
     useEffect(() => {
         loadEvents();
@@ -340,6 +344,27 @@ export default function KroegentochtAanmeldingenPage() {
                                             <AlertCircle size={20} />
                                             {showAllSignups ? 'Verberg onbetaald' : 'Toon ook onbetaald'}
                                         </button>
+
+                                        {/* Visibility toggle for Kroegentocht (ICT/admin only) */}
+                                        <div className="flex items-center gap-3">
+                                            <label className="text-sm font-medium">Kroegentocht zichtbaar</label>
+                                            <button
+                                                onClick={async () => {
+                                                    const current = kroegentochtSettings?.show ?? true;
+                                                    try {
+                                                        await siteSettingsMutations.upsertByPage('kroegentocht', { show: !current });
+                                                        await refetchKroegSettings();
+                                                    } catch (err) {
+                                                        console.error('Failed to toggle kroegentocht visibility', err);
+                                                        alert('Fout bij het bijwerken van de zichtbaarheid voor Kroegentocht');
+                                                    }
+                                                }}
+                                                className={`w-12 h-6 rounded-full p-0.5 transition ${kroegentochtSettings?.show ? 'bg-green-500' : 'bg-gray-300'}`}
+                                                aria-pressed={kroegentochtSettings?.show ?? true}
+                                            >
+                                                <span className={`block w-5 h-5 bg-white rounded-full transform transition ${kroegentochtSettings?.show ? 'translate-x-6' : 'translate-x-0'}`} />
+                                            </button>
+                                        </div>
 
                                         <button
                                             onClick={exportToExcel}
