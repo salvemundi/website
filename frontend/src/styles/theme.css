@@ -171,6 +171,17 @@ textarea::placeholder {
   color: var(--theme-text-muted);
 }
 
+/* Options (dropdown items) - ensure readable in both themes */
+select option {
+  color: var(--theme-text);
+  background-color: inherit;
+}
+
+.dark select option {
+  color: var(--theme-text);
+  background-color: var(--theme-admin-card);
+}
+
 /* ==============================================
    TEXT COLOR UTILITIES
    ============================================== */

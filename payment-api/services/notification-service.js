@@ -197,8 +197,10 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
                     
                     ${detailsHtml}
                     
-                    <p>Hieronder vind je je persoonlijke QR-code. Laat deze scannen bij de commissieleden voor toegang.</p>
-                    ${qrHtml}
+                    ${qrHtml ? `
+                        <p>Hieronder vind je je persoonlijke QR-code. Laat deze scannen bij de commissieleden voor toegang.</p>
+                        ${qrHtml}
+                    ` : ''}
                     
                     <p style="margin-top: 25px;">Veel plezier!</p>
                     <p style="margin-top: 10px; margin-bottom: 0;">Met vriendelijke groet,</p>
