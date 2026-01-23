@@ -1,0 +1,843 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import { 
+    introSignupsApi, 
+    introParentSignupsApi, 
+    introBlogsApi, 
+    introPlanningApi,
+    IntroSignup,
+    IntroParentSignup,
+    IntroBlog,
+    IntroPlanningItem
+} from '@/shared/lib/api/salvemundi';
+import { 
+    Users, 
+    Heart, 
+    FileText, 
+    Calendar, 
+    Edit, 
+    Trash2, 
+    Plus,
+    Save,
+    Search,
+    Loader2,
+    ChevronDown,
+    ChevronUp
+} from 'lucide-react';
+import { siteSettingsMutations } from '@/shared/lib/api/salvemundi';
+import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
+import { format } from 'date-fns';
+import { nl } from 'date-fns/locale';
+import * as XLSX from 'xlsx';
+
+type TabType = 'signups' | 'parents' | 'blogs' | 'planning';
+
+export default function IntroAdminPage() {
+    const [activeTab, setActiveTab] = useState<TabType>('signups');
+    const [isLoading, setIsLoading] = useState(true);
+    const { data: introSettings, refetch: refetchIntroSettings } = useSalvemundiSiteSettings('intro');
+    
+    // Signups
+    const [signups, setSignups] = useState<IntroSignup[]>([]);
+    const [filteredSignups, setFilteredSignups] = useState<IntroSignup[]>([]);
+    const [signupSearchQuery, setSignupSearchQuery] = useState('');
+    
+    // Parent Signups
+    const [parentSignups, setParentSignups] = useState<IntroParentSignup[]>([]);
+    const [filteredParentSignups, setFilteredParentSignups] = useState<IntroParentSignup[]>([]);
+    const [parentSearchQuery, setParentSearchQuery] = useState('');
+    
+    // Blogs
+    const [blogs, setBlogs] = useState<IntroBlog[]>([]);
+    const [editingBlog, setEditingBlog] = useState<Partial<IntroBlog> | null>(null);
+    const [isCreatingBlog, setIsCreatingBlog] = useState(false);
+    
+    // Planning
+    const [planning, setPlanning] = useState<IntroPlanningItem[]>([]);
+    const [editingPlanning, setEditingPlanning] = useState<Partial<IntroPlanningItem> | null>(null);
+    const [isCreatingPlanning, setIsCreatingPlanning] = useState(false);
+
+    // Expanded items
+    const [expandedSignups, setExpandedSignups] = useState<number[]>([]);
+    const [expandedParents, setExpandedParents] = useState<number[]>([]);
+
+    useEffect(() => {
+        loadData();
+    }, [activeTab]);
+
+    useEffect(() => {
+        filterSignups();
+    }, [signups, signupSearchQuery]);
+
+    useEffect(() => {
+        filterParentSignups();
+    }, [parentSignups, parentSearchQuery]);
+
+    const loadData = async () => {
+        setIsLoading(true);
+        try {
+            if (activeTab === 'signups') {
+                const data = await introSignupsApi.getAll();
+                setSignups(data);
+            } else if (activeTab === 'parents') {
+                const data = await introParentSignupsApi.getAll();
+                setParentSignups(data);
+            } else if (activeTab === 'blogs') {
+                const data = await introBlogsApi.getAllAdmin();
+                setBlogs(data);
+            } else if (activeTab === 'planning') {
+                const data = await introPlanningApi.getAllAdmin();
+                setPlanning(data);
+            }
+        } catch (error) {
+            console.error('Failed to load data:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const filterSignups = () => {
+        if (!signupSearchQuery) {
+            setFilteredSignups(signups);
+            return;
+        }
+        const query = signupSearchQuery.toLowerCase();
+        setFilteredSignups(signups.filter(s => 
+            `${s.first_name} ${s.middle_name || ''} ${s.last_name}`.toLowerCase().includes(query) ||
+            s.email.toLowerCase().includes(query) ||
+            s.phone_number.includes(query)
+        ));
+    };
+
+    const filterParentSignups = () => {
+        if (!parentSearchQuery) {
+            setFilteredParentSignups(parentSignups);
+            return;
+        }
+        const query = parentSearchQuery.toLowerCase();
+        setFilteredParentSignups(parentSignups.filter(s => 
+            `${s.first_name} ${s.last_name}`.toLowerCase().includes(query) ||
+            s.email.toLowerCase().includes(query) ||
+            s.phone_number.includes(query)
+        ));
+    };
+
+    const handleDeleteSignup = async (id: number) => {
+        if (!confirm('Weet je zeker dat je deze aanmelding wilt verwijderen?')) return;
+        try {
+            await introSignupsApi.delete(id);
+            setSignups(signups.filter(s => s.id !== id));
+        } catch (error) {
+            console.error('Failed to delete signup:', error);
+            alert('Er is een fout opgetreden bij het verwijderen.');
+        }
+    };
+
+    const handleDeleteParentSignup = async (id: number) => {
+        if (!confirm('Weet je zeker dat je deze aanmelding wilt verwijderen?')) return;
+        try {
+            await introParentSignupsApi.delete(id);
+            setParentSignups(parentSignups.filter(s => s.id !== id));
+        } catch (error) {
+            console.error('Failed to delete parent signup:', error);
+            alert('Er is een fout opgetreden bij het verwijderen.');
+        }
+    };
+
+    const handleSaveBlog = async () => {
+        if (!editingBlog) return;
+        try {
+            if (editingBlog.id) {
+                await introBlogsApi.update(editingBlog.id, editingBlog);
+                setBlogs(blogs.map(b => b.id === editingBlog.id ? { ...b, ...editingBlog } as IntroBlog : b));
+            } else {
+                const newBlog = await introBlogsApi.create(editingBlog);
+                setBlogs([newBlog, ...blogs]);
+            }
+            setEditingBlog(null);
+            setIsCreatingBlog(false);
+        } catch (error) {
+            console.error('Failed to save blog:', error);
+            alert('Er is een fout opgetreden bij het opslaan.');
+        }
+    };
+
+    const handleDeleteBlog = async (id: number) => {
+        if (!confirm('Weet je zeker dat je deze blog wilt verwijderen?')) return;
+        try {
+            await introBlogsApi.delete(id);
+            setBlogs(blogs.filter(b => b.id !== id));
+        } catch (error) {
+            console.error('Failed to delete blog:', error);
+            alert('Er is een fout opgetreden bij het verwijderen.');
+        }
+    };
+
+    const handleSavePlanning = async () => {
+        if (!editingPlanning) return;
+        try {
+            if (editingPlanning.id) {
+                await introPlanningApi.update(editingPlanning.id, editingPlanning);
+                setPlanning(planning.map(p => p.id === editingPlanning.id ? { ...p, ...editingPlanning } as IntroPlanningItem : p));
+            } else {
+                const newPlanning = await introPlanningApi.create(editingPlanning as any);
+                setPlanning([...planning, newPlanning]);
+            }
+            setEditingPlanning(null);
+            setIsCreatingPlanning(false);
+        } catch (error) {
+            console.error('Failed to save planning:', error);
+            alert('Er is een fout opgetreden bij het opslaan.');
+        }
+    };
+
+    const handleDeletePlanning = async (id: number) => {
+        if (!confirm('Weet je zeker dat je dit planning item wilt verwijderen?')) return;
+        try {
+            await introPlanningApi.delete(id);
+            setPlanning(planning.filter(p => p.id !== id));
+        } catch (error) {
+            console.error('Failed to delete planning:', error);
+            alert('Er is een fout opgetreden bij het verwijderen.');
+        }
+    };
+
+    const exportSignupsToExcel = () => {
+        const data = signups.map(s => ({
+            'Voornaam': s.first_name,
+            'Tussenvoegsel': s.middle_name || '',
+            'Achternaam': s.last_name,
+            'Geboortedatum': s.date_of_birth,
+            'Email': s.email,
+            'Telefoonnummer': s.phone_number,
+            'Favoriete GIF': s.favorite_gif || '',
+            'Aangemeld op': format(new Date(s.created_at), 'dd-MM-yyyy HH:mm', { locale: nl })
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Intro Aanmeldingen');
+        XLSX.writeFile(workbook, `intro-aanmeldingen-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+    };
+
+    const exportParentSignupsToExcel = () => {
+        const data = parentSignups.map(s => ({
+            'Voornaam': s.first_name,
+            'Achternaam': s.last_name,
+            'Email': s.email,
+            'Telefoonnummer': s.phone_number,
+            'Motivatie': s.motivation || '',
+            'Aangemeld op': s.created_at ? format(new Date(s.created_at), 'dd-MM-yyyy HH:mm', { locale: nl }) : ''
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Intro Ouders');
+        XLSX.writeFile(workbook, `intro-ouders-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+    };
+
+    const toggleExpandSignup = (id: number) => {
+        setExpandedSignups(prev => 
+            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+        );
+    };
+
+    const toggleExpandParent = (id: number) => {
+        setExpandedParents(prev => 
+            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+        );
+    };
+
+    return (
+        <>
+            <PageHeader title="Intro Beheer" />
+            
+            <div className="container mx-auto px-4 py-8 max-w-7xl">
+                {/* Tabs */}
+                <div className="flex flex-wrap gap-2 mb-6 border-b border-admin-border">
+                    <button
+                        onClick={() => setActiveTab('signups')}
+                        className={`px-6 py-3 font-semibold transition-colors ${
+                            activeTab === 'signups'
+                                ? 'text-theme-purple border-b-2 border-theme-purple'
+                                : 'text-admin-muted hover:text-admin'
+                        }`}
+                    >
+                        <Users className="inline h-5 w-5 mr-2" />
+                        Aanmeldingen ({signups.length})
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('parents')}
+                        className={`px-6 py-3 font-semibold transition-colors ${
+                            activeTab === 'parents'
+                                ? 'text-theme-purple border-b-2 border-theme-purple'
+                                : 'text-admin-muted hover:text-admin'
+                        }`}
+                    >
+                        <Heart className="inline h-5 w-5 mr-2" />
+                        Intro Ouders ({parentSignups.length})
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('blogs')}
+                        className={`px-6 py-3 font-semibold transition-colors ${
+                            activeTab === 'blogs'
+                                ? 'text-theme-purple border-b-2 border-theme-purple'
+                                : 'text-admin-muted hover:text-admin'
+                        }`}
+                    >
+                        <FileText className="inline h-5 w-5 mr-2" />
+                        Blogs ({blogs.length})
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('planning')}
+                        className={`px-6 py-3 font-semibold transition-colors ${
+                            activeTab === 'planning'
+                                ? 'text-theme-purple border-b-2 border-theme-purple'
+                                : 'text-admin-muted hover:text-admin'
+                        }`}
+                    >
+                        <Calendar className="inline h-5 w-5 mr-2" />
+                        Planning ({planning.length})
+                    </button>
+                </div>
+
+                {/* Visibility toggle */}
+                <div className="mb-6 flex items-center gap-4">
+                    <label className="text-sm font-medium">Intro zichtbaar</label>
+                    <button
+                        onClick={async () => {
+                            const current = introSettings?.show ?? true;
+                            try {
+                                await siteSettingsMutations.upsertByPage('intro', { show: !current });
+                                await refetchIntroSettings();
+                                // reload data to reflect visibility change if needed
+                                loadData();
+                            } catch (err) {
+                                console.error('Failed to toggle intro visibility', err);
+                                alert('Fout bij het bijwerken van de zichtbaarheid voor Intro');
+                            }
+                        }}
+                        className={`w-12 h-6 rounded-full p-0.5 transition ${introSettings?.show ? 'bg-green-500' : 'bg-gray-300'}`}
+                        aria-pressed={introSettings?.show ?? true}
+                    >
+                        <span className={`block w-5 h-5 bg-white rounded-full transform transition ${introSettings?.show ? 'translate-x-6' : 'translate-x-0'}`} />
+                    </button>
+                </div>
+
+                {isLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                        <Loader2 className="h-8 w-8 animate-spin text-theme-purple" />
+                    </div>
+                ) : (
+                    <>
+                        {/* Signups Tab */}
+                        {activeTab === 'signups' && (
+                            <div>
+                                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                                    <div className="flex-1 relative">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-admin-muted" />
+                                        <input
+                                            type="text"
+                                            placeholder="Zoek op naam, email of telefoonnummer..."
+                                            value={signupSearchQuery}
+                                            onChange={(e) => setSignupSearchQuery(e.target.value)}
+                                            className="w-full pl-10 pr-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-purple-600"
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={exportSignupsToExcel}
+                                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                                    >
+                                        <FileText className="h-5 w-5" />
+                                        Exporteer naar Excel
+                                    </button>
+                                </div>
+
+                                <div className="bg-admin-card rounded-lg shadow overflow-hidden">
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full">
+                                            <thead className="bg-admin-card-soft">
+                                                <tr>
+                                                    <th className="px-4 py-3 text-left text-sm font-semibold text-admin">Naam</th>
+                                                    <th className="px-4 py-3 text-left text-sm font-semibold text-admin">Email</th>
+                                                    <th className="px-4 py-3 text-left text-sm font-semibold text-admin">Telefoon</th>
+                                                    <th className="px-4 py-3 text-left text-sm font-semibold text-admin">Aangemeld</th>
+                                                    <th className="px-4 py-3 text-right text-sm font-semibold text-admin">Acties</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-admin-border">
+                                                {filteredSignups.map((signup) => (
+                                                    <tr key={signup.id} className="hover:bg-admin-card-soft transition-colors">
+                                                        <td className="px-4 py-3">
+                                                            <button
+                                                                onClick={() => toggleExpandSignup(signup.id)}
+                                                                className="flex items-center gap-2 text-admin hover:text-theme-purple"
+                                                            >
+                                                                {expandedSignups.includes(signup.id) ? (
+                                                                    <ChevronUp className="h-4 w-4" />
+                                                                ) : (
+                                                                    <ChevronDown className="h-4 w-4" />
+                                                                )}
+                                                                <span className="font-medium">
+                                                                    {signup.first_name} {signup.middle_name} {signup.last_name}
+                                                                </span>
+                                                            </button>
+                                                            {expandedSignups.includes(signup.id) && (
+                                                                <div className="mt-2 pl-6 space-y-1 text-sm text-admin-muted">
+                                                                    <p><strong>Geboortedatum:</strong> {signup.date_of_birth}</p>
+                                                                    {signup.favorite_gif && (
+                                                                        <p><strong>Favoriete GIF:</strong> <a href={signup.favorite_gif} target="_blank" rel="noopener noreferrer" className="text-theme-purple hover:underline">Bekijk</a></p>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-admin">{signup.email}</td>
+                                                        <td className="px-4 py-3 text-admin">{signup.phone_number}</td>
+                                                        <td className="px-4 py-3 text-admin-muted text-sm">
+                                                            {format(new Date(signup.created_at), 'dd MMM yyyy', { locale: nl })}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-right">
+                                                            <button
+                                                                onClick={() => handleDeleteSignup(signup.id)}
+                                                                className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                                                                title="Verwijderen"
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                        {filteredSignups.length === 0 && (
+                                            <div className="text-center py-8 text-admin-muted">
+                                                Geen aanmeldingen gevonden
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Parent Signups Tab */}
+                        {activeTab === 'parents' && (
+                            <div>
+                                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                                    <div className="flex-1 relative">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-admin-muted" />
+                                        <input
+                                            type="text"
+                                            placeholder="Zoek op naam, email of telefoonnummer..."
+                                            value={parentSearchQuery}
+                                            onChange={(e) => setParentSearchQuery(e.target.value)}
+                                            className="w-full pl-10 pr-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-purple-600"
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={exportParentSignupsToExcel}
+                                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                                    >
+                                        <FileText className="h-5 w-5" />
+                                        Exporteer naar Excel
+                                    </button>
+                                </div>
+
+                                <div className="bg-admin-card rounded-lg shadow overflow-hidden">
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full">
+                                            <thead className="bg-admin-card-soft">
+                                                <tr>
+                                                    <th className="px-4 py-3 text-left text-sm font-semibold text-admin">Naam</th>
+                                                    <th className="px-4 py-3 text-left text-sm font-semibold text-admin">Email</th>
+                                                    <th className="px-4 py-3 text-left text-sm font-semibold text-admin">Telefoon</th>
+                                                    <th className="px-4 py-3 text-left text-sm font-semibold text-admin">Aangemeld</th>
+                                                    <th className="px-4 py-3 text-right text-sm font-semibold text-admin">Acties</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-admin-border">
+                                                {filteredParentSignups.map((parent) => (
+                                                    <tr key={parent.id} className="hover:bg-admin-card-soft transition-colors">
+                                                        <td className="px-4 py-3">
+                                                            <button
+                                                                onClick={() => toggleExpandParent(parent.id!)}
+                                                                className="flex items-center gap-2 text-admin hover:text-theme-purple"
+                                                            >
+                                                                {expandedParents.includes(parent.id!) ? (
+                                                                    <ChevronUp className="h-4 w-4" />
+                                                                ) : (
+                                                                    <ChevronDown className="h-4 w-4" />
+                                                                )}
+                                                                <span className="font-medium">
+                                                                    {parent.first_name} {parent.last_name}
+                                                                </span>
+                                                            </button>
+                                                            {expandedParents.includes(parent.id!) && parent.motivation && (
+                                                                <div className="mt-2 pl-6 space-y-1 text-sm text-admin-muted">
+                                                                    <p><strong>Motivatie:</strong> {parent.motivation}</p>
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-admin">{parent.email}</td>
+                                                        <td className="px-4 py-3 text-admin">{parent.phone_number}</td>
+                                                        <td className="px-4 py-3 text-admin-muted text-sm">
+                                                            {parent.created_at ? format(new Date(parent.created_at), 'dd MMM yyyy', { locale: nl }) : '-'}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-right">
+                                                            <button
+                                                                onClick={() => handleDeleteParentSignup(parent.id!)}
+                                                                className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                                                                title="Verwijderen"
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                        {filteredParentSignups.length === 0 && (
+                                            <div className="text-center py-8 text-admin-muted">
+                                                Geen intro ouders gevonden
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Blogs Tab */}
+                        {activeTab === 'blogs' && (
+                            <div>
+                                <div className="mb-6">
+                                    <button
+                                        onClick={() => {
+                                            setEditingBlog({
+                                                title: '',
+                                                content: '',
+                                                excerpt: '',
+                                                blog_type: 'update',
+                                                is_published: false
+                                            });
+                                            setIsCreatingBlog(true);
+                                        }}
+                                        className="px-4 py-2 bg-theme-purple text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
+                                    >
+                                        <Plus className="h-5 w-5" />
+                                        Nieuwe Blog
+                                    </button>
+                                </div>
+
+                                {(editingBlog || isCreatingBlog) && (
+                                    <div className="bg-admin-card rounded-lg shadow p-6 mb-6">
+                                        <h3 className="text-lg font-bold text-admin mb-4">
+                                            {editingBlog?.id ? 'Blog Bewerken' : 'Nieuwe Blog'}
+                                        </h3>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="block text-sm font-semibold text-admin mb-2">Titel</label>
+                                                <input
+                                                    type="text"
+                                                    value={editingBlog?.title || ''}
+                                                    onChange={(e) => setEditingBlog({ ...editingBlog, title: e.target.value })}
+                                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-semibold text-admin mb-2">Slug</label>
+                                                <input
+                                                    type="text"
+                                                    value={editingBlog?.slug || ''}
+                                                    onChange={(e) => setEditingBlog({ ...editingBlog, slug: e.target.value })}
+                                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-semibold text-admin mb-2">Excerpt</label>
+                                                <textarea
+                                                    value={editingBlog?.excerpt || ''}
+                                                    onChange={(e) => setEditingBlog({ ...editingBlog, excerpt: e.target.value })}
+                                                    rows={2}
+                                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-semibold text-admin mb-2">Content</label>
+                                                <textarea
+                                                    value={editingBlog?.content || ''}
+                                                    onChange={(e) => setEditingBlog({ ...editingBlog, content: e.target.value })}
+                                                    rows={6}
+                                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-semibold text-admin mb-2">Type</label>
+                                                <select
+                                                    value={editingBlog?.blog_type || 'update'}
+                                                    onChange={(e) => setEditingBlog({ ...editingBlog, blog_type: e.target.value as any })}
+                                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
+                                                >
+                                                    <option value="update">Update</option>
+                                                    <option value="pictures">Foto's</option>
+                                                    <option value="event">Event</option>
+                                                    <option value="announcement">Aankondiging</option>
+                                                </select>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="checkbox"
+                                                    id="is_published"
+                                                    checked={editingBlog?.is_published || false}
+                                                    onChange={(e) => setEditingBlog({ ...editingBlog, is_published: e.target.checked })}
+                                                    className="h-4 w-4 text-theme-purple"
+                                                />
+                                                <label htmlFor="is_published" className="text-sm text-admin">Gepubliceerd</label>
+                                            </div>
+                                            <div className="flex gap-3">
+                                                <button
+                                                    onClick={handleSaveBlog}
+                                                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
+                                                >
+                                                    <Save className="h-4 w-4" />
+                                                    Opslaan
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingBlog(null);
+                                                        setIsCreatingBlog(false);
+                                                    }}
+                                                    className="px-4 py-2 bg-admin-card-soft text-admin rounded-lg hover:bg-admin-border"
+                                                >
+                                                    Annuleren
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="grid gap-4">
+                                    {blogs.map((blog) => (
+                                        <div key={blog.id} className="bg-admin-card rounded-lg shadow p-6">
+                                            <div className="flex justify-between items-start mb-3">
+                                                <div className="flex-1">
+                                                    <h4 className="text-lg font-bold text-admin">{blog.title}</h4>
+                                                    <p className="text-sm text-admin-muted mt-1">
+                                                        {blog.blog_type} • {blog.is_published ? 'Gepubliceerd' : 'Concept'} • {format(new Date(blog.updated_at), 'dd MMM yyyy', { locale: nl })}
+                                                    </p>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => setEditingBlog(blog)}
+                                                        className="p-2 text-theme-purple hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded"
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteBlog(blog.id)}
+                                                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            {blog.excerpt && (
+                                                <p className="text-admin-muted text-sm">{blog.excerpt}</p>
+                                            )}
+                                        </div>
+                                    ))}
+                                    {blogs.length === 0 && (
+                                        <div className="text-center py-8 text-admin-muted">
+                                            Geen blogs gevonden
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Planning Tab */}
+                        {activeTab === 'planning' && (
+                            <div>
+                                <div className="mb-6">
+                                    <button
+                                        onClick={() => {
+                                            setEditingPlanning({
+                                                day: '',
+                                                date: '',
+                                                time_start: '',
+                                                title: '',
+                                                is_mandatory: false,
+                                                sort_order: planning.length
+                                            });
+                                            setIsCreatingPlanning(true);
+                                        }}
+                                        className="px-4 py-2 bg-theme-purple text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
+                                    >
+                                        <Plus className="h-5 w-5" />
+                                        Nieuw Planning Item
+                                    </button>
+                                </div>
+
+                                {(editingPlanning || isCreatingPlanning) && (
+                                    <div className="bg-admin-card rounded-lg shadow p-6 mb-6">
+                                        <h3 className="text-lg font-bold text-admin mb-4">
+                                            {editingPlanning?.id ? 'Planning Bewerken' : 'Nieuw Planning Item'}
+                                        </h3>
+                                        <div className="space-y-4">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="block text-sm font-semibold text-admin mb-2">Dag</label>
+                                                    <input
+                                                        type="text"
+                                                        value={editingPlanning?.day || ''}
+                                                        onChange={(e) => setEditingPlanning({ ...editingPlanning, day: e.target.value })}
+                                                        placeholder="bijv. Maandag"
+                                                        className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-semibold text-admin mb-2">Datum</label>
+                                                    <input
+                                                        type="date"
+                                                        value={editingPlanning?.date || ''}
+                                                        onChange={(e) => setEditingPlanning({ ...editingPlanning, date: e.target.value })}
+                                                        className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="block text-sm font-semibold text-admin mb-2">Start Tijd</label>
+                                                    <input
+                                                        type="time"
+                                                        value={editingPlanning?.time_start || ''}
+                                                        onChange={(e) => setEditingPlanning({ ...editingPlanning, time_start: e.target.value })}
+                                                        className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-semibold text-admin mb-2">Eind Tijd</label>
+                                                    <input
+                                                        type="time"
+                                                        value={editingPlanning?.time_end || ''}
+                                                        onChange={(e) => setEditingPlanning({ ...editingPlanning, time_end: e.target.value })}
+                                                        className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-semibold text-admin mb-2">Titel</label>
+                                                <input
+                                                    type="text"
+                                                    value={editingPlanning?.title || ''}
+                                                    onChange={(e) => setEditingPlanning({ ...editingPlanning, title: e.target.value })}
+                                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-semibold text-admin mb-2">Beschrijving</label>
+                                                <textarea
+                                                    value={editingPlanning?.description || ''}
+                                                    onChange={(e) => setEditingPlanning({ ...editingPlanning, description: e.target.value })}
+                                                    rows={3}
+                                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-semibold text-admin mb-2">Locatie</label>
+                                                <input
+                                                    type="text"
+                                                    value={editingPlanning?.location || ''}
+                                                    onChange={(e) => setEditingPlanning({ ...editingPlanning, location: e.target.value })}
+                                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-semibold text-admin mb-2">Volgorde</label>
+                                                <input
+                                                    type="number"
+                                                    value={editingPlanning?.sort_order || 0}
+                                                    onChange={(e) => setEditingPlanning({ ...editingPlanning, sort_order: parseInt(e.target.value) })}
+                                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
+                                                />
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="checkbox"
+                                                    id="is_mandatory"
+                                                    checked={editingPlanning?.is_mandatory || false}
+                                                    onChange={(e) => setEditingPlanning({ ...editingPlanning, is_mandatory: e.target.checked })}
+                                                    className="h-4 w-4 text-theme-purple"
+                                                />
+                                                <label htmlFor="is_mandatory" className="text-sm text-admin">Verplicht</label>
+                                            </div>
+                                            <div className="flex gap-3">
+                                                <button
+                                                    onClick={handleSavePlanning}
+                                                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
+                                                >
+                                                    <Save className="h-4 w-4" />
+                                                    Opslaan
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingPlanning(null);
+                                                        setIsCreatingPlanning(false);
+                                                    }}
+                                                    className="px-4 py-2 bg-admin-card-soft text-admin rounded-lg hover:bg-admin-border"
+                                                >
+                                                    Annuleren
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="grid gap-4">
+                                    {planning.map((item) => (
+                                        <div key={item.id} className="bg-admin-card rounded-lg shadow p-6">
+                                            <div className="flex justify-between items-start mb-3">
+                                                <div className="flex-1">
+                                                    <h4 className="text-lg font-bold text-admin">{item.title}</h4>
+                                                    <p className="text-sm text-admin-muted mt-1">
+                                                        {item.day} {item.date} • {item.time_start}{item.time_end && ` - ${item.time_end}`}
+                                                        {item.is_mandatory && ' • Verplicht'}
+                                                    </p>
+                                                    {item.location && (
+                                                        <p className="text-sm text-admin-muted">📍 {item.location}</p>
+                                                    )}
+                                                    {item.description && (
+                                                        <p className="text-admin-muted text-sm mt-2">{item.description}</p>
+                                                    )}
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => setEditingPlanning(item)}
+                                                        className="p-2 text-theme-purple hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded"
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeletePlanning(item.id)}
+                                                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {planning.length === 0 && (
+                                        <div className="text-center py-8 text-admin-muted">
+                                            Geen planning items gevonden
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+        </>
+    );
+}

@@ -24,6 +24,8 @@ import {
     Shield
 } from 'lucide-react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import { siteSettingsMutations } from '@/shared/lib/api/salvemundi';
+import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 
 // Helper function to clean committee names
 function cleanCommitteeName(name: string): string {
@@ -187,6 +189,7 @@ export default function AdminDashboardPage() {
     });
     const [isIctMember, setIsIctMember] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const { data: introSettings, refetch: refetchIntroSettings } = useSalvemundiSiteSettings('intro');
     // (visibility toggles moved to the specific admin pages)
 
     useEffect(() => {
@@ -682,12 +685,12 @@ export default function AdminDashboardPage() {
                             colorClass="purple"
                         />
                         <StatCard
-                            title="Overzicht"
-                            value="Activiteiten"
-                            icon={<FileText className="h-6 w-6" />}
-                            subtitle="Bekijk en bewerk alle activiteiten"
-                            onClick={() => router.push('/admin/activiteiten')}
-                            colorClass="purple"
+                            title="Beheer Intro"
+                            value="Intro"
+                            icon={<Users className="h-6 w-6" />}
+                            subtitle="Beheer intro aanmeldingen & content"
+                            onClick={() => router.push('/admin/intro')}
+                            colorClass="orange"
                         />
                         {canManageReis && (
                             <StatCard
@@ -699,6 +702,26 @@ export default function AdminDashboardPage() {
                                 colorClass="teal"
                             />
                         )}
+                        
+                        <div className="flex items-center gap-3 px-4">
+                            <label className="text-sm font-medium">Intro zichtbaar</label>
+                            <button
+                                onClick={async () => {
+                                    const current = introSettings?.show ?? true;
+                                    try {
+                                        await siteSettingsMutations.upsertByPage('intro', { show: !current });
+                                        await refetchIntroSettings();
+                                    } catch (err) {
+                                        console.error('Failed to toggle intro visibility', err);
+                                        alert('Fout bij het bijwerken van de zichtbaarheid voor Intro');
+                                    }
+                                }}
+                                className={`w-12 h-6 rounded-full p-0.5 transition ${introSettings?.show ? 'bg-green-500' : 'bg-gray-300'}`}
+                                aria-pressed={introSettings?.show ?? true}
+                            >
+                                <span className={`block w-5 h-5 bg-white rounded-full transform transition ${introSettings?.show ? 'translate-x-6' : 'translate-x-0'}`} />
+                            </button>
+                        </div>
                         <StatCard
                             title="Beheer Leden"
                             value="Leden"
@@ -751,7 +774,7 @@ export default function AdminDashboardPage() {
 
                 {/* Separatie: Statistieken */}
                 <div className="mb-6 mt-4">
-                    <h3 className="text-xl font-semibold text-admin mb-2">Stats</h3>
+                    <h3 className="text-xl font-semibold text-admin mb-2"></h3>
                     <div className="h-px bg-admin-divider mb-4" />
                 </div>
 
@@ -791,6 +814,18 @@ export default function AdminDashboardPage() {
                                 subtitle="Laatste 7 dagen"
                                 onClick={() => router.push('/stickers')}
                                 colorClass="red"
+                            />
+                        </div>
+
+                        {/* Overzicht Activiteiten moved here */}
+                        <div className="mt-4">
+                            <StatCard
+                                title="Overzicht Activiteiten"
+                                value="Activiteiten"
+                                icon={<FileText className="h-6 w-6" />}
+                                subtitle="Bekijk en bewerk alle activiteiten"
+                                onClick={() => router.push('/admin/activiteiten')}
+                                colorClass="purple"
                             />
                         </div>
                     </div>
