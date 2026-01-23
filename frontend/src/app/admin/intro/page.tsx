@@ -26,7 +26,9 @@ import {
     Search,
     Loader2,
     ChevronDown,
-    ChevronUp
+    ChevronUp,
+    LayoutGrid,
+    List
 } from 'lucide-react';
 import { siteSettingsMutations } from '@/shared/lib/api/salvemundi';
 import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
@@ -63,7 +65,7 @@ export default function IntroAdminPage() {
     const [planning, setPlanning] = useState<IntroPlanningItem[]>([]);
     const [editingPlanning, setEditingPlanning] = useState<Partial<IntroPlanningItem> | null>(null);
     const [isCreatingPlanning, setIsCreatingPlanning] = useState(false);
-    const [selectedDay, setSelectedDay] = useState<string | null>(null);
+    const [planningViewMode, setPlanningViewMode] = useState<'calendar' | 'list'>('calendar');
 
     // Expanded items
     const [expandedSignups, setExpandedSignups] = useState<number[]>([]);
@@ -72,6 +74,29 @@ export default function IntroAdminPage() {
     useEffect(() => {
         loadData();
     }, [activeTab]);
+
+    // Load all data on mount to populate tab counts immediately
+    useEffect(() => {
+        loadAllDataForCounts();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const loadAllDataForCounts = async () => {
+        try {
+            const [signupsData, parentsData, blogsData, planningData] = await Promise.all([
+                introSignupsApi.getAll(),
+                introParentSignupsApi.getAll(),
+                introBlogsApi.getAllAdmin(),
+                introPlanningApi.getAllAdmin()
+            ]);
+            setSignups(signupsData);
+            setParentSignups(parentsData);
+            setBlogs(blogsData);
+            setPlanning(planningData);
+        } catch (error) {
+            console.error('Failed to load counts:', error);
+        }
+    };
 
     // Ensure we refresh data whenever this route becomes active (client-side navigation)
     useEffect(() => {
@@ -791,7 +816,7 @@ export default function IntroAdminPage() {
                         {/* Planning Tab */}
                         {activeTab === 'planning' && (
                             <div>
-                                <div className="mb-6">
+                                <div className="mb-6 flex flex-wrap gap-4 justify-between items-center">
                                     <button
                                         onClick={() => {
                                             setEditingPlanning({
@@ -808,96 +833,218 @@ export default function IntroAdminPage() {
                                         <Plus className="h-5 w-5" />
                                         Nieuw Planning Item
                                     </button>
+
+                                    {/* View Toggle */}
+                                    <div className="flex gap-2 bg-admin-card-soft rounded-lg p-1">
+                                        <button
+                                            onClick={() => setPlanningViewMode('calendar')}
+                                            className={`px-4 py-2 rounded-md flex items-center gap-2 transition-colors ${
+                                                planningViewMode === 'calendar'
+                                                    ? 'bg-theme-purple text-white'
+                                                    : 'text-admin hover:bg-admin-card'
+                                            }`}
+                                        >
+                                            <LayoutGrid className="h-4 w-4" />
+                                            Kalender
+                                        </button>
+                                        <button
+                                            onClick={() => setPlanningViewMode('list')}
+                                            className={`px-4 py-2 rounded-md flex items-center gap-2 transition-colors ${
+                                                planningViewMode === 'list'
+                                                    ? 'bg-theme-purple text-white'
+                                                    : 'text-admin hover:bg-admin-card'
+                                            }`}
+                                        >
+                                            <List className="h-4 w-4" />
+                                            Lijst
+                                        </button>
+                                    </div>
                                 </div>
 
-                                {/* Calendar view (admin) */}
-                                <div className="mb-6">
-                                    {planning.length === 0 ? null : (
-                                        <div className="bg-admin-card rounded-lg shadow overflow-hidden p-4">
-                                            {/* Day Selector */}
-                                            <div className="flex flex-wrap gap-2 justify-start mb-4">
-                                                <button
-                                                    onClick={() => setSelectedDay(null)}
-                                                    className={`px-3 py-1 rounded-full font-semibold text-sm ${selectedDay === null ? 'bg-gradient-theme text-white' : 'bg-admin-card-soft'}`}>
-                                                    Alle dagen
-                                                </button>
+                                {/* Calendar view (admin) - Multi-day grid */}
+                                {planningViewMode === 'calendar' && planning.length > 0 && (
+                                    <div className="mb-6">
+                                        <div className="bg-admin-card rounded-lg shadow overflow-hidden">
+                                            <div className="overflow-x-auto">
                                                 {(() => {
-                                                    // compute unique days present
-                                                    const byDay: Record<string, IntroPlanningItem[]> = planning.reduce((acc, it) => {
-                                                        if (!it.day) return acc;
-                                                        (acc[it.day] = acc[it.day] || []).push(it);
+                                                    const dayOrder = ['maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag'];
+                                                    const planningByDay = planning.reduce((acc, item) => {
+                                                        if (!item.day) return acc;
+                                                        const dayKey = item.day.toLowerCase();
+                                                        if (!acc[dayKey]) acc[dayKey] = [];
+                                                        acc[dayKey].push(item);
                                                         return acc;
                                                     }, {} as Record<string, IntroPlanningItem[]>);
-                                                    return Object.keys(byDay).map(day => (
-                                                        <button key={day} onClick={() => setSelectedDay(day)} className={`px-3 py-1 rounded-full font-semibold text-sm ${selectedDay === day ? 'bg-gradient-theme text-white' : 'bg-admin-card-soft'}`}>
-                                                            {day}
-                                                        </button>
-                                                    ));
-                                                })()}
-                                            </div>
 
-                                            {/* Simple calendar grid (hours) */}
-                                            <div className="overflow-x-auto">
-                                                <div className="min-w-full" style={{ minWidth: '800px' }}>
-                                                    <div className="grid gap-0 border-b-2 border-admin-border sticky top-0 bg-admin-card p-2" style={{ gridTemplateColumns: '60px 1fr' }}>
-                                                        <div className="p-2 font-bold text-admin border-r">Tijd</div>
-                                                        <div className="p-2 font-bold text-admin">Planning</div>
-                                                    </div>
+                                                    const sortedDays = Object.keys(planningByDay).sort(
+                                                        (a, b) => dayOrder.indexOf(a.toLowerCase()) - dayOrder.indexOf(b.toLowerCase())
+                                                    );
 
-                                                    <div className="relative" style={{ height: '400px', minHeight: '400px' }}>
-                                                        {/* hours rows */}
-                                                        {Array.from({ length: 15 }, (_, i) => i + 9).map(hour => (
-                                                            <div key={hour} className="grid gap-0 border-b border-admin-border" style={{ gridTemplateColumns: '60px 1fr', height: '60px' }}>
-                                                                <div className="p-1 text-sm text-admin-muted border-r flex items-start justify-center">{`${hour}:00`}</div>
-                                                                <div className="border-r border-admin-border bg-admin-card-soft relative">
-                                                                    {/* events for this hour */}
+                                                    const hours = Array.from({ length: 15 }, (_, i) => i + 9);
+
+                                                    return (
+                                                        <div className="min-w-full" style={{ minWidth: sortedDays.length > 1 ? '800px' : '100%' }}>
+                                                            {/* Header with days */}
+                                                            <div
+                                                                className="grid gap-0 border-b-2 border-admin-border sticky top-0 bg-admin-card z-20"
+                                                                style={{
+                                                                    gridTemplateColumns:
+                                                                        sortedDays.length === 1
+                                                                            ? '60px 1fr'
+                                                                            : `60px repeat(${sortedDays.length}, 1fr)`
+                                                                }}
+                                                            >
+                                                                <div className="p-2 lg:p-3 font-bold text-admin border-r border-admin-border text-xs lg:text-sm flex items-center justify-center">
+                                                                    Tijd
                                                                 </div>
-                                                            </div>
-                                                        ))}
-
-                                                        {/* events overlay - simple absolute positioning based on time */}
-                                                        <div className="absolute inset-0 grid gap-0 pointer-events-none" style={{ gridTemplateColumns: '60px 1fr' }}>
-                                                            <div />
-                                                            <div className="relative pointer-events-auto">
-                                                                {planning.filter(p => !selectedDay || p.day === selectedDay).map((item) => {
-                                                                    const top = (() => {
-                                                                        try {
-                                                                            const [h, m] = (item.time_start || '09:00').split(':').map(Number);
-                                                                            return ((h - 9) * 60 + (m || 0));
-                                                                        } catch { return 0; }
-                                                                    })();
-                                                                    const height = (() => {
-                                                                        if (!item.time_end) return 60;
-                                                                        try {
-                                                                            const [eh, em] = item.time_end.split(':').map(Number);
-                                                                            const endTop = ((eh - 9) * 60 + (em || 0));
-                                                                            return Math.max(endTop - top, 30);
-                                                                        } catch { return 60; }
-                                                                    })();
-
+                                                                {sortedDays.map((day) => {
+                                                                    const items = planningByDay[day];
+                                                                    const firstItem = items[0];
                                                                     return (
-                                                                        <div key={item.id} className={`absolute left-2 right-4 rounded-md p-2 shadow-md bg-gradient-to-br from-purple-500 to-purple-600 text-white`} style={{ top: `${top}px`, height: `${height}px` }}>
-                                                                            <div className="flex justify-between items-start">
-                                                                                <div className="flex items-center gap-2">
-                                                                                    <span className="font-bold text-sm truncate">{item.title}</span>
-                                                                                </div>
-                                                                                <div className="flex gap-2">
-                                                                                    <button onClick={() => setEditingPlanning(item)} className="p-1 bg-white/10 rounded" title="Bewerken"><Edit className="h-4 w-4" /></button>
-                                                                                    <button onClick={() => handleDeletePlanning(item.id)} className="p-1 bg-white/10 rounded" title="Verwijderen"><Trash2 className="h-4 w-4" /></button>
-                                                                                </div>
+                                                                        <div
+                                                                            key={day}
+                                                                            className="p-2 lg:p-3 text-center border-r border-admin-border last:border-r-0"
+                                                                        >
+                                                                            <div className="font-bold text-theme-purple text-sm lg:text-base capitalize">
+                                                                                {day}
                                                                             </div>
-                                                                            <div className="text-xs opacity-90 mt-1">{item.time_start}{item.time_end && ` - ${item.time_end}`}</div>
+                                                                            {firstItem?.date && (
+                                                                                <div className="text-[10px] lg:text-xs text-admin-muted mt-0.5">
+                                                                                    {format(new Date(firstItem.date), 'd MMM', { locale: nl })}
+                                                                                </div>
+                                                                            )}
                                                                         </div>
                                                                     );
                                                                 })}
                                                             </div>
+
+                                                            {/* Time grid */}
+                                                            <div
+                                                                className="relative"
+                                                                style={{ height: 'auto', maxHeight: 'calc(100vh - 350px)', minHeight: '500px' }}
+                                                            >
+                                                                {/* Hour rows */}
+                                                                {hours.map((hour) => (
+                                                                    <div
+                                                                        key={hour}
+                                                                        className="grid gap-0 border-b border-admin-border"
+                                                                        style={{
+                                                                            gridTemplateColumns:
+                                                                                sortedDays.length === 1
+                                                                                    ? '60px 1fr'
+                                                                                    : `60px repeat(${sortedDays.length}, 1fr)`,
+                                                                            height: '60px'
+                                                                        }}
+                                                                    >
+                                                                        <div className="p-1.5 lg:p-2 text-[10px] lg:text-xs text-admin-muted font-semibold border-r border-admin-border flex items-start justify-center">
+                                                                            {`${hour}:00`}
+                                                                        </div>
+                                                                        {sortedDays.map((day) => (
+                                                                            <div
+                                                                                key={`${day}-${hour}`}
+                                                                                className="border-r border-admin-border last:border-r-0 relative bg-admin-card-soft/30"
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                ))}
+
+                                                                {/* Events overlay */}
+                                                                <div
+                                                                    className="absolute inset-0 grid gap-0 pointer-events-none"
+                                                                    style={{
+                                                                        gridTemplateColumns:
+                                                                            sortedDays.length === 1
+                                                                                ? '60px 1fr'
+                                                                                : `60px repeat(${sortedDays.length}, 1fr)`
+                                                                    }}
+                                                                >
+                                                                    <div /> {/* Skip time column */}
+                                                                    {sortedDays.map((day, dayIndex) => {
+                                                                        const items = planningByDay[day];
+                                                                        return (
+                                                                            <div key={day} className="relative pointer-events-auto">
+                                                                                {items.map((item) => {
+                                                                                    const getEventPosition = (timeStart: string, timeEnd?: string) => {
+                                                                                        try {
+                                                                                            const [h, m] = timeStart.split(':').map(Number);
+                                                                                            const top = (h - 9) * 60 + (m || 0);
+                                                                                            let height = 60;
+                                                                                            if (timeEnd) {
+                                                                                                const [eh, em] = timeEnd.split(':').map(Number);
+                                                                                                height = Math.max((eh - 9) * 60 + (em || 0) - top, 30);
+                                                                                            }
+                                                                                            return { top, height };
+                                                                                        } catch {
+                                                                                            return { top: 0, height: 60 };
+                                                                                        }
+                                                                                    };
+
+                                                                                    const { top, height } = getEventPosition(
+                                                                                        item.time_start || '09:00',
+                                                                                        item.time_end
+                                                                                    );
+
+                                                                                    const colorPalettes = [
+                                                                                        'from-blue-500 to-blue-600',
+                                                                                        'from-purple-500 to-purple-600',
+                                                                                        'from-pink-500 to-pink-600',
+                                                                                        'from-indigo-500 to-indigo-600',
+                                                                                        'from-teal-500 to-teal-600',
+                                                                                        'from-cyan-500 to-cyan-600',
+                                                                                        'from-violet-500 to-violet-600',
+                                                                                        'from-fuchsia-500 to-fuchsia-600'
+                                                                                    ];
+                                                                                    const colorIndex = dayIndex % colorPalettes.length;
+
+                                                                                    return (
+                                                                                        <div
+                                                                                            key={item.id}
+                                                                                            className={`absolute left-0.5 right-0.5 lg:left-1 lg:right-1 rounded-md lg:rounded-lg p-1.5 lg:p-2 shadow-md overflow-hidden bg-gradient-to-br text-white ${colorPalettes[colorIndex]}`}
+                                                                                            style={{
+                                                                                                top: `${top}px`,
+                                                                                                height: `${Math.max(height, 30)}px`
+                                                                                            }}
+                                                                                        >
+                                                                                            <div className="flex justify-between items-start gap-1">
+                                                                                                <div className="text-[10px] lg:text-xs font-bold truncate flex-1">
+                                                                                                    {item.title}
+                                                                                                </div>
+                                                                                                <div className="flex gap-1 flex-shrink-0">
+                                                                                                    <button
+                                                                                                        onClick={() => setEditingPlanning(item)}
+                                                                                                        className="p-0.5 lg:p-1 bg-white/20 hover:bg-white/30 rounded transition-colors"
+                                                                                                        title="Bewerken"
+                                                                                                    >
+                                                                                                        <Edit className="h-3 w-3 lg:h-4 lg:w-4" />
+                                                                                                    </button>
+                                                                                                    <button
+                                                                                                        onClick={() => handleDeletePlanning(item.id)}
+                                                                                                        className="p-0.5 lg:p-1 bg-white/20 hover:bg-white/30 rounded transition-colors"
+                                                                                                        title="Verwijderen"
+                                                                                                    >
+                                                                                                        <Trash2 className="h-3 w-3 lg:h-4 lg:w-4" />
+                                                                                                    </button>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            <div className="text-[8px] lg:text-[10px] opacity-90 mt-0.5">
+                                                                                                {item.time_start}
+                                                                                                {item.time_end && ` - ${item.time_end}`}
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    );
+                                                                                })}
+                                                                            </div>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </div>
+                                                    );
+                                                })()}
                                             </div>
                                         </div>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
 
                                 {(editingPlanning || isCreatingPlanning) && (
                                     <div className="bg-admin-card rounded-lg shadow p-6 mb-6">
@@ -905,35 +1052,29 @@ export default function IntroAdminPage() {
                                             {editingPlanning?.id ? 'Planning Bewerken' : 'Nieuw Planning Item'}
                                         </h3>
                                         <div className="space-y-4">
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div>
-                                                    <label className="block text-sm font-semibold text-admin mb-2">Dag</label>
-                                                    <input
-                                                        type="text"
-                                                        value={editingPlanning?.day || ''}
-                                                        onChange={(e) => setEditingPlanning({ ...editingPlanning, day: e.target.value })}
-                                                        placeholder="bijv. Maandag"
-                                                        className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-sm font-semibold text-admin mb-2">Datum</label>
-                                                    <input
-                                                        type="date"
-                                                        value={editingPlanning?.date || ''}
-                                                        onChange={(e) => setEditingPlanning({ ...editingPlanning, date: e.target.value })}
-                                                        className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
-                                                    />
-                                                </div>
+                                            <div>
+                                                <label className="block text-sm font-semibold text-admin mb-2">
+                                                    Datum <span className="text-red-500">*</span>
+                                                </label>
+                                                <input
+                                                    type="date"
+                                                    value={editingPlanning?.date || ''}
+                                                    onChange={(e) => setEditingPlanning({ ...editingPlanning, date: e.target.value })}
+                                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
+                                                    required
+                                                />
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div>
-                                                    <label className="block text-sm font-semibold text-admin mb-2">Start Tijd</label>
+                                                    <label className="block text-sm font-semibold text-admin mb-2">
+                                                        Start Tijd <span className="text-red-500">*</span>
+                                                    </label>
                                                     <input
                                                         type="time"
                                                         value={editingPlanning?.time_start || ''}
                                                         onChange={(e) => setEditingPlanning({ ...editingPlanning, time_start: e.target.value })}
                                                         className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
+                                                        required
                                                     />
                                                 </div>
                                                 <div>
@@ -947,21 +1088,27 @@ export default function IntroAdminPage() {
                                                 </div>
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-semibold text-admin mb-2">Titel</label>
+                                                <label className="block text-sm font-semibold text-admin mb-2">
+                                                    Titel <span className="text-red-500">*</span>
+                                                </label>
                                                 <input
                                                     type="text"
                                                     value={editingPlanning?.title || ''}
                                                     onChange={(e) => setEditingPlanning({ ...editingPlanning, title: e.target.value })}
                                                     className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
+                                                    required
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-semibold text-admin mb-2">Beschrijving</label>
+                                                <label className="block text-sm font-semibold text-admin mb-2">
+                                                    Beschrijving <span className="text-red-500">*</span>
+                                                </label>
                                                 <textarea
                                                     value={editingPlanning?.description || ''}
                                                     onChange={(e) => setEditingPlanning({ ...editingPlanning, description: e.target.value })}
                                                     rows={3}
                                                     className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
+                                                    required
                                                 />
                                             </div>
                                             <div>
@@ -972,25 +1119,6 @@ export default function IntroAdminPage() {
                                                     onChange={(e) => setEditingPlanning({ ...editingPlanning, location: e.target.value })}
                                                     className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
                                                 />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-semibold text-admin mb-2">Volgorde</label>
-                                                <input
-                                                    type="number"
-                                                    value={editingPlanning?.sort_order || 0}
-                                                    onChange={(e) => setEditingPlanning({ ...editingPlanning, sort_order: parseInt(e.target.value) })}
-                                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
-                                                />
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <input
-                                                    type="checkbox"
-                                                    id="is_mandatory"
-                                                    checked={editingPlanning?.is_mandatory || false}
-                                                    onChange={(e) => setEditingPlanning({ ...editingPlanning, is_mandatory: e.target.checked })}
-                                                    className="h-4 w-4 text-theme-purple"
-                                                />
-                                                <label htmlFor="is_mandatory" className="text-sm text-admin">Verplicht</label>
                                             </div>
                                             <div className="flex gap-3">
                                                 <button
@@ -1014,46 +1142,48 @@ export default function IntroAdminPage() {
                                     </div>
                                 )}
 
-                                <div className="grid gap-4">
-                                    {planning.map((item) => (
-                                        <div key={item.id} className="bg-admin-card rounded-lg shadow p-6">
-                                            <div className="flex justify-between items-start mb-3">
-                                                <div className="flex-1">
-                                                    <h4 className="text-lg font-bold text-admin">{item.title}</h4>
-                                                    <p className="text-sm text-admin-muted mt-1">
-                                                        {item.day} {item.date} • {item.time_start}{item.time_end && ` - ${item.time_end}`}
-                                                        {item.is_mandatory && ' • Verplicht'}
-                                                    </p>
-                                                    {item.location && (
-                                                        <p className="text-sm text-admin-muted">📍 {item.location}</p>
-                                                    )}
-                                                    {item.description && (
-                                                        <p className="text-admin-muted text-sm mt-2">{item.description}</p>
-                                                    )}
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={() => setEditingPlanning(item)}
-                                                        className="p-2 text-theme-purple hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded"
-                                                    >
-                                                        <Edit className="h-4 w-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeletePlanning(item.id)}
-                                                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </button>
+                                {/* List view */}
+                                {planningViewMode === 'list' && (
+                                    <div className="grid gap-4">
+                                        {planning.map((item) => (
+                                            <div key={item.id} className="bg-admin-card rounded-lg shadow p-6">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div className="flex-1">
+                                                        <h4 className="text-lg font-bold text-admin">{item.title}</h4>
+                                                        <p className="text-sm text-admin-muted mt-1">
+                                                            {item.day} {item.date && format(new Date(item.date), 'd MMM yyyy', { locale: nl })} • {item.time_start}{item.time_end && ` - ${item.time_end}`}
+                                                        </p>
+                                                        {item.location && (
+                                                            <p className="text-sm text-admin-muted">📍 {item.location}</p>
+                                                        )}
+                                                        {item.description && (
+                                                            <p className="text-admin-muted text-sm mt-2">{item.description}</p>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => setEditingPlanning(item)}
+                                                            className="p-2 text-theme-purple hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded"
+                                                        >
+                                                            <Edit className="h-4 w-4" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeletePlanning(item.id)}
+                                                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
-                                    {planning.length === 0 && (
-                                        <div className="text-center py-8 text-admin-muted">
-                                            Geen planning items gevonden
-                                        </div>
-                                    )}
-                                </div>
+                                        ))}
+                                        {planning.length === 0 && (
+                                            <div className="text-center py-8 text-admin-muted">
+                                                Geen planning items gevonden
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </>
