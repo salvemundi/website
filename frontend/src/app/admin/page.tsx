@@ -24,8 +24,6 @@ import {
     Shield
 } from 'lucide-react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { siteSettingsMutations } from '@/shared/lib/api/salvemundi';
-import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 
 // Helper function to clean committee names
 function cleanCommitteeName(name: string): string {
@@ -189,7 +187,6 @@ export default function AdminDashboardPage() {
     });
     const [isIctMember, setIsIctMember] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const { data: introSettings, refetch: refetchIntroSettings } = useSalvemundiSiteSettings('intro');
     // (visibility toggles moved to the specific admin pages)
 
     useEffect(() => {
@@ -703,25 +700,7 @@ export default function AdminDashboardPage() {
                             />
                         )}
                         
-                        <div className="flex items-center gap-3 px-4">
-                            <label className="text-sm font-medium">Intro zichtbaar</label>
-                            <button
-                                onClick={async () => {
-                                    const current = introSettings?.show ?? true;
-                                    try {
-                                        await siteSettingsMutations.upsertByPage('intro', { show: !current });
-                                        await refetchIntroSettings();
-                                    } catch (err) {
-                                        console.error('Failed to toggle intro visibility', err);
-                                        alert('Fout bij het bijwerken van de zichtbaarheid voor Intro');
-                                    }
-                                }}
-                                className={`w-12 h-6 rounded-full p-0.5 transition ${introSettings?.show ? 'bg-green-500' : 'bg-gray-300'}`}
-                                aria-pressed={introSettings?.show ?? true}
-                            >
-                                <span className={`block w-5 h-5 bg-white rounded-full transform transition ${introSettings?.show ? 'translate-x-6' : 'translate-x-0'}`} />
-                            </button>
-                        </div>
+                        
                         <StatCard
                             title="Beheer Leden"
                             value="Leden"
