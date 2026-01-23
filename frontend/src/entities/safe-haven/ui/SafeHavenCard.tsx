@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { Mail, Phone, Clock } from 'lucide-react';
+import { useAuth } from '@/features/auth/providers/auth-provider';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 
 interface SafeHaven {
@@ -116,36 +117,47 @@ const SafeHavenCard: React.FC<SafeHavenCardProps> = ({ safeHaven }) => {
                 );
             })()}
 
-            {/* Contact Info */}
-            {(safeHaven.email || safeHaven.phone_number) && (
-                <div className="pt-4 space-y-3 border-t border-theme-purple/10">
-                    {/* Email */}
-                    {safeHaven.email && (
-                        <a
-                            href={`mailto:${safeHaven.email}`}
-                            className="flex items-center justify-start gap-3 text-theme-muted hover:text-slate-600 dark:hover:text-slate-400 transition-colors group px-2"
-                        >
-                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-600 flex items-center justify-center flex-shrink-0 transition-all">
-                                <Mail className="w-4 h-4 sm:w-5 sm:h-5 group-hover:text-white transition-colors" />
-                            </div>
-                            <span className="text-xs sm:text-sm font-medium break-all min-w-0 flex-1 text-left">{safeHaven.email}</span>
-                        </a>
-                    )}
+            {/* Contact Info - only visible for authenticated users */}
+            {(() => {
+                const { isAuthenticated } = useAuth();
+                if (!isAuthenticated) {
+                    return (
+                        <div className="pt-4 border-t border-theme-purple/10">
+                            <p className="text-sm text-theme-muted">Log in om contactgegevens te zien.</p>
+                        </div>
+                    );
+                }
 
-                    {/* Phone */}
-                    {safeHaven.phone_number && (
-                        <a
-                            href={`tel:${safeHaven.phone_number}`}
-                            className="flex items-center justify-start gap-3 text-theme-muted hover:text-slate-600 dark:hover:text-slate-400 transition-colors group px-2"
-                        >
-                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-600 flex items-center justify-center flex-shrink-0 transition-all">
-                                <Phone className="w-4 h-4 sm:w-5 sm:h-5 group-hover:text-white transition-colors" />
-                            </div>
-                            <span className="text-xs sm:text-sm font-medium">{safeHaven.phone_number}</span>
-                        </a>
-                    )}
-                </div>
-            )}
+                return (safeHaven.email || safeHaven.phone_number) ? (
+                    <div className="pt-4 space-y-3 border-t border-theme-purple/10">
+                        {/* Email */}
+                        {safeHaven.email && (
+                            <a
+                                href={`mailto:${safeHaven.email}`}
+                                className="flex items-center justify-start gap-3 text-theme-muted hover:text-slate-600 dark:hover:text-slate-400 transition-colors group px-2"
+                            >
+                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-600 flex items-center justify-center flex-shrink-0 transition-all">
+                                    <Mail className="w-4 h-4 sm:w-5 sm:h-5 group-hover:text-white transition-colors" />
+                                </div>
+                                <span className="text-xs sm:text-sm font-medium break-all min-w-0 flex-1 text-left">{safeHaven.email}</span>
+                            </a>
+                        )}
+
+                        {/* Phone */}
+                        {safeHaven.phone_number && (
+                            <a
+                                href={`tel:${safeHaven.phone_number}`}
+                                className="flex items-center justify-start gap-3 text-theme-muted hover:text-slate-600 dark:hover:text-slate-400 transition-colors group px-2"
+                            >
+                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-600 flex items-center justify-center flex-shrink-0 transition-all">
+                                    <Phone className="w-4 h-4 sm:w-5 sm:h-5 group-hover:text-white transition-colors" />
+                                </div>
+                                <span className="text-xs sm:text-sm font-medium">{safeHaven.phone_number}</span>
+                            </a>
+                        )}
+                    </div>
+                ) : null;
+            })()}
         </div>
     );
 };
