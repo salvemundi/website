@@ -11,6 +11,7 @@ import {
     IntroParentSignup,
     IntroBlog,
     IntroPlanningItem
+    , getImageUrl
 } from '@/shared/lib/api/salvemundi';
 import { 
     Users, 
@@ -53,6 +54,8 @@ export default function IntroAdminPage() {
     const [blogs, setBlogs] = useState<IntroBlog[]>([]);
     const [editingBlog, setEditingBlog] = useState<Partial<IntroBlog> | null>(null);
     const [isCreatingBlog, setIsCreatingBlog] = useState(false);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
     
     // Planning
     const [planning, setPlanning] = useState<IntroPlanningItem[]>([]);
@@ -149,11 +152,20 @@ export default function IntroAdminPage() {
     const handleSaveBlog = async () => {
         if (!editingBlog) return;
         try {
+            // upload image if a file was selected
+            let uploadedImageId: string | null = null;
+            if (imageFile) {
+                uploadedImageId = await uploadImage();
+            }
+
+            const payload: any = { ...editingBlog };
+            if (uploadedImageId) payload.image = uploadedImageId;
+
             if (editingBlog.id) {
-                await introBlogsApi.update(editingBlog.id, editingBlog);
-                setBlogs(blogs.map(b => b.id === editingBlog.id ? { ...b, ...editingBlog } as IntroBlog : b));
+                await introBlogsApi.update(editingBlog.id, payload);
+                setBlogs(blogs.map(b => b.id === editingBlog.id ? { ...b, ...payload } as IntroBlog : b));
             } else {
-                const newBlog = await introBlogsApi.create(editingBlog);
+                const newBlog = await introBlogsApi.create(payload);
                 setBlogs([newBlog, ...blogs]);
             }
             setEditingBlog(null);
@@ -162,6 +174,50 @@ export default function IntroAdminPage() {
             console.error('Failed to save blog:', error);
             alert('Er is een fout opgetreden bij het opslaan.');
         }
+    };
+
+    const uploadImage = async (): Promise<string | null> => {
+        if (!imageFile) return null;
+        try {
+            const fd = new FormData();
+            fd.append('file', imageFile);
+
+            const resp = await fetch('/api/files', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                },
+                body: fd
+            });
+
+            if (!resp.ok) {
+                console.error('Upload failed', await resp.text());
+                return null;
+            }
+            const json = await resp.json();
+            return json.data?.id || null;
+        } catch (err) {
+            console.error('Upload error', err);
+            return null;
+        }
+    };
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const f = e.target.files?.[0] || null;
+        setImageFile(f);
+        if (f) {
+            const reader = new FileReader();
+            reader.onloadend = () => setImagePreview(reader.result as string);
+            reader.readAsDataURL(f);
+        } else {
+            setImagePreview(null);
+        }
+    };
+
+    const removeImage = () => {
+        setImageFile(null);
+        setImagePreview(null);
+        if (editingBlog) setEditingBlog({ ...editingBlog, image: undefined });
     };
 
     const handleDeleteBlog = async (id: number) => {
@@ -584,6 +640,24 @@ export default function IntroAdminPage() {
                                                     <option value="announcement">Aankondiging</option>
                                                 </select>
                                             </div>
+                                            <div>
+                                                <label className="block text-sm font-semibold text-admin mb-2">Afbeelding</label>
+                                                <div className="flex items-center gap-3">
+                                                    <input type="file" accept="image/*" onChange={handleImageChange} />
+                                                    {imagePreview ? (
+                                                        <div className="w-24 h-16 overflow-hidden rounded-md bg-admin-card-soft">
+                                                            <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                                                        </div>
+                                                    ) : editingBlog?.image ? (
+                                                        <div className="w-24 h-16 overflow-hidden rounded-md bg-admin-card-soft">
+                                                            <img src={getImageUrl((editingBlog as any).image)} alt="Afbeelding" className="w-full h-full object-cover" />
+                                                        </div>
+                                                    ) : null}
+                                                    { (imagePreview || editingBlog?.image) && (
+                                                        <button type="button" onClick={removeImage} className="text-sm text-red-600 ml-2">Verwijder</button>
+                                                    )}
+                                                </div>
+                                            </div>
                                             <div className="flex items-center gap-2">
                                                 <input
                                                     type="checkbox"
@@ -618,34 +692,60 @@ export default function IntroAdminPage() {
 
                                 <div className="grid gap-4">
                                     {blogs.map((blog) => (
-                                        <div key={blog.id} className="bg-admin-card rounded-lg shadow p-6">
-                                            <div className="flex justify-between items-start mb-3">
-                                                <div className="flex-1">
-                                                    <h4 className="text-lg font-bold text-admin">{blog.title}</h4>
-                                                    <p className="text-sm text-admin-muted mt-1">
-                                                        {blog.blog_type} • {blog.is_published ? 'Gepubliceerd' : 'Concept'} • {format(new Date(blog.updated_at), 'dd MMM yyyy', { locale: nl })}
-                                                    </p>
+                                            <div
+                                                key={blog.id}
+                                                role="button"
+                                                tabIndex={0}
+                                                onClick={() => setEditingBlog(blog)}
+                                                onKeyDown={(e) => { if (e.key === 'Enter') setEditingBlog(blog); }}
+                                                className="bg-admin-card rounded-lg shadow p-6 cursor-pointer hover:bg-admin-hover transition"
+                                            >
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div className="flex-1">
+                                                        <h4 className="text-lg font-bold text-admin">{blog.title}</h4>
+                                                        <p className="text-sm text-admin-muted mt-1">
+                                                            {blog.blog_type} • {blog.is_published ? 'Gepubliceerd' : 'Concept'}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); setEditingBlog(blog); }}
+                                                            className="p-2 text-theme-purple hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded"
+                                                            title="Bewerken"
+                                                        >
+                                                            <Edit className="h-4 w-4" />
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); handleDeleteBlog(blog.id); }}
+                                                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                                                            title="Verwijderen"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={() => setEditingBlog(blog)}
-                                                        className="p-2 text-theme-purple hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded"
-                                                    >
-                                                        <Edit className="h-4 w-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteBlog(blog.id)}
-                                                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </button>
+
+                                                <div className="flex items-start gap-4">
+                                                    {blog.image && (
+                                                        <div className="w-24 h-16 flex-shrink-0 overflow-hidden rounded-md bg-admin-card-soft">
+                                                            <img
+                                                                src={(blog as any).image?.id ? `/api/assets/${(blog as any).image.id}` : typeof (blog as any).image === 'string' ? `/api/assets/${(blog as any).image}` : '/img/placeholder.svg'}
+                                                                alt={blog.title}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    <div className="flex-1">
+                                                        {blog.excerpt && (
+                                                            <p className="text-admin-muted text-sm mb-2">{blog.excerpt}</p>
+                                                        )}
+                                                        <div className="text-sm">
+                                                            <span className={`inline-block px-2 py-1 text-xs rounded ${blog.is_published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'}`}>{blog.is_published ? 'Gepubliceerd' : 'Concept'}</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            {blog.excerpt && (
-                                                <p className="text-admin-muted text-sm">{blog.excerpt}</p>
-                                            )}
-                                        </div>
-                                    ))}
+                                        ))}
                                     {blogs.length === 0 && (
                                         <div className="text-center py-8 text-admin-muted">
                                             Geen blogs gevonden
