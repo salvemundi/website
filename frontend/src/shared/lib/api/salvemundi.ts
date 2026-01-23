@@ -787,6 +787,18 @@ export const siteSettingsMutations = {
     }
 };
 
+export interface IntroSignup {
+    id: number;
+    first_name: string;
+    middle_name?: string;
+    last_name: string;
+    date_of_birth: string;
+    email: string;
+    phone_number: string;
+    favorite_gif?: string;
+    created_at: string;
+}
+
 export const introSignupsApi = {
     create: async (data: {
         first_name: string;
@@ -800,6 +812,22 @@ export const introSignupsApi = {
         return directusFetch<any>(`/items/intro_signups`, {
             method: 'POST',
             body: JSON.stringify(data)
+        });
+    },
+    getAll: async (): Promise<IntroSignup[]> => {
+        return directusFetch<IntroSignup[]>(
+            `/items/intro_signups?fields=*&sort=-created_at`
+        );
+    },
+    update: async (id: number, data: Partial<IntroSignup>) => {
+        return directusFetch<IntroSignup>(`/items/intro_signups/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        });
+    },
+    delete: async (id: number) => {
+        return directusFetch(`/items/intro_signups/${id}`, {
+            method: 'DELETE'
         });
     }
 };
@@ -822,6 +850,19 @@ export const introBlogsApi = {
     getAll: async (): Promise<IntroBlog[]> => {
         const rows = await directusFetch<IntroBlog[]>(
             `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,likes,updated_at,is_published,blog_type,created_at&filter[is_published][_eq]=true&sort=-updated_at`
+        );
+        return (rows || []).map((r) => {
+            const raw = (r as any).likes;
+            let likes = 0;
+            if (raw !== undefined && raw !== null) {
+                likes = typeof raw === 'number' ? raw : parseInt(String(raw), 10) || 0;
+            }
+            return { ...r, likes };
+        });
+    },
+    getAllAdmin: async (): Promise<IntroBlog[]> => {
+        const rows = await directusFetch<IntroBlog[]>(
+            `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,likes,updated_at,is_published,blog_type,created_at&sort=-updated_at`
         );
         return (rows || []).map((r) => {
             const raw = (r as any).likes;
@@ -855,6 +896,23 @@ export const introBlogsApi = {
             }
             return { ...r, likes };
         });
+    },
+    create: async (data: Partial<IntroBlog>) => {
+        return directusFetch<IntroBlog>(`/items/intro_blogs`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    update: async (id: number, data: Partial<IntroBlog>) => {
+        return directusFetch<IntroBlog>(`/items/intro_blogs/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        });
+    },
+    delete: async (id: number) => {
+        return directusFetch(`/items/intro_blogs/${id}`, {
+            method: 'DELETE'
+        });
     }
 };
 
@@ -871,6 +929,7 @@ export interface IntroPlanningItem {
     // optional icon name selected in Directus (e.g. 'MapPin', 'Clock')
     icon?: string;
     sort_order: number;
+    status?: 'published' | 'draft' | 'archived';
 }
 
 export const introPlanningApi = {
@@ -878,6 +937,28 @@ export const introPlanningApi = {
         return directusFetch<IntroPlanningItem[]>(
             `/items/intro_planning?fields=id,day,date,time_start,time_end,title,description,location,is_mandatory,icon,sort_order&filter[status][_eq]=published&sort=sort_order`
         );
+    },
+    getAllAdmin: async (): Promise<IntroPlanningItem[]> => {
+        return directusFetch<IntroPlanningItem[]>(
+            `/items/intro_planning?fields=id,day,date,time_start,time_end,title,description,location,is_mandatory,icon,sort_order,status&sort=sort_order`
+        );
+    },
+    create: async (data: Partial<IntroPlanningItem>) => {
+        return directusFetch<IntroPlanningItem>(`/items/intro_planning`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    update: async (id: number, data: Partial<IntroPlanningItem>) => {
+        return directusFetch<IntroPlanningItem>(`/items/intro_planning/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        });
+    },
+    delete: async (id: number) => {
+        return directusFetch(`/items/intro_planning/${id}`, {
+            method: 'DELETE'
+        });
     }
 };
 
@@ -904,6 +985,22 @@ export const introParentSignupsApi = {
         return directusFetch<IntroParentSignup[]>(
             `/items/intro_parent_signups?fields=*&filter[user_id][_eq]=${userId}`
         );
+    },
+    getAll: async (): Promise<IntroParentSignup[]> => {
+        return directusFetch<IntroParentSignup[]>(
+            `/items/intro_parent_signups?fields=*&sort=-created_at`
+        );
+    },
+    update: async (id: number, data: Partial<IntroParentSignup>) => {
+        return directusFetch<IntroParentSignup>(`/items/intro_parent_signups/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        });
+    },
+    delete: async (id: number) => {
+        return directusFetch(`/items/intro_parent_signups/${id}`, {
+            method: 'DELETE'
+        });
     }
 };
 
