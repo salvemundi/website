@@ -152,7 +152,7 @@ export default function AdminActiviteitenPage() {
                 <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                     <button
                         onClick={() => router.push('/admin/activiteiten/nieuw')}
-                        className="bg-theme-purple text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2 dark:bg-theme-purple dark:text-white dark:hover:shadow-xl dark:hover:-translate-y-0.5 dark:focus:ring-2 dark:focus:ring-theme-purple/30"
+                        className="bg-theme-purple text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2"
                     >
                         <Plus className="h-5 w-5" />
                         Nieuwe Activiteit
@@ -161,41 +161,38 @@ export default function AdminActiviteitenPage() {
                     <div className="flex gap-2 flex-wrap">
                         <button
                             onClick={() => setFilter('all')}
-                            className={`px-4 py-2 rounded-full font-medium transition ${
-                                filter === 'all'
+                            className={`px-4 py-2 rounded-full font-medium transition ${filter === 'all'
                                     ? 'bg-theme-purple text-white'
-                                    : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-transparent dark:text-white/70 dark:hover:bg-white/5'
-                            }`}
+                                    : 'bg-admin-card-soft text-admin-muted hover:bg-admin-hover'
+                                }`}
                         >
                             Alle
                         </button>
                         <button
                             onClick={() => setFilter('upcoming')}
-                            className={`px-4 py-2 rounded-full font-medium transition ${
-                                filter === 'upcoming'
+                            className={`px-4 py-2 rounded-full font-medium transition ${filter === 'upcoming'
                                     ? 'bg-theme-purple text-white'
-                                    : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-transparent dark:text-white/70 dark:hover:bg-white/5'
-                            }`}
+                                    : 'bg-admin-card-soft text-admin-muted hover:bg-admin-hover'
+                                }`}
                         >
                             Aankomend
                         </button>
                         <button
                             onClick={() => setFilter('past')}
-                            className={`px-4 py-2 rounded-full font-medium transition ${
-                                filter === 'past'
+                            className={`px-4 py-2 rounded-full font-medium transition ${filter === 'past'
                                     ? 'bg-theme-purple text-white'
-                                    : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-transparent dark:text-white/70 dark:hover:bg-white/5'
-                            }`}
+                                    : 'bg-admin-card-soft text-admin-muted hover:bg-admin-hover'
+                                }`}
                         >
                             Verleden
                         </button>
                     </div>
                     <div className="flex items-center gap-3">
-                        <label className="text-sm text-slate-600 dark:text-white/70">Toon</label>
+                        <label className="text-sm text-admin-muted">Toon</label>
                         <select
                             value={pageSize === -1 ? 'all' : pageSize}
                             onChange={(e) => setPageSize(e.target.value === 'all' ? -1 : parseInt(e.target.value, 10))}
-                            className="rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-[#1f1921] text-sm px-3 py-1 outline-none"
+                            className="rounded-full border border-admin bg-admin-card text-admin text-sm px-3 py-1 outline-none"
                         >
                             <option value="10">10</option>
                             <option value="15">15</option>
@@ -207,13 +204,13 @@ export default function AdminActiviteitenPage() {
                 {/* Search */}
                 <div className="mb-6">
                     <div className="relative max-w-md">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-admin-muted" />
                         <input
                             type="text"
                             placeholder="Zoek activiteiten..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 rounded-full border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                            className="w-full pl-12 pr-4 py-3 rounded-full border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
                         />
                     </div>
                 </div>
@@ -224,9 +221,9 @@ export default function AdminActiviteitenPage() {
                         <div className="h-12 w-12 animate-spin rounded-full border-4 border-theme-purple/20 border-t-theme-purple" />
                     </div>
                 ) : filteredEvents.length === 0 ? (
-                    <div className="bg-white dark:bg-[#1f1921] dark:border dark:border-white/10 rounded-2xl shadow-lg p-12 text-center">
-                        <Calendar className="h-16 w-16 text-slate-300 dark:text-white/60 mx-auto mb-4" />
-                        <p className="text-slate-600 dark:text-white/90 text-lg">
+                    <div className="bg-admin-card rounded-2xl shadow-lg p-12 text-center">
+                        <Calendar className="h-16 w-16 text-admin-muted mx-auto mb-4" />
+                        <p className="text-admin-muted text-lg">
                             {searchQuery ? 'Geen activiteiten gevonden' : 'Nog geen activiteiten aangemaakt'}
                         </p>
                     </div>
@@ -235,15 +232,14 @@ export default function AdminActiviteitenPage() {
                         {((pageSize === -1) ? filteredEvents : filteredEvents.slice(0, pageSize)).map((event) => (
                             <div
                                 key={event.id}
-                                className={`bg-white dark:bg-[#1f1921] dark:border dark:border-white/10 rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-all ${
-                                    isEventPast(event.event_date) ? 'opacity-75' : ''
-                                }`}
+                                className={`bg-admin-card rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-all ${isEventPast(event.event_date) ? 'opacity-75' : ''
+                                    }`}
                             >
                                 <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
                                     {/* Event Info */}
                                     <div className="flex-1">
                                         <div className="flex items-start justify-between mb-3">
-                                                <div className="flex items-start gap-4 flex-1 min-w-0">
+                                            <div className="flex items-start gap-4 flex-1 min-w-0">
                                                 {/* Event Image */}
                                                 {event.image && (
                                                     <div className="relative w-12 h-12 sm:w-16 sm:h-16 md:w-24 md:h-24 flex-shrink-0">
@@ -257,13 +253,13 @@ export default function AdminActiviteitenPage() {
                                                         />
                                                     </div>
                                                 )}
-                                                
+
                                                 {/* Event Title and Details */}
                                                 <div className="flex-1 min-w-0">
-                                                    <h3 className="text-lg sm:text-xl font-bold text-slate-800 dark:text-white mb-2 truncate">
+                                                    <h3 className="text-lg sm:text-xl font-bold text-admin mb-2 truncate">
                                                         {event.name}
                                                     </h3>
-                                                    <div className="flex flex-wrap gap-3 text-sm text-slate-600 dark:text-white/70">
+                                                    <div className="flex flex-wrap gap-3 text-sm text-admin-muted">
                                                         <div className="flex items-center gap-1">
                                                             <Calendar className="h-4 w-4" />
                                                             <span>{formatDate(event.event_date)}</span>
@@ -276,22 +272,22 @@ export default function AdminActiviteitenPage() {
                                                         )}
                                                         {event.contact && (
                                                             <div className="flex items-center gap-2">
-                                                                <span className="text-slate-500 dark:text-white/70">Contact:</span>
-                                                                <span className="font-medium text-slate-700 dark:text-white">{event.contact}</span>
+                                                                <span className="text-admin-muted">Contact:</span>
+                                                                <span className="font-medium text-admin">{event.contact}</span>
                                                             </div>
                                                         )}
                                                     </div>
                                                 </div>
                                             </div>
                                             {isEventPast(event.event_date) && (
-                                                <span className="bg-slate-200 text-slate-600 px-3 py-1 rounded-full text-sm font-medium">
+                                                <span className="bg-admin-card-soft text-admin-muted px-3 py-1 rounded-full text-sm font-medium">
                                                     Afgelopen
                                                 </span>
                                             )}
                                         </div>
 
                                         {event.description && (
-                                            <p className="text-slate-600 dark:text-white/70 text-sm mb-2 line-clamp-2">
+                                            <p className="text-admin-muted text-sm mb-2 line-clamp-2">
                                                 {event.description}
                                             </p>
                                         )}
@@ -299,12 +295,12 @@ export default function AdminActiviteitenPage() {
                                         <div className="flex flex-wrap gap-4 text-sm items-center">
                                             <div className="flex items-center gap-2">
                                                 <Users className="h-4 w-4 text-theme-purple" />
-                                                <span className="font-semibold text-slate-800 dark:text-white bg-purple-50 dark:bg-white/5 text-purple-700 dark:text-purple-300 px-2 py-1 rounded-full">{event.signup_count || 0}</span>
-                                                {event.max_sign_ups && <span className="text-slate-500 dark:text-white/70">/ {event.max_sign_ups}</span>}
-                                                <span className="text-slate-500 dark:text-white/70">aanmeldingen</span>
+                                                <span className="font-semibold text-admin bg-admin-card-soft text-theme-purple px-2 py-1 rounded-full">{event.signup_count || 0}</span>
+                                                {event.max_sign_ups && <span className="text-admin-muted">/ {event.max_sign_ups}</span>}
+                                                <span className="text-admin-muted">aanmeldingen</span>
                                             </div>
                                             {(event.price_members !== undefined || event.price_non_members !== undefined) && (
-                                                <div className="text-slate-600">
+                                                <div className="text-admin-muted">
                                                     {event.price_members === 0 && event.price_non_members === 0 ? (
                                                         <span className="font-semibold text-green-600">Gratis</span>
                                                     ) : (
@@ -320,7 +316,7 @@ export default function AdminActiviteitenPage() {
                                     {/* Actions */}
                                     <div className="flex flex-row md:flex-col gap-2 justify-end items-end w-full md:w-auto flex-wrap">
                                         <button
-                                            onClick={() => router.push(`/admin/activiteiten/${event.id}/aanmeldingen`) }
+                                            onClick={() => router.push(`/admin/activiteiten/${event.id}/aanmeldingen`)}
                                             className="flex items-center gap-1 px-3 py-2 w-auto text-sm bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-white dark:hover:bg-blue-800/30 rounded-lg hover:bg-blue-100 transition font-medium"
                                             title="Bekijk aanmeldingen"
                                         >
@@ -339,8 +335,8 @@ export default function AdminActiviteitenPage() {
                                                 return (
                                                     <>
                                                         <button
-                                                            onClick={() => router.push(`/admin/activiteiten/${event.id}/bewerken`) }
-                                                            className="flex items-center gap-1 px-3 py-2 w-auto text-sm bg-slate-50 text-slate-600 dark:bg-slate-800/30 dark:text-white dark:hover:bg-slate-700/30 rounded-lg hover:bg-slate-100 transition font-medium"
+                                                            onClick={() => router.push(`/admin/activiteiten/${event.id}/bewerken`)}
+                                                            className="flex items-center gap-1 px-3 py-2 w-auto text-sm bg-admin-card-soft text-admin-muted dark:text-white hover:bg-admin-hover transition font-medium"
                                                             title="Bewerk activiteit"
                                                         >
                                                             <Edit className="h-4 w-4" />

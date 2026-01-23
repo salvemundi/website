@@ -152,22 +152,22 @@ export default function ReisAanmeldingenPage() {
 
     const getPaymentStatus = (signup: TripSignup) => {
         if (signup.full_payment_paid) {
-            return { label: 'Volledig betaald', color: 'bg-green-100 text-green-800' };
+            return { label: 'Volledig betaald', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' };
         } else if (signup.deposit_paid) {
-            return { label: 'Aanbetaling voldaan', color: 'bg-yellow-100 text-yellow-800' };
+            return { label: 'Aanbetaling voldaan', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' };
         } else {
-            return { label: 'Nog geen betaling', color: 'bg-red-100 text-red-800' };
+            return { label: 'Nog geen betaling', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' };
         }
     };
 
     const getStatusBadge = (status: string) => {
         const statusMap: Record<string, { label: string; color: string }> = {
-            registered: { label: 'Geregistreerd', color: 'bg-blue-100 text-blue-800' },
-            waitlist: { label: 'Wachtlijst', color: 'bg-orange-100 text-orange-800' },
-            confirmed: { label: 'Bevestigd', color: 'bg-green-100 text-green-800' },
-            cancelled: { label: 'Geannuleerd', color: 'bg-gray-100 text-gray-800' },
+            registered: { label: 'Geregistreerd', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' },
+            waitlist: { label: 'Wachtlijst', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300' },
+            confirmed: { label: 'Bevestigd', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' },
+            cancelled: { label: 'Geannuleerd', color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' },
         };
-        return statusMap[status] || { label: status, color: 'bg-gray-100 text-gray-800' };
+        return statusMap[status] || { label: status, color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' };
     };
 
     const downloadExcel = () => {
@@ -279,9 +279,9 @@ export default function ReisAanmeldingenPage() {
                 method: 'PATCH',
                 body: JSON.stringify({ status: newStatus })
             });
-            
+
             setSignups(signups.map(s => s.id === id ? { ...s, status: newStatus } : s));
-            
+
             // Send email notification to participant
             if (signup && selectedTrip && oldStatus !== newStatus) {
                 try {
@@ -355,7 +355,7 @@ export default function ReisAanmeldingenPage() {
         <>
             <PageHeader
                 title="Reis Aanmeldingen"
-                    // backgroundImage="/img/backgrounds/committees-bg.jpg"
+            // backgroundImage="/img/backgrounds/committees-bg.jpg"
             />
 
             <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -370,7 +370,7 @@ export default function ReisAanmeldingenPage() {
                             const trip = trips.find(t => t.id === parseInt(e.target.value));
                             setSelectedTrip(trip || null);
                         }}
-                        className="w-full md:w-auto px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                        className="w-full md:w-auto px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                     >
                         {trips.map(trip => (
                             <option key={trip.id} value={trip.id}>
@@ -383,51 +383,51 @@ export default function ReisAanmeldingenPage() {
                 {/* Statistics */}
                 {selectedTrip && (
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-                        <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-lg shadow p-6 border-l-4 border-blue-500">
+                        <div className="bg-admin-card rounded-lg shadow p-6 border-l-4 border-blue-500">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-gray-500 text-sm dark:text-white">Totaal</p>
-                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+                                    <p className="text-admin-muted text-sm">Totaal</p>
+                                    <p className="text-2xl font-bold text-admin">{stats.total}</p>
                                 </div>
                                 <Users className="h-8 w-8 text-blue-500" />
                             </div>
                         </div>
 
-                        <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-lg shadow p-6 border-l-4 border-green-500">
+                        <div className="bg-admin-card rounded-lg shadow p-6 border-l-4 border-green-500">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-gray-500 text-sm dark:text-white">Bevestigd</p>
-                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.confirmed}</p>
+                                    <p className="text-admin-muted text-sm">Bevestigd</p>
+                                    <p className="text-2xl font-bold text-admin">{stats.confirmed}</p>
                                 </div>
                                 <UserCheck className="h-8 w-8 text-green-500" />
                             </div>
                         </div>
 
-                        <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-lg shadow p-6 border-l-4 border-orange-500">
+                        <div className="bg-admin-card rounded-lg shadow p-6 border-l-4 border-orange-500">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-gray-500 text-sm dark:text-white">Wachtlijst</p>
-                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.waitlist}</p>
+                                    <p className="text-admin-muted text-sm">Wachtlijst</p>
+                                    <p className="text-2xl font-bold text-admin">{stats.waitlist}</p>
                                 </div>
                                 <UserX className="h-8 w-8 text-orange-500" />
                             </div>
                         </div>
 
-                        <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-lg shadow p-6 border-l-4 border-yellow-500">
+                        <div className="bg-admin-card rounded-lg shadow p-6 border-l-4 border-yellow-500">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-gray-500 text-sm dark:text-white">Aanbetaling</p>
-                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.depositPaid}</p>
+                                    <p className="text-admin-muted text-sm">Aanbetaling</p>
+                                    <p className="text-2xl font-bold text-admin">{stats.depositPaid}</p>
                                 </div>
                                 <Plane className="h-8 w-8 text-yellow-500" />
                             </div>
                         </div>
 
-                        <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-lg shadow p-6 border-l-4 border-purple-500">
+                        <div className="bg-admin-card rounded-lg shadow p-6 border-l-4 border-purple-500">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-gray-500 text-sm dark:text-white">Volledig betaald</p>
-                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.fullPaid}</p>
+                                    <p className="text-admin-muted text-sm">Volledig betaald</p>
+                                    <p className="text-2xl font-bold text-admin">{stats.fullPaid}</p>
                                 </div>
                                 <Plane className="h-8 w-8 text-purple-500" />
                             </div>
@@ -436,18 +436,18 @@ export default function ReisAanmeldingenPage() {
                 )}
 
                 {/* Filters and Actions */}
-                <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-lg shadow p-6 mb-6">
+                <div className="bg-admin-card rounded-lg shadow p-6 mb-6">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         {/* Search */}
                         <div className="md:col-span-2">
                             <div className="relative">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-[var(--text-muted-dark)] h-5 w-5" />
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-admin-muted h-5 w-5" />
                                 <input
                                     type="text"
                                     placeholder="Zoek op naam of email..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                    className="w-full pl-10 pr-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                                 />
                             </div>
                         </div>
@@ -457,7 +457,7 @@ export default function ReisAanmeldingenPage() {
                             <select
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                             >
                                 <option value="all">Alle statussen</option>
                                 <option value="registered">Geregistreerd</option>
@@ -472,7 +472,7 @@ export default function ReisAanmeldingenPage() {
                             <select
                                 value={roleFilter}
                                 onChange={(e) => setRoleFilter(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                             >
                                 <option value="all">Alle rollen</option>
                                 <option value="participant">Deelnemer</option>
@@ -485,7 +485,7 @@ export default function ReisAanmeldingenPage() {
                     <div className="flex flex-wrap gap-4 mt-4">
                         <button
                             onClick={() => router.push('/admin/reis/instellingen')}
-                            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                            className="flex items-center gap-2 px-4 py-2 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition"
                         >
                             <Edit className="h-5 w-5" />
                             Reis Instellingen
@@ -519,178 +519,178 @@ export default function ReisAanmeldingenPage() {
                 </div>
 
                 {/* Signups Table */}
-                <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-lg shadow overflow-hidden">
+                <div className="bg-admin-card rounded-lg shadow overflow-hidden">
                     {isLoading ? (
                         <div className="flex items-center justify-center py-12">
-                            <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+                            <Loader2 className="h-8 w-8 animate-spin text-theme-purple" />
                         </div>
                     ) : filteredSignups.length === 0 ? (
                         <div className="text-center py-12">
-                            <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                            <p className="text-gray-600">Geen aanmeldingen gevonden</p>
+                            <AlertCircle className="h-12 w-12 text-admin-muted mx-auto mb-4" />
+                            <p className="text-admin-muted">Geen aanmeldingen gevonden</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full">
-                                <thead className="bg-gray-50 dark:bg-[var(--bg-soft-dark)] border-b">
+                                <thead className="bg-admin-card-soft border-b border-admin">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
                                             Naam
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
                                             Geboortedatum
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
                                             Rol
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
                                             Status
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
                                             Betalingstatus
                                         </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-admin-muted uppercase tracking-wider">
                                             Acties
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white dark:bg-transparent divide-y divide-gray-200 dark:divide-gray-700">
+                                <tbody className="bg-admin-card divide-y divide-admin">
                                     {filteredSignups.map(signup => {
                                         const paymentStatus = getPaymentStatus(signup);
                                         const statusBadge = getStatusBadge(signup.status);
-                                        
+
                                         return (
-                                                                    <Fragment key={signup.id}>
-                                                <tr key={signup.id} onClick={() => toggleExpand(signup)} className="hover:bg-gray-50 dark:hover:bg-[var(--bg-soft-dark)] cursor-pointer">
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm font-medium text-gray-900">
-                                                        {signup.first_name} {signup.middle_name} {signup.last_name}
-                                                    </div>
-                                                    <div className="text-sm text-gray-500 dark:text-[var(--text-muted-dark)]">{signup.email}</div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    {signup.date_of_birth 
-                                                        ? format(new Date(signup.date_of_birth), 'dd-MM-yyyy')
-                                                        : '-'}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${signup.role === 'crew' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>
-                                                        {signup.role === 'crew' ? 'Crew' : 'Deelnemer'}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <select
-                                                        value={signup.status}
-                                                        onClick={(e) => e.stopPropagation()}
-                                                        onChange={(e) => handleStatusChange(signup.id, e.target.value)}
-                                                        className={`px-2 py-1 text-xs font-semibold rounded-full border-0 ${statusBadge.color} dark:bg-opacity-20`}
-                                                    >
-                                                        <option value="registered">Geregistreerd</option>
-                                                        <option value="confirmed">Bevestigd</option>
-                                                        <option value="waitlist">Wachtlijst</option>
-                                                        <option value="cancelled">Geannuleerd</option>
-                                                    </select>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${paymentStatus.color}`}>
-                                                        {paymentStatus.label}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); router.push(`/admin/reis/deelnemer/${signup.id}`); }}
-                                                        className="text-purple-600 hover:text-purple-900 mr-4"
-                                                    >
-                                                        <Edit className="h-5 w-5" />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); handleDelete(signup.id); }}
-                                                        className="text-red-600 hover:text-red-900"
-                                                    >
-                                                        <Trash2 className="h-5 w-5" />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); toggleExpand(signup); }}
-                                                        className="ml-3 text-gray-600 hover:text-gray-900"
-                                                        title="Toon details"
-                                                    >
-                                                        {expandedIds.includes(signup.id) ? '▲' : '▼'}
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                            {expandedIds.includes(signup.id) && (
-                                                <tr key={`details-${signup.id}`} className="bg-gray-50">
-                                                    <td colSpan={6} className="px-6 py-4">
-                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                                            <div>
-                                                                <p className="text-sm font-semibold text-gray-700">Contact</p>
-                                                                <p className="text-sm text-gray-900">{signup.email}</p>
-                                                                <p className="text-sm text-gray-900">{signup.phone_number || '-'}</p>
-                                                                <p className="text-sm text-gray-900">ID Type: {signup.id_document_type ? (signup.id_document_type === 'passport' ? 'Paspoort' : signup.id_document_type === 'id_card' ? 'ID Kaart' : signup.id_document_type) : '-'}</p>
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-sm font-semibold text-gray-700">Extra informatie</p>
-                                                                <p className="text-sm text-gray-900">Allergieën: {signup.allergies || '-'}</p>
-                                                                <p className="text-sm text-gray-900">Bijzonderheden: {signup.special_notes || '-'}</p>
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-sm font-semibold text-gray-700">Activiteiten</p>
-                                                                {signupActivitiesMap[signup.id] ? (
-                                                                    signupActivitiesMap[signup.id].length > 0 ? (
-                                                                        signupActivitiesMap[signup.id].map(a => (
-                                                                            <div key={a.id} className="flex items-center justify-between text-sm text-gray-900">
-                                                                                <span>{a.name}</span>
-                                                                                <span className="font-semibold">€{Number(a.price).toFixed(2)}</span>
-                                                                            </div>
-                                                                        ))
-                                                                    ) : (
-                                                                        <p className="text-sm text-gray-600">Geen activiteiten</p>
-                                                                    )
-                                                                ) : (
-                                                                    <p className="text-sm text-gray-600">Laden...</p>
-                                                                )}
-                                                            </div>
+                                            <Fragment key={signup.id}>
+                                                <tr key={signup.id} onClick={() => toggleExpand(signup)} className="hover:bg-admin-hover cursor-pointer">
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="text-sm font-medium text-admin">
+                                                            {signup.first_name} {signup.middle_name} {signup.last_name}
                                                         </div>
-                                                        
-                                                        {/* Email buttons */}
-                                                        <div className="border-t pt-4 mt-4">
-                                                            <p className="text-sm font-semibold text-gray-700 mb-2">Betaalverzoek versturen</p>
-                                                            <div className="flex gap-2">
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        handleResendPaymentEmail(signup.id, 'deposit');
-                                                                    }}
-                                                                    disabled={sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'deposit'}
-                                                                    className="flex items-center gap-2 px-4 py-2 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                                                >
-                                                                    {sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'deposit' ? (
-                                                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                                                    ) : (
-                                                                        <Send className="h-4 w-4" />
-                                                                    )}
-                                                                    Aanbetaling
-                                                                </button>
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        handleResendPaymentEmail(signup.id, 'final');
-                                                                    }}
-                                                                    disabled={sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'final'}
-                                                                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                                                >
-                                                                    {sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'final' ? (
-                                                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                                                    ) : (
-                                                                        <Send className="h-4 w-4" />
-                                                                    )}
-                                                                    Restbetaling
-                                                                </button>
-                                                            </div>
-                                                        </div>
+                                                        <div className="text-sm text-admin-muted">{signup.email}</div>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-admin">
+                                                        {signup.date_of_birth
+                                                            ? format(new Date(signup.date_of_birth), 'dd-MM-yyyy')
+                                                            : '-'}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${signup.role === 'crew' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'}`}>
+                                                            {signup.role === 'crew' ? 'Crew' : 'Deelnemer'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <select
+                                                            value={signup.status}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            onChange={(e) => handleStatusChange(signup.id, e.target.value)}
+                                                            className={`px-2 py-1 text-xs font-semibold rounded-full border-0 ${statusBadge.color} dark:bg-opacity-20`}
+                                                        >
+                                                            <option value="registered">Geregistreerd</option>
+                                                            <option value="confirmed">Bevestigd</option>
+                                                            <option value="waitlist">Wachtlijst</option>
+                                                            <option value="cancelled">Geannuleerd</option>
+                                                        </select>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${paymentStatus.color}`}>
+                                                            {paymentStatus.label}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); router.push(`/admin/reis/deelnemer/${signup.id}`); }}
+                                                            className="text-theme-purple hover:text-theme-purple-dark mr-4"
+                                                        >
+                                                            <Edit className="h-5 w-5" />
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); handleDelete(signup.id); }}
+                                                            className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                                                        >
+                                                            <Trash2 className="h-5 w-5" />
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); toggleExpand(signup); }}
+                                                            className="ml-3 text-admin-muted hover:text-admin"
+                                                            title="Toon details"
+                                                        >
+                                                            {expandedIds.includes(signup.id) ? '▲' : '▼'}
+                                                        </button>
                                                     </td>
                                                 </tr>
-                                            )}
+                                                {expandedIds.includes(signup.id) && (
+                                                    <tr key={`details-${signup.id}`} className="bg-admin-card-soft">
+                                                        <td colSpan={6} className="px-6 py-4">
+                                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                                                <div>
+                                                                    <p className="text-sm font-semibold text-admin">Contact</p>
+                                                                    <p className="text-sm text-admin">{signup.email}</p>
+                                                                    <p className="text-sm text-admin">{signup.phone_number || '-'}</p>
+                                                                    <p className="text-sm text-admin">ID Type: {signup.id_document_type ? (signup.id_document_type === 'passport' ? 'Paspoort' : signup.id_document_type === 'id_card' ? 'ID Kaart' : signup.id_document_type) : '-'}</p>
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-sm font-semibold text-admin">Extra informatie</p>
+                                                                    <p className="text-sm text-admin">Allergieën: {signup.allergies || '-'}</p>
+                                                                    <p className="text-sm text-admin">Bijzonderheden: {signup.special_notes || '-'}</p>
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-sm font-semibold text-admin">Activiteiten</p>
+                                                                    {signupActivitiesMap[signup.id] ? (
+                                                                        signupActivitiesMap[signup.id].length > 0 ? (
+                                                                            signupActivitiesMap[signup.id].map(a => (
+                                                                                <div key={a.id} className="flex items-center justify-between text-sm text-admin">
+                                                                                    <span>{a.name}</span>
+                                                                                    <span className="font-semibold">€{Number(a.price).toFixed(2)}</span>
+                                                                                </div>
+                                                                            ))
+                                                                        ) : (
+                                                                            <p className="text-sm text-admin-muted">Geen activiteiten</p>
+                                                                        )
+                                                                    ) : (
+                                                                        <p className="text-sm text-admin-muted">Laden...</p>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Email buttons */}
+                                                            <div className="border-t pt-4 mt-4">
+                                                                <p className="text-sm font-semibold text-admin mb-2">Betaalverzoek versturen</p>
+                                                                <div className="flex gap-2">
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            handleResendPaymentEmail(signup.id, 'deposit');
+                                                                        }}
+                                                                        disabled={sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'deposit'}
+                                                                        className="flex items-center gap-2 px-4 py-2 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                    >
+                                                                        {sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'deposit' ? (
+                                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                                        ) : (
+                                                                            <Send className="h-4 w-4" />
+                                                                        )}
+                                                                        Aanbetaling
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            handleResendPaymentEmail(signup.id, 'final');
+                                                                        }}
+                                                                        disabled={sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'final'}
+                                                                        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                    >
+                                                                        {sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'final' ? (
+                                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                                        ) : (
+                                                                            <Send className="h-4 w-4" />
+                                                                        )}
+                                                                        Restbetaling
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                )}
                                             </Fragment>
                                         );
                                     })}

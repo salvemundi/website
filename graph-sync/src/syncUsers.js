@@ -102,8 +102,14 @@ let syncStatus = {
     processed: 0,
     errorCount: 0,
     missingDataCount: 0,
+    warningCount: 0,
+    successCount: 0,
+    excludedCount: 0,
     errors: [], // [{ email: string, error: string, timestamp: string }]
     missingData: [], // [{ email: string, reason: string }]
+    warnings: [], // [{ type: string, email: string, message: string }]
+    successfulUsers: [], // [{ email: string }]
+    excludedUsers: [], // [{ email: string }]
     startTime: null,
     endTime: null,
     lastRunSuccess: null
@@ -540,7 +546,7 @@ async function updateGraphUserFromDirectusById(directusUserId) {
     await updateGraphUserFromDirectusByEmail(dUser.email);
 }
 
-async function updateDirectusUserFromGraph(userId, selectedFields = null) {
+async function updateDirectusUserFromGraph(userId, selectedFields = null, forceLink = false) {
     const lockKey = `entra-${userId}`;
     if (!acquireLock(lockKey)) {
         return;
@@ -624,14 +630,110 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
         console.log(`[SYNC] ${email} groups=${groups.length} -> role=${role || 'none'}`);
 
 
-        const existingRes = await axios.get(
-            `${process.env.DIRECTUS_URL}/users?filter[email][_eq]=${encodeURIComponent(email)}&fields=id,email,first_name,last_name,phone_number,status,role,membership_expiry,fontys_email,date_of_birth,title`,
+        // Priority 1: Search by entra_id
+        const entraIdRes = await axios.get(
+            `${process.env.DIRECTUS_URL}/users?filter[entra_id][_eq]=${encodeURIComponent(userId)}&fields=id,email,first_name,last_name,phone_number,status,role,membership_expiry,fontys_email,date_of_birth,title,entra_id`,
             { headers: DIRECTUS_HEADERS }
         );
+        const existingByEntra = entraIdRes.data?.data?.[0] || null;
 
-        const existingUser = existingRes.data?.data?.[0] || null;
+        // Priority 2: Search by email (for warnings/manual linking)
+        const emailRes = await axios.get(
+            `${process.env.DIRECTUS_URL}/users?filter[email][_eq]=${encodeURIComponent(email)}&fields=id,email,first_name,last_name,phone_number,status,role,membership_expiry,fontys_email,date_of_birth,title,entra_id`,
+            { headers: DIRECTUS_HEADERS }
+        );
+        const existingByEmail = emailRes.data?.data || [];
+
+        let existingUser = existingByEntra;
+        let warning = null;
+
+        if (!existingUser && existingByEmail.length > 0) {
+            // Case: Found by email but not by entra_id
+            if (existingByEmail.length === 1) {
+                const user = existingByEmail[0];
+                if (!user.entra_id) {
+                    warning = {
+                        type: 'LINK_REQUIRED',
+                        email: email,
+                        directusId: user.id,
+                        message: `Account gevonden op e-mail, maar heeft nog geen Entra ID gekoppeld.`
+                    };
+                } else {
+                    warning = {
+                        type: 'CONFLICT',
+                        email: email,
+                        directusId: user.id,
+                        message: `E-mail match gevonden, maar dit account is al gekoppeld aan een andere Entra ID: ${user.entra_id}`
+                    };
+                }
+            } else {
+                warning = {
+                    type: 'MULTIPLE_ACCOUNTS',
+                    email: email,
+                    message: `Meerdere Directus accounts gevonden voor dit e-mailadres.`
+                };
+            }
+        }
+
+        if (warning) {
+            // If no linked account exists and we have a warning, we skip to prevent further duplication
+            // UNLESS forceLink is true and it's a LINK_REQUIRED case (single email match with no entra_id)
+            if (!existingUser) {
+                if (forceLink && warning?.type === 'LINK_REQUIRED' && existingByEmail.length === 1) {
+                    console.log(`[SYNC] 🔗 Force linking ${email} (ID: ${existingByEmail[0].id}) to Entra ID ${userId}`);
+                    existingUser = existingByEmail[0];
+                    // Don't add warning since we're successfully linking
+                } else {
+                    // Only add warning if we're NOT force linking
+                    syncStatus.warningCount++;
+                    syncStatus.warnings.push(warning);
+                    console.log(`[SYNC] ⚠️ Warning for ${email}: ${warning.message}`);
+                    console.log(`[SYNC] Skipping ${email} to prevent further duplication. Manual resolution required.`);
+                    return;
+                }
+            } else {
+                // User already exists by entra_id but has a warning (e.g., email mismatch)
+                syncStatus.warningCount++;
+                syncStatus.warnings.push(warning);
+                console.log(`[SYNC] ⚠️ Warning for ${email}: ${warning.message}`);
+            }
+        }
+
+        // Check for duplicate accounts AFTER linking (case-insensitive email check)
+        // This catches cases like "Ruben.Dijs@..." and "ruben.dijs@..." existing simultaneously
+        if (existingUser && existingByEmail.length > 1) {
+            const duplicateWarning = {
+                type: 'DUPLICATE_DETECTED',
+                email: email,
+                message: `Meerdere accounts gevonden voor ${email}. Handmatig opschonen vereist. IDs: ${existingByEmail.map(u => u.id).join(', ')}`
+            };
+            syncStatus.warningCount++;
+            syncStatus.warnings.push(duplicateWarning);
+            console.log(`[SYNC] ⚠️ Duplicate accounts detected for ${email}: ${existingByEmail.length} accounts found`);
+        }
+
+        // Check if multiple Directus accounts share the same entra_id
+        if (existingByEntra && userId) {
+            const multipleEntraRes = await axios.get(
+                `${process.env.DIRECTUS_URL}/users?filter[entra_id][_eq]=${encodeURIComponent(userId)}&fields=id,email`,
+                { headers: DIRECTUS_HEADERS }
+            );
+            const accountsWithSameEntra = multipleEntraRes.data?.data || [];
+
+            if (accountsWithSameEntra.length > 1) {
+                const entraIdWarning = {
+                    type: 'DUPLICATE_ENTRA_ID',
+                    email: email,
+                    message: `Meerdere accounts gekoppeld aan Entra ID ${userId}. Emails: ${accountsWithSameEntra.map(u => u.email).join(', ')}`
+                };
+                syncStatus.warningCount++;
+                syncStatus.warnings.push(entraIdWarning);
+                console.log(`[SYNC] ⚠️ Multiple accounts with same entra_id ${userId}: ${accountsWithSameEntra.length} accounts`);
+            }
+        }
         const payload = {
             email,
+            entra_id: userId,
             first_name: firstName || null,
             last_name: lastName || null,
             fontys_email: email.includes('@student.fontys.nl') ? email : null,
@@ -690,8 +792,15 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
                 console.log(`[SYNC] ⚠️ Role mismatch for ${email}: existing=${existingRoleVal}, new=${role}. Forcing role in payload.`);
             }
 
-            const changes = hasChanges(existingUser, finalPayload, selectedFields) || roleMismatch;
-            console.log(`[${new Date().toISOString()}] [SYNC] User ${email} exists (ID: ${directusUserId}). Has changes: ${changes}`);
+            // Force update if we're adding entra_id to an existing user (linking)
+            const entraIdMissing = !existingUser.entra_id && payload.entra_id;
+            if (entraIdMissing) {
+                finalPayload.entra_id = payload.entra_id;
+                console.log(`[SYNC] 🔗 Adding entra_id to existing user ${email}: ${payload.entra_id}`);
+            }
+
+            const changes = hasChanges(existingUser, finalPayload, selectedFields) || roleMismatch || entraIdMissing;
+            console.log(`[${new Date().toISOString()}] [SYNC] User ${email} exists (ID: ${directusUserId}). Has changes: ${changes}${entraIdMissing ? ' (entra_id linking)' : ''}`);
 
             if (changes) {
                 try {
@@ -853,6 +962,16 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null) {
         } catch (e) {
             console.error('❌ [SYNC] Error setting membership_status after committee sync:', e.response?.data || e.message);
         }
+
+        // Track successful sync if no errors, warnings, or missing data for this user
+        const hasIssues = syncStatus.errors.some(err => err.email === email) ||
+            syncStatus.warnings.some(warn => warn.email === email) ||
+            syncStatus.missingData.some(item => item.email === email);
+
+        if (!hasIssues) {
+            syncStatus.successCount++;
+            syncStatus.successfulUsers.push({ email });
+        }
     } catch (error) {
         console.error(`❌ [SYNC] Error syncing Entra user ${userId}:`, error.response?.data || error.message);
         throw error;
@@ -920,9 +1039,11 @@ app.post('/sync/initial', bodyParser.json(), async (req, res) => {
     }
 
     const selectedFields = req.body?.fields || null;
+    const forceLink = req.body?.forceLink || false;
+    const activeOnly = req.body?.activeOnly || false;
 
     // Start in background
-    runBulkSync(selectedFields);
+    runBulkSync(selectedFields, forceLink, activeOnly);
 
     res.status(202).json({ success: true, message: 'Bulk sync started in background' });
 });
@@ -952,8 +1073,8 @@ app.post('/sync/user', bodyParser.json(), async (req, res) => {
     }
 });
 
-async function runBulkSync(selectedFields = null) {
-    console.log(`[${new Date().toISOString()}] 🚀 [INIT] Bulk sync STARTING... (Fields: ${selectedFields ? selectedFields.join(', ') : 'ALL'})`);
+async function runBulkSync(selectedFields = null, forceLink = false, activeOnly = false) {
+    console.log(`[${new Date().toISOString()}] 🚀 [INIT] Bulk sync STARTING... (Fields: ${selectedFields ? selectedFields.join(', ') : 'ALL'}, ActiveOnly: ${activeOnly})`);
     syncStatus = {
         active: true,
         status: 'running',
@@ -961,8 +1082,14 @@ async function runBulkSync(selectedFields = null) {
         processed: 0,
         errorCount: 0,
         missingDataCount: 0,
+        warningCount: 0,
+        successCount: 0,
+        excludedCount: 0,
         errors: [],
         missingData: [],
+        warnings: [],
+        successfulUsers: [],
+        excludedUsers: [],
         selectedFields: selectedFields,
         startTime: new Date().toISOString(),
         endTime: null,
@@ -975,14 +1102,29 @@ async function runBulkSync(selectedFields = null) {
 
         const client = await getGraphClient();
         let users = [];
-        let nextLink = '/users?$select=id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,customSecurityAttributes&$top=100';
 
-        console.log(`[${new Date().toISOString()}] 📥 [INIT] Fetching users from Microsoft Graph...`);
-        while (nextLink) {
-            const response = await client.api(nextLink).version('beta').get();
-            users = users.concat(response.value);
-            nextLink = response['@odata.nextLink'] ? response['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0', '') : null;
-            console.log(`[${new Date().toISOString()}] 📥 [INIT] Fetched batch. Total users so far: ${users.length}`);
+        if (activeOnly) {
+            // Fetch only members of the Leden_Actief_Lidmaatschap group
+            console.log(`[${new Date().toISOString()}] 📥 [INIT] Fetching ACTIVE members only from group ${GROUP_IDS.ACTIEVE_LEDEN}...`);
+            let nextLink = `/groups/${GROUP_IDS.ACTIEVE_LEDEN}/members?$select=id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone&$top=100`;
+
+            while (nextLink) {
+                const response = await client.api(nextLink).version('beta').get();
+                users = users.concat(response.value);
+                nextLink = response['@odata.nextLink'] ? response['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0', '').replace('https://graph.microsoft.com/beta', '') : null;
+                console.log(`[${new Date().toISOString()}] 📥 [INIT] Fetched batch. Total active members so far: ${users.length}`);
+            }
+        } else {
+            // Fetch all users
+            let nextLink = '/users?$select=id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,customSecurityAttributes&$top=100';
+
+            console.log(`[${new Date().toISOString()}] 📥 [INIT] Fetching users from Microsoft Graph...`);
+            while (nextLink) {
+                const response = await client.api(nextLink).version('beta').get();
+                users = users.concat(response.value);
+                nextLink = response['@odata.nextLink'] ? response['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0', '') : null;
+                console.log(`[${new Date().toISOString()}] 📥 [INIT] Fetched batch. Total users so far: ${users.length}`);
+            }
         }
 
         syncStatus.total = users.length;
@@ -996,12 +1138,13 @@ async function runBulkSync(selectedFields = null) {
                 const userEmail = (u.mail || u.userPrincipalName || 'Unknown').toLowerCase();
 
                 if (shouldExcludeUser(userEmail)) {
-                    // console.log(`[${new Date().toISOString()}] ⏭️ [INIT] Skipping excluded user: ${userEmail}`);
+                    syncStatus.excludedCount++;
+                    syncStatus.excludedUsers.push({ email: userEmail });
+                    syncStatus.processed++;
                     return;
                 }
-
                 try {
-                    await updateDirectusUserFromGraph(u.id, selectedFields);
+                    await updateDirectusUserFromGraph(u.id, selectedFields, forceLink);
                     syncStatus.processed++;
                 } catch (err) {
                     syncStatus.errorCount++;

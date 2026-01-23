@@ -12,10 +12,11 @@
    COLOR VARIABLES
    ============================================== */
 :root {
-  /* Purple palette */
+  /* Purple palette - Light mode */
   --theme-purple: #663265;
-  --theme-purple-light: #e079d4;
-  --theme-purple-lighter: #f7e5f5;
+  --theme-purple-light: #8c4682;
+  --theme-purple-lighter: #663265;
+  /* Darker in light mode for readability on light backgrounds */
   --theme-purple-dark: #471e3b;
   --theme-purple-darker: #ca70be;
 
@@ -29,16 +30,26 @@
   --theme-text-muted: #6f5772;
   --theme-text-light: #8a7a8c;
 
-  /* Gradient colors */
-  --theme-gradient-start: #a16ca1;
-  --theme-gradient-end: #c47bbb;
+  /* Gradient colors - Light mode: use lighter gradients for cards/tiles */
+  --theme-gradient-start: #f4e9f3;
+  --theme-gradient-end: #e4cbe2;
   --theme-gradient-light-start: #a4539b;
   --theme-gradient-light-end: #d4add0;
   --theme-gradient-dark-start: #471e3b;
   --theme-gradient-dark-end: #663265;
   /* Sticker owner highlight color - used for markers that belong to the current logged-in user */
-  --sticker-mine: #2563eb; /* blue-600 */
-  --sticker-mine-light: #60a5fa; /* blue-400 for light accents */
+  --sticker-mine: #2563eb;
+  /* blue-600 */
+  --sticker-mine-light: #60a5fa;
+  /* blue-400 for light accents */
+
+  /* Admin-specific colors - Light mode */
+  --theme-admin-card: #ffffff;
+  --theme-admin-card-soft: #f8f9fa;
+  --theme-admin-text: #1e293b;
+  --theme-admin-text-muted: #64748b;
+  --theme-admin-border: #e2e8f0;
+  --theme-admin-hover: #f1f5f9;
 }
 
 /* Dark mode overrides */
@@ -60,16 +71,25 @@
   --theme-white-soft: #f5f0f5;
   --theme-white-muted: #e8e0e8;
 
-  /* Gradient colors for dark mode */
-  --theme-gradient-start: #663265;
-  --theme-gradient-end: #a4539b;
+  /* Gradient colors for dark mode - darker for contrast */
+  --theme-gradient-start: #a16ca1;
+  --theme-gradient-end: #c47bbb;
   --theme-gradient-light-start: #a4539b;
   --theme-gradient-light-end: #d4add0;
   --theme-gradient-dark-start: #471e3b;
   --theme-gradient-dark-end: #663265;
   /* Dark mode override for sticker owner color */
-  --sticker-mine: #60a5fa; /* lighter blue on dark bg */
+  --sticker-mine: #60a5fa;
+  /* lighter blue on dark bg */
   --sticker-mine-light: #93c5fd;
+
+  /* Admin-specific colors - Dark mode */
+  --theme-admin-card: #1e293b;
+  --theme-admin-card-soft: #334155;
+  --theme-admin-text: #f1f5f9;
+  --theme-admin-text-muted: #94a3b8;
+  --theme-admin-border: #475569;
+  --theme-admin-hover: #334155;
 }
 
 /* ==============================================
@@ -77,23 +97,48 @@
    ============================================== */
 
 /* Apply theme colors globally to all elements */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   color: inherit;
 }
 
 /* Base text color for all elements */
-html, body {
+html,
+body {
   color: var(--theme-text);
 }
 
 /* Ensure all common text elements use theme colors */
-h1, h2, h3, h4, h5, h6,
-p, span, a, li, label,
-div, section, article, aside,
-header, footer, nav, main,
-button, input, textarea, select,
-td, th, caption,
-blockquote, cite, figcaption {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+a,
+li,
+label,
+div,
+section,
+article,
+aside,
+header,
+footer,
+nav,
+main,
+button,
+input,
+textarea,
+select,
+td,
+th,
+caption,
+blockquote,
+cite,
+figcaption {
   color: inherit;
 }
 
@@ -107,17 +152,22 @@ a:hover {
 }
 
 /* Form elements */
-input, textarea, select {
+input,
+textarea,
+select {
   color: var(--theme-text);
   background-color: inherit;
 }
 
 /* Darker form inputs in dark mode */
-.dark input, .dark textarea, .dark select {
+.dark input,
+.dark textarea,
+.dark select {
   background-color: rgba(0, 0, 0, 0.3);
 }
 
-input::placeholder, textarea::placeholder {
+input::placeholder,
+textarea::placeholder {
   color: var(--theme-text-muted);
 }
 
@@ -155,6 +205,7 @@ input::placeholder, textarea::placeholder {
 .text-theme-purple-lighter {
   color: var(--theme-purple-lighter) !important;
 }
+
 .text-theme-purple-dark {
   color: var(--theme-purple-dark) !important;
 }
@@ -169,11 +220,9 @@ input::placeholder, textarea::placeholder {
 
 /* Base gradient text setup */
 .text-gradient {
-  background: linear-gradient(
-    135deg,
-    var(--theme-gradient-start),
-    var(--theme-gradient-end)
-  );
+  background: linear-gradient(135deg,
+      var(--theme-gradient-start),
+      var(--theme-gradient-end));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -181,11 +230,9 @@ input::placeholder, textarea::placeholder {
 
 /* Light gradient */
 .text-gradient-light {
-  background: linear-gradient(
-    135deg,
-    var(--theme-gradient-light-start),
-    var(--theme-gradient-light-end)
-  );
+  background: linear-gradient(135deg,
+      var(--theme-gradient-light-start),
+      var(--theme-gradient-light-end));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -193,11 +240,9 @@ input::placeholder, textarea::placeholder {
 
 /* Horizontal gradient */
 .text-gradient-horizontal {
-  background: linear-gradient(
-    90deg,
-    var(--theme-gradient-start),
-    var(--theme-gradient-end)
-  );
+  background: linear-gradient(90deg,
+      var(--theme-gradient-start),
+      var(--theme-gradient-end));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -205,11 +250,9 @@ input::placeholder, textarea::placeholder {
 
 /* Vertical gradient */
 .text-gradient-vertical {
-  background: linear-gradient(
-    180deg,
-    var(--theme-gradient-start),
-    var(--theme-gradient-end)
-  );
+  background: linear-gradient(180deg,
+      var(--theme-gradient-start),
+      var(--theme-gradient-end));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -233,12 +276,10 @@ input::placeholder, textarea::placeholder {
 
 /* Animated gradient */
 .text-gradient-animated {
-  background: linear-gradient(
-    135deg,
-    var(--theme-gradient-start),
-    var(--theme-gradient-end),
-    var(--theme-gradient-start)
-  );
+  background: linear-gradient(135deg,
+      var(--theme-gradient-start),
+      var(--theme-gradient-end),
+      var(--theme-gradient-start));
   background-size: 200% 200%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -250,9 +291,11 @@ input::placeholder, textarea::placeholder {
   0% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
+
   100% {
     background-position: 0% 50%;
   }
@@ -283,47 +326,62 @@ input::placeholder, textarea::placeholder {
 }
 
 .bg-gradient-theme {
-  background: linear-gradient(
-    135deg,
-    var(--theme-gradient-start),
-    var(--theme-gradient-end)
-  );
+  background: linear-gradient(135deg,
+      var(--theme-gradient-start),
+      var(--theme-gradient-end));
 }
 
 .bg-gradient-theme-horizontal {
-  background: linear-gradient(
-    90deg,
-    var(--theme-gradient-start),
-    var(--theme-gradient-end)
-  );
+  background: linear-gradient(90deg,
+      var(--theme-gradient-start),
+      var(--theme-gradient-end));
 }
 
 .bg-gradient-theme-vertical {
-  background: linear-gradient(
-    180deg,
-    var(--theme-gradient-start),
-    var(--theme-gradient-end)
-  );
+  background: linear-gradient(180deg,
+      var(--theme-gradient-start),
+      var(--theme-gradient-end));
 }
 
 /* Full page gradient (purple to dark purple to purple) */
 .bg-gradient-theme-page {
-  background: linear-gradient(
-    to bottom right,
-    var(--theme-purple),
-    var(--theme-purple-dark),
-    var(--theme-purple)
-  );
+  background: linear-gradient(to bottom right,
+      var(--theme-purple),
+      var(--theme-purple-dark),
+      var(--theme-purple));
 }
 
 /* Alternative page gradient with more contrast */
 .bg-gradient-theme-page-alt {
-  background: linear-gradient(
-    to bottom right,
-    var(--theme-purple),
-    var(--theme-purple-darker),
-    var(--theme-purple-dark)
-  );
+  background: linear-gradient(to bottom right,
+      var(--theme-purple),
+      var(--theme-purple-darker),
+      var(--theme-purple-dark));
+}
+
+/* Admin-specific utilities */
+.bg-admin-card {
+  background-color: var(--theme-admin-card);
+}
+
+.bg-admin-card-soft {
+  background-color: var(--theme-admin-card-soft);
+}
+
+.text-admin {
+  color: var(--theme-admin-text);
+}
+
+.text-admin-muted {
+  color: var(--theme-admin-text-muted);
+}
+
+.border-admin {
+  border-color: var(--theme-admin-border);
+}
+
+.hover\:bg-admin-hover:hover {
+  background-color: var(--theme-admin-hover);
 }
 
 /* ==============================================
@@ -406,8 +464,8 @@ input::placeholder, textarea::placeholder {
 /* Light mode override: prefer a solid purple button for better contrast on white */
 html:not(.dark) .btn-add-sticker {
   background: var(--theme-purple);
-  box-shadow: 0 10px 30px rgba(102,50,101,0.12);
-  border: 1px solid rgba(102,50,101,0.08);
+  box-shadow: 0 10px 30px rgba(102, 50, 101, 0.12);
+  border: 1px solid rgba(102, 50, 101, 0.08);
 }
 
 /* Dark mode: keep the gradient look (no change) */
@@ -416,20 +474,41 @@ html.dark .btn-add-sticker {
 }
 
 @keyframes icon-rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes icon-float {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-  100% { transform: translateY(0); }
+  0% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
 }
 
 @keyframes icon-pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.08); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.08);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* Map popup and control theme overrides for MapLibre/Mapbox popup elements */
@@ -438,7 +517,7 @@ html.dark .btn-add-sticker {
   background: #ffffff !important;
   color: #663265 !important;
   border-radius: 0.5rem;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 /* Dark mode popup - when html has dark class */
@@ -448,11 +527,12 @@ html.dark .mapboxgl-popup-content {
 }
 
 .mapboxgl-popup-tip {
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 /* Map controls sizing and background */
-.mapboxgl-ctrl, .mapboxgl-ctrl-top-right {
+.mapboxgl-ctrl,
+.mapboxgl-ctrl-top-right {
   background: transparent !important;
 }
 
@@ -517,7 +597,7 @@ html.dark .mapboxgl-popup-content *,
 html.dark .mapboxgl-popup * {
   border: none !important;
   outline: none !important;
-  box-shadow: 0 12px 34px rgba(0,0,0,0.6) !important;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.6) !important;
   background-clip: padding-box !important;
 }
 
@@ -548,18 +628,18 @@ html.dark .map-popup-theme .map-popup {
   background: var(--bg-card) !important;
   padding: 12px !important;
   border-radius: 0.5rem !important;
-  box-shadow: 0 12px 34px rgba(0,0,0,0.6) !important;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.6) !important;
 }
 
 /* Remove thick white border in dark mode, use subtle translucent border and deeper shadow */
 html.dark .mapboxgl-popup-content {
-  border: 1px solid rgba(255,255,255,0.04) !important;
-  box-shadow: 0 12px 34px rgba(0,0,0,0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.6) !important;
 }
 
 /* Avatar border: avoid strong white border in dark mode */
 html.dark .map-popup__avatar {
-  border: 2px solid rgba(255,255,255,0.06) !important;
+  border: 2px solid rgba(255, 255, 255, 0.06) !important;
 }
 
 /* Close button styling */
@@ -587,16 +667,21 @@ html.dark .mapboxgl-popup-close-button {
   display: inline-block;
   transform-origin: center;
 }
+
 .samu-marker__img {
   width: 48px;
   height: 48px;
   border-radius: 9999px;
   object-fit: cover;
   border: 3px solid var(--theme-white);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
-.samu-marker:hover .samu-marker__img { transform: scale(1.12); }
+
+.samu-marker:hover .samu-marker__img {
+  transform: scale(1.12);
+}
+
 .samu-marker__dot {
   position: absolute;
   bottom: -4px;
@@ -606,30 +691,97 @@ html.dark .mapboxgl-popup-close-button {
   border-radius: 9999px;
   border: 2px solid var(--theme-white);
   background: var(--color-primary-200);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
-.samu-marker__dot--mine { background: var(--sticker-mine); }
-.samu-marker--mine .samu-marker__img { box-shadow: 0 10px 22px rgba(37,99,235,0.22); }
-.samu-marker--selected { width:48px; height:48px; display:flex; align-items:center; justify-content:center; border-radius:9999px; background:var(--color-primary-500); color:white; border:3px solid var(--theme-white); }
+
+.samu-marker__dot--mine {
+  background: var(--sticker-mine);
+}
+
+.samu-marker--mine .samu-marker__img {
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.22);
+}
+
+.samu-marker--selected {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--color-primary-500);
+  color: white;
+  border: 3px solid var(--theme-white);
+}
 
 /* Popup content layout */
-.map-popup { display:block; max-width:320px; }
-.map-popup__head { display:flex; gap:0.75rem; align-items:center; margin-bottom:0.5rem; }
-.map-popup__avatar { width:40px; height:40px; border-radius:9999px; object-fit:cover; border:2px solid var(--theme-white); }
-html.dark .map-popup__avatar { border:2px solid rgba(255,255,255,0.06) !important; }
+.map-popup {
+  display: block;
+  max-width: 320px;
+}
+
+.map-popup__head {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.map-popup__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 2px solid var(--theme-white);
+}
+
+html.dark .map-popup__avatar {
+  border: 2px solid rgba(255, 255, 255, 0.06) !important;
+}
 
 /* Light mode popup text */
-.map-popup__title { font-weight:700; color:#663265; }
-.map-popup__meta { font-size:0.875rem; color:#6f5772; }
-.map-popup__desc { margin-top:0.5rem; color:#663265; }
-.map-popup__footer { margin-top:0.5rem; display:flex; gap:0.75rem; flex-direction:column; }
-.map-popup__footer > div { color:#6f5772; }
+.map-popup__title {
+  font-weight: 700;
+  color: #663265;
+}
+
+.map-popup__meta {
+  font-size: 0.875rem;
+  color: #6f5772;
+}
+
+.map-popup__desc {
+  margin-top: 0.5rem;
+  color: #663265;
+}
+
+.map-popup__footer {
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 0.75rem;
+  flex-direction: column;
+}
+
+.map-popup__footer>div {
+  color: #6f5772;
+}
 
 /* Dark mode popup text */
-html.dark .map-popup__title { color:#ffffff !important; }
-html.dark .map-popup__meta { color:#c9b2cc !important; }
-html.dark .map-popup__desc { color:#ffffff !important; }
-html.dark .map-popup__footer > div { color:#c9b2cc !important; }
+html.dark .map-popup__title {
+  color: #ffffff !important;
+}
+
+html.dark .map-popup__meta {
+  color: #c9b2cc !important;
+}
+
+html.dark .map-popup__desc {
+  color: #ffffff !important;
+}
+
+html.dark .map-popup__footer>div {
+  color: #c9b2cc !important;
+}
 
 
 /* Animate icons continuously */
@@ -658,6 +810,7 @@ html.dark .map-popup__footer > div { color:#c9b2cc !important; }
   animation-duration: 900ms;
 }
 
-.group:hover .icon-animated { /* subtle smoothness */
+.group:hover .icon-animated {
+  /* subtle smoothness */
   transition: transform 200ms ease;
 }
