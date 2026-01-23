@@ -7,6 +7,8 @@ import { useAuth } from '@/features/auth/providers/auth-provider';
 import NoAccessPage from '@/app/admin/no-access/page';
 import { isUserAuthorizedForReis } from '@/shared/lib/committee-utils';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import { siteSettingsMutations } from '@/shared/lib/api/salvemundi';
+import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { Search, Download, Users, Plane, Mail, Edit, Trash2, Loader2, AlertCircle, UserCheck, UserX, Send } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
@@ -61,6 +63,8 @@ export default function ReisAanmeldingenPage() {
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [roleFilter, setRoleFilter] = useState<string>('all');
     const [sendingEmailTo, setSendingEmailTo] = useState<{ signupId: number; type: string } | null>(null);
+    // Site visibility settings for Reis
+    const { data: reisSettings, refetch: refetchReisSettings } = useSalvemundiSiteSettings('reis');
 
     useEffect(() => {
         loadTrips();
@@ -490,6 +494,27 @@ export default function ReisAanmeldingenPage() {
                             <Edit className="h-5 w-5" />
                             Reis Instellingen
                         </button>
+
+                        {/* Visibility toggle for Reis (only shown to users who can manage Reis; permission check is earlier) */}
+                        <div className="flex items-center gap-3">
+                            <label className="text-sm font-medium">Reis zichtbaar</label>
+                            <button
+                                onClick={async () => {
+                                    const current = reisSettings?.show ?? true;
+                                    try {
+                                        await siteSettingsMutations.upsertByPage('reis', { show: !current });
+                                        await refetchReisSettings();
+                                    } catch (err) {
+                                        console.error('Failed to toggle reis visibility', err);
+                                        alert('Fout bij het bijwerken van de zichtbaarheid voor Reis');
+                                    }
+                                }}
+                                className={`w-12 h-6 rounded-full p-0.5 transition ${reisSettings?.show ? 'bg-green-500' : 'bg-gray-300'}`}
+                                aria-pressed={reisSettings?.show ?? true}
+                            >
+                                <span className={`block w-5 h-5 bg-white rounded-full transform transition ${reisSettings?.show ? 'translate-x-6' : 'translate-x-0'}`} />
+                            </button>
+                        </div>
 
                         <button
                             onClick={() => router.push('/admin/reis/activiteiten')}
