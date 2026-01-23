@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { 
     introSignupsApi, 
@@ -36,6 +37,7 @@ import * as XLSX from 'xlsx';
 type TabType = 'signups' | 'parents' | 'blogs' | 'planning';
 
 export default function IntroAdminPage() {
+    const pathname = usePathname();
     const [activeTab, setActiveTab] = useState<TabType>('signups');
     const [isLoading, setIsLoading] = useState(true);
     const { data: introSettings, refetch: refetchIntroSettings } = useSalvemundiSiteSettings('intro');
@@ -61,6 +63,7 @@ export default function IntroAdminPage() {
     const [planning, setPlanning] = useState<IntroPlanningItem[]>([]);
     const [editingPlanning, setEditingPlanning] = useState<Partial<IntroPlanningItem> | null>(null);
     const [isCreatingPlanning, setIsCreatingPlanning] = useState(false);
+    const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
     // Expanded items
     const [expandedSignups, setExpandedSignups] = useState<number[]>([]);
@@ -69,6 +72,15 @@ export default function IntroAdminPage() {
     useEffect(() => {
         loadData();
     }, [activeTab]);
+
+    // Ensure we refresh data whenever this route becomes active (client-side navigation)
+    useEffect(() => {
+        if (pathname === '/admin/intro') {
+            // loadData already manages loading state; call to refresh counts when opening panel
+            loadData();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pathname]);
 
     useEffect(() => {
         filterSignups();
@@ -231,14 +243,35 @@ export default function IntroAdminPage() {
         }
     };
 
+    const computeDayFromDate = (dateStr?: string) => {
+        try {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('nl-NL', { weekday: 'long' });
+        } catch {
+            return '';
+        }
+    };
+
     const handleSavePlanning = async () => {
         if (!editingPlanning) return;
+
+        // Basic validation: date, title, description required
+        if (!editingPlanning.date || !editingPlanning.title || !editingPlanning.description) {
+            alert('Datum, titel en beschrijving zijn verplicht.');
+            return;
+        }
+
+        // Auto-fill day based on date
+        const day = computeDayFromDate(editingPlanning.date as string);
+        const payload = { ...editingPlanning, day } as any;
+
         try {
             if (editingPlanning.id) {
-                await introPlanningApi.update(editingPlanning.id, editingPlanning);
-                setPlanning(planning.map(p => p.id === editingPlanning.id ? { ...p, ...editingPlanning } as IntroPlanningItem : p));
+                await introPlanningApi.update(editingPlanning.id, payload);
+                setPlanning(planning.map(p => p.id === editingPlanning.id ? { ...p, ...payload } as IntroPlanningItem : p));
             } else {
-                const newPlanning = await introPlanningApi.create(editingPlanning as any);
+                const newPlanning = await introPlanningApi.create(payload as any);
                 setPlanning([...planning, newPlanning]);
             }
             setEditingPlanning(null);
@@ -762,12 +795,11 @@ export default function IntroAdminPage() {
                                     <button
                                         onClick={() => {
                                             setEditingPlanning({
-                                                day: '',
                                                 date: '',
                                                 time_start: '',
                                                 title: '',
-                                                is_mandatory: false,
-                                                sort_order: planning.length
+                                                description: '',
+                                                location: ''
                                             });
                                             setIsCreatingPlanning(true);
                                         }}
@@ -776,6 +808,95 @@ export default function IntroAdminPage() {
                                         <Plus className="h-5 w-5" />
                                         Nieuw Planning Item
                                     </button>
+                                </div>
+
+                                {/* Calendar view (admin) */}
+                                <div className="mb-6">
+                                    {planning.length === 0 ? null : (
+                                        <div className="bg-admin-card rounded-lg shadow overflow-hidden p-4">
+                                            {/* Day Selector */}
+                                            <div className="flex flex-wrap gap-2 justify-start mb-4">
+                                                <button
+                                                    onClick={() => setSelectedDay(null)}
+                                                    className={`px-3 py-1 rounded-full font-semibold text-sm ${selectedDay === null ? 'bg-gradient-theme text-white' : 'bg-admin-card-soft'}`}>
+                                                    Alle dagen
+                                                </button>
+                                                {(() => {
+                                                    // compute unique days present
+                                                    const byDay: Record<string, IntroPlanningItem[]> = planning.reduce((acc, it) => {
+                                                        if (!it.day) return acc;
+                                                        (acc[it.day] = acc[it.day] || []).push(it);
+                                                        return acc;
+                                                    }, {} as Record<string, IntroPlanningItem[]>);
+                                                    return Object.keys(byDay).map(day => (
+                                                        <button key={day} onClick={() => setSelectedDay(day)} className={`px-3 py-1 rounded-full font-semibold text-sm ${selectedDay === day ? 'bg-gradient-theme text-white' : 'bg-admin-card-soft'}`}>
+                                                            {day}
+                                                        </button>
+                                                    ));
+                                                })()}
+                                            </div>
+
+                                            {/* Simple calendar grid (hours) */}
+                                            <div className="overflow-x-auto">
+                                                <div className="min-w-full" style={{ minWidth: '800px' }}>
+                                                    <div className="grid gap-0 border-b-2 border-admin-border sticky top-0 bg-admin-card p-2" style={{ gridTemplateColumns: '60px 1fr' }}>
+                                                        <div className="p-2 font-bold text-admin border-r">Tijd</div>
+                                                        <div className="p-2 font-bold text-admin">Planning</div>
+                                                    </div>
+
+                                                    <div className="relative" style={{ height: '400px', minHeight: '400px' }}>
+                                                        {/* hours rows */}
+                                                        {Array.from({ length: 15 }, (_, i) => i + 9).map(hour => (
+                                                            <div key={hour} className="grid gap-0 border-b border-admin-border" style={{ gridTemplateColumns: '60px 1fr', height: '60px' }}>
+                                                                <div className="p-1 text-sm text-admin-muted border-r flex items-start justify-center">{`${hour}:00`}</div>
+                                                                <div className="border-r border-admin-border bg-admin-card-soft relative">
+                                                                    {/* events for this hour */}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+
+                                                        {/* events overlay - simple absolute positioning based on time */}
+                                                        <div className="absolute inset-0 grid gap-0 pointer-events-none" style={{ gridTemplateColumns: '60px 1fr' }}>
+                                                            <div />
+                                                            <div className="relative pointer-events-auto">
+                                                                {planning.filter(p => !selectedDay || p.day === selectedDay).map((item) => {
+                                                                    const top = (() => {
+                                                                        try {
+                                                                            const [h, m] = (item.time_start || '09:00').split(':').map(Number);
+                                                                            return ((h - 9) * 60 + (m || 0));
+                                                                        } catch { return 0; }
+                                                                    })();
+                                                                    const height = (() => {
+                                                                        if (!item.time_end) return 60;
+                                                                        try {
+                                                                            const [eh, em] = item.time_end.split(':').map(Number);
+                                                                            const endTop = ((eh - 9) * 60 + (em || 0));
+                                                                            return Math.max(endTop - top, 30);
+                                                                        } catch { return 60; }
+                                                                    })();
+
+                                                                    return (
+                                                                        <div key={item.id} className={`absolute left-2 right-4 rounded-md p-2 shadow-md bg-gradient-to-br from-purple-500 to-purple-600 text-white`} style={{ top: `${top}px`, height: `${height}px` }}>
+                                                                            <div className="flex justify-between items-start">
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <span className="font-bold text-sm truncate">{item.title}</span>
+                                                                                </div>
+                                                                                <div className="flex gap-2">
+                                                                                    <button onClick={() => setEditingPlanning(item)} className="p-1 bg-white/10 rounded" title="Bewerken"><Edit className="h-4 w-4" /></button>
+                                                                                    <button onClick={() => handleDeletePlanning(item.id)} className="p-1 bg-white/10 rounded" title="Verwijderen"><Trash2 className="h-4 w-4" /></button>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div className="text-xs opacity-90 mt-1">{item.time_start}{item.time_end && ` - ${item.time_end}`}</div>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {(editingPlanning || isCreatingPlanning) && (
