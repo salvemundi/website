@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Search, Download, Users, Beer, AlertCircle, Trash2, Loader2, Edit } from 'lucide-react';
+import { useAuth } from '@/features/auth/providers/auth-provider';
+import { isUserAuthorizedForReis } from '@/shared/lib/committee-utils';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
@@ -34,6 +36,8 @@ interface Participant {
 
 export default function KroegentochtAanmeldingenPage() {
     const router = useRouter();
+    const { user } = useAuth();
+    const canEdit = isUserAuthorizedForReis(user);
     const [events, setEvents] = useState<PubCrawlEvent[]>([]);
     const [selectedEvent, setSelectedEvent] = useState<PubCrawlEvent | null>(null);
     const [signups, setSignups] = useState<PubCrawlSignup[]>([]);
@@ -124,6 +128,10 @@ export default function KroegentochtAanmeldingenPage() {
     };
 
     const handleDelete = async (id: number) => {
+        if (!canEdit) {
+            alert('Je hebt geen rechten om inschrijvingen te verwijderen.');
+            return;
+        }
         if (!confirm('Weet je zeker dat je deze inschrijving wilt verwijderen?')) return;
 
         try {
@@ -427,21 +435,25 @@ export default function KroegentochtAanmeldingenPage() {
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-right">
                                                                 <div className="inline-flex items-center space-x-2">
-                                                                    <button
-                                                                        onClick={() => router.push(`/admin/kroegentocht/deelnemer/${signup.id}`)}
-                                                                        className="text-admin-muted hover:text-admin p-2 rounded-lg hover:bg-admin-hover transition-colors"
-                                                                        title="Bewerk inschrijving"
-                                                                    >
-                                                                        <Edit className="h-5 w-5" />
-                                                                    </button>
+                                                                    {canEdit && (
+                                                                        <>
+                                                                            <button
+                                                                                onClick={() => router.push(`/admin/kroegentocht/deelnemer/${signup.id}`)}
+                                                                                className="text-admin-muted hover:text-admin p-2 rounded-lg hover:bg-admin-hover transition-colors"
+                                                                                title="Bewerk inschrijving"
+                                                                            >
+                                                                                <Edit className="h-5 w-5" />
+                                                                            </button>
 
-                                                                    <button
-                                                                        onClick={() => handleDelete(signup.id)}
-                                                                        className="text-red-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                                                                        title="Verwijder inschrijving"
-                                                                    >
-                                                                        <Trash2 className="h-5 w-5" />
-                                                                    </button>
+                                                                            <button
+                                                                                onClick={() => handleDelete(signup.id)}
+                                                                                className="text-red-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                                                                title="Verwijder inschrijving"
+                                                                            >
+                                                                                <Trash2 className="h-5 w-5" />
+                                                                            </button>
+                                                                        </>
+                                                                    )}
                                                                 </div>
                                                             </td>
                                                         </tr>
