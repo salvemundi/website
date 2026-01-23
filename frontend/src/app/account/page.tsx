@@ -20,7 +20,7 @@ import {
   ExternalLink,
   ChevronRight,
   Lock,
-  Feather,
+  
 } from "lucide-react";
 
 interface EventSignup {
@@ -501,13 +501,7 @@ export default function AccountPage() {
                 href="https://salvemundi.sharepoint.com"
                 external
               />
-              {user.is_safe_haven ? (
-                <QuickLink
-                  label="Beschikbaarheid Safe Haven"
-                  icon={<Feather className="h-6 w-6" />}
-                  href="/account/safe-haven-availability"
-                />
-              ) : null}
+              {/* Availability editing removed: contact availability is no longer editable via the web UI */}
               {isCommitteeMember ? (
                 <QuickLink
                   label="Admin panel"
