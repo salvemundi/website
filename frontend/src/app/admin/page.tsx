@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
+import { isUserAuthorizedForReis } from '@/shared/lib/committee-utils';
 import { directusFetch } from '@/shared/lib/directus';
 import { stickersApi, eventsApi } from '@/shared/lib/api/salvemundi';
 import {
@@ -150,6 +151,7 @@ function ListCard({
 export default function AdminDashboardPage() {
     const router = useRouter();
     const { user } = useAuth();
+    const canManageReis = isUserAuthorizedForReis(user);
     const [stats, setStats] = useState<DashboardStats>({
         totalSignups: 0,
         upcomingBirthdays: [],
@@ -631,13 +633,15 @@ export default function AdminDashboardPage() {
                         <FileText className="h-5 w-5" />
                         Beheer Activiteiten
                     </button>
-                    <button
-                        onClick={() => router.push('/admin/reis')}
-                        className="bg-white dark:bg-slate-800 text-theme-purple dark:text-theme-purple-light hover:bg-slate-50 dark:hover:bg-slate-700 px-4 sm:px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl dark:shadow-slate-900/50 transition-all hover:-translate-y-0.5 flex items-center gap-2 w-full sm:w-auto justify-center"
-                    >
-                        <Activity className="h-5 w-5" />
-                        Beheer Reis
-                    </button>
+                    {canManageReis && (
+                        <button
+                            onClick={() => router.push('/admin/reis')}
+                            className="bg-white dark:bg-slate-800 text-theme-purple dark:text-theme-purple-light hover:bg-slate-50 dark:hover:bg-slate-700 px-4 sm:px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl dark:shadow-slate-900/50 transition-all hover:-translate-y-0.5 flex items-center gap-2 w-full sm:w-auto justify-center"
+                        >
+                            <Activity className="h-5 w-5" />
+                            Beheer Reis
+                        </button>
+                    )}
                     <button
                         onClick={() => router.push('/admin/leden')}
                         className="bg-white dark:bg-slate-800 text-theme-purple dark:text-theme-purple-light hover:bg-slate-50 dark:hover:bg-slate-700 px-4 sm:px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl dark:shadow-slate-900/50 transition-all hover:-translate-y-0.5 flex items-center gap-2 w-full sm:w-auto justify-center"
