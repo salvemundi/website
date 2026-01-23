@@ -162,7 +162,7 @@ export default function ActiviteitenBeheerPage() {
 
         const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
         const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_API_URL;
-        
+
         const formData = new FormData();
         formData.append('file', file);
 
@@ -175,11 +175,11 @@ export default function ActiviteitenBeheerPage() {
                 body: formData,
                 headers
             });
-            
+
             if (!response.ok) throw new Error('Upload failed');
             const json = await response.json();
             const fileId = json?.data?.id || json?.data;
-            
+
             setForm({ ...form, image: fileId });
         } catch (err) {
             console.error('Error uploading image:', err);
@@ -196,23 +196,23 @@ export default function ActiviteitenBeheerPage() {
     return (
         <>
             <PageHeader title="Activiteiten Beheer" />
-            
+
             <div className="container mx-auto px-4 py-8">
                 {error && (
-                    <div className="mb-6 bg-red-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-red-400 p-4 rounded">
+                    <div className="mb-6 bg-red-50 dark:bg-red-900/30 border-l-4 border-red-400 dark:border-red-600 p-4 rounded">
                         <p className="text-red-700 dark:text-red-300">{error}</p>
                     </div>
                 )}
 
                 {/* Trip Selector */}
-                <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-lg shadow-md p-6 mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                <div className="bg-admin-card rounded-lg shadow-md p-6 mb-6">
+                    <label className="block text-sm font-medium text-admin-muted mb-2">
                         Selecteer Reis
                     </label>
                     <select
                         value={selectedTripId || ''}
                         onChange={(e) => setSelectedTripId(parseInt(e.target.value))}
-                        className="w-full md:w-1/2 px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="w-full md:w-1/2 px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                     >
                         {trips.map((trip) => (
                             <option key={trip.id} value={trip.id}>
@@ -227,7 +227,7 @@ export default function ActiviteitenBeheerPage() {
                     <div className="mb-6">
                         <button
                             onClick={handleAdd}
-                            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center"
+                            className="px-6 py-3 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition flex items-center shadow-md hover:shadow-lg"
                         >
                             <Plus className="h-5 w-5 mr-2" />
                             Nieuwe Activiteit Toevoegen
@@ -237,27 +237,27 @@ export default function ActiviteitenBeheerPage() {
 
                 {/* Add/Edit Form */}
                 {(addingNew || editingId) && (
-                    <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-lg shadow-md p-6 mb-6">
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                    <div className="bg-admin-card rounded-lg shadow-md p-6 mb-6">
+                        <h2 className="text-xl font-bold text-admin mb-4">
                             {addingNew ? 'Nieuwe Activiteit' : 'Activiteit Bewerken'}
                         </h2>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-admin-muted mb-2">
                                     Naam *
                                 </label>
                                 <input
                                     type="text"
                                     value={form.name}
                                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                     placeholder="Bijv. Kanoën"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-admin-muted mb-2">
                                     Prijs (€) *
                                 </label>
                                 <input
@@ -265,50 +265,50 @@ export default function ActiviteitenBeheerPage() {
                                     step="0.01"
                                     value={form.price}
                                     onChange={(e) => setForm({ ...form, price: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-admin-muted mb-2">
                                     Beschrijving
                                 </label>
                                 <textarea
                                     value={form.description}
                                     onChange={(e) => setForm({ ...form, description: e.target.value })}
                                     rows={3}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                     placeholder="Optionele beschrijving..."
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-admin-muted mb-2">
                                     Max. Deelnemers
                                 </label>
                                 <input
                                     type="number"
                                     value={form.max_participants || ''}
                                     onChange={(e) => setForm({ ...form, max_participants: e.target.value ? parseInt(e.target.value) : null })}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                     placeholder="Leeg = onbeperkt"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-admin-muted mb-2">
                                     Weergavevolgorde
                                 </label>
                                 <input
                                     type="number"
                                     value={form.display_order}
                                     onChange={(e) => setForm({ ...form, display_order: parseInt(e.target.value) || 0 })}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-admin-muted mb-2">
                                     Afbeelding
                                 </label>
                                 <div className="flex items-center gap-4">
@@ -319,7 +319,7 @@ export default function ActiviteitenBeheerPage() {
                                             className="w-24 h-24 object-cover rounded-lg"
                                         />
                                     )}
-                                    <label className="px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 flex items-center">
+                                    <label className="px-4 py-2 border border-admin rounded-lg cursor-pointer hover:bg-admin-hover flex items-center bg-admin-card text-admin-muted">
                                         <Upload className="h-5 w-5 mr-2" />
                                         Upload Afbeelding
                                         <input
@@ -338,9 +338,9 @@ export default function ActiviteitenBeheerPage() {
                                         type="checkbox"
                                         checked={form.is_active}
                                         onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
-                                        className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 dark:border-gray-600 rounded"
+                                        className="h-4 w-4 text-theme-purple focus:ring-theme-purple border-admin rounded dark:border-gray-600 bg-admin-card"
                                     />
-                                    <span className="ml-2 text-sm text-gray-700 dark:text-[var(--text-muted-dark)]">Actief (zichtbaar voor deelnemers)</span>
+                                    <span className="ml-2 text-sm text-admin-muted">Actief (zichtbaar voor deelnemers)</span>
                                 </label>
                             </div>
                         </div>
@@ -365,7 +365,7 @@ export default function ActiviteitenBeheerPage() {
                             </button>
                             <button
                                 onClick={handleCancel}
-                                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition flex items-center"
+                                className="px-6 py-2 border border-admin text-admin-muted rounded-lg hover:bg-admin-hover hover:text-admin transition flex items-center"
                             >
                                 <X className="h-5 w-5 mr-2" />
                                 Annuleren
@@ -382,12 +382,12 @@ export default function ActiviteitenBeheerPage() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {activities.length === 0 ? (
-                            <div className="col-span-full text-center py-12 text-gray-500">
+                            <div className="col-span-full text-center py-12 text-admin-muted">
                                 Nog geen activiteiten toegevoegd
                             </div>
                         ) : (
                             activities.map((activity) => (
-                                <div key={activity.id} className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-lg shadow-md overflow-hidden">
+                                <div key={activity.id} className="bg-admin-card rounded-lg shadow-md overflow-hidden">
                                     {activity.image ? (
                                         <img
                                             src={getImageUrl(activity.image)}
@@ -395,36 +395,36 @@ export default function ActiviteitenBeheerPage() {
                                             className="w-full h-48 object-cover"
                                         />
                                     ) : (
-                                        <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-                                            <ImageIcon className="h-12 w-12 text-gray-400" />
+                                        <div className="w-full h-48 bg-admin-card-soft flex items-center justify-center">
+                                            <ImageIcon className="h-12 w-12 text-admin-muted" />
                                         </div>
                                     )}
-                                    
-                                        <div className="p-4">
+
+                                    <div className="p-4">
                                         <div className="flex justify-between items-start mb-2">
-                                            <h3 className="text-lg font-bold text-gray-900 dark:text-white">{activity.name}</h3>
+                                            <h3 className="text-lg font-bold text-admin">{activity.name}</h3>
                                             {!activity.is_active && (
-                                                <span className="px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-[var(--text-muted-dark)] text-xs rounded">
+                                                <span className="px-2 py-1 bg-gray-200 dark:bg-gray-700 text-admin-muted text-xs rounded">
                                                     Inactief
                                                 </span>
                                             )}
                                         </div>
-                                        
-                                            {activity.description && (
-                                            <p className="text-sm text-gray-600 dark:text-[var(--text-muted-dark)] mb-3 line-clamp-2">{activity.description}</p>
+
+                                        {activity.description && (
+                                            <p className="text-sm text-admin-muted mb-3 line-clamp-2">{activity.description}</p>
                                         )}
-                                        
+
                                         <div className="flex justify-between items-center mb-4">
-                                            <span className="text-xl font-bold text-purple-600">€{fmt(activity.price)}</span>
+                                            <span className="text-xl font-bold text-theme-purple">€{fmt(activity.price)}</span>
                                             {activity.max_participants && (
-                                                <span className="text-sm text-gray-500 dark:text-[var(--text-muted-dark)]">Max: {activity.max_participants}</span>
+                                                <span className="text-sm text-admin-muted">Max: {activity.max_participants}</span>
                                             )}
                                         </div>
-                                        
+
                                         <div className="flex gap-2">
                                             <button
                                                 onClick={() => handleEdit(activity)}
-                                                className="flex-1 px-4 py-2 border border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50 dark:hover:bg-[var(--bg-soft-dark)] transition flex items-center justify-center"
+                                                className="flex-1 px-4 py-2 border border-theme-purple text-theme-purple rounded-lg hover:bg-admin-card-soft transition flex items-center justify-center"
                                             >
                                                 <Edit2 className="h-4 w-4 mr-2" />
                                                 Bewerken

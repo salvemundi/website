@@ -12,6 +12,8 @@ function LoginContent() {
 
     // Get the returnTo URL from query parameters, fallback to '/account'
     const returnTo = searchParams.get('returnTo') || '/account';
+    const noAuto = searchParams.get('noAuto') === 'true';
+    const [isAutoRedirecting, setIsAutoRedirecting] = useState(false);
 
     // If the user is already authenticated, redirect to the intended page.
     useEffect(() => {
@@ -33,6 +35,26 @@ function LoginContent() {
         }
     }, [isLoading, isAuthenticated, router, returnTo]);
 
+    // Automate SSO Login
+    useEffect(() => {
+        const triggerAutoLogin = async () => {
+            if (!isLoading && !isAuthenticated && !error && !noAuto && !isAutoRedirecting) {
+                setIsAutoRedirecting(true);
+                try {
+                    // Store the returnTo URL in localStorage to persist across MSAL redirect
+                    localStorage.setItem('auth_return_to', returnTo);
+                    await loginWithMicrosoft();
+                } catch (err) {
+                    setError('Microsoft login failed. Please try again.');
+                    setIsAutoRedirecting(false);
+                    console.error(err);
+                }
+            }
+        };
+
+        triggerAutoLogin();
+    }, [isLoading, isAuthenticated, error, noAuto, isAutoRedirecting, loginWithMicrosoft, returnTo]);
+
     const handleMicrosoftLogin = async () => {
         setError('');
 
@@ -53,10 +75,12 @@ function LoginContent() {
                 <div className="max-w-md mx-auto">
                     <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl shadow-2xl p-8">
                         <h1 className="text-3xl font-bold text-gradient mb-2 text-center">
-                            Welcome Back
+                            {isAutoRedirecting ? 'Redirecting...' : 'Welcome Back'}
                         </h1>
                         <p className="text-theme-muted text-center mb-8">
-                            Login to your account
+                            {isAutoRedirecting
+                                ? 'Logging you in automatically via SSO'
+                                : 'Login to your account'}
                         </p>
 
                         {error && (
@@ -68,7 +92,7 @@ function LoginContent() {
                         {/* Microsoft Login Button */}
                         <button
                             onClick={handleMicrosoftLogin}
-                            disabled={isLoading}
+                            disabled={isLoading || isAutoRedirecting}
                             className="w-full mb-6 flex items-center justify-center gap-3 px-6 py-3 bg-gradient-theme text-theme-white rounded-full shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
                         >
                             <svg className="w-5 h-5" viewBox="0 0 23 23" fill="none">
@@ -78,7 +102,7 @@ function LoginContent() {
                                 <path fill="#ffb900" d="M12 12h11v11H12z" />
                             </svg>
                             <span>
-                                {isLoading ? 'Logging in...' : 'Login with Microsoft'}
+                                {isLoading || isAutoRedirecting ? 'Logging in...' : 'Login with Microsoft'}
                             </span>
                         </button>
                     </div>

@@ -219,14 +219,14 @@ export default function KroegentochtAanmeldingenPage() {
                     {/* Back Button */}
                     <button
                         onClick={() => router.push('/admin')}
-                        className="mb-6 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition"
+                        className="mb-6 px-4 py-2 bg-admin-card-soft text-admin rounded-lg hover:bg-admin-hover transition"
                     >
                         ← Terug naar Dashboard
                     </button>
 
                     {/* Event Selector */}
-                    <div className="mb-6 bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
-                        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4">Selecteer Event</h2>
+                    <div className="mb-6 bg-admin-card rounded-2xl shadow-lg p-6">
+                        <h2 className="text-xl font-bold text-admin mb-4">Selecteer Event</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {events.map(event => {
                                 const eventDate = new Date(event.date);
@@ -238,21 +238,21 @@ export default function KroegentochtAanmeldingenPage() {
                                         key={event.id}
                                         onClick={() => setSelectedEvent(event)}
                                         className={`p-4 rounded-xl border-2 transition text-left ${isSelected
-                                            ? 'border-theme-purple bg-purple-50 dark:bg-purple-900/20'
-                                            : 'border-slate-200 dark:border-slate-700 hover:border-theme-purple dark:hover:border-theme-purple'
+                                            ? 'border-theme-purple bg-theme-purple/10'
+                                            : 'border-admin hover:border-theme-purple'
                                             }`}
                                     >
                                         <div className="flex items-start justify-between mb-2">
-                                            <h3 className="font-bold text-slate-800 dark:text-slate-100 line-clamp-1">
+                                            <h3 className="font-bold text-admin line-clamp-1">
                                                 {event.name}
                                             </h3>
                                             {isUpcoming && (
-                                                <span className="ml-2 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-medium rounded">
+                                                <span className="ml-2 px-2 py-0.5 bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-medium rounded">
                                                     Aanstaand
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-sm text-slate-600 dark:text-slate-400">
+                                        <p className="text-sm text-admin-muted">
                                             {format(eventDate, 'd MMMM yyyy', { locale: nl })}
                                         </p>
                                     </button>
@@ -295,28 +295,28 @@ export default function KroegentochtAanmeldingenPage() {
                                     </div>
                                 </div>
 
-                                <div className="bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-6 text-slate-600 dark:text-slate-300 text-center sm:text-left">
+                                <div className="bg-admin-card-soft border-2 border-dashed border-admin rounded-2xl p-6 text-admin-muted text-center sm:text-left">
                                     <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2">
                                         <div>
                                             <p className="text-sm font-medium mb-1">Onbetaald / Open</p>
                                             <p className="text-4xl font-bold">{stats.failedCount}</p>
                                         </div>
-                                        <AlertCircle className="h-12 w-12 text-slate-400/30 hidden sm:block" />
+                                        <AlertCircle className="h-12 w-12 text-admin-muted/30 hidden sm:block" />
                                     </div>
                                 </div>
                             </div>
 
                             {/* Search and Export */}
-                            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 mb-6">
+                            <div className="bg-admin-card rounded-2xl shadow-lg p-6 mb-6">
                                 <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
                                     <div className="relative flex-1 w-full lg:max-w-md">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-admin-muted" />
                                         <input
                                             type="text"
                                             placeholder="Zoek op naam, email of vereniging..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent dark:bg-slate-700 dark:text-slate-100"
+                                            className="w-full pl-10 pr-4 py-2 border border-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent bg-admin-card text-admin"
                                         />
                                     </div>
 
@@ -326,7 +326,7 @@ export default function KroegentochtAanmeldingenPage() {
                                             onClick={() => setShowAllSignups(!showAllSignups)}
                                             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition whitespace-nowrap border-2 ${showAllSignups
                                                 ? 'bg-amber-100 border-amber-300 text-amber-700 dark:bg-amber-900/30 dark:border-amber-700 dark:text-amber-300'
-                                                : 'bg-slate-50 border-slate-200 text-slate-600 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 hover:border-theme-purple'
+                                                : 'bg-admin-card-soft border-admin text-admin-muted hover:border-theme-purple'
                                                 }`}
                                         >
                                             <AlertCircle size={20} />
@@ -345,35 +345,35 @@ export default function KroegentochtAanmeldingenPage() {
                             </div>
 
                             {/* Signups Table */}
-                            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg overflow-hidden">
+                            <div className="bg-admin-card rounded-2xl shadow-lg overflow-hidden">
                                 <div className="overflow-x-auto">
                                     <table className="w-full">
-                                        <thead className="bg-slate-50 dark:bg-slate-700">
+                                        <thead className="bg-admin-card-soft">
                                             <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
                                                     Naam
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider text-center">
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider text-center">
                                                     Tickets
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
                                                     Betaalstatus
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
                                                     Email & Vereniging
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
                                                     Aangemeld op
                                                 </th>
-                                                <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                                                <th className="px-6 py-3 text-right text-xs font-medium text-admin-muted uppercase tracking-wider">
                                                     Acties
                                                 </th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                                        <tbody className="divide-y divide-admin">
                                             {isLoading ? (
                                                 <tr>
-                                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                                                    <td colSpan={6} className="px-6 py-12 text-center text-admin-muted">
                                                         <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-theme-purple" />
                                                         Laden...
                                                     </td>
@@ -382,15 +382,15 @@ export default function KroegentochtAanmeldingenPage() {
                                                 filteredSignups.map((signup) => {
                                                     const participants = parseParticipants(signup.name_initials);
                                                     return (
-                                                        <tr key={signup.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                                                        <tr key={signup.id} className="hover:bg-admin-hover">
                                                             <td className="px-6 py-4">
-                                                                <div className="font-bold text-slate-900 dark:text-slate-100">
+                                                                <div className="font-bold text-admin">
                                                                     {signup.name}
                                                                 </div>
                                                                 {participants.length > 0 && (
                                                                     <div className="mt-2 text-xs space-y-0.5 border-l-2 border-purple-200 dark:border-purple-800 pl-2">
                                                                         {participants.map((p, idx) => (
-                                                                            <div key={idx} className="text-slate-500 dark:text-slate-400">
+                                                                            <div key={idx} className="text-admin-muted">
                                                                                 • {p.name} {p.initial}.
                                                                             </div>
                                                                         ))}
@@ -417,19 +417,19 @@ export default function KroegentochtAanmeldingenPage() {
                                                                     <a href={`mailto:${signup.email}`} className="text-theme-purple hover:underline font-medium block">
                                                                         {signup.email}
                                                                     </a>
-                                                                    <div className="text-slate-500 dark:text-slate-400 mt-1">
+                                                                    <div className="text-admin-muted mt-1">
                                                                         {signup.association || '-'}
                                                                     </div>
                                                                 </div>
                                                             </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-admin-muted">
                                                                 {format(new Date(signup.created_at), 'd MMM HH:mm', { locale: nl })}
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-right">
                                                                 <div className="inline-flex items-center space-x-2">
                                                                     <button
                                                                         onClick={() => router.push(`/admin/kroegentocht/deelnemer/${signup.id}`)}
-                                                                        className="text-slate-600 hover:text-slate-800 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/20 transition-colors"
+                                                                        className="text-admin-muted hover:text-admin p-2 rounded-lg hover:bg-admin-hover transition-colors"
                                                                         title="Bewerk inschrijving"
                                                                     >
                                                                         <Edit className="h-5 w-5" />
@@ -450,7 +450,7 @@ export default function KroegentochtAanmeldingenPage() {
                                             ) : (
                                                 <tr>
                                                     <td colSpan={6} className="px-6 py-12 text-center">
-                                                        <div className="flex flex-col items-center gap-2 text-slate-500 dark:text-slate-400">
+                                                        <div className="flex flex-col items-center gap-2 text-admin-muted">
                                                             <AlertCircle className="h-12 w-12 opacity-20" />
                                                             <p className="font-bold text-lg">Geen aanmeldingen gevonden</p>
                                                             <p className="text-sm">Probeer een andere zoekopdracht of filter.</p>
@@ -464,9 +464,9 @@ export default function KroegentochtAanmeldingenPage() {
                             </div>
                         </>
                     ) : (
-                        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-12 text-center">
-                            <AlertCircle className="h-16 w-16 text-slate-400 mx-auto mb-4" />
-                            <p className="text-slate-600 dark:text-slate-400 italic">Selecteer een event hierboven om de aanmeldingen te bekijken.</p>
+                        <div className="bg-admin-card rounded-2xl shadow-lg p-12 text-center">
+                            <AlertCircle className="h-16 w-16 text-admin-muted mx-auto mb-4" />
+                            <p className="text-admin-muted italic">Selecteer een event hierboven om de aanmeldingen te bekijken.</p>
                         </div>
                     )}
                 </div>

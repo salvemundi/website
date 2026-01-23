@@ -139,12 +139,12 @@ export default function LedenOverzichtPage() {
             <div className="container mx-auto px-4 py-8 max-w-7xl">
                 {/* Filters & Search */}
                 <div className="mb-8 flex flex-col md:flex-row gap-4 items-center justify-between">
-                    <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl w-full md:w-auto">
+                    <div className="flex p-1 bg-admin-card-soft rounded-xl w-full md:w-auto">
                         <button
                             onClick={() => setActiveTab('active')}
                             className={`flex-1 md:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'active'
-                                ? 'bg-white dark:bg-slate-700 text-theme-purple shadow-sm'
-                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                ? 'bg-admin-card text-theme-purple shadow-sm'
+                                : 'text-admin-muted hover:text-admin'
                                 }`}
                         >
                             <UserCheck className="h-4 w-4" />
@@ -153,8 +153,8 @@ export default function LedenOverzichtPage() {
                         <button
                             onClick={() => setActiveTab('inactive')}
                             className={`flex-1 md:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'inactive'
-                                ? 'bg-white dark:bg-slate-700 text-theme-purple shadow-sm'
-                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                ? 'bg-admin-card text-theme-purple shadow-sm'
+                                : 'text-admin-muted hover:text-admin'
                                 }`}
                         >
                             <UserMinus className="h-4 w-4" />
@@ -163,19 +163,19 @@ export default function LedenOverzichtPage() {
                     </div>
 
                     <div className="relative w-full md:w-96">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-admin-muted" />
                         <input
                             type="text"
                             placeholder="Zoek op naam, email of geboortedatum..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white dark:bg-slate-800 border-none shadow-lg focus:ring-2 focus:ring-theme-purple outline-none text-slate-800 dark:text-slate-100 placeholder:text-slate-400"
+                            className="w-full pl-10 pr-4 py-3 rounded-2xl bg-admin-card border-none shadow-lg focus:ring-2 focus:ring-theme-purple outline-none text-admin placeholder:text-admin-muted"
                         />
                     </div>
 
                     <button
                         onClick={loadMembers}
-                        className="p-3 rounded-2xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 shadow-lg hover:text-theme-purple transition-all"
+                        className="p-3 rounded-2xl bg-admin-card text-admin-muted shadow-lg hover:text-theme-purple transition-all"
                         title="Verversen"
                     >
                         <RefreshCw className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`} />
@@ -183,22 +183,22 @@ export default function LedenOverzichtPage() {
                 </div>
 
                 {/* Desktop List */}
-                <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl overflow-hidden hidden md:block">
+                <div className="bg-admin-card rounded-3xl shadow-xl overflow-hidden hidden md:block">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700">
-                                <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Lid</th>
-                                <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Email</th>
-                                <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Geboortedatum</th>
-                                <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Lidmaatschap tot</th>
-                                <th className="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Actie</th>
+                            <tr className="bg-admin-card-soft border-b border-admin">
+                                <th className="px-6 py-4 text-xs font-bold text-admin-muted uppercase tracking-wider">Lid</th>
+                                <th className="px-6 py-4 text-xs font-bold text-admin-muted uppercase tracking-wider">Email</th>
+                                <th className="px-6 py-4 text-xs font-bold text-admin-muted uppercase tracking-wider">Geboortedatum</th>
+                                <th className="px-6 py-4 text-xs font-bold text-admin-muted uppercase tracking-wider">Lidmaatschap tot</th>
+                                <th className="px-6 py-4 text-right text-xs font-bold text-admin-muted uppercase tracking-wider">Actie</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                        <tbody className="divide-y divide-admin">
                             {filteredMembers.map((member) => (
                                 <tr
                                     key={member.id}
-                                    className="hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors group"
+                                    className="hover:bg-admin-card-soft transition-colors group"
                                 >
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
@@ -206,29 +206,29 @@ export default function LedenOverzichtPage() {
                                                 {member.first_name?.[0]}{member.last_name?.[0]}
                                             </div>
                                             <div>
-                                                <p className="font-bold text-slate-800 dark:text-slate-100">
+                                                <p className="font-bold text-admin">
                                                     {member.first_name} {member.last_name}
                                                 </p>
-                                                <p className="text-xs text-slate-400">ID: {member.id.substring(0, 8)}</p>
+                                                <p className="text-xs text-admin-muted">ID: {member.id.substring(0, 8)}</p>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-sm">
+                                        <div className="flex items-center gap-2 text-admin-muted text-sm">
                                             <Mail className="h-3 w-3" />
                                             {member.email}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-sm">
+                                        <div className="flex items-center gap-2 text-admin-muted text-sm">
                                             <Calendar className="h-3 w-3" />
                                             {formatDate(member.date_of_birth)}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${member.membership_expiry && new Date(member.membership_expiry) > new Date()
-                                            ? 'bg-green-100 text-green-600 dark:bg-green-500/10 dark:text-green-400'
-                                            : 'bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400'
+                                            ? 'bg-green-500/10 text-green-600 dark:text-green-400'
+                                            : 'bg-red-500/10 text-red-600 dark:text-red-400'
                                             }`}>
                                             {formatDate(member.membership_expiry)}
                                         </span>
@@ -236,7 +236,7 @@ export default function LedenOverzichtPage() {
                                     <td className="px-6 py-4 text-right">
                                         <button
                                             onClick={() => router.push(`/admin/leden/${member.id}`)}
-                                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-theme-purple hover:text-white dark:hover:bg-theme-purple transition-all shadow-sm"
+                                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-admin-card-soft text-admin font-bold text-sm hover:bg-theme-purple hover:text-white dark:hover:bg-theme-purple transition-all shadow-sm"
                                         >
                                             Beheer
                                             <ChevronRight className="h-4 w-4" />
@@ -248,8 +248,8 @@ export default function LedenOverzichtPage() {
                     </table>
                     {filteredMembers.length === 0 && (
                         <div className="py-20 text-center">
-                            <Users className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                            <p className="text-slate-500 font-medium">Geen leden gevonden die voldoen aan de filters.</p>
+                            <Users className="h-12 w-12 text-admin-muted mx-auto mb-4" />
+                            <p className="text-admin-muted font-medium">Geen leden gevonden die voldoen aan de filters.</p>
                         </div>
                     )}
                 </div>
@@ -257,22 +257,22 @@ export default function LedenOverzichtPage() {
                 {/* Mobile List */}
                 <div className="md:hidden space-y-4">
                     {filteredMembers.map((member) => (
-                        <div key={member.id} className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-lg border border-slate-50 dark:border-slate-700">
+                        <div key={member.id} className="bg-admin-card p-6 rounded-3xl shadow-lg border border-admin">
                             <div className="flex justify-between items-start mb-4">
                                 <div className="flex items-center gap-3">
                                     <div className="h-12 w-12 rounded-full bg-theme-purple/10 flex items-center justify-center text-theme-purple font-bold text-lg">
                                         {member.first_name?.[0]}{member.last_name?.[0]}
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-slate-800 dark:text-slate-100">
+                                        <h3 className="font-bold text-admin">
                                             {member.first_name} {member.last_name}
                                         </h3>
-                                        <p className="text-xs text-slate-400">{member.email}</p>
+                                        <p className="text-xs text-admin-muted">{member.email}</p>
                                     </div>
                                 </div>
                                 <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${member.membership_expiry && new Date(member.membership_expiry) > new Date()
-                                    ? 'bg-green-100 text-green-600 dark:bg-green-500/10 dark:text-green-400'
-                                    : 'bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400'
+                                    ? 'bg-green-500/10 text-green-600 dark:text-green-400'
+                                    : 'bg-red-500/10 text-red-600 dark:text-red-400'
                                     }`}>
                                     {member.membership_expiry && new Date(member.membership_expiry) > new Date() ? 'Actief' : 'Niet Actief'}
                                 </span>
@@ -280,18 +280,18 @@ export default function LedenOverzichtPage() {
 
                             <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
                                 <div>
-                                    <p className="text-slate-400 text-xs mb-1">Geboortedatum</p>
-                                    <p className="text-slate-600 dark:text-slate-300 font-medium">{formatDate(member.date_of_birth)}</p>
+                                    <p className="text-admin-muted text-xs mb-1">Geboortedatum</p>
+                                    <p className="text-admin font-medium">{formatDate(member.date_of_birth)}</p>
                                 </div>
                                 <div>
-                                    <p className="text-slate-400 text-xs mb-1">Vervaldatum</p>
-                                    <p className="text-slate-600 dark:text-slate-300 font-medium">{formatDate(member.membership_expiry)}</p>
+                                    <p className="text-admin-muted text-xs mb-1">Vervaldatum</p>
+                                    <p className="text-admin font-medium">{formatDate(member.membership_expiry)}</p>
                                 </div>
                             </div>
 
                             <button
                                 onClick={() => router.push(`/admin/leden/${member.id}`)}
-                                className="w-full py-3 rounded-2xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-theme-purple hover:text-white transition-all shadow-sm flex items-center justify-center gap-2"
+                                className="w-full py-3 rounded-2xl bg-admin-card-soft text-admin font-bold text-sm hover:bg-theme-purple hover:text-white transition-all shadow-sm flex items-center justify-center gap-2"
                             >
                                 Beheer Profiel
                                 <ChevronRight className="h-4 w-4" />
@@ -300,7 +300,7 @@ export default function LedenOverzichtPage() {
                     ))}
                     {filteredMembers.length === 0 && (
                         <div className="py-10 text-center">
-                            <p className="text-slate-500 font-medium">Geen leden gevonden.</p>
+                            <p className="text-admin-muted font-medium">Geen leden gevonden.</p>
                         </div>
                     )}
                 </div>
