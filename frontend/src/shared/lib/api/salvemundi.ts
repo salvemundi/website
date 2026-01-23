@@ -757,6 +757,36 @@ export const siteSettingsApi = {
     }
 };
 
+// Add create/update helper for site settings (client code will use this for toggles)
+export const siteSettingsMutations = {
+    // Create a new site_settings record for a page
+    create: async (data: { page: string; show?: boolean; disabled_message?: string }) => {
+        return directusFetch<any>(`/items/site_settings`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    },
+
+    // Update an existing site_settings record by id
+    update: async (id: number, data: { show?: boolean; disabled_message?: string }) => {
+        return directusFetch<any>(`/items/site_settings/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data),
+        });
+    },
+
+    // Upsert: if a settings row exists update it, otherwise create
+    upsertByPage: async (page: string, data: { show?: boolean; disabled_message?: string }) => {
+        // Try to fetch existing
+        const existing = await siteSettingsApi.get(page);
+        if (existing && existing.id) {
+            return siteSettingsMutations.update(existing.id, data);
+        }
+        // Create new
+        return siteSettingsMutations.create({ page, ...data });
+    }
+};
+
 export const introSignupsApi = {
     create: async (data: {
         first_name: string;

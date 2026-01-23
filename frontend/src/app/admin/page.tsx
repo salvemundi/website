@@ -6,6 +6,8 @@ import { useAuth } from '@/features/auth/providers/auth-provider';
 import { isUserAuthorizedForReis } from '@/shared/lib/committee-utils';
 import { directusFetch } from '@/shared/lib/directus';
 import { stickersApi, eventsApi } from '@/shared/lib/api/salvemundi';
+import { siteSettingsMutations } from '@/shared/lib/api/salvemundi';
+import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import {
     Users,
     Calendar,
@@ -187,6 +189,9 @@ export default function AdminDashboardPage() {
     });
     const [isIctMember, setIsIctMember] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    // Site settings hooks for toggles
+    const { data: reisSettings, refetch: refetchReisSettings } = useSalvemundiSiteSettings('reis');
+    const { data: kroegentochtSettings, refetch: refetchKroegSettings } = useSalvemundiSiteSettings('kroegentocht');
 
     useEffect(() => {
         loadDashboardData();
@@ -743,6 +748,59 @@ export default function AdminDashboardPage() {
                                 onClick={() => router.push('/admin/kroegentocht')}
                                 colorClass="orange"
                             />
+                        )}
+                        {/* Toggles for Reis & Kroegentocht visibility (only for ICT/admin) */}
+                        {canManageReis && (
+                            <div className="col-span-1 md:col-span-3">
+                                <div className="bg-admin-card rounded-2xl shadow-lg p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                                    <div className="flex-1">
+                                        <h4 className="font-bold text-admin mb-1">Site visibility toggles</h4>
+                                        <p className="text-admin-muted text-sm">Maak aanmeldpagina's zichtbaar of verborgen voor bezoekers.</p>
+                                    </div>
+                                    <div className="flex gap-4 items-center">
+                                        <div className="flex items-center gap-3">
+                                            <label className="text-sm font-medium">Reis zichtbaar</label>
+                                            <button
+                                                onClick={async () => {
+                                                    const current = reisSettings?.show ?? true;
+                                                    try {
+                                                        await siteSettingsMutations.upsertByPage('reis', { show: !current });
+                                                        await refetchReisSettings();
+                                                        // Refresh header/menu by reloading or revalidating queries if needed
+                                                    } catch (err) {
+                                                        console.error('Failed to toggle reis visibility', err);
+                                                        alert('Fout bij het bijwerken van de zichtbaarheid voor Reis');
+                                                    }
+                                                }}
+                                                className={`w-12 h-6 rounded-full p-0.5 transition ${reisSettings?.show ? 'bg-green-500' : 'bg-gray-300'}`}
+                                                aria-pressed={reisSettings?.show ?? true}
+                                            >
+                                                <span className={`block w-5 h-5 bg-white rounded-full transform transition ${reisSettings?.show ? 'translate-x-6' : 'translate-x-0'}`} />
+                                            </button>
+                                        </div>
+
+                                        <div className="flex items-center gap-3">
+                                            <label className="text-sm font-medium">Kroegentocht zichtbaar</label>
+                                            <button
+                                                onClick={async () => {
+                                                    const current = kroegentochtSettings?.show ?? true;
+                                                    try {
+                                                        await siteSettingsMutations.upsertByPage('kroegentocht', { show: !current });
+                                                        await refetchKroegSettings();
+                                                    } catch (err) {
+                                                        console.error('Failed to toggle kroegentocht visibility', err);
+                                                        alert('Fout bij het bijwerken van de zichtbaarheid voor Kroegentocht');
+                                                    }
+                                                }}
+                                                className={`w-12 h-6 rounded-full p-0.5 transition ${kroegentochtSettings?.show ? 'bg-green-500' : 'bg-gray-300'}`}
+                                                aria-pressed={kroegentochtSettings?.show ?? true}
+                                            >
+                                                <span className={`block w-5 h-5 bg-white rounded-full transform transition ${kroegentochtSettings?.show ? 'translate-x-6' : 'translate-x-0'}`} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         )}
                     </div>
                 </div>
