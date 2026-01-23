@@ -687,7 +687,7 @@ export default function AdminDashboardPage() {
                             icon={<Users className="h-6 w-6" />}
                             subtitle="Beheer intro aanmeldingen & content"
                             onClick={() => router.push('/admin/intro')}
-                            colorClass="orange"
+                            colorClass="blue"
                         />
                         {canManageReis && (
                             <StatCard
