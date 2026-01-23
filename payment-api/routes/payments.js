@@ -354,6 +354,13 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
             });
 
             console.warn(`[Payment][${traceId}] Mollie Payment Created: ${payment.id}`);
+            // Log what Mollie reports back for the amount and the checkout URL to verify the transmitted value
+            try {
+                console.warn(`[Payment][${traceId}] Mollie reported amount: ${payment.amount?.value} ${payment.amount?.currency}`);
+                console.warn(`[Payment][${traceId}] Mollie checkout URL: ${payment.getCheckoutUrl ? payment.getCheckoutUrl() : payment.checkoutUrl || payment._links?.checkout?.href}`);
+            } catch (logErr) {
+                console.warn(`[Payment][${traceId}] Could not log full Mollie payment details:`, logErr?.message || logErr);
+            }
 
             await directusService.updateDirectusTransaction(
                 DIRECTUS_URL,

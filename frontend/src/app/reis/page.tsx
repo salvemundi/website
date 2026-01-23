@@ -22,6 +22,8 @@ export default function ReisPage() {
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [lightboxOpen, setLightboxOpen] = useState(false);
+    const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
     const { data: trips, isLoading: tripsLoading } = useSalvemundiTrips();
     const { data: siteSettings, isLoading: isSettingsLoading } = useSalvemundiSiteSettings('reis');
@@ -85,6 +87,24 @@ export default function ReisPage() {
     const headerBackgroundImage = nextTrip?.image
         ? getImageUrl(nextTrip.image)
         : '/img/placeholder.svg';
+
+    const openLightbox = (src: string) => {
+        setLightboxSrc(src);
+        setLightboxOpen(true);
+    };
+
+    const closeLightbox = () => {
+        setLightboxOpen(false);
+        setLightboxSrc(null);
+    };
+
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') closeLightbox();
+        };
+        if (lightboxOpen) window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [lightboxOpen]);
 
     // Calculate participants stats
     const participantsCount = signups?.filter(s => s.status === 'confirmed' || s.status === 'registered').length || 0;
@@ -389,15 +409,21 @@ export default function ReisPage() {
                             {nextTrip && (
                                 <div className="bg-gradient-theme rounded-3xl p-6 shadow-lg">
                                     {nextTrip.image && (
-                                        <img
-                                            src={getImageUrl(nextTrip.image)}
-                                            alt={nextTrip.name}
-                                            className="w-full h-64 object-cover rounded-2xl"
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.src = '/img/placeholder.svg';
-                                            }}
-                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => openLightbox(getImageUrl(nextTrip.image))}
+                                            className="w-full rounded-2xl overflow-hidden focus:outline-none"
+                                        >
+                                            <img
+                                                src={getImageUrl(nextTrip.image)}
+                                                alt={nextTrip.name}
+                                                className="w-full h-64 object-cover rounded-2xl"
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.src = '/img/placeholder.svg';
+                                                }}
+                                            />
+                                        </button>
                                     )}
 
                                     <div className="bg-white/10 rounded-lg p-4 mt-4">
@@ -415,6 +441,30 @@ export default function ReisPage() {
                                             <Calendar className="h-10 w-10 text-white/60" />
                                         </div>
                                     </div>
+                                </div>
+                            )}
+
+                            {lightboxOpen && lightboxSrc && (
+                                <div
+                                    role="dialog"
+                                    aria-modal="true"
+                                    className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/70"
+                                    onClick={closeLightbox}
+                                >
+                                    <button
+                                        onClick={closeLightbox}
+                                        aria-label="Sluiten"
+                                        className="absolute top-6 right-6 text-white text-3xl leading-none"
+                                    >
+                                        ×
+                                    </button>
+
+                                    <img
+                                        src={lightboxSrc}
+                                        alt={nextTrip?.name || 'Reis afbeelding'}
+                                        className="max-h-[90vh] max-w-full rounded shadow-lg"
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
                                 </div>
                             )}
 
