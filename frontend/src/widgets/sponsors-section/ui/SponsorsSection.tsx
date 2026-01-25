@@ -37,7 +37,7 @@ export default function SponsorsSection() {
 
     if (loading) {
         return (
-            <section className="py-12 bg-[var(--bg-main)] overflow-hidden">
+            <section className="py-12 md:py-16 lg:py-20 bg-[var(--bg-main)] overflow-hidden">
                 <div className="mx-auto max-w-app px-6">
                     <div className="text-center mb-8">
                         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-theme-purple mb-2">
@@ -86,7 +86,7 @@ export default function SponsorsSection() {
     ];
 
     return (
-        <section className="py-12 bg-[var(--bg-main)] overflow-hidden">
+        <section className="py-12 md:py-16 lg:py-20 bg-[var(--bg-main)] overflow-hidden">
             <div className="mx-auto max-w-app px-6">
                 <div className="text-center mb-8">
                     <p className="text-xs font-semibold uppercase tracking-[0.3em] text-theme-purple mb-2">
@@ -97,7 +97,7 @@ export default function SponsorsSection() {
                     </h2>
                 </div>
             </div>
-            
+
             <div className="sponsors-scroll-container">
                 <div className="sponsors-scroll-track">
                     {duplicatedSponsors.map((sponsor, index) => (
@@ -108,22 +108,22 @@ export default function SponsorsSection() {
                             rel="noopener noreferrer"
                             className="sponsor-item"
                         >
-                                    {(() => {
-                                        const imageId = typeof sponsor.image === 'string'
-                                            ? sponsor.image
-                                            : sponsor.image && typeof sponsor.image === 'object'
-                                                ? sponsor.image.id
-                                                : null;
-                                        const src = imageId ? `/api/assets/${imageId}` : '/img/placeholder.png';
-                                        return (
-                                            <img
-                                                src={src}
-                                                alt={sponsor.website_url || 'Sponsor'}
-                                                className="sponsor-logo"
-                                                loading="lazy"
-                                            />
-                                        );
-                                    })()}
+                            {(() => {
+                                const imageId = typeof sponsor.image === 'string'
+                                    ? sponsor.image
+                                    : sponsor.image && typeof sponsor.image === 'object'
+                                        ? sponsor.image.id
+                                        : null;
+                                const src = imageId ? `/api/assets/${imageId}` : '/img/placeholder.png';
+                                return (
+                                    <img
+                                        src={src}
+                                        alt={sponsor.website_url || 'Sponsor'}
+                                        className="sponsor-logo"
+                                        loading="lazy"
+                                    />
+                                );
+                            })()}
                         </a>
                     ))}
                 </div>
