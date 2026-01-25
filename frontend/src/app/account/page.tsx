@@ -203,8 +203,10 @@ export default function AccountPage() {
   };
 
   const handleLogout = async () => {
+    // We redirect manually first to ensure we land on the login page with ?noAuto=true.
+    // This prevents the useEffect from firing a different redirect during the async logout.
+    router.replace("/login?noAuto=true");
     await logout();
-    router.push("/login?noAuto=true");
   };
 
   const handleSaveMinecraftUsername = async () => {

@@ -46,6 +46,14 @@
 
   /* Header & UI */
   --header-height: 64px;
+
+  /* --- SEMANTIC THEME ALIASES (Tailwind Compatibility) --- */
+  --theme-white: var(--color-white);
+  --theme-text: var(--text-main);
+  --theme-text-muted: var(--text-muted);
+  --theme-text-light: var(--text-light);
+  --bg-card-dark: var(--bg-card);
+  /* Fallback for tailwind config */
 }
 
 /* --- 3. DARK MODE OVERRIDES --- */
@@ -67,6 +75,14 @@
 
   --gradient-start: #a16ca1;
   --gradient-end: #c47bbb;
+
+  /* Dark mode specific mappings */
+  --theme-white: var(--color-white);
+  /* Keep it white or maybe soft violet? */
+  --theme-text: var(--text-main);
+  --theme-text-muted: var(--text-muted);
+  --theme-text-light: var(--text-light);
+  --bg-card-dark: var(--bg-card);
 }
 
 /* --- 4. LEGACY & COMPATIBILITY ALIASES --- */
@@ -77,6 +93,9 @@
   --color-ink: var(--text-main);
   --color-ink-muted: var(--text-muted);
   --color-oranje: var(--theme-purple);
+  --theme-purple-dark: var(--color-purple-800);
+  --theme-purple-darker: var(--color-purple-900);
+  --theme-purple-lighter: var(--color-purple-200);
   /* Legacy mapping */
 }
 

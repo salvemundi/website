@@ -273,6 +273,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Only clear local session, don't logout from Microsoft
         localStorage.removeItem('auth_token');
         localStorage.removeItem('refresh_token');
+
+        // Clear user-specific committees cache
+        if (user?.id) {
+            localStorage.removeItem(`user_committees_${user.id}`);
+        }
+
+        // Thoroughly clear MSAL cache and other auth-related items from localStorage
+        // to prevent automatic re-login loops.
+        try {
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (key.startsWith('msal.') || key.startsWith('user_committees_'))) {
+                    keysToRemove.push(key);
+                }
+            }
+            keysToRemove.forEach(k => localStorage.removeItem(k));
+
+            // Also clear session storage
+            sessionStorage.clear();
+        } catch (e) {
+            // ignore localStorage/sessionStorage access errors
+        }
+
+        // If MSAL is initialized, clear the active account
+        if (msalInstance) {
+            try {
+                msalInstance.setActiveAccount(null);
+            } catch (e) {
+                // ignore
+            }
+        }
+
         setUser(null);
     };
 
