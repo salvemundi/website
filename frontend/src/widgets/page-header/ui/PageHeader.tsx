@@ -70,12 +70,10 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                     />
                 </div>
             ) : (
-                <div className="absolute inset-0 bg-cover z-0 bg-theme-purple-lighter" />
+                <div className="absolute inset-0 bg-gradient-theme-page-alt transition-colors duration-500 z-0" />
             )}
-            {/* Purple gradient overlay when no background image */}
-            {!backgroundImage && (
-                <div className="absolute inset-0 bg-gradient-to-br from-theme-purple-darker to-theme-purple z-0" />
-            )}
+            {/* Subtle overlay for better text contrast if needed */}
+            <div className="absolute inset-0 bg-black/10 z-0" />
 
             <div className={`relative z-20 w-full max-w-app px-4 ${contentPadding} ${variant === 'centered' ? 'text-center' : ''}`}>
                 {variant === 'centered' ? (
