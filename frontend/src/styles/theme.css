@@ -133,6 +133,15 @@ a:hover {
 .bg-gradient-theme {
   background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
 }
+/* Page header gradient (fallback when no image) */
+.bg-gradient-theme-page-alt {
+  background: linear-gradient(135deg, #f4e9f3, #e4cbe2);  /* Light pink/purple in light mode */
+}
+
+.dark .bg-gradient-theme-page-alt {
+  background: linear-gradient(135deg, #a16ca1, #c47bbb);  /* Keep darker purple in dark mode */
+}
+
 
 .text-gradient {
   background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
