@@ -233,7 +233,7 @@ const Header: React.FC = () => {
                         ) : (
                             <Link
                                 href={ROUTES.LOGIN}
-                                className="flex items-center gap-2 rounded-full  bg-primary-100 text-theme-purple-darker font-semibold  px-3 py-1.5 text-sm  text-theme shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+                                className="flex items-center gap-2 rounded-full  bg-primary-100 dark:bg-theme-purple/20 text-theme-purple-darker dark:text-theme-white font-semibold px-3 py-1.5 text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                             >
                                 Inloggen
                             </Link>
@@ -360,3 +360,4 @@ const Header: React.FC = () => {
 };
 
 export default Header;
+
