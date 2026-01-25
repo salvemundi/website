@@ -301,19 +301,21 @@ function ActivitiesContent() {
                                 )}
                             </div>
                         </div>
-                    </main>
-                </>
-                );
-        }
-
-                export default function ActivitiesPage() {
-    return (
-                <Suspense fallback={
-                    <div className="flex items-center justify-center min-h-screen">
-                        <div className="text-paars text-xl font-semibold">Laden...</div>
                     </div>
-                }>
-                    <ActivitiesContent />
-                </Suspense>
-                );
+                </div>
+            </main>
+        </div>
+    );
+}
+
+export default function ActivitiesPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-paars text-xl font-semibold">Laden...</div>
+            </div>
+        }>
+            <ActivitiesContent />
+        </Suspense>
+    );
 }
