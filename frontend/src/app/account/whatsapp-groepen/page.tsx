@@ -41,7 +41,7 @@ export default function WhatsAppGroupsPage() {
                 <main className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12">
                     <div className="rounded-3xl bg-gradient-theme p-6 sm:p-8 lg:p-12 shadow-xl">
                         <div className="max-w-4xl mx-auto">
-                            <Card variant="card" padding="p-8" className="text-center bg-white/95 dark:bg-surface-dark/95">
+                            <Card variant="card" padding="p-8" className="text-center bg-[var(--bg-card)]">
                                 <div className="text-6xl mb-4">🔒</div>
                                 <h1 className="text-3xl font-bold text-theme-purple dark:text-theme-white mb-4">Actief Lidmaatschap Vereist</h1>
                                 <p className="text-theme-text-light dark:text-theme-text-light mb-6">
@@ -84,7 +84,7 @@ export default function WhatsAppGroupsPage() {
                     </div>
 
                     {/* Info Banner */}
-                    <div className="bg-white/95 dark:bg-surface-dark/95 rounded-2xl p-6 mb-8 shadow-md">
+                    <div className="bg-[var(--bg-card)] rounded-2xl p-6 mb-8 shadow-md">
                         <div className="flex items-start gap-4">
                             <span className="text-3xl">ℹ️</span>
                             <div>
@@ -99,11 +99,11 @@ export default function WhatsAppGroupsPage() {
 
                     {/* Groups Section */}
                     {groupsLoading ? (
-                        <div className="text-center py-12 bg-white/95 dark:bg-surface-dark/95 rounded-3xl">
+                        <div className="text-center py-12 bg-[var(--bg-card)] rounded-3xl">
                             <div className="text-theme-purple dark:text-theme-white">WhatsApp groepen worden geladen...</div>
                         </div>
                     ) : error ? (
-                        <div className="text-center py-12 bg-white/95 dark:bg-surface-dark/95 rounded-3xl">
+                        <div className="text-center py-12 bg-[var(--bg-card)] rounded-3xl">
                             <div className="text-theme-purple dark:text-theme-white mb-4">Er is een fout opgetreden bij het laden van de groepen.</div>
                             <button
                                 onClick={() => refetch()}
@@ -113,7 +113,7 @@ export default function WhatsAppGroupsPage() {
                             </button>
                         </div>
                     ) : groups.length === 0 ? (
-                        <div className="text-center py-12 bg-white/95 dark:bg-surface-dark/95 rounded-3xl">
+                        <div className="text-center py-12 bg-[var(--bg-card)] rounded-3xl">
                             <div className="text-6xl mb-4">💬</div>
                             <div className="text-theme-purple dark:text-theme-white mb-4 font-semibold">Momenteel geen WhatsApp groepen beschikbaar.</div>
                             <p className="text-theme-text-light dark:text-theme-text-light text-sm mb-4">
@@ -126,7 +126,7 @@ export default function WhatsAppGroupsPage() {
                                 <Card
                                     key={group.id}
                                     variant="card"
-                                    className="bg-white/95 dark:bg-surface-dark/95 h-full"
+                                    className="bg-[var(--bg-card)] h-full"
                                 >
                                     <div className="flex items-start gap-4 mb-4">
                                         <div className="w-16 h-16 rounded-full bg-theme-purple/10 flex items-center justify-center flex-shrink-0 text-theme-purple dark:text-theme-white">
@@ -164,7 +164,7 @@ export default function WhatsAppGroupsPage() {
                     )}
 
                     {/* Additional Info */}
-                    <Card variant="card" className="mt-8 bg-white/95 dark:bg-surface-dark/95">
+                    <Card variant="card" className="mt-8 bg-[var(--bg-card)]">
                         <h3 className="font-semibold text-theme-purple dark:text-theme-white mb-3 text-lg">Groepsregels</h3>
                         <ul className="space-y-3 text-sm text-theme-text-muted dark:text-theme-text-muted">
                             <li className="flex items-start gap-2">
@@ -200,3 +200,4 @@ export default function WhatsAppGroupsPage() {
         </div>
     );
 }
+

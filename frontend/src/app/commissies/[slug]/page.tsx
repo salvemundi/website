@@ -9,7 +9,7 @@ import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { slugify } from '@/shared/lib/utils/slug';
-import { Mail, Calendar, Users2, History, Edit,} from 'lucide-react';
+import { Mail, Calendar, Users2, History, Edit, } from 'lucide-react';
 
 function cleanCommitteeName(name: string): string {
     return name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim();
@@ -46,24 +46,24 @@ export default function CommitteeDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="relative min-h-screen" style={{backgroundColor: 'var(--bg-main)'}}>
+            <div className="relative min-h-screen" style={{ backgroundColor: 'var(--bg-main)' }}>
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-oranje/10/80 via-transparent to-oranje/20/60" />
                 <div className="relative z-10">
-                        <div className="mx-auto max-w-app px-4 py-12">
-                            <div className="h-96 animate-pulse rounded-3xl bg-white/60 dark:bg-white/10" />
-                        </div>
+                    <div className="mx-auto max-w-app px-4 py-12">
+                        <div className="h-96 animate-pulse rounded-3xl bg-white/60 dark:bg-white/10" />
                     </div>
                 </div>
+            </div>
         );
     }
 
     if (error || !committee) {
         return (
-            <div className="relative min-h-screen" style={{backgroundColor: 'var(--bg-main)'}}>
+            <div className="relative min-h-screen" style={{ backgroundColor: 'var(--bg-main)' }}>
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-oranje/10/80 via-transparent to-oranje/20/60" />
                 <div className="relative z-10">
                     <div className="mx-auto max-w-app px-4 py-12">
-                        <div className="rounded-3xl bg-white/80 dark:bg-[#1f1921] dark:border dark:border-white/10 p-8 text-center shadow-lg">
+                        <div className="rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-8 text-center shadow-lg">
                             <p className="mb-4 text-lg font-semibold text-paars">Commissie niet gevonden</p>
                             <Link
                                 href="/commissies"
@@ -75,7 +75,7 @@ export default function CommitteeDetailPage() {
                     </div>
                 </div>
             </div>
-        );    
+        );
     }
 
     const cleanName = cleanCommitteeName(committee.name);
@@ -174,31 +174,31 @@ export default function CommitteeDetailPage() {
                     <div className="grid gap-8 lg:grid-cols-3">
                         {/* Main Content */}
                         <div className="lg:col-span-2 space-y-8">
-                                {/* Committee image */}
-                                {committee.image && (
-                                    <div className="rounded-3xl overflow-hidden bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 shadow-lg relative h-96">
-                                        <button
-                                            onClick={() => setImageModalOpen(true)}
-                                            aria-label={`Open afbeelding van ${cleanName}`}
-                                            className="absolute inset-0 h-full w-full"
-                                        >
-                                            <SmartImage
-                                                src={getImageUrl(committee.image)}
-                                                alt={cleanName}
-                                                width={720}
-                                                height={480}
-                                                className="object-contain w-full h-full bg-white dark:bg-[#0f1721]"
-                                                loading="lazy"
-                                                placeholder="blur"
-                                                blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
-                                            />
-                                        </button>
-                                    </div>
-                                )}
+                            {/* Committee image */}
+                            {committee.image && (
+                                <div className="rounded-3xl overflow-hidden bg-[var(--bg-card)] dark:border dark:border-white/10 shadow-lg relative h-96">
+                                    <button
+                                        onClick={() => setImageModalOpen(true)}
+                                        aria-label={`Open afbeelding van ${cleanName}`}
+                                        className="absolute inset-0 h-full w-full"
+                                    >
+                                        <SmartImage
+                                            src={getImageUrl(committee.image)}
+                                            alt={cleanName}
+                                            width={720}
+                                            height={480}
+                                            className="object-contain w-full h-full bg-white dark:bg-[#0f1721]"
+                                            loading="lazy"
+                                            placeholder="blur"
+                                            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
+                                        />
+                                    </button>
+                                </div>
+                            )}
 
                             {/* Short description / Overview */}
                             {committee.description && (
-                                <div className="rounded-3xl bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 p-8 shadow-lg">
+                                <div className="rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-8 shadow-lg">
                                     <h2 className="mb-4 text-2xl font-bold text-slate-900 dark:text-white">Over {cleanName}</h2>
                                     <div
                                         className="prose max-w-none text-slate-700 dark:text-white/80"
@@ -209,7 +209,7 @@ export default function CommitteeDetailPage() {
 
                             {/* Long description from Directus (if available) - render above activities */}
                             {committeeDetail?.description && (
-                                <div className="rounded-3xl bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 p-8 shadow-lg">
+                                <div className="rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-8 shadow-lg">
                                     <h2 className="mb-4 text-2xl font-bold text-slate-900 dark:text-white">Meer over {cleanName}</h2>
                                     <div
                                         className="prose max-w-none text-slate-700 dark:text-white/80"
@@ -220,7 +220,7 @@ export default function CommitteeDetailPage() {
 
                             {/* Events */}
                             {events.length > 0 && (
-                                <div className="rounded-3xl bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 p-8 shadow-lg">
+                                <div className="rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-8 shadow-lg">
                                     <h2 className="mb-6 text-2xl font-bold text-slate-900 dark:text-white">Activiteiten</h2>
                                     <div className="grid gap-4 sm:grid-cols-2">
                                         {events.map((event) => (
@@ -250,7 +250,7 @@ export default function CommitteeDetailPage() {
                         <div className="space-y-6">
                             {/* Committee Email Contact */}
                             {committee.email && (
-                                <div className="rounded-3xl bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 p-6 shadow-lg">
+                                <div className="rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-lg">
                                     <h3 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">Commissie Contact</h3>
                                     <div className="flex items-center gap-3 mb-3">
                                         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-paars/10 dark:bg-paars/20">
@@ -275,7 +275,7 @@ export default function CommitteeDetailPage() {
 
                             {/* Leader Contact */}
                             {leader && (
-                                <div className="rounded-3xl bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 p-6 shadow-lg">
+                                <div className="rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-lg">
                                     <h3 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">Commissieleider</h3>
                                     <div className="flex items-center gap-4">
                                         <div className="relative h-16 w-16 rounded-full overflow-hidden">
@@ -311,7 +311,7 @@ export default function CommitteeDetailPage() {
 
                             {/* Members */}
                             {members.length > 0 && (
-                                <div className="rounded-3xl bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 p-6 shadow-lg">
+                                <div className="rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-lg">
                                     <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white">
                                         <Users2 className="h-5 w-5 text-paars" />
                                         Leden ({members.length})
@@ -352,7 +352,7 @@ export default function CommitteeDetailPage() {
 
                             {/* Board History Button - Only show for Bestuur */}
                             {cleanName.toLowerCase().includes('bestuur') && (
-                                <div className="rounded-3xl bg-white/90 dark:bg-[#1f1921] dark:border dark:border-white/10 p-6 shadow-lg">
+                                <div className="rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-lg">
                                     <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white">
                                         <History className="h-5 w-5 text-paars" />
                                         Geschiedenis
