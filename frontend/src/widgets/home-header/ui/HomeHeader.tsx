@@ -27,16 +27,16 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({
                     aria-hidden="true"
                 />
                 <div
-                    className="absolute inset-0 bg-samu/80 rounded-4xl"
+                    className="absolute inset-0 bg-theme-purple/80 rounded-4xl"
                     aria-hidden="true"
                 />
                 <div
-                    className="absolute inset-0 bg-gradient-to-r from-oranje/20 to-paars/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-4xl"
+                    className="absolute inset-0 bg-gradient-to-r from-theme-purple-light/20 to-theme-purple/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-4xl"
                     aria-hidden="true"
                 />
                 {/* Content */}
                 <div className="relative flex flex-col items-center z-10 px-3 py-6 sm:py-10">
-                    <h1 className={`text-beige font-bold text-center leading-tight ${titleClassName}`}>
+                    <h1 className={`text-theme-white font-bold text-center leading-tight ${titleClassName}`}>
                         {title.split('\n').map((line, index) => (
                             <React.Fragment key={index}>
                                 {line}

@@ -70,7 +70,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                     />
                 </div>
             ) : (
-                <div className="absolute inset-0 bg-cover z-0" style={{ backgroundColor: 'var(--color-primary-600)' }} />
+                <div className="absolute inset-0 bg-cover z-0 bg-theme-purple-lighter" />
             )}
             {/* Purple gradient overlay when no background image */}
             {!backgroundImage && (
