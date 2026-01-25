@@ -203,6 +203,13 @@ export default function AccountPage() {
   };
 
   const handleLogout = async () => {
+    // Clear any stored return URL to prevent auto-redirects after logout
+    try {
+      localStorage.removeItem('auth_return_to');
+    } catch (e) {
+      // ignore
+    }
+
     // We redirect manually first to ensure we land on the login page with ?noAuto=true.
     // This prevents the useEffect from firing a different redirect during the async logout.
     router.replace("/login?noAuto=true");
