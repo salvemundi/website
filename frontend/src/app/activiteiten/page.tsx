@@ -69,10 +69,10 @@ function ActivitiesContent() {
                 backgroundPosition="center 75%"
                 /* apply a subtle blur to the banner image */
                 imageFilter={`brightness(0.65)`}
-                variant="split"
-                titleClassName="text-theme-white text-3xl sm:text-4xl md:text-6xl"
+                variant="centered"
+                titleClassName="text-theme-purple dark:text-theme-white text-3xl sm:text-4xl md:text-6xl drop-shadow-sm"
                 description={
-                    <p className="text-lg sm:text-xl text-theme-white max-w-3xl mt-4">
+                    <p className="text-lg sm:text-xl text-theme-purple dark:text-theme-white max-w-3xl mt-4 font-medium drop-shadow-sm">
                         Bekijk alle evenementen, trainingen en feesten van Salve Mundi.
                     </p>
                 }

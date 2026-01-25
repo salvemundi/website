@@ -268,7 +268,13 @@ export default function SignUp() {
                     backgroundPosition="center 75%"
                     /* match activiteiten banner size and add a subtle blur */
                     contentPadding="py-20"
-                    imageFilter={``}
+                    variant="centered"
+                    titleClassName="text-theme-purple dark:text-theme-white text-3xl sm:text-4xl md:text-6xl drop-shadow-sm"
+                    description={
+                        <p className="text-lg sm:text-xl text-theme-purple dark:text-theme-white max-w-3xl mt-4 font-medium drop-shadow-sm mx-auto">
+                            Beheer je lidmaatschap bij Salve Mundi.
+                        </p>
+                    }
                 />
             </div>
 
