@@ -308,7 +308,7 @@ export default function SignUp() {
                             </div>
                         </div>
                     )}
-                <div className="flex flex-col sm:flex-row gap-6 p-6 sm:p-10">
+                <div className="flex flex-col sm:flex-row gap-6 px-6 py-12 md:py-16 lg:py-20">
                     <section className="w-full sm:w-1/2 bg-gradient-theme rounded-3xl shadow-lg p-6 sm:p-8">
                         <h1 className="text-3xl font-bold text-theme-purple dark:text-theme-white mb-6">
                             {formTitle}
