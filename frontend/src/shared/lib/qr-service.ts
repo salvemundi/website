@@ -107,6 +107,72 @@ export async function isUserAuthorizedForAttendance(userId: string, eventId: num
     }
 }
 
+// ===== PUB CRAWL / KROEGENTOCHT FUNCTIONS =====
+
+export async function updatePubCrawlSignupWithQRToken(signupId: number, token: string) {
+    try {
+        const apiKey = process.env.NEXT_PUBLIC_DIRECTUS_API_KEY || '';
+        console.log('[updatePubCrawlSignupWithQRToken] Using API key, length:', apiKey.length, 'signupId:', signupId);
+        await directusFetch(`/items/pub_crawl_signups/${signupId}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ qr_token: token }),
+            headers: {
+                Authorization: `Bearer ${apiKey}`
+            }
+        });
+        console.log('[updatePubCrawlSignupWithQRToken] Successfully updated QR token for pub crawl signup', signupId);
+    } catch (err) {
+        console.error('Error updating pub crawl signup with QR token:', err);
+        throw err;
+    }
+}
+
+export async function checkInPubCrawlParticipant(qrToken: string) {
+    try {
+        const signups = await directusFetch<any[]>(`/items/pub_crawl_signups?filter[qr_token][_eq]=${encodeURIComponent(qrToken)}&fields=id,pub_crawl_event_id.*,checked_in,checked_in_at,qr_token,name,email,association,amount_tickets,name_initials`);
+        if (!signups || signups.length === 0) {
+            return { success: false, message: 'Ongeldige QR code. Deze QR code is niet gevonden.' };
+        }
+
+        const signup = signups[0];
+        if (signup.checked_in) {
+            return { success: false, message: `Deze groep is al ingecheckt op ${new Date(signup.checked_in_at).toLocaleString('nl-NL')}.`, signup };
+        }
+
+        await directusFetch(`/items/pub_crawl_signups/${signup.id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ checked_in: true, checked_in_at: new Date().toISOString() })
+        });
+
+        const updated = await directusFetch(`/items/pub_crawl_signups/${signup.id}?fields=id,pub_crawl_event_id.*,checked_in,checked_in_at,name,email,association,amount_tickets,name_initials`);
+        return { success: true, message: 'Succesvol ingecheckt!', signup: updated };
+    } catch (err) {
+        console.error('Error checking in pub crawl participant:', err);
+        return { success: false, message: 'Er is een fout opgetreden bij het inchecken. Probeer het opnieuw.' };
+    }
+}
+
+export async function getPubCrawlSignupsWithCheckIn(eventId: number) {
+    try {
+        const list = await directusFetch<any[]>(`/items/pub_crawl_signups?filter[pub_crawl_event_id][_eq]=${eventId}&fields=id,pub_crawl_event_id,checked_in,checked_in_at,created_at,name,email,association,amount_tickets,name_initials,qr_token&sort=checked_in_at,-created_at`);
+        return list || [];
+    } catch (err) {
+        console.error('Error fetching pub crawl signups:', err);
+        return [];
+    }
+}
+
+export async function isUserAuthorizedForPubCrawlAttendance(userId: string) {
+    try {
+        // Check if user is a member of ANY committee
+        const committees = await directusFetch<any[]>(`/items/committee_members?filter[user_id][_eq]=${userId}&fields=id`);
+        return committees && committees.length > 0;
+    } catch (err) {
+        console.error('Error checking pub crawl attendance authorization:', err);
+        return false;
+    }
+}
+
 export default {
     generateQRToken,
     generateQRCode,
@@ -114,4 +180,9 @@ export default {
     checkInParticipant,
     getEventSignupsWithCheckIn,
     isUserAuthorizedForAttendance,
+    // Pub Crawl functions
+    updatePubCrawlSignupWithQRToken,
+    checkInPubCrawlParticipant,
+    getPubCrawlSignupsWithCheckIn,
+    isUserAuthorizedForPubCrawlAttendance,
 };
