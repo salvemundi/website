@@ -73,7 +73,7 @@ export default function FeaturedEvent({ event, onEventClick }: FeaturedEventProp
                     </div>
                 </div>
 
-                <button className="w-full rounded-xl bg-gradient-theme py-3 font-semibold text-theme-white transition hover:opacity-90">
+                <button className="w-full rounded-xl bg-gradient-theme py-3 font-bold text-theme-purple dark:text-theme-white transition hover:opacity-90 shadow-md">
                     Bekijk details
                 </button>
             </div>

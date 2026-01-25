@@ -153,7 +153,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                             e.stopPropagation();
                             onShowDetails?.();
                         }}
-                        className="px-4 py-2 text-sm font-semibold rounded-full text-theme-purple hover:bg-gradient-theme hover:text-theme-white transition"
+                        className="px-4 py-2 text-sm font-semibold rounded-full text-theme-purple hover:bg-gradient-theme hover:text-theme-purple dark:hover:text-theme-white transition"
                     >
                         MEER INFO
                     </button>
@@ -161,7 +161,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                     {!isPast && (
                         <button
                             onClick={handleSignupClick}
-                            className={`${cannotSignUp ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-gradient-theme text-theme-white shadow-lg shadow-theme-purple/30 hover:-translate-y-0.5 hover:shadow-xl'} px-4 py-2 text-sm font-semibold rounded-full transition-transform`}
+                            className={`${cannotSignUp ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-gradient-theme text-theme-purple dark:text-theme-white shadow-lg shadow-theme-purple/30 hover:-translate-y-0.5 hover:shadow-xl'} px-4 py-2 text-sm font-semibold rounded-full transition-transform`}
                             disabled={cannotSignUp}
                         >
                             {alreadySignedUp ? 'AL AANGEMELD' : isDeadlinePassed ? 'INSCHRIJVEN GESLOTEN' : 'AANMELDEN'}
@@ -201,32 +201,32 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
             </div>
 
             {/* Content Section */}
-            <div className="flex flex-col flex-grow text-theme-white relative z-10">
+            <div className="flex flex-col flex-grow text-theme-text dark:text-theme-white relative z-10">
                 {/* Header - Title, Date, and Price */}
                 <div className="flex flex-row justify-between items-start mb-2 gap-3 flex-wrap">
-                    <h1 className="text-lg sm:text-xl font-bold text-theme-purple-lighter leading-tight pr-2 sm:pr-4 break-words w-full sm:flex-1">
+                    <h1 className="text-lg sm:text-xl font-bold text-title leading-tight pr-2 sm:pr-4 break-words w-full sm:flex-1">
                         {title}
                     </h1>
                     <div className="flex flex-col items-end whitespace-nowrap text-right ml-auto">
                         {date && (
                             <>
-                                <p className="text-xs sm:text-sm font-semibold text-theme-white">{formatDate(date)}</p>
-                                {timeRange && <p className="text-sm text-theme-white/90">{timeRange}</p>}
+                                <p className="text-xs sm:text-sm font-semibold text-theme-text dark:text-theme-white">{formatDate(date)}</p>
+                                {timeRange && <p className="text-sm text-theme-text/90 dark:text-theme-white/90">{timeRange}</p>}
                             </>
                         )}
-                        {location && <p className="text-xs text-theme-white/80 mt-1">{location}</p>}
+                        {location && <p className="text-xs text-theme-text/80 dark:text-theme-white/80 mt-1">{location}</p>}
                         {contact && (
-                            <p className="text-xs text-theme-white/80 mt-1">
+                            <p className="text-xs text-theme-text/80 dark:text-theme-white/80 mt-1">
                                 <span className="font-medium">Contact:</span>{' '}
                                 <span className="font-medium">{contact}</span>
                             </p>
                         )}
-                        <span className="text-lg font-bold text-theme-white">€{safePrice}</span>
+                        <span className="text-lg font-bold text-theme-purple dark:text-theme-white">€{safePrice}</span>
                     </div>
                 </div>
 
                 {/* Description - truncated to 150 characters */}
-                <p className="text-theme-white/90 text-sm sm:text-base mb-4 sm:mb-6 flex-grow break-words overflow-hidden">
+                <p className="text-theme-text/90 dark:text-theme-white/90 text-sm sm:text-base mb-4 sm:mb-6 flex-grow break-words overflow-hidden">
                     {description && description.length > 150
                         ? `${description.substring(0, 150)}...`
                         : description}

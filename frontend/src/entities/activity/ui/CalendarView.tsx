@@ -63,7 +63,7 @@ export default function CalendarView({
     return (
         <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl shadow-xl overflow-hidden">
             {/* Header */}
-            <div className="p-6 flex items-center justify-between bg-gradient-theme text-theme-white">
+            <div className="p-6 flex items-center justify-between bg-gradient-theme text-theme-purple dark:text-theme-white">
                 <h2 className="text-2xl font-bold capitalize">
                     {format(currentDate, 'MMMM yyyy', { locale: nl })}
                 </h2>
@@ -125,7 +125,7 @@ export default function CalendarView({
                             <div className="flex justify-between items-start">
                                 <span
                                     className={`text-sm font-semibold w-7 h-7 flex items-center justify-center rounded-full
-                                        ${isDayToday ? 'bg-gradient-theme text-theme-white' : isSelected ? 'text-theme-purple' : 'text-theme'}
+                                        ${isDayToday ? 'bg-gradient-theme text-theme-purple dark:text-theme-white' : isSelected ? 'text-theme-purple' : 'text-theme'}
                                     `}
                                 >
                                     {format(day, 'd')}

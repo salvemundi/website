@@ -273,8 +273,8 @@ export default function IntroPage() {
                       ) : (
                         <form onSubmit={handleSubmit} className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4">
                           <div className="flex items-center gap-2 mb-4">
-                            <Heart className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
-                            <h3 className="text-xl lg:text-2xl font-bold text-white">Word Intro Ouder!</h3>
+                            <Heart className="w-5 h-5 lg:w-6 lg:h-6 text-theme-purple dark:text-white" />
+                            <h3 className="text-xl lg:text-2xl font-bold text-theme-purple dark:text-theme-white">Word Intro Ouder!</h3>
                           </div>
                           <div className="bg-white/10 rounded-lg p-3 lg:p-4 mb-4">
                             <p className="text-white text-xs lg:text-sm">
@@ -296,7 +296,7 @@ export default function IntroPage() {
                             {phoneError && <p className="text-red-200 text-xs lg:text-sm mt-1">{phoneError}</p>}
                           </div>
                           <div>
-                            <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Motivatie *</label>
+                            <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Motivatie *</label>
                             <textarea
                               name="motivation"
                               value={(parentForm as any).motivation}
@@ -319,11 +319,11 @@ export default function IntroPage() {
                     ) : (
                       <form onSubmit={handleSubmit} className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4">
                         <div className="flex items-center gap-2 mb-4">
-                          <Users className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
-                          <h3 className="text-xl lg:text-2xl font-bold text-white">Meld je aan!</h3>
+                          <Users className="w-5 h-5 lg:w-6 lg:h-6 text-theme-purple dark:text-white" />
+                          <h3 className="text-xl lg:text-2xl font-bold text-theme-purple dark:text-white">Meld je aan!</h3>
                         </div>
                         <div>
-                          <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Voornaam *</label>
+                          <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Voornaam *</label>
                           <input
                             type="text"
                             name="voornaam"
@@ -334,7 +334,7 @@ export default function IntroPage() {
                           />
                         </div>
                         <div>
-                          <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Tussenvoegsel</label>
+                          <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Tussenvoegsel</label>
                           <input
                             type="text"
                             name="tussenvoegsel"
@@ -344,7 +344,7 @@ export default function IntroPage() {
                           />
                         </div>
                         <div>
-                          <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Achternaam *</label>
+                          <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Achternaam *</label>
                           <input
                             type="text"
                             name="achternaam"
@@ -355,7 +355,7 @@ export default function IntroPage() {
                           />
                         </div>
                         <div>
-                          <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Geboortedatum *</label>
+                          <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Geboortedatum *</label>
                           <input
                             type="date"
                             name="geboortedatum"
@@ -366,7 +366,7 @@ export default function IntroPage() {
                           />
                         </div>
                         <div>
-                          <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Email *</label>
+                          <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Email *</label>
                           <input
                             type="email"
                             name="email"
@@ -377,7 +377,7 @@ export default function IntroPage() {
                           />
                         </div>
                         <div>
-                          <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Telefoonnummer *</label>
+                          <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Telefoonnummer *</label>
                           <input
                             type="tel"
                             name="telefoonnummer"
@@ -389,7 +389,7 @@ export default function IntroPage() {
                           {phoneError && <p className="text-red-200 text-xs lg:text-sm mt-1">{phoneError}</p>}
                         </div>
                         <div>
-                          <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Favoriete GIF URL (optioneel)</label>
+                          <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Favoriete GIF URL (optioneel)</label>
                           <input
                             type="url"
                             name="favorieteGif"

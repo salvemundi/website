@@ -7,8 +7,7 @@
 /* Google Material Symbols - outlined (self-hosted) */
 @font-face {
   font-family: "Material Symbols Outlined";
-  src: url("/fonts/material-symbols/MaterialSymbolsOutlined.ttf")
-    format("truetype");
+  src: url("/fonts/material-symbols/MaterialSymbolsOutlined.ttf") format("truetype");
   font-weight: 100 700;
   font-style: normal;
   font-display: swap;
@@ -19,6 +18,7 @@
     transform: translateY(100%);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -26,7 +26,7 @@
 }
 
 .animate-slide-up {
-  animation: slide-up 0.3s ease-out;
+  animation: slide-up 0.2s ease-out;
 }
 
 /* Root color system */
@@ -83,6 +83,7 @@
 .heart-pop {
   transition: transform 180ms cubic-bezier(0.2, 0.9, 0.2, 1), opacity 180ms;
 }
+
 .heart-pop.pop {
   transform: scale(1.25);
 }
@@ -168,30 +169,39 @@ figcaption {
 .text-primary-50 {
   color: var(--color-primary-50);
 }
+
 .text-primary-100 {
   color: var(--color-primary-100);
 }
+
 .text-primary-200 {
   color: var(--color-primary-200);
 }
+
 .text-primary-300 {
   color: var(--color-primary-300);
 }
+
 .text-primary-400 {
   color: var(--color-primary-400);
 }
+
 .text-primary-500 {
   color: var(--color-primary-500);
 }
+
 .text-primary-600 {
   color: var(--color-primary-600);
 }
+
 .text-primary-700 {
   color: var(--color-primary-700);
 }
+
 .text-primary-800 {
   color: var(--color-primary-800);
 }
+
 .text-primary-900 {
   color: var(--color-primary-900);
 }
@@ -199,30 +209,39 @@ figcaption {
 .bg-primary-50 {
   background-color: var(--color-primary-50);
 }
+
 .bg-primary-100 {
   background-color: var(--color-primary-100);
 }
+
 .bg-primary-200 {
   background-color: var(--color-primary-200);
 }
+
 .bg-primary-300 {
   background-color: var(--color-primary-300);
 }
+
 .bg-primary-400 {
   background-color: var(--color-primary-400);
 }
+
 .bg-primary-500 {
   background-color: var(--color-primary-500);
 }
+
 .bg-primary-600 {
   background-color: var(--color-primary-600);
 }
+
 .bg-primary-700 {
   background-color: var(--color-primary-700);
 }
+
 .bg-primary-800 {
   background-color: var(--color-primary-800);
 }
+
 .bg-primary-900 {
   background-color: var(--color-primary-900);
 }
@@ -271,11 +290,9 @@ figcaption {
 
   /* Gradients - Lighter for light mode */
   --bg-gradient-primary: linear-gradient(to right, #471e3b, #5e2b52);
-  --bg-gradient-card: linear-gradient(
-    to bottom right,
-    var(--bg-main),
-    var(--bg-soft)
-  );
+  --bg-gradient-card: linear-gradient(to bottom right,
+      var(--bg-main),
+      var(--bg-soft));
 }
 
 .dark {
@@ -285,11 +302,9 @@ figcaption {
 
   --shadow-card: var(--shadow-card-dark);
   /* Darker gradient for dark mode */
-  --bg-gradient-card: linear-gradient(
-    to bottom right,
-    var(--bg-soft),
-    var(--bg-main)
-  );
+  --bg-gradient-card: linear-gradient(to bottom right,
+      var(--bg-soft),
+      var(--bg-main));
   --bg-gradient-primary: linear-gradient(to right, #3d1a3a, #5e2b52);
 }
 
@@ -370,21 +385,15 @@ iframe {
    ============================================== */
 @media (max-width: 768px) {
   body.mobile-home-theme {
-    background: radial-gradient(
-        circle at 15% 20%,
+    background: radial-gradient(circle at 15% 20%,
         rgba(102, 50, 101, 0.25),
-        transparent 45%
-      ),
-      radial-gradient(
-        circle at 85% 25%,
+        transparent 45%),
+      radial-gradient(circle at 85% 25%,
         rgba(185, 154, 217, 0.18),
-        transparent 40%
-      ),
-      radial-gradient(
-        circle at 20% 80%,
+        transparent 40%),
+      radial-gradient(circle at 20% 80%,
         rgba(102, 50, 101, 0.15),
-        transparent 45%
-      ),
+        transparent 45%),
       var(--bg-main);
     color: var(--text-main);
     overflow-x: hidden;
@@ -400,28 +409,19 @@ iframe {
   }
 
   body.mobile-home-theme::before {
-    background: radial-gradient(
-          circle at 10% 30%,
-          rgba(102, 50, 101, 0.22),
-          transparent 35%
-        )
-        0 0/100% 100% no-repeat,
-      radial-gradient(
-          circle at 90% 10%,
-          rgba(185, 154, 217, 0.18),
-          transparent 40%
-        )
-        0 0/100% 100% no-repeat;
+    background: radial-gradient(circle at 10% 30%,
+        rgba(102, 50, 101, 0.22),
+        transparent 35%) 0 0/100% 100% no-repeat,
+      radial-gradient(circle at 90% 10%,
+        rgba(185, 154, 217, 0.18),
+        transparent 40%) 0 0/100% 100% no-repeat;
     filter: blur(50px);
   }
 
   body.mobile-home-theme::after {
-    background: radial-gradient(
-        circle at 25% 85%,
+    background: radial-gradient(circle at 25% 85%,
         rgba(102, 50, 101, 0.16),
-        transparent 45%
-      )
-      0 0/100% 100% no-repeat;
+        transparent 45%) 0 0/100% 100% no-repeat;
     filter: blur(60px);
   }
 
@@ -467,6 +467,7 @@ iframe {
   0% {
     transform: translateX(0);
   }
+
   100% {
     transform: translateX(-50%);
   }
@@ -500,12 +501,15 @@ iframe {
 
 /* Hide scrollbar completely */
 .scrollbar-hide {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none; /* Chrome, Safari and Opera */
+  display: none;
+  /* Chrome, Safari and Opera */
 }
 
 /* ==============================================
@@ -645,6 +649,7 @@ iframe {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -656,6 +661,7 @@ iframe {
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -679,24 +685,31 @@ iframe {
 .stagger-item:nth-child(1) {
   animation-delay: 0.05s;
 }
+
 .stagger-item:nth-child(2) {
   animation-delay: 0.1s;
 }
+
 .stagger-item:nth-child(3) {
   animation-delay: 0.15s;
 }
+
 .stagger-item:nth-child(4) {
   animation-delay: 0.2s;
 }
+
 .stagger-item:nth-child(5) {
   animation-delay: 0.25s;
 }
+
 .stagger-item:nth-child(6) {
   animation-delay: 0.3s;
 }
+
 .stagger-item:nth-child(7) {
   animation-delay: 0.35s;
 }
+
 .stagger-item:nth-child(8) {
   animation-delay: 0.4s;
 }
@@ -711,6 +724,7 @@ iframe {
   outline: 3px dashed rgba(255, 60, 60, 0.9);
   outline-offset: -4px;
 }
+
 .debug-outline-green {
   outline: 3px dashed rgba(60, 255, 120, 0.9);
   outline-offset: -4px;
