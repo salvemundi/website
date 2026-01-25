@@ -438,9 +438,25 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                     if (payment.metadata.registrationType === 'pub_crawl_signup') {
                         collection = 'pub_crawl_signups';
                         
+                        // Fetch the signup to get the pub_crawl_event_id for QR token generation
+                        let pubCrawlEventId = 0;
+                        try {
+                            const signup = await directusService.getDirectusItem(
+                                DIRECTUS_URL,
+                                DIRECTUS_API_TOKEN,
+                                collection,
+                                registrationId,
+                                'pub_crawl_event_id'
+                            );
+                            pubCrawlEventId = signup?.pub_crawl_event_id || 0;
+                            console.warn(`[Webhook][${traceId}] Fetched pub_crawl_event_id: ${pubCrawlEventId}`);
+                        } catch (err) {
+                            console.error(`[Webhook][${traceId}] Failed to fetch pub_crawl_event_id:`, err);
+                        }
+                        
                         // Generate QR token for pub crawl signup
                         console.warn(`[Webhook][${traceId}] Generating QR token for pub crawl signup ${registrationId}`);
-                        const qrToken = generateQRToken(registrationId, eventId || 0);
+                        const qrToken = generateQRToken(registrationId, pubCrawlEventId);
                         updatePayload.qr_token = qrToken;
                         console.warn(`[Webhook][${traceId}] Generated QR token: ${qrToken}`);
                         
