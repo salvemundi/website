@@ -958,10 +958,7 @@ export default function AdminDashboardPage() {
                                 {stats.topStickers.map((person, index) => (
                                     <div key={person.id} className="flex items-center justify-between p-3 bg-admin-card-soft rounded-xl">
                                         <div className="flex items-center gap-3">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${index === 0 ? 'bg-yellow-500 dark:bg-yellow-600' :
-                                                index === 1 ? 'bg-slate-400 dark:bg-slate-500' :
-                                                    'bg-orange-600 dark:bg-orange-700'
-                                                }`}>
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${index === 0 ? 'bg-yellow-500 dark:bg-yellow-600' : index === 1 ? 'bg-slate-400 dark:bg-slate-500' : 'bg-orange-600 dark:bg-orange-700'}`}>
                                                 {index + 1}
                                             </div>
                                             <div>
@@ -974,7 +971,7 @@ export default function AdminDashboardPage() {
                                             <span className="text-2xl font-bold text-theme-purple">{person.count}</span>
                                             <Award className="h-5 w-5 text-theme-purple" />
                                         </div>
-                                                <div className="lg:col-span-5 grid grid-cols-2 gap-4">
+                                    </div>
                                 ))}
                             </div>
                         ) : (
@@ -1001,29 +998,20 @@ export default function AdminDashboardPage() {
                                     </div>
                                     <span className="text-green-600 dark:text-green-400 font-bold">✓</span>
                                 </div>
-                                <div className="flex items-center justify-between p-3 bg-admin-card-soft rounded-xl">
-                                    <div className="flex items-center gap-3">
-                                        <AlertCircle className="h-5 w-5 text-admin-muted" />
-                                        <div>
-                                            <p className="font-semibold text-admin">Recente Fouten</p>
-                                            <p className="text-sm text-admin-muted">Laatste 24 uur</p>
+                                    <div className="flex items-center justify-between p-3 bg-admin-card-soft rounded-xl">
+                                        <div className="flex items-center gap-3">
+                                            <AlertCircle className="h-5 w-5 text-admin-muted" />
+                                            <div>
+                                                <p className="font-semibold text-admin">Recente Fouten</p>
+                                                <p className="text-sm text-admin-muted">Laatste 24 uur</p>
+                                            </div>
                                         </div>
+                                        <span className="text-2xl font-bold text-admin-muted">{stats.systemErrors}</span>
                                     </div>
-                                    <span className="text-2xl font-bold text-admin-muted">{stats.systemErrors}</span>
-                                                <div className="lg:col-span-7">
-                                                    <div className="mb-4">
-                                                        <h3 className="text-2xl font-bold text-admin">Stats</h3>
-                                                    </div>
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                                    <p className="text-sm text-blue-700 dark:text-blue-300">
-                                        <strong>ICT Dashboard:</strong> Alleen zichtbaar voor ICT commissieleden.
-                                    </p>
                                 </div>
-                            </div>
-                        </ListCard>
-                    </div>
-                )}
+                            </ListCard>
+                        </div>
+                    )}
 
                 {/* Additional Info removed */}
             </div>
