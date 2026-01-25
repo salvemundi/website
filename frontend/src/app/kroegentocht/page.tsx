@@ -314,7 +314,7 @@ export default function KroegentochtPage() {
                                     )}
 
                                     {/* Name */}
-                                    <label className="font-semibold text-theme-purple dark:text-white">
+                                    <label className="font-semibold text-white">
                                         Naam
                                         <input
                                             type="text"
@@ -328,7 +328,7 @@ export default function KroegentochtPage() {
                                     </label>
 
                                     {/* Email */}
-                                    <label className="font-semibold text-theme-purple dark:text-white">
+                                    <label className="font-semibold text-white">
                                         E-mailadres
                                         <input
                                             type="email"
@@ -342,7 +342,7 @@ export default function KroegentochtPage() {
                                     </label>
 
                                     {/* Association */}
-                                    <label className="font-semibold text-theme-purple dark:text-white">
+                                    <label className="font-semibold text-white">
                                         Vereniging
                                         <select
                                             name="association"
@@ -362,12 +362,12 @@ export default function KroegentochtPage() {
 
                                     {/* Custom Association */}
                                     {form.association === 'Anders' && (
-                                        <label className="font-semibold text-theme-purple dark:text-white">
-                                            Naam
+                                        <label className="font-semibold text-white">
+                                            Naam vereniging
                                             <input
                                                 type="text"
-                                                name="name"
-                                                value={form.name}
+                                                name="customAssociation"
+                                                value={form.customAssociation}
                                                 onChange={handleChange}
                                                 required
                                                 placeholder="Naam van je vereniging"
@@ -377,7 +377,7 @@ export default function KroegentochtPage() {
                                     )}
 
                                     {/* Amount of Tickets */}
-                                    <label className="font-semibold text-theme-purple dark:text-white">
+                                    <label className="font-semibold text-white">
                                         Aantal tickets
                                         <input
                                             type="number"
@@ -389,22 +389,22 @@ export default function KroegentochtPage() {
                                             max="10"
                                             className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
                                         />
-                                        <span className="text-sm text-theme-text/80 dark:text-white/80 mt-1 block">
+                                        <span className="text-sm text-white/80 mt-1 block">
                                             Maximum 10 tickets per inschrijving
                                         </span>
                                     </label>
 
                                     {/* Participant Names and Initials */}
                                     <div className="bg-white/10 rounded-lg p-4 space-y-3">
-                                        <h3 className="font-semibold text-theme-purple dark:text-white text-lg mb-2">
+                                        <h3 className="font-semibold text-white text-lg mb-2">
                                             Deelnemers ({form.amount_tickets} {form.amount_tickets === 1 ? 'ticket' : 'tickets'})
                                         </h3>
-                                        <p className="text-sm text-theme-text/80 dark:text-white/80 mb-3">
+                                        <p className="text-sm text-white/80 mb-3">
                                             Vul voor elk ticket een naam en eerste letter van de achternaam in.
                                         </p>
                                         {participants.map((participant, index) => (
                                             <div key={index} className="bg-white/10 rounded p-3 space-y-2">
-                                                <label className="block text-sm font-semibold text-theme-purple dark:text-white-soft">
+                                                <label className="block text-sm font-semibold text-white">
                                                     Ticket {index + 1} - Naam
                                                     <input
                                                         type="text"
@@ -415,7 +415,7 @@ export default function KroegentochtPage() {
                                                         className="mt-1 p-2 rounded w-full bg-white text-theme-purple text-sm dark:bg-gray-800 dark:text-theme"
                                                     />
                                                 </label>
-                                                <label className="block text-sm font-semibold text-theme-purple dark:text-white-soft">
+                                                <label className="block text-sm font-semibold text-white">
                                                     Eerste letter achternaam
                                                     <input
                                                         type="text"

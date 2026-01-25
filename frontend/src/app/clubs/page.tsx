@@ -29,8 +29,8 @@ export default function ClubsPage() {
             </PageHeader>
 
             <main className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12">
-                <div className="rounded-3xl bg-gradient-theme p-6 sm:p-8 lg:p-12 shadow-xl">
-                    <div className="mb-8 text-center sm:text-left">
+                <div className="max-w-6xl mx-auto">
+                    <div className="mb-8 text-center">
                         <h2 className="text-3xl font-black text-theme-purple dark:text-theme-white sm:text-4xl">
                             Onze Clubs
                         </h2>
