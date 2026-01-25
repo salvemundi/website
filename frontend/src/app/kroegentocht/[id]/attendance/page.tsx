@@ -267,15 +267,15 @@ export default function PubCrawlAttendancePage() {
                     {/* Mobile: 2x2 grid */}
                     <div className="grid grid-cols-2 gap-3 md:hidden">
                         <div className="bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end rounded-2xl p-3 shadow-lg">
-                            <div className="flex items-center gap-2">
-                                <div className="h-8 w-8 rounded-xl bg-paars/10 flex items-center justify-center shrink-0">
-                                    <Clock className="h-4 w-4 text-theme-purple-dark" />
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-xs text-theme-purple-dark font-semibold truncate">Groepen</p>
-                                    <p className="text-xl font-bold text-theme-purple">{stats.total}</p>
-                                </div>
-                            </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-8 w-8 rounded-xl bg-paars/10 flex items-center justify-center shrink-0">
+                                            <Clock className="h-4 w-4 text-theme-purple-dark" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-xs text-theme-purple-dark dark:text-white font-semibold truncate">Groepen</p>
+                                            <p className="text-xl font-bold text-theme-purple dark:text-white">{stats.total}</p>
+                                        </div>
+                                    </div>
                         </div>
 
                         <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-2xl p-3 shadow-lg">
@@ -318,15 +318,15 @@ export default function PubCrawlAttendancePage() {
                     {/* Desktop: 4 cards in a row */}
                     <div className="hidden md:grid md:grid-cols-4 gap-4">
                         <div className="bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end rounded-3xl p-6 shadow-lg">
-                            <div className="flex items-center gap-3">
-                                <div className="h-12 w-12 rounded-2xl bg-paars/10 flex items-center justify-center shrink-0">
-                                    <Clock className="h-6 w-6 text-theme-purple-dark" />
+                                <div className="flex items-center gap-3">
+                                    <div className="h-12 w-12 rounded-2xl bg-paars/10 flex items-center justify-center shrink-0">
+                                        <Clock className="h-6 w-6 text-theme-purple-dark" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-sm text-theme-purple-dark dark:text-white font-semibold truncate">Groepen</p>
+                                        <p className="text-3xl font-bold text-theme-purple dark:text-white">{stats.total}</p>
+                                    </div>
                                 </div>
-                                <div className="min-w-0">
-                                    <p className="text-sm text-theme-purple-dark font-semibold truncate">Groepen</p>
-                                    <p className="text-3xl font-bold text-theme-purple">{stats.total}</p>
-                                </div>
-                            </div>
                         </div>
 
                         <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-3xl p-6 shadow-lg">
