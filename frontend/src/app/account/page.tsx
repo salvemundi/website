@@ -53,21 +53,21 @@ function Tile({
   return (
     <section
       className={[
-        "relative overflow-hidden rounded-3xl bg-white/95 dark:bg-surface-dark/95 shadow-lg",
+        "relative overflow-hidden rounded-3xl bg-white dark:bg-surface-dark shadow-xl border border-theme-purple/5",
         className,
       ].join(" ")}
     >
-      <div className="relative p-6 sm:p-7">
+      <div className="relative p-6 sm:p-8">
         {(title || actions) && (
-          <header className="mb-5 flex items-center justify-between gap-4">
+          <header className="mb-6 flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-3">
               {icon ? (
-                <div className="shrink-0 rounded-xl bg-theme-purple/10 p-2 text-theme-purple dark:text-theme-white">
+                <div className="shrink-0 rounded-xl bg-theme-purple/5 p-2.5 text-theme-purple dark:text-theme-purple-light">
                   {icon}
                 </div>
               ) : null}
               {title ? (
-                <h2 className="truncate text-lg font-bold text-theme-purple dark:text-theme-white">
+                <h2 className="truncate text-xl font-bold text-theme-purple dark:text-white">
                   {title}
                 </h2>
               ) : null}
@@ -77,7 +77,7 @@ function Tile({
           </header>
         )}
 
-        <div className="text-theme-text/80 dark:text-theme-white/80">
+        <div className="text-theme-text dark:text-white/80">
           {children}
         </div>
       </div>
@@ -101,13 +101,13 @@ function QuickLink({
   external?: boolean;
 }) {
   const common =
-    "group flex flex-col items-center justify-center gap-2 rounded-2xl bg-theme-purple/5 dark:bg-white/5 p-4 text-center transition hover:bg-theme-purple/10 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-theme-purple/30 aspect-square";
+    "group flex flex-col items-center justify-center gap-3 rounded-2xl bg-theme-purple/5 dark:bg-white/5 p-4 text-center transition hover:bg-theme-purple/10 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-theme-purple/30 aspect-square border border-transparent hover:border-theme-purple/20 shadow-sm";
   const inner = (
     <>
-      <div className="rounded-full bg-theme-purple/10 dark:bg-white/10 p-3 text-theme-purple dark:text-theme-white transition-transform group-hover:scale-110">
+      <div className="rounded-full bg-theme-purple/10 dark:bg-white/10 p-4 text-theme-purple dark:text-white transition-transform group-hover:scale-110">
         {icon}
       </div>
-      <span className="flex items-center gap-1 text-xs font-semibold text-theme-purple dark:text-theme-white">
+      <span className="flex items-center gap-1.5 text-sm font-bold text-theme-purple/90 dark:text-white/90">
         {label}
         {locked ? <Lock className="h-3 w-3 opacity-50" /> : null}
         {external ? (
@@ -230,20 +230,20 @@ export default function AccountPage() {
     if (!user?.membership_status || user.membership_status === "none") {
       return {
         text: "Geen Actief Lidmaatschap",
-        color: "bg-gray-400",
+        color: "bg-gray-400 dark:bg-gray-600",
         textColor: "text-white",
       };
     }
     if (user.membership_status === "active") {
       return {
         text: "Actief Lid",
-        color: "bg-theme-purple",
+        color: "bg-theme-purple dark:bg-theme-purple",
         textColor: "text-white",
       };
     }
     return {
       text: "Lidmaatschap Verlopen",
-      color: "bg-theme-purple/50",
+      color: "bg-theme-purple/50 dark:bg-theme-purple/50",
       textColor: "text-white",
     };
   }, [user?.membership_status]);
@@ -251,7 +251,7 @@ export default function AccountPage() {
   if (authLoading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-theme-purple dark:text-theme-white text-xl font-semibold animate-pulse">
+        <div className="text-theme-purple dark:text-white text-xl font-semibold animate-pulse">
           Laden...
         </div>
       </div>
@@ -259,13 +259,14 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[var(--bg-main)]">
       <PageHeader
         title="Mijn Account"
         variant="centered"
-        titleClassName="text-theme-purple dark:text-theme-white text-3xl sm:text-4xl md:text-5xl drop-shadow-sm"
+        titleClassName="text-theme-purple dark:text-white text-3xl sm:text-4xl md:text-5xl"
+        imageFilter="brightness(0.65) blur(4px)"
         description={
-          <p className="text-lg sm:text-xl text-theme-purple dark:text-theme-white max-w-3xl mt-4 font-medium drop-shadow-sm mx-auto">
+          <p className="text-lg sm:text-xl text-theme-purple dark:text-white max-w-3xl mt-4 font-medium mx-auto">
             Beheer je gegevens, lidmaatschap en inschrijvingen.
           </p>
         }
@@ -281,315 +282,311 @@ export default function AccountPage() {
         </div>
       </PageHeader>
 
-      <main className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12">
-        <div className="rounded-3xl bg-gradient-theme p-6 sm:p-8 lg:p-12 shadow-xl">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 auto-rows-min">
-            {/* Profile */}
-            <Tile className="lg:col-span-8">
-              <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-                {/* Avatar */}
-                <div className="shrink-0 self-center sm:self-start">
-                  {user.avatar ? (
-                    <div className="relative h-24 w-24 sm:h-28 sm:w-28 rounded-full overflow-hidden border-4 border-theme-purple/20 shadow-xl">
-                      <Image
-                        src={getImageUrl(user.avatar)}
-                        alt={`${user.first_name} ${user.last_name}`}
-                        fill
-                        sizes="112px"
-                        className="object-cover"
-                        priority
-                        placeholder="blur"
-                        blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTEyIiBoZWlnaHQ9IjExMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTEyIiBoZWlnaHQ9IjExMiIgZmlsbD0iI2VlZSIvPjwvc3ZnPg=="
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = "/img/avatar-placeholder.svg";
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-full bg-theme-purple/10 flex items-center justify-center border-4 border-theme-purple/20 shadow-xl">
-                      <span className="text-3xl font-bold text-theme-purple dark:text-theme-white">
-                        {user.first_name?.[0]}
-                        {user.last_name?.[0]}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Info */}
-                <div className="min-w-0 flex-1 text-center sm:text-left">
-                  <h2 className="truncate text-2xl sm:text-3xl font-bold text-theme-purple dark:text-theme-white">
-                    {user.first_name && user.last_name
-                      ? `${user.first_name} ${user.last_name}`
-                      : user.email || "User"}
-                  </h2>
-
-                  <div className="mt-3 flex flex-wrap justify-center sm:justify-start gap-2">
-                    {user.is_member ? (
-                      <span className="px-3 py-1 bg-theme-purple text-white text-[10px] font-black uppercase tracking-widest rounded-full">
-                        Fontys Student
-                      </span>
-                    ) : (
-                      <span className="px-3 py-1 bg-theme-purple/10 text-theme-purple dark:text-theme-white text-[10px] font-black uppercase tracking-widest rounded-full">
-                        Geregistreerde Gebruiker
-                      </span>
-                    )}
-
-                    <span
-                      className={`px-3 py-1 ${membershipStatus.color} ${membershipStatus.textColor} text-[10px] font-black uppercase tracking-widest rounded-full`}
-                    >
-                      {membershipStatus.text}
+      <main className="mx-auto max-w-app px-4 py-12 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 auto-rows-min">
+          {/* Profile */}
+          <Tile className="lg:col-span-8">
+            <div className="flex flex-col gap-8 sm:flex-row sm:items-start">
+              {/* Avatar */}
+              <div className="shrink-0 self-center sm:self-start">
+                {user.avatar ? (
+                  <div className="relative h-28 w-28 sm:h-32 sm:w-32 rounded-full overflow-hidden border-4 border-theme-purple/10 shadow-lg">
+                    <Image
+                      src={getImageUrl(user.avatar)}
+                      alt={`${user.first_name} ${user.last_name}`}
+                      fill
+                      sizes="128px"
+                      className="object-cover"
+                      priority
+                      placeholder="blur"
+                      blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2VlZSIvPjwvc3ZnPg=="
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/img/avatar-placeholder.svg";
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="h-28 w-28 sm:h-32 sm:w-32 rounded-full bg-theme-purple/5 flex items-center justify-center border-4 border-theme-purple/10 shadow-lg">
+                    <span className="text-4xl font-bold text-theme-purple dark:text-white">
+                      {user.first_name?.[0]}
+                      {user.last_name?.[0]}
                     </span>
                   </div>
-
-                  <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="rounded-2xl bg-theme-purple/5 border border-theme-purple/10 px-4 py-3">
-                      <p className="text-[10px] text-theme-purple dark:text-theme-white/60 font-black uppercase tracking-widest mb-1">
-                        Lidmaatschap eindigt
-                      </p>
-                      <p className="text-sm font-bold text-theme-purple dark:text-theme-white">
-                        {user.membership_expiry
-                          ? format(new Date(user.membership_expiry), "d MMMM yyyy")
-                          : "Niet van toepassing"}
-                      </p>
-                    </div>
-
-                    <div className="rounded-2xl bg-theme-purple/5 border border-theme-purple/10 px-4 py-3">
-                      <p className="text-[10px] text-theme-purple dark:text-theme-white/60 font-black uppercase tracking-widest mb-1">
-                        Account
-                      </p>
-                      <p className="text-sm font-bold text-theme-purple dark:text-theme-white truncate">
-                        {user.email}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
-            </Tile>
 
-            {/* Contact */}
-            <Tile
-              className="lg:col-span-4"
-              title="Contact"
-              icon={<Mail className="h-5 w-5" />}
-            >
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-lg bg-theme-purple/10 p-2 text-theme-purple dark:text-theme-white">
-                    <Mail className="h-5 w-5" />
+              {/* Info */}
+              <div className="min-w-0 flex-1 text-center sm:text-left">
+                <h2 className="truncate text-3xl sm:text-4xl font-extrabold text-theme-purple dark:text-white">
+                  {user.first_name && user.last_name
+                    ? `${user.first_name} ${user.last_name}`
+                    : user.email || "User"}
+                </h2>
+
+                <div className="mt-4 flex flex-wrap justify-center sm:justify-start gap-2.5">
+                  {user.is_member ? (
+                    <span className="px-3.5 py-1.5 bg-theme-purple text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-sm">
+                      Fontys Student
+                    </span>
+                  ) : (
+                    <span className="px-3.5 py-1.5 bg-theme-purple/5 border border-theme-purple/10 text-theme-purple dark:text-white text-[10px] font-black uppercase tracking-widest rounded-full">
+                      Geregistreerde Gebruiker
+                    </span>
+                  )}
+
+                  <span
+                    className={`px-3.5 py-1.5 ${membershipStatus.color} ${membershipStatus.textColor} text-[10px] font-black uppercase tracking-widest rounded-full shadow-sm`}
+                  >
+                    {membershipStatus.text}
+                  </span>
+                </div>
+
+                <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="rounded-2xl bg-theme-purple/5 border border-theme-purple/10 px-5 py-4">
+                    <p className="text-[10px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-widest mb-1.5">
+                      Lidmaatschap eindigt
+                    </p>
+                    <p className="text-base font-bold text-theme-purple dark:text-white">
+                      {user.membership_expiry
+                        ? format(new Date(user.membership_expiry), "d MMMM yyyy")
+                        : "Niet van toepassing"}
+                    </p>
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-theme-purple dark:text-theme-white/60 font-black uppercase tracking-widest">
+
+                  <div className="rounded-2xl bg-theme-purple/5 border border-theme-purple/10 px-5 py-4">
+                    <p className="text-[10px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-widest mb-1.5">
                       E-mailadres
                     </p>
-                    <p
-                      className="truncate font-bold text-theme-purple dark:text-theme-white"
-                      title={user.email}
-                    >
+                    <p className="text-base font-bold text-theme-purple dark:text-white truncate">
                       {user.email}
                     </p>
                   </div>
                 </div>
-
-                {user.fontys_email ? (
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-theme-purple/10 p-2 text-theme-purple dark:text-theme-white">
-                      <Mail className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[10px] text-theme-purple dark:text-theme-white/60 font-black uppercase tracking-widest">
-                        Fontys e-mail
-                      </p>
-                      <p
-                        className="truncate font-bold text-theme-purple dark:text-theme-white"
-                        title={user.fontys_email}
-                      >
-                        {user.fontys_email}
-                      </p>
-                    </div>
-                  </div>
-                ) : null}
-
-                {user.phone_number ? (
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-theme-purple/10 p-2 text-theme-purple dark:text-theme-white">
-                      <Phone className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[10px] text-theme-purple dark:text-theme-white/60 font-black uppercase tracking-widest">
-                        Telefoonnummer
-                      </p>
-                      <p className="font-bold text-theme-purple dark:text-theme-white">
-                        {user.phone_number}
-                      </p>
-                    </div>
-                  </div>
-                ) : null}
               </div>
-            </Tile>
+            </div>
+          </Tile>
 
-            {/* Minecraft */}
-            <Tile
-              className="lg:col-span-4"
-              title="Minecraft"
-              icon={<Gamepad2 className="h-5 w-5" />}
-            >
-              <div className="rounded-2xl bg-theme-purple/5 p-4 border border-theme-purple/10">
-                <p className="mb-2 text-[10px] font-black uppercase text-theme-purple dark:text-theme-white/60 tracking-widest">
-                  Gebruikersnaam
-                </p>
-
-                {isEditingMinecraft ? (
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={minecraftUsername}
-                      onChange={(e) => setMinecraftUsername(e.target.value)}
-                      className="flex-1 rounded-xl bg-white/80 dark:bg-black/20 px-3 py-2 text-sm text-theme-purple dark:text-theme-white outline-none focus:ring-2 focus:ring-theme-purple"
-                      placeholder="Username"
-                    />
-                    <button
-                      onClick={handleSaveMinecraftUsername}
-                      disabled={isSavingMinecraft}
-                      className="rounded-xl bg-theme-purple px-4 py-2 text-sm font-bold text-white hover:bg-theme-purple-light transition disabled:opacity-50"
-                    >
-                      {isSavingMinecraft ? "..." : "Opslaan"}
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="truncate font-bold text-theme-purple dark:text-theme-white">
-                      {user.minecraft_username || "Niet ingesteld"}
-                    </span>
-                    <button
-                      onClick={() => setIsEditingMinecraft(true)}
-                      className="shrink-0 rounded-xl bg-theme-purple/10 px-3 py-2 text-[10px] font-black uppercase text-theme-purple dark:text-theme-white hover:bg-theme-purple/20 transition"
-                    >
-                      {user.minecraft_username ? "Wijzig" : "Instellen"}
-                    </button>
-                  </div>
-                )}
+          {/* Contact */}
+          <Tile
+            className="lg:col-span-4"
+            title="Gegevens"
+            icon={<Mail className="h-5 w-5" />}
+          >
+            <div className="space-y-5">
+              <div className="flex items-center gap-4">
+                <div className="rounded-xl bg-theme-purple/5 p-2.5 text-theme-purple dark:text-white shadow-sm">
+                  <Mail className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-widest mb-0.5">
+                    E-mailadres
+                  </p>
+                  <p
+                    className="truncate font-bold text-theme-purple dark:text-white"
+                    title={user.email}
+                  >
+                    {user.email}
+                  </p>
+                </div>
               </div>
-            </Tile>
 
-            {/* Quick links */}
-            <Tile
-              className="lg:col-span-8"
-              title="Snelle links"
-              icon={<ChevronRight className="h-5 w-5" />}
-            >
-              <div
-                className={[
-                  "grid grid-cols-2 gap-4 sm:grid-cols-4",
-                ].join(" ")}
-              >
-                <QuickLink
-                  label="Transacties"
-                  icon={<CreditCard className="h-6 w-6" />}
-                  onClick={() => router.push("/account/transacties")}
-                />
-                <QuickLink
-                  label="WhatsApp"
-                  icon={<MessageCircle className="h-6 w-6" />}
-                  onClick={() => router.push("/account/whatsapp-groepen")}
-                  locked={user.membership_status !== "active"}
-                />
-                <QuickLink
-                  label="SharePoint"
-                  icon={<FileText className="h-6 w-6" />}
-                  href="https://salvemundi.sharepoint.com"
-                  external
-                />
-                {isCommitteeMember ? (
-                  <QuickLink
-                    label="Admin panel"
-                    icon={<Shield className="h-6 w-6" />}
-                    href="https://admin.salvemundi.nl"
-                    external
+              {user.fontys_email ? (
+                <div className="flex items-center gap-4">
+                  <div className="rounded-xl bg-theme-purple/5 p-2.5 text-theme-purple dark:text-white shadow-sm">
+                    <Mail className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-widest mb-0.5">
+                      Fontys e-mail
+                    </p>
+                    <p
+                      className="truncate font-bold text-theme-purple dark:text-white"
+                      title={user.fontys_email}
+                    >
+                      {user.fontys_email}
+                    </p>
+                  </div>
+                </div>
+              ) : null}
+
+              {user.phone_number ? (
+                <div className="flex items-center gap-4">
+                  <div className="rounded-xl bg-theme-purple/5 p-2.5 text-theme-purple dark:text-white shadow-sm">
+                    <Phone className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-widest mb-0.5">
+                      Telefoonnummer
+                    </p>
+                    <p className="font-bold text-theme-purple dark:text-white">
+                      {user.phone_number}
+                    </p>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </Tile>
+
+          {/* Minecraft */}
+          <Tile
+            className="lg:col-span-4"
+            title="Social Gaming"
+            icon={<Gamepad2 className="h-5 w-5" />}
+          >
+            <div className="rounded-2xl bg-theme-purple/5 p-5 border border-theme-purple/10">
+              <p className="mb-2.5 text-[10px] font-black uppercase text-theme-purple/60 dark:text-white/40 tracking-widest">
+                Minecraft Username
+              </p>
+
+              {isEditingMinecraft ? (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={minecraftUsername}
+                    onChange={(e) => setMinecraftUsername(e.target.value)}
+                    className="flex-1 rounded-xl bg-white dark:bg-black/40 px-3.5 py-2 text-sm text-theme-purple dark:text-white outline-none focus:ring-2 focus:ring-theme-purple shadow-inner"
+                    placeholder="Username"
                   />
-                ) : null}
-              </div>
-            </Tile>
-
-            {/* Event signups */}
-            <Tile
-              className="lg:col-span-12"
-              title="Mijn inschrijvingen"
-              icon={<Calendar className="h-5 w-5" />}
-              actions={
-                <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setShowPastEvents((v) => !v)}
-                    className="inline-flex items-center gap-2 rounded-xl bg-theme-purple/5 px-3 py-2 text-[10px] font-black uppercase text-theme-purple dark:text-theme-white hover:bg-theme-purple/10 transition border border-theme-purple/10"
+                    onClick={handleSaveMinecraftUsername}
+                    disabled={isSavingMinecraft}
+                    className="rounded-xl bg-theme-purple px-4 py-2 text-sm font-bold text-white hover:bg-theme-purple-light transition disabled:opacity-50 shadow-md"
                   >
-                    {showPastEvents ? "Verberg oude" : "Toon oude"}
-                  </button>
-
-                  <button
-                    onClick={() => router.push("/activiteiten")}
-                    className="inline-flex items-center gap-1 rounded-xl bg-theme-purple px-3 py-2 text-[10px] font-black uppercase text-white hover:bg-theme-purple-light transition shadow-md"
-                  >
-                    Bekijk agenda <ChevronRight className="h-3 w-3" />
-                  </button>
-                </div>
-              }
-            >
-              {isLoading ? (
-                <div className="flex flex-col items-center justify-center py-10">
-                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-theme-purple/20 border-t-theme-purple" />
-                  <p className="mt-4 text-sm font-bold text-theme-purple/60 dark:text-theme-white/60">
-                    Inschrijvingen laden...
-                  </p>
-                </div>
-              ) : eventSignups.length === 0 ? (
-                <div className="rounded-3xl border-2 border-dashed border-theme-purple/20 bg-theme-purple/5 p-8 text-center">
-                  <p className="text-theme-purple dark:text-theme-white font-bold">
-                    Je hebt je nog niet ingeschreven voor evenementen.
-                  </p>
-                  <button
-                    onClick={() => router.push("/activiteiten")}
-                    className="mt-4 rounded-full bg-theme-purple px-8 py-2.5 text-sm font-bold text-white shadow-lg transition hover:-translate-y-0.5"
-                  >
-                    Naar evenementen
+                    {isSavingMinecraft ? "..." : "Save"}
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {filteredSignups.map((signup) => {
-                    const isPast = (() => {
-                      try {
-                        if (!signup?.event_id?.event_date) return false;
-                        const eventDate = startOfDay(new Date(signup.event_id.event_date));
-                        return isBefore(eventDate, startOfDay(new Date()));
-                      } catch (e) {
-                        return false;
-                      }
-                    })();
+                <div className="flex items-center justify-between gap-3">
+                  <span className="truncate font-bold text-theme-purple dark:text-white text-lg">
+                    {user.minecraft_username || "Not set"}
+                  </span>
+                  <button
+                    onClick={() => setIsEditingMinecraft(true)}
+                    className="shrink-0 rounded-xl bg-theme-purple/10 px-4 py-2 text-[10px] font-black uppercase text-theme-purple dark:text-white hover:bg-theme-purple/20 transition shadow-sm border border-theme-purple/10"
+                  >
+                    {user.minecraft_username ? "Wijzig" : "Instellen"}
+                  </button>
+                </div>
+              )}
+            </div>
+          </Tile>
 
-                    return (
-                      <button
-                        key={signup.id}
-                        type="button"
-                        onClick={() => router.push(`/activiteiten/${signup.event_id.id}`)}
-                        className={[
-                          "group flex w-full gap-4 rounded-2xl p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-theme-purple/30 border border-transparent",
-                          isPast
-                            ? "bg-theme-purple/5 opacity-60 grayscale"
-                            : "bg-white dark:bg-black/20 hover:bg-theme-purple/5 border-theme-purple/10",
-                        ].join(" ")}
-                      >
+          {/* Quick links */}
+          <Tile
+            className="lg:col-span-8"
+            title="Snelle links"
+            icon={<ChevronRight className="h-5 w-5" />}
+          >
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <QuickLink
+                label="Transacties"
+                icon={<CreditCard className="h-6 w-6" />}
+                onClick={() => router.push("/account/transacties")}
+              />
+              <QuickLink
+                label="WhatsApp"
+                icon={<MessageCircle className="h-6 w-6" />}
+                onClick={() => router.push("/account/whatsapp-groepen")}
+                locked={user.membership_status !== "active"}
+              />
+              <QuickLink
+                label="SharePoint"
+                icon={<FileText className="h-6 w-6" />}
+                href="https://salvemundi.sharepoint.com"
+                external
+              />
+              {isCommitteeMember ? (
+                <QuickLink
+                  label="Admin panel"
+                  icon={<Shield className="h-6 w-6" />}
+                  href="https://admin.salvemundi.nl"
+                  external
+                />
+              ) : null}
+            </div>
+          </Tile>
+
+          {/* Event signups */}
+          <Tile
+            className="lg:col-span-12"
+            title="Mijn inschrijvingen"
+            icon={<Calendar className="h-5 w-5" />}
+            actions={
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowPastEvents((v) => !v)}
+                  className="inline-flex items-center justify-center rounded-xl bg-theme-purple/5 px-4 py-2 text-[10px] font-black uppercase text-theme-purple dark:text-white hover:bg-theme-purple/10 transition border border-theme-purple/10"
+                >
+                  {showPastEvents ? "Verberg oude" : "Toon oude"}
+                </button>
+
+                <button
+                  onClick={() => router.push("/activiteiten")}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-theme-purple px-4 py-2 text-[10px] font-black uppercase text-white hover:bg-theme-purple-light transition shadow-lg"
+                >
+                  Kalender <ChevronRight className="h-3 w-3" />
+                </button>
+              </div>
+            }
+          >
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center py-16">
+                <div className="h-10 w-10 animate-spin rounded-full border-4 border-theme-purple/10 border-t-theme-purple" />
+                <p className="mt-4 text-sm font-bold text-theme-purple/50 dark:text-white/40">
+                  Inschrijvingen laden...
+                </p>
+              </div>
+            ) : eventSignups.length === 0 ? (
+              <div className="rounded-3xl border-2 border-dashed border-theme-purple/20 bg-theme-purple/5 p-12 text-center">
+                <p className="text-theme-purple dark:text-white font-bold text-lg">
+                  Je hebt je nog niet ingeschreven voor evenementen.
+                </p>
+                <button
+                  onClick={() => router.push("/activiteiten")}
+                  className="mt-6 rounded-full bg-theme-purple px-10 py-3 text-sm font-bold text-white shadow-xl transition hover:-translate-y-0.5 hover:bg-theme-purple-light"
+                >
+                  Ontdek evenementen
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+                {filteredSignups.map((signup) => {
+                  const isPast = (() => {
+                    try {
+                      if (!signup?.event_id?.event_date) return false;
+                      const eventDate = startOfDay(new Date(signup.event_id.event_date));
+                      return isBefore(eventDate, startOfDay(new Date()));
+                    } catch (e) {
+                      return false;
+                    }
+                  })();
+
+                  return (
+                    <button
+                      key={signup.id}
+                      type="button"
+                      onClick={() => router.push(`/activiteiten/${signup.event_id.id}`)}
+                      className={[
+                        "group h-full flex flex-col gap-4 rounded-3xl p-5 text-left transition focus:outline-none focus:ring-2 focus:ring-theme-purple/30 border border-theme-purple/10 shadow-sm",
+                        isPast
+                          ? "bg-theme-purple/5 opacity-60 grayscale border-transparent"
+                          : "bg-white dark:bg-black/20 hover:bg-theme-purple/5 hover:border-theme-purple/30",
+                      ].join(" ")}
+                    >
+                      <div className="flex items-start justify-between gap-4">
                         <div className="shrink-0">
                           {signup.event_id.image ? (
-                            <div className="relative h-20 w-20 rounded-xl overflow-hidden shadow-sm border border-theme-purple/10">
+                            <div className="relative h-16 w-16 rounded-2xl overflow-hidden shadow-md border border-theme-purple/10">
                               <Image
                                 src={getImageUrl(signup.event_id.image)}
                                 alt={signup.event_id.name}
                                 fill
-                                sizes="80px"
-                                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                sizes="64px"
+                                className="object-cover transition-transform duration-500 group-hover:scale-110"
                                 loading="lazy"
                                 placeholder="blur"
-                                blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjZWVlIi8+PC9zdmc+"
+                                blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZWVlIi8+PC9zdmc+"
                                 onError={(e) => {
                                   const target = e.target as HTMLImageElement;
                                   target.src = "/img/placeholder.svg";
@@ -597,38 +594,37 @@ export default function AccountPage() {
                               />
                             </div>
                           ) : (
-                            <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-theme-purple/10 text-theme-purple dark:text-theme-white transition-transform duration-300 group-hover:scale-105">
-                              <Calendar className="h-8 w-8" />
+                            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-theme-purple/10 text-theme-purple dark:text-white shadow-sm">
+                              <Calendar className="h-7 w-7" />
                             </div>
                           )}
                         </div>
+                        <span className="shrink-0 text-theme-purple/20 dark:text-white/20 transition-transform group-hover:translate-x-1">
+                          <ChevronRight className="h-6 w-6" />
+                        </span>
+                      </div>
 
-                        <div className="min-w-0 flex-1">
-                          <h3 className="truncate text-lg font-bold text-theme-purple dark:text-theme-white">
-                            {signup.event_id.name}
-                          </h3>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-theme-purple dark:text-white line-clamp-1">
+                          {signup.event_id.name}
+                        </h3>
 
-                          <div className="mt-1 space-y-1">
-                            <p className="flex items-center gap-2 text-xs font-bold text-theme-purple/70 dark:text-theme-white/70">
-                              <Calendar className="h-3 w-3" />
-                              {format(new Date(signup.event_id.event_date), "d MMMM yyyy")}
-                            </p>
-                            <p className="text-[10px] text-theme-purple/50 dark:text-theme-white/50 font-medium italic">
-                              Ingeschreven op: {format(new Date(signup.created_at), "d MMM yyyy")}
-                            </p>
-                          </div>
+                        <div className="mt-2.5 space-y-1.5">
+                          <p className="flex items-center gap-2 text-xs font-bold text-theme-purple/70 dark:text-white/70">
+                            <Calendar className="h-3.5 w-3.5" />
+                            {format(new Date(signup.event_id.event_date), "d MMM yyyy")}
+                          </p>
+                          <p className="text-[10px] text-theme-purple/40 dark:text-white/40 font-medium italic">
+                            Inschrijving: {format(new Date(signup.created_at), "d MMM yyyy")}
+                          </p>
                         </div>
-
-                        <div className="flex items-center justify-center text-theme-purple/30 dark:text-theme-white/30 transition-transform group-hover:translate-x-1">
-                          <ChevronRight className="h-5 w-5" />
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </Tile>
-          </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </Tile>
         </div>
       </main>
     </div>
