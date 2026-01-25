@@ -3,7 +3,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import PubCrawlAttendanceButton from '@/entities/activity/ui/PubCrawlAttendanceButton';
 import { pubCrawlSignupsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
 
 import { useSalvemundiPubCrawlEvents, useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
@@ -517,11 +516,6 @@ export default function KroegentochtPage() {
                                                     {nextEvent.email}
                                                 </a>
                                             </div>
-                                            {nextEvent && (
-                                                <div className="mt-4">
-                                                    <PubCrawlAttendanceButton eventId={nextEvent.id} />
-                                                </div>
-                                            )}
                                             <div className="flex items-start gap-2">
                                                 <span className="font-semibold text-white/80">Locatie:</span>
                                                 <span>Verschillende locaties in Eindhoven</span>
