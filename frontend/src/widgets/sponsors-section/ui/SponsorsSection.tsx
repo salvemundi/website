@@ -37,7 +37,7 @@ export default function SponsorsSection() {
 
     if (loading) {
         return (
-            <section className="py-12 md:py-16 lg:py-20 bg-[var(--bg-main)] overflow-hidden">
+            <section className="py-8 sm:py-10 md:py-12 bg-[var(--bg-main)] overflow-hidden">
                 <div className="mx-auto max-w-app px-6">
                     <div className="text-center mb-8">
                         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-theme-purple mb-2">
@@ -86,7 +86,7 @@ export default function SponsorsSection() {
     ];
 
     return (
-        <section className="py-12 md:py-16 lg:py-20 bg-[var(--bg-main)] overflow-hidden">
+        <section className="py-8 sm:py-10 md:py-12 bg-[var(--bg-main)] overflow-hidden">
             <div className="mx-auto max-w-app px-6">
                 <div className="text-center mb-8">
                     <p className="text-xs font-semibold uppercase tracking-[0.3em] text-theme-purple mb-2">
