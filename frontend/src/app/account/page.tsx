@@ -8,7 +8,6 @@ import { getUserEventSignups, updateMinecraftUsername } from "@/shared/lib/auth"
 import { getImageUrl } from "@/shared/lib/api/salvemundi";
 import { format, startOfDay, isBefore } from "date-fns";
 import PageHeader from "@/widgets/page-header/ui/PageHeader";
-import { stripHtml } from "@/shared/lib/text";
 import {
   LogOut,
   CreditCard,
