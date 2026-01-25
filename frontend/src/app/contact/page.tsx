@@ -55,10 +55,10 @@ export default function ContactPage() {
                                         >
                                             rachelsmolen 1
                                         </p>
-                                        <p className="text-theme-purple/70 text-sm mt-1">
+                                        <p className="text-theme-text-light dark:text-theme-text-light text-sm mt-1">
                                             gebouw r10
                                         </p>
-                                        <p className="text-theme-purple/70 text-sm mt-1">
+                                        <p className="text-theme-text-light dark:text-theme-text-light text-sm mt-1">
                                             lokaal 2.26 (2de verdieping)
                                         </p>
                                     </div>
@@ -101,7 +101,7 @@ export default function ContactPage() {
                                     </h3>
                                     <div className="space-y-3 ml-14">
                                         {documentsLoading ? (
-                                            <p className="text-theme-muted text-sm">Laden...</p>
+                                            <p className="text-theme-text-muted dark:text-theme-text-muted text-sm">Laden...</p>
                                         ) : documents && documents.length > 0 ? (
                                             documents.map((doc: Document) => {
                                                 // Construct file download URL
@@ -113,7 +113,7 @@ export default function ContactPage() {
                                                         href={fileUrl}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="block text-theme-muted hover:text-theme-purple dark:hover:text-theme-white transition-colors group"
+                                                        className="block text-theme-text-muted dark:text-theme-text-muted hover:text-theme-purple dark:hover:text-theme-white transition-colors group"
                                                         title={doc.description || doc.title}
                                                     >
                                                         <span className="group-hover:translate-x-1 inline-block transition-transform">→</span> {doc.title}
@@ -121,7 +121,7 @@ export default function ContactPage() {
                                                 );
                                             })
                                         ) : (
-                                            <p className="text-theme-muted text-sm">Geen documenten beschikbaar</p>
+                                            <p className="text-theme-text-muted dark:text-theme-text-muted text-sm">Geen documenten beschikbaar</p>
                                         )}
                                     </div>
                                 </div>
@@ -196,7 +196,7 @@ export default function ContactPage() {
                                             </div>
                                             <div className="text-left">
                                                 <div className="text-lg font-bold">Safe Havens</div>
-                                                <div className="text-sm text-theme-text/80 dark:text-white/80">Veilig aanspreekpunt voor hulp</div>
+                                                <div className="text-sm text-theme-text-light dark:text-theme-text-light">Veilig aanspreekpunt voor hulp</div>
                                             </div>
                                         </div>
                                         <span className="text-2xl group-hover:translate-x-1 transition-transform">→</span>

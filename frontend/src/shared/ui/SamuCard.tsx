@@ -31,7 +31,7 @@ const SamuCard: React.FC<SamuCardProps> = ({
                     />
                 </div>
             )}
-            <p className="text-center text-base leading-relaxed sm:text-lg flex-1 text-theme-white/90">
+            <p className="text-center text-base leading-relaxed sm:text-lg flex-1 text-theme-text-subtle dark:text-theme-text-subtle">
                 {description}
             </p>
 

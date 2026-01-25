@@ -29,8 +29,12 @@
   --bg-card: var(--color-white);
 
   --text-main: var(--color-purple-800);
+  --text-subtle: #6a5068;
+  /* 90% - Between main and muted */
   --text-muted: #6f5772;
+  /* 80% */
   --text-light: #8a7a8c;
+  /* 70% */
 
   --border-color: #d9c7db;
 
@@ -50,6 +54,7 @@
   /* --- SEMANTIC THEME ALIASES (Tailwind Compatibility) --- */
   --theme-white: var(--color-white);
   --theme-text: var(--text-main);
+  --theme-text-subtle: var(--text-subtle);
   --theme-text-muted: var(--text-muted);
   --theme-text-light: var(--text-light);
   --bg-card-dark: var(--bg-card);
@@ -66,8 +71,12 @@
   --bg-card: #1f1921;
 
   --text-main: #ffffff;
+  --text-subtle: #e8dce9;
+  /* 90% - Slightly dimmed white with purple tint */
   --text-muted: #c9b2cc;
+  /* 80% */
   --text-light: #e0d5e1;
+  /* 70% */
 
   --border-color: #4b3a4d;
 
@@ -80,6 +89,7 @@
   --theme-white: var(--color-white);
   /* Keep it white or maybe soft violet? */
   --theme-text: var(--text-main);
+  --theme-text-subtle: var(--text-subtle);
   --theme-text-muted: var(--text-muted);
   --theme-text-light: var(--text-light);
   --bg-card-dark: var(--bg-card);

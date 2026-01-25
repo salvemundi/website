@@ -319,7 +319,7 @@ export default function Hero() {
                                                     <p className="mt-1 sm:mt-2 text-sm sm:text-base md:text-lg font-bold text-theme-purple dark:text-theme-white truncate">
                                                         Sluit je aan bij Salve Mundi
                                                     </p>
-                                                    <p className="mt-0.5 sm:mt-1 text-[0.7rem] sm:text-xs md:text-sm text-theme-text/80 dark:text-theme-white/80 line-clamp-2">
+                                                    <p className="mt-0.5 sm:mt-1 text-[0.7rem] sm:text-xs md:text-sm text-theme-text-muted dark:text-theme-text-muted line-clamp-2">
                                                         Ontdek alle voordelen van een lidmaatschap!
                                                     </p>
                                                 </div>
@@ -344,7 +344,7 @@ export default function Hero() {
                                                     <p className="mt-2 text-base sm:text-lg font-bold text-theme-purple dark:text-theme-white truncate">
                                                         {nextEvent.name} • {formatEventDate(nextEvent.event_date)}
                                                     </p>
-                                                    <p className="mt-1 text-xs sm:text-sm text-theme-text/80 dark:text-theme-white/80 line-clamp-2">
+                                                    <p className="mt-1 text-xs sm:text-sm text-theme-text-muted dark:text-theme-text-muted line-clamp-2">
                                                         {nextEvent.description || "Kom gezellig langs bij ons volgende evenement!"}
                                                     </p>
                                                 </div>
@@ -371,7 +371,7 @@ export default function Hero() {
                                                     <p className="mt-2 text-base sm:text-lg font-bold text-theme-purple dark:text-theme-white">
                                                         Binnenkort meer activiteiten
                                                     </p>
-                                                    <p className="mt-1 text-xs sm:text-sm text-theme-text/80 dark:text-theme-white/80 line-clamp-2">
+                                                    <p className="mt-1 text-xs sm:text-sm text-theme-text-muted dark:text-theme-text-muted line-clamp-2">
                                                         Check regelmatig onze agenda voor nieuwe evenementen en activiteiten.
                                                     </p>
                                                 </>

@@ -324,7 +324,7 @@ export default function SignUp() {
                             <div className="text-theme-white">
                                 <div className="bg-green-500/20 p-4 rounded-lg mb-6">
                                     <p className="font-bold text-green-400 text-lg mb-1">✓ Actief Lid</p>
-                                    <p className="text-sm text-theme-white/90">Je bent een volwaardig lid van Salve Mundi.</p>
+                                    <p className="text-sm text-theme-text-subtle dark:text-theme-text-subtle">Je bent een volwaardig lid van Salve Mundi.</p>
                                 </div>
 
                                 <p className="mb-4 text-lg">
@@ -334,15 +334,15 @@ export default function SignUp() {
                                 <div className="bg-theme-white/10 p-4 rounded-lg mb-6">
                                     <p className="text-sm text-theme-purple-lighter font-semibold uppercase tracking-wide">Jouw gegevens</p>
                                     <p className="text-theme-white font-medium">{user.first_name} {user.last_name}</p>
-                                    <p className="text-theme-white/80 text-sm">{user.email}</p>
+                                    <p className="text-theme-text-muted dark:text-theme-text-muted text-sm">{user.email}</p>
                                     {user.membership_expiry && (
-                                        <p className="text-theme-white/60 text-xs mt-2">
+                                        <p className="text-theme-text-light dark:text-theme-text-light text-xs mt-2">
                                             Geldig tot: {new Date(user.membership_expiry).toLocaleDateString('nl-NL')}
                                         </p>
                                     )}
                                 </div>
 
-                                <p className="text-sm text-theme-white/60 italic">
+                                <p className="text-sm text-theme-text-light dark:text-theme-text-light italic">
                                     Je hoeft op dit moment geen actie te ondernemen.
                                 </p>
                             </div>
@@ -355,7 +355,7 @@ export default function SignUp() {
                                 <p className="mb-4 text-lg">
                                     Welkom terug, <span className="font-bold text-theme-purple-lighter">{user.first_name}</span>.
                                 </p>
-                                <p className="mb-6 text-theme-white/90">
+                                <p className="mb-6 text-theme-text-subtle dark:text-theme-text-subtle">
                                     Je lidmaatschap is verlopen. Om weer toegang te krijgen tot alle activiteiten en je account te behouden, vragen we je de jaarlijkse contributie te voldoen.
                                 </p>
 
@@ -481,3 +481,4 @@ export default function SignUp() {
         </>
     );
 }
+

@@ -61,7 +61,7 @@ export default function EventsSection() {
                             <h2 className="text-3xl font-black text-theme-purple dark:text-theme-white sm:text-4xl">
                                 Aankomende evenementen
                             </h2>
-                            <p className="max-w-xl text-sm text-theme-text/80 dark:text-theme-white/80">
+                            <p className="max-w-xl text-sm text-theme-text-muted dark:text-theme-text-muted">
                                 Hier vind je een overzicht van al onze evenementen.
                             </p>
                         </div>

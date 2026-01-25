@@ -66,7 +66,7 @@ export default function Footer() {
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
                     <div>
                         <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-title mb-4">Informatie</h3>
-                        <ul className="space-y-2 text-sm text-theme-text/90">
+                        <ul className="space-y-2 text-sm text-theme-text-subtle dark:text-theme-text-subtle">
                             <li>Rachelsmolen 1</li>
                             <li>5612 MA Eindhoven</li>
                             <li>KvK nr. 70280606</li>
@@ -134,7 +134,7 @@ export default function Footer() {
                                     </li>
                                 ))
                             ) : (
-                                <li className="text-theme-text/60">Laden...</li>
+                                <li className="text-theme-text-light dark:text-theme-text-light">Laden...</li>
                             )}
                         </ul>
                     </div>
@@ -214,7 +214,7 @@ export default function Footer() {
                 </div>
 
                 <div className="mt-12 pt-8 text-center">
-                    <p className="text-sm text-theme-text/80">
+                    <p className="text-sm text-theme-text-muted dark:text-theme-text-muted">
                         Copyright © 2025 Salve Mundi - alle rechten voorbehouden.{" "}
                         <a
                             href="https://github.com/salvemundi/website"
