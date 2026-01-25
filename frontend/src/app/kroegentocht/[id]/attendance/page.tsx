@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import qrService from '@/shared/lib/qr-service';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { Search, Camera, Download, RefreshCw, X, CheckCircle, XCircle, Clock } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { format } from 'date-fns';
@@ -18,6 +19,7 @@ export default function PubCrawlAttendancePage() {
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
     const [eventTitle, setEventTitle] = useState<string | null>(null);
+    const [eventImageUrl, setEventImageUrl] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [showScanner, setShowScanner] = useState(false);
     const [scannerError, setScannerError] = useState<string | null>(null);
@@ -53,9 +55,12 @@ export default function PubCrawlAttendancePage() {
         const loadTitle = async () => {
             try {
                 const { directusFetch } = await import('@/shared/lib/directus');
-                const data = await directusFetch(`/items/pub_crawl_events/${eventId}?fields=id,name`);
+                const data = await directusFetch(`/items/pub_crawl_events/${eventId}?fields=id,name,image`);
                 const title = (data as any)?.name || null;
+                const img = (data as any)?.image || null;
+                const imageUrl = img ? getImageUrl(img) : null;
                 setEventTitle(title);
+                setEventImageUrl(imageUrl);
             } catch (err) {
                 console.error('Error loading event title:', err);
             }
@@ -242,7 +247,10 @@ export default function PubCrawlAttendancePage() {
 
     return (
         <div className="min-h-screen bg-beige">
-            <PageHeader title={eventTitle ? `Aanwezigheid: ${eventTitle}` : 'Aanwezigheid beheren'} backgroundImage="/img/backgrounds/Kroto2025.jpg" />
+            <PageHeader
+                title={eventTitle ? `Aanwezigheid: ${eventTitle}` : 'Aanwezigheid beheren'}
+                backgroundImage={eventImageUrl || '/img/backgrounds/Kroto2025.jpg'}
+            />
 
             <main className="mx-auto max-w-7xl px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
                 {/* Message Toast */}
