@@ -96,7 +96,7 @@ function ActivitiesContent() {
 
                     {/* Controls & Header */}
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-                        <h2 className="text-3xl font-bold text-white">
+                        <h2 className="text-3xl font-bold text-theme-purple dark:text-theme-white">
                             {showPastActivities ? 'Alle Activiteiten' : 'Komende Activiteiten'}
                         </h2>
 
