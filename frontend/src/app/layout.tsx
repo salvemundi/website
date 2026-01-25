@@ -4,7 +4,6 @@ import { RootProviders } from './providers';
 import Header from '@/widgets/header/ui/Header';
 import Footer from '@/widgets/footer/ui/Footer';
 import { ServiceWorkerRegistration } from './ServiceWorkerRegistration';
-import DebugSpacing from '@/shared/ui/DebugSpacing';
 
 const getBaseUrl = () => {
     if (process.env.NEXT_PUBLIC_APP_URL) {
@@ -84,7 +83,6 @@ export default function RootLayout({
                 <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-oranje/10/80 via-transparent to-oranje/20/60 dark:from-oranje/5/40 dark:to-paars/10/40" aria-hidden="true" />
                 <RootProviders>
                     <ServiceWorkerRegistration />
-                    <DebugSpacing />
                     <Header />
                     <div className="relative z-10">
                         {children}
