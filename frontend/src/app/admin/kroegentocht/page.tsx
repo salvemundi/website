@@ -9,6 +9,7 @@ import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { Search, Download, Users, Beer, AlertCircle, Trash2, Loader2, Edit } from 'lucide-react';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { isUserAuthorizedForReis } from '@/shared/lib/committee-utils';
+import qrService from '@/shared/lib/qr-service';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
@@ -45,6 +46,7 @@ export default function KroegentochtAanmeldingenPage() {
     const [signups, setSignups] = useState<PubCrawlSignup[]>([]);
     const [filteredSignups, setFilteredSignups] = useState<PubCrawlSignup[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [authorizedForAttendance, setAuthorizedForAttendance] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [showAllSignups, setShowAllSignups] = useState(false);
     // site visibility for kroegentocht
@@ -53,6 +55,20 @@ export default function KroegentochtAanmeldingenPage() {
     useEffect(() => {
         loadEvents();
     }, []);
+
+    useEffect(() => {
+        const check = async () => {
+            try {
+                if (user) {
+                    const ok = await qrService.isUserAuthorizedForPubCrawlAttendance(user.id);
+                    setAuthorizedForAttendance(ok);
+                }
+            } catch (err) {
+                console.error('Error checking pub crawl attendance auth:', err);
+            }
+        };
+        check();
+    }, [user]);
 
     useEffect(() => {
         if (selectedEvent) {
@@ -373,6 +389,14 @@ export default function KroegentochtAanmeldingenPage() {
                                             <Download className="h-5 w-5" />
                                             Export (Gefilterd)
                                         </button>
+                                        {authorizedForAttendance && selectedEvent && (
+                                            <button
+                                                onClick={() => router.push(`/kroegentocht/${selectedEvent.id}/attendance`)}
+                                                className="flex items-center gap-2 px-4 py-2 bg-theme-purple text-white font-bold rounded-lg transition whitespace-nowrap"
+                                            >
+                                                Aanwezigheid Beheren
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
