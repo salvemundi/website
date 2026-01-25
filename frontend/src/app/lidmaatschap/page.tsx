@@ -310,7 +310,7 @@ export default function SignUp() {
                     )}
                 <div className="flex flex-col sm:flex-row gap-6 px-6 py-12 md:py-16 lg:py-20">
                     <section className="w-full sm:w-1/2 bg-gradient-theme rounded-3xl shadow-lg p-6 sm:p-8">
-                        <h1 className="text-3xl font-bold text-theme-white mb-6">
+                        <h1 className="text-3xl font-bold text-theme-purple dark:text-theme-white mb-6">
                             {formTitle}
                         </h1>
 
@@ -365,25 +365,25 @@ export default function SignUp() {
 
                         {isGuest && (
                             <form className="flex text-start flex-col gap-4" onSubmit={handleSubmit}>
-                                <p className="text-theme-white mb-2">Vul je gegevens in om een account aan te maken en lid te worden.</p>
+                                <p className="text-theme-text dark:text-theme-white mb-2">Vul je gegevens in om een account aan te maken en lid te worden.</p>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <label className="font-semibold text-theme-white">
+                                    <label className="font-semibold text-theme-purple dark:text-theme-white">
                                         Voornaam
                                         <input type="text" name="voornaam" value={form.voornaam} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple" />
                                     </label>
-                                    <label className="font-semibold text-theme-white">
+                                    <label className="font-semibold text-theme-purple dark:text-theme-white">
                                         Achternaam
                                         <input type="text" name="achternaam" value={form.achternaam} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple" />
                                     </label>
                                 </div>
 
-                                <label className="font-semibold text-theme-white">
+                                <label className="font-semibold text-theme-purple dark:text-theme-white">
                                     E-mail
                                     <input type="email" name="email" value={form.email} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple" />
                                 </label>
 
-                                <label className="font-semibold text-theme-white">Geboortedatum</label>
+                                <label className="font-semibold text-theme-purple dark:text-theme-white">Geboortedatum</label>
                                 <div className="w-full">
                                     <DatePicker
                                         selected={form.geboortedatum}
@@ -398,14 +398,14 @@ export default function SignUp() {
                                     />
                                 </div>
 
-                                <label className="font-semibold text-theme-white">
+                                <label className="font-semibold text-theme-purple dark:text-theme-white">
                                     Telefoonnummer
                                     <input type="tel" name="telefoon" value={form.telefoon} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple" />
                                     {phoneError && <p className="text-red-300 text-sm mt-1">{phoneError}</p>}
                                 </label>
 
                                 <div className="border-t border-theme-white/20 pt-4 mt-2">
-                                    <label className="font-semibold text-theme-white block mb-2">Heb je een coupon code?</label>
+                                    <label className="font-semibold text-theme-purple dark:text-theme-white block mb-2">Heb je een coupon code?</label>
                                     <div className="flex gap-2">
                                         <input
                                             type="text"
@@ -431,7 +431,7 @@ export default function SignUp() {
                                     )}
 
                                     {/* Summary of price */}
-                                    <div className="mt-4 flex justify-between items-center text-theme-white font-bold text-lg">
+                                    <div className="mt-4 flex justify-between items-center text-theme-purple dark:text-theme-white font-bold text-lg">
                                         <span>Totaal:</span>
                                         <span>
                                             {couponStatus?.valid && couponStatus.discount ? (
