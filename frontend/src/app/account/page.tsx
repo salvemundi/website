@@ -20,7 +20,7 @@ import {
   ExternalLink,
   ChevronRight,
   Lock,
-  
+
 } from "lucide-react";
 
 interface EventSignup {
@@ -326,11 +326,11 @@ export default function AccountPage() {
 
                 <div className="mt-3 flex flex-wrap justify-center sm:justify-start gap-2">
                   {user.is_member ? (
-                    <span className="px-3 py-1 bg-theme-purple text-theme-purple-lighter text-xs font-bold uppercase tracking-wider rounded-full">
+                    <span className="px-3 py-1 bg-theme-purple text-white text-xs font-bold uppercase tracking-wider rounded-full">
                       Fontys Student
                     </span>
                   ) : (
-                    <span className="px-3 py-1 bg-theme-purple/10 text-theme-purple-lighter text-xs font-bold uppercase tracking-wider rounded-full">
+                    <span className="px-3 py-1 bg-theme-purple/10 text-theme-purple text-xs font-bold uppercase tracking-wider rounded-full">
                       Geregistreerde Gebruiker
                     </span>
                   )}

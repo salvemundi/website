@@ -189,15 +189,15 @@ export default function ContactPage() {
                                 <div className="pt-6">
                                     <button
                                         onClick={() => router.push('/safe-havens')}
-                                        className="w-full bg-gradient-theme text-theme-white rounded-2xl p-6 font-semibold hover:-translate-y-0.5 transition-all shadow-lg shadow-theme-purple/30 flex items-center justify-between group"
+                                        className="w-full bg-gradient-theme text-theme-purple dark:text-theme-white rounded-2xl p-6 font-semibold hover:-translate-y-0.5 transition-all shadow-lg shadow-theme-purple/30 flex items-center justify-between group"
                                     >
                                         <div className="flex items-center gap-4">
                                             <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                                                <span className="text-2xl">️</span>
+                                                <span className="text-2xl">⚡️</span>
                                             </div>
                                             <div className="text-left">
                                                 <div className="text-lg font-bold">Safe Havens</div>
-                                                <div className="text-sm text-white/80">Veilig aanspreekpunt voor hulp</div>
+                                                <div className="text-sm text-theme-text/80 dark:text-white/80">Veilig aanspreekpunt voor hulp</div>
                                             </div>
                                         </div>
                                         <span className="text-2xl group-hover:translate-x-1 transition-transform">→</span>
