@@ -38,13 +38,24 @@ function LoginContent() {
     // Automate SSO Login
     useEffect(() => {
         const triggerAutoLogin = async () => {
+            // Check if we're in an MSAL callback flow (hash or code in URL)
+            // If so, we should definitely NOT trigger another login attempt.
+            const isCallback = typeof window !== 'undefined' && (window.location.hash || window.location.search.includes('code='));
+            if (isCallback) return;
+
             if (!isLoading && !isAuthenticated && !error && !noAuto && !isAutoRedirecting) {
                 setIsAutoRedirecting(true);
                 try {
                     // Store the returnTo URL in localStorage to persist across MSAL redirect
                     localStorage.setItem('auth_return_to', returnTo);
                     await loginWithMicrosoft();
-                } catch (err) {
+                } catch (err: any) {
+                    // Ignore transient interaction errors that will be resolved by handleRedirectPromise
+                    if (err?.name === 'BrowserAuthError' && err?.errorCode === 'interaction_in_progress') {
+                        setIsAutoRedirecting(false);
+                        return;
+                    }
+
                     setError('Microsoft login failed. Please try again.');
                     setIsAutoRedirecting(false);
                     console.error(err);
