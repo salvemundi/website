@@ -28,16 +28,23 @@ function KroegentochtConfirmationContent() {
                 let statusValue = 'open';
                 let signup = null;
                 
+                console.log('[Kroegentocht Bevestiging] Checking status, retry:', retryCount);
+                
                 if (transactionId) {
+                    console.log('[Kroegentocht Bevestiging] Checking transaction:', transactionId);
                     const transaction = await transactionsApi.getById(transactionId);
                     statusValue = transaction.payment_status;
+                    console.log('[Kroegentocht Bevestiging] Transaction status:', statusValue);
                 } else if (signupId) {
+                    console.log('[Kroegentocht Bevestiging] Checking signup:', signupId);
                     signup = await pubCrawlSignupsApi.getById(signupId);
                     statusValue = signup.payment_status;
+                    console.log('[Kroegentocht Bevestiging] Signup status:', statusValue, 'QR token:', signup.qr_token ? 'present' : 'missing');
                     setSignupData(signup);
                 }
 
                 if (statusValue === 'paid') {
+                    console.log('[Kroegentocht Bevestiging] ✅ Payment is PAID!');
                     // Make sure we have signup data when paid
                     if (!signup && signupId) {
                         signup = await pubCrawlSignupsApi.getById(signupId);
@@ -45,15 +52,18 @@ function KroegentochtConfirmationContent() {
                     }
                     setStatus('paid');
                 } else if (statusValue === 'failed' || statusValue === 'canceled' || statusValue === 'expired') {
+                    console.log('[Kroegentocht Bevestiging] ❌ Payment failed/canceled/expired');
                     setStatus('failed');
-                } else if (retryCount < 5) {
+                } else if (retryCount < 10) {
                     // Still open, maybe webhook hasn't fired yet. Retry after 2 seconds.
+                    console.log('[Kroegentocht Bevestiging] Status still open, retrying in 2s... (attempt', retryCount + 1, 'of 10)');
                     setTimeout(() => setRetryCount(prev => prev + 1), 2000);
                 } else {
+                    console.log('[Kroegentocht Bevestiging] ⚠️ Max retries reached, status still open');
                     setStatus('open');
                 }
             } catch (err) {
-                console.error('Error fetching signup status:', err);
+                console.error('[Kroegentocht Bevestiging] Error fetching signup status:', err);
                 setStatus('error');
             }
         };
@@ -144,9 +154,14 @@ function KroegentochtConfirmationContent() {
                             <AlertTriangle className="w-12 h-12 text-yellow-500" />
                         </div>
                         <h1 className="text-3xl font-bold text-theme-white mb-4">Betaling nog in verwerking</h1>
-                        <p className="text-lg text-theme-white/90 mb-8 max-w-lg mx-auto">
+                        <p className="text-lg text-theme-white/90 mb-6 max-w-lg mx-auto">
                             Je betaling wordt nog verwerkt. Zodra de betaling is afgerond, ontvang je een bevestigingsmail. Dit kan soms een paar minuten duren.
                         </p>
+                        <div className="bg-white/10 p-4 rounded-xl max-w-lg mx-auto mb-6">
+                            <p className="text-sm text-white/90">
+                                <strong>Tip:</strong> Je kunt deze pagina veilig sluiten. Je ontvangt een email zodra je betaling is verwerkt met je toegangscode(s).
+                            </p>
+                        </div>
                     </>
                 );
             default:
