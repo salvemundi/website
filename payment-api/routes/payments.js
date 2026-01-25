@@ -5,6 +5,13 @@ const { getEnvironment } = require('../services/env-utils');
 module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, MEMBERSHIP_API_URL, directusService, notificationService, GRAPH_SYNC_URL) {
     const router = express.Router();
 
+    // QR Token generation function (same as frontend)
+    function generateQRToken(signupId, eventId) {
+        const rand = Math.random().toString(36).substring(2, 15);
+        const time = Date.now().toString(36);
+        return `r-${signupId}-${eventId}-${time}-${rand}`;
+    }
+
     router.post('/create', async (req, res) => {
         const traceId = req.headers['x-trace-id'] || `pay-${Math.random().toString(36).substring(7)}`;
         console.warn(`[Payment][${traceId}] Incoming Payment Creation Request`);
@@ -430,6 +437,15 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
 
                     if (payment.metadata.registrationType === 'pub_crawl_signup') {
                         collection = 'pub_crawl_signups';
+                        
+                        // Generate QR token for pub crawl signup
+                        console.warn(`[Webhook][${traceId}] Generating QR token for pub crawl signup ${registrationId}`);
+                        const qrToken = generateQRToken(registrationId, eventId || 0);
+                        updatePayload.qr_token = qrToken;
+                        console.warn(`[Webhook][${traceId}] Generated QR token: ${qrToken}`);
+                        
+                        // Add QR token to metadata for email
+                        payment.metadata.qrToken = qrToken;
                     } else if (payment.metadata.registrationType === 'trip_signup') {
                         collection = 'trip_signups';
                         // For trip signups, check description to determine if it's deposit or final payment

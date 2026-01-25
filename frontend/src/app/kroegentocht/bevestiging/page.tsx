@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import QRDisplay from '@/entities/activity/ui/QRDisplay';
 import { motion } from 'framer-motion';
 import { CheckCircle, Home, XCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { useEffect, useState, Suspense } from 'react';
@@ -14,6 +15,7 @@ function KroegentochtConfirmationContent() {
     const transactionId = searchParams.get('transaction_id');
     const [status, setStatus] = useState<'loading' | 'paid' | 'open' | 'failed' | 'error'>('loading');
     const [retryCount, setRetryCount] = useState(0);
+    const [signupData, setSignupData] = useState<any>(null);
 
     useEffect(() => {
         if (!transactionId && !signupId) {
@@ -24,15 +26,23 @@ function KroegentochtConfirmationContent() {
         const checkStatus = async () => {
             try {
                 let statusValue = 'open';
+                let signup = null;
+                
                 if (transactionId) {
                     const transaction = await transactionsApi.getById(transactionId);
                     statusValue = transaction.payment_status;
                 } else if (signupId) {
-                    const signup = await pubCrawlSignupsApi.getById(signupId);
+                    signup = await pubCrawlSignupsApi.getById(signupId);
                     statusValue = signup.payment_status;
+                    setSignupData(signup);
                 }
 
                 if (statusValue === 'paid') {
+                    // Make sure we have signup data when paid
+                    if (!signup && signupId) {
+                        signup = await pubCrawlSignupsApi.getById(signupId);
+                        setSignupData(signup);
+                    }
                     setStatus('paid');
                 } else if (statusValue === 'failed' || statusValue === 'canceled' || statusValue === 'expired') {
                     setStatus('failed');
@@ -72,10 +82,39 @@ function KroegentochtConfirmationContent() {
                             <CheckCircle className="w-12 h-12 text-green-400" />
                         </div>
                         <h1 className="text-3xl font-bold text-theme-white mb-4">Inschrijving Geslaagd!</h1>
-                        <p className="text-lg text-theme-white/90 mb-8 max-w-lg mx-auto">
+                        <p className="text-lg text-theme-white/90 mb-6 max-w-lg mx-auto">
                             Bedankt voor je inschrijving voor de Kroegentocht! Je betaling is succesvol verwerkt.
                             We hebben een bevestigingsmail naar je gestuurd met de details.
                         </p>
+
+                        {/* Display QR codes if available */}
+                        {signupData && signupData.qr_token && (
+                            <div className="mt-8 space-y-4">
+                                <h2 className="text-2xl font-bold text-white">Jouw Tickets ({signupData.amount_tickets}x)</h2>
+                                <p className="text-white/90 mb-4">
+                                    Bewaar deze QR-code{signupData.amount_tickets > 1 ? 's' : ''} of laat ze zien bij de ingang.
+                                </p>
+                                
+                                {Array.from({ length: signupData.amount_tickets || 1 }).map((_, index) => {
+                                    const participants = signupData.name_initials ? JSON.parse(signupData.name_initials) : [];
+                                    const participant = participants[index];
+                                    return (
+                                        <div key={index} className="bg-white/10 p-4 rounded-xl">
+                                            <p className="text-center font-semibold mb-2 text-white">
+                                                Ticket {index + 1}{participant ? `: ${participant.name} ${participant.initial}.` : ''}
+                                            </p>
+                                            <div className="flex justify-center">
+                                                <QRDisplay qrToken={signupData.qr_token} size={200} />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+
+                                <p className="text-center text-sm text-white/70 mt-4">
+                                    Deze QR-code is ook per e-mail naar je verzonden.
+                                </p>
+                            </div>
+                        )}
                     </>
                 );
             case 'failed':
