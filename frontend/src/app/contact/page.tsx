@@ -38,7 +38,7 @@ export default function ContactPage() {
                 <div className="max-w-6xl mx-auto relative flex w-full flex-col gap-8">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Informatie Section */}
-                        <div className="bg-white/95 dark:bg-surface-dark/95 dark:border dark:border-white/10 rounded-3xl shadow-lg p-8">
+                        <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl shadow-lg p-8">
                             <h2 className="text-3xl font-bold text-theme-purple dark:text-theme-white mb-6">
                                 Informatie
                             </h2>
@@ -129,7 +129,7 @@ export default function ContactPage() {
                         </div>
 
                         {/* Contact Section */}
-                        <div className="bg-white/95 dark:bg-surface-dark/95 dark:border dark:border-white/10 rounded-3xl shadow-lg p-8">
+                        <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl shadow-lg p-8">
                             <h2 className="text-3xl font-bold text-theme-purple dark:text-theme-white mb-6">
                                 Contact
                             </h2>
@@ -207,7 +207,7 @@ export default function ContactPage() {
                     </div>
 
                     {/* Social Media Section */}
-                    <div className="mt-8 bg-white/95 dark:bg-surface-dark/95 dark:border dark:border-white/10 rounded-3xl shadow-lg p-8">
+                    <div className="mt-8 bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl shadow-lg p-8">
                         <h2 className="text-2xl font-bold text-theme-purple dark:text-theme-white mb-6 text-center">
                             Volg Ons Op Social Media
                         </h2>
@@ -262,3 +262,4 @@ export default function ContactPage() {
         </div>
     );
 }
+
