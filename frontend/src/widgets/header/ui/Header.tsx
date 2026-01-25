@@ -48,7 +48,7 @@ const Header: React.FC = () => {
                 const committees = (user as any).committees;
                 console.log('[Header] Checking committee membership for user:', user.id);
                 console.log('[Header] User committees:', committees);
-                
+
                 if (Array.isArray(committees)) {
                     // User has committees data loaded
                     const isMember = committees.length > 0;
@@ -59,15 +59,15 @@ const Header: React.FC = () => {
 
                 // Fallback: fetch from API if committees not loaded yet
                 console.log('[Header] Committees not loaded, checking via API');
-                
+
                 // Get user's committee memberships with committee details including is_visible
                 const memberships = await directusFetch<any[]>(
                     `/items/committee_members?filter[user_id][_eq]=${user.id}&fields=committee_id.id,committee_id.is_visible`
                 );
                 console.log('[Header] API response:', memberships);
-                
+
                 // Check if user is member of at least one visible committee
-                const isMember = Array.isArray(memberships) && 
+                const isMember = Array.isArray(memberships) &&
                     memberships.some(m => m.committee_id?.is_visible !== false);
                 console.log('[Header] User is committee member via API:', isMember);
                 setIsCommitteeMember(isMember);
@@ -240,7 +240,7 @@ const Header: React.FC = () => {
                         {!isAuthenticated && (
                             <Link
                                 href={ROUTES.MEMBERSHIP}
-                                className="hidden items-center gap-2 rounded-full bg-gradient-theme px-4 py-2 text-sm font-bold text-theme-white shadow-lg shadow-theme-purple/30 transition hover:-translate-y-0.5 hover:shadow-xl md:inline-flex"
+                                className="hidden items-center gap-2 rounded-full bg-gradient-theme px-4 py-2 text-sm font-bold text-theme-purple dark:text-theme-white shadow-lg shadow-theme-purple/30 transition hover:-translate-y-0.5 hover:shadow-xl md:inline-flex"
                             >
                                 <Sparkles className="h-4 w-4" />
                                 Word lid
@@ -344,7 +344,7 @@ const Header: React.FC = () => {
                         <Link
                             href={ROUTES.MEMBERSHIP}
                             onClick={() => setMenuOpen(false)}
-                            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-theme px-4 py-3 text-sm font-semibold text-theme-white shadow-lg shadow-theme-purple/40"
+                            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-theme px-4 py-3 text-sm font-semibold text-theme-purple dark:text-theme-white shadow-lg shadow-theme-purple/40"
                         >
                             <Sparkles className="h-4 w-4" />
                             Word lid
