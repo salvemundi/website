@@ -14,7 +14,7 @@
   /* Purple palette - Light mode */
   --theme-purple: #663265;
   --theme-purple-light: #8c4682;
-  --theme-purple-lighter: #663265;
+  --theme-purple-lighter: #f8eff7;
   /* Darker in light mode for readability on light backgrounds */
   --theme-purple-dark: #471e3b;
   --theme-purple-darker: #ca70be;
@@ -30,8 +30,8 @@
   --theme-text-light: #8a7a8c;
 
   /* Gradient colors - Light mode: use lighter gradients for cards/tiles */
-  --theme-gradient-start: #f4e9f3;
-  --theme-gradient-end: #e4cbe2;
+  --theme-gradient-start: #eac8e7;
+  --theme-gradient-end: #d8a6d4;
   --theme-gradient-light-start: #a4539b;
   --theme-gradient-light-end: #d4add0;
   --theme-gradient-dark-start: #471e3b;
