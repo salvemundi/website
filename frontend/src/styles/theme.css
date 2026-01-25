@@ -1,240 +1,118 @@
-/* ==============================================
-   THEME UTILITIES - Light & Dark Mode
-   ============================================== */
+/* ==========================================================================
+   SALVE MUNDI DESIGN SYSTEM (theme.css)
+   ========================================================================== */
 
-/* 
- * This file provides easy-to-use utility classes for theming.
- * Import this file in your globals.css or layout.
- */
-
-/* ==============================================
-   COLOR VARIABLES
-   ============================================== */
 :root {
-  /* Purple palette - Light mode */
-  --theme-purple: #663265;
-  --theme-purple-light: #8c4682;
-  --theme-purple-lighter: #f8eff7;
-  /* Darker in light mode for readability on light backgrounds */
-  --theme-purple-dark: #471e3b;
-  --theme-purple-darker: #ca70be;
+  /* --- 1. CORE TOKENS (De 'Rauwe' Kleuren) --- */
+  --color-purple-50: #f4e9f3;
+  --color-purple-100: #e4cbe2;
+  --color-purple-200: #d4add0;
+  --color-purple-300: #c48fbe;
+  --color-purple-400: #b471ad;
+  --color-purple-500: #a4539b;
+  /* Base Purple */
+  --color-purple-600: #8c4682;
+  --color-purple-700: #75386a;
+  --color-purple-800: #5e2b52;
+  --color-purple-900: #471e3b;
 
-  /* White/Light colors */
-  --theme-white: #ffffff;
-  --theme-white-soft: #faf7fb;
-  --theme-white-muted: #f0ebf0;
+  --color-white: #ffffff;
+  --color-white-soft: #faf7fb;
+  --color-white-mute: #f0ebf0;
 
-  /* Text colors - Light mode */
-  --theme-text: #663265;
-  --theme-text-muted: #6f5772;
-  --theme-text-light: #8a7a8c;
+  /* --- 2. SEMANTISCHE ROLLEN (Licht Mode) --- */
+  --theme-purple: var(--color-purple-700);
+  --theme-purple-light: var(--color-purple-500);
 
-  /* Gradient colors - Light mode: use lighter gradients for cards/tiles */
-  --theme-gradient-start: #eac8e7;
-  --theme-gradient-end: #d8a6d4;
-  --theme-gradient-light-start: #a4539b;
-  --theme-gradient-light-end: #d4add0;
-  --theme-gradient-dark-start: #471e3b;
-  --theme-gradient-dark-end: #663265;
-  /* Sticker owner highlight color - used for markers that belong to the current logged-in user */
-  --sticker-mine: #2563eb;
-  /* blue-600 */
-  --sticker-mine-light: #60a5fa;
-  /* blue-400 for light accents */
+  --bg-main: #f8f9fa;
+  --bg-soft: var(--color-white-soft);
+  --bg-card: var(--color-white);
 
-  /* Admin-specific colors - Light mode */
-  --theme-admin-card: #ffffff;
-  --theme-admin-card-soft: #f8f9fa;
-  --theme-admin-text: #1e293b;
-  --theme-admin-text-muted: #64748b;
-  --theme-admin-border: #e2e8f0;
-  --theme-admin-hover: #f1f5f9;
+  --text-main: var(--color-purple-800);
+  --text-muted: #6f5772;
+  --text-light: #8a7a8c;
+
+  --border-color: #d9c7db;
+
+  /* Shadows & Radius --- */
+  --shadow-card: 0 1px 3px rgba(16, 24, 40, 0.1), 0 1px 2px rgba(16, 24, 40, 0.06);
+  --shadow-glow: 0 0 15px rgba(102, 50, 101, 0.3);
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+
+  /* Gradients */
+  --gradient-start: #eac8e7;
+  --gradient-end: #d8a6d4;
+
+  /* Header & UI */
+  --header-height: 64px;
 }
 
-/* Dark mode overrides */
+/* --- 3. DARK MODE OVERRIDES --- */
 .dark {
-  /* Text colors - Dark mode */
-  --theme-text: #ffffff;
-  --theme-text-muted: #c9b2cc;
-  --theme-text-light: #e0d5e1;
-
-  /* Adjusted purples for dark mode visibility */
   --theme-purple: #d9a3d6;
   --theme-purple-light: #e8c4e6;
-  --theme-purple-lighter: #f4e2f3;
-  --theme-purple-dark: #b471ad;
-  --theme-purple-darker: #663265;
 
-  /* White stays white in dark mode */
-  --theme-white: #ffffff;
-  --theme-white-soft: #f5f0f5;
-  --theme-white-muted: #e8e0e8;
+  --bg-main: #1a141b;
+  --bg-soft: #1a141b;
+  --bg-card: #1f1921;
 
-  /* Gradient colors for dark mode - darker for contrast */
-  --theme-gradient-start: #a16ca1;
-  --theme-gradient-end: #c47bbb;
-  --theme-gradient-light-start: #a4539b;
-  --theme-gradient-light-end: #d4add0;
-  --theme-gradient-dark-start: #471e3b;
-  --theme-gradient-dark-end: #663265;
-  /* Dark mode override for sticker owner color */
-  --sticker-mine: #60a5fa;
-  /* lighter blue on dark bg */
-  --sticker-mine-light: #93c5fd;
+  --text-main: #ffffff;
+  --text-muted: #c9b2cc;
+  --text-light: #e0d5e1;
 
-  /* Admin-specific colors - Dark mode */
-  --theme-admin-card: #1e293b;
-  --theme-admin-card-soft: #334155;
-  --theme-admin-text: #f1f5f9;
-  --theme-admin-text-muted: #94a3b8;
-  --theme-admin-border: #475569;
-  --theme-admin-hover: #334155;
+  --border-color: #4b3a4d;
+
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+
+  --gradient-start: #a16ca1;
+  --gradient-end: #c47bbb;
 }
 
-/* ==============================================
-   GLOBAL TEXT COLOR APPLICATION
-   ============================================== */
+/* --- 4. LEGACY & COMPATIBILITY ALIASES --- */
+:root {
+  --color-primary: var(--theme-purple);
+  --color-background: var(--bg-main);
+  --color-surface: var(--bg-card);
+  --color-ink: var(--text-main);
+  --color-ink-muted: var(--text-muted);
+  --color-oranje: var(--theme-purple);
+  /* Legacy mapping */
+}
 
-/* Apply theme colors globally to all elements */
+/* --- 5. GLOBAL ELEMENT DEFAULTS --- */
+html,
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
 
-
-/* Links - slightly different for visibility */
 a {
   color: var(--theme-purple);
+  text-decoration: none;
+  transition: color 0.2s;
 }
 
 a:hover {
   color: var(--theme-purple-light);
 }
 
-/* Form elements */
-input,
-textarea,
-select {
-  color: var(--theme-text);
-  background-color: inherit;
+/* --- 6. UTILITY CLASSES (Custom Salve Mundi) --- */
+
+/* Gradients */
+.bg-gradient-theme {
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
 }
 
-/* Darker form inputs in dark mode */
-.dark input,
-.dark textarea,
-.dark select {
-  background-color: rgba(0, 0, 0, 0.3);
-}
-
-input::placeholder,
-textarea::placeholder {
-  color: var(--theme-text-muted);
-}
-
-/* Options (dropdown items) - ensure readable in both themes */
-select option {
-  color: var(--theme-text);
-  background-color: inherit;
-}
-
-.dark select option {
-  color: var(--theme-text);
-  background-color: var(--theme-admin-card);
-}
-
-/* ==============================================
-   TEXT COLOR UTILITIES
-   ============================================== */
-
-/* Adaptive text (changes with theme) */
-.text-theme {
-  color: var(--theme-text) !important;
-}
-
-.text-theme-muted {
-  color: var(--theme-text-muted) !important;
-}
-
-.text-theme-light {
-  color: var(--theme-text-light) !important;
-}
-
-/* White text (always white) */
-.text-theme-white {
-  color: var(--theme-white) !important;
-}
-
-/* Purple text variations - Use Tailwind classes directly (text-theme-purple etc) */
-
-/* ==============================================
-   GRADIENT TEXT UTILITIES
-   ============================================== */
-
-/* Base gradient text setup */
 .text-gradient {
-  background: linear-gradient(135deg,
-      var(--theme-gradient-start),
-      var(--theme-gradient-end));
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Light gradient */
-.text-gradient-light {
-  background: linear-gradient(135deg,
-      var(--theme-gradient-light-start),
-      var(--theme-gradient-light-end));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Horizontal gradient */
-.text-gradient-horizontal {
-  background: linear-gradient(90deg,
-      var(--theme-gradient-start),
-      var(--theme-gradient-end));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Vertical gradient */
-.text-gradient-vertical {
-  background: linear-gradient(180deg,
-      var(--theme-gradient-start),
-      var(--theme-gradient-end));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Purple to white gradient (great for dark backgrounds) */
-.text-gradient-purple-white {
-  background: linear-gradient(135deg, var(--theme-purple), var(--theme-white));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* White to purple gradient */
-.text-gradient-white-purple {
-  background: linear-gradient(135deg, var(--theme-white), var(--theme-purple));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Animated gradient */
-.text-gradient-animated {
-  background: linear-gradient(135deg,
-      var(--theme-gradient-start),
-      var(--theme-gradient-end),
-      var(--theme-gradient-start));
-  background-size: 200% 200%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: gradientShift 3s ease infinite;
-}
-
+/* Animations */
 @keyframes gradientShift {
   0% {
     background-position: 0% 50%;
@@ -249,83 +127,11 @@ select option {
   }
 }
 
-/* ==============================================
-   BACKGROUND UTILITIES
-   ============================================== */
-
-
-
-.bg-gradient-theme {
-  background: linear-gradient(135deg,
-      var(--theme-gradient-start),
-      var(--theme-gradient-end));
+.text-gradient-animated {
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end), var(--gradient-start));
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 3s ease infinite;
 }
-
-.bg-gradient-theme-horizontal {
-  background: linear-gradient(90deg,
-      var(--theme-gradient-start),
-      var(--theme-gradient-end));
-}
-
-.bg-gradient-theme-vertical {
-  background: linear-gradient(180deg,
-      var(--theme-gradient-start),
-      var(--theme-gradient-end));
-}
-
-/* Full page gradient (purple to dark purple to purple) */
-.bg-gradient-theme-page {
-  background: linear-gradient(to bottom right,
-      var(--theme-purple),
-      var(--theme-purple-dark),
-      var(--theme-purple));
-}
-
-/* Alternative page gradient with more contrast */
-.bg-gradient-theme-page-alt {
-  background: linear-gradient(to bottom right,
-      var(--theme-purple),
-      var(--theme-purple-darker),
-      var(--theme-purple-dark));
-}
-
-/* Admin-specific utilities */
-.bg-admin-card {
-  background-color: var(--theme-admin-card);
-}
-
-.bg-admin-card-soft {
-  background-color: var(--theme-admin-card-soft);
-}
-
-.text-admin {
-  color: var(--theme-admin-text);
-}
-
-.text-admin-muted {
-  color: var(--theme-admin-text-muted);
-}
-
-.border-admin {
-  border-color: var(--theme-admin-border);
-}
-
-.hover\:bg-admin-hover:hover {
-  background-color: var(--theme-admin-hover);
-}
-
-/* ==============================================
-   BORDER UTILITIES
-   ============================================== */
-
-
-
-/* ==============================================
-   HOVER STATES
-   ============================================== */
-
-
-
-/* ==============================================
-   FOCUS STATES
-   ============================================== */
