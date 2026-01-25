@@ -52,16 +52,16 @@ export default function EventsSection() {
     return (
         <section id="kalender" className="py-8 sm:py-10 md:py-12 bg-[var(--bg-main)]">
             <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
-                <div className="flex flex-col gap-6 rounded-xl bg-gradient-primary px-6 sm:px-10 pt-8 sm:pt-10 md:pt-12 pb-8 sm:pb-10 md:pb-12 shadow-xl">
+                <div className="flex flex-col gap-6 rounded-xl bg-gradient-theme px-6 sm:px-10 pt-8 sm:pt-10 md:pt-12 pb-8 sm:pb-10 md:pb-12 shadow-xl">
                     <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                         <div className="space-y-3">
-                            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-white">
+                            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-theme-purple dark:text-theme-white">
                                 <CalendarClock className="h-3 w-3" /> Agenda
                             </p>
-                            <h2 className="text-3xl font-black text-white sm:text-4xl">
+                            <h2 className="text-3xl font-black text-theme-purple dark:text-theme-white sm:text-4xl">
                                 Aankomende evenementen
                             </h2>
-                            <p className="max-w-xl text-sm text-white/90">
+                            <p className="max-w-xl text-sm text-theme-text/80 dark:text-theme-white/80">
                                 Hier vind je een overzicht van al onze evenementen.
                             </p>
                         </div>
