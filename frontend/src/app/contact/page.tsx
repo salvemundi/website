@@ -109,155 +109,157 @@ export default function ContactPage() {
                                                 const fileUrl = `${directusUrl}/assets/${doc.file}`;
 
                                                 return (
-                                                    href = { fileUrl }
-                                                        target = "_blank"
-                                                rel = "noopener noreferrer"
-                                                className = "block text-theme-muted hover:text-theme-purple dark:hover:text-theme-white transition-colors group"
-                                                title = { doc.description || doc.title }
+                                                    <a
+                                                        key={doc.id}
+                                                        href={fileUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="block text-theme-muted hover:text-theme-purple dark:hover:text-theme-white transition-colors group"
+                                                        title={doc.description || doc.title}
                                                     >
-                                                    <span className="group-hover:translate-x-1 inline-block transition-transform">→</span> { doc.title }
+                                                        <span className="group-hover:translate-x-1 inline-block transition-transform">→</span> {doc.title}
                                                     </a>
-                                    );
+                                                );
                                             })
-                                    ) : (
-                                    <p className="text-theme-muted text-sm">Geen documenten beschikbaar</p>
+                                        ) : (
+                                            <p className="text-theme-muted text-sm">Geen documenten beschikbaar</p>
                                         )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Contact Section */}
-                    <div className="bg-white dark:bg-[#1f1921] dark:border dark:border-white/10 rounded-3xl shadow-lg p-8">
-                        <h2 className="text-3xl font-bold text-theme-purple dark:text-theme-white mb-6">
-                            Contact
-                        </h2>
+                        {/* Contact Section */}
+                        <div className="bg-white dark:bg-[#1f1921] dark:border dark:border-white/10 rounded-3xl shadow-lg p-8">
+                            <h2 className="text-3xl font-bold text-theme-purple dark:text-theme-white mb-6">
+                                Contact
+                            </h2>
 
-                        <div className="space-y-6">
-                            {/* Email */}
-                            <div className="flex items-start items-center gap-4">
-                                <div className="w-12 h-12 rounded-full bg-theme-purple-light flex items-center justify-center flex-shrink-0">
-                                    <span className="text-2xl">✉️</span>
-                                </div>
-                                <div>
-                                    <a
-                                        href="mailto:info@salvemundi.nl"
-                                        className="text-theme-purple dark:text-theme-white text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
-                                    >
-                                        info@salvemundi.nl
-                                    </a>
-                                </div>
-                            </div>
-
-                            {/* Phone */}
-                            <div className="flex items-start items-center gap-4">
-                                <div className="w-12 h-12 rounded-full bg-theme-purple-light flex items-center justify-center flex-shrink-0">
-                                    <span className="text-2xl">📞</span>
-                                </div>
-                                <div>
-                                    <a
-                                        href="tel:+31624827777"
-                                        className="text-theme-purple dark:text-theme-white text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
-                                    >
-                                        +31 6 24827777
-                                    </a>
-                                </div>
-                            </div>
-
-                            {/* WhatsApp (only for authenticated users) */}
-                            {isAuthenticated && (
+                            <div className="space-y-6">
+                                {/* Email */}
                                 <div className="flex items-start items-center gap-4">
                                     <div className="w-12 h-12 rounded-full bg-theme-purple-light flex items-center justify-center flex-shrink-0">
-                                        <span className="text-2xl">💬</span>
+                                        <span className="text-2xl">✉️</span>
                                     </div>
                                     <div>
                                         <a
-                                            href="https://wa.me/31624827777"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
+                                            href="mailto:info@salvemundi.nl"
                                             className="text-theme-purple dark:text-theme-white text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
                                         >
-                                            WhatsApp
+                                            info@salvemundi.nl
                                         </a>
                                     </div>
                                 </div>
-                            )}
 
-                            {/* Safe Havens Button */}
-                            <div className="pt-6">
-                                <button
-                                    onClick={() => router.push('/safe-havens')}
-                                    className="w-full bg-gradient-theme text-theme-purple dark:text-theme-white rounded-2xl p-6 font-semibold hover:-translate-y-0.5 transition-all shadow-lg shadow-theme-purple/30 flex items-center justify-between group"
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                                            <span className="text-2xl">⚡️</span>
+                                {/* Phone */}
+                                <div className="flex items-start items-center gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-theme-purple-light flex items-center justify-center flex-shrink-0">
+                                        <span className="text-2xl">📞</span>
+                                    </div>
+                                    <div>
+                                        <a
+                                            href="tel:+31624827777"
+                                            className="text-theme-purple dark:text-theme-white text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
+                                        >
+                                            +31 6 24827777
+                                        </a>
+                                    </div>
+                                </div>
+
+                                {/* WhatsApp (only for authenticated users) */}
+                                {isAuthenticated && (
+                                    <div className="flex items-start items-center gap-4">
+                                        <div className="w-12 h-12 rounded-full bg-theme-purple-light flex items-center justify-center flex-shrink-0">
+                                            <span className="text-2xl">💬</span>
                                         </div>
-                                        <div className="text-left">
-                                            <div className="text-lg font-bold">Safe Havens</div>
-                                            <div className="text-sm text-theme-text/80 dark:text-white/80">Veilig aanspreekpunt voor hulp</div>
+                                        <div>
+                                            <a
+                                                href="https://wa.me/31624827777"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-theme-purple dark:text-theme-white text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
+                                            >
+                                                WhatsApp
+                                            </a>
                                         </div>
                                     </div>
-                                    <span className="text-2xl group-hover:translate-x-1 transition-transform">→</span>
-                                </button>
+                                )}
+
+                                {/* Safe Havens Button */}
+                                <div className="pt-6">
+                                    <button
+                                        onClick={() => router.push('/safe-havens')}
+                                        className="w-full bg-gradient-theme text-theme-purple dark:text-theme-white rounded-2xl p-6 font-semibold hover:-translate-y-0.5 transition-all shadow-lg shadow-theme-purple/30 flex items-center justify-between group"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                                                <span className="text-2xl">⚡️</span>
+                                            </div>
+                                            <div className="text-left">
+                                                <div className="text-lg font-bold">Safe Havens</div>
+                                                <div className="text-sm text-theme-text/80 dark:text-white/80">Veilig aanspreekpunt voor hulp</div>
+                                            </div>
+                                        </div>
+                                        <span className="text-2xl group-hover:translate-x-1 transition-transform">→</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Social Media Section */}
-                <div className="mt-8 bg-white dark:bg-[#1f1921] dark:border dark:border-white/10 rounded-3xl shadow-lg p-8">
-                    <h2 className="text-2xl font-bold text-theme-purple dark:text-theme-white mb-6 text-center">
-                        Volg Ons Op Social Media
-                    </h2>
-                    <div className="flex flex-wrap justify-center gap-4">
-                        <a
-                            href="https://www.instagram.com/sv.salvemundi/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-3 px-6 py-3 bg-theme-purple/10 rounded-full hover:bg-gradient-theme hover:text-theme-white transition-all text-theme-purple font-semibold"
-                        >
-                            <span className="inline-block w-5 h-5 mr-2" aria-hidden>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
-                                    <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
-                                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                                    <line x1="17.5" y1="6.5" x2="17.5" y2="6.5"></line>
-                                </svg>
-                            </span>
-                            Instagram
-                        </a>
+                    {/* Social Media Section */}
+                    <div className="mt-8 bg-white dark:bg-[#1f1921] dark:border dark:border-white/10 rounded-3xl shadow-lg p-8">
+                        <h2 className="text-2xl font-bold text-theme-purple dark:text-theme-white mb-6 text-center">
+                            Volg Ons Op Social Media
+                        </h2>
+                        <div className="flex flex-wrap justify-center gap-4">
+                            <a
+                                href="https://www.instagram.com/sv.salvemundi/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-3 px-6 py-3 bg-theme-purple/10 rounded-full hover:bg-gradient-theme hover:text-theme-white transition-all text-theme-purple font-semibold"
+                            >
+                                <span className="inline-block w-5 h-5 mr-2" aria-hidden>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
+                                        <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
+                                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                        <line x1="17.5" y1="6.5" x2="17.5" y2="6.5"></line>
+                                    </svg>
+                                </span>
+                                Instagram
+                            </a>
 
-                        <a
-                            href="https://www.facebook.com/sv.salvemundi/?locale=nl_NL"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-3 px-6 py-3 bg-theme-purple/10 rounded-full hover:bg-gradient-theme hover:text-theme-white transition-all text-theme-purple font-semibold"
-                        >
-                            <span className="inline-block w-5 h-5 mr-2" aria-hidden>
-                                <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                                    <path d="M22 12a10 10 0 1 0-11.5 9.9v-7h-2.2v-2.9h2.2V9.3c0-2.2 1.3-3.4 3.3-3.4.9 0 1.8.1 1.8.1v2h-1c-1 0-1.3.6-1.3 1.2v1.5h2.3l-.4 2.9h-1.9v7A10 10 0 0 0 22 12z"></path>
-                                </svg>
-                            </span>
-                            Facebook
-                        </a>
+                            <a
+                                href="https://www.facebook.com/sv.salvemundi/?locale=nl_NL"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-3 px-6 py-3 bg-theme-purple/10 rounded-full hover:bg-gradient-theme hover:text-theme-white transition-all text-theme-purple font-semibold"
+                            >
+                                <span className="inline-block w-5 h-5 mr-2" aria-hidden>
+                                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                                        <path d="M22 12a10 10 0 1 0-11.5 9.9v-7h-2.2v-2.9h2.2V9.3c0-2.2 1.3-3.4 3.3-3.4.9 0 1.8.1 1.8.1v2h-1c-1 0-1.3.6-1.3 1.2v1.5h2.3l-.4 2.9h-1.9v7A10 10 0 0 0 22 12z"></path>
+                                    </svg>
+                                </span>
+                                Facebook
+                            </a>
 
-                        <a
-                            href="https://nl.linkedin.com/company/salve-mundi"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-3 px-6 py-3 bg-theme-purple/10 rounded-full hover:bg-gradient-theme hover:text-theme-white transition-all text-theme-purple font-semibold"
-                        >
-                            <span className="inline-block w-5 h-5 mr-2" aria-hidden>
-                                <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                                    <path d="M4.98 3.5C4.98 4.88 3.88 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM0 8h5v16H0V8zm7.5 0h4.8v2.2h.1c.7-1.3 2.4-2.6 5-2.6 5.3 0 6.3 3.5 6.3 8.1V24h-5V15.4c0-2.1 0-4.8-2.9-4.8-2.9 0-3.3 2.2-3.3 4.6V24h-5V8z"></path>
-                                </svg>
-                            </span>
-                            LinkedIn
-                        </a>
+                            <a
+                                href="https://nl.linkedin.com/company/salve-mundi"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-3 px-6 py-3 bg-theme-purple/10 rounded-full hover:bg-gradient-theme hover:text-theme-white transition-all text-theme-purple font-semibold"
+                            >
+                                <span className="inline-block w-5 h-5 mr-2" aria-hidden>
+                                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                                        <path d="M4.98 3.5C4.98 4.88 3.88 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM0 8h5v16H0V8zm7.5 0h4.8v2.2h.1c.7-1.3 2.4-2.6 5-2.6 5.3 0 6.3 3.5 6.3 8.1V24h-5V15.4c0-2.1 0-4.8-2.9-4.8-2.9 0-3.3 2.2-3.3 4.6V24h-5V8z"></path>
+                                    </svg>
+                                </span>
+                                LinkedIn
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
         </div >
     );
 }
