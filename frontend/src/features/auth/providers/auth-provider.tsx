@@ -38,6 +38,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isMsalInitializing, setIsMsalInitializing] = useState(true);
 
     // Check for existing session on mount
     useEffect(() => {
@@ -134,7 +135,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Handle MSAL redirect promise on component mount
     useEffect(() => {
         const handleRedirect = async () => {
-            if (!msalInstance) return;
+            if (!msalInstance) {
+                setIsMsalInitializing(false);
+                return;
+            }
 
             try {
                 await msalInstance.initialize();
@@ -146,6 +150,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }
             } catch (error) {
                 console.error('Error handling redirect promise:', error);
+            } finally {
+                setIsMsalInitializing(false);
             }
         };
 
@@ -295,7 +301,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             value={{
                 user,
                 isAuthenticated: !!user,
-                isLoading,
+                isLoading: isLoading || isMsalInitializing,
                 loginWithMicrosoft,
                 logout,
                 signup,

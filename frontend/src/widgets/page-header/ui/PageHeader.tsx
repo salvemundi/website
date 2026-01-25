@@ -89,7 +89,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                                 </Link>
                             </div>
                         )}
-                        <h1 className={`text-theme-white font-bold leading-tight drop-shadow-lg shadow-black/50 ${titleClassName}`} style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
+                        <h1 className={`text-theme-purple dark:text-theme-white font-bold leading-tight drop-shadow-lg shadow-black/50 ${titleClassName}`} style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
                             {title.split('\n').map((line, index) => (
                                 <React.Fragment key={index}>
                                     {line}
@@ -103,7 +103,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                 ) : (
                     <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
                         <div className="flex-1 text-center lg:text-left">
-                            <h1 className={`text-theme-white font-bold leading-tight drop-shadow-lg whitespace-normal break-words ${titleClassName}`}>
+                            <h1 className={`text-theme-purple dark:text-theme-white font-bold leading-tight drop-shadow-lg whitespace-normal break-words ${titleClassName}`}>
                                 {title.split('\n').map((line, index) => (
                                     <React.Fragment key={index}>
                                         {line}
