@@ -140,6 +140,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 return;
             }
 
+            // Check if noAuto is in the URL - if so, skip MSAL redirect processing
+            // to prevent auto-login after explicit logout
+            if (typeof window !== 'undefined') {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('noAuto') === 'true') {
+                    setIsMsalInitializing(false);
+                    return;
+                }
+            }
+
             try {
                 await msalInstance.initialize();
                 const response = await msalInstance.handleRedirectPromise();
