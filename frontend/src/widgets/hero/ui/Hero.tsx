@@ -314,13 +314,13 @@ export default function Hero() {
                                         >
                                             <div className="w-full max-w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-3 sm:p-4 md:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-3 sm:gap-4 min-h-[90px] sm:min-h-[100px] overflow-hidden">
                                                 <div className="flex-1 min-w-0 overflow-hidden">
-                                                    <p className="text-[0.6rem] sm:text-xs font-semibold uppercase tracking-wide text-theme-white">
+                                                    <p className="text-[0.6rem] sm:text-xs font-semibold uppercase tracking-wide text-title">
                                                         Word lid
                                                     </p>
-                                                    <p className="mt-1 sm:mt-2 text-sm sm:text-base md:text-lg font-bold text-theme-white truncate">
+                                                    <p className="mt-1 sm:mt-2 text-sm sm:text-base md:text-lg font-bold text-title truncate">
                                                         Sluit je aan bij Salve Mundi
                                                     </p>
-                                                    <p className="mt-0.5 sm:mt-1 text-[0.7rem] sm:text-xs md:text-sm text-theme-white line-clamp-2">
+                                                    <p className="mt-0.5 sm:mt-1 text-[0.7rem] sm:text-xs md:text-sm text-theme-text/80 line-clamp-2">
                                                         Ontdek alle voordelen van een lidmaatschap!
                                                     </p>
                                                 </div>
@@ -339,13 +339,13 @@ export default function Hero() {
                                         >
                                             <div className="w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4 min-h-[90px] sm:min-h-[100px]">
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-white">
+                                                    <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-title">
                                                         Volgende evenement
                                                     </p>
-                                                    <p className="mt-2 text-base sm:text-lg font-bold text-theme-white truncate">
+                                                    <p className="mt-2 text-base sm:text-lg font-bold text-title truncate">
                                                         {nextEvent.name} • {formatEventDate(nextEvent.event_date)}
                                                     </p>
-                                                    <p className="mt-1 text-xs sm:text-sm text-theme-white line-clamp-2">
+                                                    <p className="mt-1 text-xs sm:text-sm text-theme-text/80 line-clamp-2">
                                                         {nextEvent.description || "Kom gezellig langs bij ons volgende evenement!"}
                                                     </p>
                                                 </div>
@@ -359,7 +359,7 @@ export default function Hero() {
                                         </Link>
                                     ) : (
                                         <div className="w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur min-h-[90px] sm:min-h-[100px]">
-                                            <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-white">
+                                            <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-title">
                                                 Volgende evenement
                                             </p>
                                             {eventsLoading ? (

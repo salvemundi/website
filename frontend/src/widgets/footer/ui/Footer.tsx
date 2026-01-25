@@ -50,15 +50,15 @@ export default function Footer() {
     const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://admin.salvemundi.nl';
 
     return (
-        <footer className="relative overflow-hidden bg-gradient-theme text-theme-white">
+        <footer className="relative overflow-hidden bg-gradient-theme text-theme-text">
             <div className="absolute -left-10 top-10 h-64 w-64 rounded-full bg-theme-purple-light/10 blur-3xl" />
             <div className="absolute -right-10 bottom-10 h-64 w-64 rounded-full bg-theme-purple-lighter/10 blur-3xl" />
 
             <div className="relative mx-auto max-w-screen-xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
                     <div>
-                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-theme-white mb-4">Informatie</h3>
-                        <ul className="space-y-2 text-sm text-theme-white/90">
+                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-title mb-4">Informatie</h3>
+                        <ul className="space-y-2 text-sm text-theme-text/90">
                             <li>Rachelsmolen 1</li>
                             <li>5612 MA Eindhoven</li>
                             <li>KvK nr. 70280606</li>
@@ -84,7 +84,7 @@ export default function Footer() {
                     </div>
 
                     <div>
-                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-theme-white mb-4">Pagina's</h3>
+                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-title mb-4">Pagina's</h3>
                         <ul className="space-y-2 text-sm">
                             {[
                                 { label: "Home", href: ROUTES.HOME },
@@ -101,9 +101,9 @@ export default function Footer() {
                             ].map((link) => (
                                 <li key={link.href}>
                                     <Link
-                                            href={link.href}
-                                            className="inline-flex items-center gap-1 rounded-full px-2 py-1 transition hover:bg-white/10 hover:text-theme-purple-lighter"
-                                        >
+                                        href={link.href}
+                                        className="inline-flex items-center gap-1 rounded-full px-2 py-1 transition hover:bg-white/10 hover:text-theme-purple-lighter"
+                                    >
                                         {link.label}
                                     </Link>
                                 </li>
@@ -112,7 +112,7 @@ export default function Footer() {
                     </div>
 
                     <div>
-                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-theme-white mb-4">Commissies</h3>
+                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-title mb-4">Commissies</h3>
                         <ul className="space-y-2 text-sm">
                             {committees.length > 0 ? (
                                 committees.map((committee) => (
@@ -126,13 +126,13 @@ export default function Footer() {
                                     </li>
                                 ))
                             ) : (
-                                <li className="text-theme-white/60">Laden...</li>
+                                <li className="text-theme-text/60">Laden...</li>
                             )}
                         </ul>
                     </div>
 
                     <div>
-                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-theme-white mb-4">Contact</h3>
+                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-title mb-4">Contact</h3>
                         <ul className="space-y-2 text-sm mb-6">
                             <li>
                                 <a
@@ -152,12 +152,12 @@ export default function Footer() {
                             </li>
                             {isAuthenticated && (
                                 <li>
-                                        <a
-                                            href="https://wa.me/31624827777"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-1 rounded-full px-2 py-1 transition hover:bg-white/10 hover:text-theme-purple-lighter"
-                                        >
+                                    <a
+                                        href="https://wa.me/31624827777"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1 rounded-full px-2 py-1 transition hover:bg-white/10 hover:text-theme-purple-lighter"
+                                    >
                                         WhatsApp
                                     </a>
                                 </li>
@@ -165,14 +165,14 @@ export default function Footer() {
                             <li>
                                 <Link
                                     href={ROUTES.SAFE_HAVENS}
-                                    className="inline-flex items-center gap-1 rounded-full px-2 py-1 bg-theme-purple-light/20  font-semibold transition hover:bg-theme-purple-light/30 hover:text-theme-white"
+                                    className="inline-flex items-center gap-1 rounded-full px-2 py-1 bg-theme-purple-light/20  font-semibold transition hover:bg-theme-purple-light/30 hover:text-theme-text"
                                 >
                                     Safe Havens
                                 </Link>
                             </li>
                         </ul>
 
-                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-theme-white mb-4">Social Media</h3>
+                        <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-title mb-4">Social Media</h3>
                         <div className="flex gap-3">
                             <a
                                 href="https://www.instagram.com/sv.salvemundi/"
@@ -206,7 +206,7 @@ export default function Footer() {
                 </div>
 
                 <div className="mt-12 pt-8 text-center">
-                    <p className="text-sm text-theme-white/80">
+                    <p className="text-sm text-theme-text/80">
                         Copyright © 2025 Salve Mundi - alle rechten voorbehouden.{" "}
                         <a
                             href="https://github.com/salvemundi/website"
