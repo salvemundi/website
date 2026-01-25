@@ -674,6 +674,12 @@ export default function AdminDashboardPage() {
         return date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
     };
 
+    const activeAdmin = visibilitySettings.kroegentocht
+        ? { title: 'Kroegentocht', link: '/admin/kroegentocht' }
+        : (visibilitySettings.reis && canManageReis)
+            ? { title: 'Reis', link: '/admin/reis' }
+            : { title: 'Stickers', link: '/stickers' };
+
     if (isLoading) {
         return (
             <>
@@ -711,28 +717,28 @@ export default function AdminDashboardPage() {
                             colorClass="purple"
                         />
                         <StatCard
-                            title="Nieuwe"
-                            value="Intro Post"
+                            title="Intro"
+                            value="Admin"
                             icon={<FileText className="h-6 w-6" />}
-                            subtitle="Maak een nieuwe intro blog post"
+                            subtitle="Beheer intro pagina"
                             onClick={() => router.push('/admin/intro')}
                             colorClass="blue"
                         />
                         <StatCard
-                            title="Nieuw"
-                            value="Lid"
+                            title="Overzicht"
+                            value="Leden"
                             icon={<Users className="h-6 w-6" />}
-                            subtitle="Voeg een nieuw lid toe"
+                            subtitle="Bekijk alle leden"
                             onClick={() => router.push('/admin/leden')}
                             colorClass="green"
                         />
                         <StatCard
-                            title="Sticker"
-                            value="Toevoegen"
-                            icon={<Sticker className="h-6 w-6" />}
-                            subtitle="Voeg een sticker toe"
-                            onClick={() => router.push('/stickers')}
-                            colorClass="red"
+                            title={activeAdmin.title}
+                            value="Admin"
+                            icon={<Activity className="h-6 w-6" />}
+                            subtitle={`Beheer ${activeAdmin.title.toLowerCase()}`}
+                            onClick={() => router.push(activeAdmin.link)}
+                            colorClass="orange"
                         />
                     </div>
                 </div>
@@ -968,7 +974,7 @@ export default function AdminDashboardPage() {
                                             <span className="text-2xl font-bold text-theme-purple">{person.count}</span>
                                             <Award className="h-5 w-5 text-theme-purple" />
                                         </div>
-                                    </div>
+                                                <div className="lg:col-span-5 grid grid-cols-2 gap-4">
                                 ))}
                             </div>
                         ) : (
@@ -1004,7 +1010,11 @@ export default function AdminDashboardPage() {
                                         </div>
                                     </div>
                                     <span className="text-2xl font-bold text-admin-muted">{stats.systemErrors}</span>
-                                </div>
+                                                <div className="lg:col-span-7">
+                                                    <div className="mb-4">
+                                                        <h3 className="text-2xl font-bold text-admin">Stats</h3>
+                                                    </div>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
                                     <p className="text-sm text-blue-700 dark:text-blue-300">
                                         <strong>ICT Dashboard:</strong> Alleen zichtbaar voor ICT commissieleden.
