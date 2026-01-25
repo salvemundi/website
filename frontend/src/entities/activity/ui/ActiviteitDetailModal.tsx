@@ -260,7 +260,7 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                                             <item.icon className="h-5 w-5" />
                                         </span>
                                         <div className="leading-tight">
-                                            <p className="text-xs uppercase tracking-wide text-theme-white/70">{item.label}</p>
+                                            <p className="text-xs uppercase tracking-wide text-theme-text-light dark:text-theme-text-light">{item.label}</p>
                                             <p className="text-base font-semibold text-theme-white">{item.value}</p>
                                         </div>
                                     </div>
@@ -315,7 +315,7 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                             // Digital ticket display case: Paid and QR token is present.
                             <div className="space-y-6 text-theme-white">
                                 <h3 className="text-3xl font-extrabold text-theme-purple-lighter text-center">🎉 Inschrijving Definitief!</h3>
-                                <p className="text-center text-lg text-theme-white/90">
+                                <p className="text-center text-lg text-theme-text-subtle dark:text-theme-text-subtle">
                                     Je bent succesvol ingeschreven en betaald voor {activity.title}.
                                 </p>
 
@@ -323,7 +323,7 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                                     <QRDisplay qrToken={signupQrToken!} />
                                 </div>
 
-                                <p className="text-center text-sm text-theme-white/70 mt-4">
+                                <p className="text-center text-sm text-theme-text-light dark:text-theme-text-light mt-4">
                                     Dit ticket is ook per e-mail naar je verzonden. Laat de QR-code scannen bij de ingang.
                                 </p>
                                 <button
@@ -342,7 +342,7 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                                 </div>
                                 <h3 className="text-2xl font-bold text-theme-white mb-2">Je bent ingeschreven!</h3>
                                 {signupPaymentStatus === 'open' ? (
-                                    <p className="text-theme-white/80">
+                                    <p className="text-theme-text-muted dark:text-theme-text-muted">
                                         Je inschrijving is in afwachting van betaling. Controleer je e-mail voor de betaallink of probeer opnieuw.
                                     </p>
                                 ) : (
@@ -440,7 +440,7 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                                     {(activity.committee_name || activity.contact_name || committeeEmail) && (
                                         <div className="bg-white/5  rounded-2xl p-5 text-theme-white w-full lg:max-w-sm h-fit">
                                             <h4 className="text-xl font-semibold text-theme-purple-lighter mb-3">Contact commissie</h4>
-                                            <p className="text-sm text-theme-white/80 mb-4">Vragen over deze activiteit? Neem direct contact op.</p>
+                                            <p className="text-sm text-theme-text-muted dark:text-theme-text-muted mb-4">Vragen over deze activiteit? Neem direct contact op.</p>
                                             <div className="space-y-3 text-theme-white">
                                                 {activity.committee_name && (
                                                     <p>
@@ -470,3 +470,4 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
 };
 
 export default ActiviteitDetailModal;
+

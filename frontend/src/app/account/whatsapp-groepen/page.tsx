@@ -44,7 +44,7 @@ export default function WhatsAppGroupsPage() {
                             <Card variant="card" padding="p-8" className="text-center bg-white/95 dark:bg-surface-dark/95">
                                 <div className="text-6xl mb-4">🔒</div>
                                 <h1 className="text-3xl font-bold text-theme-purple dark:text-theme-white mb-4">Actief Lidmaatschap Vereist</h1>
-                                <p className="text-theme-text/70 dark:text-theme-white/70 mb-6">
+                                <p className="text-theme-text-light dark:text-theme-text-light mb-6">
                                     WhatsApp groepen zijn alleen beschikbaar voor leden met een actief lidmaatschap.
                                     Vernieuw je lidmaatschap om toegang te krijgen tot deze groepen.
                                 </p>
@@ -89,7 +89,7 @@ export default function WhatsAppGroupsPage() {
                             <span className="text-3xl">ℹ️</span>
                             <div>
                                 <h3 className="font-semibold text-theme-purple dark:text-theme-white mb-2">Over WhatsApp Groepen</h3>
-                                <p className="text-theme-text/80 dark:text-theme-white/80 text-sm">
+                                <p className="text-theme-text-muted dark:text-theme-text-muted text-sm">
                                     Deze groepen zijn exclusief voor actieve leden. Klik op een groep om via WhatsApp lid te worden.
                                     Wees respectvol en volg de groepsregels.
                                 </p>
@@ -116,7 +116,7 @@ export default function WhatsAppGroupsPage() {
                         <div className="text-center py-12 bg-white/95 dark:bg-surface-dark/95 rounded-3xl">
                             <div className="text-6xl mb-4">💬</div>
                             <div className="text-theme-purple dark:text-theme-white mb-4 font-semibold">Momenteel geen WhatsApp groepen beschikbaar.</div>
-                            <p className="text-theme-text/70 dark:text-theme-white/70 text-sm mb-4">
+                            <p className="text-theme-text-light dark:text-theme-text-light text-sm mb-4">
                                 Kom later terug voor nieuwe groepen om lid van te worden!
                             </p>
                         </div>
@@ -137,7 +137,7 @@ export default function WhatsAppGroupsPage() {
                                                 {group.name}
                                             </h3>
                                             {group.description && (
-                                                <p className="text-sm sm:text-base text-theme-text/80 dark:text-theme-white/80 leading-relaxed whitespace-pre-line break-words">
+                                                <p className="text-sm sm:text-base text-theme-text-muted dark:text-theme-text-muted leading-relaxed whitespace-pre-line break-words">
                                                     {stripHtml(group.description)}
                                                 </p>
                                             )}
@@ -166,7 +166,7 @@ export default function WhatsAppGroupsPage() {
                     {/* Additional Info */}
                     <Card variant="card" className="mt-8 bg-white/95 dark:bg-surface-dark/95">
                         <h3 className="font-semibold text-theme-purple dark:text-theme-white mb-3 text-lg">Groepsregels</h3>
-                        <ul className="space-y-3 text-sm text-theme-text/80 dark:text-theme-white/80">
+                        <ul className="space-y-3 text-sm text-theme-text-muted dark:text-theme-text-muted">
                             <li className="flex items-start gap-2">
                                 <span className="text-theme-purple dark:text-theme-white mt-1">•</span>
                                 <span>Wees respectvol naar alle leden</span>

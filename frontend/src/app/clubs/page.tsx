@@ -34,7 +34,7 @@ export default function ClubsPage() {
                         <h2 className="text-3xl font-black text-theme-purple dark:text-theme-white sm:text-4xl">
                             Onze Clubs
                         </h2>
-                        <p className="mt-2 text-theme-text/80 dark:text-theme-white/80">
+                        <p className="mt-2 text-theme-text-muted dark:text-theme-text-muted">
                             Word lid van een van onze gezellige clubs en ontmoet mensen met dezelfde passies.
                         </p>
                     </div>
@@ -48,7 +48,7 @@ export default function ClubsPage() {
                     ) : error ? (
                         <div className="rounded-3xl bg-white/95 dark:bg-surface-dark/95 p-8 text-center shadow-lg">
                             <p className="mb-2 text-lg font-semibold text-theme-purple dark:text-theme-white">Fout bij laden van clubs</p>
-                            <p className="text-sm text-theme-muted dark:text-theme-white/70">{String(error)}</p>
+                            <p className="text-sm text-theme-muted dark:text-theme-text-light">{String(error)}</p>
                         </div>
                     ) : sortedClubs.length === 0 ? (
                         <div className="rounded-3xl bg-white/95 dark:bg-surface-dark/95 p-8 text-center shadow-lg">
@@ -156,3 +156,4 @@ export default function ClubsPage() {
         </>
     );
 }
+

@@ -268,7 +268,7 @@ export default function IntroPage() {
                       hasParentSignup ? (
                         <div className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4 text-center">
                           <h3 className="text-xl lg:text-2xl font-bold text-white">Je hebt je al aangemeld als Intro Ouder</h3>
-                          <p className="text-theme-white/80">Bedankt! Je inschrijving is ontvangen. Als je iets wilt aanpassen, neem contact op met de intro commissie.</p>
+                          <p className="text-theme-text-muted dark:text-theme-text-muted">Bedankt! Je inschrijving is ontvangen. Als je iets wilt aanpassen, neem contact op met de intro commissie.</p>
                         </div>
                       ) : (
                         <form onSubmit={handleSubmit} className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4">
@@ -439,3 +439,4 @@ export default function IntroPage() {
     </>
   );
 }
+

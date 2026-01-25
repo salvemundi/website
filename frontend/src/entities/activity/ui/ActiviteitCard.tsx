@@ -211,12 +211,12 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                         {date && (
                             <>
                                 <p className="text-xs sm:text-sm font-semibold text-theme-text dark:text-theme-white">{formatDate(date)}</p>
-                                {timeRange && <p className="text-sm text-theme-text/90 dark:text-theme-white/90">{timeRange}</p>}
+                                {timeRange && <p className="text-sm text-theme-text-subtle dark:text-theme-text-subtle">{timeRange}</p>}
                             </>
                         )}
-                        {location && <p className="text-xs text-theme-text/80 dark:text-theme-white/80 mt-1">{location}</p>}
+                        {location && <p className="text-xs text-theme-text-muted dark:text-theme-text-muted mt-1">{location}</p>}
                         {contact && (
-                            <p className="text-xs text-theme-text/80 dark:text-theme-white/80 mt-1">
+                            <p className="text-xs text-theme-text-muted dark:text-theme-text-muted mt-1">
                                 <span className="font-medium">Contact:</span>{' '}
                                 <span className="font-medium">{contact}</span>
                             </p>
@@ -226,7 +226,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                 </div>
 
                 {/* Description - truncated to 150 characters */}
-                <p className="text-theme-text/90 dark:text-theme-white/90 text-sm sm:text-base mb-4 sm:mb-6 flex-grow break-words overflow-hidden">
+                <p className="text-theme-text-subtle dark:text-theme-text-subtle text-sm sm:text-base mb-4 sm:mb-6 flex-grow break-words overflow-hidden">
                     {description && description.length > 150
                         ? `${description.substring(0, 150)}...`
                         : description}

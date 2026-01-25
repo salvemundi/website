@@ -80,7 +80,7 @@ function KroegentochtConfirmationContent() {
                             <Loader2 className="w-12 h-12 text-theme-purple animate-spin" />
                         </div>
                         <h1 className="text-3xl font-bold text-theme-white mb-4">Status controleren...</h1>
-                        <p className="text-lg text-theme-white/90 mb-8 max-w-lg mx-auto">
+                        <p className="text-lg text-theme-text-subtle dark:text-theme-text-subtle mb-8 max-w-lg mx-auto">
                             We controleren je betaling. Een moment geduld alsjeblieft.
                         </p>
                     </>
@@ -92,7 +92,7 @@ function KroegentochtConfirmationContent() {
                             <CheckCircle className="w-12 h-12 text-green-400" />
                         </div>
                         <h1 className="text-3xl font-bold text-theme-white mb-4">Inschrijving Geslaagd!</h1>
-                        <p className="text-lg text-theme-white/90 mb-6 max-w-lg mx-auto">
+                        <p className="text-lg text-theme-text-subtle dark:text-theme-text-subtle mb-6 max-w-lg mx-auto">
                             Bedankt voor je inschrijving voor de Kroegentocht! Je betaling is succesvol verwerkt.
                             We hebben een bevestigingsmail naar je gestuurd met de details.
                         </p>
@@ -134,7 +134,7 @@ function KroegentochtConfirmationContent() {
                             <XCircle className="w-12 h-12 text-red-500" />
                         </div>
                         <h1 className="text-3xl font-bold text-theme-white mb-4">Betaling Mislukt</h1>
-                        <p className="text-lg text-theme-white/90 mb-8 max-w-lg mx-auto">
+                        <p className="text-lg text-theme-text-subtle dark:text-theme-text-subtle mb-8 max-w-lg mx-auto">
                             Helaas is je betaling niet gelukt. Je kunt het opnieuw proberen of contact met ons opnemen als dit probleem blijft optreden.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -154,7 +154,7 @@ function KroegentochtConfirmationContent() {
                             <AlertTriangle className="w-12 h-12 text-yellow-500" />
                         </div>
                         <h1 className="text-3xl font-bold text-theme-white mb-4">Betaling nog in verwerking</h1>
-                        <p className="text-lg text-theme-white/90 mb-6 max-w-lg mx-auto">
+                        <p className="text-lg text-theme-text-subtle dark:text-theme-text-subtle mb-6 max-w-lg mx-auto">
                             Je betaling wordt nog verwerkt. Zodra de betaling is afgerond, ontvang je een bevestigingsmail. Dit kan soms een paar minuten duren.
                         </p>
                         <div className="bg-white/10 p-4 rounded-xl max-w-lg mx-auto mb-6">
@@ -171,7 +171,7 @@ function KroegentochtConfirmationContent() {
                             <AlertTriangle className="w-12 h-12 text-red-500" />
                         </div>
                         <h1 className="text-3xl font-bold text-theme-white mb-4">Oeps!</h1>
-                        <p className="text-lg text-theme-white/90 mb-8 max-w-lg mx-auto">
+                        <p className="text-lg text-theme-text-subtle dark:text-theme-text-subtle mb-8 max-w-lg mx-auto">
                             Er is iets misgegaan bij het ophalen van je inschrijvingsstatus. Geen zorgen, als je betaling geslaagd is, ontvang je alsnog een mail.
                         </p>
                     </>
@@ -224,3 +224,4 @@ export default function KroegentochtConfirmation() {
         </>
     );
 }
+

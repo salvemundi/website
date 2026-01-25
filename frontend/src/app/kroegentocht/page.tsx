@@ -454,7 +454,7 @@ export default function KroegentochtPage() {
                                 <h2 className="text-2xl font-bold text-title mb-4">
                                     🍻 Over de Kroegentocht
                                 </h2>
-                                <div className="text-theme-text/80 space-y-3">
+                                <div className="text-theme-text-muted dark:text-theme-text-muted space-y-3">
                                     {eventsLoading ? (
                                         <p>Evenementomschrijving wordt geladen...</p>
                                     ) : nextEvent?.description ? (
@@ -483,7 +483,7 @@ export default function KroegentochtPage() {
                                 {eventsLoading ? (
                                     <div className="text-white">Evenementgegevens worden geladen...</div>
                                 ) : nextEvent ? (
-                                    <div className="text-theme-text/80 space-y-4">
+                                    <div className="text-theme-text-muted dark:text-theme-text-muted space-y-4">
                                         {nextEvent.image && (
                                             <img
                                                 src={getImageUrl(nextEvent.image)}
@@ -540,25 +540,25 @@ export default function KroegentochtPage() {
                                 <h2 className="text-2xl font-bold text-title mb-4">
                                     ℹ️ Belangrijke Informatie
                                 </h2>
-                                <div className="text-theme-text/80 space-y-2">
+                                <div className="text-theme-text-muted dark:text-theme-text-muted space-y-2">
                                     <p className="flex items-start gap-2">
-                                        <span className="text-theme-text/80">•</span>
+                                        <span className="text-theme-text-muted dark:text-theme-text-muted">•</span>
                                         <span>Je hoeft <strong>geen lid</strong> te zijn om deel te nemen</span>
                                     </p>
                                     <p className="flex items-start gap-2">
-                                        <span className="text-theme-text/80">•</span>
+                                        <span className="text-theme-text-muted dark:text-theme-text-muted">•</span>
                                         <span>Je ontvangt een bevestigingsmail na inschrijving</span>
                                     </p>
                                     <p className="flex items-start gap-2">
-                                        <span className="text-theme-text/80">•</span>
+                                        <span className="text-theme-text-muted dark:text-theme-text-muted">•</span>
                                         <span>Minimumleeftijd: 18 jaar</span>
                                     </p>
                                     <p className="flex items-start gap-2">
-                                        <span className="text-theme-text/80">•</span>
+                                        <span className="text-theme-text-muted dark:text-theme-text-muted">•</span>
                                         <span>Tickets zijn overdraagbaar</span>
                                     </p>
                                     <p className="flex items-start gap-2">
-                                        <span className="text-theme-text/80">•</span>
+                                        <span className="text-theme-text-muted dark:text-theme-text-muted">•</span>
                                         <span>Bij vragen? Neem contact op via <a href="/contact" className="text-theme-purple dark:text-white underline">onze contactpagina</a></span>
                                     </p>
                                 </div>
