@@ -91,8 +91,8 @@ function ActivitiesContent() {
             </PageHeader>
 
 
-            <main className="relative flex flex-col items-center overflow-hidden pb-24">
-                <div className="relative flex w-full max-w-app flex-col px-4 pt-12 sm:px-6 lg:px-8 lg:pt-16">
+            <main className="relative flex flex-col items-center overflow-hidden pb-12 md:pb-16">
+                <div className="relative flex w-full max-w-app flex-col px-4 pt-8 sm:px-6 lg:px-8 md:pt-12">
 
                     {/* Controls & Header */}
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">

@@ -34,7 +34,7 @@ export default function ContactPage() {
                     Neem contact met ons op voor vragen, suggesties of informatie
                 </p>
             </PageHeader>
-            <div className="container mx-auto px-4 py-16">
+            <div className="container mx-auto px-4 py-8 sm:py-10 md:py-12">
                 <div className="max-w-6xl mx-auto">
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
