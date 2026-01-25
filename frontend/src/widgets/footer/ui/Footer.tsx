@@ -7,6 +7,7 @@ import { Instagram, Facebook, Linkedin } from "lucide-react";
 import { documentsApi, committeesApi } from "@/shared/lib/api/salvemundi";
 import { slugify } from "@/shared/lib/utils/slug";
 import { useAuth } from "@/features/auth/providers/auth-provider";
+import { useSalvemundiSiteSettings } from "@/shared/lib/hooks/useSalvemundiApi";
 import { ROUTES } from "@/shared/lib/routes";
 
 interface Document {
@@ -35,6 +36,13 @@ export default function Footer() {
         queryFn: () => committeesApi.getAllWithMembers(),
         staleTime: 5 * 60 * 1000
     });
+
+    const { data: introSettings } = useSalvemundiSiteSettings('intro');
+    const introEnabled = introSettings?.show ?? true;
+    const { data: kroegentochtSettings } = useSalvemundiSiteSettings('kroegentocht');
+    const kroegentochtEnabled = kroegentochtSettings?.show ?? true;
+    const { data: reisSettings } = useSalvemundiSiteSettings('reis');
+    const reisEnabled = reisSettings?.show ?? true;
 
     const committees = React.useMemo(() => {
         return [...committeesData].sort((a, b) => {
@@ -88,15 +96,15 @@ export default function Footer() {
                         <ul className="space-y-2 text-sm">
                             {[
                                 { label: "Home", href: ROUTES.HOME },
-                                { label: "Intro", href: ROUTES.INTRO },
+                                ...(introEnabled ? [{ label: "Intro", href: ROUTES.INTRO }] : []),
                                 { label: "Activiteiten", href: ROUTES.ACTIVITIES },
                                 { label: "Commissies", href: ROUTES.COMMITTEES },
                                 { label: "Clubs", href: ROUTES.CLUBS },
                                 { label: "Contact", href: ROUTES.CONTACT },
                                 { label: "Safe Havens", href: ROUTES.SAFE_HAVENS },
                                 { label: "Lidmaatschap", href: ROUTES.MEMBERSHIP },
-                                { label: "Kroegentocht", href: ROUTES.PUB_CRAWL },
-                                { label: "Reis", href: ROUTES.TRIP },
+                                ...(kroegentochtEnabled ? [{ label: "Kroegentocht", href: ROUTES.PUB_CRAWL }] : []),
+                                ...(reisEnabled ? [{ label: "Reis", href: ROUTES.TRIP }] : []),
                                 { label: "Stickers", href: ROUTES.STICKERS },
                             ].map((link) => (
                                 <li key={link.href}>
