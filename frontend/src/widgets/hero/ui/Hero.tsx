@@ -52,13 +52,6 @@ export default function Hero() {
 
             // Animate title with character-by-character reveal
             if (titleRef.current) {
-                // First, apply the gradient background directly to the h1
-                titleRef.current.style.background = 'linear-gradient(135deg, var(--theme-gradient-start), var(--theme-gradient-end), var(--theme-gradient-start))';
-                titleRef.current.style.backgroundSize = '200% 200%';
-                titleRef.current.style.webkitBackgroundClip = 'text';
-                titleRef.current.style.backgroundClip = 'text';
-                titleRef.current.style.webkitTextFillColor = 'transparent';
-
                 const spans = titleRef.current.querySelectorAll('span');
 
                 // Split each span into individual characters
@@ -293,8 +286,8 @@ export default function Hero() {
                     <div className="grid gap-5 sm:gap-6 md:grid-cols-2 md:gap-10 lg:gap-16 xl:gap-20 md:items-center">
                         <div className="space-y-5 sm:space-y-6 md:space-y-8 lg:space-y-10 min-w-0">
                             <div className="space-y-3 sm:space-y-4 md:space-y-6">
-                                <h1 ref={titleRef} className="text-2xl font-black leading-tight sm:text-3xl md:text-5xl lg:text-6xl pb-1">
-                                    <span className="text-gradient">Studievereniging</span>
+                                <h1 ref={titleRef} className="text-gradient-animated text-2xl font-black leading-tight sm:text-3xl md:text-5xl lg:text-6xl pb-1">
+                                    <span>Studievereniging</span>
                                     <br />
                                     <span className="inline-block w-full">Salve Mundi</span>
                                 </h1>
@@ -307,7 +300,13 @@ export default function Hero() {
 
                             <div className="w-full max-w-full">
                                 <div className="flex flex-wrap gap-3 sm:gap-4 min-h-[100px]">
-                                    {showMembershipLink ? (
+                                    {authLoading ? (
+                                        <div className="w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/10 p-4 sm:p-6 shadow-lg backdrop-blur min-h-[90px] sm:min-h-[100px] animate-pulse border border-theme-purple/10">
+                                            <div className="h-4 w-24 bg-theme-purple/10 rounded mb-3"></div>
+                                            <div className="h-6 w-3/4 bg-theme-purple/10 rounded mb-2"></div>
+                                            <div className="h-4 w-1/2 bg-theme-purple/10 rounded"></div>
+                                        </div>
+                                    ) : showMembershipLink ? (
                                         <Link
                                             href="/lidmaatschap"
                                             className="block w-full transition-transform hover:scale-[1.02]"
