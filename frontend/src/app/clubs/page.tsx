@@ -23,7 +23,7 @@ export default function ClubsPage() {
                 title="CLUBS"
                 backgroundImage="/img/backgrounds/clubs-banner.jpg"
             >
-                <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-white/90 sm:text-xl">
+                <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-theme-purple dark:text-theme-white sm:text-xl font-medium drop-shadow-sm">
                     Ontdek student-clubs georganiseerd door en voor ICT-studenten
                 </p>
             </PageHeader>
