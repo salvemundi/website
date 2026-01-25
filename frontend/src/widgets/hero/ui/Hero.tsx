@@ -273,7 +273,7 @@ export default function Hero() {
     // Only apply a min-height on medium+ screens so mobile won't force a
     // large empty area. On md+ we ensure the hero fills the viewport minus the header.
     return (
-        <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full min-h-[600px] md:min-h-[500px] py-6 sm:py-10 md:py-16 lg:py-20 transition-colors duration-300">
+        <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full min-h-[450px] md:min-h-[500px] py-4 sm:py-8 lg:py-12 transition-colors duration-300">
 
             {/* Mobile-only fallback image (shows ONLY on very small screens, for robustness)
                 This ensures even if Swiper fails or images don't load, we have a visual.
@@ -358,7 +358,7 @@ export default function Hero() {
                                         </Link>
                                     ) : (
                                         <div className="w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur min-h-[90px] sm:min-h-[100px]">
-                                            <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-title">
+                                            <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-purple dark:text-theme-white">
                                                 Volgende evenement
                                             </p>
                                             {eventsLoading ? (
@@ -368,10 +368,10 @@ export default function Hero() {
                                                 </div>
                                             ) : (
                                                 <>
-                                                    <p className="mt-2 text-base sm:text-lg font-bold text-theme">
+                                                    <p className="mt-2 text-base sm:text-lg font-bold text-theme-purple dark:text-theme-white">
                                                         Binnenkort meer activiteiten
                                                     </p>
-                                                    <p className="mt-1 text-xs sm:text-sm text-theme-muted line-clamp-2">
+                                                    <p className="mt-1 text-xs sm:text-sm text-theme-text/80 dark:text-theme-white/80 line-clamp-2">
                                                         Check regelmatig onze agenda voor nieuwe evenementen en activiteiten.
                                                     </p>
                                                 </>
