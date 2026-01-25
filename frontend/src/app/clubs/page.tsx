@@ -46,12 +46,12 @@ export default function ClubsPage() {
                             ))}
                         </div>
                     ) : error ? (
-                        <div className="rounded-3xl bg-white/95 dark:bg-surface-dark/95 p-8 text-center shadow-lg">
+                        <div className="rounded-3xl bg-[var(--bg-card)] p-8 text-center shadow-lg">
                             <p className="mb-2 text-lg font-semibold text-theme-purple dark:text-theme-white">Fout bij laden van clubs</p>
                             <p className="text-sm text-theme-muted dark:text-theme-text-light">{String(error)}</p>
                         </div>
                     ) : sortedClubs.length === 0 ? (
-                        <div className="rounded-3xl bg-white/95 dark:bg-surface-dark/95 p-8 text-center shadow-lg">
+                        <div className="rounded-3xl bg-[var(--bg-card)] p-8 text-center shadow-lg">
                             <p className="text-lg text-theme-purple dark:text-theme-white">Geen clubs gevonden</p>
                         </div>
                     ) : (
@@ -63,7 +63,7 @@ export default function ClubsPage() {
                                 return (
                                     <article
                                         key={club.id}
-                                        className="group flex flex-col overflow-hidden rounded-3xl bg-white/95 dark:bg-surface-dark/95 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl stagger-item"
+                                        className="group flex flex-col overflow-hidden rounded-3xl bg-[var(--bg-card)] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl stagger-item"
                                         style={{ animationDelay: `${index * 0.05}s` }}
                                     >
                                         <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-theme-purple/10 to-theme-purple/20">
@@ -156,4 +156,5 @@ export default function ClubsPage() {
         </>
     );
 }
+
 
