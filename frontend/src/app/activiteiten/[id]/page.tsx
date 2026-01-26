@@ -536,14 +536,14 @@ export default function EventDetailPage() {
                                     <form onSubmit={handleSubmit} className="space-y-4 flex flex-col">
                                         {/* Name */}
                                         <div>
-                                            <label htmlFor="name" className="block text-theme-purple font-semibold mb-2">Naam *</label>
+                                            <label htmlFor="name" className="form-label">Naam *</label>
                                             <input
                                                 type="text"
                                                 id="name"
                                                 name="name"
                                                 value={formData.name}
                                                 onChange={handleInputChange}
-                                                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-paars transition-all ${errors.name ? "ring-2 ring-red-500" : ""}`}
+                                                className={`form-input ${errors.name ? "ring-2 ring-red-500" : ""}`}
                                                 placeholder="Jouw naam"
                                             />
                                             {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
@@ -551,14 +551,14 @@ export default function EventDetailPage() {
 
                                         {/* Email */}
                                         <div>
-                                            <label htmlFor="email" className="block text-theme-purple font-semibold mb-2">Email *</label>
+                                            <label htmlFor="email" className="form-label">Email *</label>
                                             <input
                                                 type="email"
                                                 id="email"
                                                 name="email"
                                                 value={formData.email}
                                                 onChange={handleInputChange}
-                                                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-paars transition-all ${errors.email ? "ring-2 ring-red-500" : ""}`}
+                                                className={`form-input ${errors.email ? "ring-2 ring-red-500" : ""}`}
                                                 placeholder="naam.achternaam@salvemundi.nl"
                                             />
                                             {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
@@ -566,14 +566,14 @@ export default function EventDetailPage() {
 
                                         {/* Phone */}
                                         <div>
-                                            <label htmlFor="phoneNumber" className="block text-theme-purple font-semibold mb-2">Telefoonnummer *</label>
+                                            <label htmlFor="phoneNumber" className="form-label">Telefoonnummer *</label>
                                             <input
                                                 type="tel"
                                                 id="phoneNumber"
                                                 name="phoneNumber"
                                                 value={formData.phoneNumber}
                                                 onChange={handleInputChange}
-                                                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-paars transition-all ${errors.phoneNumber ? "ring-2 ring-red-500" : ""}`}
+                                                className={`form-input ${errors.phoneNumber ? "ring-2 ring-red-500" : ""}`}
                                                 placeholder="0612345678"
                                             />
                                             {errors.phoneNumber && <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>}
@@ -584,7 +584,7 @@ export default function EventDetailPage() {
                                             <button
                                                 type="submit"
                                                 disabled={isSubmitting}
-                                                className="w-full bg-theme-purple text-theme-purple-darker font-bold py-4 px-6 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                                className="form-button group"
                                             >
                                                 {isSubmitting ? (
                                                     <>

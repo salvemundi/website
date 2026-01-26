@@ -248,13 +248,19 @@ a:hover {
 .form-input {
   width: 100%;
   padding: 0.875rem 1rem;
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-xl);
   background-color: var(--bg-soft);
-  border: 1px solid var(--border-color);
+  border: 1px solid transparent;
+  /* No border by default to match activity form */
   color: var(--text-main);
   font-weight: 500;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: var(--font-size-base);
+}
+
+textarea.form-input {
+  min-height: 100px;
+  resize: vertical;
 }
 
 .form-input::placeholder {
@@ -268,6 +274,17 @@ a:hover {
   background-color: var(--bg-card);
   box-shadow: 0 0 0 4px rgba(164, 83, 155, 0.1);
   /* Subtle purple glow */
+}
+
+/* Dark mode specific for inputs on normal backgrounds */
+.dark .form-input {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark .form-input:focus {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-color: var(--theme-purple);
 }
 
 /* --- GLASS VARIANT (Automatically applied on gradient backgrounds) --- */

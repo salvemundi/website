@@ -362,7 +362,7 @@ export default function SignUp() {
                                 <button
                                     onClick={() => { setIsProcessing(true); initiateContributionPayment(); }}
                                     disabled={isProcessing}
-                                    className="w-full bg-theme-purple-lighter text-theme-purple-darker font-bold py-3 px-6 rounded-xl shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="form-button"
                                 >
                                     {isProcessing ? 'Verwerken...' : `Nu Verlengen (€${baseAmount.toFixed(2).replace('.', ',')})`}
                                 </button>
@@ -374,44 +374,46 @@ export default function SignUp() {
                                 <p className="text-theme-text dark:text-theme-white mb-2">Vul je gegevens in om een account aan te maken en lid te worden.</p>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <label className="font-semibold text-white">
+                                    <label className="form-label">
                                         Voornaam
-                                        <input type="text" name="voornaam" value={form.voornaam} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple" />
+                                        <input type="text" name="voornaam" value={form.voornaam} onChange={handleChange} required className="form-input mt-1" />
                                     </label>
-                                    <label className="font-semibold text-white">
+                                    <label className="form-label">
                                         Achternaam
-                                        <input type="text" name="achternaam" value={form.achternaam} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple" />
+                                        <input type="text" name="achternaam" value={form.achternaam} onChange={handleChange} required className="form-input mt-1" />
                                     </label>
                                 </div>
 
-                                <label className="font-semibold text-white">
+                                <label className="form-label">
                                     E-mail
-                                    <input type="email" name="email" value={form.email} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple" />
+                                    <input type="email" name="email" value={form.email} onChange={handleChange} required className="form-input mt-1" />
                                 </label>
 
-                                <label className="font-semibold text-white">Geboortedatum</label>
-                                <div className="w-full">
-                                    <DatePicker
-                                        selected={form.geboortedatum}
-                                        onChange={(date) => setForm({ ...form, geboortedatum: date })}
-                                        dateFormat="dd-MM-yyyy"
-                                        locale={nl}
-                                        className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple"
-                                        placeholderText="Selecteer datum"
-                                        showYearDropdown
-                                        scrollableYearDropdown
-                                        yearDropdownItemNumber={100}
-                                    />
-                                </div>
+                                <label className="form-label">
+                                    Geboortedatum
+                                    <div className="w-full">
+                                        <DatePicker
+                                            selected={form.geboortedatum}
+                                            onChange={(date) => setForm({ ...form, geboortedatum: date })}
+                                            dateFormat="dd-MM-yyyy"
+                                            locale={nl}
+                                            className="form-input mt-1"
+                                            placeholderText="Selecteer datum"
+                                            showYearDropdown
+                                            scrollableYearDropdown
+                                            yearDropdownItemNumber={100}
+                                        />
+                                    </div>
+                                </label>
 
-                                <label className="font-semibold text-white">
+                                <label className="form-label">
                                     Telefoonnummer
-                                    <input type="tel" name="telefoon" value={form.telefoon} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple" />
+                                    <input type="tel" name="telefoon" value={form.telefoon} onChange={handleChange} required className="form-input mt-1" />
                                     {phoneError && <p className="text-red-300 text-sm mt-1">{phoneError}</p>}
                                 </label>
 
                                 <div className="border-t border-theme-white/20 pt-4 mt-2">
-                                    <label className="font-semibold text-white block mb-2">Heb je een coupon code?</label>
+                                    <label className="form-label mb-2 text-white">Heb je een coupon code?</label>
                                     <div className="flex gap-2">
                                         <input
                                             type="text"
@@ -419,13 +421,13 @@ export default function SignUp() {
                                             value={form.coupon}
                                             onChange={handleChange}
                                             placeholder="Bijv. ACTIE2024"
-                                            className="p-2 rounded w-full bg-theme-white text-theme-purple uppercase"
+                                            className="form-input uppercase"
                                         />
                                         <button
                                             type="button"
                                             onClick={verifyCoupon}
                                             disabled={!form.coupon || verifyingCoupon}
-                                            className="bg-theme-purple-lighter text-theme-purple-darker font-bold px-4 rounded hover:bg-white disabled:opacity-50"
+                                            className="bg-theme-white text-theme-purple font-bold px-4 rounded-xl hover:bg-white-soft disabled:opacity-50 transition-all shadow-md"
                                         >
                                             {verifyingCoupon ? '...' : 'Check'}
                                         </button>
@@ -457,8 +459,8 @@ export default function SignUp() {
                                     </div>
                                 </div>
 
-                                <button type="submit" disabled={isProcessing} className="bg-theme-white text-theme-purple-darker font-bold py-2 px-4 rounded shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl mt-4 disabled:opacity-50 disabled:cursor-not-allowed">
-                                    {isProcessing ? 'Verwerken...' : 'Betalen en Inschrijven (€20,00)'}
+                                <button type="submit" disabled={isProcessing} className="form-button mt-4">
+                                    {isProcessing ? 'Verwerken...' : `Betalen en Inschrijven (€${baseAmount.toFixed(2).replace('.', ',')})`}
                                 </button>
                             </form>
                         )}

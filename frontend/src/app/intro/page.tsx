@@ -284,33 +284,33 @@ export default function IntroPage() {
                             </p>
                           </div>
                           <div>
-                            <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Telefoonnummer</label>
+                            <label className="form-label">Telefoonnummer</label>
                             <input
                               type="tel"
                               name="telefoonnummer"
                               value={form.telefoonnummer}
                               onChange={handleChange}
                               required
-                              className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                              className="form-input"
                             />
                             {phoneError && <p className="text-red-200 text-xs lg:text-sm mt-1">{phoneError}</p>}
                           </div>
                           <div>
-                            <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Motivatie *</label>
+                            <label className="form-label">Motivatie *</label>
                             <textarea
                               name="motivation"
                               value={(parentForm as any).motivation}
                               onChange={handleParentChange}
                               required
                               rows={4}
-                              className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                              className="form-input"
                             />
                           </div>
                           {error && <p className="text-red-200 text-xs lg:text-sm">{error}</p>}
                           <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full bg-theme-purple-lighter text-theme-purple-darker font-bold py-3 px-6 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm lg:text-base"
+                            className="form-button"
                           >
                             {isSubmitting ? 'Bezig...' : 'Meld je aan als Introouder'}
                           </button>
@@ -323,87 +323,87 @@ export default function IntroPage() {
                           <h3 className="text-xl lg:text-2xl font-bold text-theme-purple dark:text-white">Meld je aan!</h3>
                         </div>
                         <div>
-                          <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Voornaam *</label>
+                          <label className="form-label">Voornaam *</label>
                           <input
                             type="text"
                             name="voornaam"
                             value={form.voornaam}
                             onChange={handleChange}
                             required
-                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                            className="form-input"
                           />
                         </div>
                         <div>
-                          <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Tussenvoegsel</label>
+                          <label className="form-label">Tussenvoegsel</label>
                           <input
                             type="text"
                             name="tussenvoegsel"
                             value={form.tussenvoegsel}
                             onChange={handleChange}
-                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                            className="form-input"
                           />
                         </div>
                         <div>
-                          <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Achternaam *</label>
+                          <label className="form-label">Achternaam *</label>
                           <input
                             type="text"
                             name="achternaam"
                             value={form.achternaam}
                             onChange={handleChange}
                             required
-                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                            className="form-input"
                           />
                         </div>
                         <div>
-                          <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Geboortedatum *</label>
+                          <label className="form-label">Geboortedatum *</label>
                           <input
                             type="date"
                             name="geboortedatum"
                             value={form.geboortedatum}
                             onChange={handleChange}
                             required
-                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                            className="form-input"
                           />
                         </div>
                         <div>
-                          <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Email *</label>
+                          <label className="form-label">Email *</label>
                           <input
                             type="email"
                             name="email"
                             value={form.email}
                             onChange={handleChange}
                             required
-                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                            className="form-input"
                           />
                         </div>
                         <div>
-                          <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Telefoonnummer *</label>
+                          <label className="form-label">Telefoonnummer *</label>
                           <input
                             type="tel"
                             name="telefoonnummer"
                             value={form.telefoonnummer}
                             onChange={handleChange}
                             required
-                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                            className="form-input"
                           />
                           {phoneError && <p className="text-red-200 text-xs lg:text-sm mt-1">{phoneError}</p>}
                         </div>
                         <div>
-                          <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Favoriete GIF URL (optioneel)</label>
+                          <label className="form-label">Favoriete GIF URL (optioneel)</label>
                           <input
                             type="url"
                             name="favorieteGif"
                             value={form.favorieteGif}
                             onChange={handleChange}
                             placeholder="https://..."
-                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                            className="form-input"
                           />
                         </div>
                         {error && <p className="text-red-200 text-xs lg:text-sm">{error}</p>}
                         <button
                           type="submit"
                           disabled={isSubmitting}
-                          className="w-full bg-theme-purple-lighter text-theme-purple-darker font-bold py-3 px-6 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm lg:text-base"
+                          className="form-button"
                         >
                           {isSubmitting ? 'Bezig...' : 'Verstuur'}
                         </button>
