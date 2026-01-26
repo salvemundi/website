@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useAuth } from "@/features/auth/providers/auth-provider";
@@ -47,6 +47,7 @@ function Tile({
   children,
   className = "",
   actions,
+  centeredTitle,
 }: {
   title?: string;
   icon?: React.ReactNode;
@@ -67,18 +68,20 @@ function Tile({
           <header className={`mb-8 flex items-center gap-4 ${centeredTitle ? 'flex-col justify-center text-center' : 'justify-between'}`}>
             <div className={`flex min-w-0 items-center gap-3 ${centeredTitle ? 'flex-col' : ''}`}>
               {icon ? (
-                <div className="shrink-0 rounded-xl bg-theme-purple/5 p-2.5 text-theme-purple dark:text-theme-purple-light">
-                  {icon}
+                <div className={`shrink-0 rounded-2xl bg-theme-purple/5 text-theme-purple dark:text-theme-purple-light transition-all ${centeredTitle ? 'p-4 mb-2' : 'p-2.5'}`}>
+                  {React.cloneElement(icon as React.ReactElement, {
+                    className: centeredTitle ? "h-8 w-8" : "h-5 w-5"
+                  })}
                 </div>
               ) : null}
               {title ? (
-                <h2 className="truncate text-xl font-bold text-theme-purple dark:text-white uppercase tracking-widest">
+                <h2 className={`truncate font-black text-theme-purple dark:text-white uppercase tracking-[0.2em] transition-all ${centeredTitle ? 'text-2xl sm:text-3xl' : 'text-xl'}`}>
                   {title}
                 </h2>
               ) : null}
             </div>
 
-            {actions ? <div className="shrink-0">{actions}</div> : null}
+            {actions ? <div className={`shrink-0 ${centeredTitle ? 'mt-4' : ''}`}>{actions}</div> : null}
           </header>
         )}
 
@@ -520,20 +523,22 @@ export default function AccountPage() {
             </div>
           </Tile>
 
-          {/* Contact */}
           <Tile
             className="md:col-span-7 lg:col-span-8"
             title="Mijn gegevens"
-            icon={<Mail className="h-5 w-5" />}
+            icon={<Mail />}
             centeredTitle
           >
-            <div className="flex flex-col items-center gap-y-10 py-6">
-              <div className="text-center w-full max-w-2xl px-4">
+            <div className="flex flex-col items-center gap-y-12 py-8">
+              <div className="flex flex-col items-center text-center w-full max-w-2xl px-4">
+                <div className="mb-4 rounded-2xl bg-theme-purple/5 p-4 text-theme-purple dark:text-white">
+                  <Mail className="h-8 w-8" />
+                </div>
                 <p className="text-xs text-theme-purple/40 dark:text-white/30 font-black uppercase tracking-[0.2em] mb-2">
                   E-mailadres
                 </p>
                 <p
-                  className="text-2xl sm:text-3xl font-black text-theme-purple dark:text-white break-words leading-tight"
+                  className="text-xl sm:text-2xl md:text-3xl font-black text-theme-purple dark:text-white break-words leading-tight"
                   title={user.email}
                 >
                   {user.email.split('@').join('\u200B@\u200B')}
@@ -541,12 +546,15 @@ export default function AccountPage() {
               </div>
 
               {user.fontys_email ? (
-                <div className="text-center w-full max-w-2xl px-4">
+                <div className="flex flex-col items-center text-center w-full max-w-2xl px-4">
+                  <div className="mb-4 rounded-2xl bg-theme-purple/5 p-4 text-theme-purple dark:text-white">
+                    <Mail className="h-8 w-8" />
+                  </div>
                   <p className="text-xs text-theme-purple/40 dark:text-white/30 font-black uppercase tracking-[0.2em] mb-2">
                     Fontys e-mail
                   </p>
                   <p
-                    className="text-2xl sm:text-3xl font-black text-theme-purple dark:text-white break-words leading-tight"
+                    className="text-xl sm:text-2xl md:text-3xl font-black text-theme-purple dark:text-white break-words leading-tight"
                     title={user.fontys_email}
                   >
                     {user.fontys_email.split('@').join('\u200B@\u200B')}
@@ -555,11 +563,14 @@ export default function AccountPage() {
               ) : null}
 
               {user.phone_number ? (
-                <div className="text-center w-full max-w-2xl px-4">
+                <div className="flex flex-col items-center text-center w-full max-w-2xl px-4">
+                  <div className="mb-4 rounded-2xl bg-theme-purple/5 p-4 text-theme-purple dark:text-white">
+                    <Phone className="h-8 w-8" />
+                  </div>
                   <p className="text-xs text-theme-purple/40 dark:text-white/30 font-black uppercase tracking-[0.2em] mb-2">
                     Telefoonnummer
                   </p>
-                  <p className="text-2xl sm:text-3xl font-black text-theme-purple dark:text-white">
+                  <p className="text-xl sm:text-2xl md:text-3xl font-black text-theme-purple dark:text-white">
                     {user.phone_number}
                   </p>
                 </div>
