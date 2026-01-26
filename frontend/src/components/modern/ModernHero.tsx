@@ -1,10 +1,11 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useMotionTemplate, useMotionValue } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import type { HeroBannerProps } from '../HeroBanner';
+import { MouseEvent } from 'react';
 
 export default function ModernHero({
     title,
@@ -13,6 +14,16 @@ export default function ModernHero({
     cta,
     gradient = true,
 }: HeroBannerProps) {
+    // Mouse tracking for Spotlight effect
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+
+    function handleMouseMove({ currentTarget, clientX, clientY }: MouseEvent) {
+        const { left, top } = currentTarget.getBoundingClientRect();
+        mouseX.set(clientX - left);
+        mouseY.set(clientY - top);
+    }
+
     // Animation variants
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -44,8 +55,23 @@ export default function ModernHero({
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="relative w-full overflow-hidden rounded-2xl lg:rounded-3xl shadow-2xl mb-8 lg:mb-12 group"
+            className="relative w-full overflow-hidden rounded-2xl lg:rounded-3xl shadow-2xl mb-8 lg:mb-12 group border border-white/10"
+            onMouseMove={handleMouseMove}
         >
+            {/* Spotlight Overlay */}
+            <motion.div
+                className="pointer-events-none absolute -inset-px rounded-2xl lg:rounded-3xl opacity-0 transition duration-300 group-hover:opacity-100 z-10"
+                style={{
+                    background: useMotionTemplate`
+                        radial-gradient(
+                          650px circle at ${mouseX}px ${mouseY}px,
+                          rgba(255,255,255,0.15),
+                          transparent 80%
+                        )
+                    `,
+                }}
+            />
+
             {/* Background Image or Gradient */}
             {image ? (
                 <div className="relative w-full h-72 sm:h-96 lg:h-[32rem]">
@@ -78,7 +104,7 @@ export default function ModernHero({
             )}
 
             {/* Content Overlay */}
-            <div className="absolute inset-0 flex flex-col justify-end p-8 sm:p-12 lg:p-16">
+            <div className="absolute inset-0 flex flex-col justify-end p-8 sm:p-12 lg:p-16 z-20">
                 <motion.div
                     variants={containerVariants}
                     initial="hidden"
