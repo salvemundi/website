@@ -11,7 +11,6 @@ import {
     Calendar,
     Award,
     Cake,
-    TrendingUp,
     UserCheck,
     Plus,
     FileText,
@@ -708,7 +707,6 @@ export default function AdminDashboardPage() {
             <div className="container mx-auto px-4 py-8 max-w-7xl">
                 {/* Quick Actions Section */}
                 <div className="mb-8">
-                    <h2 className="text-2xl font-bold text-admin mb-4">Snelle Acties</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <StatCard
                             title="Overzicht"
@@ -743,11 +741,20 @@ export default function AdminDashboardPage() {
                             colorClass="orange"
                         />
                     </div>
+
+                    {/* titles moved into the stats grid so they align with the top of the stats column */}
                 </div>
 
                 {/* Stats Section */}
                 <div className="mb-8">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-4 items-start">
+                        {/* Headings aligned with stats column top */}
+                        <div className="lg:col-span-5">
+                            <h2 className="text-2xl font-bold text-admin mb-4 whitespace-nowrap">Snelle Acties</h2>
+                        </div>
+                        <div className="lg:col-start-6 lg:col-span-7 pl-6">
+                            <h2 className="text-2xl font-bold text-admin mb-4">Statistieken</h2>
+                        </div>
                         {/* Action Buttons - Left Side */}
                         <div className="lg:col-start-1 lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <StatCard
@@ -781,32 +788,21 @@ export default function AdminDashboardPage() {
 
                         {/* Stats - Right Side (bento grid) */}
                         <div className="lg:col-start-6 lg:col-span-7 pl-6 border-l border-admin-card-muted/40 dark:border-admin-card-muted/20">
-                            <h2 className="text-2xl font-bold text-admin mb-4">Statistieken</h2>
 
                             {/* Top-right grid: main big card + two small ones */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-2">
                                     <StatCard
-                                        title="Totaal Stickers"
-                                        value={stats.totalStickers}
+                                        title="Meeste Activiteiten"
+                                        value={stats.topCommittee ? cleanCommitteeName(stats.topCommittee.name) : 'Geen data'}
                                         icon={<Sticker className="h-6 w-6" />}
-                                        subtitle="Alle verzamelde stickers"
-                                        onClick={() => router.push('/stickers')}
-                                        colorClass="red"
+                                        subtitle={stats.topCommittee ? `${stats.topCommittee.count} ${stats.topCommittee.count === 1 ? 'activiteit' : 'activiteiten'} dit jaar` : 'Geen data'}
+                                        onClick={() => router.push('/commissies')}
+                                        colorClass="purple"
                                     />
                                 </div>
 
-                                <div className="col-span-1">
-                                    <StatCard
-                                        title="Sticker Groei"
-                                        value={`${stats.stickerGrowthRate}%`}
-                                        icon={<TrendingUp className="h-6 w-6" />}
-                                        subtitle="Laatste 7 dagen"
-                                        onClick={() => router.push('/stickers')}
-                                        colorClass="red"
-                                    />
-                                </div>
-
+                                {/* Small stats: Commissieleden + Totaal Stickers */}
                                 <div className="col-span-1">
                                     <StatCard
                                         title="Commissieleden"
@@ -817,62 +813,81 @@ export default function AdminDashboardPage() {
                                         colorClass="green"
                                     />
                                 </div>
+
+                                <div className="col-span-1">
+                                    <StatCard
+                                        title="Totaal Stickers"
+                                        value={stats.totalStickers}
+                                        icon={<Sticker className="h-6 w-6" />}
+                                        subtitle="Alle verzamelde stickers"
+                                        onClick={() => router.push('/stickers')}
+                                        colorClass="red"
+                                    />
+                                </div>
                             </div>
                         </div>
 
                         {/* Full-width lower stats row: spans under the action buttons and to the right */}
                         <div className="lg:col-span-12">
                             <div className="mt-4 grid grid-cols-2 gap-4">
+                                {/* Ensure 'Meeste Activiteiten' and 'Commissieleden' are the first two cards */}
+                                {/* Totaal Stickers displayed as small card in the top-right bento; removed duplicate here */}
+
+                                <div>
+                                    <StatCard
+                                        title="Commissieleden"
+                                        value={stats.totalCommitteeMembers}
+                                        icon={<Users className="h-6 w-6" />}
+                                        subtitle="Actieve leden"
+                                        onClick={() => router.push('/commissies')}
+                                        colorClass="green"
+                                    />
+                                </div>
+                                {/* 1) Intro first card */}
                                 {visibilitySettings.intro && (
-                                    <>
-                                        <div>
-                                            <StatCard
-                                                title="Intro Aanmeldingen"
-                                                value={stats.introSignups}
-                                                icon={<Mail className="h-6 w-6" />}
-                                                subtitle="Totaal aanmeldingen"
-                                                onClick={() => router.push('/intro')}
-                                                colorClass="blue"
-                                            />
-                                        </div>
-                                        <div>
-                                            <StatCard
-                                                title="Blog Likes"
-                                                value={stats.introBlogLikes}
-                                                icon={<Heart className="h-6 w-6" />}
-                                                subtitle="Alle intro blogs"
-                                                onClick={() => router.push('/intro/blog')}
-                                                colorClass="blue"
-                                            />
-                                        </div>
-                                    </>
+                                    <div>
+                                        <StatCard
+                                            title="Intro Aanmeldingen"
+                                            value={stats.introSignups}
+                                            icon={<Mail className="h-6 w-6" />}
+                                            subtitle="Totaal aanmeldingen"
+                                            onClick={() => router.push('/intro')}
+                                            colorClass="blue"
+                                        />
+                                    </div>
                                 )}
 
+                                {/* Kroegentocht Groepen removed */}
+
+                                {/* 3) Intro second card (if present) */}
+                                {visibilitySettings.intro && (
+                                    <div>
+                                        <StatCard
+                                            title="Blog Likes"
+                                            value={stats.introBlogLikes}
+                                            icon={<Heart className="h-6 w-6" />}
+                                            subtitle="Alle intro blogs"
+                                            onClick={() => router.push('/intro/blog')}
+                                            colorClass="blue"
+                                        />
+                                    </div>
+                                )}
+
+                                {/* 4) Kroegentocht second card (if present) */}
                                 {visibilitySettings.kroegentocht && stats.upcomingPubCrawl && (
-                                    <>
-                                        <div>
-                                            <StatCard
-                                                title="Kroegentocht Groepen"
-                                                value={stats.pubCrawlGroups ?? 0}
-                                                icon={<Users className="h-6 w-6" />}
-                                                subtitle={`${stats.upcomingPubCrawl.name}`}
-                                                onClick={() => router.push('/admin/kroegentocht')}
-                                                colorClass="orange"
-                                            />
-                                        </div>
-                                        <div>
-                                            <StatCard
-                                                title="Kroegentocht Tickets"
-                                                value={stats.pubCrawlTickets ?? 0}
-                                                icon={<Ticket className="h-6 w-6" />}
-                                                subtitle={`${stats.upcomingPubCrawl.name}`}
-                                                onClick={() => router.push('/admin/kroegentocht')}
-                                                colorClass="orange"
-                                            />
-                                        </div>
-                                    </>
+                                    <div>
+                                        <StatCard
+                                            title="Kroegentocht Tickets"
+                                            value={stats.pubCrawlTickets ?? 0}
+                                            icon={<Ticket className="h-6 w-6" />}
+                                            subtitle={`${stats.upcomingPubCrawl.name}`}
+                                            onClick={() => router.push('/admin/kroegentocht')}
+                                            colorClass="orange"
+                                        />
+                                    </div>
                                 )}
 
+                                {/* 5) Reis (full-width if present) */}
                                 {visibilitySettings.reis && canManageReis && (
                                     <div className="col-span-2">
                                         <StatCard
@@ -886,16 +901,7 @@ export default function AdminDashboardPage() {
                                     </div>
                                 )}
 
-                                <div className="col-span-2">
-                                    <StatCard
-                                        title="Meeste Activiteiten"
-                                        value={stats.topCommittee ? cleanCommitteeName(stats.topCommittee.name) : 'Geen data'}
-                                        icon={<FileText className="h-6 w-6" />}
-                                        subtitle={stats.topCommittee ? `${stats.topCommittee.count} ${stats.topCommittee.count === 1 ? 'activiteit' : 'activiteiten'} dit jaar` : undefined}
-                                        onClick={() => router.push('/commissies')}
-                                        colorClass="purple"
-                                    />
-                                </div>
+                                {/* removed duplicate top-committee card; it's rendered as the first card above */}
                             </div>
                         </div>
                     </div>
