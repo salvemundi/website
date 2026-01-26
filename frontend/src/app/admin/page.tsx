@@ -787,7 +787,7 @@ export default function AdminDashboardPage() {
                         </div>
 
                         {/* Stats - Right Side (bento grid) */}
-                        <div className="lg:col-start-6 lg:col-span-7 pl-6 border-l border-admin-card-muted/40 dark:border-admin-card-muted/20">
+                        <div className="lg:col-start-6 lg:col-span-7 lg:pl-6 lg:border-l lg:border-admin-card-muted/40 lg:dark:border-admin-card-muted/20">
 
                             {/* Top-right grid: main big card + two small ones */}
                             <div className="grid grid-cols-2 gap-4">
