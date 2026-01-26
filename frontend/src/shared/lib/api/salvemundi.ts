@@ -48,7 +48,8 @@ export interface Transaction {
     amount: number;
     description: string;
     transaction_type: 'payment' | 'membership' | 'event' | 'other';
-    status: 'pending' | 'completed' | 'failed';
+    status?: 'pending' | 'completed' | 'failed' | 'paid';
+    payment_status?: 'pending' | 'completed' | 'failed' | 'paid' | 'open';
     created_at: string;
     updated_at?: string;
 }
