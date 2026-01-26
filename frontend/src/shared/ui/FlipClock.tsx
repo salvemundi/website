@@ -54,7 +54,7 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href }) => {
 
     return (
         <div className="w-full text-center">
-            <div className="text-lg sm:text-xl font-bold uppercase tracking-wider text-purple-100 mb-2 drop-shadow-md">
+            <div className="text-xl sm:text-2xl font-bold uppercase tracking-wider text-purple-100 mb-2 drop-shadow-md">
                 Volgende Activiteit
             </div>
 
