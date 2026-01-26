@@ -2,6 +2,7 @@ import Hero from '@/widgets/hero/ui/Hero';
 import EventsSection from '@/widgets/events-section/ui/EventsSection';
 import { ScrollTriggerWrapper } from '@/shared/ui/ScrollTriggerWrapper';
 import SponsorsSection from '@/widgets/sponsors-section/ui/SponsorsSection';
+import JoinSection from '@/widgets/join-section/ui/JoinSection';
 
 export default function HomePage() {
     return (
@@ -62,34 +63,7 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* Join Section */}
-            <section className="px-6 py-8 sm:py-10 md:py-12 bg-[var(--bg-main)]">
-                <ScrollTriggerWrapper animation="scale" duration={0.9} triggerStart="top 100%" once={true}>
-                    <div className="mx-auto max-w-4xl text-center">
-                        <h2 className="text-3xl font-black text-gradient sm:text-4xl md:text-5xl mb-6">
-                            Klaar om lid te worden?
-                        </h2>
-                        <p className="text-lg text-theme-muted mb-8 max-w-2xl mx-auto">
-                            Sluit je aan bij onze community van studenten en maak het meeste van je studententijd.
-                            Voor slechts €20 per jaar krijg je toegang tot alle activiteiten met korting!
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <a
-                                href="/lidmaatschap"
-                                className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-theme px-8 py-4 text-base font-semibold text-theme-white shadow-xl transition hover:scale-105"
-                            >
-                                Word nu lid
-                            </a>
-                            <a
-                                href="/contact"
-                                className="inline-flex items-center justify-center gap-2 rounded-full bg-transparent px-8 py-4 text-base font-semibold text-theme-purple transition hover:bg-theme-purple/5 hover:scale-105"
-                            >
-                                Neem contact op
-                            </a>
-                        </div>
-                    </div>
-                </ScrollTriggerWrapper>
-            </section>
+            <JoinSection />
 
             {/* Sponsors Section */}
             <SponsorsSection />
