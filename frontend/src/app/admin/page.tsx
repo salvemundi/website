@@ -771,16 +771,16 @@ export default function AdminDashboardPage() {
                                 value="Intro Post"
                                 icon={<FileText className="h-6 w-6" />}
                                 subtitle="Maak een nieuwe intro blog post"
-                                onClick={() => router.push('/admin/intro')}
+                                onClick={() => router.push('/admin/intro?tab=blogs&create=1')}
                                 nowrap
                                 colorClass="blue"
                             />
                             <StatCard
-                                title="Sticker"
-                                value="Toevoegen"
+                                title="Nieuwe"
+                                value="Sticker"
                                 icon={<Sticker className="h-6 w-6" />}
                                 subtitle="Voeg een sticker toe"
-                                onClick={() => router.push('/stickers')}
+                                onClick={() => router.push('/stickers?add=1')}
                                 nowrap
                                 colorClass="red"
                             />

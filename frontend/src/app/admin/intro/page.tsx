@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { 
@@ -40,6 +41,7 @@ type TabType = 'signups' | 'parents' | 'blogs' | 'planning';
 
 export default function IntroAdminPage() {
     const pathname = usePathname();
+    const searchParams = typeof window !== 'undefined' ? useSearchParams?.() : null;
     const [activeTab, setActiveTab] = useState<TabType>('signups');
     const [isLoading, setIsLoading] = useState(true);
     const { data: introSettings, refetch: refetchIntroSettings } = useSalvemundiSiteSettings('intro');
@@ -74,6 +76,39 @@ export default function IntroAdminPage() {
     useEffect(() => {
         loadData();
     }, [activeTab]);
+
+    // Handle incoming query params to open specific tab/form (e.g. from admin quick actions)
+    useEffect(() => {
+        try {
+            if (!searchParams) return;
+            const tab = searchParams.get('tab');
+            const create = searchParams.get('create');
+            if (tab && (tab === 'signups' || tab === 'parents' || tab === 'blogs' || tab === 'planning')) {
+                setActiveTab(tab as TabType);
+            }
+            if (tab === 'blogs' && create === '1') {
+                // open the new blog editor
+                setEditingBlog({
+                    title: '',
+                    content: '',
+                    excerpt: '',
+                    blog_type: 'update',
+                    is_published: false
+                });
+                setIsCreatingBlog(true);
+                // scroll into view after a tick
+                setTimeout(() => {
+                    const el = document.querySelector('[data-new-blog-form]');
+                    if (el && typeof (el as HTMLElement).scrollIntoView === 'function') {
+                        (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 100);
+            }
+        } catch (err) {
+            // ignore
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Load all data on mount to populate tab counts immediately
     useEffect(() => {
@@ -644,7 +679,7 @@ export default function IntroAdminPage() {
                                 </div>
 
                                 {(editingBlog || isCreatingBlog) && (
-                                    <div className="bg-admin-card rounded-lg shadow p-6 mb-6">
+                                    <div data-new-blog-form className="bg-admin-card rounded-lg shadow p-6 mb-6">
                                         <h3 className="text-lg font-bold text-admin mb-4">
                                             {editingBlog?.id ? 'Blog Bewerken' : 'Nieuwe Blog'}
                                         </h3>
