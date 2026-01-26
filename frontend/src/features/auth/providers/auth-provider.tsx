@@ -31,6 +31,7 @@ export interface AuthContextType {
     logout: () => void;
     signup: (userData: SignupData) => Promise<void>;
     refreshUser: () => Promise<void>;
+    isLoggingOut: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,6 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isMsalInitializing, setIsMsalInitializing] = useState(true);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     // Check for existing session on mount
     useEffect(() => {
@@ -271,6 +273,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const logout = async () => {
+        setIsLoggingOut(true);
         const refreshToken = localStorage.getItem('refresh_token');
         if (refreshToken) {
             try {
@@ -317,6 +320,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         setUser(null);
+        // We keep isLoggingOut true until the page is reloaded or redirected
     };
 
     const refreshUser = async () => {
@@ -345,6 +349,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 user,
                 isAuthenticated: !!user,
                 isLoading: isLoading || isMsalInitializing,
+                isLoggingOut,
                 loginWithMicrosoft,
                 logout,
                 signup,

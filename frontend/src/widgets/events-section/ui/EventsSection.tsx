@@ -86,7 +86,7 @@ export default function EventsSection() {
                             ))}
                         </div>
                     ) : displayEvents.length === 0 && !eventsError ? (
-                        <div className="w-full rounded-3xl bg-white/90 dark:bg-surface-dark/90 p-10 flex items-center justify-center text-sm text-theme-purple dark:text-theme-white font-medium">
+                        <div className="w-full rounded-3xl bg-white/90 dark:bg-[#241824]/90 p-10 flex items-center justify-center text-sm text-theme-purple dark:text-white font-medium">
                             Nog geen aankomende evenementen. Check later opnieuw!
                         </div>
                     ) : (
@@ -97,6 +97,7 @@ export default function EventsSection() {
                                         title={event.name}
                                         category={event.committee_name || 'Salve Mundi'}
                                         date={renderDate(event.event_date)}
+                                        href={`/activiteiten/${event.id}`}
                                     />
                                 </div>
                             ))}

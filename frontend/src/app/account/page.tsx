@@ -21,6 +21,10 @@ import {
   ExternalLink,
   ChevronRight,
   Lock,
+  Upload,
+  Loader2,
+  Check,
+  X,
 } from "lucide-react";
 
 interface EventSignup {
@@ -49,6 +53,7 @@ function Tile({
   children: React.ReactNode;
   className?: string;
   actions?: React.ReactNode;
+  centeredTitle?: boolean;
 }) {
   return (
     <section
@@ -59,15 +64,15 @@ function Tile({
     >
       <div className="relative p-6 sm:p-8">
         {(title || actions) && (
-          <header className="mb-6 flex items-center justify-between gap-4">
-            <div className="flex min-w-0 items-center gap-3">
+          <header className={`mb-8 flex items-center gap-4 ${centeredTitle ? 'flex-col justify-center text-center' : 'justify-between'}`}>
+            <div className={`flex min-w-0 items-center gap-3 ${centeredTitle ? 'flex-col' : ''}`}>
               {icon ? (
                 <div className="shrink-0 rounded-xl bg-theme-purple/5 p-2.5 text-theme-purple dark:text-theme-purple-light">
                   {icon}
                 </div>
               ) : null}
               {title ? (
-                <h2 className="truncate text-xl font-bold text-theme-purple dark:text-white">
+                <h2 className="truncate text-xl font-bold text-theme-purple dark:text-white uppercase tracking-widest">
                   {title}
                 </h2>
               ) : null}
@@ -139,8 +144,12 @@ function QuickLink({
 
 export default function AccountPage() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading: authLoading, logout, refreshUser } =
+  const { user, isAuthenticated, isLoading: authLoading, logout, refreshUser, isLoggingOut } =
     useAuth();
+  const fileInputRef = useMemo(() => ({ current: null as HTMLInputElement | null }), []);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const isCommitteeMember = !!(user?.committees && user.committees.length > 0);
 
@@ -158,12 +167,14 @@ export default function AccountPage() {
     if (user?.minecraft_username) setMinecraftUsername(user.minecraft_username);
   }, [user]);
 
+
+
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated && !isLoggingOut) {
       const returnTo = window.location.pathname + window.location.search;
       router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
     }
-  }, [isAuthenticated, authLoading, router]);
+  }, [isAuthenticated, authLoading, router, isLoggingOut]);
 
   useEffect(() => {
     if (user?.id) loadEventSignups();
@@ -203,6 +214,7 @@ export default function AccountPage() {
   };
 
   const handleLogout = async () => {
+
     // Clear any stored return URL to prevent auto-redirects after logout
     try {
       localStorage.removeItem('auth_return_to');
@@ -210,10 +222,16 @@ export default function AccountPage() {
       // ignore
     }
 
-    // We redirect manually first to ensure we land on the login page with ?noAuto=true.
-    // This prevents the useEffect from firing a different redirect during the async logout.
-    router.replace("/login?noAuto=true");
+    // Perform the logout cleanup (clearing tokens, MSAL cache, etc.)
+    // We await this to ensure all session data is cleared before we leave the page.
     await logout();
+
+    // Force a full page reload to the homepage. This breaks the React lifecycle
+    // and prevents any pending effects (like the auto-redirect to login) from firing.
+    // Full reload ensures MSAL internal state is completely reset.
+    if (typeof window !== 'undefined') {
+      window.location.href = "/?noAuto=true";
+    }
   };
 
   const handleSaveMinecraftUsername = async () => {
@@ -232,6 +250,74 @@ export default function AccountPage() {
       alert("Kon Minecraft gebruikersnaam niet bijwerken. Probeer het opnieuw.");
     } finally {
       setIsSavingMinecraft(false);
+    }
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSelectedFile(file);
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+  };
+
+  const handleCancelAvatar = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setSelectedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleConfirmAvatar = async () => {
+    if (!selectedFile || !user?.id) return;
+
+    setIsUploadingAvatar(true);
+    try {
+      const token = localStorage.getItem("auth_token");
+      const fd = new FormData();
+      fd.append("file", selectedFile);
+
+      const headers: Record<string, string> = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      // 1. Upload the file to Directus
+      const uploadResp = await fetch(`${window.location.origin}/api/files`, {
+        method: "POST",
+        body: fd,
+        headers,
+      });
+
+      if (!uploadResp.ok) throw new Error("Upload failed");
+      const uploadJson = await uploadResp.json();
+      const fileId = uploadJson?.data?.id || uploadJson?.data;
+
+      if (!fileId) throw new Error("No file ID returned");
+
+      // 2. Update the user's avatar in Directus
+      const updateResp = await fetch(`${window.location.origin}/api/users/me`, {
+        method: "PATCH",
+        headers: {
+          ...headers,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ avatar: fileId }),
+      });
+
+      if (!updateResp.ok) throw new Error("Failed to update user profile");
+
+      // 3. Refresh user data to show the new avatar
+      await refreshUser();
+      handleCancelAvatar(); // Cleanup
+    } catch (error) {
+      console.error("Avatar upload failed:", error);
+      alert("Kon profielfoto niet bijwerken. Probeer het opnieuw.");
+    } finally {
+      setIsUploadingAvatar(false);
     }
   };
 
@@ -292,83 +378,141 @@ export default function AccountPage() {
       </PageHeader>
 
       <main className="mx-auto max-w-app px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 auto-rows-min">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-12 auto-rows-min">
           {/* Profile */}
-          <Tile className="lg:col-span-8">
-            <div className="flex flex-col gap-8 sm:flex-row sm:items-start">
+          <Tile className="md:col-span-5 lg:col-span-4 lg:row-span-1">
+            <div className="flex flex-col gap-6 items-center text-center">
               {/* Avatar */}
-              <div className="shrink-0 self-center sm:self-start">
-                {user.avatar ? (
-                  <div className="relative h-28 w-28 sm:h-32 sm:w-32 rounded-full overflow-hidden border-4 border-theme-purple/10 shadow-lg">
+              <div className="relative group shrink-0">
+                <input
+                  type="file"
+                  ref={(el) => { fileInputRef.current = el; }}
+                  onChange={handleAvatarChange}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <div className={`relative h-32 w-32 sm:h-40 sm:w-40 rounded-full overflow-hidden border-4 shadow-lg transition-all ${previewUrl ? 'border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.3)]' : 'border-theme-purple/10'}`}>
+                  {previewUrl ? (
+                    <>
+                      <Image
+                        src={previewUrl}
+                        alt="Preview"
+                        fill
+                        sizes="160px"
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="w-full h-full border-[16px] border-black/20 rounded-full"></div>
+                      </div>
+                      <div className="absolute bottom-2 left-0 right-0 text-center">
+                        <span className="bg-green-500 text-white text-[8px] font-black uppercase px-2 py-0.5 rounded-full shadow-lg">
+                          Voorvertoning
+                        </span>
+                      </div>
+                    </>
+                  ) : user.avatar ? (
                     <Image
                       src={getImageUrl(user.avatar)}
                       alt={`${user.first_name} ${user.last_name}`}
                       fill
-                      sizes="128px"
+                      sizes="160px"
                       className="object-cover"
                       priority
-                      placeholder="blur"
-                      blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2VlZSIvPjwvc3ZnPg=="
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.src = "/img/avatar-placeholder.svg";
                       }}
                     />
+                  ) : (
+                    <div className="h-full w-full bg-theme-purple/5 flex items-center justify-center">
+                      <span className="text-5xl font-bold text-theme-purple dark:text-white">
+                        {user.first_name?.[0]}
+                        {user.last_name?.[0]}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Overlay on hover (only when no preview) */}
+                  {!previewUrl && (
+                    <div
+                      onClick={handleAvatarClick}
+                      className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity"
+                    >
+                      <Upload className="h-8 w-8 text-white" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Mobile change button or confirmation buttons */}
+                {previewUrl ? (
+                  <div className="absolute -bottom-2 flex gap-2">
+                    <button
+                      onClick={handleConfirmAvatar}
+                      disabled={isUploadingAvatar}
+                      className="h-10 w-10 rounded-full bg-green-500 text-white shadow-xl flex items-center justify-center border-2 border-white dark:border-surface-dark hover:scale-105 transition-transform"
+                      title="Bevestigen"
+                    >
+                      {isUploadingAvatar ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <Check className="h-5 w-5" />
+                      )}
+                    </button>
+                    <button
+                      onClick={handleCancelAvatar}
+                      disabled={isUploadingAvatar}
+                      className="h-10 w-10 rounded-full bg-red-500 text-white shadow-xl flex items-center justify-center border-2 border-white dark:border-surface-dark hover:scale-105 transition-transform"
+                      title="Annuleren"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
                   </div>
                 ) : (
-                  <div className="h-28 w-28 sm:h-32 sm:w-32 rounded-full bg-theme-purple/5 flex items-center justify-center border-4 border-theme-purple/10 shadow-lg">
-                    <span className="text-4xl font-bold text-theme-purple dark:text-white">
-                      {user.first_name?.[0]}
-                      {user.last_name?.[0]}
-                    </span>
-                  </div>
+                  <button
+                    onClick={handleAvatarClick}
+                    disabled={isUploadingAvatar}
+                    className="absolute bottom-1 right-1 h-10 w-10 rounded-full bg-theme-purple text-white shadow-xl flex items-center justify-center border-2 border-white dark:border-surface-dark sm:hidden"
+                  >
+                    <Upload className="h-5 w-5" />
+                  </button>
                 )}
               </div>
 
               {/* Info */}
-              <div className="min-w-0 flex-1 text-center sm:text-left">
-                <h2 className="truncate text-3xl sm:text-4xl font-extrabold text-theme-purple dark:text-white">
+              <div className="min-w-0 w-full">
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-theme-purple dark:text-white break-words">
                   {user.first_name && user.last_name
                     ? `${user.first_name} ${user.last_name}`
                     : user.email || "User"}
                 </h2>
 
-                <div className="mt-4 flex flex-wrap justify-center sm:justify-start gap-2.5">
+                <div className="mt-4 flex flex-wrap justify-center gap-2">
                   {user.is_member ? (
-                    <span className="px-3.5 py-1.5 bg-theme-purple text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-sm">
+                    <span className="px-3 py-1 bg-theme-purple text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-sm">
                       Fontys Student
                     </span>
                   ) : (
-                    <span className="px-3.5 py-1.5 bg-theme-purple/5 border border-theme-purple/10 text-theme-purple dark:text-white text-[10px] font-black uppercase tracking-widest rounded-full">
-                      Geregistreerde Gebruiker
+                    <span className="px-3 py-1 bg-theme-purple/5 border border-theme-purple/10 text-theme-purple dark:text-white text-[9px] font-black uppercase tracking-widest rounded-full">
+                      Gebruiker
                     </span>
                   )}
 
                   <span
-                    className={`px-3.5 py-1.5 ${membershipStatus.color} ${membershipStatus.textColor} text-[10px] font-black uppercase tracking-widest rounded-full shadow-sm`}
+                    className={`px-3 py-1 ${membershipStatus.color} ${membershipStatus.textColor} text-[9px] font-black uppercase tracking-widest rounded-full shadow-sm`}
                   >
                     {membershipStatus.text}
                   </span>
                 </div>
 
-                <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="rounded-2xl bg-theme-purple/5 border border-theme-purple/10 px-5 py-4">
-                    <p className="text-[10px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-widest mb-1.5">
-                      Lidmaatschap eindigt
+                <div className="mt-6 flex flex-col gap-3">
+                  <div className="rounded-2xl bg-theme-purple/5 border border-theme-purple/10 px-4 py-3">
+                    <p className="text-[9px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-widest mb-1">
+                      Lidmaatschap tot
                     </p>
-                    <p className="text-base font-bold text-theme-purple dark:text-white">
+                    <p className="text-sm font-bold text-theme-purple dark:text-white">
                       {user.membership_expiry
-                        ? format(new Date(user.membership_expiry), "d MMMM yyyy")
-                        : "Niet van toepassing"}
-                    </p>
-                  </div>
-
-                  <div className="rounded-2xl bg-theme-purple/5 border border-theme-purple/10 px-5 py-4">
-                    <p className="text-[10px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-widest mb-1.5">
-                      E-mailadres
-                    </p>
-                    <p className="text-base font-bold text-theme-purple dark:text-white truncate">
-                      {user.email}
+                        ? format(new Date(user.membership_expiry), "d MMM yyyy")
+                        : "N/A"}
                     </p>
                   </div>
                 </div>
@@ -378,60 +522,46 @@ export default function AccountPage() {
 
           {/* Contact */}
           <Tile
-            className="lg:col-span-4"
-            title="Gegevens"
+            className="md:col-span-7 lg:col-span-8"
+            title="Mijn gegevens"
             icon={<Mail className="h-5 w-5" />}
+            centeredTitle
           >
-            <div className="space-y-5">
-              <div className="flex items-center gap-4">
-                <div className="rounded-xl bg-theme-purple/5 p-2.5 text-theme-purple dark:text-white shadow-sm">
-                  <Mail className="h-5 w-5" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-widest mb-0.5">
-                    E-mailadres
-                  </p>
-                  <p
-                    className="truncate font-bold text-theme-purple dark:text-white"
-                    title={user.email}
-                  >
-                    {user.email}
-                  </p>
-                </div>
+            <div className="flex flex-col items-center gap-y-10 py-6">
+              <div className="text-center w-full max-w-2xl px-4">
+                <p className="text-xs text-theme-purple/40 dark:text-white/30 font-black uppercase tracking-[0.2em] mb-2">
+                  E-mailadres
+                </p>
+                <p
+                  className="text-2xl sm:text-3xl font-black text-theme-purple dark:text-white break-words leading-tight"
+                  title={user.email}
+                >
+                  {user.email.split('@').join('\u200B@\u200B')}
+                </p>
               </div>
 
               {user.fontys_email ? (
-                <div className="flex items-center gap-4">
-                  <div className="rounded-xl bg-theme-purple/5 p-2.5 text-theme-purple dark:text-white shadow-sm">
-                    <Mail className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-widest mb-0.5">
-                      Fontys e-mail
-                    </p>
-                    <p
-                      className="truncate font-bold text-theme-purple dark:text-white"
-                      title={user.fontys_email}
-                    >
-                      {user.fontys_email}
-                    </p>
-                  </div>
+                <div className="text-center w-full max-w-2xl px-4">
+                  <p className="text-xs text-theme-purple/40 dark:text-white/30 font-black uppercase tracking-[0.2em] mb-2">
+                    Fontys e-mail
+                  </p>
+                  <p
+                    className="text-2xl sm:text-3xl font-black text-theme-purple dark:text-white break-words leading-tight"
+                    title={user.fontys_email}
+                  >
+                    {user.fontys_email.split('@').join('\u200B@\u200B')}
+                  </p>
                 </div>
               ) : null}
 
               {user.phone_number ? (
-                <div className="flex items-center gap-4">
-                  <div className="rounded-xl bg-theme-purple/5 p-2.5 text-theme-purple dark:text-white shadow-sm">
-                    <Phone className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-widest mb-0.5">
-                      Telefoonnummer
-                    </p>
-                    <p className="font-bold text-theme-purple dark:text-white">
-                      {user.phone_number}
-                    </p>
-                  </div>
+                <div className="text-center w-full max-w-2xl px-4">
+                  <p className="text-xs text-theme-purple/40 dark:text-white/30 font-black uppercase tracking-[0.2em] mb-2">
+                    Telefoonnummer
+                  </p>
+                  <p className="text-2xl sm:text-3xl font-black text-theme-purple dark:text-white">
+                    {user.phone_number}
+                  </p>
                 </div>
               ) : null}
             </div>
@@ -442,11 +572,22 @@ export default function AccountPage() {
             className="lg:col-span-4"
             title="Social Gaming"
             icon={<Gamepad2 className="h-5 w-5" />}
+            centeredTitle
           >
-            <div className="rounded-2xl bg-theme-purple/5 p-5 border border-theme-purple/10">
-              <p className="mb-2.5 text-[10px] font-black uppercase text-theme-purple/60 dark:text-white/40 tracking-widest">
-                Minecraft Username
-              </p>
+            <div className="rounded-2xl bg-theme-purple/5 p-5 border border-theme-purple/10 text-center">
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <p className="text-[10px] font-black uppercase text-theme-purple/60 dark:text-white/40 tracking-widest">
+                  Minecraft Username
+                </p>
+                {!isEditingMinecraft && (
+                  <button
+                    onClick={() => setIsEditingMinecraft(true)}
+                    className="shrink-0 rounded-xl bg-theme-purple/10 px-3 py-1.5 text-[9px] font-black uppercase text-theme-purple dark:text-white hover:bg-theme-purple/20 transition shadow-sm border border-theme-purple/10"
+                  >
+                    {user.minecraft_username ? "Wijzig" : "Instellen"}
+                  </button>
+                )}
+              </div>
 
               {isEditingMinecraft ? (
                 <div className="flex gap-2">
@@ -464,18 +605,18 @@ export default function AccountPage() {
                   >
                     {isSavingMinecraft ? "..." : "Save"}
                   </button>
+                  <button
+                    onClick={() => setIsEditingMinecraft(false)}
+                    className="rounded-xl bg-theme-purple/5 px-3 py-2 text-sm font-bold text-theme-purple dark:text-white border border-theme-purple/10"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
               ) : (
-                <div className="flex items-center justify-between gap-3">
-                  <span className="truncate font-bold text-theme-purple dark:text-white text-lg">
-                    {user.minecraft_username || "Not set"}
-                  </span>
-                  <button
-                    onClick={() => setIsEditingMinecraft(true)}
-                    className="shrink-0 rounded-xl bg-theme-purple/10 px-4 py-2 text-[10px] font-black uppercase text-theme-purple dark:text-white hover:bg-theme-purple/20 transition shadow-sm border border-theme-purple/10"
-                  >
-                    {user.minecraft_username ? "Wijzig" : "Instellen"}
-                  </button>
+                <div className="min-w-0">
+                  <p className="break-words font-black text-theme-purple dark:text-white text-2xl">
+                    {user.minecraft_username || "Niet ingesteld"}
+                  </p>
                 </div>
               )}
             </div>
@@ -486,6 +627,7 @@ export default function AccountPage() {
             className="lg:col-span-8"
             title="Snelle links"
             icon={<ChevronRight className="h-5 w-5" />}
+            centeredTitle
           >
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <QuickLink
@@ -521,6 +663,7 @@ export default function AccountPage() {
             className="lg:col-span-12"
             title="Mijn inschrijvingen"
             icon={<Calendar className="h-5 w-5" />}
+            centeredTitle
             actions={
               <div className="flex items-center gap-3">
                 <button

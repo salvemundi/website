@@ -67,8 +67,9 @@
   --theme-purple-light: #e8c4e6;
 
   --bg-main: #1a141b;
-  --bg-soft: #1a141b;
-  --bg-card: #1f1921;
+  /* slightly adjust soft and card backgrounds so cards contrast from the page */
+  --bg-soft: #161116;
+  --bg-card: #241824; /* darker but distinct from --bg-main */
 
   --text-main: #ffffff;
   --text-subtle: #e8dce9;
@@ -81,6 +82,19 @@
   --border-color: #4b3a4d;
 
   --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+
+  /* add a subtle elevated shadow for cards in dark mode for extra separation */
+  --shadow-card-elevated: 0 8px 20px rgba(6, 4, 10, 0.45);
+
+  /* Ensure Tailwind-generated elements that use the bg-[var(--bg-card)] utility
+     get a subtle border and elevated shadow in dark mode so they read as cards */
+.dark [class*="bg-[var(--bg-card)]"] {
+  /* Respect Tailwind opacity modifiers (e.g. /80, /10) so we don't force solid backgrounds */
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: var(--shadow-card-elevated);
+  /* Gentle backdrop blur helps separate translucent cards from the page */
+  backdrop-filter: blur(4px);
+}
 
   --gradient-start: #a16ca1;
   --gradient-end: #c47bbb;

@@ -39,7 +39,7 @@ export default function CommitteesPage() {
                 <PageHeader
                     title="COMMISSIES"
                     backgroundImage="/img/backgrounds/commissies-banner.png"
-                        backgroundPosition="center 30%"
+                    backgroundPosition="center 30%"
                     imageFilter={`brightness(0.65)`}
                 >
                     <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-ink-muted dark:text-white/90 sm:text-xl">
@@ -86,7 +86,7 @@ export default function CommitteesPage() {
                                     >
                                         <Link
                                             href={`/commissies/${slugify(cleanCommitteeName(committee.name))}`}
-                                            className={`group flex h-full flex-col overflow-hidden rounded-3xl bg-[var(--bg-card)]/90 dark:border dark:border-white/10 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl ${isBestuur ? 'ring-4 ring-theme-purple-lighter/30' : ''
+                                            className={`group flex h-full flex-col overflow-hidden rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl ${isBestuur ? 'ring-4 ring-theme-purple/20' : ''
                                                 }`}
                                         >
                                             <div className="relative h-56 w-full overflow-hidden bg-gradient-to-br from-theme-purple/20 to-theme-purple-dark/20">
@@ -120,18 +120,18 @@ export default function CommitteesPage() {
                                                         <Users className="h-4 w-4 text-theme-purple" />
                                                         <div className="flex -space-x-2">
                                                             {members.slice(0, 5).map((member: any, idx: number) => (
-                                                                    <div key={idx} className="relative h-8 w-8 rounded-full overflow-hidden ring-2 ring-white dark:ring-gray-800">
-                                                                        <SmartImage
-                                                                            src={member.image}
-                                                                            alt={member.firstName}
-                                                                            fill
-                                                                            sizes="32px"
-                                                                            className="object-cover"
-                                                                            loading="lazy"
-                                                                            placeholder="blur"
-                                                                            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjZGRkIi8+PC9zdmc+"
-                                                                        />
-                                                                    </div>
+                                                                <div key={idx} className="relative h-8 w-8 rounded-full overflow-hidden ring-2 ring-white dark:ring-gray-800">
+                                                                    <SmartImage
+                                                                        src={member.image}
+                                                                        alt={member.firstName}
+                                                                        fill
+                                                                        sizes="32px"
+                                                                        className="object-cover"
+                                                                        loading="lazy"
+                                                                        placeholder="blur"
+                                                                        blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjZGRkIi8+PC9zdmc+"
+                                                                    />
+                                                                </div>
                                                             ))}
                                                             {members.length > 5 && (
                                                                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-theme-purple/20 text-xs font-semibold text-theme-purple">

@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { Menu, X, Sparkles, Shield } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Menu, X, Sparkles, Shield, MapPin, LogOut, Home, User, CalendarDays, Users, Beer, Map, Mail } from "lucide-react";
 import { useAuth } from "@/features/auth/providers/auth-provider";
 import { getImageUrl } from "@/shared/lib/api/salvemundi";
 import { useSalvemundiSiteSettings } from "@/shared/lib/hooks/useSalvemundiApi";
@@ -14,7 +14,8 @@ import { directusFetch } from "@/shared/lib/directus";
 
 const Header: React.FC = () => {
     const pathname = usePathname();
-    const { isAuthenticated, user } = useAuth();
+    const { isAuthenticated, user, logout } = useAuth();
+    const router = useRouter();
     const [menuOpen, setMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const [isCommitteeMember, setIsCommitteeMember] = useState(false);
@@ -116,15 +117,15 @@ const Header: React.FC = () => {
     }, [menuOpen]);
 
     const navItems = [
-        { name: "Home", href: ROUTES.HOME },
-        ...(introEnabled ? [{ name: "Intro", href: ROUTES.INTRO }] : []),
-        { name: "Lidmaatschap", href: ROUTES.MEMBERSHIP },
-        { name: "Activiteiten", href: ROUTES.ACTIVITIES },
-        { name: "Commissies", href: ROUTES.COMMITTEES },
-        ...(kroegentochtEnabled ? [{ name: "Kroegentocht", href: ROUTES.PUB_CRAWL }] : []),
-        ...(reisEnabled ? [{ name: "Reis", href: ROUTES.TRIP }] : []),
-        { name: "Safe Havens", href: "/safe-havens" },
-        { name: "Contact", href: ROUTES.CONTACT },
+        { name: "Home", href: ROUTES.HOME, icon: Home },
+        ...(introEnabled ? [{ name: "Intro", href: ROUTES.INTRO, icon: Sparkles }] : []),
+        { name: "Lidmaatschap", href: ROUTES.MEMBERSHIP, icon: User },
+        { name: "Activiteiten", href: ROUTES.ACTIVITIES, icon: CalendarDays },
+        { name: "Commissies", href: ROUTES.COMMITTEES, icon: Users },
+        ...(kroegentochtEnabled ? [{ name: "Kroegentocht", href: ROUTES.PUB_CRAWL, icon: Beer }] : []),
+        ...(reisEnabled ? [{ name: "Reis", href: ROUTES.TRIP, icon: Map }] : []),
+        { name: "Safe Havens", href: "/safe-havens", icon: MapPin },
+        { name: "Contact", href: ROUTES.CONTACT, icon: Mail },
     ];
 
     const getLinkClassName = (href: string) => {
@@ -330,16 +331,23 @@ const Header: React.FC = () => {
                             </Link>
                         )}
 
-                        {navItems.map((link) => (
-                            <Link
-                                key={link.href}
-                                href={link.href}
-                                onClick={() => setMenuOpen(false)}
-                                className="flex items-center justify-between rounded-2xl bg-[var(--bg-card)]/70 px-4 py-3 text-sm font-semibold text-theme shadow-sm"
-                            >
-                                <span>{link.name}</span>
-                            </Link>
-                        ))}
+                        {navItems.map((link) => {
+                            const Icon = (link as any).icon as any;
+                            return (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    onClick={() => setMenuOpen(false)}
+                                    className="flex items-center justify-between rounded-2xl bg-[var(--bg-card)]/70 px-4 py-3 text-sm font-semibold text-theme shadow-sm"
+                                >
+                                    <span className="flex items-center gap-3">
+                                        {Icon ? <Icon className="h-5 w-5 text-theme" aria-hidden /> : null}
+                                        <span>{link.name}</span>
+                                    </span>
+                                    <span aria-hidden className="text-theme/60">›</span>
+                                </Link>
+                            );
+                        })}
                     </div>
 
                     {!isAuthenticated && (
@@ -352,6 +360,50 @@ const Header: React.FC = () => {
                             Word lid
                         </Link>
                     )}
+
+                    {/* Bottom actions: Stickers + Logout (pinned to bottom) */}
+                    <div className="mt-auto w-full">
+                        <div className="flex items-center justify-between px-2">
+                            <Link
+                                href={ROUTES.STICKERS}
+                                onClick={() => setMenuOpen(false)}
+                                className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-[var(--bg-card)]/70 text-theme shadow-sm"
+                                aria-label="Stickers"
+                            >
+                                <MapPin className="h-5 w-5" aria-hidden />
+                                <span className="sr-only">Stickers</span>
+                            </Link>
+
+                            {isAuthenticated ? (
+                                <button
+                                    type="button"
+                                    onClick={async () => {
+                                        try {
+                                            await logout();
+                                        } catch (e) {
+                                            // ignore
+                                        }
+                                        setMenuOpen(false);
+                                        // Use window.location.href for logout redirect to ensure a clean state
+                                        // and break potential auto-login loops.
+                                        if (typeof window !== 'undefined') {
+                                            window.location.href = "/?noAuto=true";
+                                        } else {
+                                            router.push("/");
+                                        }
+                                    }}
+                                    className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-red-600 text-white shadow-sm"
+                                    aria-label="Logout"
+                                >
+                                    <LogOut className="h-5 w-5" aria-hidden />
+                                    <span className="sr-only">Logout</span>
+                                </button>
+                            ) : (
+                                // keep an empty placeholder to preserve spacing when not authenticated
+                                <div className="h-12 w-12" aria-hidden />
+                            )}
+                        </div>
+                    </div>
                 </nav>
             </div>
 
