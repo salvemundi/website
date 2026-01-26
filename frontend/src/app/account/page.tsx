@@ -21,6 +21,10 @@ import {
   ExternalLink,
   ChevronRight,
   Lock,
+  Upload,
+  Loader2,
+  Check,
+  X,
 } from "lucide-react";
 
 interface EventSignup {
@@ -141,6 +145,10 @@ export default function AccountPage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading, logout, refreshUser, isLoggingOut } =
     useAuth();
+  const fileInputRef = useMemo(() => ({ current: null as HTMLInputElement | null }), []);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const isCommitteeMember = !!(user?.committees && user.committees.length > 0);
 
@@ -244,6 +252,74 @@ export default function AccountPage() {
     }
   };
 
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSelectedFile(file);
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+  };
+
+  const handleCancelAvatar = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setSelectedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleConfirmAvatar = async () => {
+    if (!selectedFile || !user?.id) return;
+
+    setIsUploadingAvatar(true);
+    try {
+      const token = localStorage.getItem("auth_token");
+      const fd = new FormData();
+      fd.append("file", selectedFile);
+
+      const headers: Record<string, string> = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      // 1. Upload the file to Directus
+      const uploadResp = await fetch(`${window.location.origin}/api/files`, {
+        method: "POST",
+        body: fd,
+        headers,
+      });
+
+      if (!uploadResp.ok) throw new Error("Upload failed");
+      const uploadJson = await uploadResp.json();
+      const fileId = uploadJson?.data?.id || uploadJson?.data;
+
+      if (!fileId) throw new Error("No file ID returned");
+
+      // 2. Update the user's avatar in Directus
+      const updateResp = await fetch(`${window.location.origin}/api/users/me`, {
+        method: "PATCH",
+        headers: {
+          ...headers,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ avatar: fileId }),
+      });
+
+      if (!updateResp.ok) throw new Error("Failed to update user profile");
+
+      // 3. Refresh user data to show the new avatar
+      await refreshUser();
+      handleCancelAvatar(); // Cleanup
+    } catch (error) {
+      console.error("Avatar upload failed:", error);
+      alert("Kon profielfoto niet bijwerken. Probeer het opnieuw.");
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
   const membershipStatus = useMemo(() => {
     if (!user?.membership_status || user.membership_status === "none") {
       return {
@@ -303,81 +379,129 @@ export default function AccountPage() {
       <main className="mx-auto max-w-app px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 auto-rows-min">
           {/* Profile */}
-          <Tile className="lg:col-span-8">
-            <div className="flex flex-col gap-8 sm:flex-row sm:items-start">
+          <Tile className="lg:col-span-4 lg:row-span-1">
+            <div className="flex flex-col gap-6 items-center text-center">
               {/* Avatar */}
-              <div className="shrink-0 self-center sm:self-start">
-                {user.avatar ? (
-                  <div className="relative h-28 w-28 sm:h-32 sm:w-32 rounded-full overflow-hidden border-4 border-theme-purple/10 shadow-lg">
+              <div className="relative group shrink-0">
+                <input
+                  type="file"
+                  ref={(el) => { fileInputRef.current = el; }}
+                  onChange={handleAvatarChange}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <div className="relative h-32 w-32 sm:h-40 sm:w-40 rounded-full overflow-hidden border-4 border-theme-purple/10 shadow-lg group-hover:border-theme-purple/30 transition-all">
+                  {previewUrl ? (
+                    <Image
+                      src={previewUrl}
+                      alt="Preview"
+                      fill
+                      sizes="160px"
+                      className="object-cover"
+                    />
+                  ) : user.avatar ? (
                     <Image
                       src={getImageUrl(user.avatar)}
                       alt={`${user.first_name} ${user.last_name}`}
                       fill
-                      sizes="128px"
+                      sizes="160px"
                       className="object-cover"
                       priority
-                      placeholder="blur"
-                      blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2VlZSIvPjwvc3ZnPg=="
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.src = "/img/avatar-placeholder.svg";
                       }}
                     />
+                  ) : (
+                    <div className="h-full w-full bg-theme-purple/5 flex items-center justify-center">
+                      <span className="text-5xl font-bold text-theme-purple dark:text-white">
+                        {user.first_name?.[0]}
+                        {user.last_name?.[0]}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Overlay on hover (only when no preview) */}
+                  {!previewUrl && (
+                    <div
+                      onClick={handleAvatarClick}
+                      className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity"
+                    >
+                      <Upload className="h-8 w-8 text-white" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Mobile change button or confirmation buttons */}
+                {previewUrl ? (
+                  <div className="absolute -bottom-2 flex gap-2">
+                    <button
+                      onClick={handleConfirmAvatar}
+                      disabled={isUploadingAvatar}
+                      className="h-10 w-10 rounded-full bg-green-500 text-white shadow-xl flex items-center justify-center border-2 border-white dark:border-surface-dark hover:scale-105 transition-transform"
+                      title="Bevestigen"
+                    >
+                      {isUploadingAvatar ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <Check className="h-5 w-5" />
+                      )}
+                    </button>
+                    <button
+                      onClick={handleCancelAvatar}
+                      disabled={isUploadingAvatar}
+                      className="h-10 w-10 rounded-full bg-red-500 text-white shadow-xl flex items-center justify-center border-2 border-white dark:border-surface-dark hover:scale-105 transition-transform"
+                      title="Annuleren"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
                   </div>
                 ) : (
-                  <div className="h-28 w-28 sm:h-32 sm:w-32 rounded-full bg-theme-purple/5 flex items-center justify-center border-4 border-theme-purple/10 shadow-lg">
-                    <span className="text-4xl font-bold text-theme-purple dark:text-white">
-                      {user.first_name?.[0]}
-                      {user.last_name?.[0]}
-                    </span>
-                  </div>
+                  <button
+                    onClick={handleAvatarClick}
+                    disabled={isUploadingAvatar}
+                    className="absolute bottom-1 right-1 h-10 w-10 rounded-full bg-theme-purple text-white shadow-xl flex items-center justify-center border-2 border-white dark:border-surface-dark sm:hidden"
+                  >
+                    <Upload className="h-5 w-5" />
+                  </button>
                 )}
               </div>
 
               {/* Info */}
-              <div className="min-w-0 flex-1 text-center sm:text-left">
-                <h2 className="truncate text-3xl sm:text-4xl font-extrabold text-theme-purple dark:text-white">
+              <div className="min-w-0 w-full">
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-theme-purple dark:text-white break-words">
                   {user.first_name && user.last_name
                     ? `${user.first_name} ${user.last_name}`
                     : user.email || "User"}
                 </h2>
 
-                <div className="mt-4 flex flex-wrap justify-center sm:justify-start gap-2.5">
+                <div className="mt-4 flex flex-wrap justify-center gap-2">
                   {user.is_member ? (
-                    <span className="px-3.5 py-1.5 bg-theme-purple text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-sm">
+                    <span className="px-3 py-1 bg-theme-purple text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-sm">
                       Fontys Student
                     </span>
                   ) : (
-                    <span className="px-3.5 py-1.5 bg-theme-purple/5 border border-theme-purple/10 text-theme-purple dark:text-white text-[10px] font-black uppercase tracking-widest rounded-full">
-                      Geregistreerde Gebruiker
+                    <span className="px-3 py-1 bg-theme-purple/5 border border-theme-purple/10 text-theme-purple dark:text-white text-[9px] font-black uppercase tracking-widest rounded-full">
+                      Gebruiker
                     </span>
                   )}
 
                   <span
-                    className={`px-3.5 py-1.5 ${membershipStatus.color} ${membershipStatus.textColor} text-[10px] font-black uppercase tracking-widest rounded-full shadow-sm`}
+                    className={`px-3 py-1 ${membershipStatus.color} ${membershipStatus.textColor} text-[9px] font-black uppercase tracking-widest rounded-full shadow-sm`}
                   >
                     {membershipStatus.text}
                   </span>
                 </div>
 
-                <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="rounded-2xl bg-theme-purple/5 border border-theme-purple/10 px-5 py-4">
-                    <p className="text-[10px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-widest mb-1.5">
-                      Lidmaatschap eindigt
+                <div className="mt-6 flex flex-col gap-3">
+                  <div className="rounded-2xl bg-theme-purple/5 border border-theme-purple/10 px-4 py-3">
+                    <p className="text-[9px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-widest mb-1">
+                      Lidmaatschap tot
                     </p>
-                    <p className="text-base font-bold text-theme-purple dark:text-white">
+                    <p className="text-sm font-bold text-theme-purple dark:text-white">
                       {user.membership_expiry
-                        ? format(new Date(user.membership_expiry), "d MMMM yyyy")
-                        : "Niet van toepassing"}
-                    </p>
-                  </div>
-
-                  <div className="rounded-2xl bg-theme-purple/5 border border-theme-purple/10 px-5 py-4">
-                    <p className="text-[10px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-widest mb-1.5">
-                      E-mailadres
-                    </p>
-                    <p className="text-base font-bold text-theme-purple dark:text-white truncate">
-                      {user.email}
+                        ? format(new Date(user.membership_expiry), "d MMM yyyy")
+                        : "N/A"}
                     </p>
                   </div>
                 </div>
@@ -387,8 +511,8 @@ export default function AccountPage() {
 
           {/* Contact */}
           <Tile
-            className="lg:col-span-4"
-            title="Gegevens"
+            className="lg:col-span-8"
+            title="Mijn gegevens"
             icon={<Mail className="h-5 w-5" />}
           >
             <div className="space-y-5">

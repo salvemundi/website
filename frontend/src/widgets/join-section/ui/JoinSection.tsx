@@ -18,8 +18,6 @@ export default function JoinSection() {
     }
 
     // Determine the text based on membership status
-    const isExpired = isAuthenticated && (user?.membership_status === 'expired' || !user?.is_member);
-
     // Check if the user has ever been a member but it's not active anymore.
     // If they have an expiry date but 'is_member' is false, it's definitely a renewal.
     const isRenewal = isAuthenticated && user?.membership_expiry && !user?.is_member;
