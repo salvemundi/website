@@ -179,6 +179,7 @@ a:hover {
 .bg-gradient-theme span,
 .bg-gradient-theme a,
 .bg-gradient-theme li,
+.bg-gradient-theme label,
 .bg-gradient-theme strong {
   color: rgba(255, 255, 255, 0.95) !important;
 }
@@ -235,65 +236,101 @@ a:hover {
 
 /* --- 7. SHARED FORM ELEMENTS --- */
 /* Consistent input design for all forms (Reis, Contact, etc.) */
+.form-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text-main);
+  letter-spacing: 0.01em;
+}
+
 .form-input {
   width: 100%;
-  padding: 0.75rem 1rem;
-  border-radius: 1rem;
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  transition: all 0.2s ease;
+  padding: 0.875rem 1rem;
+  border-radius: var(--radius-2xl);
+  background-color: var(--bg-soft);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
   font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: var(--font-size-base);
 }
 
 .form-input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
+  opacity: 0.6;
 }
 
 .form-input:focus {
   outline: none;
-  background-color: rgba(255, 255, 255, 0.15);
+  border-color: var(--theme-purple);
+  background-color: var(--bg-card);
+  box-shadow: 0 0 0 4px rgba(164, 83, 155, 0.1);
+  /* Subtle purple glow */
+}
+
+/* --- GLASS VARIANT (Automatically applied on gradient backgrounds) --- */
+.bg-gradient-theme .form-label {
+  color: #ffffff !important;
+}
+
+.bg-gradient-theme .form-input {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff !important;
+  backdrop-filter: blur(8px);
+}
+
+.bg-gradient-theme .form-input::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.bg-gradient-theme .form-input:focus {
+  background-color: rgba(255, 255, 255, 0.2);
   border-color: rgba(255, 255, 255, 0.4);
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
 }
 
-/* Dark mode overrides for form inputs when NOT on a gradient background */
-.dark .form-input:not(.bg-gradient-theme *) {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-.form-label {
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: #ffffff;
-}
-
-/* Base button for forms */
+/* Form Buttons */
 .form-button {
-  background-color: #ffffff;
-  color: var(--color-purple-700);
-  font-weight: 700;
+  width: 100%;
   padding: 1rem 1.5rem;
-  border-radius: 1rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
+  border-radius: var(--radius-2xl);
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  border: none;
+  font-size: var(--font-size-base);
+
+  /* Modern soft-primary style */
+  background-color: var(--theme-purple);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.form-button:hover {
-  background-color: var(--color-white-soft);
+.form-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 25px rgba(164, 83, 155, 0.2);
+  filter: brightness(1.1);
 }
 
 .form-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
+}
+
+/* White variant for dark backgrounds */
+.bg-gradient-theme .form-button {
+  background-color: #ffffff;
+  color: var(--color-purple-800);
+}
+
+.bg-gradient-theme .form-button:hover:not(:disabled) {
+  background-color: var(--color-white-soft);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
 }
