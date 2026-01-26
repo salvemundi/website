@@ -158,12 +158,14 @@ export default function AccountPage() {
     if (user?.minecraft_username) setMinecraftUsername(user.minecraft_username);
   }, [user]);
 
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated && !isLoggingOut) {
       const returnTo = window.location.pathname + window.location.search;
       router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
     }
-  }, [isAuthenticated, authLoading, router]);
+  }, [isAuthenticated, authLoading, router, isLoggingOut]);
 
   useEffect(() => {
     if (user?.id) loadEventSignups();
@@ -203,6 +205,8 @@ export default function AccountPage() {
   };
 
   const handleLogout = async () => {
+    setIsLoggingOut(true);
+
     // Clear any stored return URL to prevent auto-redirects after logout
     try {
       localStorage.removeItem('auth_return_to');
@@ -210,10 +214,16 @@ export default function AccountPage() {
       // ignore
     }
 
-    // We redirect manually first to ensure we land on the login page with ?noAuto=true.
-    // This prevents the useEffect from firing a different redirect during the async logout.
-    router.replace("/login?noAuto=true");
+    // Perform the logout cleanup (clearing tokens, MSAL cache, etc.)
+    // We await this to ensure all session data is cleared before we leave the page.
     await logout();
+
+    // Force a full page reload to the homepage. This breaks the React lifecycle
+    // and prevents any pending effects (like the auto-redirect to login) from firing.
+    // Full reload ensures MSAL internal state is completely reset.
+    if (typeof window !== 'undefined') {
+      window.location.href = "/?noAuto=true";
+    }
   };
 
   const handleSaveMinecraftUsername = async () => {
