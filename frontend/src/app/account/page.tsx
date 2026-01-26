@@ -809,6 +809,7 @@ export default function AccountPage() {
               )}
             </Tile>
           </div>
+        </div>
       </main>
     </div>
   );
