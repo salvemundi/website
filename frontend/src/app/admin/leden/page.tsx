@@ -51,21 +51,21 @@ function isRealUser(member: Member) {
 
 export default function LedenOverzichtPage() {
     const router = useRouter();
-    const { user, isLoading: authLoading } = useAuth();
+    const { user, isLoading: authLoading, isLoggingOut } = useAuth();
     const [members, setMembers] = useState<Member[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState<'active' | 'inactive'>('active');
 
     useEffect(() => {
-        if (!authLoading && !user) {
+        if (!authLoading && !user && !isLoggingOut) {
             const returnTo = window.location.pathname + window.location.search;
             router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
         }
-        if (user && !user.entra_id) {
+        if (user && !user.entra_id && !isLoggingOut) {
             router.push('/admin/no-access');
         }
-    }, [user, authLoading, router]);
+    }, [user, authLoading, router, isLoggingOut]);
 
     const loadMembers = async () => {
         setIsLoading(true);

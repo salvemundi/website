@@ -8,7 +8,7 @@ import NoAccessPage from './no-access/page';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
-    const { user, isLoading: authLoading } = useAuth();
+    const { user, isLoading: authLoading, isLoggingOut } = useAuth();
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [isChecking, setIsChecking] = useState(true);
 
@@ -17,7 +17,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             // Reset authorization when starting a new check
             setIsAuthorized(false);
 
-            if (authLoading) return;
+            if (authLoading || isLoggingOut) return;
 
             if (!user) {
                 const returnTo = window.location.pathname + window.location.search;
