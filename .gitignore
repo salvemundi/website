@@ -43,3 +43,8 @@ RSA
 # Agent helper scripts
 .agent/
 frontend/next-env.d.ts
+
+# Local Rules
+FRONTEND_RULES.md
+.cursorrules
+.windsurfrules
