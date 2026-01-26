@@ -35,3 +35,12 @@ export function isUserAuthorizedForReis(user: any): boolean {
 
     return false;
 }
+
+// Returns true if the given user object (from useAuth) belongs to any committee.
+export function isUserAuthorizedForKroegentocht(user: any): boolean {
+    if (!user) return false;
+
+    const committees: any[] = (user as any).committees || [];
+    // Anyone in any committee can access kroegentocht management
+    return committees.length > 0;
+}
