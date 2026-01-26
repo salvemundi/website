@@ -249,9 +249,9 @@ export default function ReisPage() {
                         <div className="flex flex-col lg:flex-row gap-8 items-start">
                             {/* Form Section */}
                             <section className="w-full lg:w-1/2 bg-gradient-theme rounded-3xl shadow-glow p-6 sm:p-8">
-                                <h2 className="text-3xl font-bold text-white mb-6">
+                                <h1 className="text-3xl font-bold text-white mb-6">
                                     Inschrijven voor de Reis
-                                </h2>
+                                </h1>
 
                                 {submitted ? (
                                     <div className="text-white">
@@ -308,70 +308,75 @@ export default function ReisPage() {
                                             Let op: dit is een vrijblijvende aanmelding. De daadwerkelijke betaling volgt later.
                                         </p>
 
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <div className="flex flex-col gap-1">
-                                                <label className="font-semibold text-white text-sm">Voornaam</label>
+                                        <div className="flex flex-col gap-4">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <label className="font-semibold text-white">
+                                                    Voornaam
+                                                    <input
+                                                        type="text"
+                                                        name="first_name"
+                                                        value={form.first_name}
+                                                        onChange={handleChange}
+                                                        required
+                                                        placeholder="Voornaam"
+                                                        className="mt-1 p-2 rounded-xl w-full bg-theme-white text-theme-purple focus:outline-none focus:ring-2 focus:ring-white/50 transition-all font-medium"
+                                                    />
+                                                    <span className="text-xs text-white/80 mt-1 block">
+                                                        Gebruik je volledige naam zoals op je paspoort/ID
+                                                    </span>
+                                                </label>
+
+                                                <label className="font-semibold text-white">
+                                                    Tussenvoegsel
+                                                    <input
+                                                        type="text"
+                                                        name="middle_name"
+                                                        value={form.middle_name}
+                                                        onChange={handleChange}
+                                                        placeholder="bijv. van, de"
+                                                        className="mt-1 p-2 rounded-xl w-full bg-theme-white text-theme-purple focus:outline-none focus:ring-2 focus:ring-white/50 transition-all font-medium"
+                                                    />
+                                                </label>
+                                            </div>
+
+                                            <label className="font-semibold text-white">
+                                                Achternaam
                                                 <input
                                                     type="text"
-                                                    name="first_name"
-                                                    value={form.first_name}
+                                                    name="last_name"
+                                                    value={form.last_name}
                                                     onChange={handleChange}
                                                     required
-                                                    placeholder="Voornaam"
-                                                    className="p-3 rounded-xl w-full bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
+                                                    placeholder="Achternaam"
+                                                    className="mt-1 p-2 rounded-xl w-full bg-theme-white text-theme-purple focus:outline-none focus:ring-2 focus:ring-white/50 transition-all font-medium"
                                                 />
-                                            </div>
+                                            </label>
 
-                                            <div className="flex flex-col gap-1">
-                                                <label className="font-semibold text-white text-sm">Tussenvoegsel</label>
+                                            <label className="font-semibold text-white">
+                                                E-mailadres
                                                 <input
-                                                    type="text"
-                                                    name="middle_name"
-                                                    value={form.middle_name}
+                                                    type="email"
+                                                    name="email"
+                                                    value={form.email}
                                                     onChange={handleChange}
-                                                    placeholder="bijv. van, de"
-                                                    className="p-3 rounded-xl w-full bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
+                                                    required
+                                                    placeholder="jouw@email.nl"
+                                                    className="mt-1 p-2 rounded-xl w-full bg-theme-white text-theme-purple focus:outline-none focus:ring-2 focus:ring-white/50 transition-all font-medium"
                                                 />
-                                            </div>
-                                        </div>
+                                            </label>
 
-                                        <div className="flex flex-col gap-1">
-                                            <label className="font-semibold text-white text-sm">Achternaam</label>
-                                            <input
-                                                type="text"
-                                                name="last_name"
-                                                value={form.last_name}
-                                                onChange={handleChange}
-                                                required
-                                                placeholder="Achternaam"
-                                                className="p-3 rounded-xl w-full bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
-                                            />
-                                        </div>
-
-                                        <div className="flex flex-col gap-1">
-                                            <label className="font-semibold text-white text-sm">E-mailadres</label>
-                                            <input
-                                                type="email"
-                                                name="email"
-                                                value={form.email}
-                                                onChange={handleChange}
-                                                required
-                                                placeholder="jouw@email.nl"
-                                                className="p-3 rounded-xl w-full bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
-                                            />
-                                        </div>
-
-                                        <div className="flex flex-col gap-1">
-                                            <label className="font-semibold text-white text-sm">Telefoonnummer</label>
-                                            <input
-                                                type="tel"
-                                                name="phone_number"
-                                                value={form.phone_number}
-                                                onChange={handleChange}
-                                                required
-                                                placeholder="+31 6 12345678"
-                                                className="p-3 rounded-xl w-full bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
-                                            />
+                                            <label className="font-semibold text-white">
+                                                Telefoonnummer
+                                                <input
+                                                    type="tel"
+                                                    name="phone_number"
+                                                    value={form.phone_number}
+                                                    onChange={handleChange}
+                                                    required
+                                                    placeholder="+31 6 12345678"
+                                                    className="mt-1 p-2 rounded-xl w-full bg-theme-white text-theme-purple focus:outline-none focus:ring-2 focus:ring-white/50 transition-all font-medium"
+                                                />
+                                            </label>
                                         </div>
 
                                         {/* Terms */}
