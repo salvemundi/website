@@ -42,3 +42,4 @@ RSA
 
 # Agent helper scripts
 .agent/
+frontend/next-env.d.ts
