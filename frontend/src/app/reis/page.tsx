@@ -494,6 +494,30 @@ export default function ReisPage() {
                     </div>
                 )}
             </main>
+
+            {lightboxOpen && lightboxSrc && (
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/70 backdrop-blur-sm"
+                    onClick={closeLightbox}
+                >
+                    <button
+                        onClick={closeLightbox}
+                        aria-label="Sluiten"
+                        className="absolute top-6 right-6 text-white text-4xl leading-none hover:scale-110 transition-transform"
+                    >
+                        ×
+                    </button>
+
+                    <img
+                        src={lightboxSrc}
+                        alt={nextTrip?.name || 'Reis afbeelding'}
+                        className="max-h-[90vh] max-w-full rounded-2xl shadow-2xl animate-fade-in"
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                </div>
+            )}
         </>
     );
 }
