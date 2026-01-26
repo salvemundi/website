@@ -382,9 +382,9 @@ export default function ReisPage() {
                                         />
                                         <span className="text-sm">
                                             Ik accepteer de{' '}
-                                            <Link href="/algemene-voorwaarden" className="underline font-semibold">
+                                            <a href="/reisvoorwaarden.pdf" download className="underline font-semibold" target="_blank" rel="noopener noreferrer">
                                                 algemene voorwaarden
-                                            </Link>
+                                            </a>
                                         </span>
                                     </label>
 
