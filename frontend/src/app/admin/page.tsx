@@ -166,13 +166,15 @@ function ActionCard({
     subtitle,
     icon,
     onClick,
-    colorClass = 'purple'
+    colorClass = 'purple',
+    disabled = false
 }: {
     title: string;
     subtitle?: string;
     icon: React.ReactNode;
     onClick?: () => void;
     colorClass?: 'purple' | 'blue' | 'red' | 'green' | 'orange' | 'teal';
+    disabled?: boolean;
 }) {
     const colorMap: Record<string, string> = {
         purple: 'bg-gradient-to-br from-purple-500 to-purple-600',
@@ -185,12 +187,11 @@ function ActionCard({
 
     return (
         <button
-            onClick={onClick}
-            className={`w-full flex items-center gap-4 p-3 rounded-2xl shadow-sm ${colorMap[colorClass]} text-white hover:scale-[1.01] transition`}
+            onClick={!disabled ? onClick : undefined}
+            disabled={disabled}
+            className={`w-full flex items-center gap-4 p-3 rounded-2xl shadow-sm ${colorMap[colorClass]} text-white ${disabled ? 'opacity-60 cursor-not-allowed hover:scale-100' : 'hover:scale-[1.01] transition'}`}
         >
-            <div className="p-2 bg-white/20 rounded-lg flex items-center justify-center">
-                {icon}
-            </div>
+            <div className={`${disabled ? 'p-2 bg-white/10' : 'p-2 bg-white/20'} rounded-lg flex items-center justify-center`}>{icon}</div>
             <div className="text-left">
                 <p className="text-sm opacity-90">{title}</p>
                 {subtitle && <p className="font-bold text-lg">{subtitle}</p>}
@@ -856,6 +857,7 @@ export default function AdminDashboardPage() {
                                         icon={<FileText className="h-6 w-6" />}
                                         onClick={() => router.push('/admin/intro?tab=blogs&create=1')}
                                         colorClass="blue"
+                                        disabled={!visibilitySettings.intro}
                                     />
                                     <ActionCard
                                         title="Nieuwe"
@@ -864,6 +866,16 @@ export default function AdminDashboardPage() {
                                         onClick={() => router.push('/stickers?add=1')}
                                         colorClass="red"
                                     />
+                                    <div className="sm:col-span-2 mt-2 border-t border-admin-card-soft pt-3">
+                                        <ActionCard
+                                            title="Beheer"
+                                            subtitle="Reis"
+                                            icon={<Activity className="h-6 w-6" />}
+                                            onClick={() => router.push('/admin/reis')}
+                                            colorClass="teal"
+                                            disabled={!(visibilitySettings.reis && canManageReis)}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>

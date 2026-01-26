@@ -126,16 +126,16 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                         <p className="text-xs uppercase tracking-wider text-theme-purple/60 font-semibold">
                             {committeeLabel}
                         </p>
-                        <h3 className="text-lg font-bold text-theme-purple leading-snug">{title}</h3>
+                        <h3 className="text-lg font-bold text-theme-purple/80 leading-snug">{title}</h3>
                         {contact && (
                             <p className="text-sm text-theme-muted mt-1">
-                                <span className="font-medium text-theme-purple/90">Contact:</span>{' '}
+                                <span className="font-medium text-theme-purple/80">Contact:</span>{' '}
                                 <span className="text-theme-muted">{contact}</span>
                             </p>
                         )}
                     </div>
 
-                    <div className="flex flex-row flex-wrap gap-4 text-right text-theme-purple font-semibold">
+                    <div className="flex flex-row flex-wrap gap-4 text-right text-theme-purple/80 font-semibold">
                         <div className="min-w-[160px] text-right">
                             <p className="text-xs text-theme-purple/60 uppercase tracking-wide">Datum & Tijd</p>
                             <p className="text-base">{formatDate(date)}{timeRange ? ` — ${timeRange}` : ''}</p>
@@ -176,7 +176,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     return (
         <div
             onClick={onShowDetails}
-            className={`group relative z-0 overflow-visible w-full rounded-[1.75rem] bg-[var(--bg-card)] dark:border dark:border-white/10 p-5 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 group-hover:z-10 ${isPast ? 'opacity-60 filter grayscale' : ''}`}
+            className={`group relative z-0 overflow-visible w-full sm:w-[360px] md:w-[420px] rounded-[1.75rem] bg-[var(--bg-card)] dark:border dark:border-white/10 p-5 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 group-hover:z-10 ${isPast ? 'opacity-60 filter grayscale' : ''}`}
         >
             <span className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-theme-purple/10 transition-transform duration-500 group-hover:scale-125 pointer-events-none" />
 
@@ -207,7 +207,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
 
             {/* Content Section */}
             <div className="flex flex-col flex-grow relative z-10 space-y-3">
-                <h3 className="text-xl font-bold text-theme-purple leading-snug line-clamp-2">
+                <h3 className="text-xl font-bold text-theme-purple/80 leading-snug line-clamp-2">
                     {title}
                 </h3>
 
@@ -231,7 +231,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                 <div className="flex items-center justify-between pt-4 mt-auto border-t border-slate-100 dark:border-white/5">
                     <div className="flex flex-col">
                         <span className="text-[10px] uppercase font-bold text-theme-purple/50">Prijs</span>
-                        <span className="text-lg font-bold text-theme-purple">€{safePrice}</span>
+                        <span className="text-lg font-bold text-theme-purple/80">€{safePrice}</span>
                     </div>
 
                     <div className="flex gap-2">
