@@ -8,6 +8,9 @@ import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { isValidPhoneNumber } from '@/shared/lib/phone';
 import { Users, Heart, CheckCircle2 } from 'lucide-react';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
+import { nl } from 'date-fns/locale';
 
 export default function IntroPage() {
   const { isAuthenticated, user } = useAuth();
@@ -16,7 +19,7 @@ export default function IntroPage() {
     voornaam: '',
     tussenvoegsel: '',
     achternaam: '',
-    geboortedatum: '',
+    geboortedatum: null as Date | null,
     email: '',
     telefoonnummer: user?.phone_number || '',
     favorieteGif: '',
@@ -122,7 +125,7 @@ export default function IntroPage() {
           first_name: form.voornaam,
           middle_name: form.tussenvoegsel || undefined,
           last_name: form.achternaam,
-          date_of_birth: form.geboortedatum,
+          date_of_birth: form.geboortedatum ? form.geboortedatum.toISOString().split('T')[0] : undefined,
           email: form.email,
           phone_number: form.telefoonnummer,
           favorite_gif: form.favorieteGif || undefined,
@@ -133,7 +136,7 @@ export default function IntroPage() {
           participantFirstName: form.voornaam,
           participantLastName: form.achternaam,
           phoneNumber: form.telefoonnummer,
-          dateOfBirth: form.geboortedatum || undefined,
+          dateOfBirth: form.geboortedatum ? form.geboortedatum.toISOString().split('T')[0] : undefined,
           favoriteGif: form.favorieteGif || undefined,
         }).catch(() => { });
       }
@@ -356,14 +359,20 @@ export default function IntroPage() {
                         </div>
                         <div>
                           <label className="form-label">Geboortedatum *</label>
-                          <input
-                            type="date"
-                            name="geboortedatum"
-                            value={form.geboortedatum}
-                            onChange={handleChange}
-                            required
-                            className="form-input"
-                          />
+                          <div className="w-full">
+                            <DatePicker
+                              selected={form.geboortedatum}
+                              onChange={(date) => setForm(prev => ({ ...prev, geboortedatum: date }))}
+                              dateFormat="dd-MM-yyyy"
+                              locale={nl}
+                              className="form-input"
+                              placeholderText="Selecteer datum"
+                              showYearDropdown
+                              scrollableYearDropdown
+                              yearDropdownItemNumber={100}
+                              required
+                            />
+                          </div>
                         </div>
                         <div>
                           <label className="form-label">Email *</label>

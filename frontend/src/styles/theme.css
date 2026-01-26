@@ -329,3 +329,119 @@ textarea.form-input {
   background-color: var(--color-white-soft);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
 }
+
+/* --- 8. VENDOR OVERRIDES (React DatePicker, etc.) --- */
+/* Custom styling for the date picker popup to match our premium look */
+
+.react-datepicker {
+  font-family: inherit !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-2xl) !important;
+  background-color: var(--bg-card) !important;
+  box-shadow: var(--shadow-card-elevated) !important;
+  overflow: hidden;
+  color: var(--text-main) !important;
+}
+
+.react-datepicker__header {
+  background-color: var(--theme-purple) !important;
+  border-bottom: none !important;
+  padding-top: 1rem !important;
+  border-radius: 0 !important;
+}
+
+.react-datepicker__current-month,
+.react-datepicker-time__header,
+.react-datepicker-year-header {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.9rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.react-datepicker__day-name {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-weight: 600 !important;
+}
+
+.react-datepicker__day {
+  color: var(--text-main) !important;
+  border-radius: 0.5rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-datepicker__day:hover {
+  background-color: var(--color-purple-50) !important;
+  color: var(--color-purple-600) !important;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: var(--theme-purple) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 10px rgba(var(--color-purple-500-rgb), 0.3) !important;
+}
+
+.react-datepicker__day--outside-month {
+  color: var(--text-muted) !important;
+  opacity: 0.4 !important;
+}
+
+.react-datepicker__navigation {
+  top: 1rem !important;
+}
+
+.react-datepicker__navigation-icon::before {
+  border-color: #ffffff !important;
+}
+
+/* Dark Mode support for DatePicker */
+.dark .react-datepicker {
+  background-color: var(--bg-card) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .react-datepicker__header {
+  background-color: #2d1b2d !important;
+  /* Slightly darker than card */
+}
+
+.dark .react-datepicker__day {
+  color: #ffffff !important;
+}
+
+.dark .react-datepicker__day:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+.dark .react-datepicker__day--selected {
+  background-color: var(--theme-purple) !important;
+}
+
+/* Dropdown/Year Picker Styles */
+.react-datepicker__year-read-view--down-arrow,
+.react-datepicker__month-read-view--down-arrow {
+  border-color: #ffffff !important;
+}
+
+.react-datepicker__year-dropdown,
+.react-datepicker__month-dropdown {
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0.5rem !important;
+  box-shadow: var(--shadow-card-elevated) !important;
+}
+
+.react-datepicker__year-option:hover,
+.react-datepicker__month-option:hover {
+  background-color: var(--color-purple-50) !important;
+}
+
+.dark .react-datepicker__year-option:hover,
+.dark .react-datepicker__month-option:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
