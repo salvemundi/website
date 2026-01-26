@@ -97,6 +97,7 @@ export default function EventsSection() {
                                         title={event.name}
                                         category={event.committee_name || 'Salve Mundi'}
                                         date={renderDate(event.event_date)}
+                                        href={`/activiteiten/${event.id}`}
                                     />
                                 </div>
                             ))}
