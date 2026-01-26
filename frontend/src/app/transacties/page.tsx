@@ -20,7 +20,25 @@ function TransactionsContent() {
         }
     }, [user, authLoading, router, isLoggingOut]);
 
-    const getTransactionTypeColor = (type: string) => {
+    const getInferredTransactionType = (t: Transaction) => {
+        if (t.transaction_type) return t.transaction_type;
+
+        const desc = (t.product_name || t.description || '').toLowerCase();
+
+        if (t.registration || t.pub_crawl_signup || desc.includes('event') || desc.includes('activiteit') || desc.includes('inschrijving')) {
+            return 'event';
+        }
+        if (t.trip_signup || desc.includes('reis')) {
+            return 'event';
+        }
+        if (desc.includes('lidmaatschap') || desc.includes('contributie') || desc.includes('membership')) {
+            return 'membership';
+        }
+
+        return 'payment';
+    };
+
+    const getTransactionTypeColor = (type: string | undefined) => {
         switch (type) {
             case 'membership':
                 return 'bg-theme-purple-lighter text-theme-purple-darker';
@@ -137,11 +155,11 @@ function TransactionsContent() {
                                                     {format(new Date(transaction.created_at), 'd MMM yyyy HH:mm')}
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-gray-900">
-                                                    {transaction.description}
+                                                    {transaction.product_name || transaction.description || 'Geen beschrijving'}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getTransactionTypeColor(transaction.transaction_type)}`}>
-                                                        {transaction.transaction_type}
+                                                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getTransactionTypeColor(getInferredTransactionType(transaction))}`}>
+                                                        {getInferredTransactionType(transaction)}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
@@ -169,7 +187,7 @@ function TransactionsContent() {
                                         <div className="flex justify-between items-start mb-2">
                                             <div className="flex-1">
                                                 <h3 className="font-semibold text-paars mb-1">
-                                                    {transaction.description}
+                                                    {transaction.product_name || transaction.description || 'Geen beschrijving'}
                                                 </h3>
                                                 <p className="text-sm text-paars/70">
                                                     {format(new Date(transaction.created_at), 'd MMMM yyyy')}
@@ -182,8 +200,8 @@ function TransactionsContent() {
                                             </div>
                                         </div>
                                         <div className="flex gap-2 mt-3">
-                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getTransactionTypeColor(transaction.transaction_type)}`}>
-                                                {transaction.transaction_type}
+                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getTransactionTypeColor(getInferredTransactionType(transaction))}`}>
+                                                {getInferredTransactionType(transaction)}
                                             </span>
                                             <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(transaction.payment_status || transaction.status)}`}>
                                                 {(transaction.payment_status === 'completed' || transaction.payment_status === 'paid' || transaction.status === 'completed' || transaction.status === 'paid') ? 'Betaald' :
