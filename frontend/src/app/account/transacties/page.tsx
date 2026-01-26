@@ -13,7 +13,12 @@ function TransactionsContent() {
     const { user, isLoading: authLoading } = useAuth();
     const { data: transactions = [], isLoading: transactionsLoading, error, refetch } = useSalvemundiTransactions(user?.id);
 
-    const successfulTransactions = transactions.filter((t: Transaction) => t.status === 'completed');
+    const successfulTransactions = transactions.filter((t: Transaction) =>
+        t.status === 'completed' ||
+        t.status === 'paid' ||
+        t.payment_status === 'completed' ||
+        t.payment_status === 'paid'
+    );
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -35,13 +40,18 @@ function TransactionsContent() {
         }
     };
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
+    const getStatusColor = (status: string | undefined) => {
+        const s = status?.toLowerCase();
+        switch (s) {
             case 'completed':
+            case 'paid':
                 return 'bg-green-500 text-theme-white';
             case 'pending':
+            case 'open':
                 return 'bg-yellow-500 text-theme-white';
             case 'failed':
+            case 'canceled':
+            case 'expired':
                 return 'bg-theme-purple text-theme-white';
             default:
                 return 'bg-soft text-main';
@@ -153,9 +163,9 @@ function TransactionsContent() {
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(transaction.status)}`}>
-                                                        {transaction.status === 'completed' ? 'Betaald' :
-                                                            transaction.status === 'pending' ? 'In afwachting' : 'Mislukt'}
+                                                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(transaction.payment_status || transaction.status)}`}>
+                                                        {(transaction.payment_status === 'completed' || transaction.payment_status === 'paid' || transaction.status === 'completed' || transaction.status === 'paid') ? 'Betaald' :
+                                                            (transaction.payment_status === 'pending' || transaction.status === 'pending') ? 'In afwachting' : 'Mislukt'}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-main text-right font-medium">
@@ -193,9 +203,9 @@ function TransactionsContent() {
                                             <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getTransactionTypeColor(transaction.transaction_type)}`}>
                                                 {transaction.transaction_type}
                                             </span>
-                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(transaction.status)}`}>
-                                                {transaction.status === 'completed' ? 'Betaald' :
-                                                    transaction.status === 'pending' ? 'In afwachting' : 'Mislukt'}
+                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(transaction.payment_status || transaction.status)}`}>
+                                                {(transaction.payment_status === 'completed' || transaction.payment_status === 'paid' || transaction.status === 'completed' || transaction.status === 'paid') ? 'Betaald' :
+                                                    (transaction.payment_status === 'pending' || transaction.status === 'pending') ? 'In afwachting' : 'Mislukt'}
                                             </span>
                                         </div>
                                     </div>
