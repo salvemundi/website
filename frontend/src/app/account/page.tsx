@@ -112,18 +112,21 @@ function QuickLink({
   external?: boolean;
 }) {
   const common =
-    "group flex flex-col items-center justify-center gap-3 rounded-2xl bg-theme-purple/5 dark:bg-white/5 p-4 text-center transition hover:bg-theme-purple/10 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-theme-purple/30 aspect-square border border-transparent hover:border-theme-purple/20 shadow-sm";
+    "group flex items-center gap-4 rounded-2xl bg-theme-purple/5 dark:bg-white/5 p-4 transition hover:bg-theme-purple/10 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-theme-purple/30 border border-transparent hover:border-theme-purple/20 shadow-sm w-full";
   const inner = (
     <>
-      <div className="rounded-full bg-theme-purple/10 dark:bg-white/10 p-4 text-theme-purple dark:text-white transition-transform group-hover:scale-110">
-        {icon}
+      <div className="rounded-xl bg-theme-purple/10 dark:bg-white/10 p-2.5 text-theme-purple dark:text-white transition-transform group-hover:scale-105">
+        {React.cloneElement(icon as React.ReactElement, { className: "h-5 w-5" })}
       </div>
-      <span className="flex items-center gap-1.5 text-sm font-bold text-theme-purple/90 dark:text-white/90">
-        {label}
-        {locked ? <Lock className="h-3 w-3 opacity-50" /> : null}
-        {external ? (
-          <ExternalLink className="h-3 w-3 opacity-50" />
-        ) : null}
+      <span className="flex-1 flex items-center justify-between text-sm font-bold text-theme-purple/90 dark:text-white/90">
+        <span>{label}</span>
+        <div className="flex items-center gap-2">
+          {locked ? <Lock className="h-3 w-3 opacity-50" /> : null}
+          {external ? (
+            <ExternalLink className="h-3 w-3 opacity-50" />
+          ) : null}
+          <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
       </span>
     </>
   );
@@ -384,7 +387,7 @@ export default function AccountPage() {
       </PageHeader>
 
       <main className="mx-auto max-w-app px-4 py-8 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-x-5 gap-y-4 md:grid-cols-12 auto-rows-min items-start">
+        <div className="grid grid-cols-1 gap-x-5 gap-y-0 md:grid-cols-12 auto-rows-min items-start">
           {/* Profile */}
           <Tile className="md:col-span-5 lg:col-span-4 lg:row-span-1 h-fit">
             <div className="flex flex-col gap-6 items-center text-center">
@@ -649,11 +652,11 @@ export default function AccountPage() {
 
           {/* Quick links */}
           <Tile
-            className="lg:col-span-8 h-fit"
+            className="lg:col-span-8 h-fit self-stretch"
             title="Snelle links"
             icon={<ChevronRight />}
           >
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <QuickLink
                 label="Transacties"
                 icon={<CreditCard className="h-6 w-6" />}
