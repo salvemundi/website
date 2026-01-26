@@ -383,8 +383,8 @@ export default function AccountPage() {
         </div>
       </PageHeader>
 
-      <main className="mx-auto max-w-app px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-12 auto-rows-min items-start">
+      <main className="mx-auto max-w-app px-4 py-8 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-12 auto-rows-min items-start">
           {/* Profile */}
           <Tile className="md:col-span-5 lg:col-span-4 lg:row-span-1 h-fit">
             <div className="flex flex-col gap-6 items-center text-center">
@@ -530,70 +530,62 @@ export default function AccountPage() {
             className="md:col-span-7 lg:col-span-8 h-fit"
             title="Mijn gegevens"
             icon={<Mail />}
-            centeredTitle
           >
-            <div className="flex flex-col items-center gap-y-8 py-4">
-              <div className="flex flex-col items-center text-center w-full max-w-3xl px-6">
-                <div className="mb-4 rounded-2xl bg-theme-purple/5 p-4 text-theme-purple dark:text-white shadow-inner">
-                  <Mail className="h-6 w-6 sm:h-8 sm:w-8" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex items-center gap-4 rounded-2xl bg-theme-purple/5 p-4 border border-theme-purple/5">
+                <div className="shrink-0 rounded-xl bg-white/50 dark:bg-black/20 p-2.5 text-theme-purple dark:text-white shadow-sm">
+                  <Mail className="h-5 w-5" />
                 </div>
-                <p
-                  className="font-black uppercase tracking-[0.25em] mb-2 text-theme-purple/40 dark:text-white/30"
-                  style={{ fontSize: 'var(--font-size-xs)' }}
-                >
-                  E-mailadres
-                </p>
-                <div className="w-full">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] text-theme-purple/40 dark:text-white/30 font-black uppercase tracking-wider mb-0.5">
+                    E-mailadres
+                  </p>
                   <p
-                    className="font-bold text-theme-purple dark:text-white leading-[1.2] break-words"
-                    style={{ fontSize: 'var(--font-size-lg)' }}
+                    className="font-bold text-theme-purple dark:text-white truncate"
+                    style={{ fontSize: 'var(--font-size-base)' }}
                     title={user.email}
                   >
-                    {user.email.split('@')[0]}<wbr />@<wbr />{user.email.split('@')[1]}
+                    {user.email}
                   </p>
                 </div>
               </div>
 
               {user.fontys_email ? (
-                <div className="flex flex-col items-center text-center w-full max-w-3xl px-6 border-t border-theme-purple/5 pt-8">
-                  <div className="mb-4 rounded-2xl bg-theme-purple/5 p-4 text-theme-purple dark:text-white shadow-inner">
-                    <Mail className="h-6 w-6 sm:h-8 sm:w-8" />
+                <div className="flex items-center gap-4 rounded-2xl bg-theme-purple/5 p-4 border border-theme-purple/5">
+                  <div className="shrink-0 rounded-xl bg-white/50 dark:bg-black/20 p-2.5 text-theme-purple dark:text-white shadow-sm">
+                    <Mail className="h-5 w-5" />
                   </div>
-                  <p
-                    className="font-black uppercase tracking-[0.25em] mb-2 text-theme-purple/40 dark:text-white/30"
-                    style={{ fontSize: 'var(--font-size-xs)' }}
-                  >
-                    Fontys e-mail
-                  </p>
-                  <div className="w-full">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] text-theme-purple/40 dark:text-white/30 font-black uppercase tracking-wider mb-0.5">
+                      Fontys e-mail
+                    </p>
                     <p
-                      className="font-bold text-theme-purple dark:text-white leading-[1.2] break-words"
-                      style={{ fontSize: 'var(--font-size-lg)' }}
+                      className="font-bold text-theme-purple dark:text-white truncate"
+                      style={{ fontSize: 'var(--font-size-base)' }}
                       title={user.fontys_email}
                     >
-                      {user.fontys_email.split('@')[0]}<wbr />@<wbr />{user.fontys_email.split('@')[1]}
+                      {user.fontys_email}
                     </p>
                   </div>
                 </div>
               ) : null}
 
               {user.phone_number ? (
-                <div className="flex flex-col items-center text-center w-full max-w-3xl px-6 border-t border-theme-purple/5 pt-8">
-                  <div className="mb-4 rounded-2xl bg-theme-purple/5 p-4 text-theme-purple dark:text-white shadow-inner">
-                    <Phone className="h-6 w-6 sm:h-8 sm:w-8" />
+                <div className="flex items-center gap-4 rounded-2xl bg-theme-purple/5 p-4 border border-theme-purple/5">
+                  <div className="shrink-0 rounded-xl bg-white/50 dark:bg-black/20 p-2.5 text-theme-purple dark:text-white shadow-sm">
+                    <Phone className="h-5 w-5" />
                   </div>
-                  <p
-                    className="font-black uppercase tracking-[0.25em] mb-2 text-theme-purple/40 dark:text-white/30"
-                    style={{ fontSize: 'var(--font-size-xs)' }}
-                  >
-                    Telefoonnummer
-                  </p>
-                  <p
-                    className="font-bold text-theme-purple dark:text-white"
-                    style={{ fontSize: 'var(--font-size-lg)' }}
-                  >
-                    {user.phone_number}
-                  </p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] text-theme-purple/40 dark:text-white/30 font-black uppercase tracking-wider mb-0.5">
+                      Telefoonnummer
+                    </p>
+                    <p
+                      className="font-bold text-theme-purple dark:text-white"
+                      style={{ fontSize: 'var(--font-size-base)' }}
+                    >
+                      {user.phone_number}
+                    </p>
+                  </div>
                 </div>
               ) : null}
             </div>
