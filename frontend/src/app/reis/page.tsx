@@ -310,7 +310,7 @@ export default function ReisPage() {
 
                                         <div className="flex flex-col gap-4">
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                <label className="font-semibold text-white">
+                                                <label className="form-label">
                                                     Voornaam
                                                     <input
                                                         type="text"
@@ -319,14 +319,14 @@ export default function ReisPage() {
                                                         onChange={handleChange}
                                                         required
                                                         placeholder="Voornaam"
-                                                        className="mt-1 p-2 rounded-xl w-full bg-theme-white text-theme-purple focus:outline-none focus:ring-2 focus:ring-white/50 transition-all font-medium"
+                                                        className="form-input mt-1"
                                                     />
-                                                    <span className="text-xs text-white/80 mt-1 block">
+                                                    <span className="text-xs text-white/80 mt-1 block font-normal">
                                                         Gebruik je volledige naam zoals op je paspoort/ID
                                                     </span>
                                                 </label>
 
-                                                <label className="font-semibold text-white">
+                                                <label className="form-label">
                                                     Tussenvoegsel
                                                     <input
                                                         type="text"
@@ -334,12 +334,12 @@ export default function ReisPage() {
                                                         value={form.middle_name}
                                                         onChange={handleChange}
                                                         placeholder="bijv. van, de"
-                                                        className="mt-1 p-2 rounded-xl w-full bg-theme-white text-theme-purple focus:outline-none focus:ring-2 focus:ring-white/50 transition-all font-medium"
+                                                        className="form-input mt-1"
                                                     />
                                                 </label>
                                             </div>
 
-                                            <label className="font-semibold text-white">
+                                            <label className="form-label">
                                                 Achternaam
                                                 <input
                                                     type="text"
@@ -348,11 +348,11 @@ export default function ReisPage() {
                                                     onChange={handleChange}
                                                     required
                                                     placeholder="Achternaam"
-                                                    className="mt-1 p-2 rounded-xl w-full bg-theme-white text-theme-purple focus:outline-none focus:ring-2 focus:ring-white/50 transition-all font-medium"
+                                                    className="form-input mt-1"
                                                 />
                                             </label>
 
-                                            <label className="font-semibold text-white">
+                                            <label className="form-label">
                                                 E-mailadres
                                                 <input
                                                     type="email"
@@ -361,11 +361,11 @@ export default function ReisPage() {
                                                     onChange={handleChange}
                                                     required
                                                     placeholder="jouw@email.nl"
-                                                    className="mt-1 p-2 rounded-xl w-full bg-theme-white text-theme-purple focus:outline-none focus:ring-2 focus:ring-white/50 transition-all font-medium"
+                                                    className="form-input mt-1"
                                                 />
                                             </label>
 
-                                            <label className="font-semibold text-white">
+                                            <label className="form-label">
                                                 Telefoonnummer
                                                 <input
                                                     type="tel"
@@ -374,20 +374,20 @@ export default function ReisPage() {
                                                     onChange={handleChange}
                                                     required
                                                     placeholder="+31 6 12345678"
-                                                    className="mt-1 p-2 rounded-xl w-full bg-theme-white text-theme-purple focus:outline-none focus:ring-2 focus:ring-white/50 transition-all font-medium"
+                                                    className="form-input mt-1"
                                                 />
                                             </label>
                                         </div>
 
                                         {/* Terms */}
-                                        <label className="flex items-start gap-2 text-white">
+                                        <label className="flex items-start gap-2 text-white mt-2">
                                             <input
                                                 type="checkbox"
                                                 name="terms_accepted"
                                                 checked={form.terms_accepted}
                                                 onChange={handleChange}
                                                 required
-                                                className="mt-1 h-5 w-5 rounded"
+                                                className="mt-1 h-5 w-5 rounded accent-white/20"
                                             />
                                             <span className="text-sm">
                                                 Ik accepteer de{' '}
@@ -400,7 +400,7 @@ export default function ReisPage() {
                                         <button
                                             type="submit"
                                             disabled={loading || !canSignUp || !nextTrip}
-                                            className="bg-white text-theme-purple font-bold py-4 px-6 rounded-2xl shadow-lg shadow-black/10 transition-all hover:bg-white-soft hover:-translate-y-0.5 mt-4 disabled:opacity-50 disabled:cursor-not-allowed group flex items-center justify-center gap-2"
+                                            className="form-button mt-4 group"
                                         >
                                             <span>
                                                 {loading

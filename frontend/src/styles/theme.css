@@ -168,6 +168,7 @@ a:hover {
 .bg-gradient-theme {
   background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
 }
+
 /* Improve text contrast for gradient-themed cards (kroegentocht, reis, etc.) */
 .bg-gradient-theme,
 .bg-gradient-theme h1,
@@ -179,15 +180,16 @@ a:hover {
 .bg-gradient-theme a,
 .bg-gradient-theme li,
 .bg-gradient-theme strong {
-  color: rgba(255,255,255,0.95) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
 }
 
 /* Slightly muted items (bullets, helper text) but still high contrast */
 .bg-gradient-theme .muted,
 .bg-gradient-theme .subtle,
 .bg-gradient-theme small {
-  color: rgba(255,255,255,0.82) !important;
+  color: rgba(255, 255, 255, 0.82) !important;
 }
+
 /* Page header gradient (fallback when no image) */
 .bg-gradient-theme-page-alt {
   background: linear-gradient(135deg, #f4e9f3, #e4cbe2);
@@ -229,4 +231,69 @@ a:hover {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: gradientShift 3s ease infinite;
+}
+
+/* --- 7. SHARED FORM ELEMENTS --- */
+/* Consistent input design for all forms (Reis, Contact, etc.) */
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.form-input:focus {
+  outline: none;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+}
+
+/* Dark mode overrides for form inputs when NOT on a gradient background */
+.dark .form-input:not(.bg-gradient-theme *) {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #ffffff;
+}
+
+/* Base button for forms */
+.form-button {
+  background-color: #ffffff;
+  color: var(--color-purple-700);
+  font-weight: 700;
+  padding: 1rem 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.form-button:hover {
+  background-color: var(--color-white-soft);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.form-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
