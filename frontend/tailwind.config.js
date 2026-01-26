@@ -125,7 +125,9 @@ export default {
       },
 
       maxWidth: {
-        app: "7xl",
+        // Use an explicit max-width so Tailwind outputs a valid CSS value.
+        // 7xl in Tailwind equals 80rem (1280px). Use that so containers expand on wide screens.
+        app: "80rem",
       },
 
       backgroundImage: {
