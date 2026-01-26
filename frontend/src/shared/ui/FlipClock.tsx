@@ -92,16 +92,16 @@ const SlotUnit = ({ value, label }: { value: string | number; label: string }) =
             {/* The Machine Case / Bezel */}
             <div className="relative p-1 rounded-xl bg-gradient-to-b from-theme-purple-light to-theme-purple-dark shadow-xl">
                 {/* The Recessed Reel Window */}
-                <div className="relative bg-[#f0f0f0] dark:bg-[#1a1a1a] rounded-lg p-2 sm:p-3 w-16 sm:w-22 h-20 sm:h-24 flex items-center justify-center overflow-hidden border-2 border-black/20">
+                <div className="relative bg-[#111] rounded-lg p-1 sm:p-2 min-w-[3.5rem] sm:min-w-[4.5rem] h-20 sm:h-24 flex items-center justify-center overflow-hidden border-2 border-black/20">
 
                     {/* Inner Shadow (Curved Reel Effect) */}
-                    <div className="absolute inset-0 pointer-events-none z-20 shadow-[inset_0_10px_15px_rgba(0,0,0,0.3),inset_0_-10px_15px_rgba(0,0,0,0.3)] rounded-lg"></div>
+                    <div className="absolute inset-0 pointer-events-none z-20 shadow-[inset_0_15px_15px_rgba(0,0,0,0.4),inset_0_-15px_15px_rgba(0,0,0,0.4)] rounded-lg"></div>
 
                     {/* Glass Reflection Overlay */}
-                    <div className="absolute inset-0 pointer-events-none z-30 bg-gradient-to-b from-white/30 to-transparent opacity-50 rounded-lg"></div>
+                    <div className="absolute inset-0 pointer-events-none z-30 bg-gradient-to-b from-white/10 via-transparent to-white/5 opacity-50 rounded-lg"></div>
 
-                    {/* Digits */}
-                    <div className="flex items-center justify-center gap-1 z-10">
+                    {/* Digits Container */}
+                    <div className="flex items-center justify-center gap-[2px] z-10 h-full px-1">
                         {digits.map((digit, index) => (
                             <SlotDigit key={index} digit={digit} />
                         ))}
@@ -118,24 +118,24 @@ const SlotUnit = ({ value, label }: { value: string | number; label: string }) =
 
 const SlotDigit = ({ digit }: { digit: string }) => {
     return (
-        <div className="relative w-6 sm:w-7 h-10 sm:h-12 overflow-hidden flex justify-center items-center">
-            {/* Divider Line between numbers (optional, visual separation) */}
+        <div className="relative w-7 sm:w-9 h-full overflow-hidden flex justify-center items-center bg-[#1a1a1a] rounded-[2px]">
+            {/* The moving reel tape */}
             <AnimatePresence mode="popLayout">
-                <motion.span
+                <motion.div
                     key={digit}
-                    initial={{ y: '150%', opacity: 0, filter: 'blur(5px)' }}
-                    animate={{ y: '0%', opacity: 1, filter: 'blur(0px)' }}
-                    exit={{ y: '-150%', opacity: 0, filter: 'blur(5px)' }}
+                    initial={{ y: '-100%' }}
+                    animate={{ y: '0%' }}
+                    exit={{ y: '100%' }}
                     transition={{
-                        y: { type: "spring", stiffness: 120, damping: 18, mass: 0.8 },
-                        opacity: { duration: 0.2 },
-                        filter: { duration: 0.2 }
+                        y: { type: "spring", stiffness: 100, damping: 20, mass: 1 },
                     }}
-                    className="absolute text-3xl sm:text-4xl font-black font-mono text-theme-purple-dark dark:text-theme-purple-light"
-                    style={{ textShadow: '0 1px 2px rgba(0,0,0,0.1)' }}
+                    className="absolute inset-0 flex items-center justify-center bg-[#f0f0f0] dark:bg-[#2a2a2a] border-x border-black/10"
                 >
-                    {digit}
-                </motion.span>
+                    <span className="text-3xl sm:text-4xl font-black font-mono text-theme-purple-dark dark:text-theme-purple-light"
+                        style={{ textShadow: '0 1px 1px rgba(0,0,0,0.1)' }}>
+                        {digit}
+                    </span>
+                </motion.div>
             </AnimatePresence>
         </div>
     );
