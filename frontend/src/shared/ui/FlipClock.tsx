@@ -61,13 +61,13 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href }) => {
             {title && (
                 href ? (
                     <div>
-                        <Link href={href} className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white hover:text-purple-100 transition drop-shadow-md block mb-4">
+                        <Link href={href} className="text-2xl sm:text-3xl font-extrabold text-white hover:text-purple-100 transition drop-shadow-md block mb-4">
                             {title}
                         </Link>
                     </div>
                 ) : (
                     <div>
-                        <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white drop-shadow-md mb-4">{title}</div>
+                        <div className="text-2xl sm:text-3xl font-extrabold text-white drop-shadow-md mb-4">{title}</div>
                     </div>
                 )
             )}
