@@ -139,7 +139,7 @@ function QuickLink({
 
 export default function AccountPage() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading: authLoading, logout, refreshUser } =
+  const { user, isAuthenticated, isLoading: authLoading, logout, refreshUser, isLoggingOut } =
     useAuth();
 
   const isCommitteeMember = !!(user?.committees && user.committees.length > 0);
@@ -158,7 +158,7 @@ export default function AccountPage() {
     if (user?.minecraft_username) setMinecraftUsername(user.minecraft_username);
   }, [user]);
 
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated && !isLoggingOut) {
@@ -205,7 +205,6 @@ export default function AccountPage() {
   };
 
   const handleLogout = async () => {
-    setIsLoggingOut(true);
 
     // Clear any stored return URL to prevent auto-redirects after logout
     try {

@@ -384,7 +384,13 @@ const Header: React.FC = () => {
                                             // ignore
                                         }
                                         setMenuOpen(false);
-                                        router.push(ROUTES.HOME);
+                                        // Use window.location.href for logout redirect to ensure a clean state
+                                        // and break potential auto-login loops.
+                                        if (typeof window !== 'undefined') {
+                                            window.location.href = "/?noAuto=true";
+                                        } else {
+                                            router.push("/");
+                                        }
                                     }}
                                     className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-red-600 text-white shadow-sm"
                                     aria-label="Logout"
