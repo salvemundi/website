@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import { isUserAuthorizedForReis } from '@/shared/lib/committee-utils';
+import { isUserAuthorizedForReis, isUserAuthorizedForKroegentocht } from '@/shared/lib/committee-utils';
 import { directusFetch } from '@/shared/lib/directus';
 import { stickersApi, eventsApi, siteSettingsApi } from '@/shared/lib/api/salvemundi';
 import {
@@ -20,6 +20,7 @@ import {
     AlertCircle,
     Activity,
     Ticket,
+    Plane,
 } from 'lucide-react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 
@@ -49,6 +50,7 @@ interface DashboardStats {
     upcomingPubCrawl?: { id: number; name: string; date: string };
     pubCrawlTickets?: number;
     pubCrawlGroups?: number;
+    reisSignups: number;
 }
 
 function StatCard({
@@ -149,12 +151,12 @@ function ListCard({
     children: React.ReactNode;
 }) {
     return (
-        <div className="bg-admin-card rounded-2xl shadow-lg p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
             <div className="flex items-center gap-3 mb-4">
-                <div className="bg-admin-card-soft p-2 rounded-xl text-theme-purple">
+                <div className="bg-theme-purple/10 dark:bg-theme-purple/20 p-2 rounded-xl text-theme-purple">
                     {icon}
                 </div>
-                <h3 className="text-lg font-bold text-admin">{title}</h3>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h3>
             </div>
             {children}
         </div>
@@ -210,6 +212,7 @@ export default function AdminDashboardPage() {
     const fakeLocalUser = localBypass ? ({ id: 'local-admin', first_name: 'Local', last_name: 'Admin', committees: [] } as any) : null;
     const effectiveUser = user ?? fakeLocalUser;
     const canManageReis = isUserAuthorizedForReis(effectiveUser);
+    const canManageKroegentocht = isUserAuthorizedForKroegentocht(effectiveUser);
     const [stats, setStats] = useState<DashboardStats>({
         totalSignups: 0,
         upcomingBirthdays: [],
@@ -231,6 +234,7 @@ export default function AdminDashboardPage() {
         upcomingPubCrawl: undefined,
         pubCrawlTickets: 0,
         pubCrawlGroups: 0,
+        reisSignups: 0,
     });
     const [isIctMember, setIsIctMember] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -294,7 +298,8 @@ export default function AdminDashboardPage() {
                 latestEventsDetail,
                 topCommittee,
                 couponsData,
-                pubCrawlStats
+                pubCrawlStats,
+                reisStats
             ] = await Promise.all([
                 // Total event signups
                 directusFetch<any>('/items/event_signups?aggregate[count]=*'),
@@ -322,7 +327,9 @@ export default function AdminDashboardPage() {
                 // (moved for ordering above)
                 directusFetch<any>('/items/coupons?aggregate[count]=*&filter[is_active][_eq]=true').catch(() => [{ count: 0 }]),
                 // Pub crawl stats
-                fetchPubCrawlStats()
+                fetchPubCrawlStats(),
+                // Reis signups
+                fetchReisStats()
             ]);
 
             setStats({
@@ -346,6 +353,7 @@ export default function AdminDashboardPage() {
                 upcomingPubCrawl: pubCrawlStats.upcomingEvent,
                 pubCrawlTickets: pubCrawlStats.totalTickets || 0,
                 pubCrawlGroups: pubCrawlStats.groups || 0,
+                reisSignups: reisStats,
             });
         } catch (error) {
             console.error('Failed to load dashboard data:', error);
@@ -760,16 +768,27 @@ export default function AdminDashboardPage() {
         }
     };
 
+    const fetchReisStats = async () => {
+        try {
+            // Get all trip signups
+            const signupsData = await directusFetch<any[]>('/items/trip_signups?aggregate[count]=*');
+            return signupsData?.[0]?.count || 0;
+        } catch (error) {
+            console.error('Failed to fetch reis signups:', error);
+            return 0;
+        }
+    };
+
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
     };
 
     const activeAdmin = visibilitySettings.kroegentocht
-        ? { title: 'Kroegentocht', link: '/admin/kroegentocht' }
+        ? { title: 'Kroegentocht', link: '/admin/kroegentocht', color: 'orange' as const }
         : canManageReis
-            ? { title: 'Reis', link: '/admin/reis' }
-            : { title: 'Stickers', link: '/stickers' };
+            ? { title: 'Reis', link: '/admin/reis', color: 'teal' as const }
+            : { title: 'Stickers', link: '/stickers', color: 'red' as const };
 
     if (isLoading) {
         return (
@@ -823,12 +842,12 @@ export default function AdminDashboardPage() {
                             colorClass="green"
                         />
                         <StatCard
-                            title={activeAdmin.title}
-                            value="Admin"
+                            title="Beheer"
+                            value={activeAdmin.title}
                             icon={<Activity className="h-6 w-6" />}
                             subtitle={`Beheer ${activeAdmin.title.toLowerCase()}`}
                             onClick={() => router.push(activeAdmin.link)}
-                            colorClass="orange"
+                            colorClass={activeAdmin.color}
                         />
                     </div>
 
@@ -838,116 +857,64 @@ export default function AdminDashboardPage() {
                 {/* Stats Section */}
                 <div className="mb-8">
                     
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 auto-rows-min">
-                        {/* Snelle Acties - Fixed top left */}
-                        <div className="lg:col-span-5 lg:row-span-2">
-                            <div className="bg-admin-card rounded-2xl shadow-lg p-6">
-                                <h3 className="text-xl font-bold text-admin mb-4">Snelle Acties</h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <ActionCard
-                                        title="Nieuwe"
-                                        subtitle="Activiteit"
-                                        icon={<Plus className="h-6 w-6" />}
-                                        onClick={() => router.push('/admin/activiteiten/nieuw')}
-                                        colorClass="purple"
-                                    />
-                                    <ActionCard
-                                        title="Nieuwe"
-                                        subtitle="Intro Post"
-                                        icon={<FileText className="h-6 w-6" />}
-                                        onClick={() => router.push('/admin/intro?tab=blogs&create=1')}
-                                        colorClass="blue"
-                                        disabled={!visibilitySettings.intro}
-                                    />
-                                    <ActionCard
-                                        title="Nieuwe"
-                                        subtitle="Sticker"
-                                        icon={<Sticker className="h-6 w-6" />}
-                                        onClick={() => router.push('/stickers?add=1')}
-                                        colorClass="red"
-                                    />
-                                    {canManageReis && (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+                        {/* Snelle Acties - Left side */}
+                        <div>
+                            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Snelle Acties</h3>
+                                <div className="space-y-4">
+                                    {/* Standard actions */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <ActionCard
-                                            title="Beheer"
-                                            subtitle="Reis"
-                                            icon={<Activity className="h-6 w-6" />}
-                                            onClick={() => router.push('/admin/reis')}
-                                            colorClass="teal"
+                                            title="Nieuwe"
+                                            subtitle="Activiteit"
+                                            icon={<Plus className="h-6 w-6" />}
+                                            onClick={() => router.push('/admin/activiteiten/nieuw')}
+                                            colorClass="purple"
                                         />
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* All other stat cards wrap around Snelle Acties */}
-                        <div className="lg:col-span-7">
-                            <StatCard
-                                title="Meeste Activiteiten"
-                                value={stats.topCommittee ? cleanCommitteeName(stats.topCommittee.name) : 'Geen data'}
-                                icon={<Sticker className="h-6 w-6" />}
-                                subtitle={stats.topCommittee ? `${stats.topCommittee.count} ${stats.topCommittee.count === 1 ? 'activiteit' : 'activiteiten'} dit jaar` : 'Geen data'}
-                                onClick={() => router.push('/commissies')}
-                                colorClass="purple"
-                            />
-                        </div>
-
-                        <div className="lg:col-span-7">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-min">
-                                <div className="col-span-1">
-                                    <StatCard
-                                        title="Commissieleden"
-                                        value={stats.totalCommitteeMembers}
-                                        icon={<Users className="h-6 w-6" />}
-                                        subtitle="Actieve leden"
-                                        onClick={() => router.push('/commissies')}
-                                        colorClass="green"
-                                    />
-                                </div>
-                                
-                                {/* Latest Activities - larger card that spans 2 columns and 2 rows */}
-                                <div className="sm:col-span-2 sm:row-span-2">
-                                    <div className="bg-admin-card rounded-2xl shadow-lg p-6 h-full">
-                                        <div className="flex items-center justify-between mb-3">
-                                            <div>
-                                                <p className="text-admin-muted text-sm font-medium">Laatste Activiteiten</p>
-                                                <h3 className="text-admin font-bold">Recente aanmeldingen</h3>
-                                            </div>
-                                            <Activity className="h-6 w-6 text-theme-purple" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            {stats.latestEventsWithSignups && stats.latestEventsWithSignups.length > 0 ? (
-                                                stats.latestEventsWithSignups.map(ev => (
-                                                    <div key={ev.id} className="flex items-center justify-between p-3 rounded-lg bg-admin-card-soft">
-                                                        <div className="text-sm text-admin truncate pr-2">{ev.name}</div>
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-lg font-bold text-theme-purple">{ev.signups}</span>
-                                                            <UserCheck className="h-4 w-4 text-theme-purple" />
-                                                        </div>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <p className="text-admin-muted text-sm text-center py-2">Geen recente activiteiten</p>
-                                            )}
+                                        <ActionCard
+                                            title="Nieuwe"
+                                            subtitle="Intro Post"
+                                            icon={<FileText className="h-6 w-6" />}
+                                            onClick={() => router.push('/admin/intro?tab=blogs&create=1')}
+                                            colorClass="blue"
+                                            disabled={!visibilitySettings.intro}
+                                        />
+                                        <ActionCard
+                                            title="Nieuwe"
+                                            subtitle="Sticker"
+                                            icon={<Sticker className="h-6 w-6" />}
+                                            onClick={() => router.push('/stickers?add=1')}
+                                            colorClass="red"
+                                        />
+                                    </div>
+                                    
+                                    {/* Reis and Kroegentocht - Separated section */}
+                                    <div className="border-t border-admin-muted pt-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <ActionCard
+                                                title="Beheer"
+                                                subtitle="Reis"
+                                                icon={<Activity className="h-6 w-6" />}
+                                                onClick={() => router.push('/admin/reis')}
+                                                colorClass="teal"
+                                                disabled={!canManageReis}
+                                            />
+                                            <ActionCard
+                                                title="Beheer"
+                                                subtitle="Kroegentocht"
+                                                icon={<Ticket className="h-6 w-6" />}
+                                                onClick={() => router.push('/admin/kroegentocht')}
+                                                colorClass="orange"
+                                                disabled={!canManageKroegentocht}
+                                            />
                                         </div>
                                     </div>
                                 </div>
-
-                                <div className="col-span-1">
-                                    <StatCard
-                                        title="Totaal Stickers"
-                                        value={stats.totalStickers}
-                                        icon={<Sticker className="h-6 w-6" />}
-                                        subtitle="Alle verzamelde stickers"
-                                        onClick={() => router.push('/stickers')}
-                                        colorClass="red"
-                                    />
-                                </div>
                             </div>
-                        </div>
 
-                        {/* Additional cards that continue wrapping below */}
-                        <div className="lg:col-span-12">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {/* Additional cards below Snelle Acties */}
+                            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
                                 <div className="col-span-1">
                                     <ListCard
                                         title="Aankomende Jarigen (7 dagen)"
@@ -961,11 +928,11 @@ export default function AdminDashboardPage() {
                                                         className={`flex items-center justify-between p-3 rounded-xl ${
                                                             person.isToday 
                                                                 ? 'bg-gradient-to-r from-yellow-100 to-yellow-50 dark:from-yellow-900/40 dark:to-yellow-900/20 border-2 border-yellow-400 dark:border-yellow-600' 
-                                                                : 'bg-admin-card-soft'
+                                                                : 'bg-slate-100 dark:bg-slate-700'
                                                         }`}
                                                     >
                                                         <div>
-                                                            <p className={`font-semibold ${person.isToday ? 'text-yellow-900 dark:text-yellow-100' : 'text-admin'}`}>
+                                                            <p className={`font-semibold ${person.isToday ? 'text-yellow-900 dark:text-yellow-100' : 'text-slate-700 dark:text-slate-200'}`}>
                                                                 {person.first_name} {person.last_name}
                                                                 {person.isToday && (
                                                                     <span className="ml-2 text-xs font-bold bg-yellow-500 text-white px-2 py-0.5 rounded-full">
@@ -973,7 +940,7 @@ export default function AdminDashboardPage() {
                                                                     </span>
                                                                 )}
                                                             </p>
-                                                            <p className={`text-sm ${person.isToday ? 'text-yellow-700 dark:text-yellow-300' : 'text-admin-muted'}`}>
+                                                            <p className={`text-sm ${person.isToday ? 'text-yellow-700 dark:text-yellow-300' : 'text-slate-500 dark:text-slate-400'}`}>
                                                                 {formatDate(person.birthday)}
                                                             </p>
                                                         </div>
@@ -982,117 +949,184 @@ export default function AdminDashboardPage() {
                                                 ))}
                                             </div>
                                         ) : (
-                                            <p className="text-admin-muted text-center py-4">Geen jarigen in de komende 7 dagen</p>
+                                            <p className="text-slate-500 dark:text-slate-400 text-center py-4">Geen jarigen in de komende 7 dagen</p>
                                         )}
                                     </ListCard>
                                 </div>
-                                {visibilitySettings.intro && (
-                                    <div className="col-span-1">
-                                        <StatCard
-                                            title="Intro Aanmeldingen"
-                                            value={stats.introSignups}
-                                            icon={<Mail className="h-6 w-6" />}
-                                            subtitle="Totaal aanmeldingen"
-                                            onClick={() => router.push('/intro')}
-                                            colorClass="blue"
-                                        />
+                                <div className="col-span-1">
+                                    <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
+                                        {visibilitySettings.intro && (
+                                            <StatCard
+                                                title="Intro Aanmeldingen"
+                                                value={stats.introSignups}
+                                                icon={<Mail className="h-6 w-6" />}
+                                                subtitle="Totaal aanmeldingen"
+                                                onClick={() => router.push('/intro')}
+                                                colorClass="blue"
+                                            />
+                                        )}
+
+                                        {visibilitySettings.intro && (
+                                            <StatCard
+                                                title="Blog Likes"
+                                                value={stats.introBlogLikes}
+                                                icon={<Heart className="h-6 w-6" />}
+                                                subtitle="Alle intro blogs"
+                                                onClick={() => router.push('/intro/blog')}
+                                                colorClass="blue"
+                                            />
+                                        )}
+
+                                        {/* Top 3 Sticker Collectors moved here */}
+                                        <div className="mt-2">
+                                            <ListCard
+                                                title="Top 3 Sticker Verzamelaars"
+                                                icon={<Award className="h-5 w-5" />}
+                                            >
+                                                {stats.topStickers.length > 0 ? (
+                                                    <div className="space-y-3">
+                                                        {stats.topStickers.map((person, index) => (
+                                                            <div key={person.id} className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-700 rounded-xl">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${index === 0 ? 'bg-yellow-500 dark:bg-yellow-600' : index === 1 ? 'bg-slate-400 dark:bg-slate-500' : 'bg-orange-600 dark:bg-orange-700'}`}>
+                                                                        {index + 1}
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="font-semibold text-slate-700 dark:text-slate-200">
+                                                                            {person.first_name} {person.last_name}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-2xl font-bold text-theme-purple">{person.count}</span>
+                                                                    <Award className="h-5 w-5 text-theme-purple" />
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-slate-500 dark:text-slate-400 text-center py-4">Geen stickers gevonden</p>
+                                                )}
+                                            </ListCard>
+                                        </div>
+                                        {/* Kroegentocht card moved to the right column under Activiteiten aanmeldingen */}
+
+                                        {/* Reis card moved under 'Activiteiten aanmeldingen' on the right side */}
                                     </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        {/* Right side stats */}
+                        <div className="space-y-4">
+                            <StatCard
+                                title="Meeste Activiteiten"
+                                value={stats.topCommittee ? cleanCommitteeName(stats.topCommittee.name) : 'Geen data'}
+                                icon={<Sticker className="h-6 w-6" />}
+                                subtitle={stats.topCommittee ? `${stats.topCommittee.count} ${stats.topCommittee.count === 1 ? 'activiteit' : 'activiteiten'} dit jaar` : 'Geen data'}
+                                onClick={() => router.push('/commissies')}
+                                colorClass="purple"
+                            />
+                            
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <StatCard
+                                    title="Commissieleden"
+                                    value={stats.totalCommitteeMembers}
+                                    icon={<Users className="h-6 w-6" />}
+                                    subtitle="Actieve leden"
+                                    onClick={() => router.push('/commissies')}
+                                    colorClass="green"
+                                />
+                                
+                                <StatCard
+                                    title="Totaal Stickers"
+                                    value={stats.totalStickers}
+                                    icon={<Sticker className="h-6 w-6" />}
+                                    subtitle="Alle verzamelde stickers"
+                                    onClick={() => router.push('/stickers')}
+                                    colorClass="red"
+                                />
+                            </div>
+                            
+                            {/* Activiteiten aanmeldingen - Now on the right side */}
+                            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div>
+                                        <h3 className="text-slate-900 dark:text-white font-bold">Activiteiten aanmeldingen</h3>
+                                    </div>
+                                    <Activity className="h-6 w-6 text-theme-purple" />
+                                </div>
+                                <div className="space-y-2">
+                                    {stats.latestEventsWithSignups && stats.latestEventsWithSignups.length > 0 ? (
+                                        stats.latestEventsWithSignups.map(ev => {
+                                            const eventDate = ev.event_date ? new Date(ev.event_date) : null;
+                                            const now = new Date();
+                                            const isPast = eventDate && eventDate < now;
+                                            
+                                            return (
+                                                <div 
+                                                    key={ev.id} 
+                                                    className={`flex items-center justify-between p-3 rounded-lg ${
+                                                        isPast 
+                                                            ? 'bg-slate-200 dark:bg-slate-700/50 opacity-75' 
+                                                            : 'bg-slate-100 dark:bg-slate-700'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                        <div className="text-sm text-slate-700 dark:text-slate-200 truncate pr-2">{ev.name}</div>
+                                                        {isPast && (
+                                                            <span className="text-xs bg-slate-400 dark:bg-slate-600 text-white px-2 py-0.5 rounded-full whitespace-nowrap">
+                                                                Afgelopen
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`text-lg font-bold ${isPast ? 'text-slate-500 dark:text-slate-400' : 'text-theme-purple'}`}>
+                                                            {ev.signups}
+                                                        </span>
+                                                        <UserCheck className={`h-4 w-4 ${isPast ? 'text-slate-500 dark:text-slate-400' : 'text-theme-purple'}`} />
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        <p className="text-slate-500 dark:text-slate-400 text-sm text-center py-2">Geen recente activiteiten</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Kroegentocht & Reis aanmeldingen shown under Activiteiten aanmeldingen */}
+                            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {(visibilitySettings.reis || canManageReis) && (
+                                    <StatCard
+                                        title="Reis Aanmeldingen"
+                                        value={stats.reisSignups}
+                                        icon={<Plane className="h-6 w-6" />}
+                                        subtitle="Totaal deelnemers"
+                                        onClick={() => router.push('/admin/reis')}
+                                        colorClass="teal"
+                                    />
                                 )}
 
-                                {visibilitySettings.intro && (
-                                    <div className="col-span-1">
-                                        <StatCard
-                                            title="Blog Likes"
-                                            value={stats.introBlogLikes}
-                                            icon={<Heart className="h-6 w-6" />}
-                                            subtitle="Alle intro blogs"
-                                            onClick={() => router.push('/intro/blog')}
-                                            colorClass="blue"
-                                        />
-                                    </div>
-                                )}
-
-                                {visibilitySettings.kroegentocht && stats.upcomingPubCrawl && (
-                                    <div className="col-span-1">
-                                        <StatCard
-                                            title="Kroegentocht Tickets"
-                                            value={stats.pubCrawlTickets ?? 0}
-                                            icon={<Ticket className="h-6 w-6" />}
-                                            subtitle={`${stats.upcomingPubCrawl.name}`}
-                                            onClick={() => router.push('/admin/kroegentocht')}
-                                            colorClass="orange"
-                                        />
-                                    </div>
+                                {(visibilitySettings.kroegentocht || canManageKroegentocht) && (
+                                    <StatCard
+                                        title="Kroegentocht Aanmeldingen"
+                                        value={stats.pubCrawlSignups ?? 0}
+                                        icon={<Ticket className="h-6 w-6" />}
+                                        subtitle={stats.upcomingPubCrawl ? `${stats.upcomingPubCrawl.name}` : 'Geen data'}
+                                        onClick={() => router.push('/admin/kroegentocht')}
+                                        colorClass="orange"
+                                    />
                                 )}
                             </div>
                         </div>
                     </div>
-                </div>
+                    
+                    
+                    </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-                    {/* Upcoming Events with Signups */}
-                    <ListCard
-                        title="Aankomende Events"
-                        icon={<Calendar className="h-5 w-5" />}
-                    >
-                        {stats.upcomingEventsWithSignups.length > 0 ? (
-                            <div className="space-y-3">
-                                {stats.upcomingEventsWithSignups.map(event => (
-                                    <button
-                                        key={event.id}
-                                        onClick={() => router.push(`/activiteiten/${event.id}`)}
-                                        className="flex items-center justify-between p-3 bg-admin-card-soft rounded-xl w-full hover:bg-admin-hover transition"
-                                    >
-                                        <div className="text-left">
-                                            <p className="font-semibold text-admin line-clamp-1">
-                                                {event.name}
-                                            </p>
-                                            <p className="text-sm text-admin-muted">{formatDate(event.event_date)}</p>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-lg font-bold text-theme-purple">{event.signups}</span>
-                                            <UserCheck className="h-5 w-5 text-theme-purple" />
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-admin-muted text-center py-4">Geen aankomende events</p>
-                        )}
-                    </ListCard>
-
-                    {/* Upcoming Birthdays moved to lower stats grid */}
-
-                    {/* Top Sticker Collectors */}
-                    <ListCard
-                        title="Top 3 Sticker Verzamelaars"
-                        icon={<Award className="h-5 w-5" />}
-                    >
-                        {stats.topStickers.length > 0 ? (
-                            <div className="space-y-3">
-                                {stats.topStickers.map((person, index) => (
-                                    <div key={person.id} className="flex items-center justify-between p-3 bg-admin-card-soft rounded-xl">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${index === 0 ? 'bg-yellow-500 dark:bg-yellow-600' : index === 1 ? 'bg-slate-400 dark:bg-slate-500' : 'bg-orange-600 dark:bg-orange-700'}`}>
-                                                {index + 1}
-                                            </div>
-                                            <div>
-                                                <p className="font-semibold text-admin">
-                                                    {person.first_name} {person.last_name}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-2xl font-bold text-theme-purple">{person.count}</span>
-                                            <Award className="h-5 w-5 text-theme-purple" />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-admin-muted text-center py-4">Geen stickers gevonden</p>
-                        )}
-                    </ListCard>
                 </div>
 
                 {/* System Health - ICT Only */}
@@ -1113,12 +1147,12 @@ export default function AdminDashboardPage() {
                                     </div>
                                     <span className="text-green-600 dark:text-green-400 font-bold">✓</span>
                                 </div>
-                                    <div className="flex items-center justify-between p-3 bg-admin-card-soft rounded-xl">
+                                    <div className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-700 rounded-xl">
                                         <div className="flex items-center gap-3">
-                                            <AlertCircle className="h-5 w-5 text-admin-muted" />
+                                            <AlertCircle className="h-5 w-5 text-slate-500 dark:text-slate-400" />
                                             <div>
-                                                <p className="font-semibold text-admin">Recente Fouten</p>
-                                                <p className="text-sm text-admin-muted">Laatste 24 uur</p>
+                                                <p className="font-semibold text-slate-700 dark:text-slate-200">Recente Fouten</p>
+                                                <p className="text-sm text-slate-500 dark:text-slate-400">Laatste 24 uur</p>
                                             </div>
                                         </div>
                                         <span className="text-2xl font-bold text-admin-muted">{stats.systemErrors}</span>
