@@ -866,16 +866,15 @@ export default function AdminDashboardPage() {
                                         onClick={() => router.push('/stickers?add=1')}
                                         colorClass="red"
                                     />
-                                    <div className="sm:col-span-2 mt-2 border-t border-admin-card-soft pt-3">
+                                    {canManageReis && (
                                         <ActionCard
                                             title="Beheer"
                                             subtitle="Reis"
                                             icon={<Activity className="h-6 w-6" />}
                                             onClick={() => router.push('/admin/reis')}
                                             colorClass="teal"
-                                            disabled={!canManageReis}
                                         />
-                                    </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -1022,19 +1021,6 @@ export default function AdminDashboardPage() {
                                             subtitle={`${stats.upcomingPubCrawl.name}`}
                                             onClick={() => router.push('/admin/kroegentocht')}
                                             colorClass="orange"
-                                        />
-                                    </div>
-                                )}
-
-                                {canManageReis && (
-                                    <div className="col-span-1 sm:col-span-2 lg:col-span-4">
-                                        <StatCard
-                                            title="Reis"
-                                            value="Beheer"
-                                            icon={<Activity className="h-6 w-6" />}
-                                            subtitle="Beheer reisactiviteiten"
-                                            onClick={() => router.push('/admin/reis')}
-                                            colorClass="teal"
                                         />
                                     </div>
                                 )}
