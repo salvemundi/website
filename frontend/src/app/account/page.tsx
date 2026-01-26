@@ -68,20 +68,23 @@ function Tile({
           <header className={`mb-8 flex items-center gap-4 ${centeredTitle ? 'flex-col justify-center text-center' : 'justify-between'}`}>
             <div className={`flex min-w-0 items-center gap-3 ${centeredTitle ? 'flex-col' : ''}`}>
               {icon ? (
-                <div className={`shrink-0 rounded-2xl bg-theme-purple/5 text-theme-purple dark:text-theme-purple-light transition-all ${centeredTitle ? 'p-5 mb-4' : 'p-2.5'}`}>
+                <div className={`shrink-0 rounded-2xl bg-theme-purple/5 text-theme-purple dark:text-theme-purple-light transition-all ${centeredTitle ? 'p-3 mb-3' : 'p-2'}`}>
                   {React.cloneElement(icon as React.ReactElement, {
-                    className: centeredTitle ? "h-10 w-10 sm:h-12 sm:w-12" : "h-5 w-5"
+                    className: centeredTitle ? "h-6 w-6 sm:h-8 sm:w-8" : "h-5 w-5"
                   })}
                 </div>
               ) : null}
               {title ? (
-                <h2 className={`font-black text-theme-purple dark:text-white uppercase tracking-[0.25em] transition-all ${centeredTitle ? 'text-3xl sm:text-4xl md:text-5xl' : 'text-xl'}`}>
+                <h2
+                  className={`font-black text-theme-purple dark:text-white uppercase tracking-[0.2em] transition-all`}
+                  style={{ fontSize: centeredTitle ? 'var(--font-size-2xl)' : 'var(--font-size-xl)' }}
+                >
                   {title}
                 </h2>
               ) : null}
             </div>
 
-            {actions ? <div className={`shrink-0 ${centeredTitle ? 'mt-6' : ''}`}>{actions}</div> : null}
+            {actions ? <div className={`shrink-0 ${centeredTitle ? 'mt-4' : ''}`}>{actions}</div> : null}
           </header>
         )}
 
@@ -529,17 +532,21 @@ export default function AccountPage() {
             icon={<Mail />}
             centeredTitle
           >
-            <div className="flex flex-col items-center gap-y-16 py-12">
+            <div className="flex flex-col items-center gap-y-10 py-10">
               <div className="flex flex-col items-center text-center w-full max-w-3xl px-6">
-                <div className="mb-6 rounded-3xl bg-theme-purple/5 p-6 text-theme-purple dark:text-white shadow-inner">
-                  <Mail className="h-10 w-10 sm:h-12 sm:w-12" />
+                <div className="mb-4 rounded-2xl bg-theme-purple/5 p-4 text-theme-purple dark:text-white shadow-inner">
+                  <Mail className="h-6 w-6 sm:h-8 sm:w-8" />
                 </div>
-                <p className="text-sm text-theme-purple/40 dark:text-white/30 font-black uppercase tracking-[0.3em] mb-4">
+                <p
+                  className="font-black uppercase tracking-[0.25em] mb-2 text-theme-purple/40 dark:text-white/30"
+                  style={{ fontSize: 'var(--font-size-xs)' }}
+                >
                   E-mailadres
                 </p>
                 <div className="w-full">
                   <p
-                    className="text-2xl sm:text-3xl md:text-4xl font-black text-theme-purple dark:text-white leading-[1.2] break-words"
+                    className="font-bold text-theme-purple dark:text-white leading-[1.2] break-words"
+                    style={{ fontSize: 'var(--font-size-lg)' }}
                     title={user.email}
                   >
                     {user.email.split('@')[0]}<wbr />@<wbr />{user.email.split('@')[1]}
@@ -548,16 +555,20 @@ export default function AccountPage() {
               </div>
 
               {user.fontys_email ? (
-                <div className="flex flex-col items-center text-center w-full max-w-3xl px-6 border-t border-theme-purple/5 pt-16">
-                  <div className="mb-6 rounded-3xl bg-theme-purple/5 p-6 text-theme-purple dark:text-white shadow-inner">
-                    <Mail className="h-10 w-10 sm:h-12 sm:w-12" />
+                <div className="flex flex-col items-center text-center w-full max-w-3xl px-6 border-t border-theme-purple/5 pt-10">
+                  <div className="mb-4 rounded-2xl bg-theme-purple/5 p-4 text-theme-purple dark:text-white shadow-inner">
+                    <Mail className="h-6 w-6 sm:h-8 sm:w-8" />
                   </div>
-                  <p className="text-sm text-theme-purple/40 dark:text-white/30 font-black uppercase tracking-[0.3em] mb-4">
+                  <p
+                    className="font-black uppercase tracking-[0.25em] mb-2 text-theme-purple/40 dark:text-white/30"
+                    style={{ fontSize: 'var(--font-size-xs)' }}
+                  >
                     Fontys e-mail
                   </p>
                   <div className="w-full">
                     <p
-                      className="text-2xl sm:text-3xl md:text-4xl font-black text-theme-purple dark:text-white leading-[1.2] break-words"
+                      className="font-bold text-theme-purple dark:text-white leading-[1.2] break-words"
+                      style={{ fontSize: 'var(--font-size-lg)' }}
                       title={user.fontys_email}
                     >
                       {user.fontys_email.split('@')[0]}<wbr />@<wbr />{user.fontys_email.split('@')[1]}
@@ -567,14 +578,20 @@ export default function AccountPage() {
               ) : null}
 
               {user.phone_number ? (
-                <div className="flex flex-col items-center text-center w-full max-w-3xl px-6 border-t border-theme-purple/5 pt-16">
-                  <div className="mb-6 rounded-3xl bg-theme-purple/5 p-6 text-theme-purple dark:text-white shadow-inner">
-                    <Phone className="h-10 w-10 sm:h-12 sm:w-12" />
+                <div className="flex flex-col items-center text-center w-full max-w-3xl px-6 border-t border-theme-purple/5 pt-10">
+                  <div className="mb-4 rounded-2xl bg-theme-purple/5 p-4 text-theme-purple dark:text-white shadow-inner">
+                    <Phone className="h-6 w-6 sm:h-8 sm:w-8" />
                   </div>
-                  <p className="text-sm text-theme-purple/40 dark:text-white/30 font-black uppercase tracking-[0.3em] mb-4">
+                  <p
+                    className="font-black uppercase tracking-[0.25em] mb-2 text-theme-purple/40 dark:text-white/30"
+                    style={{ fontSize: 'var(--font-size-xs)' }}
+                  >
                     Telefoonnummer
                   </p>
-                  <p className="text-2xl sm:text-3xl md:text-4xl font-black text-theme-purple dark:text-white">
+                  <p
+                    className="font-bold text-theme-purple dark:text-white"
+                    style={{ fontSize: 'var(--font-size-lg)' }}
+                  >
                     {user.phone_number}
                   </p>
                 </div>
@@ -629,7 +646,10 @@ export default function AccountPage() {
                 </div>
               ) : (
                 <div className="min-w-0">
-                  <p className="break-words font-black text-theme-purple dark:text-white text-xl sm:text-2xl md:text-3xl">
+                  <p
+                    className="break-words font-bold text-theme-purple dark:text-white"
+                    style={{ fontSize: 'var(--font-size-lg)' }}
+                  >
                     {user.minecraft_username || "Niet ingesteld"}
                   </p>
                 </div>

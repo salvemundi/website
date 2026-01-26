@@ -51,7 +51,27 @@
   /* Header & UI */
   --header-height: 64px;
 
-  /* --- SEMANTIC THEME ALIASES (Tailwind Compatibility) --- */
+  /* --- 3. TYPOGRAPHY TOKENS --- */
+  --font-size-xs: 0.75rem;
+  /* 12px */
+  --font-size-sm: 0.875rem;
+  /* 14px */
+  --font-size-base: 1rem;
+  /* 16px */
+  --font-size-lg: 1.125rem;
+  /* 18px */
+  --font-size-xl: 1.25rem;
+  /* 20px */
+  --font-size-2xl: 1.5rem;
+  /* 24px */
+  --font-size-3xl: 1.875rem;
+  /* 30px */
+  --font-size-4xl: 2.25rem;
+  /* 36px */
+  --font-size-5xl: 3rem;
+  /* 48px */
+
+  /* --- 4. SEMANTIC THEME ALIASES (Tailwind Compatibility) --- */
   --theme-white: var(--color-white);
   --theme-text: var(--text-main);
   --theme-text-subtle: var(--text-subtle);
@@ -69,7 +89,8 @@
   --bg-main: #1a141b;
   /* slightly adjust soft and card backgrounds so cards contrast from the page */
   --bg-soft: #161116;
-  --bg-card: #241824; /* darker but distinct from --bg-main */
+  --bg-card: #241824;
+  /* darker but distinct from --bg-main */
 
   --text-main: #ffffff;
   --text-subtle: #e8dce9;
@@ -88,13 +109,13 @@
 
   /* Ensure Tailwind-generated elements that use the bg-[var(--bg-card)] utility
      get a subtle border and elevated shadow in dark mode so they read as cards */
-.dark [class*="bg-[var(--bg-card)]"] {
-  /* Respect Tailwind opacity modifiers (e.g. /80, /10) so we don't force solid backgrounds */
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  box-shadow: var(--shadow-card-elevated);
-  /* Gentle backdrop blur helps separate translucent cards from the page */
-  backdrop-filter: blur(4px);
-}
+  .dark [class*="bg-[var(--bg-card)]"] {
+    /* Respect Tailwind opacity modifiers (e.g. /80, /10) so we don't force solid backgrounds */
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    box-shadow: var(--shadow-card-elevated);
+    /* Gentle backdrop blur helps separate translucent cards from the page */
+    backdrop-filter: blur(4px);
+  }
 
   --gradient-start: #a16ca1;
   --gradient-end: #905E8E;
@@ -147,13 +168,16 @@ a:hover {
 .bg-gradient-theme {
   background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
 }
+
 /* Page header gradient (fallback when no image) */
 .bg-gradient-theme-page-alt {
-  background: linear-gradient(135deg, #f4e9f3, #e4cbe2);  /* Light pink/purple in light mode */
+  background: linear-gradient(135deg, #f4e9f3, #e4cbe2);
+  /* Light pink/purple in light mode */
 }
 
 .dark .bg-gradient-theme-page-alt {
-  background: linear-gradient(135deg, #a16ca1, #c47bbb);  /* Keep darker purple in dark mode */
+  background: linear-gradient(135deg, #a16ca1, #c47bbb);
+  /* Keep darker purple in dark mode */
 }
 
 
