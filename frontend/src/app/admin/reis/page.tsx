@@ -386,62 +386,62 @@ export default function ReisAanmeldingenPage() {
 
                 {/* Statistics */}
                 {selectedTrip && (
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-                        <div className="bg-admin-card rounded-lg shadow p-6 border-l-4 border-blue-500">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 mb-8">
+                        <div className="bg-admin-card rounded-lg shadow p-4 sm:p-4 sm:p-6 border-l-4 border-blue-500">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-admin-muted text-sm">Totaal</p>
-                                    <p className="text-2xl font-bold text-admin">{stats.total}</p>
+                                    <p className="text-admin-muted text-xs sm:text-sm">Totaal</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-admin">{stats.total}</p>
                                 </div>
-                                <Users className="h-8 w-8 text-blue-500" />
+                                <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500" />
                             </div>
                         </div>
 
-                        <div className="bg-admin-card rounded-lg shadow p-6 border-l-4 border-green-500">
+                        <div className="bg-admin-card rounded-lg shadow p-4 sm:p-6 border-l-4 border-green-500">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-admin-muted text-sm">Bevestigd</p>
-                                    <p className="text-2xl font-bold text-admin">{stats.confirmed}</p>
+                                    <p className="text-admin-muted text-xs sm:text-sm">Bevestigd</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-admin">{stats.confirmed}</p>
                                 </div>
-                                <UserCheck className="h-8 w-8 text-green-500" />
+                                <UserCheck className="h-6 w-6 sm:h-8 sm:w-8 text-green-500" />
                             </div>
                         </div>
 
-                        <div className="bg-admin-card rounded-lg shadow p-6 border-l-4 border-orange-500">
+                        <div className="bg-admin-card rounded-lg shadow p-4 sm:p-6 border-l-4 border-orange-500">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-admin-muted text-sm">Wachtlijst</p>
-                                    <p className="text-2xl font-bold text-admin">{stats.waitlist}</p>
+                                    <p className="text-admin-muted text-xs sm:text-sm">Wachtlijst</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-admin">{stats.waitlist}</p>
                                 </div>
-                                <UserX className="h-8 w-8 text-orange-500" />
+                                <UserX className="h-6 w-6 sm:h-8 sm:w-8 text-orange-500" />
                             </div>
                         </div>
 
-                        <div className="bg-admin-card rounded-lg shadow p-6 border-l-4 border-yellow-500">
+                        <div className="bg-admin-card rounded-lg shadow p-4 sm:p-6 border-l-4 border-yellow-500">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-admin-muted text-sm">Aanbetaling</p>
-                                    <p className="text-2xl font-bold text-admin">{stats.depositPaid}</p>
+                                    <p className="text-admin-muted text-xs sm:text-sm">Aanbetaling</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-admin">{stats.depositPaid}</p>
                                 </div>
-                                <Plane className="h-8 w-8 text-yellow-500" />
+                                <Plane className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500" />
                             </div>
                         </div>
 
-                        <div className="bg-admin-card rounded-lg shadow p-6 border-l-4 border-purple-500">
+                        <div className="bg-admin-card rounded-lg shadow p-4 sm:p-6 border-l-4 border-purple-500">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-admin-muted text-sm">Volledig betaald</p>
-                                    <p className="text-2xl font-bold text-admin">{stats.fullPaid}</p>
+                                    <p className="text-admin-muted text-xs sm:text-sm">Volledig betaald</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-admin">{stats.fullPaid}</p>
                                 </div>
-                                <Plane className="h-8 w-8 text-purple-500" />
+                                <Plane className="h-6 w-6 sm:h-8 sm:w-8 text-purple-500" />
                             </div>
                         </div>
                     </div>
                 )}
 
                 {/* Filters and Actions */}
-                <div className="bg-admin-card rounded-lg shadow p-6 mb-6">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="bg-admin-card rounded-lg shadow p-4 sm:p-6 mb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4">
                         {/* Search */}
                         <div className="md:col-span-2">
                             <div className="relative">
@@ -486,17 +486,17 @@ export default function ReisAanmeldingenPage() {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex flex-wrap gap-4 mt-4">
+                    <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mt-4">
                         <button
                             onClick={() => router.push('/admin/reis/instellingen')}
-                            className="flex items-center gap-2 px-4 py-2 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition"
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition w-full sm:w-auto"
                         >
                             <Edit className="h-5 w-5" />
                             Reis Instellingen
                         </button>
 
                         {/* Visibility toggle for Reis (only shown to users who can manage Reis; permission check is earlier) */}
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
                             <label className="text-sm font-medium">Reis zichtbaar</label>
                             <button
                                 onClick={async () => {
@@ -518,8 +518,7 @@ export default function ReisAanmeldingenPage() {
 
                         <button
                             onClick={() => router.push('/admin/reis/activiteiten')}
-                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-                        >
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition w-full sm:w-auto">
                             <Plane className="h-5 w-5" />
                             Activiteiten Beheren
                         </button>
@@ -527,16 +526,14 @@ export default function ReisAanmeldingenPage() {
                         <button
                             onClick={downloadExcel}
                             disabled={filteredSignups.length === 0}
-                            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto">
                             <Download className="h-5 w-5" />
                             Export naar Excel
                         </button>
 
                         <button
                             onClick={() => router.push(`/admin/reis/mail${selectedTrip ? `?trip=${selectedTrip.id}` : ''}`)}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                        >
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition w-full sm:w-auto">
                             <Mail className="h-5 w-5" />
                             Mail alle deelnemers
                         </button>
@@ -559,22 +556,22 @@ export default function ReisAanmeldingenPage() {
                             <table className="w-full">
                                 <thead className="bg-admin-card-soft border-b border-admin">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
+                                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
                                             Naam
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
+                                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider hidden sm:table-cell">
                                             Geboortedatum
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
+                                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider hidden md:table-cell">
                                             Rol
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
+                                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
                                             Status
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
+                                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider hidden sm:table-cell">
                                             Betalingstatus
                                         </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-admin-muted uppercase tracking-wider">
+                                        <th className="px-2 sm:px-6 py-3 text-right text-xs font-medium text-admin-muted uppercase tracking-wider">
                                             Acties
                                         </th>
                                     </tr>
@@ -587,60 +584,63 @@ export default function ReisAanmeldingenPage() {
                                         return (
                                             <Fragment key={signup.id}>
                                                 <tr key={signup.id} onClick={() => toggleExpand(signup)} className="hover:bg-admin-hover cursor-pointer">
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="text-sm font-medium text-admin">
+                                                    <td className="px-3 sm:px-6 py-3 sm:py-4">
+                                                        <div className="text-xs sm:text-sm font-medium text-admin">
                                                             {signup.first_name} {signup.middle_name} {signup.last_name}
                                                         </div>
-                                                        <div className="text-sm text-admin-muted">{signup.email}</div>
+                                                        <div className="text-xs sm:text-sm text-admin-muted">{signup.email}</div>
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-admin">
+                                                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-admin hidden sm:table-cell">
                                                         {signup.date_of_birth
                                                             ? format(new Date(signup.date_of_birth), 'dd-MM-yyyy')
                                                             : '-'}
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap hidden md:table-cell">
                                                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${signup.role === 'crew' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'}`}>
                                                             {signup.role === 'crew' ? 'Crew' : 'Deelnemer'}
                                                         </span>
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                                                         <select
                                                             value={signup.status}
                                                             onClick={(e) => e.stopPropagation()}
                                                             onChange={(e) => handleStatusChange(signup.id, e.target.value)}
-                                                            className={`px-2 py-1 text-xs font-semibold rounded-full border-0 ${statusBadge.color} dark:bg-opacity-20`}
-                                                        >
+                                                            className={`px-1.5 sm:px-2 py-1 text-xs font-semibold rounded-full border-0 ${statusBadge.color} dark:bg-opacity-20 w-full sm:w-auto`}>
                                                             <option value="registered">Geregistreerd</option>
                                                             <option value="confirmed">Bevestigd</option>
                                                             <option value="waitlist">Wachtlijst</option>
                                                             <option value="cancelled">Geannuleerd</option>
                                                         </select>
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap hidden sm:table-cell">
                                                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${paymentStatus.color}`}>
                                                             {paymentStatus.label}
                                                         </span>
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); router.push(`/admin/reis/deelnemer/${signup.id}`); }}
-                                                            className="text-theme-purple hover:text-theme-purple-dark mr-4"
-                                                        >
-                                                            <Edit className="h-5 w-5" />
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); handleDelete(signup.id); }}
-                                                            className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
-                                                        >
-                                                            <Trash2 className="h-5 w-5" />
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); toggleExpand(signup); }}
-                                                            className="ml-3 text-admin-muted hover:text-admin"
-                                                            title="Toon details"
-                                                        >
-                                                            {expandedIds.includes(signup.id) ? '▲' : '▼'}
-                                                        </button>
+                                                    <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                        <div className="flex justify-end gap-1 sm:gap-2">
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); router.push(`/admin/reis/deelnemer/${signup.id}`); }}
+                                                                className="text-theme-purple hover:text-theme-purple-dark p-1 sm:p-0"
+                                                                title="Bewerken"
+                                                            >
+                                                                <Edit className="h-4 w-4 sm:h-5 sm:w-5" />
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); handleDelete(signup.id); }}
+                                                                className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1 sm:p-0"
+                                                                title="Verwijderen"
+                                                            >
+                                                                <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); toggleExpand(signup); }}
+                                                                className="text-admin-muted hover:text-admin p-1 sm:p-0"
+                                                                title="Toon details"
+                                                            >
+                                                                <span className="text-xs sm:text-sm">{expandedIds.includes(signup.id) ? '▲' : '▼'}</span>
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                                 {expandedIds.includes(signup.id) && (
