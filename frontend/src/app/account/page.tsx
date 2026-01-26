@@ -47,14 +47,12 @@ function Tile({
   children,
   className = "",
   actions,
-  centeredTitle,
 }: {
   title?: string;
   icon?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
   actions?: React.ReactNode;
-  centeredTitle?: boolean;
 }) {
   return (
     <section
