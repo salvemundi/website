@@ -91,8 +91,8 @@ function ActivitiesContent() {
             </PageHeader>
 
 
-            <main className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12">
-                <div className="max-w-6xl mx-auto relative flex w-full flex-col">
+            <main className="w-full px-4 py-8 sm:py-10 md:py-12">
+                <div className="relative w-full flex flex-col">
 
                     {/* Controls & Header */}
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
