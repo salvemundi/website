@@ -125,7 +125,7 @@ export default function IntroPage() {
           first_name: form.voornaam,
           middle_name: form.tussenvoegsel || undefined,
           last_name: form.achternaam,
-          date_of_birth: form.geboortedatum ? form.geboortedatum.toISOString().split('T')[0] : undefined,
+          date_of_birth: (form.geboortedatum ? form.geboortedatum.toISOString().split('T')[0] : '') as any,
           email: form.email,
           phone_number: form.telefoonnummer,
           favorite_gif: form.favorieteGif || undefined,
@@ -136,7 +136,7 @@ export default function IntroPage() {
           participantFirstName: form.voornaam,
           participantLastName: form.achternaam,
           phoneNumber: form.telefoonnummer,
-          dateOfBirth: form.geboortedatum ? form.geboortedatum.toISOString().split('T')[0] : undefined,
+          dateOfBirth: (form.geboortedatum ? form.geboortedatum.toISOString().split('T')[0] : undefined) as any,
           favoriteGif: form.favorieteGif || undefined,
         }).catch(() => { });
       }
