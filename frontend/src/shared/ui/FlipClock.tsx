@@ -89,17 +89,27 @@ const SlotUnit = ({ value, label }: { value: string | number; label: string }) =
 
     return (
         <div className="flex flex-col items-center gap-2">
-            <div className="relative bg-[var(--bg-card)] text-theme-purple rounded-lg p-2 sm:p-3 w-16 sm:w-20 h-20 sm:h-24 flex items-center justify-center shadow-lg border border-theme-muted overflow-hidden">
-                {/* Background Texture/Shine */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/5 to-transparent pointer-events-none z-10 rounded-lg shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]"></div>
+            {/* The Machine Case / Bezel */}
+            <div className="relative p-1 rounded-xl bg-gradient-to-b from-theme-purple-light to-theme-purple-dark shadow-xl">
+                {/* The Recessed Reel Window */}
+                <div className="relative bg-[#f0f0f0] dark:bg-[#1a1a1a] rounded-lg p-2 sm:p-3 w-16 sm:w-22 h-20 sm:h-24 flex items-center justify-center overflow-hidden border-2 border-black/20">
 
-                <div className="flex items-center justify-center gap-[1px]">
-                    {digits.map((digit, index) => (
-                        <SlotDigit key={index} digit={digit} />
-                    ))}
+                    {/* Inner Shadow (Curved Reel Effect) */}
+                    <div className="absolute inset-0 pointer-events-none z-20 shadow-[inset_0_10px_15px_rgba(0,0,0,0.3),inset_0_-10px_15px_rgba(0,0,0,0.3)] rounded-lg"></div>
+
+                    {/* Glass Reflection Overlay */}
+                    <div className="absolute inset-0 pointer-events-none z-30 bg-gradient-to-b from-white/30 to-transparent opacity-50 rounded-lg"></div>
+
+                    {/* Digits */}
+                    <div className="flex items-center justify-center gap-1 z-10">
+                        {digits.map((digit, index) => (
+                            <SlotDigit key={index} digit={digit} />
+                        ))}
+                    </div>
                 </div>
             </div>
-            <span className="text-[10px] sm:text-xs font-bold text-theme-muted tracking-widest uppercase">
+
+            <span className="text-[10px] sm:text-xs font-bold text-theme-muted tracking-widest uppercase mt-1">
                 {label}
             </span>
         </div>
@@ -108,19 +118,21 @@ const SlotUnit = ({ value, label }: { value: string | number; label: string }) =
 
 const SlotDigit = ({ digit }: { digit: string }) => {
     return (
-        <div className="relative w-5 sm:w-6 h-10 sm:h-12 overflow-hidden flex justify-center">
+        <div className="relative w-6 sm:w-7 h-10 sm:h-12 overflow-hidden flex justify-center items-center">
+            {/* Divider Line between numbers (optional, visual separation) */}
             <AnimatePresence mode="popLayout">
                 <motion.span
                     key={digit}
-                    initial={{ y: '100%', filter: 'blur(2px)', opacity: 0 }}
-                    animate={{ y: '0%', filter: 'blur(0px)', opacity: 1 }}
-                    exit={{ y: '-100%', filter: 'blur(2px)', opacity: 0 }}
+                    initial={{ y: '150%', opacity: 0, filter: 'blur(5px)' }}
+                    animate={{ y: '0%', opacity: 1, filter: 'blur(0px)' }}
+                    exit={{ y: '-150%', opacity: 0, filter: 'blur(5px)' }}
                     transition={{
-                        y: { type: "spring", stiffness: 200, damping: 25 },
+                        y: { type: "spring", stiffness: 120, damping: 18, mass: 0.8 },
                         opacity: { duration: 0.2 },
                         filter: { duration: 0.2 }
                     }}
-                    className="absolute text-3xl sm:text-4xl font-bold font-mono text-theme-purple"
+                    className="absolute text-3xl sm:text-4xl font-black font-mono text-theme-purple-dark dark:text-theme-purple-light"
+                    style={{ textShadow: '0 1px 2px rgba(0,0,0,0.1)' }}
                 >
                     {digit}
                 </motion.span>
