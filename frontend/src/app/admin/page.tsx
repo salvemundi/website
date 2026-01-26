@@ -767,7 +767,7 @@ export default function AdminDashboardPage() {
 
     const activeAdmin = visibilitySettings.kroegentocht
         ? { title: 'Kroegentocht', link: '/admin/kroegentocht' }
-        : (visibilitySettings.reis && canManageReis)
+        : canManageReis
             ? { title: 'Reis', link: '/admin/reis' }
             : { title: 'Stickers', link: '/stickers' };
 
@@ -873,7 +873,7 @@ export default function AdminDashboardPage() {
                                             icon={<Activity className="h-6 w-6" />}
                                             onClick={() => router.push('/admin/reis')}
                                             colorClass="teal"
-                                            disabled={!(visibilitySettings.reis && canManageReis)}
+                                            disabled={!canManageReis}
                                         />
                                     </div>
                                 </div>
@@ -1026,7 +1026,7 @@ export default function AdminDashboardPage() {
                                     </div>
                                 )}
 
-                                {visibilitySettings.reis && canManageReis && (
+                                {canManageReis && (
                                     <div className="col-span-1 sm:col-span-2 lg:col-span-4">
                                         <StatCard
                                             title="Reis"

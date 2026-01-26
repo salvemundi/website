@@ -17,9 +17,6 @@ export function isUserAuthorizedForReis(user: any): boolean {
     const allowedTokens = ['reiscommissie', 'reis', 'ictcommissie', 'ict', 'bestuur'];
 
     const committees: any[] = (user as any).committees || [];
-    console.log('[isUserAuthorizedForReis] User:', user);
-    console.log('[isUserAuthorizedForReis] Committees:', committees);
-    
     // If committees may be stored as simple strings, map accordingly
     const names = committees.map((c: any) => {
         if (!c) return '';
@@ -29,19 +26,12 @@ export function isUserAuthorizedForReis(user: any): boolean {
         return '';
     });
 
-    console.log('[isUserAuthorizedForReis] Normalized names:', names);
-    console.log('[isUserAuthorizedForReis] Allowed tokens:', allowedTokens);
-
     for (const n of names) {
         if (!n) continue;
         for (const token of allowedTokens) {
-            if (n.includes(token)) {
-                console.log(`[isUserAuthorizedForReis] MATCH: "${n}" includes "${token}"`);
-                return true;
-            }
+            if (n.includes(token)) return true;
         }
     }
 
-    console.log('[isUserAuthorizedForReis] NO MATCH FOUND');
     return false;
 }
