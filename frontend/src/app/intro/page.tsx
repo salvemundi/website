@@ -271,10 +271,10 @@ export default function IntroPage() {
                           <p className="text-theme-text-muted dark:text-theme-text-muted">Bedankt! Je inschrijving is ontvangen. Als je iets wilt aanpassen, neem contact op met de intro commissie.</p>
                         </div>
                       ) : (
-                        <form onSubmit={handleSubmit} className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-xl space-y-4">
+                        <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4">
                           <div className="flex items-center gap-2 mb-4">
-                            <Heart className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
-                            <h3 className="text-xl lg:text-2xl font-bold text-white">Word Intro Ouder!</h3>
+                            <Heart className="w-5 h-5 lg:w-6 lg:h-6 text-theme-purple" />
+                            <h3 className="text-xl lg:text-2xl font-bold text-theme-purple">Word Intro Ouder!</h3>
                           </div>
                           <div className="bg-white/10 rounded-lg p-3 lg:p-4 mb-4">
                             <p className="text-white text-xs lg:text-sm">
@@ -317,10 +317,10 @@ export default function IntroPage() {
                         </form>
                       )
                     ) : (
-                      <form onSubmit={handleSubmit} className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-xl space-y-4">
+                      <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4">
                         <div className="flex items-center gap-2 mb-4">
-                          <Users className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
-                          <h3 className="text-xl lg:text-2xl font-bold text-white">Meld je aan!</h3>
+                          <Users className="w-5 h-5 lg:w-6 lg:h-6 text-theme-purple" />
+                          <h3 className="text-xl lg:text-2xl font-bold text-theme-purple">Meld je aan!</h3>
                         </div>
                         <div>
                           <label className="form-label">Voornaam *</label>

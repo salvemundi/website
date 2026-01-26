@@ -248,8 +248,8 @@ export default function ReisPage() {
                     <div className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12">
                         <div className="flex flex-col lg:flex-row gap-8 items-start">
                             {/* Form Section */}
-                            <section className="w-full lg:w-1/2 bg-gradient-theme rounded-3xl shadow-glow p-6 sm:p-8">
-                                <h1 className="text-3xl font-bold text-white mb-6">
+                            <section className="w-full lg:w-1/2 bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl shadow-lg p-6 sm:p-8">
+                                <h1 className="text-3xl font-bold text-theme-purple dark:text-theme-white mb-6">
                                     Inschrijven voor de Reis
                                 </h1>
 
@@ -304,7 +304,7 @@ export default function ReisPage() {
                                             </div>
                                         )}
 
-                                        <p className="text-white/90 text-sm mb-2">
+                                        <p className="text-theme-text dark:text-white/90 text-sm mb-2">
                                             Let op: dit is een vrijblijvende aanmelding. De daadwerkelijke betaling volgt later.
                                         </p>
 
@@ -380,14 +380,14 @@ export default function ReisPage() {
                                         </div>
 
                                         {/* Terms */}
-                                        <label className="flex items-start gap-2 text-white mt-2">
+                                        <label className="flex items-start gap-2 text-theme-text dark:text-white mt-2">
                                             <input
                                                 type="checkbox"
                                                 name="terms_accepted"
                                                 checked={form.terms_accepted}
                                                 onChange={handleChange}
                                                 required
-                                                className="mt-1 h-5 w-5 rounded accent-white/20"
+                                                className="mt-1 h-5 w-5 rounded accent-theme-purple"
                                             />
                                             <span className="text-sm">
                                                 Ik accepteer de{' '}
