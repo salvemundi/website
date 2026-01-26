@@ -83,7 +83,7 @@
 
 /* --- 3. DARK MODE OVERRIDES --- */
 .dark {
-  --theme-purple: #7F697D;
+  --theme-purple: #9A8098;
   --theme-purple-light: #e8c4e6;
 
   --bg-main: #1a141b;
@@ -117,7 +117,7 @@
     backdrop-filter: blur(4px);
   }
 
-  --gradient-start: #a16ca1;
+  --gradient-start: #805480;
   --gradient-end: #905E8E;
 
   /* Dark mode specific mappings */
@@ -140,7 +140,7 @@
   --color-oranje: var(--theme-purple);
   --theme-purple-dark: var(--color-purple-800);
   --theme-purple-darker: var(--color-purple-900);
-  --theme-purple-lighter: var(--color-purple-200);
+  --theme-purple-lighter: var(--color-purple-100);
   /* Legacy mapping */
 }
 
@@ -168,7 +168,26 @@ a:hover {
 .bg-gradient-theme {
   background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
 }
+/* Improve text contrast for gradient-themed cards (kroegentocht, reis, etc.) */
+.bg-gradient-theme,
+.bg-gradient-theme h1,
+.bg-gradient-theme h2,
+.bg-gradient-theme h3,
+.bg-gradient-theme h4,
+.bg-gradient-theme p,
+.bg-gradient-theme span,
+.bg-gradient-theme a,
+.bg-gradient-theme li,
+.bg-gradient-theme strong {
+  color: rgba(255,255,255,0.95) !important;
+}
 
+/* Slightly muted items (bullets, helper text) but still high contrast */
+.bg-gradient-theme .muted,
+.bg-gradient-theme .subtle,
+.bg-gradient-theme small {
+  color: rgba(255,255,255,0.82) !important;
+}
 /* Page header gradient (fallback when no image) */
 .bg-gradient-theme-page-alt {
   background: linear-gradient(135deg, #f4e9f3, #e4cbe2);
