@@ -46,6 +46,7 @@ function Tile({
   children,
   className = "",
   actions,
+  centeredTitle,
 }: {
   title?: string;
   icon?: React.ReactNode;
