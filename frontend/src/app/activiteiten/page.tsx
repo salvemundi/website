@@ -289,7 +289,7 @@ function ActivitiesContent() {
                                     {/* Grid / Card View */}
                                     {viewMode === 'grid' && (
                                         <EventList
-                                            events={filteredEvents.filter(e => String(e.id) !== String(upcomingEvent?.id))}
+                                            events={filteredEvents}
                                             onEventClick={handleShowDetails}
                                             variant="grid"
                                         />
