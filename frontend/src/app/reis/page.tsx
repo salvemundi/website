@@ -222,291 +222,272 @@ export default function ReisPage() {
                 <PageHeader
                     title={nextTrip?.name || "SALVE MUNDI REIS"}
                     backgroundImage={headerBackgroundImage}
+                    variant="centered"
+                    titleClassName="text-theme-purple dark:text-theme-white text-3xl sm:text-4xl md:text-6xl drop-shadow-sm"
+                    description={
+                        <p className="mx-auto text-center text-lg sm:text-xl text-white/90 max-w-3xl mt-4 font-medium drop-shadow-sm">
+                            Schrijf je in voor de jaarlijkse reis van Salve Mundi! Een onvergetelijke ervaring vol gezelligheid en avontuur.
+                        </p>
+                    }
                 />
             </div>
 
-            <main className="relative overflow-hidden bg-white dark:bg-gray-900">
+            <main className="relative overflow-hidden bg-background">
                 {!isReisEnabled ? (
                     <section className="px-4 sm:px-6 lg:px-10 py-12 lg:py-16">
-                        <div className="max-w-4xl mx-auto bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl lg:rounded-3xl p-6 lg:p-8 text-center shadow-2xl">
+                        <div className="max-w-4xl mx-auto bg-surface dark:border dark:border-white/10 rounded-2xl lg:rounded-3xl p-6 lg:p-8 text-center shadow-card dark:shadow-card-elevated">
                             <h2 className="text-2xl lg:text-3xl font-bold text-gradient mb-4">Reis momenteel niet beschikbaar</h2>
-                            <p className="text-base lg:text-lg text-theme-muted mb-6">{reisDisabledMessage}</p>
-                            {isSettingsLoading && <p className="text-sm text-theme-muted mb-6">Bezig met controleren van status...</p>}
-                            <Link href="/" className="inline-flex items-center justify-center px-6 py-3 bg-gradient-theme text-theme-white font-semibold rounded-full">
+                            <p className="text-base lg:text-lg text-theme-text-muted mb-6">{reisDisabledMessage}</p>
+                            {isSettingsLoading && <p className="text-sm text-theme-text-muted mb-6">Bezig met controleren van status...</p>}
+                            <Link href="/" className="inline-flex items-center justify-center px-6 py-3 bg-gradient-theme text-white font-semibold rounded-full shadow-lg shadow-theme-purple/30 hover:-translate-y-0.5 transition-all">
                                 Terug naar Home
                             </Link>
                         </div>
                     </section>
                 ) : (
-                    <div className="flex flex-col lg:flex-row gap-6 p-6 sm:p-10 items-start">
-                        {/* Form Section */}
-                        <section className="w-full lg:w-1/2 bg-gradient-theme rounded-3xl shadow-lg p-6 sm:p-8">
-                            <h1 className="text-3xl font-bold text-white mb-6">
-                                Inschrijven voor de Reis
-                            </h1>
-
-                            {submitted ? (
-                                <div className="text-white">
-                                    <div className="flex items-center justify-center mb-4">
-                                        <CheckCircle2 className="w-12 h-12 lg:w-16 lg:h-16 text-white" />
-                                    </div>
-                                    <h2 className="text-2xl font-semibold mb-4 text-center">Aanmelding Voltooid!</h2>
-                                    <p className="text-lg mb-4">
-                                        {spotsLeft > 1 
-                                            ? 'Je bent succesvol ingeschreven voor de reis!'
-                                            : 'Je bent succesvol ingeschreven en op de wachtlijst geplaatst!'}
-                                    </p>
-                                    <p className="text-white/90 mb-2">
-                                        Je ontvangt binnenkort een bevestigingsmail met alle details op <strong>{form.email}</strong>.
-                                    </p>
-                                    <button
-                                        onClick={() => {
-                                            setSubmitted(false);
-                                            setForm({
-                                                first_name: '',
-                                                middle_name: '',
-                                                last_name: '',
-                                                email: '',
-                                                phone_number: '',
-                                                terms_accepted: false,
-                                            });
-                                        }}
-                                        className="bg-white text-theme-purple font-bold py-2 px-4 rounded hover:bg-white/90 transition mt-4"
-                                    >
-                                        Nieuwe inschrijving
-                                    </button>
-                                </div>
-                            ) : (
-                                <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-                                    {error && (
-                                        <div className="bg-white/20 text-white px-4 py-3 rounded">
-                                            {error}
-                                        </div>
-                                    )}
-
-                                    {!tripsLoading && !canSignUp && nextTrip && (
-                                        <div className="bg-white/20 text-white px-4 py-3 rounded">
-                                            De inschrijvingen voor deze reis zijn momenteel gesloten. Houd deze pagina in de gaten!
-                                        </div>
-                                    )}
-
-                                    {!tripsLoading && !nextTrip && (
-                                        <div className="bg-white/20 text-white px-4 py-3 rounded">
-                                            Momenteel is er geen reis gepland. Houd deze pagina in de gaten voor nieuwe data!
-                                        </div>
-                                    )}
-
-                                    <p className="text-white/90 text-sm mb-2">
-                                        Let op: dit is een vrijblijvende aanmelding. De daadwerkelijke betaling volgt later.
-                                    </p>
-
-                                    {/* Name fields */}
-                                    <label className="font-semibold text-white">
-                                        Voornaam
-                                        <input
-                                            type="text"
-                                            name="first_name"
-                                            value={form.first_name}
-                                            onChange={handleChange}
-                                            required
-                                            placeholder="Volledige voornaam (incl. doopnamen)"
-                                            className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
-                                        />
-                                        <span className="text-xs text-white/80 mt-1 block">
-                                            Gebruik je volledige naam zoals op je paspoort/ID
-                                        </span>
-                                    </label>
-
-                                    <label className="font-semibold text-white">
-                                        Tussenvoegsel
-                                        <input
-                                            type="text"
-                                            name="middle_name"
-                                            value={form.middle_name}
-                                            onChange={handleChange}
-                                            placeholder="bijv. van, de"
-                                            className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
-                                        />
-                                    </label>
-
-                                    <label className="font-semibold text-white">
-                                        Achternaam
-                                        <input
-                                            type="text"
-                                            name="last_name"
-                                            value={form.last_name}
-                                            onChange={handleChange}
-                                            required
-                                            placeholder="Achternaam"
-                                            className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
-                                        />
-                                    </label>
-
-                                    {/* Email */}
-                                    <label className="font-semibold text-white">
-                                        E-mailadres
-                                        <input
-                                            type="email"
-                                            name="email"
-                                            value={form.email}
-                                            onChange={handleChange}
-                                            required
-                                            placeholder="jouw@email.nl"
-                                            className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
-                                        />
-                                    </label>
-
-                                    {/* Phone */}
-                                    <label className="font-semibold text-white">
-                                        Telefoonnummer
-                                        <input
-                                            type="tel"
-                                            name="phone_number"
-                                            value={form.phone_number}
-                                            onChange={handleChange}
-                                            required
-                                            placeholder="+31 6 12345678"
-                                            className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
-                                        />
-                                    </label>
-
-                                    {/* Terms */}
-                                    <label className="flex items-start gap-2 text-white">
-                                        <input
-                                            type="checkbox"
-                                            name="terms_accepted"
-                                            checked={form.terms_accepted}
-                                            onChange={handleChange}
-                                            required
-                                            className="mt-1 h-5 w-5 rounded"
-                                        />
-                                        <span className="text-sm">
-                                            Ik accepteer de{' '}
-                                            <a href="/reisvoorwaarden.pdf" download className="underline font-semibold" target="_blank" rel="noopener noreferrer">
-                                                algemene voorwaarden
-                                            </a>
-                                        </span>
-                                    </label>
-
-                                    <button
-                                        type="submit"
-                                        disabled={loading || !canSignUp || !nextTrip}
-                                        className="bg-white text-theme-purple font-bold py-3 px-6 rounded shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {loading
-                                            ? 'Bezig met aanmelden...'
-                                            : (canSignUp && nextTrip)
-                                                ? 'Aanmelden voor de reis'
-                                                : 'Inschrijving nog niet beschikbaar'}
-                                    </button>
-                                </form>
-                            )}
-                        </section>
-
-                        {/* Info Section */}
-                        <div className="w-full lg:w-1/2 flex flex-col gap-6">
-                            {/* Image + Date Card (removed Deelnemers & Plekken over) */}
-                            {nextTrip && (
-                                <div className="bg-gradient-theme rounded-3xl p-6 shadow-lg">
-                                    {nextTrip.image && (
-                                        <button
-                                            type="button"
-                                            onClick={() => openLightbox(getImageUrl(nextTrip.image))}
-                                            className="w-full rounded-2xl overflow-hidden focus:outline-none"
-                                        >
-                                            <img
-                                                src={getImageUrl(nextTrip.image)}
-                                                alt={nextTrip.name}
-                                                className="w-full h-64 object-cover rounded-2xl"
-                                                onError={(e) => {
-                                                    const target = e.target as HTMLImageElement;
-                                                    target.src = '/img/placeholder.svg';
-                                                }}
-                                            />
-                                        </button>
-                                    )}
-
-                                    <div className="bg-white/10 rounded-lg p-4 mt-4">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <p className="text-white/80 text-sm font-medium">Datum</p>
-                                                <p className="text-2xl font-bold text-white mt-1">
-                                                    {formattedFromDate && formattedUntilDate ? (
-                                                        formattedFromDate === formattedUntilDate ? formattedFromDate : `${formattedFromDate} — ${formattedUntilDate}`
-                                                    ) : (
-                                                        'Nog te bepalen'
-                                                    )}
-                                                </p>
-                                            </div>
-                                            <Calendar className="h-10 w-10 text-white/60" />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {lightboxOpen && lightboxSrc && (
-                                <div
-                                    role="dialog"
-                                    aria-modal="true"
-                                    className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/70"
-                                    onClick={closeLightbox}
-                                >
-                                    <button
-                                        onClick={closeLightbox}
-                                        aria-label="Sluiten"
-                                        className="absolute top-6 right-6 text-white text-3xl leading-none"
-                                    >
-                                        ×
-                                    </button>
-
-                                    <img
-                                        src={lightboxSrc}
-                                        alt={nextTrip?.name || 'Reis afbeelding'}
-                                        className="max-h-[90vh] max-w-full rounded shadow-lg"
-                                        onClick={(e) => e.stopPropagation()}
-                                    />
-                                </div>
-                            )}
-
-                            {/* Description */}
-                            {nextTrip?.description && (
-                                <div className="bg-gradient-theme rounded-3xl p-6 shadow-lg">
-                                    <h2 className="text-2xl font-bold text-white mb-4">
-                                        ✈️ Over de Reis
-                                    </h2>
-                                    <div 
-                                        className="text-white space-y-3 prose prose-invert max-w-none"
-                                        dangerouslySetInnerHTML={{ __html: nextTrip.description }}
-                                    />
-                                </div>
-                            )}
-
-                            {/* Important Info */}
-                            <div className="bg-gradient-theme rounded-3xl p-6 shadow-lg">
-                                <h2 className="text-2xl font-bold text-white mb-4">
-                                    ℹ️ Belangrijke Informatie
+                    <div className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12">
+                        <div className="flex flex-col lg:flex-row gap-8 items-start">
+                            {/* Form Section */}
+                            <section className="w-full lg:w-1/2 bg-gradient-theme rounded-3xl shadow-glow p-6 sm:p-8">
+                                <h2 className="text-3xl font-bold text-white mb-6">
+                                    Inschrijven voor de Reis
                                 </h2>
-                                <div className="text-white space-y-2">
-                                    <p className="flex items-start gap-2">
-                                        <span className="text-white/80">•</span>
-                                        <span>Je hoeft <strong>geen lid</strong> te zijn om deel te nemen</span>
-                                    </p>
-                                    <p className="flex items-start gap-2">
-                                        <span className="text-white/80">•</span>
-                                        <span>Je ontvangt een bevestigingsmail na inschrijving</span>
-                                    </p>
-                                    <p className="flex items-start gap-2">
-                                        <span className="text-white/80">•</span>
-                                        <span>Minimumleeftijd: 18 jaar</span>
-                                    </p>
-                                    <p className="flex items-start gap-2">
-                                        <span className="text-white/80">•</span>
-                                        <span>Gebruik je volledige naam zoals op je paspoort/ID</span>
-                                    </p>
-                                    <p className="flex items-start gap-2">
-                                        <span className="text-white/80">•</span>
-                                        <span>Bij vragen? Neem contact op via <a href="/contact" className="text-white underline">onze contactpagina</a></span>
-                                    </p>
+
+                                {submitted ? (
+                                    <div className="text-white">
+                                        <div className="flex items-center justify-center mb-4">
+                                            <CheckCircle2 className="w-12 h-12 lg:w-16 lg:h-16 text-white" />
+                                        </div>
+                                        <h2 className="text-2xl font-semibold mb-4 text-center">Aanmelding Voltooid!</h2>
+                                        <p className="text-lg mb-4">
+                                            {spotsLeft > 1
+                                                ? 'Je bent succesvol ingeschreven voor de reis!'
+                                                : 'Je bent succesvol ingeschreven en op de wachtlijst geplaatst!'}
+                                        </p>
+                                        <p className="text-white/90 mb-2">
+                                            Je ontvangt binnenkort een bevestigingsmail met alle details op <strong>{form.email}</strong>.
+                                        </p>
+                                        <button
+                                            onClick={() => {
+                                                setSubmitted(false);
+                                                setForm({
+                                                    first_name: '',
+                                                    middle_name: '',
+                                                    last_name: '',
+                                                    email: '',
+                                                    phone_number: '',
+                                                    terms_accepted: false,
+                                                });
+                                            }}
+                                            className="bg-white text-theme-purple font-bold py-2 px-4 rounded hover:bg-white/90 transition mt-4"
+                                        >
+                                            Nieuwe inschrijving
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+                                        {error && (
+                                            <div className="bg-white/20 text-white px-4 py-3 rounded">
+                                                {error}
+                                            </div>
+                                        )}
+
+                                        {!tripsLoading && !canSignUp && nextTrip && (
+                                            <div className="bg-white/20 text-white px-4 py-3 rounded">
+                                                De inschrijvingen voor deze reis zijn momenteel gesloten. Houd deze pagina in de gaten!
+                                            </div>
+                                        )}
+
+                                        {!tripsLoading && !nextTrip && (
+                                            <div className="bg-white/20 text-white px-4 py-3 rounded">
+                                                Momenteel is er geen reis gepland. Houd deze pagina in de gaten voor nieuwe data!
+                                            </div>
+                                        )}
+
+                                        <p className="text-white/90 text-sm mb-2">
+                                            Let op: dit is een vrijblijvende aanmelding. De daadwerkelijke betaling volgt later.
+                                        </p>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="flex flex-col gap-1">
+                                                <label className="font-semibold text-white text-sm">Voornaam</label>
+                                                <input
+                                                    type="text"
+                                                    name="first_name"
+                                                    value={form.first_name}
+                                                    onChange={handleChange}
+                                                    required
+                                                    placeholder="Voornaam"
+                                                    className="p-3 rounded-xl w-full bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
+                                                />
+                                            </div>
+
+                                            <div className="flex flex-col gap-1">
+                                                <label className="font-semibold text-white text-sm">Tussenvoegsel</label>
+                                                <input
+                                                    type="text"
+                                                    name="middle_name"
+                                                    value={form.middle_name}
+                                                    onChange={handleChange}
+                                                    placeholder="bijv. van, de"
+                                                    className="p-3 rounded-xl w-full bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col gap-1">
+                                            <label className="font-semibold text-white text-sm">Achternaam</label>
+                                            <input
+                                                type="text"
+                                                name="last_name"
+                                                value={form.last_name}
+                                                onChange={handleChange}
+                                                required
+                                                placeholder="Achternaam"
+                                                className="p-3 rounded-xl w-full bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
+                                            />
+                                        </div>
+
+                                        <div className="flex flex-col gap-1">
+                                            <label className="font-semibold text-white text-sm">E-mailadres</label>
+                                            <input
+                                                type="email"
+                                                name="email"
+                                                value={form.email}
+                                                onChange={handleChange}
+                                                required
+                                                placeholder="jouw@email.nl"
+                                                className="p-3 rounded-xl w-full bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
+                                            />
+                                        </div>
+
+                                        <div className="flex flex-col gap-1">
+                                            <label className="font-semibold text-white text-sm">Telefoonnummer</label>
+                                            <input
+                                                type="tel"
+                                                name="phone_number"
+                                                value={form.phone_number}
+                                                onChange={handleChange}
+                                                required
+                                                placeholder="+31 6 12345678"
+                                                className="p-3 rounded-xl w-full bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
+                                            />
+                                        </div>
+
+                                        {/* Terms */}
+                                        <label className="flex items-start gap-2 text-white">
+                                            <input
+                                                type="checkbox"
+                                                name="terms_accepted"
+                                                checked={form.terms_accepted}
+                                                onChange={handleChange}
+                                                required
+                                                className="mt-1 h-5 w-5 rounded"
+                                            />
+                                            <span className="text-sm">
+                                                Ik accepteer de{' '}
+                                                <a href="/reisvoorwaarden.pdf" download className="underline font-semibold" target="_blank" rel="noopener noreferrer">
+                                                    algemene voorwaarden
+                                                </a>
+                                            </span>
+                                        </label>
+
+                                        <button
+                                            type="submit"
+                                            disabled={loading || !canSignUp || !nextTrip}
+                                            className="bg-white text-theme-purple font-bold py-4 px-6 rounded-2xl shadow-lg shadow-black/10 transition-all hover:bg-white-soft hover:-translate-y-0.5 mt-4 disabled:opacity-50 disabled:cursor-not-allowed group flex items-center justify-center gap-2"
+                                        >
+                                            <span>
+                                                {loading
+                                                    ? 'Bezig met aanmelden...'
+                                                    : (canSignUp && nextTrip)
+                                                        ? 'Aanmelden voor de reis'
+                                                        : 'Inschrijving nog niet beschikbaar'}
+                                            </span>
+                                            {!loading && (canSignUp && nextTrip) && <span className="group-hover:translate-x-1 transition-transform">→</span>}
+                                        </button>
+                                    </form>
+                                )}
+                            </section>
+
+                            {/* Info Section */}
+                            <div className="w-full lg:w-1/2 flex flex-col gap-8">
+                                {/* Image + Date Card */}
+                                {nextTrip && (
+                                    <div className="bg-surface dark:border dark:border-white/10 rounded-3xl p-6 shadow-card">
+                                        {nextTrip.image && (
+                                            <button
+                                                type="button"
+                                                onClick={() => openLightbox(getImageUrl(nextTrip.image))}
+                                                className="w-full rounded-2xl overflow-hidden focus:outline-none group relative"
+                                            >
+                                                <img
+                                                    src={getImageUrl(nextTrip.image)}
+                                                    alt={nextTrip.name}
+                                                    className="w-full h-72 object-cover rounded-2xl transition-transform duration-500 group-hover:scale-105"
+                                                    onError={(e) => {
+                                                        const target = e.target as HTMLImageElement;
+                                                        target.src = '/img/placeholder.svg';
+                                                    }}
+                                                />
+                                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <span className="text-white bg-black/40 px-4 py-2 rounded-full backdrop-blur-md">Bekijk afbeelding</span>
+                                                </div>
+                                            </button>
+                                        )}
+
+                                        <div className="mt-6 flex items-center justify-between p-4 bg-theme-white-soft dark:bg-white/5 rounded-2xl border border-theme-purple/10 dark:border-white/5">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-full bg-theme-purple/10 flex items-center justify-center">
+                                                    <Calendar className="h-6 w-6 text-theme-purple" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-theme-text-muted text-xs font-semibold uppercase tracking-wider">Datum Reis</p>
+                                                    <p className="text-xl font-bold text-theme-purple dark:text-theme-white mt-0.5">
+                                                        {formattedFromDate && formattedUntilDate ? (
+                                                            formattedFromDate === formattedUntilDate ? formattedFromDate : `${formattedFromDate} — ${formattedUntilDate}`
+                                                        ) : (
+                                                            'Nog te bepalen'
+                                                        )}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Description */}
+                                {nextTrip?.description && (
+                                    <div className="bg-surface dark:border dark:border-white/10 rounded-3xl p-8 shadow-card">
+                                        <h2 className="text-2xl font-bold text-theme-purple dark:text-theme-white mb-6 flex items-center gap-2">
+                                            <span>✈️</span> Over de Reis
+                                        </h2>
+                                        <div
+                                            className="text-theme-text-muted dark:text-theme-text-muted space-y-4 prose prose-purple dark:prose-invert max-w-none prose-p:leading-relaxed"
+                                            dangerouslySetInnerHTML={{ __html: nextTrip.description }}
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Important Info */}
+                                <div className="bg-surface dark:border dark:border-white/10 rounded-3xl p-8 shadow-card">
+                                    <h2 className="text-2xl font-bold text-theme-purple dark:text-theme-white mb-6 flex items-center gap-2">
+                                        <span>ℹ️</span> Belangrijke Informatie
+                                    </h2>
+                                    <ul className="space-y-4">
+                                        {[
+                                            { icon: '👥', text: 'Je hoeft <strong>geen lid</strong> te zijn om deel te nemen' },
+                                            { icon: '📧', text: 'Je ontvangt een bevestigingsmail na inschrijving' },
+                                            { icon: '🔞', text: 'Minimumleeftijd: 18 jaar' },
+                                            { icon: '🪪', text: 'Gebruik je volledige naam zoals op je paspoort/ID' },
+                                            { icon: '📞', text: 'Bij vragen? Neem contact op via <a href="/contact" class="text-theme-purple underline font-semibold">onze contactpagina</a>' },
+                                        ].map((item, i) => (
+                                            <li key={i} className="flex items-start gap-4">
+                                                <span className="text-xl flex-shrink-0">{item.icon}</span>
+                                                <span className="text-theme-text-muted leading-snug" dangerouslySetInnerHTML={{ __html: item.text }} />
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </div>
                             </div>
                         </div>
