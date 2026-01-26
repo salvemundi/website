@@ -119,7 +119,7 @@
   --color-oranje: var(--theme-purple);
   --theme-purple-dark: var(--color-purple-800);
   --theme-purple-darker: var(--color-purple-900);
-  --theme-purple-lighter: var(--color-purple-200);
+  --theme-purple-lighter: var(--color-purple-100);
   /* Legacy mapping */
 }
 
@@ -146,6 +146,26 @@ a:hover {
 /* Gradients */
 .bg-gradient-theme {
   background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+}
+/* Improve text contrast for gradient-themed cards (kroegentocht, reis, etc.) */
+.bg-gradient-theme,
+.bg-gradient-theme h1,
+.bg-gradient-theme h2,
+.bg-gradient-theme h3,
+.bg-gradient-theme h4,
+.bg-gradient-theme p,
+.bg-gradient-theme span,
+.bg-gradient-theme a,
+.bg-gradient-theme li,
+.bg-gradient-theme strong {
+  color: rgba(255,255,255,0.95) !important;
+}
+
+/* Slightly muted items (bullets, helper text) but still high contrast */
+.bg-gradient-theme .muted,
+.bg-gradient-theme .subtle,
+.bg-gradient-theme small {
+  color: rgba(255,255,255,0.82) !important;
 }
 /* Page header gradient (fallback when no image) */
 .bg-gradient-theme-page-alt {
