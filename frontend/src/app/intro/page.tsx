@@ -174,7 +174,7 @@ export default function IntroPage() {
           <section className="px-4 sm:px-6 lg:px-10 py-8 lg:py-10">
             <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 max-w-7xl mx-auto">
               <div className="flex-1">
-                <div className="text-white">
+                <div className="text-theme dark:text-white">
                   {isAuthenticated ? (
                     <>
                       <h2 className="text-2xl lg:text-3xl font-bold mb-4">Word Intro Ouder — begeleid de nieuwe lichting</h2>
