@@ -14,7 +14,6 @@ import {
   MessageCircle,
   FileText,
   Mail,
-  Phone,
   Gamepad2,
   Calendar,
   Shield,
