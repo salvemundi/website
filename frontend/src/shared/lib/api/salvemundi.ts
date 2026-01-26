@@ -46,8 +46,12 @@ export interface Transaction {
     id: number;
     user_id: string;
     amount: number;
-    description: string;
-    transaction_type: 'payment' | 'membership' | 'event' | 'other';
+    description?: string;
+    product_name?: string;
+    transaction_type?: 'payment' | 'membership' | 'event' | 'other';
+    registration?: any;
+    pub_crawl_signup?: any;
+    trip_signup?: any;
     status?: 'pending' | 'completed' | 'failed' | 'paid';
     payment_status?: 'pending' | 'completed' | 'failed' | 'paid' | 'open';
     created_at: string;
