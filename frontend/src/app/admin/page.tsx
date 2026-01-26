@@ -786,7 +786,7 @@ export default function AdminDashboardPage() {
 
     const activeAdmin = visibilitySettings.kroegentocht
         ? { title: 'Kroegentocht', link: '/admin/kroegentocht', color: 'orange' as const }
-        : canManageReis
+        : visibilitySettings.reis
             ? { title: 'Reis', link: '/admin/reis', color: 'teal' as const }
             : { title: 'Stickers', link: '/stickers', color: 'red' as const };
 
@@ -1098,7 +1098,7 @@ export default function AdminDashboardPage() {
 
                             {/* Kroegentocht & Reis aanmeldingen shown under Activiteiten aanmeldingen */}
                             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {(visibilitySettings.reis || canManageReis) && (
+                                {visibilitySettings.reis && (
                                     <StatCard
                                         title="Reis Aanmeldingen"
                                         value={stats.reisSignups}
@@ -1109,7 +1109,7 @@ export default function AdminDashboardPage() {
                                     />
                                 )}
 
-                                {(visibilitySettings.kroegentocht || canManageKroegentocht) && (
+                                {visibilitySettings.kroegentocht && (
                                     <StatCard
                                         title="Kroegentocht Aanmeldingen"
                                         value={stats.pubCrawlSignups ?? 0}
