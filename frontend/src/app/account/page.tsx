@@ -65,26 +65,26 @@ function Tile({
     >
       <div className="relative p-6 sm:p-8">
         {(title || actions) && (
-          <header className={`mb-8 flex items-center gap-4 ${centeredTitle ? 'flex-col justify-center text-center' : 'justify-between'}`}>
-            <div className={`flex min-w-0 items-center gap-3 ${centeredTitle ? 'flex-col' : ''}`}>
+          <header className="mb-6 flex items-center justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-3">
               {icon ? (
-                <div className={`shrink-0 rounded-2xl bg-theme-purple/5 text-theme-purple dark:text-theme-purple-light transition-all ${centeredTitle ? 'p-3 mb-3' : 'p-2'}`}>
+                <div className="shrink-0 rounded-xl bg-theme-purple/5 p-2 text-theme-purple dark:text-theme-purple-light">
                   {React.cloneElement(icon as React.ReactElement, {
-                    className: centeredTitle ? "h-6 w-6 sm:h-8 sm:w-8" : "h-5 w-5"
+                    className: "h-5 w-5"
                   })}
                 </div>
               ) : null}
               {title ? (
                 <h2
-                  className={`font-black text-theme-purple dark:text-white uppercase tracking-[0.2em] transition-all`}
-                  style={{ fontSize: centeredTitle ? 'var(--font-size-2xl)' : 'var(--font-size-xl)' }}
+                  className="truncate font-black text-theme-purple dark:text-white uppercase tracking-[0.2em]"
+                  style={{ fontSize: 'var(--font-size-xl)' }}
                 >
                   {title}
                 </h2>
               ) : null}
             </div>
 
-            {actions ? <div className={`shrink-0 ${centeredTitle ? 'mt-4' : ''}`}>{actions}</div> : null}
+            {actions ? <div className="shrink-0">{actions}</div> : null}
           </header>
         )}
 
@@ -384,7 +384,7 @@ export default function AccountPage() {
       </PageHeader>
 
       <main className="mx-auto max-w-app px-4 py-8 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-12 auto-rows-min items-start">
+        <div className="grid grid-cols-1 gap-x-5 gap-y-4 md:grid-cols-12 auto-rows-min items-start">
           {/* Profile */}
           <Tile className="md:col-span-5 lg:col-span-4 lg:row-span-1 h-fit">
             <div className="flex flex-col gap-6 items-center text-center">
@@ -530,8 +530,7 @@ export default function AccountPage() {
             className="md:col-span-7 lg:col-span-8 h-fit"
             title="Mijn gegevens"
             icon={<Mail />}
-          >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          >  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex items-center gap-4 rounded-2xl bg-theme-purple/5 p-4 border border-theme-purple/5">
                 <div className="shrink-0 rounded-xl bg-white/50 dark:bg-black/20 p-2.5 text-theme-purple dark:text-white shadow-sm">
                   <Mail className="h-5 w-5" />
@@ -591,16 +590,14 @@ export default function AccountPage() {
             </div>
           </Tile>
 
-          {/* Minecraft */}
           <Tile
             className="lg:col-span-4 h-fit"
             title="Social Gaming"
-            icon={<Gamepad2 className="h-5 w-5" />}
-            centeredTitle
+            icon={<Gamepad2 />}
           >
-            <div className="rounded-2xl bg-theme-purple/5 p-5 border border-theme-purple/10 text-center">
-              <div className="flex items-center justify-center gap-2 mb-3">
-                <p className="text-[10px] font-black uppercase text-theme-purple/60 dark:text-white/40 tracking-widest">
+            <div className="rounded-2xl bg-theme-purple/5 p-4 border border-theme-purple/10">
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <p className="text-[10px] font-black uppercase text-theme-purple/60 dark:text-white/40 tracking-widest text-left">
                   Minecraft Username
                 </p>
                 {!isEditingMinecraft && (
@@ -637,10 +634,11 @@ export default function AccountPage() {
                   </button>
                 </div>
               ) : (
-                <div className="min-w-0">
+                <div className="flex items-center gap-3 min-w-0">
+                  <Gamepad2 className="h-5 w-5 text-theme-purple/40" />
                   <p
                     className="break-words font-bold text-theme-purple dark:text-white"
-                    style={{ fontSize: 'var(--font-size-lg)' }}
+                    style={{ fontSize: 'var(--font-size-base)' }}
                   >
                     {user.minecraft_username || "Niet ingesteld"}
                   </p>
@@ -653,8 +651,7 @@ export default function AccountPage() {
           <Tile
             className="lg:col-span-8 h-fit"
             title="Snelle links"
-            icon={<ChevronRight className="h-5 w-5" />}
-            centeredTitle
+            icon={<ChevronRight />}
           >
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <QuickLink
@@ -689,8 +686,7 @@ export default function AccountPage() {
           <Tile
             className="lg:col-span-12 h-fit"
             title="Mijn inschrijvingen"
-            icon={<Calendar className="h-5 w-5" />}
-            centeredTitle
+            icon={<Calendar />}
             actions={
               <div className="flex items-center gap-3">
                 <button
