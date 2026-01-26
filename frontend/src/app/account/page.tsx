@@ -390,15 +390,25 @@ export default function AccountPage() {
                   accept="image/*"
                   className="hidden"
                 />
-                <div className="relative h-32 w-32 sm:h-40 sm:w-40 rounded-full overflow-hidden border-4 border-theme-purple/10 shadow-lg group-hover:border-theme-purple/30 transition-all">
+                <div className={`relative h-32 w-32 sm:h-40 sm:w-40 rounded-full overflow-hidden border-4 shadow-lg transition-all ${previewUrl ? 'border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.3)]' : 'border-theme-purple/10'}`}>
                   {previewUrl ? (
-                    <Image
-                      src={previewUrl}
-                      alt="Preview"
-                      fill
-                      sizes="160px"
-                      className="object-cover"
-                    />
+                    <>
+                      <Image
+                        src={previewUrl}
+                        alt="Preview"
+                        fill
+                        sizes="160px"
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="w-full h-full border-[16px] border-black/20 rounded-full"></div>
+                      </div>
+                      <div className="absolute bottom-2 left-0 right-0 text-center">
+                        <span className="bg-green-500 text-white text-[8px] font-black uppercase px-2 py-0.5 rounded-full shadow-lg">
+                          Voorvertoning
+                        </span>
+                      </div>
+                    </>
                   ) : user.avatar ? (
                     <Image
                       src={getImageUrl(user.avatar)}
