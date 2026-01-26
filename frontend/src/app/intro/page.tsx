@@ -271,7 +271,7 @@ export default function IntroPage() {
                           <p className="text-theme-text-muted dark:text-theme-text-muted">Bedankt! Je inschrijving is ontvangen. Als je iets wilt aanpassen, neem contact op met de intro commissie.</p>
                         </div>
                       ) : (
-                        <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4">
+                        <form onSubmit={handleSubmit} className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4">
                           <div className="flex items-center gap-2 mb-4">
                             <Heart className="w-5 h-5 lg:w-6 lg:h-6 text-theme-purple" />
                             <h3 className="text-xl lg:text-2xl font-bold text-theme-purple">Word Intro Ouder!</h3>
@@ -317,7 +317,7 @@ export default function IntroPage() {
                         </form>
                       )
                     ) : (
-                      <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4">
+                      <form onSubmit={handleSubmit} className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4">
                         <div className="flex items-center gap-2 mb-4">
                           <Users className="w-5 h-5 lg:w-6 lg:h-6 text-theme-purple" />
                           <h3 className="text-xl lg:text-2xl font-bold text-theme-purple">Meld je aan!</h3>
