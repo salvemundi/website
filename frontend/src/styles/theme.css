@@ -87,9 +87,6 @@
 
 /* --- 3. DARK MODE OVERRIDES --- */
 .dark {
-  --theme-purple: #9A8098;
-  --theme-purple-light: #e8c4e6;
-
   --bg-main: #1a141b;
   /* slightly adjust soft and card backgrounds so cards contrast from the page */
   --bg-soft: #161116;
@@ -304,7 +301,7 @@ textarea.form-input {
   font-size: var(--font-size-base);
 
   background-color: var(--theme-purple);
-  color: var(--theme-purple-darker);
+  color: #ffffff;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
