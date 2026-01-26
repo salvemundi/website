@@ -42,6 +42,7 @@ interface DashboardStats {
     systemErrors: number;
     mostLikedPost?: { id: string; title: string; likes: number; slug: string };
     upcomingEventsWithSignups: Array<{ id: string; name: string; event_date: string; signups: number }>;
+    latestEventsWithSignups: Array<{ id: string; name: string; event_date?: string; signups: number }>;
     topCommittee?: { name: string; count: number };
     totalCoupons: number;
     pubCrawlSignups: number;
@@ -160,6 +161,44 @@ function ListCard({
     );
 }
 
+function ActionCard({
+    title,
+    subtitle,
+    icon,
+    onClick,
+    colorClass = 'purple'
+}: {
+    title: string;
+    subtitle?: string;
+    icon: React.ReactNode;
+    onClick?: () => void;
+    colorClass?: 'purple' | 'blue' | 'red' | 'green' | 'orange' | 'teal';
+}) {
+    const colorMap: Record<string, string> = {
+        purple: 'bg-gradient-to-br from-purple-500 to-purple-600',
+        blue: 'bg-gradient-to-br from-blue-500 to-blue-600',
+        red: 'bg-gradient-to-br from-red-500 to-red-600',
+        green: 'bg-gradient-to-br from-green-500 to-green-600',
+        orange: 'bg-gradient-to-br from-orange-500 to-orange-600',
+        teal: 'bg-gradient-to-br from-teal-500 to-teal-600'
+    };
+
+    return (
+        <button
+            onClick={onClick}
+            className={`w-full flex items-center gap-4 p-3 rounded-2xl shadow-sm ${colorMap[colorClass]} text-white hover:scale-[1.01] transition`}
+        >
+            <div className="p-2 bg-white/20 rounded-lg flex items-center justify-center">
+                {icon}
+            </div>
+            <div className="text-left">
+                <p className="text-sm opacity-90">{title}</p>
+                {subtitle && <p className="font-bold text-lg">{subtitle}</p>}
+            </div>
+        </button>
+    );
+}
+
 export default function AdminDashboardPage() {
     const router = useRouter();
     const { user } = useAuth();
@@ -184,6 +223,7 @@ export default function AdminDashboardPage() {
         systemErrors: 0,
         mostLikedPost: undefined,
         upcomingEventsWithSignups: [],
+    latestEventsWithSignups: [],
         topCommittee: undefined,
         totalCoupons: 0,
         pubCrawlSignups: 0,
@@ -250,6 +290,7 @@ export default function AdminDashboardPage() {
                 introStats,
                 systemHealth,
                 upcomingEventsDetail,
+                latestEventsDetail,
                 topCommittee,
                 couponsData,
                 pubCrawlStats
@@ -272,9 +313,12 @@ export default function AdminDashboardPage() {
                 fetchSystemHealth(),
                 // Upcoming events with signup counts
                 fetchUpcomingEventsWithSignups(),
+                // Latest activities (most recent 4) with signup counts
+                fetchLatestEventsWithSignups(),
                 // Top committee by activities this year
                 fetchTopCommitteeByActivities(),
                 // Total active coupons
+                // (moved for ordering above)
                 directusFetch<any>('/items/coupons?aggregate[count]=*&filter[is_active][_eq]=true').catch(() => [{ count: 0 }]),
                 // Pub crawl stats
                 fetchPubCrawlStats()
@@ -294,6 +338,7 @@ export default function AdminDashboardPage() {
                 systemErrors: systemHealth.errors,
                 mostLikedPost: introStats.mostLikedPost,
                 upcomingEventsWithSignups: upcomingEventsDetail,
+                latestEventsWithSignups: latestEventsDetail,
                 topCommittee: topCommittee,
                 totalCoupons: couponsData?.[0]?.count || 0,
                 pubCrawlSignups: pubCrawlStats.signups,
@@ -630,6 +675,50 @@ export default function AdminDashboardPage() {
         }
     };
 
+    const fetchLatestEventsWithSignups = async () => {
+        try {
+            // Try to fetch using start_date if available, but fallback to event_date-only on permission errors
+            let allEvents: any[] = [];
+            try {
+                allEvents = await directusFetch<any[]>('/items/events?fields=id,name,event_date,start_date&sort=-start_date,-event_date&limit=4');
+            } catch (err: any) {
+                const message = err?.message || '';
+                // If start_date is forbidden or doesn't exist, retry without it
+                if (message.includes('start_date') || message.includes('403') || message.toLowerCase().includes('forbidden')) {
+                    allEvents = await directusFetch<any[]>('/items/events?fields=id,name,event_date&sort=-event_date&limit=4');
+                } else {
+                    throw err;
+                }
+            }
+
+            const eventsWithSignups = await Promise.all(
+                (allEvents || []).map(async (event) => {
+                    try {
+                        const signups = await directusFetch<any>(`/items/event_signups?aggregate[count]=*&filter[event_id][_eq]=${event.id}`);
+                        return {
+                            id: event.id,
+                            name: event.name,
+                            event_date: event.event_date || event.start_date,
+                            signups: signups?.[0]?.count || 0
+                        };
+                    } catch (error) {
+                        return {
+                            id: event.id,
+                            name: event.name,
+                            event_date: event.event_date || event.start_date,
+                            signups: 0
+                        };
+                    }
+                })
+            );
+
+            return eventsWithSignups;
+        } catch (error) {
+            console.error('Failed to fetch latest events with signups:', error);
+            return [];
+        }
+    };
+
     const fetchPubCrawlStats = async () => {
         try {
             // Get upcoming pub crawl event
@@ -747,62 +836,52 @@ export default function AdminDashboardPage() {
 
                 {/* Stats Section */}
                 <div className="mb-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-4 items-start">
-                        {/* Headings aligned with stats column top */}
-                        <div className="lg:col-span-5">
-                            <h2 className="text-2xl font-bold text-admin mb-4 whitespace-nowrap">Snelle Acties</h2>
-                        </div>
-                        <div className="lg:col-start-6 lg:col-span-7 pl-6">
-                            <h2 className="text-2xl font-bold text-admin mb-4">Statistieken</h2>
-                        </div>
-                        {/* Action Buttons - Left Side */}
-                        <div className="lg:col-start-1 lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <StatCard
-                                title="Nieuwe"
-                                value="Activiteit"
-                                icon={<Plus className="h-6 w-6" />}
-                                subtitle="Maak een nieuwe activiteit aan"
-                                onClick={() => router.push('/admin/activiteiten/nieuw')}
-                                nowrap
-                                colorClass="purple"
-                            />
-                            <StatCard
-                                title="Nieuwe"
-                                value="Intro Post"
-                                icon={<FileText className="h-6 w-6" />}
-                                subtitle="Maak een nieuwe intro blog post"
-                                onClick={() => router.push('/admin/intro?tab=blogs&create=1')}
-                                nowrap
-                                colorClass="blue"
-                            />
-                            <StatCard
-                                title="Nieuwe"
-                                value="Sticker"
-                                icon={<Sticker className="h-6 w-6" />}
-                                subtitle="Voeg een sticker toe"
-                                onClick={() => router.push('/stickers?add=1')}
-                                nowrap
-                                colorClass="red"
-                            />
-                        </div>
-
-                        {/* Stats - Right Side (bento grid) */}
-                        <div className="lg:col-start-6 lg:col-span-7 lg:pl-6 lg:border-l lg:border-admin-card-muted/40 lg:dark:border-admin-card-muted/20">
-
-                            {/* Top-right grid: main big card + two small ones */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="col-span-2">
-                                    <StatCard
-                                        title="Meeste Activiteiten"
-                                        value={stats.topCommittee ? cleanCommitteeName(stats.topCommittee.name) : 'Geen data'}
-                                        icon={<Sticker className="h-6 w-6" />}
-                                        subtitle={stats.topCommittee ? `${stats.topCommittee.count} ${stats.topCommittee.count === 1 ? 'activiteit' : 'activiteiten'} dit jaar` : 'Geen data'}
-                                        onClick={() => router.push('/commissies')}
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 auto-rows-min">
+                        {/* Snelle Acties - Fixed top left */}
+                        <div className="lg:col-span-5 lg:row-span-2">
+                            <div className="bg-admin-card rounded-2xl shadow-lg p-6">
+                                <h3 className="text-xl font-bold text-admin mb-4">Snelle Acties</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <ActionCard
+                                        title="Nieuwe"
+                                        subtitle="Activiteit"
+                                        icon={<Plus className="h-6 w-6" />}
+                                        onClick={() => router.push('/admin/activiteiten/nieuw')}
                                         colorClass="purple"
                                     />
+                                    <ActionCard
+                                        title="Nieuwe"
+                                        subtitle="Intro Post"
+                                        icon={<FileText className="h-6 w-6" />}
+                                        onClick={() => router.push('/admin/intro?tab=blogs&create=1')}
+                                        colorClass="blue"
+                                    />
+                                    <ActionCard
+                                        title="Nieuwe"
+                                        subtitle="Sticker"
+                                        icon={<Sticker className="h-6 w-6" />}
+                                        onClick={() => router.push('/stickers?add=1')}
+                                        colorClass="red"
+                                    />
                                 </div>
+                            </div>
+                        </div>
 
-                                {/* Small stats: Commissieleden + Totaal Stickers */}
+                        {/* All other stat cards wrap around Snelle Acties */}
+                        <div className="lg:col-span-7">
+                            <StatCard
+                                title="Meeste Activiteiten"
+                                value={stats.topCommittee ? cleanCommitteeName(stats.topCommittee.name) : 'Geen data'}
+                                icon={<Sticker className="h-6 w-6" />}
+                                subtitle={stats.topCommittee ? `${stats.topCommittee.count} ${stats.topCommittee.count === 1 ? 'activiteit' : 'activiteiten'} dit jaar` : 'Geen data'}
+                                onClick={() => router.push('/commissies')}
+                                colorClass="purple"
+                            />
+                        </div>
+
+                        <div className="lg:col-span-7">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-min">
                                 <div className="col-span-1">
                                     <StatCard
                                         title="Commissieleden"
@@ -812,6 +891,34 @@ export default function AdminDashboardPage() {
                                         onClick={() => router.push('/commissies')}
                                         colorClass="green"
                                     />
+                                </div>
+                                
+                                {/* Latest Activities - larger card that spans 2 columns and 2 rows */}
+                                <div className="sm:col-span-2 sm:row-span-2">
+                                    <div className="bg-admin-card rounded-2xl shadow-lg p-6 h-full">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div>
+                                                <p className="text-admin-muted text-sm font-medium">Laatste Activiteiten</p>
+                                                <h3 className="text-admin font-bold">Recente aanmeldingen</h3>
+                                            </div>
+                                            <Activity className="h-6 w-6 text-theme-purple" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            {stats.latestEventsWithSignups && stats.latestEventsWithSignups.length > 0 ? (
+                                                stats.latestEventsWithSignups.map(ev => (
+                                                    <div key={ev.id} className="flex items-center justify-between p-3 rounded-lg bg-admin-card-soft">
+                                                        <div className="text-sm text-admin truncate pr-2">{ev.name}</div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-lg font-bold text-theme-purple">{ev.signups}</span>
+                                                            <UserCheck className="h-4 w-4 text-theme-purple" />
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <p className="text-admin-muted text-sm text-center py-2">Geen recente activiteiten</p>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="col-span-1">
@@ -827,25 +934,49 @@ export default function AdminDashboardPage() {
                             </div>
                         </div>
 
-                        {/* Full-width lower stats row: spans under the action buttons and to the right */}
+                        {/* Additional cards that continue wrapping below */}
                         <div className="lg:col-span-12">
-                            <div className="mt-4 grid grid-cols-2 gap-4">
-                                {/* Ensure 'Meeste Activiteiten' and 'Commissieleden' are the first two cards */}
-                                {/* Totaal Stickers displayed as small card in the top-right bento; removed duplicate here */}
-
-                                <div>
-                                    <StatCard
-                                        title="Commissieleden"
-                                        value={stats.totalCommitteeMembers}
-                                        icon={<Users className="h-6 w-6" />}
-                                        subtitle="Actieve leden"
-                                        onClick={() => router.push('/commissies')}
-                                        colorClass="green"
-                                    />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div className="col-span-1">
+                                    <ListCard
+                                        title="Aankomende Jarigen (7 dagen)"
+                                        icon={<Cake className="h-5 w-5" />}
+                                    >
+                                        {stats.upcomingBirthdays.length > 0 ? (
+                                            <div className="space-y-3">
+                                                {stats.upcomingBirthdays.map(person => (
+                                                    <div 
+                                                        key={person.id} 
+                                                        className={`flex items-center justify-between p-3 rounded-xl ${
+                                                            person.isToday 
+                                                                ? 'bg-gradient-to-r from-yellow-100 to-yellow-50 dark:from-yellow-900/40 dark:to-yellow-900/20 border-2 border-yellow-400 dark:border-yellow-600' 
+                                                                : 'bg-admin-card-soft'
+                                                        }`}
+                                                    >
+                                                        <div>
+                                                            <p className={`font-semibold ${person.isToday ? 'text-yellow-900 dark:text-yellow-100' : 'text-admin'}`}>
+                                                                {person.first_name} {person.last_name}
+                                                                {person.isToday && (
+                                                                    <span className="ml-2 text-xs font-bold bg-yellow-500 text-white px-2 py-0.5 rounded-full">
+                                                                        VANDAAG! 🎉
+                                                                    </span>
+                                                                )}
+                                                            </p>
+                                                            <p className={`text-sm ${person.isToday ? 'text-yellow-700 dark:text-yellow-300' : 'text-admin-muted'}`}>
+                                                                {formatDate(person.birthday)}
+                                                            </p>
+                                                        </div>
+                                                        <Cake className={`h-5 w-5 ${person.isToday ? 'text-yellow-600 dark:text-yellow-400' : 'text-theme-purple'}`} />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="text-admin-muted text-center py-4">Geen jarigen in de komende 7 dagen</p>
+                                        )}
+                                    </ListCard>
                                 </div>
-                                {/* 1) Intro first card */}
                                 {visibilitySettings.intro && (
-                                    <div>
+                                    <div className="col-span-1">
                                         <StatCard
                                             title="Intro Aanmeldingen"
                                             value={stats.introSignups}
@@ -857,11 +988,8 @@ export default function AdminDashboardPage() {
                                     </div>
                                 )}
 
-                                {/* Kroegentocht Groepen removed */}
-
-                                {/* 3) Intro second card (if present) */}
                                 {visibilitySettings.intro && (
-                                    <div>
+                                    <div className="col-span-1">
                                         <StatCard
                                             title="Blog Likes"
                                             value={stats.introBlogLikes}
@@ -873,9 +1001,8 @@ export default function AdminDashboardPage() {
                                     </div>
                                 )}
 
-                                {/* 4) Kroegentocht second card (if present) */}
                                 {visibilitySettings.kroegentocht && stats.upcomingPubCrawl && (
-                                    <div>
+                                    <div className="col-span-1">
                                         <StatCard
                                             title="Kroegentocht Tickets"
                                             value={stats.pubCrawlTickets ?? 0}
@@ -887,9 +1014,8 @@ export default function AdminDashboardPage() {
                                     </div>
                                 )}
 
-                                {/* 5) Reis (full-width if present) */}
                                 {visibilitySettings.reis && canManageReis && (
-                                    <div className="col-span-2">
+                                    <div className="col-span-1 sm:col-span-2 lg:col-span-4">
                                         <StatCard
                                             title="Reis"
                                             value="Beheer"
@@ -900,8 +1026,6 @@ export default function AdminDashboardPage() {
                                         />
                                     </div>
                                 )}
-
-                                {/* removed duplicate top-committee card; it's rendered as the first card above */}
                             </div>
                         </div>
                     </div>
@@ -939,43 +1063,7 @@ export default function AdminDashboardPage() {
                         )}
                     </ListCard>
 
-                    {/* Upcoming Birthdays */}
-                    <ListCard
-                        title="Aankomende Jarigen (7 dagen)"
-                        icon={<Cake className="h-5 w-5" />}
-                    >
-                        {stats.upcomingBirthdays.length > 0 ? (
-                            <div className="space-y-3">
-                                {stats.upcomingBirthdays.map(person => (
-                                    <div 
-                                        key={person.id} 
-                                        className={`flex items-center justify-between p-3 rounded-xl ${
-                                            person.isToday 
-                                                ? 'bg-gradient-to-r from-yellow-100 to-yellow-50 dark:from-yellow-900/40 dark:to-yellow-900/20 border-2 border-yellow-400 dark:border-yellow-600' 
-                                                : 'bg-admin-card-soft'
-                                        }`}
-                                    >
-                                        <div>
-                                            <p className={`font-semibold ${person.isToday ? 'text-yellow-900 dark:text-yellow-100' : 'text-admin'}`}>
-                                                {person.first_name} {person.last_name}
-                                                {person.isToday && (
-                                                    <span className="ml-2 text-xs font-bold bg-yellow-500 text-white px-2 py-0.5 rounded-full">
-                                                        VANDAAG! 🎉
-                                                    </span>
-                                                )}
-                                            </p>
-                                            <p className={`text-sm ${person.isToday ? 'text-yellow-700 dark:text-yellow-300' : 'text-admin-muted'}`}>
-                                                {formatDate(person.birthday)}
-                                            </p>
-                                        </div>
-                                        <Cake className={`h-5 w-5 ${person.isToday ? 'text-yellow-600 dark:text-yellow-400' : 'text-theme-purple'}`} />
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-admin-muted text-center py-4">Geen jarigen in de komende 7 dagen</p>
-                        )}
-                    </ListCard>
+                    {/* Upcoming Birthdays moved to lower stats grid */}
 
                     {/* Top Sticker Collectors */}
                     <ListCard
