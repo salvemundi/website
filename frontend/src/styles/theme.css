@@ -63,7 +63,7 @@
 
 /* --- 3. DARK MODE OVERRIDES --- */
 .dark {
-  --theme-purple: #7F697D;
+  --theme-purple: #9A8098;
   --theme-purple-light: #e8c4e6;
 
   --bg-main: #1a141b;
@@ -96,7 +96,7 @@
   backdrop-filter: blur(4px);
 }
 
-  --gradient-start: #a16ca1;
+  --gradient-start: #805480;
   --gradient-end: #905E8E;
 
   /* Dark mode specific mappings */
