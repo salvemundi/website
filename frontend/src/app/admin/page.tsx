@@ -57,7 +57,9 @@ function StatCard({
     icon,
     subtitle,
     onClick,
-    colorClass = 'purple'
+    colorClass = 'purple',
+    className = '',
+    compact = false
 }: {
     title: string;
     value: string | number;
@@ -65,6 +67,8 @@ function StatCard({
     subtitle?: string;
     onClick?: () => void;
     colorClass?: 'purple' | 'orange' | 'blue' | 'green' | 'red' | 'amber' | 'teal';
+    className?: string;
+    compact?: boolean;
 }) {
     const Component = onClick ? 'button' : 'div';
 
@@ -115,18 +119,21 @@ function StatCard({
 
     const colors = colorStyles[colorClass];
 
+    const basePadding = compact ? 'p-3 sm:p-4' : 'p-4 sm:p-6';
+    const hoverClass = onClick ? 'hover:shadow-2xl transition-all cursor-pointer hover:-translate-y-1 hover:scale-[1.02]' : '';
+
     return (
         <Component
             onClick={onClick}
-            className={`w-full bg-gradient-to-br ${colors.gradient} rounded-2xl shadow-lg p-4 sm:p-6 relative overflow-hidden ${onClick ? 'hover:shadow-2xl transition-all cursor-pointer hover:-translate-y-1 hover:scale-[1.02]' : ''}`}
+            className={`w-full bg-gradient-to-br ${colors.gradient} rounded-2xl shadow-lg ${basePadding} relative overflow-hidden ${hoverClass} ${className}`}
         >
             <div className="absolute top-0 right-0 w-28 h-28 sm:w-32 sm:h-32 bg-white/10 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16" />
             <div className="relative z-10">
-                <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-3">
-                    <div className="flex-1 text-center sm:text-left sm:pr-2">
-                        <p className={`${colors.subtitleText} text-sm font-medium mb-2`}>{title}</p>
-                        <p className={`${typeof value === 'string' && value.length > 10 ? 'text-2xl' : 'text-3xl sm:text-4xl'} font-bold ${colors.text} mb-1 break-words`}>{value}</p>
-                        {subtitle && <p className={`${colors.subtitleText} text-xs line-clamp-2`} title={subtitle}>{subtitle}</p>}
+                <div className={`flex ${compact ? 'flex-row items-center' : 'flex-col sm:flex-row items-center sm:items-start'} justify-between gap-3`}>
+                    <div className={`flex-1 ${compact ? 'text-left' : 'text-center sm:text-left sm:pr-2'}`}>
+                        <p className={`${colors.subtitleText} ${compact ? 'text-xs' : 'text-sm'} font-medium mb-1`}>{title}</p>
+                        <p className={`${compact ? 'text-xl' : (typeof value === 'string' && value.length > 10 ? 'text-2xl' : 'text-3xl sm:text-4xl')} font-bold ${colors.text} mb-1 break-words`}>{value}</p>
+                        {subtitle && <p className={`${colors.subtitleText} ${compact ? 'text-xs line-clamp-1' : 'text-xs line-clamp-2'}`} title={subtitle}>{subtitle}</p>}
                     </div>
                     <div className={`hidden sm:block ${colors.iconBg} p-3 rounded-xl ${colors.text} backdrop-blur-sm flex-shrink-0`}>
                         {icon}
@@ -707,7 +714,7 @@ export default function AdminDashboardPage() {
                 {/* Quick Actions Section */}
                 <div className="mb-8">
                     <h2 className="text-2xl font-bold text-admin mb-4">Snelle Acties</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         <StatCard
                             title="Overzicht"
                             value="Activiteiten"
@@ -715,6 +722,8 @@ export default function AdminDashboardPage() {
                             subtitle="Bekijk alle activiteiten"
                             onClick={() => router.push('/admin/activiteiten')}
                             colorClass="purple"
+                            compact
+                            className="lg:col-span-2"
                         />
                         <StatCard
                             title="Intro"
@@ -723,6 +732,7 @@ export default function AdminDashboardPage() {
                             subtitle="Beheer intro pagina"
                             onClick={() => router.push('/admin/intro')}
                             colorClass="blue"
+                            compact
                         />
                         <StatCard
                             title="Overzicht"
@@ -731,6 +741,8 @@ export default function AdminDashboardPage() {
                             subtitle="Bekijk alle leden"
                             onClick={() => router.push('/admin/leden')}
                             colorClass="green"
+                            compact
+                            className="lg:col-span-2"
                         />
                         <StatCard
                             title={activeAdmin.title}
@@ -739,6 +751,7 @@ export default function AdminDashboardPage() {
                             subtitle={`Beheer ${activeAdmin.title.toLowerCase()}`}
                             onClick={() => router.push(activeAdmin.link)}
                             colorClass="orange"
+                            compact
                         />
                     </div>
                 </div>
@@ -747,8 +760,8 @@ export default function AdminDashboardPage() {
                 <div className="mb-8">
                     <h2 className="text-2xl font-bold text-admin mb-4">Statistieken</h2>
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-4">
-                        {/* Action Buttons - Left Side */}
-                        <div className="lg:col-span-4 grid grid-cols-2 gap-4">
+                        {/* Action Buttons - Left Side (wider, compact) */}
+                        <div className="lg:col-span-5 grid grid-cols-1 gap-4">
                             <StatCard
                                 title="Nieuwe"
                                 value="Activiteit"
@@ -756,23 +769,29 @@ export default function AdminDashboardPage() {
                                 subtitle="Maak een nieuwe activiteit aan"
                                 onClick={() => router.push('/admin/activiteiten/nieuw')}
                                 colorClass="purple"
+                                compact
+                                className="h-20"
                             />
-                            <StatCard
-                                title="Nieuwe"
-                                value="Intro Post"
-                                icon={<FileText className="h-6 w-6" />}
-                                subtitle="Maak een nieuwe intro blog post"
-                                onClick={() => router.push('/admin/intro')}
-                                colorClass="blue"
-                            />
-                            <StatCard
-                                title="Nieuw"
-                                value="Lid"
-                                icon={<Users className="h-6 w-6" />}
-                                subtitle="Voeg een nieuw lid toe"
-                                onClick={() => router.push('/admin/leden')}
-                                colorClass="green"
-                            />
+                            <div className="grid grid-cols-2 gap-4">
+                                <StatCard
+                                    title="Nieuwe"
+                                    value="Intro Post"
+                                    icon={<FileText className="h-6 w-6" />}
+                                    subtitle="Maak een nieuwe intro blog post"
+                                    onClick={() => router.push('/admin/intro')}
+                                    colorClass="blue"
+                                    compact
+                                />
+                                <StatCard
+                                    title="Nieuw"
+                                    value="Lid"
+                                    icon={<Users className="h-6 w-6" />}
+                                    subtitle="Voeg een nieuw lid toe"
+                                    onClick={() => router.push('/admin/leden')}
+                                    colorClass="green"
+                                    compact
+                                />
+                            </div>
                             <StatCard
                                 title="Sticker"
                                 value="Toevoegen"
@@ -780,11 +799,12 @@ export default function AdminDashboardPage() {
                                 subtitle="Voeg een sticker toe"
                                 onClick={() => router.push('/stickers')}
                                 colorClass="red"
+                                compact
                             />
                         </div>
 
-                        {/* Stats - Right Side (2 columns) */}
-                        <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Stats - Right Side (bento-style grid) */}
+                        <div className="lg:col-span-7 grid grid-cols-2 lg:grid-cols-4 grid-rows-2 gap-4">
                         {/* Intro Stats - Only show if intro is visible */}
                         {visibilitySettings.intro && (
                             <>
@@ -849,6 +869,7 @@ export default function AdminDashboardPage() {
                             subtitle="Alle verzamelde stickers"
                             onClick={() => router.push('/stickers')}
                             colorClass="red"
+                            compact
                         />
                         <StatCard
                             title="Sticker Groei"
@@ -857,6 +878,7 @@ export default function AdminDashboardPage() {
                             subtitle="Laatste 7 dagen"
                             onClick={() => router.push('/stickers')}
                             colorClass="red"
+                            compact
                         />
                         <StatCard
                             title="Commissieleden"
@@ -865,6 +887,7 @@ export default function AdminDashboardPage() {
                             subtitle="Actieve leden"
                             onClick={() => router.push('/commissies')}
                             colorClass="green"
+                            compact
                         />
                         <StatCard
                             title="Meeste Activiteiten"
@@ -873,6 +896,7 @@ export default function AdminDashboardPage() {
                             subtitle={stats.topCommittee ? `${stats.topCommittee.count} ${stats.topCommittee.count === 1 ? 'activiteit' : 'activiteiten'} dit jaar` : undefined}
                             onClick={() => router.push('/commissies')}
                             colorClass="purple"
+                            compact
                         />
                         </div>
                     </div>
