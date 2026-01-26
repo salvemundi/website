@@ -377,9 +377,9 @@ export default function AccountPage() {
       </PageHeader>
 
       <main className="mx-auto max-w-app px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 auto-rows-min">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-12 auto-rows-min">
           {/* Profile */}
-          <Tile className="lg:col-span-4 lg:row-span-1">
+          <Tile className="md:col-span-5 lg:col-span-4 lg:row-span-1">
             <div className="flex flex-col gap-6 items-center text-center">
               {/* Avatar */}
               <div className="relative group shrink-0">
@@ -521,16 +521,16 @@ export default function AccountPage() {
 
           {/* Contact */}
           <Tile
-            className="lg:col-span-8"
+            className="md:col-span-7 lg:col-span-8"
             title="Mijn gegevens"
             icon={<Mail className="h-5 w-5" />}
           >
-            <div className="space-y-5">
-              <div className="flex items-center gap-4">
-                <div className="rounded-xl bg-theme-purple/5 p-2.5 text-theme-purple dark:text-white shadow-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="shrink-0 rounded-xl bg-theme-purple/5 p-2.5 text-theme-purple dark:text-white shadow-sm">
                   <Mail className="h-5 w-5" />
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="text-[10px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-widest mb-0.5">
                     E-mailadres
                   </p>
@@ -544,11 +544,11 @@ export default function AccountPage() {
               </div>
 
               {user.fontys_email ? (
-                <div className="flex items-center gap-4">
-                  <div className="rounded-xl bg-theme-purple/5 p-2.5 text-theme-purple dark:text-white shadow-sm">
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="shrink-0 rounded-xl bg-theme-purple/5 p-2.5 text-theme-purple dark:text-white shadow-sm">
                     <Mail className="h-5 w-5" />
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="text-[10px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-widest mb-0.5">
                       Fontys e-mail
                     </p>
@@ -563,15 +563,15 @@ export default function AccountPage() {
               ) : null}
 
               {user.phone_number ? (
-                <div className="flex items-center gap-4">
-                  <div className="rounded-xl bg-theme-purple/5 p-2.5 text-theme-purple dark:text-white shadow-sm">
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="shrink-0 rounded-xl bg-theme-purple/5 p-2.5 text-theme-purple dark:text-white shadow-sm">
                     <Phone className="h-5 w-5" />
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="text-[10px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-widest mb-0.5">
                       Telefoonnummer
                     </p>
-                    <p className="font-bold text-theme-purple dark:text-white">
+                    <p className="font-bold text-theme-purple dark:text-white truncate">
                       {user.phone_number}
                     </p>
                   </div>
