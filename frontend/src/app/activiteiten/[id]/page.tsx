@@ -466,7 +466,7 @@ export default function EventDetailPage() {
 
 
                     {/* Signup Form - Tall Tile (Right column) */}
-                    <div className="md:col-span-1 md:row-span-3 rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-lg flex flex-col h-full">
+                    <div className="md:col-span-1 md:row-span-3 rounded-3xl bg-gradient-theme p-6 shadow-xl flex flex-col h-full">
                         <div className="flex-grow">
                             {isPaidAndHasQR ? (
                                 // Digital ticket display case
@@ -529,8 +529,8 @@ export default function EventDetailPage() {
                             ) : (
                                 // Signup Form
                                 <div className="h-full flex flex-col">
-                                    <h3 className="text-2xl font-bold text-theme-purple mb-6 flex items-center gap-2">
-                                        <Users className="h-6 w-6 text-theme-purple" />
+                                    <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                                        <Users className="h-6 w-6 text-white" />
                                         Inschrijven
                                     </h3>
                                     <form onSubmit={handleSubmit} className="space-y-4 flex flex-col">

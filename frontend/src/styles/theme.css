@@ -16,6 +16,10 @@
   --color-purple-800: #5e2b52;
   --color-purple-900: #471e3b;
 
+  /* Helper RGB tokens for opacity-based styles */
+  --color-purple-500-rgb: 164, 83, 155;
+  --color-purple-400-rgb: 180, 113, 173;
+
   --color-white: #ffffff;
   --color-white-soft: #faf7fb;
   --color-white-mute: #f0ebf0;
@@ -235,77 +239,92 @@ a:hover {
 }
 
 /* --- 7. SHARED FORM ELEMENTS --- */
-/* Consistent input design for all forms (Reis, Contact, etc.) */
+/* Premium, glassy design for all forms across the site */
 .form-label {
   display: block;
   font-size: var(--font-size-sm);
   font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: var(--text-main);
-  letter-spacing: 0.01em;
+  margin-bottom: 0.6rem;
+  color: var(--theme-purple);
+  /* Use purple for better 'brand' feel */
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.dark .form-label {
+  color: var(--color-white-soft);
 }
 
 .form-input {
   width: 100%;
-  padding: 0.875rem 1rem;
+  padding: 0.9rem 1.1rem;
   border-radius: var(--radius-xl);
-  background-color: var(--bg-soft);
-  border: 1px solid transparent;
-  /* No border by default to match activity form */
+
+  /* Glassy appearance by default */
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  border: 1px solid rgba(var(--color-purple-500-rgb), 0.15);
   color: var(--text-main);
   font-weight: 500;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: var(--font-size-base);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.dark .form-input {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
 }
 
 textarea.form-input {
-  min-height: 100px;
+  min-height: 120px;
   resize: vertical;
 }
 
 .form-input::placeholder {
   color: var(--text-muted);
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 .form-input:focus {
   outline: none;
+  background-color: #ffffff;
   border-color: var(--theme-purple);
-  background-color: var(--bg-card);
-  box-shadow: 0 0 0 4px rgba(164, 83, 155, 0.1);
-  /* Subtle purple glow */
-}
-
-/* Dark mode specific for inputs on normal backgrounds */
-.dark .form-input {
-  background-color: rgba(0, 0, 0, 0.3);
-  border-color: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 0 4px rgba(var(--color-purple-500-rgb), 0.15), 0 4px 12px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
 }
 
 .dark .form-input:focus {
-  background-color: rgba(0, 0, 0, 0.5);
-  border-color: var(--theme-purple);
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--color-purple-400);
+  box-shadow: 0 0 0 4px rgba(var(--color-purple-400-rgb), 0.2);
 }
 
-/* --- GLASS VARIANT (Automatically applied on gradient backgrounds) --- */
+/* --- GLASS VARIANT (For Gradient Backgrounds like Reis/Intro) --- */
 .bg-gradient-theme .form-label {
   color: #ffffff !important;
+  opacity: 0.9;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .bg-gradient-theme .form-input {
-  background-color: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
   color: #ffffff !important;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .bg-gradient-theme .form-input::placeholder {
-  color: rgba(255, 255, 255, 0.5) !important;
+  color: rgba(255, 255, 255, 0.4) !important;
 }
 
 .bg-gradient-theme .form-input:focus {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.4);
+  background-color: rgba(255, 255, 255, 0.25);
+  border-color: #ffffff;
   box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
 }
 
@@ -327,13 +346,13 @@ textarea.form-input {
   /* Modern soft-primary style */
   background-color: var(--theme-purple);
   color: #ffffff;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(var(--color-purple-500-rgb), 0.2);
 }
 
 .form-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(164, 83, 155, 0.2);
-  filter: brightness(1.1);
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 8px 25px rgba(var(--color-purple-500-rgb), 0.3);
+  filter: brightness(1.15);
 }
 
 .form-button:disabled {
