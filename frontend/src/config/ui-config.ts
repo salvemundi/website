@@ -1,1 +1,1 @@
-export const USE_MODERN_UI = true;
+export const USE_MODERN_UI = false;
