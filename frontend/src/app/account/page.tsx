@@ -535,10 +535,10 @@ export default function AccountPage() {
                     E-mailadres
                   </p>
                   <p
-                    className="truncate font-bold text-theme-purple dark:text-white"
+                    className="break-words font-bold text-theme-purple dark:text-white"
                     title={user.email}
                   >
-                    {user.email}
+                    {user.email.split('@').join('\u200B@\u200B')}
                   </p>
                 </div>
               </div>
@@ -553,10 +553,10 @@ export default function AccountPage() {
                       Fontys e-mail
                     </p>
                     <p
-                      className="truncate font-bold text-theme-purple dark:text-white"
+                      className="break-words font-bold text-theme-purple dark:text-white"
                       title={user.fontys_email}
                     >
-                      {user.fontys_email}
+                      {user.fontys_email.split('@').join('\u200B@\u200B')}
                     </p>
                   </div>
                 </div>
@@ -571,7 +571,7 @@ export default function AccountPage() {
                     <p className="text-[10px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-widest mb-0.5">
                       Telefoonnummer
                     </p>
-                    <p className="font-bold text-theme-purple dark:text-white truncate">
+                    <p className="font-bold text-theme-purple dark:text-white break-words">
                       {user.phone_number}
                     </p>
                   </div>
@@ -587,9 +587,19 @@ export default function AccountPage() {
             icon={<Gamepad2 className="h-5 w-5" />}
           >
             <div className="rounded-2xl bg-theme-purple/5 p-5 border border-theme-purple/10">
-              <p className="mb-2.5 text-[10px] font-black uppercase text-theme-purple/60 dark:text-white/40 tracking-widest">
-                Minecraft Username
-              </p>
+              <div className="flex items-center justify-between gap-2 mb-2.5">
+                <p className="text-[10px] font-black uppercase text-theme-purple/60 dark:text-white/40 tracking-widest">
+                  Minecraft Username
+                </p>
+                {!isEditingMinecraft && (
+                  <button
+                    onClick={() => setIsEditingMinecraft(true)}
+                    className="shrink-0 rounded-xl bg-theme-purple/10 px-3 py-1.5 text-[9px] font-black uppercase text-theme-purple dark:text-white hover:bg-theme-purple/20 transition shadow-sm border border-theme-purple/10"
+                  >
+                    {user.minecraft_username ? "Wijzig" : "Instellen"}
+                  </button>
+                )}
+              </div>
 
               {isEditingMinecraft ? (
                 <div className="flex gap-2">
@@ -607,18 +617,18 @@ export default function AccountPage() {
                   >
                     {isSavingMinecraft ? "..." : "Save"}
                   </button>
+                  <button
+                    onClick={() => setIsEditingMinecraft(false)}
+                    className="rounded-xl bg-theme-purple/5 px-3 py-2 text-sm font-bold text-theme-purple dark:text-white border border-theme-purple/10"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
               ) : (
-                <div className="flex items-center justify-between gap-3">
-                  <span className="truncate font-bold text-theme-purple dark:text-white text-lg">
-                    {user.minecraft_username || "Not set"}
+                <div className="min-w-0">
+                  <span className="break-words font-bold text-theme-purple dark:text-white text-lg">
+                    {user.minecraft_username || "Niet ingesteld"}
                   </span>
-                  <button
-                    onClick={() => setIsEditingMinecraft(true)}
-                    className="shrink-0 rounded-xl bg-theme-purple/10 px-4 py-2 text-[10px] font-black uppercase text-theme-purple dark:text-white hover:bg-theme-purple/20 transition shadow-sm border border-theme-purple/10"
-                  >
-                    {user.minecraft_username ? "Wijzig" : "Instellen"}
-                  </button>
                 </div>
               )}
             </div>
