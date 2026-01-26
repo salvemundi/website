@@ -466,7 +466,7 @@ export default function EventDetailPage() {
 
 
                     {/* Signup Form - Tall Tile (Right column) */}
-                    <div className="md:col-span-1 md:row-span-3 rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg flex flex-col h-full">
+                    <div className="md:col-span-1 md:row-span-3 rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-lg flex flex-col h-full">
                         <div className="flex-grow">
                             {isPaidAndHasQR ? (
                                 // Digital ticket display case
@@ -606,52 +606,52 @@ export default function EventDetailPage() {
                     {/* Right column: compact info tiles */}
                     <div className="md:col-span-1 md:row-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4 h-full">
                         {/* Date & Time - Compact */}
-                        <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
+                        <div className="rounded-2xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-md flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-lg bg-theme-purple/10 dark:bg-white/10 flex items-center justify-center text-theme-purple dark:text-theme-white">
                                 <CalendarClock className="h-6 w-6" />
                             </div>
                             <div className="min-w-0">
-                                <p className="text-sm uppercase tracking-wide text-white/90 font-bold">Datum & Tijd</p>
-                                <p className="text-base font-semibold text-white truncate">{formattedDate}</p>
+                                <p className="text-sm uppercase tracking-wide text-theme-purple/60 dark:text-theme-white/60 font-bold">Datum & Tijd</p>
+                                <p className="text-base font-semibold text-theme-purple dark:text-theme-white truncate">{formattedDate}</p>
                                 {(formattedTimeRange || formattedTime) && (
-                                    <p className="text-sm text-white/80">{formattedTimeRange || formattedTime}</p>
+                                    <p className="text-sm text-theme-purple/80 dark:text-theme-white/80">{formattedTimeRange || formattedTime}</p>
                                 )}
                             </div>
                         </div>
 
                         {/* Price - Compact */}
-                        <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
+                        <div className="rounded-2xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-md flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-lg bg-theme-purple/10 dark:bg-white/10 flex items-center justify-center text-theme-purple dark:text-theme-white">
                                 <Euro className="h-6 w-6" />
                             </div>
                             <div>
-                                <p className="text-sm uppercase tracking-wide text-white/90 font-bold">Prijs</p>
-                                <p className="text-base font-semibold text-white">{displayPrice}</p>
+                                <p className="text-sm uppercase tracking-wide text-theme-purple/60 dark:text-theme-white/60 font-bold">Prijs</p>
+                                <p className="text-base font-semibold text-theme-purple dark:text-theme-white">{displayPrice}</p>
                             </div>
                         </div>
 
                         {/* Location - Compact */}
                         {event.location && (
-                            <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
+                            <div className="rounded-2xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-md flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-lg bg-theme-purple/10 dark:bg-white/10 flex items-center justify-center text-theme-purple dark:text-theme-white">
                                     <MapPin className="h-6 w-6" />
                                 </div>
                                 <div>
-                                    <p className="text-sm uppercase tracking-wide text-white/90 font-bold">Locatie</p>
-                                    <p className="text-base font-semibold text-white break-words max-w-[18rem]">{event.location}</p>
+                                    <p className="text-sm uppercase tracking-wide text-theme-purple/60 dark:text-theme-white/60 font-bold">Locatie</p>
+                                    <p className="text-base font-semibold text-theme-purple dark:text-theme-white break-words max-w-[18rem]">{event.location}</p>
                                 </div>
                             </div>
                         )}
 
                         {/* Committee - Compact */}
                         {event.committee_name && (
-                            <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
+                            <div className="rounded-2xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-md flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-lg bg-theme-purple/10 dark:bg-white/10 flex items-center justify-center text-theme-purple dark:text-theme-white">
                                     <UsersIcon className="h-6 w-6" />
                                 </div>
                                 <div>
-                                    <p className="text-sm uppercase tracking-wide text-white/90 font-bold">Organisatie</p>
-                                    <p className="text-base font-semibold text-white truncate">
+                                    <p className="text-sm uppercase tracking-wide text-theme-purple/60 dark:text-theme-white/60 font-bold">Organisatie</p>
+                                    <p className="text-base font-semibold text-theme-purple dark:text-theme-white truncate">
                                         {event.committee_name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim()}
                                     </p>
                                 </div>
@@ -660,29 +660,29 @@ export default function EventDetailPage() {
 
                         {/* Contact - Compact */}
                         {(event.contact_name || committeeEmail || event.contact) && (
-                            <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
+                            <div className="rounded-2xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-md flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-lg bg-theme-purple/10 dark:bg-white/10 flex items-center justify-center text-theme-purple dark:text-theme-white">
                                     <Mail className="h-6 w-6" />
                                 </div>
                                 <div>
-                                    <p className="text-sm uppercase tracking-wide text-white/90 font-bold">Contact</p>
+                                    <p className="text-sm uppercase tracking-wide text-theme-purple/60 dark:text-theme-white/60 font-bold">Contact</p>
                                     {event.contact_name && (
-                                        <p className="text-base font-semibold text-white">{event.contact_name}</p>
+                                        <p className="text-base font-semibold text-theme-purple dark:text-theme-white">{event.contact_name}</p>
                                     )}
                                     {committeeEmail && (
-                                        <a href={`mailto:${committeeEmail}`} className="text-sm text-white/80 hover:underline break-all">
+                                        <a href={`mailto:${committeeEmail}`} className="text-sm text-theme-purple/80 dark:text-theme-white/80 hover:underline break-all">
                                             {committeeEmail}
                                         </a>
                                     )}
                                     {/* Show explicit contact email if set on the event */}
                                     {event.contact && typeof event.contact === 'string' && event.contact.includes('@') && (
-                                        <a href={`mailto:${event.contact}`} className="text-sm text-white/80 hover:underline break-all block mt-1">
+                                        <a href={`mailto:${event.contact}`} className="text-sm text-theme-purple/80 dark:text-theme-white/80 hover:underline break-all block mt-1">
                                             {event.contact}
                                         </a>
                                     )}
                                     {/* Fallback: show contact (e.g., phone) when it's not an email */}
                                     {event.contact && typeof event.contact === 'string' && !event.contact.includes('@') && (
-                                        <p className="text-sm text-white/80 break-all mt-1">{event.contact}</p>
+                                        <p className="text-sm text-theme-purple/80 dark:text-theme-white/80 break-all mt-1">{event.contact}</p>
                                     )}
                                 </div>
                             </div>
@@ -691,13 +691,13 @@ export default function EventDetailPage() {
 
                     {/* Description - Large Tile (2x2 on desktop) */}
                     {event.description && (
-                        <div className="md:col-span-2 md:row-span-2 rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-8 shadow-lg flex flex-col">
-                            <h2 className="mb-4 text-2xl font-bold text-theme-purple dark:text-white flex items-center gap-2">
-                                <Info className="h-6 w-6 text-theme-purple-dark dark:text-white" />
+                        <div className="md:col-span-2 md:row-span-2 rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-8 shadow-lg flex flex-col">
+                            <h2 className="mb-4 text-2xl font-bold text-theme-purple dark:text-theme-white flex items-center gap-2">
+                                <Info className="h-6 w-6 text-theme-purple dark:text-theme-white" />
                                 Over dit evenement
                             </h2>
                             <div
-                                className="prose dark:prose-invert max-w-none text-theme-purple dark:text-white/90 flex-grow"
+                                className="prose dark:prose-invert max-w-none text-theme-purple dark:text-theme-white/90 flex-grow"
                                 dangerouslySetInnerHTML={{ __html: event.description }}
                             />
                         </div>

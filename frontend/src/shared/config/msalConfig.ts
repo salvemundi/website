@@ -1,7 +1,22 @@
 import { Configuration, LogLevel, RedirectRequest } from '@azure/msal-browser';
 
-const redirectUri = process.env.NEXT_PUBLIC_AUTH_REDIRECT_URI || (typeof window !== 'undefined' ? window.location.origin : '');
-const postLogoutRedirectUri = process.env.NEXT_PUBLIC_AUTH_LOGOUT_REDIRECT_URI || redirectUri;
+const getRedirectUri = () => {
+    if (typeof window === 'undefined') return '';
+
+    // Check if we are on localhost/IP
+    const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)/i.test(window.location.origin);
+
+    // If on localhost, ALWAYS use the current origin to avoid being redirected to prod
+    if (isLocalhost) {
+        return window.location.origin;
+    }
+
+    // Otherwise use the env var or the current origin
+    return process.env.NEXT_PUBLIC_AUTH_REDIRECT_URI || window.location.origin;
+};
+
+const redirectUri = getRedirectUri();
+const postLogoutRedirectUri = redirectUri;
 
 // Helpful hint for LAN/IP testing where Microsoft requires HTTPS
 if (typeof window !== 'undefined') {

@@ -11,15 +11,15 @@ import Card from '@/shared/ui/Card';
 
 export default function WhatsAppGroupsPage() {
     const router = useRouter();
-    const { user, isLoading: authLoading } = useAuth();
+    const { user, isLoading: authLoading, isLoggingOut } = useAuth();
     const { data: groups = [], isLoading: groupsLoading, error, refetch } = useSalvemundiWhatsAppGroups(true);
 
     useEffect(() => {
-        if (!authLoading && !user) {
+        if (!authLoading && !user && !isLoggingOut) {
             const returnTo = window.location.pathname + window.location.search;
             router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
         }
-    }, [user, authLoading, router]);
+    }, [user, authLoading, router, isLoggingOut]);
 
     const handleJoinGroup = (inviteLink: string) => {
         window.open(inviteLink, '_blank', 'noopener,noreferrer');

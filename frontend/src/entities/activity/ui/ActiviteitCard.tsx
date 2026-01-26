@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAuth } from '@/features/auth/providers/auth-provider';
+import { Calendar } from 'lucide-react';
 
 interface ActiviteitCardProps {
     id: number | string;
@@ -175,21 +176,18 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     return (
         <div
             onClick={onShowDetails}
-            className={`bg-gradient-theme p-4 sm:p-6 rounded-2xl shadow-lg flex flex-col w-full overflow-hidden cursor-pointer transition-all hover:scale-[1.02] relative h-full ${isPast ? 'opacity-70 filter grayscale' : ''}`}
+            className={`group relative z-0 overflow-visible w-full rounded-[1.75rem] bg-[var(--bg-card)] dark:border dark:border-white/10 p-5 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 group-hover:z-10 ${isPast ? 'opacity-60 filter grayscale' : ''}`}
         >
-            {/* Greyed out overlay for past activities (subtle) */}
-            {isPast && (
-                <div className="absolute inset-0 bg-white/30 rounded-2xl z-0 pointer-events-none" />
-            )}
+            <span className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-theme-purple/10 transition-transform duration-500 group-hover:scale-125 pointer-events-none" />
 
-            {/* Image with rounded corners at the top - always show */}
-            <div className="relative z-10 h-40 sm:h-44 md:h-48 mb-4 rounded-xl overflow-hidden">
+            {/* Image Section */}
+            <div className="relative z-10 h-44 sm:h-48 mb-5 rounded-2xl overflow-hidden shadow-inner">
                 <Image
                     src={image || '/img/placeholder.svg'}
                     alt={title}
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-                    className="object-cover"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
                     loading="lazy"
                     placeholder="blur"
                     blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjE5MiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjE5MiIgZmlsbD0iI2VlZSIvPjwvc3ZnPg=="
@@ -198,79 +196,85 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                         target.src = '/img/placeholder.svg';
                     }}
                 />
+                {!isPast && (
+                    <div className="absolute top-4 right-4 z-20">
+                        <span className="bg-theme-purple text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider">
+                            {committeeLabel}
+                        </span>
+                    </div>
+                )}
             </div>
 
             {/* Content Section */}
-            <div className="flex flex-col flex-grow text-theme-text dark:text-theme-white relative z-10">
-                {/* Header - Title, Date, and Price */}
-                <div className="flex flex-row justify-between items-start mb-2 gap-3 flex-wrap">
-                    <h1 className="text-lg sm:text-xl font-bold text-title leading-tight pr-2 sm:pr-4 break-words w-full sm:flex-1">
-                        {title}
-                    </h1>
-                    <div className="flex flex-col items-end whitespace-nowrap text-right ml-auto">
-                        {date && (
-                            <>
-                                <p className="text-xs sm:text-sm font-semibold text-theme-text dark:text-theme-white">{formatDate(date)}</p>
-                                {timeRange && <p className="text-sm text-theme-text-subtle dark:text-theme-text-subtle">{timeRange}</p>}
-                            </>
-                        )}
-                        {location && <p className="text-xs text-theme-text-muted dark:text-theme-text-muted mt-1">{location}</p>}
-                        {contact && (
-                            <p className="text-xs text-theme-text-muted dark:text-theme-text-muted mt-1">
-                                <span className="font-medium">Contact:</span>{' '}
-                                <span className="font-medium">{contact}</span>
-                            </p>
-                        )}
-                        <span className="text-lg font-bold text-theme-purple dark:text-theme-white">€{safePrice}</span>
+            <div className="flex flex-col flex-grow relative z-10 space-y-3">
+                <h3 className="text-xl font-bold text-theme-purple leading-snug line-clamp-2">
+                    {title}
+                </h3>
+
+                <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2 text-sm text-theme-purple/80 font-semibold">
+                        <Calendar className="h-4 w-4" />
+                        <span>{formatDate(date)}</span>
                     </div>
+                    {timeRange && (
+                        <p className="text-sm text-theme-muted ml-6">
+                            {timeRange}
+                        </p>
+                    )}
                 </div>
 
-                {/* Description - truncated to 150 characters */}
-                <p className="text-theme-text-subtle dark:text-theme-text-subtle text-sm sm:text-base mb-4 sm:mb-6 flex-grow break-words overflow-hidden">
-                    {description && description.length > 150
-                        ? `${description.substring(0, 150)}...`
-                        : description}
+                <p className="text-theme-muted text-sm line-clamp-3 leading-relaxed">
+                    {description}
                 </p>
 
-                {/* Footer - Buttons */}
-                <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 mt-auto w-full">
-                    {/* Details Button */}
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onShowDetails?.();
-                        }}
-                        className="bg-theme-white text-theme-purple font-semibold px-5 py-3 rounded-full shadow-lg hover:bg-opacity-90 w-full sm:w-auto"
-                    >
-                        MEER INFO
-                    </button>
+                {/* Footer Section */}
+                <div className="flex items-center justify-between pt-4 mt-auto border-t border-slate-100 dark:border-white/5">
+                    <div className="flex flex-col">
+                        <span className="text-[10px] uppercase font-bold text-theme-purple/50">Prijs</span>
+                        <span className="text-lg font-bold text-theme-purple">€{safePrice}</span>
+                    </div>
 
-                    {/* Sign-up Button */}
-                    {!isPast && (
-                        <button
-                            onClick={handleSignupClick}
-                            className={`${cannotSignUp ? 'bg-gray-400 text-theme-white cursor-not-allowed' : 'bg-theme-purple-lighter text-theme-purple-darker shadow-lg shadow-theme-purple/30 hover:-translate-y-0.5 hover:shadow-xl'} font-semibold px-5 py-3 rounded-full w-full sm:w-auto flex items-center justify-center gap-2 transition-transform`}
-                            disabled={cannotSignUp}
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
+                    <div className="flex gap-2">
+                        {!isPast && (
+                            <button
+                                onClick={handleSignupClick}
+                                className={`${cannotSignUp ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-gradient-theme text-theme-purple dark:text-theme-white shadow-lg shadow-theme-purple/20 hover:scale-105'} p-2 rounded-full transition-all`}
+                                disabled={cannotSignUp}
+                                title={alreadySignedUp ? 'Al aangemeld' : 'Aanmelden'}
                             >
-                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                                <circle cx="9" cy="7" r="4" />
-                                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                >
+                                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                    <circle cx="9" cy="7" r="4" />
+                                    <line x1="19" y1="8" x2="19" y2="14" />
+                                    <line x1="22" y1="11" x2="16" y2="11" />
+                                </svg>
+                            </button>
+                        )}
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onShowDetails?.();
+                            }}
+                            className="p-2 rounded-full bg-slate-100 dark:bg-white/10 text-theme-purple dark:text-theme-white hover:scale-105 transition-all"
+                            title="Meer info"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="16" x2="12" y2="12" />
+                                <line x1="12" y1="8" x2="12.01" y2="8" />
                             </svg>
-                            {alreadySignedUp ? 'AL AANGEMELD' : isDeadlinePassed ? 'INSCHRIJVEN GESLOTEN' : 'AANMELDEN'}
                         </button>
-                    )}
+                    </div>
                 </div>
             </div>
         </div>
