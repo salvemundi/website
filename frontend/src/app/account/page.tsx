@@ -384,9 +384,9 @@ export default function AccountPage() {
       </PageHeader>
 
       <main className="mx-auto max-w-app px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-12 auto-rows-min">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-12 auto-rows-min items-start">
           {/* Profile */}
-          <Tile className="md:col-span-5 lg:col-span-4 lg:row-span-1">
+          <Tile className="md:col-span-5 lg:col-span-4 lg:row-span-1 h-fit">
             <div className="flex flex-col gap-6 items-center text-center">
               {/* Avatar */}
               <div className="relative group shrink-0">
@@ -527,12 +527,12 @@ export default function AccountPage() {
           </Tile>
 
           <Tile
-            className="md:col-span-7 lg:col-span-8"
+            className="md:col-span-7 lg:col-span-8 h-fit"
             title="Mijn gegevens"
             icon={<Mail />}
             centeredTitle
           >
-            <div className="flex flex-col items-center gap-y-10 py-10">
+            <div className="flex flex-col items-center gap-y-8 py-4">
               <div className="flex flex-col items-center text-center w-full max-w-3xl px-6">
                 <div className="mb-4 rounded-2xl bg-theme-purple/5 p-4 text-theme-purple dark:text-white shadow-inner">
                   <Mail className="h-6 w-6 sm:h-8 sm:w-8" />
@@ -555,7 +555,7 @@ export default function AccountPage() {
               </div>
 
               {user.fontys_email ? (
-                <div className="flex flex-col items-center text-center w-full max-w-3xl px-6 border-t border-theme-purple/5 pt-10">
+                <div className="flex flex-col items-center text-center w-full max-w-3xl px-6 border-t border-theme-purple/5 pt-8">
                   <div className="mb-4 rounded-2xl bg-theme-purple/5 p-4 text-theme-purple dark:text-white shadow-inner">
                     <Mail className="h-6 w-6 sm:h-8 sm:w-8" />
                   </div>
@@ -578,7 +578,7 @@ export default function AccountPage() {
               ) : null}
 
               {user.phone_number ? (
-                <div className="flex flex-col items-center text-center w-full max-w-3xl px-6 border-t border-theme-purple/5 pt-10">
+                <div className="flex flex-col items-center text-center w-full max-w-3xl px-6 border-t border-theme-purple/5 pt-8">
                   <div className="mb-4 rounded-2xl bg-theme-purple/5 p-4 text-theme-purple dark:text-white shadow-inner">
                     <Phone className="h-6 w-6 sm:h-8 sm:w-8" />
                   </div>
@@ -601,7 +601,7 @@ export default function AccountPage() {
 
           {/* Minecraft */}
           <Tile
-            className="lg:col-span-4"
+            className="lg:col-span-4 h-fit"
             title="Social Gaming"
             icon={<Gamepad2 className="h-5 w-5" />}
             centeredTitle
@@ -659,7 +659,7 @@ export default function AccountPage() {
 
           {/* Quick links */}
           <Tile
-            className="lg:col-span-8"
+            className="lg:col-span-8 h-fit"
             title="Snelle links"
             icon={<ChevronRight className="h-5 w-5" />}
             centeredTitle
@@ -695,7 +695,7 @@ export default function AccountPage() {
 
           {/* Event signups */}
           <Tile
-            className="lg:col-span-12"
+            className="lg:col-span-12 h-fit"
             title="Mijn inschrijvingen"
             icon={<Calendar className="h-5 w-5" />}
             centeredTitle
