@@ -315,8 +315,8 @@ export default function SignUp() {
                         </div>
                     )}
                 <div className="flex flex-col sm:flex-row gap-6 px-6 py-8 sm:py-10 md:py-12">
-                    <section className="w-full sm:w-1/2 bg-gradient-theme rounded-3xl shadow-xl p-6 sm:p-8">
-                        <h1 className="text-3xl font-bold text-white mb-6">
+                    <section className="w-full sm:w-1/2 bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl shadow-lg p-6 sm:p-8">
+                        <h1 className="text-3xl font-bold text-theme-purple dark:text-theme-white mb-6">
                             {formTitle}
                         </h1>
 
@@ -467,11 +467,11 @@ export default function SignUp() {
                     </section>
 
                     <div className="w-full sm:w-1/2 flex flex-col gap-6">
-                        <div className="w-full text-center bg-gradient-theme rounded-3xl p-6">
-                            <h2 className="text-2xl font-bold text-white mb-2">
+                        <div className="w-full text-center bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl p-6">
+                            <h2 className="text-2xl font-bold text-theme-purple dark:text-theme-white mb-2">
                                 Waarom lid worden?
                             </h2>
-                            <p className="text-lg mb-4 text-white/90">
+                            <p className="text-lg mb-4 text-theme-text dark:text-theme-white/90">
                                 Als lid van Salve Mundi krijg je toegang tot exclusieve
                                 activiteiten, workshops, borrels en nog veel meer! Word vandaag
                                 nog lid en ontdek de wereld van ICT samen met ons.
