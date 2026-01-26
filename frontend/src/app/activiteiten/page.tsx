@@ -89,13 +89,6 @@ function ActivitiesContent() {
                     </div>
                 )}
             </PageHeader>
-
-            <div className="w-full px-4 sm:px-8 mb-6 text-center">
-                <p className="text-sm text-theme-purple dark:text-theme-white">
-                    Lees de <a href="/reisvoorwaarden.pdf" target="_blank" rel="noopener noreferrer" className="underline font-semibold">reisvoorwaarden</a> voordat je boekt.
-                </p>
-            </div>
-
             <main className="w-full px-4 py-8 sm:py-10 md:py-12">
                 <div className="relative w-full flex flex-col">
 
