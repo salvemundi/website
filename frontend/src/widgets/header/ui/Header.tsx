@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, X, Sparkles, Shield, MapPin, LogOut } from "lucide-react";
+import { Menu, X, Sparkles, Shield, MapPin, LogOut, Home, User, CalendarDays, Users, Beer, Map, Mail } from "lucide-react";
 import { useAuth } from "@/features/auth/providers/auth-provider";
 import { getImageUrl } from "@/shared/lib/api/salvemundi";
 import { useSalvemundiSiteSettings } from "@/shared/lib/hooks/useSalvemundiApi";
@@ -117,15 +117,15 @@ const Header: React.FC = () => {
     }, [menuOpen]);
 
     const navItems = [
-        { name: "Home", href: ROUTES.HOME },
-        ...(introEnabled ? [{ name: "Intro", href: ROUTES.INTRO }] : []),
-        { name: "Lidmaatschap", href: ROUTES.MEMBERSHIP },
-        { name: "Activiteiten", href: ROUTES.ACTIVITIES },
-        { name: "Commissies", href: ROUTES.COMMITTEES },
-        ...(kroegentochtEnabled ? [{ name: "Kroegentocht", href: ROUTES.PUB_CRAWL }] : []),
-        ...(reisEnabled ? [{ name: "Reis", href: ROUTES.TRIP }] : []),
-        { name: "Safe Havens", href: "/safe-havens" },
-        { name: "Contact", href: ROUTES.CONTACT },
+        { name: "Home", href: ROUTES.HOME, icon: Home },
+        ...(introEnabled ? [{ name: "Intro", href: ROUTES.INTRO, icon: Sparkles }] : []),
+        { name: "Lidmaatschap", href: ROUTES.MEMBERSHIP, icon: User },
+        { name: "Activiteiten", href: ROUTES.ACTIVITIES, icon: CalendarDays },
+        { name: "Commissies", href: ROUTES.COMMITTEES, icon: Users },
+        ...(kroegentochtEnabled ? [{ name: "Kroegentocht", href: ROUTES.PUB_CRAWL, icon: Beer }] : []),
+        ...(reisEnabled ? [{ name: "Reis", href: ROUTES.TRIP, icon: Map }] : []),
+        { name: "Safe Havens", href: "/safe-havens", icon: MapPin },
+        { name: "Contact", href: ROUTES.CONTACT, icon: Mail },
     ];
 
     const getLinkClassName = (href: string) => {
@@ -331,16 +331,23 @@ const Header: React.FC = () => {
                             </Link>
                         )}
 
-                        {navItems.map((link) => (
-                            <Link
-                                key={link.href}
-                                href={link.href}
-                                onClick={() => setMenuOpen(false)}
-                                className="flex items-center justify-between rounded-2xl bg-[var(--bg-card)]/70 px-4 py-3 text-sm font-semibold text-theme shadow-sm"
-                            >
-                                <span>{link.name}</span>
-                            </Link>
-                        ))}
+                        {navItems.map((link) => {
+                            const Icon = (link as any).icon as any;
+                            return (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    onClick={() => setMenuOpen(false)}
+                                    className="flex items-center justify-between rounded-2xl bg-[var(--bg-card)]/70 px-4 py-3 text-sm font-semibold text-theme shadow-sm"
+                                >
+                                    <span className="flex items-center gap-3">
+                                        {Icon ? <Icon className="h-5 w-5 text-theme" aria-hidden /> : null}
+                                        <span>{link.name}</span>
+                                    </span>
+                                    <span aria-hidden className="text-theme/60">›</span>
+                                </Link>
+                            );
+                        })}
                     </div>
 
                     {!isAuthenticated && (
