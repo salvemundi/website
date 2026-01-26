@@ -53,6 +53,7 @@ function Tile({
   children: React.ReactNode;
   className?: string;
   actions?: React.ReactNode;
+  centeredTitle?: boolean;
 }) {
   return (
     <section
@@ -63,15 +64,15 @@ function Tile({
     >
       <div className="relative p-6 sm:p-8">
         {(title || actions) && (
-          <header className="mb-6 flex items-center justify-between gap-4">
-            <div className="flex min-w-0 items-center gap-3">
+          <header className={`mb-8 flex items-center gap-4 ${centeredTitle ? 'flex-col justify-center text-center' : 'justify-between'}`}>
+            <div className={`flex min-w-0 items-center gap-3 ${centeredTitle ? 'flex-col' : ''}`}>
               {icon ? (
                 <div className="shrink-0 rounded-xl bg-theme-purple/5 p-2.5 text-theme-purple dark:text-theme-purple-light">
                   {icon}
                 </div>
               ) : null}
               {title ? (
-                <h2 className="truncate text-xl font-bold text-theme-purple dark:text-white">
+                <h2 className="truncate text-xl font-bold text-theme-purple dark:text-white uppercase tracking-widest">
                   {title}
                 </h2>
               ) : null}
@@ -524,57 +525,43 @@ export default function AccountPage() {
             className="md:col-span-7 lg:col-span-8"
             title="Mijn gegevens"
             icon={<Mail className="h-5 w-5" />}
+            centeredTitle
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="shrink-0 rounded-xl bg-theme-purple/5 p-2.5 text-theme-purple dark:text-white shadow-sm">
-                  <Mail className="h-5 w-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[10px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-widest mb-0.5">
-                    E-mailadres
-                  </p>
-                  <p
-                    className="break-words font-bold text-theme-purple dark:text-white"
-                    title={user.email}
-                  >
-                    {user.email.split('@').join('\u200B@\u200B')}
-                  </p>
-                </div>
+            <div className="flex flex-col items-center gap-y-10 py-6">
+              <div className="text-center w-full max-w-2xl px-4">
+                <p className="text-xs text-theme-purple/40 dark:text-white/30 font-black uppercase tracking-[0.2em] mb-2">
+                  E-mailadres
+                </p>
+                <p
+                  className="text-2xl sm:text-3xl font-black text-theme-purple dark:text-white break-words leading-tight"
+                  title={user.email}
+                >
+                  {user.email.split('@').join('\u200B@\u200B')}
+                </p>
               </div>
 
               {user.fontys_email ? (
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="shrink-0 rounded-xl bg-theme-purple/5 p-2.5 text-theme-purple dark:text-white shadow-sm">
-                    <Mail className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[10px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-widest mb-0.5">
-                      Fontys e-mail
-                    </p>
-                    <p
-                      className="break-words font-bold text-theme-purple dark:text-white"
-                      title={user.fontys_email}
-                    >
-                      {user.fontys_email.split('@').join('\u200B@\u200B')}
-                    </p>
-                  </div>
+                <div className="text-center w-full max-w-2xl px-4">
+                  <p className="text-xs text-theme-purple/40 dark:text-white/30 font-black uppercase tracking-[0.2em] mb-2">
+                    Fontys e-mail
+                  </p>
+                  <p
+                    className="text-2xl sm:text-3xl font-black text-theme-purple dark:text-white break-words leading-tight"
+                    title={user.fontys_email}
+                  >
+                    {user.fontys_email.split('@').join('\u200B@\u200B')}
+                  </p>
                 </div>
               ) : null}
 
               {user.phone_number ? (
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="shrink-0 rounded-xl bg-theme-purple/5 p-2.5 text-theme-purple dark:text-white shadow-sm">
-                    <Phone className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[10px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-widest mb-0.5">
-                      Telefoonnummer
-                    </p>
-                    <p className="font-bold text-theme-purple dark:text-white break-words">
-                      {user.phone_number}
-                    </p>
-                  </div>
+                <div className="text-center w-full max-w-2xl px-4">
+                  <p className="text-xs text-theme-purple/40 dark:text-white/30 font-black uppercase tracking-[0.2em] mb-2">
+                    Telefoonnummer
+                  </p>
+                  <p className="text-2xl sm:text-3xl font-black text-theme-purple dark:text-white">
+                    {user.phone_number}
+                  </p>
                 </div>
               ) : null}
             </div>
@@ -585,9 +572,10 @@ export default function AccountPage() {
             className="lg:col-span-4"
             title="Social Gaming"
             icon={<Gamepad2 className="h-5 w-5" />}
+            centeredTitle
           >
-            <div className="rounded-2xl bg-theme-purple/5 p-5 border border-theme-purple/10">
-              <div className="flex items-center justify-between gap-2 mb-2.5">
+            <div className="rounded-2xl bg-theme-purple/5 p-5 border border-theme-purple/10 text-center">
+              <div className="flex items-center justify-center gap-2 mb-3">
                 <p className="text-[10px] font-black uppercase text-theme-purple/60 dark:text-white/40 tracking-widest">
                   Minecraft Username
                 </p>
@@ -626,9 +614,9 @@ export default function AccountPage() {
                 </div>
               ) : (
                 <div className="min-w-0">
-                  <span className="break-words font-bold text-theme-purple dark:text-white text-lg">
+                  <p className="break-words font-black text-theme-purple dark:text-white text-2xl">
                     {user.minecraft_username || "Niet ingesteld"}
-                  </span>
+                  </p>
                 </div>
               )}
             </div>
@@ -639,6 +627,7 @@ export default function AccountPage() {
             className="lg:col-span-8"
             title="Snelle links"
             icon={<ChevronRight className="h-5 w-5" />}
+            centeredTitle
           >
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <QuickLink
@@ -674,6 +663,7 @@ export default function AccountPage() {
             className="lg:col-span-12"
             title="Mijn inschrijvingen"
             icon={<Calendar className="h-5 w-5" />}
+            centeredTitle
             actions={
               <div className="flex items-center gap-3">
                 <button
