@@ -100,8 +100,6 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                 theme={chronoTheme}
                 hideControls={true}
                 enableOutline={false}
-                cardHeight="auto"
-                disableAutoScrollOnClick={true}
                 fontSizes={{
                     cardSubtitle: '0.875rem',
                     cardTitle: '1.25rem',
