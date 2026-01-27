@@ -1233,17 +1233,7 @@ app.post('/sync/dob-fix', bodyParser.json(), async (req, res) => {
                 process.env.CLIENT_SECRET
             );
 
-            const client = Client.init({
-                authProvider: async (done) => {
-                    try {
-                        const token = await credential.getToken(['https://graph.microsoft.com/.default']);
-                        done(null, token.token);
-                    } catch (err) {
-                        console.error("Error getting token for FIX:", err);
-                        done(err, null);
-                    }
-                }
-            });
+            const accessToken = (await credential.getToken(['https://graph.microsoft.com/.default'])).token;
 
             // Fetch all users with date_of_birth from Directus
             const url = `${process.env.DIRECTUS_URL}/users?fields=id,email,first_name,last_name,date_of_birth,entra_id&filter[date_of_birth][_nnull]=true&limit=-1`;
@@ -1270,28 +1260,29 @@ app.post('/sync/dob-fix', bodyParser.json(), async (req, res) => {
                         cleanDob = cleanDob.split('T')[0];
                     }
 
-                    // DEBUG: Verify we can at least READ the user (checks User.Read.All)
-                    try {
-                        await client.api(`/users/${user.entra_id}`).select('id,userPrincipalName').get();
-                    } catch (readErr) {
-                        console.error(`❌ [FIX] READ Check Failed for ${user.email}: ${readErr.statusCode} - ${readErr.message}`);
-                    }
-
                     // Proceed with PATCH
-                    console.log(`[FIX] Attempting PATCH for ${user.email} (DOB: ${cleanDob})...`);
-                    await client.api(`/users/${user.entra_id}`).patch({
-                        birthday: `${cleanDob}T04:04:04Z`
+                    console.log(`[FIX] Attempting PATCH (Raw) for ${user.email} (DOB: ${cleanDob})...`);
+                    const patchRes = await fetch(`https://graph.microsoft.com/v1.0/users/${user.entra_id}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            birthday: `${cleanDob}T04:04:04Z`
+                        })
                     });
+
+                    if (!patchRes.ok) {
+                        const errText = await patchRes.text();
+                        throw new Error(`Status: ${patchRes.status}, Body: ${errText}`);
+                    }
 
                     success++;
                     if (success % 10 === 0) console.log(`[FIX] Progress: ${success} updated...`);
 
                 } catch (e) {
-                    console.error(`❌ [FIX] Failed for ${user.email} (${user.entra_id}):`);
-                    console.error(`   Status: ${e.statusCode}`);
-                    console.error(`   Code: ${e.body?.error?.code || e.code}`);
-                    console.error(`   Message: ${e.body?.error?.message || e.message}`);
-                    if (e.body) console.error(`   Full Body: ${JSON.stringify(e.body)}`);
+                    console.error(`❌ [FIX] Failed for ${user.email} (${user.entra_id}): ${e.message}`);
                     failed++;
                 }
 
