@@ -1214,6 +1214,57 @@ app.post('/sync/directus-to-entra', bodyParser.json(), async (req, res) => {
     }
 });
 
+app.post('/sync/dob-fix', bodyParser.json(), async (req, res) => {
+    console.log(`[${new Date().toISOString()}] 🚀 [FIX] Starting Date of Birth sync from Directus to Azure...`);
+
+    // Check for simple auth via query or body secret if needed, but for now open as it is internal/admin tool
+    res.json({ message: "Sync started. Check logs." });
+
+    // Background process
+    (async () => {
+        try {
+            // Ensure token is fresh
+            const client = await getGraphClient();
+
+            // Fetch all users with date_of_birth from Directus
+            const url = `${process.env.DIRECTUS_URL}/users?fields=id,email,first_name,last_name,date_of_birth,entra_id&filter[date_of_birth][_nnull]=true&limit=-1`;
+            const response = await axios.get(url, { headers: DIRECTUS_HEADERS });
+            const users = response.data?.data || [];
+
+            console.log(`[FIX] Found ${users.length} users with dob in Directus.`);
+            let success = 0, failed = 0, skipped = 0;
+
+            for (const user of users) {
+                if (!user.entra_id) {
+                    skipped++;
+                    continue;
+                }
+                if (!user.date_of_birth || user.date_of_birth.startsWith('0001-') || user.date_of_birth.startsWith('1-01-')) {
+                    skipped++;
+                    continue;
+                }
+
+                try {
+                    await client.api(`/users/${user.entra_id}`).patch({
+                        birthday: `${user.date_of_birth}T04:04:04Z`
+                    });
+                    success++;
+                    if (success % 10 === 0) console.log(`[FIX] Progress: ${success} updated...`);
+                } catch (e) {
+                    console.error(`❌ [FIX] Failed for ${user.email} (${user.entra_id}): ${e.message}`);
+                    failed++;
+                }
+
+                // Rate limit protection
+                await new Promise(r => setTimeout(r, 100));
+            }
+            console.log(`[FIX] Complete. Success: ${success}, Failed: ${failed}, Skipped: ${skipped}`);
+        } catch (e) {
+            console.error(`[FIX] Fatal error: ${e.message}`);
+        }
+    })();
+});
+
 app.listen(PORT, async () => {
     // startup logs removed
     try {

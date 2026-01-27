@@ -227,7 +227,7 @@ export default function AdminDashboardPage() {
         systemErrors: 0,
         mostLikedPost: undefined,
         upcomingEventsWithSignups: [],
-    latestEventsWithSignups: [],
+        latestEventsWithSignups: [],
         topCommittee: undefined,
         totalCoupons: 0,
         pubCrawlSignups: 0,
@@ -270,7 +270,7 @@ export default function AdminDashboardPage() {
                 siteSettingsApi.get('kroegentocht'),
                 siteSettingsApi.get('reis')
             ]);
-            
+
             setVisibilitySettings({
                 intro: introSettings?.show ?? false,
                 kroegentocht: kroegentochtsSettings?.show ?? false,
@@ -856,7 +856,7 @@ export default function AdminDashboardPage() {
 
                 {/* Stats Section */}
                 <div className="mb-8">
-                    
+
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
                         {/* Snelle Acties - Left side */}
                         <div>
@@ -888,7 +888,7 @@ export default function AdminDashboardPage() {
                                             colorClass="red"
                                         />
                                     </div>
-                                    
+
                                     {/* Reis and Kroegentocht - Separated section */}
                                     <div className="border-t border-admin-muted pt-4">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -923,13 +923,12 @@ export default function AdminDashboardPage() {
                                         {stats.upcomingBirthdays.length > 0 ? (
                                             <div className="space-y-3">
                                                 {stats.upcomingBirthdays.map(person => (
-                                                    <div 
-                                                        key={person.id} 
-                                                        className={`flex items-center justify-between p-3 rounded-xl ${
-                                                            person.isToday 
-                                                                ? 'bg-gradient-to-r from-yellow-100 to-yellow-50 dark:from-yellow-900/40 dark:to-yellow-900/20 border-2 border-yellow-400 dark:border-yellow-600' 
+                                                    <div
+                                                        key={person.id}
+                                                        className={`flex items-center justify-between p-3 rounded-xl ${person.isToday
+                                                                ? 'bg-gradient-to-r from-yellow-100 to-yellow-50 dark:from-yellow-900/40 dark:to-yellow-900/20 border-2 border-yellow-400 dark:border-yellow-600'
                                                                 : 'bg-slate-100 dark:bg-slate-700'
-                                                        }`}
+                                                            }`}
                                                     >
                                                         <div>
                                                             <p className={`font-semibold ${person.isToday ? 'text-yellow-900 dark:text-yellow-100' : 'text-slate-700 dark:text-slate-200'}`}>
@@ -1028,7 +1027,7 @@ export default function AdminDashboardPage() {
                                 onClick={() => router.push('/commissies')}
                                 colorClass="purple"
                             />
-                            
+
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <StatCard
                                     title="Commissieleden"
@@ -1038,7 +1037,7 @@ export default function AdminDashboardPage() {
                                     onClick={() => router.push('/commissies')}
                                     colorClass="green"
                                 />
-                                
+
                                 <StatCard
                                     title="Totaal Stickers"
                                     value={stats.totalStickers}
@@ -1048,7 +1047,7 @@ export default function AdminDashboardPage() {
                                     colorClass="red"
                                 />
                             </div>
-                            
+
                             {/* Activiteiten aanmeldingen - Now on the right side */}
                             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
                                 <div className="flex items-center justify-between mb-3">
@@ -1063,15 +1062,14 @@ export default function AdminDashboardPage() {
                                             const eventDate = ev.event_date ? new Date(ev.event_date) : null;
                                             const now = new Date();
                                             const isPast = eventDate && eventDate < now;
-                                            
+
                                             return (
-                                                <div 
-                                                    key={ev.id} 
-                                                    className={`flex items-center justify-between p-3 rounded-lg ${
-                                                        isPast 
-                                                            ? 'bg-slate-200 dark:bg-slate-700/50 opacity-75' 
+                                                <div
+                                                    key={ev.id}
+                                                    className={`flex items-center justify-between p-3 rounded-lg ${isPast
+                                                            ? 'bg-slate-200 dark:bg-slate-700/50 opacity-75'
                                                             : 'bg-slate-100 dark:bg-slate-700'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     <div className="flex items-center gap-2 flex-1 min-w-0">
                                                         <div className="text-sm text-slate-700 dark:text-slate-200 truncate pr-2">{ev.name}</div>
@@ -1122,16 +1120,16 @@ export default function AdminDashboardPage() {
                             </div>
                         </div>
                     </div>
-                    
-                    
-                    </div>
+
+
+                </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                 </div>
 
                 {/* System Health - ICT Only */}
                 {isIctMember && (
-                    <div className="mt-8">
+                    <div className="mt-8 space-y-4">
                         <ListCard
                             title="Systeemstatus"
                             icon={<Activity className="h-5 w-5" />}
@@ -1147,20 +1145,47 @@ export default function AdminDashboardPage() {
                                     </div>
                                     <span className="text-green-600 dark:text-green-400 font-bold">✓</span>
                                 </div>
-                                    <div className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-700 rounded-xl">
-                                        <div className="flex items-center gap-3">
-                                            <AlertCircle className="h-5 w-5 text-slate-500 dark:text-slate-400" />
-                                            <div>
-                                                <p className="font-semibold text-slate-700 dark:text-slate-200">Recente Fouten</p>
-                                                <p className="text-sm text-slate-500 dark:text-slate-400">Laatste 24 uur</p>
-                                            </div>
+                                <div className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-700 rounded-xl">
+                                    <div className="flex items-center gap-3">
+                                        <AlertCircle className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+                                        <div>
+                                            <p className="font-semibold text-slate-700 dark:text-slate-200">Recente Fouten</p>
+                                            <p className="text-sm text-slate-500 dark:text-slate-400">Laatste 24 uur</p>
                                         </div>
-                                        <span className="text-2xl font-bold text-admin-muted">{stats.systemErrors}</span>
                                     </div>
+                                    <span className="text-2xl font-bold text-admin-muted">{stats.systemErrors}</span>
                                 </div>
-                            </ListCard>
+                            </div>
+                        </ListCard>
+
+                        {/* Technical Fixes */}
+                        <div className="p-4 bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800 rounded-xl">
+                            <h4 className="font-bold text-yellow-800 dark:text-yellow-200 mb-2">Technical Operations</h4>
+                            <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-4">
+                                Gebruik deze knoppen alleen indien nodig.
+                            </p>
+                            <button
+                                onClick={async () => {
+                                    if (!confirm('Weet je zeker dat je alle Date of Births van Directus naar Azure wilt pushen? Dit update alle users in Azure.')) return;
+                                    try {
+                                        const res = await fetch('/api/admin/sync-dob-fix', { method: 'POST' });
+                                        const data = await res.json();
+                                        if (res.ok) {
+                                            alert(`Sync gestart! ${data.message || ''}`);
+                                        } else {
+                                            alert('Fout: ' + (data.error || JSON.stringify(data)));
+                                        }
+                                    } catch (e) {
+                                        alert('Netwerk fout: ' + e);
+                                    }
+                                }}
+                                className="px-4 py-2 bg-yellow-600 dark:bg-yellow-700 text-white font-medium rounded-lg hover:bg-yellow-700 dark:hover:bg-yellow-600 transition shadow-sm"
+                            >
+                                Sync DOB Directus → Azure (Fix)
+                            </button>
                         </div>
-                    )}
+                    </div>
+                )}
 
                 {/* Additional Info removed */}
             </div>
