@@ -13,7 +13,15 @@ async function mapDirectusUserToUser(rawUser: any): Promise<User> {
         throw new Error('Invalid user data received from Directus');
     }
 
-    // Determine membership exclusively from the user record in Directus.
+    // DEBUG: Log raw user data to investigate membership issues
+    console.log('[AUTH] Mapping user data:', {
+        id: rawUser.id,
+        email: rawUser.email,
+        membership_status: rawUser.membership_status,
+        membership_expiry: rawUser.membership_expiry,
+        entra_id: rawUser.entra_id,
+        fontys_email: rawUser.fontys_email
+    });
     // Priority:
     // 1. Use explicit `membership_status` if present ('active'|'expired'|'none')
     // 2. If not present, use `membership_expiry` to infer active/expired
@@ -287,7 +295,7 @@ export async function fetchUserDetails(token: string): Promise<User | null> {
             } as User;
         }
 
-        const response = await fetch(`${directusUrl}/users/me?fields=*,membership_expiry`, {
+        const response = await fetch(`${directusUrl}/users/me?fields=*,membership_expiry,membership_status,entra_id`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
