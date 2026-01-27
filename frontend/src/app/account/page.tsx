@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useAuth } from "@/features/auth/providers/auth-provider";
-import { getUserEventSignups, updateMinecraftUsername } from "@/shared/lib/auth";
+import { getUserEventSignups } from "@/shared/lib/auth";
 import { getImageUrl } from "@/shared/lib/api/salvemundi";
 import { format, startOfDay, isBefore } from "date-fns";
 import PageHeader from "@/widgets/page-header/ui/PageHeader";
