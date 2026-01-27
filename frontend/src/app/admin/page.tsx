@@ -829,13 +829,7 @@ export default function AdminDashboardPage() {
                                 colorClass="blue"
                                 disabled={!visibilitySettings.intro}
                             />
-                            <ActionCard
-                                title="Nieuwe"
-                                subtitle="Sticker"
-                                icon={<Sticker className="h-6 w-6" />}
-                                onClick={() => router.push('/stickers?add=1')}
-                                colorClass="red"
-                            />
+
                         </div>
 
                         {/* Management Actions */}
