@@ -90,8 +90,7 @@ async def create_azure_user(data: CreateMemberRequest, token: str):
     }
     if data.phone_number:
         user_payload["mobilePhone"] = data.phone_number
-    if data.date_of_birth:
-        user_payload["birthday"] = f"{data.date_of_birth}T04:04:04Z"
+    # Note: birthday cannot be set in initial POST, will be set via PATCH in update_user_attributes
         
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     async with httpx.AsyncClient() as client:
