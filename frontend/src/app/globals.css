@@ -240,3 +240,37 @@ button[class*="layout"] {
   display: none !important;
   visibility: hidden !important;
 }
+
+/* Strong overrides to ensure Chrono card wrappers do not clip custom content */
+[class*="chrono"] .card,
+[class*="chrono"] .chrono-card,
+.card,
+.chrono-card,
+.timeline-card,
+.timeline-card-content,
+.card-content-wrapper,
+.card-description,
+.chrono-card-content,
+.card-contents,
+[class*="card-content"] {
+  position: static !important;
+  display: block !important;
+  overflow: visible !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+/* Ensure vertical wrappers and inner containers allow natural flow */
+.timeline-vertical-wrapper,
+[class*="timeline-vertical"],
+.timeline-main-wrapper,
+[class*="timeline-main"],
+[class*="chrono-wrapper"],
+.timeline-items-container,
+[class*="timeline-items"],
+[class*="card-content-wrapper"] {
+  position: static !important;
+  overflow: visible !important;
+  height: auto !important;
+  max-height: none !important;
+}

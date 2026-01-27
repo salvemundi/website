@@ -56,8 +56,11 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
     // Theme configuration based on mode
     const chronoTheme = useMemo(() => ({
         primary: '#663265',
+        // keep secondary subtle; use card variable for actual card background
         secondary: isDarkMode ? '#1a141b' : '#f8f9fa',
-        cardBgColor: isDarkMode ? '#1f1921' : '#ffffff',
+        // use CSS variable so cards match site's card background in both themes
+        cardBgColor: 'var(--bg-card)',
+        // title colors should adapt to theme so they're readable on the card
         titleColor: isDarkMode ? '#ffffff' : '#663265',
         titleColorActive: '#ff6b35',
         cardTitleColor: isDarkMode ? '#ffffff' : '#1a141b',
@@ -91,7 +94,7 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
     };
 
     return (
-        <div className="w-full [&_.timeline-card-content]:!max-h-none [&_.timeline-card-content]:!overflow-visible [&_.card-content-wrapper]:!max-h-none [&_.card-content-wrapper]:!overflow-visible [&_.card-description]:!line-clamp-none">
+        <div className="w-full [&_.timeline-card-content]:!max-h-none [&_.timeline-card-content]:!overflow-visible [&_.card-content-wrapper]:!max-h-none [&_.card-content-wrapper]:!overflow-visible [&_.card-description]:!line-clamp-none dark:[&_.timeline-card-content]:bg-[var(--bg-card)] dark:[&_.timeline-card-content]:!text-white dark:[&_.card-title]:!text-white dark:[&_.card-subtitle]:!text-white dark:[&_.card-description]:!text-white dark:[&_.title]:!text-white dark:[&_.timeline-card-title]:!text-white dark:[&_.timeline-title]:!text-white">
             <Chrono
                 items={items}
                 mode="VERTICAL_ALTERNATING"
@@ -110,7 +113,7 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                 }}
             >
                 {sortedBoards.map((board, index) => (
-                    <div key={board.id || `board-${index}`} className="p-6 space-y-4" data-testid={`timeline-item-${index}`}>                        {/* Board description */}
+                    <div key={board.id || `board-${index}`} className="p-6 space-y-4 rounded-3xl bg-[var(--bg-card)] shadow-lg border border-slate-200/5 overflow-visible" data-testid={`timeline-item-${index}`}>                        {/* Board description */}
                         {board.omschrijving && (
                             <div className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
                                 <p>{board.omschrijving}</p>
@@ -147,7 +150,7 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {board.members.map((member: any) => {
                                         const avatarRef = resolvePicture(member);
-                                        let avatarSrc = '/img/placeholder.svg';
+                                            let avatarSrc = '/img/placeholder.svg';
                                         if (avatarRef) {
                                             if (typeof avatarRef === 'string' && (avatarRef.startsWith('http://') || avatarRef.startsWith('https://') || avatarRef.startsWith('/'))) {
                                                 avatarSrc = avatarRef;
@@ -167,7 +170,7 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                                         return (
                                             <div
                                                 key={member.id ?? `${board.id}-${Math.random()}`}
-                                                className="flex items-center gap-3 rounded-xl bg-white/80 dark:bg-[#2a232b] border border-slate-200/50 dark:border-white/10 p-3 shadow-sm hover:shadow-md transition-shadow"
+                                                className="flex items-center gap-3 rounded-xl bg-[var(--bg-card)] border border-slate-200/50 dark:border-white/10 p-3 shadow-sm hover:shadow-md transition-shadow"
                                             >
                                                 <img
                                                     src={avatarSrc}
