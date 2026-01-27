@@ -926,8 +926,8 @@ export default function AdminDashboardPage() {
                                                     <div
                                                         key={person.id}
                                                         className={`flex items-center justify-between p-3 rounded-xl ${person.isToday
-                                                                ? 'bg-gradient-to-r from-yellow-100 to-yellow-50 dark:from-yellow-900/40 dark:to-yellow-900/20 border-2 border-yellow-400 dark:border-yellow-600'
-                                                                : 'bg-slate-100 dark:bg-slate-700'
+                                                            ? 'bg-gradient-to-r from-yellow-100 to-yellow-50 dark:from-yellow-900/40 dark:to-yellow-900/20 border-2 border-yellow-400 dark:border-yellow-600'
+                                                            : 'bg-slate-100 dark:bg-slate-700'
                                                             }`}
                                                     >
                                                         <div>
@@ -1067,8 +1067,8 @@ export default function AdminDashboardPage() {
                                                 <div
                                                     key={ev.id}
                                                     className={`flex items-center justify-between p-3 rounded-lg ${isPast
-                                                            ? 'bg-slate-200 dark:bg-slate-700/50 opacity-75'
-                                                            : 'bg-slate-100 dark:bg-slate-700'
+                                                        ? 'bg-slate-200 dark:bg-slate-700/50 opacity-75'
+                                                        : 'bg-slate-100 dark:bg-slate-700'
                                                         }`}
                                                 >
                                                     <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -1129,7 +1129,7 @@ export default function AdminDashboardPage() {
 
                 {/* System Health - ICT Only */}
                 {isIctMember && (
-                    <div className="mt-8 space-y-4">
+                    <div className="mt-8">
                         <ListCard
                             title="Systeemstatus"
                             icon={<Activity className="h-5 w-5" />}
@@ -1157,33 +1157,6 @@ export default function AdminDashboardPage() {
                                 </div>
                             </div>
                         </ListCard>
-
-                        {/* Technical Fixes */}
-                        <div className="p-4 bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800 rounded-xl">
-                            <h4 className="font-bold text-yellow-800 dark:text-yellow-200 mb-2">Technical Operations</h4>
-                            <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-4">
-                                Gebruik deze knoppen alleen indien nodig.
-                            </p>
-                            <button
-                                onClick={async () => {
-                                    if (!confirm('Weet je zeker dat je alle Date of Births van Directus naar Azure wilt pushen? Dit update alle users in Azure.')) return;
-                                    try {
-                                        const res = await fetch('/api/admin/sync-dob-fix', { method: 'POST' });
-                                        const data = await res.json();
-                                        if (res.ok) {
-                                            alert(`Sync gestart! ${data.message || ''}`);
-                                        } else {
-                                            alert('Fout: ' + (data.error || JSON.stringify(data)));
-                                        }
-                                    } catch (e) {
-                                        alert('Netwerk fout: ' + e);
-                                    }
-                                }}
-                                className="px-4 py-2 bg-yellow-600 dark:bg-yellow-700 text-white font-medium rounded-lg hover:bg-yellow-700 dark:hover:bg-yellow-600 transition shadow-sm"
-                            >
-                                Sync DOB Directus → Azure (Fix)
-                            </button>
-                        </div>
                     </div>
                 )}
 
