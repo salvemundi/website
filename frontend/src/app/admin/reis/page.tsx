@@ -19,6 +19,8 @@ interface Trip {
     id: number;
     name: string;
     event_date: string;
+    start_date?: string;
+    end_date?: string;
     registration_open: boolean;
     max_participants: number;
     base_price: number;
@@ -90,7 +92,7 @@ export default function ReisAanmeldingenPage() {
         setIsLoading(true);
         try {
             const tripsData = await directusFetch<Trip[]>(
-                '/items/trips?fields=id,name,event_date,registration_open,max_participants,base_price,crew_discount,deposit_amount,is_bus_trip&sort=-event_date'
+                '/items/trips?fields=id,name,event_date,start_date,end_date,registration_open,max_participants,base_price,crew_discount,deposit_amount,is_bus_trip&sort=-event_date'
             );
             setTrips(tripsData);
 
@@ -376,11 +378,17 @@ export default function ReisAanmeldingenPage() {
                         }}
                         className="w-full md:w-auto px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                     >
-                        {trips.map(trip => (
-                            <option key={trip.id} value={trip.id}>
-                                {trip.name} - {format(new Date(trip.event_date), 'd MMMM yyyy', { locale: nl })}
-                            </option>
-                        ))}
+                        {trips.map(trip => {
+                            const displayStartDate = trip.start_date || trip.event_date;
+                            const dateDisplay = trip.end_date
+                                ? `${format(new Date(displayStartDate), 'd MMMM yyyy', { locale: nl })} - ${format(new Date(trip.end_date), 'd MMMM yyyy', { locale: nl })}`
+                                : format(new Date(displayStartDate), 'd MMMM yyyy', { locale: nl });
+                            return (
+                                <option key={trip.id} value={trip.id}>
+                                    {trip.name} - {dateDisplay}
+                                </option>
+                            );
+                        })}
                     </select>
                 </div>
 
