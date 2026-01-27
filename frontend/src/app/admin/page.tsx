@@ -783,11 +783,7 @@ export default function AdminDashboardPage() {
         return date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
     };
 
-    const activeAdmin = visibilitySettings.kroegentocht
-        ? { title: 'Kroegentocht', link: '/admin/kroegentocht', color: 'orange' as const }
-        : visibilitySettings.reis
-            ? { title: 'Reis', link: '/admin/reis', color: 'teal' as const }
-            : { title: 'Stickers', link: '/stickers', color: 'red' as const };
+
 
     if (isLoading) {
         return (
