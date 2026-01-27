@@ -295,7 +295,7 @@ export async function fetchUserDetails(token: string): Promise<User | null> {
             } as User;
         }
 
-        const response = await fetch(`${directusUrl}/users/me?fields=*,membership_expiry,membership_status,entra_id`, {
+        const response = await fetch(`${directusUrl}/users/me?fields=*,membership_expiry,membership_status,entra_id,date_of_birth`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
