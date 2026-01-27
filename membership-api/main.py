@@ -121,8 +121,8 @@ async def update_user_attributes(user_id: str, date_of_birth: str = None):
             check_res = await client.get(f"{url_beta}?$select=customSecurityAttributes", headers=headers)
             print(f"DEBUG: Current attributes in Azure for {user_id}: {check_res.text}")
 
-            # De @odata.type is CRUCIAAL voor Azure om de property te herkennen
-            payload = {
+            # 1. Critical Update: Membership Dates
+            payload_dates = {
                 "customSecurityAttributes": {
                     ATTRIBUTE_SET_NAME: {
                         "@odata.type": "#microsoft.graph.customSecurityAttributeValue",
@@ -131,18 +131,34 @@ async def update_user_attributes(user_id: str, date_of_birth: str = None):
                     }
                 }
             }
-            if date_of_birth:
-                payload["customSecurityAttributes"][ATTRIBUTE_SET_NAME]["Geboortedatum"] = date_of_birth
             
             # Schrijven doen we via v1.0, dat is nu bewezen werkend met de type hint
             url_v1 = f"https://graph.microsoft.com/v1.0/users/{user_id}"
-            print(f"DEBUG: Sending PATCH to {url_v1} with payload: {payload}")
-            res = await client.patch(url_v1, json=payload, headers=headers)
+            print(f"DEBUG: Sending PATCH (Dates) to {url_v1} with payload: {payload_dates}")
+            res = await client.patch(url_v1, json=payload_dates, headers=headers)
             
             if res.status_code not in [200, 204]:
-                print(f"Graph Patch Error: {res.status_code} - {res.text}")
-                return
+                print(f"Graph Patch Error (Dates): {res.status_code} - {res.text}")
+                return # Critical failure
 
+            # 2. Optional Update: Date of Birth (might fail if attribute missing in tenant)
+            if date_of_birth:
+                try:
+                    payload_dob = {
+                        "customSecurityAttributes": {
+                            ATTRIBUTE_SET_NAME: {
+                                "@odata.type": "#microsoft.graph.customSecurityAttributeValue",
+                                "Geboortedatum": date_of_birth
+                            }
+                        }
+                    }
+                    print(f"DEBUG: Sending PATCH (DoB) to {url_v1} with payload: {payload_dob}")
+                    res_dob = await client.patch(url_v1, json=payload_dob, headers=headers)
+                    if res_dob.status_code not in [200, 204]:
+                         print(f"⚠️ Warning: perform DoB update failed: {res_dob.status_code} - {res_dob.text}. Attribute might be missing in Azure.")
+                except Exception as e:
+                    print(f"⚠️ Warning: Exception during DoB update: {e}")
+            
             # VERIFICATION LOOP: Wait until Azure AD actually shows the new attributes
             print(f"DEBUG: Starting verification for {user_id}...")
             for i in range(10):  # Max 10 attempts (10 seconds)
