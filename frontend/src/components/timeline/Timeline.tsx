@@ -91,12 +91,12 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
     };
 
     return (
-        <div className="w-full [&_.timeline-card-content]:!max-h-none [&_.timeline-card-content]:!overflow-visible [&_.card-content-wrapper]:!max-h-none [&_.card-content-wrapper]:!overflow-visible">
+        <div className="w-full [&_.timeline-card-content]:!max-h-none [&_.timeline-card-content]:!overflow-visible [&_.card-content-wrapper]:!max-h-none [&_.card-content-wrapper]:!overflow-visible [&_.card-description]:!line-clamp-none">
             <Chrono
                 items={items}
                 mode="VERTICAL_ALTERNATING"
                 slideShow={false}
-                scrollable={true}
+                scrollable={{ scrollbar: false }}
                 theme={chronoTheme}
                 hideControls={true}
                 enableOutline={false}
@@ -108,7 +108,12 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                 }}
             >
                 {sortedBoards.map((board, index) => (
-                    <div key={board.id || `board-${index}`} className="p-4" data-testid={`timeline-item-${index}`}>
+                    <div key={board.id || `board-${index}`} className="p-6 space-y-4" data-testid={`timeline-item-${index}`}>                        {/* Board description */}
+                        {board.omschrijving && (
+                            <div className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
+                                <p>{board.omschrijving}</p>
+                            </div>
+                        )}
                         {/* Board image */}
                         {board.image && (
                             <div className="w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-700 mb-4">
@@ -131,13 +136,13 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
 
                         {/* Members */}
                         {Array.isArray(board.members) && board.members.length > 0 && (
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 <div className="flex items-center gap-2 text-sm font-semibold text-paars dark:text-purple-400">
-                                    <Users className="h-4 w-4" />
-                                    <span>Bestuursleden</span>
+                                    <Users className="h-5 w-5" />
+                                    <span>Bestuursleden ({board.members.length})</span>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {board.members.map((member: any) => {
                                         const avatarRef = resolvePicture(member);
                                         let avatarSrc = '/img/placeholder.svg';
@@ -160,12 +165,12 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                                         return (
                                             <div
                                                 key={member.id ?? `${board.id}-${Math.random()}`}
-                                                className="flex items-center gap-3 rounded-lg bg-slate-50 dark:bg-[#2a232b] dark:border dark:border-white/10 p-3"
+                                                className="flex items-center gap-3 rounded-xl bg-white/80 dark:bg-[#2a232b] border border-slate-200/50 dark:border-white/10 p-3 shadow-sm hover:shadow-md transition-shadow"
                                             >
                                                 <img
                                                     src={avatarSrc}
                                                     alt={fullName}
-                                                    className="h-10 w-10 flex-shrink-0 rounded-full object-contain bg-slate-100 dark:bg-slate-700"
+                                                    className="h-12 w-12 flex-shrink-0 rounded-full object-cover bg-slate-100 dark:bg-slate-700 border-2 border-white/50 dark:border-slate-600"
                                                     loading="lazy"
                                                     onError={(e) => {
                                                         const t = e.target as HTMLImageElement;
@@ -177,7 +182,7 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                                                         {fullName}
                                                     </p>
                                                     {member.functie && (
-                                                        <p className="text-xs text-paars dark:text-purple-400 truncate">{member.functie}</p>
+                                                        <p className="text-xs text-paars dark:text-purple-400 truncate font-medium">{member.functie}</p>
                                                     )}
                                                 </div>
                                             </div>
