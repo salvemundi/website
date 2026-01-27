@@ -77,7 +77,7 @@ function ActivitiesContent() {
                     </p>
                 }
             >
-                {upcomingEvent && viewMode !== 'grid' && (
+                {upcomingEvent && (
                     <div className="rounded-3xl shadow-xl px-8 pb-4 bg-gradient-to-br 
                         from-theme-gradient-light-start 
                         via-theme-gradient-light-start 
