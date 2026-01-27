@@ -310,7 +310,8 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                 transaction_id: transactionId
             });
         } catch (error) {
-            console.error('[AdminRoutes] Approval failed:', error.message);
+            console.error('[AdminRoutes] Approval failed:', error);
+            console.error('[AdminRoutes] Error stack:', error.stack);
             res.status(500).json({ error: 'Failed to approve signup', details: error.message });
         }
     });
