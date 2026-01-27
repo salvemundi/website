@@ -40,13 +40,15 @@
     background: var(--bg-card);
     border-radius: 0.75rem;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    /* Remove glow/shadow for a plain card look */
+    box-shadow: none;
     cursor: pointer;
 }
 
 .sponsor-item:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    /* Keep the subtle lift but remove glow/shadow */
+    box-shadow: none;
 }
 
 .sponsor-logo {
@@ -56,13 +58,29 @@
     width: auto;
     max-width: 220px;
     object-fit: contain;
-    filter: none;
+    /* Add a subtle drop-shadow to improve contrast against background
+       The color will be overridden in dark mode to provide a white halo */
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
     opacity: 1;
     display: block;
 }
 
 .sponsor-item:hover .sponsor-logo {
     transform: scale(1.02);
+}
+
+/* Dark mode: provide a light halo so dark logos show on dark backgrounds */
+.dark .sponsor-logo,
+html.dark .sponsor-logo {
+    filter: drop-shadow(0 2px 6px rgba(255, 255, 255, 0.65));
+}
+
+/* Ensure the sponsor card itself has a contrasting surface in dark mode */
+.dark .sponsor-item,
+html.dark .sponsor-item {
+    background: var(--bg-card-dark, rgba(255,255,255,0.04));
+    /* Remove dark-mode card glow */
+    box-shadow: none;
 }
 
 @keyframes scroll-sponsors {
@@ -88,4 +106,32 @@
         height: 40px;
         max-width: 120px;
     }
+}
+
+/* Per-sponsor preference: force dark or light card regardless of site theme */
+.sponsor-dark-bg {
+    background: var(--bg-card-dark, #0f172a) !important;
+    /* No glow for forced dark cards either */
+    box-shadow: none !important;
+}
+
+.sponsor-light-bg {
+    /* Plain white background with no glow */
+    background: #ffffff !important;
+    box-shadow: none !important;
+}
+
+/* Logo filter tuned for the forced background */
+.sponsor-dark-bg .sponsor-logo {
+    filter: drop-shadow(0 2px 6px rgba(255,255,255,0.80));
+}
+
+.sponsor-light-bg .sponsor-logo {
+    /* No additional halo or glow on light backgrounds */
+    filter: none !important;
+}
+
+/* Remove hover glow for light-bg items while keeping the subtle lift */
+.sponsor-light-bg:hover {
+    box-shadow: none !important;
 }

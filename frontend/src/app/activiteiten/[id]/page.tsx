@@ -8,6 +8,7 @@ import { eventsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
 import { directusFetch } from '@/shared/lib/directus';
 import AttendanceButton from '@/entities/activity/ui/AttendanceButton';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import QRDisplay from '@/entities/activity/ui/QRDisplay';
 import {
     CalendarClock,
     Euro,
@@ -66,12 +67,29 @@ export default function EventDetailPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
 
-    // Check for existing signup
+    // Check for existing signup or payment return from URL
     useEffect(() => {
         const checkSignupStatus = async () => {
+            // Priority 1: Check URL params for payment status (works for guests too)
+            // Note: We use window.location because searchParams hook might not be reactive enough for instant feedback 
+            // or we want to be explicit about reading the browser URL.
+            const urlParams = new URLSearchParams(window.location.search);
+            const statusParam = urlParams.get('status');
+
+            if (statusParam === 'paid') {
+                setSignupStatus({
+                    isSignedUp: true,
+                    paymentStatus: 'paid',
+                    // We might not have the QR token here for guests without a fetch, 
+                    // but we can at least show the "Paid" state.
+                    qrToken: 'status-verified'
+                });
+                // Continue to check DB if user is logged in, to get real QR token if possible
+                if (!user) return;
+            }
+
+            // Priority 2: Check backend if logged in
             if (!user || !eventId) return;
-
-
 
             try {
                 // We need to query event_signups for this user and event
@@ -94,7 +112,10 @@ export default function EventDetailPage() {
                         qrToken: signup.qr_token
                     });
                 } else {
-                    setSignupStatus({ isSignedUp: false });
+                    // Only reset if we didn't just find a paid status in URL
+                    if (statusParam !== 'paid') {
+                        setSignupStatus({ isSignedUp: false });
+                    }
                 }
             } catch (err) {
                 console.error('Error checking signup status:', err);
@@ -183,12 +204,18 @@ export default function EventDetailPage() {
     // Calculate price based on membership (if we knew it) or just display both/one
     // The modal used `activity.price`, but our event object has `price_members` and `price_non_members`
     // We'll try to be smart about it
+    const applicablePrice = useMemo(() => {
+        if (!event) return 0;
+        return user?.is_member ? Number(event.price_members) : Number(event.price_non_members);
+    }, [event, user]);
+
     const displayPrice = useMemo(() => {
         if (!event) return 'Loading...';
         if (event.price_members === 0 && event.price_non_members === 0) return 'Gratis';
-        if (event.price_members === event.price_non_members) return `€${Number(event.price_members).toFixed(2)}`;
-        return `€${Number(event.price_members).toFixed(2)} (leden) / €${Number(event.price_non_members).toFixed(2)}`;
-    }, [event]);
+
+        const price = applicablePrice;
+        return `€${price.toFixed(2).replace('.', ',')}`;
+    }, [event, applicablePrice]);
 
     // Treat an event as past only after the end of its calendar day (local timezone)
     const isPast = event ? isEventPast(event.event_date) : false;
@@ -198,6 +225,8 @@ export default function EventDetailPage() {
 
     const isPaidAndHasQR = signupStatus.isSignedUp && signupStatus.paymentStatus === 'paid' && !!signupStatus.qrToken;
 
+    
+
     // Form handlers
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -206,6 +235,8 @@ export default function EventDetailPage() {
             setErrors((prev) => ({ ...prev, [name]: "" }));
         }
     };
+
+    
 
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
@@ -232,7 +263,7 @@ export default function EventDetailPage() {
         setSubmitError(null);
 
         try {
-            await eventsApi.createSignup({
+            const signup = await eventsApi.createSignup({
                 event_id: Number(eventId),
                 email: formData.email,
                 name: formData.name,
@@ -240,20 +271,127 @@ export default function EventDetailPage() {
                 user_id: user?.id,
                 event_name: event.name,
                 event_date: event.event_date,
-                // Use member price if user is logged in (assumption), or non-member price
-                // Ideally backend handles this logic or we check membership status
-                event_price: Number(user ? event.price_members : event.price_non_members) || 0
+                event_price: applicablePrice
             });
 
-            // Refresh status
+            if (!signup || !signup.id) {
+                throw new Error('Kon inschrijving niet aanmaken.');
+            }
+
+            // If it's a paid activity, initiate payment
+            if (applicablePrice > 0) {
+                const traceId = Math.random().toString(36).substring(7);
+                const paymentPayload = {
+                    amount: applicablePrice.toFixed(2),
+                    description: `Inschrijving - ${event.name}`,
+                    redirectUrl: window.location.origin + `/activiteiten/${eventId}?status=paid`,
+                    registrationId: signup.id,
+                    registrationType: 'event_signup',
+                    email: formData.email,
+                    firstName: formData.name.split(' ')[0],
+                    lastName: formData.name.split(' ').slice(1).join(' '),
+                    userId: user?.id,
+                    isContribution: false,
+                    qrToken: signup.qr_token // Add QR token to payment metadata
+                };
+
+                const paymentRes = await fetch('/api/payments/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Trace-Id': traceId
+                    },
+                    body: JSON.stringify(paymentPayload),
+                });
+
+                if (!paymentRes.ok) {
+                    const errorData = await paymentRes.json();
+                    throw new Error(errorData.details || errorData.error || 'Fout bij het aanmaken van de betaling.');
+                }
+
+                const paymentData = await paymentRes.json();
+                if (paymentData.checkoutUrl) {
+                    window.location.href = paymentData.checkoutUrl;
+                    return;
+                }
+            }
+
+            // Refresh status for free activity
             setSignupStatus({
                 isSignedUp: true,
-                paymentStatus: 'open', // Default to open for new signups
+                paymentStatus: applicablePrice > 0 ? 'open' : 'paid',
             });
 
         } catch (error: any) {
             console.error('Signup error:', error);
             setSubmitError(error?.message || 'Er is iets misgegaan tijdens het inschrijven.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handlePayAgain = async () => {
+        if (!signupStatus.isSignedUp || applicablePrice <= 0) return;
+
+        setIsSubmitting(true);
+        setSubmitError(null);
+
+        try {
+            // Find the signup ID (we should ideally have it in signupStatus)
+            const query = new URLSearchParams({
+                filter: JSON.stringify({
+                    event_id: { _eq: eventId },
+                    directus_relations: { _eq: user?.id },
+                    participant_email: { _eq: formData.email }
+                }),
+                fields: 'id,qr_token'
+            });
+
+            const signups = await directusFetch<any[]>(`/items/event_signups?${query}`);
+            if (!signups || signups.length === 0) {
+                throw new Error('Inschrijving niet gevonden.');
+            }
+
+            const signupId = signups[0].id;
+            const qrToken = signups[0].qr_token;
+
+            const traceId = Math.random().toString(36).substring(7);
+            const paymentPayload = {
+                amount: applicablePrice.toFixed(2),
+                description: `Betaling Inschrijving - ${event.name}`,
+                redirectUrl: window.location.origin + `/activiteiten/${eventId}?status=paid`,
+                registrationId: signupId,
+                registrationType: 'event_signup',
+                email: formData.email,
+                firstName: formData.name.split(' ')[0],
+                lastName: formData.name.split(' ').slice(1).join(' '),
+                userId: user?.id,
+                isContribution: false,
+                qrToken: qrToken // Add QR token to payment metadata
+            };
+
+            const paymentRes = await fetch('/api/payments/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Trace-Id': traceId
+                },
+                body: JSON.stringify(paymentPayload),
+            });
+
+            if (!paymentRes.ok) {
+                const errorData = await paymentRes.json();
+                throw new Error(errorData.details || errorData.error || 'Fout bij het aanmaken van de betaling.');
+            }
+
+            const paymentData = await paymentRes.json();
+            if (paymentData.checkoutUrl) {
+                window.location.href = paymentData.checkoutUrl;
+                return;
+            }
+        } catch (error: any) {
+            console.error('Retry payment error:', error);
+            setSubmitError(error?.message || 'Fout bij het herstarten van de betaling.');
         } finally {
             setIsSubmitting(false);
         }
@@ -332,19 +470,18 @@ export default function EventDetailPage() {
 
 
                     {/* Signup Form - Tall Tile (Right column) */}
-                    <div className="md:col-span-1 md:row-span-3 rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg flex flex-col h-full">
+                    <div className="md:col-span-1 md:row-span-3 rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-lg flex flex-col h-full">
                         <div className="flex-grow">
                             {isPaidAndHasQR ? (
                                 // Digital ticket display case
                                 <div className="space-y-6 text-slate-900 dark:text-white h-full flex flex-col justify-center">
                                     <h3 className="text-2xl font-extrabold text-theme-purple-dark text-center">🎉 Inschrijving Definitief!</h3>
                                     <p className="text-center text-lg text-slate-600 dark:text-white/90">
-                                        Je bent succesvol ingeschreven en betaald voor {event.name}.
+                                        Je bent succesvol ingeschreven voor {event.name} en je betaling is ontvangen.
                                     </p>
 
                                     <div className="flex justify-center bg-white p-4 rounded-xl border-2 border-dashed border-slate-300">
-                                        {/* Placeholder for QR Display */}
-                                        <div className="text-center text-slate-400 py-8">QR Code</div>
+                                        <QRDisplay qrToken={signupStatus.qrToken!} />
                                     </div>
 
                                     <p className="text-center text-sm text-slate-500 dark:text-white/70 mt-4">
@@ -359,9 +496,22 @@ export default function EventDetailPage() {
                                     </div>
                                     <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Je bent ingeschreven!</h3>
                                     {signupStatus.paymentStatus === 'open' ? (
-                                        <p className="text-slate-600 dark:text-white/80">
-                                            Je inschrijving is in afwachting van betaling. Controleer je e-mail voor de betaallink.
-                                        </p>
+                                        <div className="space-y-4">
+                                            <p className="text-slate-600 dark:text-white/80">
+                                                Je inschrijving is in afwachting van betaling.
+                                            </p>
+                                            <button
+                                                onClick={handlePayAgain}
+                                                disabled={isSubmitting}
+                                                className="w-full bg-paars text-white font-bold py-3 px-6 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-md disabled:opacity-70 flex items-center justify-center gap-2"
+                                            >
+                                                {isSubmitting ? (
+                                                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                                ) : (
+                                                    `BETAAL NU (€${applicablePrice.toFixed(2).replace('.', ',')})`
+                                                )}
+                                            </button>
+                                        </div>
                                     ) : (
                                         <p className="text-slate-600 dark:text-white/80">
                                             We zien je graag op {formattedDate}.
@@ -382,7 +532,7 @@ export default function EventDetailPage() {
                                 </div>
                             ) : (
                                 // Signup Form
-                                <div className="h-full flex flex-col">
+                                <div className="signup-form-container h-full flex flex-col">
                                     <h3 className="text-2xl font-bold text-theme-purple mb-6 flex items-center gap-2">
                                         <Users className="h-6 w-6 text-theme-purple" />
                                         Inschrijven
@@ -390,14 +540,14 @@ export default function EventDetailPage() {
                                     <form onSubmit={handleSubmit} className="space-y-4 flex flex-col">
                                         {/* Name */}
                                         <div>
-                                            <label htmlFor="name" className="block text-theme-purple font-semibold mb-2">Naam *</label>
+                                            <label htmlFor="name" className="block text-sm font-semibold text-theme-purple dark:text-white mb-1">Naam *</label>
                                             <input
                                                 type="text"
                                                 id="name"
                                                 name="name"
                                                 value={formData.name}
                                                 onChange={handleInputChange}
-                                                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-paars transition-all ${errors.name ? "ring-2 ring-red-500" : ""}`}
+                                                className={`w-full px-4 py-3 rounded-xl dark:!bg-white/10 dark:!border-white/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-paars focus:border-paars transition-all ${errors.name ? "ring-2 ring-red-500 !border-red-500" : ""}`}
                                                 placeholder="Jouw naam"
                                             />
                                             {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
@@ -405,14 +555,14 @@ export default function EventDetailPage() {
 
                                         {/* Email */}
                                         <div>
-                                            <label htmlFor="email" className="block text-theme-purple font-semibold mb-2">Email *</label>
+                                            <label htmlFor="email" className="block text-sm font-semibold text-theme-purple dark:text-white mb-1">Email *</label>
                                             <input
                                                 type="email"
                                                 id="email"
                                                 name="email"
                                                 value={formData.email}
                                                 onChange={handleInputChange}
-                                                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-paars transition-all ${errors.email ? "ring-2 ring-red-500" : ""}`}
+                                                className={`w-full px-4 py-3 rounded-xl dark:!bg-white/10 dark:!border-white/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-paars focus:border-paars transition-all ${errors.email ? "ring-2 ring-red-500 !border-red-500" : ""}`}
                                                 placeholder="naam.achternaam@salvemundi.nl"
                                             />
                                             {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
@@ -420,14 +570,14 @@ export default function EventDetailPage() {
 
                                         {/* Phone */}
                                         <div>
-                                            <label htmlFor="phoneNumber" className="block text-theme-purple font-semibold mb-2">Telefoonnummer *</label>
+                                            <label htmlFor="phone" className="block text-sm font-semibold text-theme-purple dark:text-white mb-1">Telefoonnummer *</label>
                                             <input
                                                 type="tel"
-                                                id="phoneNumber"
+                                                id="phone"
                                                 name="phoneNumber"
                                                 value={formData.phoneNumber}
                                                 onChange={handleInputChange}
-                                                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-paars transition-all ${errors.phoneNumber ? "ring-2 ring-red-500" : ""}`}
+                                                className={`w-full px-4 py-3 rounded-xl dark:!bg-white/10 dark:!border-white/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-paars focus:border-paars transition-all ${errors.phoneNumber ? "ring-2 ring-red-500 !border-red-500" : ""}`}
                                                 placeholder="0612345678"
                                             />
                                             {errors.phoneNumber && <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>}
@@ -438,7 +588,7 @@ export default function EventDetailPage() {
                                             <button
                                                 type="submit"
                                                 disabled={isSubmitting}
-                                                className="w-full bg-theme-purple text-theme-purple-darker font-bold py-4 px-6 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                                className="w-full bg-theme-purple text-theme-purple-darker font-bold py-4 px-6 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
                                             >
                                                 {isSubmitting ? (
                                                     <>
@@ -446,7 +596,7 @@ export default function EventDetailPage() {
                                                         Bezig...
                                                     </>
                                                 ) : (
-                                                    'AANMELDEN'
+                                                    `AANMELDEN (${displayPrice})`
                                                 )}
                                             </button>
                                         </div>
@@ -460,52 +610,52 @@ export default function EventDetailPage() {
                     {/* Right column: compact info tiles */}
                     <div className="md:col-span-1 md:row-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4 h-full">
                         {/* Date & Time - Compact */}
-                        <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
+                        <div className="rounded-2xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-md flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-lg bg-theme-purple/10 dark:bg-white/10 flex items-center justify-center text-theme-purple dark:text-theme-white">
                                 <CalendarClock className="h-6 w-6" />
                             </div>
                             <div className="min-w-0">
-                                <p className="text-sm uppercase tracking-wide text-white/90 font-bold">Datum & Tijd</p>
-                                <p className="text-base font-semibold text-white truncate">{formattedDate}</p>
+                                <p className="text-sm uppercase tracking-wide text-theme-purple/60 dark:text-theme-white/60 font-bold">Datum & Tijd</p>
+                                <p className="text-base font-semibold text-theme-purple dark:text-theme-white truncate">{formattedDate}</p>
                                 {(formattedTimeRange || formattedTime) && (
-                                    <p className="text-sm text-white/80">{formattedTimeRange || formattedTime}</p>
+                                    <p className="text-sm text-theme-purple/80 dark:text-theme-white/80">{formattedTimeRange || formattedTime}</p>
                                 )}
                             </div>
                         </div>
 
                         {/* Price - Compact */}
-                        <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
+                        <div className="rounded-2xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-md flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-lg bg-theme-purple/10 dark:bg-white/10 flex items-center justify-center text-theme-purple dark:text-theme-white">
                                 <Euro className="h-6 w-6" />
                             </div>
                             <div>
-                                <p className="text-sm uppercase tracking-wide text-white/90 font-bold">Prijs</p>
-                                <p className="text-base font-semibold text-white">{displayPrice}</p>
+                                <p className="text-sm uppercase tracking-wide text-theme-purple/60 dark:text-theme-white/60 font-bold">Prijs</p>
+                                <p className="text-base font-semibold text-theme-purple dark:text-theme-white">{displayPrice}</p>
                             </div>
                         </div>
 
                         {/* Location - Compact */}
                         {event.location && (
-                            <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
+                            <div className="rounded-2xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-md flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-lg bg-theme-purple/10 dark:bg-white/10 flex items-center justify-center text-theme-purple dark:text-theme-white">
                                     <MapPin className="h-6 w-6" />
                                 </div>
                                 <div>
-                                    <p className="text-sm uppercase tracking-wide text-white/90 font-bold">Locatie</p>
-                                    <p className="text-base font-semibold text-white break-words max-w-[18rem]">{event.location}</p>
+                                    <p className="text-sm uppercase tracking-wide text-theme-purple/60 dark:text-theme-white/60 font-bold">Locatie</p>
+                                    <p className="text-base font-semibold text-theme-purple dark:text-theme-white break-words max-w-[18rem]">{event.location}</p>
                                 </div>
                             </div>
                         )}
 
                         {/* Committee - Compact */}
                         {event.committee_name && (
-                            <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
+                            <div className="rounded-2xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-md flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-lg bg-theme-purple/10 dark:bg-white/10 flex items-center justify-center text-theme-purple dark:text-theme-white">
                                     <UsersIcon className="h-6 w-6" />
                                 </div>
                                 <div>
-                                    <p className="text-sm uppercase tracking-wide text-white/90 font-bold">Organisatie</p>
-                                    <p className="text-base font-semibold text-white truncate">
+                                    <p className="text-sm uppercase tracking-wide text-theme-purple/60 dark:text-theme-white/60 font-bold">Organisatie</p>
+                                    <p className="text-base font-semibold text-theme-purple dark:text-theme-white truncate">
                                         {event.committee_name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim()}
                                     </p>
                                 </div>
@@ -514,29 +664,29 @@ export default function EventDetailPage() {
 
                         {/* Contact - Compact */}
                         {(event.contact_name || committeeEmail || event.contact) && (
-                            <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
+                            <div className="rounded-2xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-md flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-lg bg-theme-purple/10 dark:bg-white/10 flex items-center justify-center text-theme-purple dark:text-theme-white">
                                     <Mail className="h-6 w-6" />
                                 </div>
                                 <div>
-                                    <p className="text-sm uppercase tracking-wide text-white/90 font-bold">Contact</p>
+                                    <p className="text-sm uppercase tracking-wide text-theme-purple/60 dark:text-theme-white/60 font-bold">Contact</p>
                                     {event.contact_name && (
-                                        <p className="text-base font-semibold text-white">{event.contact_name}</p>
+                                        <p className="text-base font-semibold text-theme-purple dark:text-theme-white">{event.contact_name}</p>
                                     )}
                                     {committeeEmail && (
-                                        <a href={`mailto:${committeeEmail}`} className="text-sm text-white/80 hover:underline break-all">
+                                        <a href={`mailto:${committeeEmail}`} className="text-sm text-theme-purple/80 dark:text-theme-white/80 hover:underline break-all">
                                             {committeeEmail}
                                         </a>
                                     )}
                                     {/* Show explicit contact email if set on the event */}
                                     {event.contact && typeof event.contact === 'string' && event.contact.includes('@') && (
-                                        <a href={`mailto:${event.contact}`} className="text-sm text-white/80 hover:underline break-all block mt-1">
+                                        <a href={`mailto:${event.contact}`} className="text-sm text-theme-purple/80 dark:text-theme-white/80 hover:underline break-all block mt-1">
                                             {event.contact}
                                         </a>
                                     )}
                                     {/* Fallback: show contact (e.g., phone) when it's not an email */}
                                     {event.contact && typeof event.contact === 'string' && !event.contact.includes('@') && (
-                                        <p className="text-sm text-white/80 break-all mt-1">{event.contact}</p>
+                                        <p className="text-sm text-theme-purple/80 dark:text-theme-white/80 break-all mt-1">{event.contact}</p>
                                     )}
                                 </div>
                             </div>
@@ -545,13 +695,13 @@ export default function EventDetailPage() {
 
                     {/* Description - Large Tile (2x2 on desktop) */}
                     {event.description && (
-                        <div className="md:col-span-2 md:row-span-2 rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-8 shadow-lg flex flex-col">
-                            <h2 className="mb-4 text-2xl font-bold text-theme-purple dark:text-white flex items-center gap-2">
-                                <Info className="h-6 w-6 text-theme-purple-dark dark:text-white" />
+                        <div className="md:col-span-2 md:row-span-2 rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-8 shadow-lg flex flex-col">
+                            <h2 className="mb-4 text-2xl font-bold text-theme-purple dark:text-theme-white flex items-center gap-2">
+                                <Info className="h-6 w-6 text-theme-purple dark:text-theme-white" />
                                 Over dit evenement
                             </h2>
                             <div
-                                className="prose dark:prose-invert max-w-none text-theme-purple dark:text-white/90 flex-grow"
+                                className="prose dark:prose-invert max-w-none text-theme-purple dark:text-theme-white/90 flex-grow"
                                 dangerouslySetInnerHTML={{ __html: event.description }}
                             />
                         </div>

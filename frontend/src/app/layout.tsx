@@ -58,6 +58,7 @@ export const viewport: Viewport = {
     themeColor: '#ff6542',
     width: 'device-width',
     initialScale: 1,
+    viewportFit: 'cover',
 };
 
 export default function RootLayout({
@@ -72,10 +73,10 @@ export default function RootLayout({
                 <link rel="preconnect" href="https://admin.salvemundi.nl" />
                 <link rel="dns-prefetch" href="https://admin.salvemundi.nl" />
 
-                
+
                 {/* Preload critical assets */}
                 <link rel="preload" href="/logo_purple.svg" as="image" />
-                
+
                 {/* Preload self-hosted Material Symbols font */}
                 <link rel="preload" href="/fonts/material-symbols/MaterialSymbolsOutlined.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
             </head>

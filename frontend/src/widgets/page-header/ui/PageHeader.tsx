@@ -19,7 +19,7 @@ interface PageHeaderProps {
     backLink?: string;
 }
 
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useRef, useMemo, useState } from 'react';
 
 const PageHeader: React.FC<PageHeaderProps> = ({
     title,
@@ -55,6 +55,16 @@ const PageHeader: React.FC<PageHeaderProps> = ({
         return /blur\(/.test(base) ? base : `${base} blur(0px)`;
     }, [imageFilter]);
 
+    const [isDark, setIsDark] = useState(false);
+
+    useEffect(() => {
+        const check = () => setIsDark(document.documentElement.classList.contains('dark'));
+        check();
+        const mo = new MutationObserver(check);
+        mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        return () => mo.disconnect();
+    }, []);
+
     return (
         <header ref={headerRef} className={`relative flex items-center justify-center mb-5 ${className}`}>
             {backgroundImage ? (
@@ -70,12 +80,10 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                     />
                 </div>
             ) : (
-                <div className="absolute inset-0 bg-cover z-0" style={{ backgroundColor: 'var(--color-primary-600)' }} />
+                <div className="absolute inset-0 bg-gradient-theme-page-alt transition-colors duration-500 z-0" />
             )}
-            {/* Purple gradient overlay when no background image */}
-            {!backgroundImage && (
-                <div className="absolute inset-0 bg-gradient-to-br from-theme-purple-darker to-theme-purple z-0" />
-            )}
+            {/* Subtle overlay for better text contrast if needed */}
+            <div className="absolute inset-0 bg-black/10 z-0" />
 
             <div className={`relative z-20 w-full max-w-app px-4 ${contentPadding} ${variant === 'centered' ? 'text-center' : ''}`}>
                 {variant === 'centered' ? (
@@ -91,7 +99,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                                 </Link>
                             </div>
                         )}
-                        <h1 className={`text-theme-white font-bold leading-tight drop-shadow-lg shadow-black/50 ${titleClassName}`} style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
+                        <h1 className={`text-theme-purple dark:!text-white font-bold leading-tight drop-shadow-lg shadow-black/50 ${titleClassName}`} style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)', color: isDark ? '#ffffff' : undefined }}>
                             {title.split('\n').map((line, index) => (
                                 <React.Fragment key={index}>
                                     {line}
@@ -99,13 +107,13 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                                 </React.Fragment>
                             ))}
                         </h1>
-                        {description && <div className="mt-4">{typeof description === 'string' ? stripHtml(description) : description}</div>}
+                        {description && <div className="mt-4 text-center mx-auto">{typeof description === 'string' ? stripHtml(description) : description}</div>}
                         {children}
                     </>
                 ) : (
                     <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
                         <div className="flex-1 text-center lg:text-left">
-                            <h1 className={`text-theme-purple font-bold leading-tight drop-shadow-lg whitespace-normal break-words ${titleClassName}`}>
+                            <h1 className={`text-theme-purple dark:!text-white font-bold leading-tight drop-shadow-lg whitespace-normal break-words ${titleClassName}`} style={{ color: isDark ? '#ffffff' : undefined }}>
                                 {title.split('\n').map((line, index) => (
                                     <React.Fragment key={index}>
                                         {line}

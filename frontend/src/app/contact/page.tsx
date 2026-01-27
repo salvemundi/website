@@ -34,13 +34,12 @@ export default function ContactPage() {
                     Neem contact met ons op voor vragen, suggesties of informatie
                 </p>
             </PageHeader>
-            <div className="container mx-auto px-4 py-16">
-                <div className="max-w-6xl mx-auto">
-
+            <main className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12">
+                <div className="max-w-6xl mx-auto relative flex w-full flex-col gap-8">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Informatie Section */}
-                        <div className="bg-white dark:bg-[#1f1921] dark:border dark:border-white/10 rounded-3xl shadow-lg p-8">
-                            <h2 className="text-3xl font-bold text-purple mb-6">
+                        <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl shadow-lg p-8">
+                            <h2 className="text-3xl font-bold text-theme-purple dark:text-theme-white mb-6">
                                 Informatie
                             </h2>
 
@@ -52,14 +51,14 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <p
-                                            className="text-theme-purple text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
+                                            className="text-theme-purple dark:text-theme-white text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
                                         >
                                             rachelsmolen 1
                                         </p>
-                                        <p className="text-theme-purple/70 text-sm mt-1">
+                                        <p className="text-theme-text-light dark:text-theme-text-light text-sm mt-1">
                                             gebouw r10
                                         </p>
-                                        <p className="text-theme-purple/70 text-sm mt-1">
+                                        <p className="text-theme-text-light dark:text-theme-text-light text-sm mt-1">
                                             lokaal 2.26 (2de verdieping)
                                         </p>
                                     </div>
@@ -72,7 +71,7 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <p
-                                            className="text-theme-purple text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
+                                            className="text-theme-purple dark:text-theme-white text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
                                         >
                                             KvK nr. 70280606
                                         </p>
@@ -87,7 +86,7 @@ export default function ContactPage() {
                                     <div>
                                         <a
                                             href="/activiteiten"
-                                            className="text-theme-purple text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
+                                            className="text-theme-purple dark:text-theme-white text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
                                         >
                                             Kalender
                                         </a>
@@ -96,13 +95,13 @@ export default function ContactPage() {
 
                                 {/* Documents Section */}
                                 <div className="pt-6">
-                                    <h3 className="font-semibold text-theme-purple mb-4  flex items-center gap-2">
+                                    <h3 className="font-semibold text-theme-purple dark:text-theme-white mb-4 flex items-center gap-2">
                                         <span className="text-2xl">📄</span>
                                         Documenten
                                     </h3>
                                     <div className="space-y-3 ml-14">
                                         {documentsLoading ? (
-                                            <p className="text-theme-muted text-sm">Laden...</p>
+                                            <p className="text-theme-text-muted dark:text-theme-text-muted text-sm">Laden...</p>
                                         ) : documents && documents.length > 0 ? (
                                             documents.map((doc: Document) => {
                                                 // Construct file download URL
@@ -114,7 +113,7 @@ export default function ContactPage() {
                                                         href={fileUrl}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="block text-theme-muted hover:text-theme-white transition-colors group"
+                                                        className="block text-theme-text-muted dark:text-theme-text-muted hover:text-theme-purple dark:hover:text-theme-white transition-colors group"
                                                         title={doc.description || doc.title}
                                                     >
                                                         <span className="group-hover:translate-x-1 inline-block transition-transform">→</span> {doc.title}
@@ -122,7 +121,7 @@ export default function ContactPage() {
                                                 );
                                             })
                                         ) : (
-                                            <p className="text-theme-muted text-sm">Geen documenten beschikbaar</p>
+                                            <p className="text-theme-text-muted dark:text-theme-text-muted text-sm">Geen documenten beschikbaar</p>
                                         )}
                                     </div>
                                 </div>
@@ -130,8 +129,8 @@ export default function ContactPage() {
                         </div>
 
                         {/* Contact Section */}
-                        <div className="bg-white dark:bg-[#1f1921] dark:border dark:border-white/10 rounded-3xl shadow-lg p-8">
-                            <h2 className="text-3xl font-bold text-purple mb-6">
+                        <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl shadow-lg p-8">
+                            <h2 className="text-3xl font-bold text-theme-purple dark:text-theme-white mb-6">
                                 Contact
                             </h2>
 
@@ -144,7 +143,7 @@ export default function ContactPage() {
                                     <div>
                                         <a
                                             href="mailto:info@salvemundi.nl"
-                                            className="text-theme-purple text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
+                                            className="text-theme-purple dark:text-theme-white text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
                                         >
                                             info@salvemundi.nl
                                         </a>
@@ -159,7 +158,7 @@ export default function ContactPage() {
                                     <div>
                                         <a
                                             href="tel:+31624827777"
-                                            className="text-theme-purple text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
+                                            className="text-theme-purple dark:text-theme-white text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
                                         >
                                             +31 6 24827777
                                         </a>
@@ -177,7 +176,7 @@ export default function ContactPage() {
                                                 href="https://wa.me/31624827777"
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="text-theme-purple text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
+                                                className="text-theme-purple dark:text-theme-white text-[1.3rem] font-bold hover:text-theme-purple-dark transition-colors"
                                             >
                                                 WhatsApp
                                             </a>
@@ -189,15 +188,15 @@ export default function ContactPage() {
                                 <div className="pt-6">
                                     <button
                                         onClick={() => router.push('/safe-havens')}
-                                        className="w-full bg-gradient-theme text-theme-white rounded-2xl p-6 font-semibold hover:-translate-y-0.5 transition-all shadow-lg shadow-theme-purple/30 flex items-center justify-between group"
+                                        className="w-full bg-gradient-theme text-theme-purple dark:text-theme-white rounded-2xl p-6 font-semibold hover:-translate-y-0.5 transition-all shadow-lg shadow-theme-purple/30 flex items-center justify-between group"
                                     >
                                         <div className="flex items-center gap-4">
                                             <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                                                <span className="text-2xl">️</span>
+                                                <span className="text-2xl">⚡️</span>
                                             </div>
                                             <div className="text-left">
                                                 <div className="text-lg font-bold">Safe Havens</div>
-                                                <div className="text-sm text-white/80">Veilig aanspreekpunt voor hulp</div>
+                                                <div className="text-sm text-theme-text-light dark:text-theme-text-light">Veilig aanspreekpunt voor hulp</div>
                                             </div>
                                         </div>
                                         <span className="text-2xl group-hover:translate-x-1 transition-transform">→</span>
@@ -208,8 +207,8 @@ export default function ContactPage() {
                     </div>
 
                     {/* Social Media Section */}
-                    <div className="mt-8 bg-white dark:bg-[#1f1921] dark:border dark:border-white/10 rounded-3xl shadow-lg p-8">
-                        <h2 className="text-2xl font-bold text-purple mb-6 text-center">
+                    <div className="mt-8 bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl shadow-lg p-8">
+                        <h2 className="text-2xl font-bold text-theme-purple dark:text-theme-white mb-6 text-center">
                             Volg Ons Op Social Media
                         </h2>
                         <div className="flex flex-wrap justify-center gap-4">
@@ -217,7 +216,7 @@ export default function ContactPage() {
                                 href="https://www.instagram.com/sv.salvemundi/"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-3 px-6 py-3 bg-theme-purple/10 rounded-full hover:bg-gradient-theme hover:text-theme-white transition-all text-theme-purple font-semibold"
+                                className="flex items-center gap-3 px-6 py-3 bg-theme-purple/10 dark:bg-theme-white/10 rounded-full hover:bg-gradient-theme hover:text-theme-white dark:hover:text-theme-white transition-all text-theme-purple dark:text-theme-white font-semibold"
                             >
                                 <span className="inline-block w-5 h-5 mr-2" aria-hidden>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
@@ -233,7 +232,7 @@ export default function ContactPage() {
                                 href="https://www.facebook.com/sv.salvemundi/?locale=nl_NL"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-3 px-6 py-3 bg-theme-purple/10 rounded-full hover:bg-gradient-theme hover:text-theme-white transition-all text-theme-purple font-semibold"
+                                className="flex items-center gap-3 px-6 py-3 bg-theme-purple/10 dark:bg-theme-white/10 rounded-full hover:bg-gradient-theme hover:text-theme-white dark:hover:text-theme-white transition-all text-theme-purple dark:text-theme-white font-semibold"
                             >
                                 <span className="inline-block w-5 h-5 mr-2" aria-hidden>
                                     <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
@@ -247,7 +246,7 @@ export default function ContactPage() {
                                 href="https://nl.linkedin.com/company/salve-mundi"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-3 px-6 py-3 bg-theme-purple/10 rounded-full hover:bg-gradient-theme hover:text-theme-white transition-all text-theme-purple font-semibold"
+                                className="flex items-center gap-3 px-6 py-3 bg-theme-purple/10 dark:bg-theme-white/10 rounded-full hover:bg-gradient-theme hover:text-theme-white dark:hover:text-theme-white transition-all text-theme-purple dark:text-theme-white font-semibold"
                             >
                                 <span className="inline-block w-5 h-5 mr-2" aria-hidden>
                                     <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
@@ -259,7 +258,8 @@ export default function ContactPage() {
                         </div>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     );
 }
+

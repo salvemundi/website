@@ -63,14 +63,14 @@ export default function CalendarView({
     return (
         <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl shadow-xl overflow-hidden">
             {/* Header */}
-            <div className="p-6 flex items-center justify-between bg-gradient-theme text-theme-white">
+            <div className="p-6 flex items-center justify-between bg-gradient-theme text-theme-purple dark:text-theme-white">
                 <h2 className="text-2xl font-bold capitalize">
                     {format(currentDate, 'MMMM yyyy', { locale: nl })}
                 </h2>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={onPrevMonth}
-                        className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                        className="p-2 hover:bg-theme-purple/10 dark:hover:bg-white/20 rounded-full transition-colors"
                         aria-label="Vorige maand"
                     >
                         <ChevronLeft className="w-6 h-6" />
@@ -81,13 +81,13 @@ export default function CalendarView({
                             onSelectDay(today);
                             onGoToDate?.(today);
                         }}
-                        className="px-4 py-1.5 bg-white/20 hover:bg-white/30 rounded-full text-sm font-semibold transition-colors"
+                        className="px-4 py-1.5 bg-theme-purple/10 dark:bg-white/20 hover:bg-theme-purple/20 dark:hover:bg-white/30 rounded-full text-sm font-semibold transition-colors"
                     >
                         Vandaag
                     </button>
                     <button
                         onClick={onNextMonth}
-                        className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                        className="p-2 hover:bg-theme-purple/10 dark:hover:bg-white/20 rounded-full transition-colors"
                         aria-label="Volgende maand"
                     >
                         <ChevronRight className="w-6 h-6" />
@@ -125,7 +125,7 @@ export default function CalendarView({
                             <div className="flex justify-between items-start">
                                 <span
                                     className={`text-sm font-semibold w-7 h-7 flex items-center justify-center rounded-full
-                                        ${isDayToday ? 'bg-gradient-theme text-theme-white' : isSelected ? 'text-theme-purple' : 'text-theme'}
+                                        ${isDayToday ? 'bg-gradient-theme text-theme-purple dark:text-theme-white' : isSelected ? 'text-theme-purple' : 'text-theme'}
                                     `}
                                 >
                                     {format(day, 'd')}

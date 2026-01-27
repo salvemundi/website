@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { isValidPhoneNumber } from '@/shared/lib/phone';
+import { PhoneNumberInput, isValidPhoneNumber } from '@/shared/components/PhoneNumberInput';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { User } from '@/shared/model/types/auth';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
@@ -55,11 +55,12 @@ const DeletionTimer = ({ expiryDateStr }: { expiryDateStr: string }) => {
 export default function SignUp() {
     const { user: realUser } = useAuth();
     const [isMockExpired, setIsMockExpired] = useState(false);
+    const [isMockCommittee, setIsMockCommittee] = useState(false);
 
     const user = isMockExpired
         ? (realUser
-            ? { ...realUser, is_member: false, membership_expiry: realUser.membership_expiry || new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString() }
-            : { id: 'mock-id', first_name: 'Mock', last_name: 'Gebruiker', email: 'test@example.com', is_member: false, membership_expiry: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString() } as User
+            ? { ...realUser, is_member: false, membership_expiry: realUser.membership_expiry || new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(), committees: isMockCommittee ? [{ id: 'mock', name: 'Mock Committee' }] : realUser.committees }
+            : { id: 'mock-id', first_name: 'Mock', last_name: 'Gebruiker', email: 'test@example.com', is_member: false, membership_expiry: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(), committees: isMockCommittee ? [{ id: 'mock', name: 'Mock Committee' }] : [] } as User
         )
         : realUser;
 
@@ -82,6 +83,8 @@ export default function SignUp() {
     const isGuest = !user;
     const isValidMember = user && user.is_member;
     const isExpired = user && !user.is_member;
+    const isCommitteeMember = user?.committees && user.committees.length > 0;
+    const baseAmount = isCommitteeMember ? 10.00 : 20.00;
 
     let pageTitle = "WORD LID!";
     let formTitle = "Inschrijfformulier";
@@ -152,15 +155,16 @@ export default function SignUp() {
 
         try {
             const payload = {
-                amount: '20.00',
+                amount: baseAmount.toFixed(2),
                 description: 'Contributie Salve Mundi',
-                redirectUrl: window.location.origin + '/lidmaatschap/bevestiging',
+                redirectUrl: window.location.origin + '/lidmaatschap/bevestiging' + (isExpired ? '?type=renewal' : ''),
                 isContribution: true, // Make sure backend expects this boolean
                 userId: user ? user.id : null,
                 firstName: user ? undefined : form.voornaam,
                 lastName: user ? undefined : form.achternaam,
                 email: user ? user.email : form.email,
                 dateOfBirth: form.geboortedatum ? form.geboortedatum.toISOString().split('T')[0] : undefined,
+                phoneNumber: form.telefoon,
                 couponCode: couponStatus?.valid ? form.coupon : undefined
             };
 
@@ -265,7 +269,13 @@ export default function SignUp() {
                     backgroundPosition="center 75%"
                     /* match activiteiten banner size and add a subtle blur */
                     contentPadding="py-20"
-                    imageFilter={``}
+                    variant="centered"
+                    titleClassName="text-theme-purple dark:text-theme-white text-3xl sm:text-4xl md:text-6xl drop-shadow-sm"
+                    description={
+                        <p className="text-lg sm:text-xl text-theme-purple dark:text-theme-white max-w-3xl mt-4 font-medium drop-shadow-sm mx-auto">
+                            Beheer je lidmaatschap bij Salve Mundi.
+                        </p>
+                    }
                 />
             </div>
 
@@ -283,20 +293,31 @@ export default function SignUp() {
                                 </span>
                                 <span className="text-theme-purple-lighter font-bold text-xs uppercase tracking-widest">Dev Mode</span>
                             </div>
-                            <button
-                                onClick={() => setIsMockExpired(!isMockExpired)}
-                                className={`px-6 py-2 rounded-xl text-sm font-bold transition-all duration-200 border-2 ${isMockExpired
-                                    ? 'bg-theme-purple-lighter text-theme-purple border-theme-purple-lighter shadow-[0_0_15px_rgba(180,160,255,0.4)]'
-                                    : 'bg-transparent text-theme-purple-lighter border-theme-purple-lighter/50 hover:bg-theme-purple-lighter/10'
-                                    }`}
-                            >
-                                {isMockExpired ? '✅ Mocking Expired' : 'Simuleer Verlopen Account'}
-                            </button>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setIsMockCommittee(!isMockCommittee)}
+                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 border-2 ${isMockCommittee
+                                        ? 'bg-theme-purple-lighter text-theme-purple border-theme-purple-lighter shadow-[0_0_15px_rgba(180,160,255,0.4)]'
+                                        : 'bg-transparent text-theme-purple-lighter border-theme-purple-lighter/50 hover:bg-theme-purple-lighter/10'
+                                        }`}
+                                >
+                                    {isMockCommittee ? '✅ Committee' : 'Simuleer Commissie'}
+                                </button>
+                                <button
+                                    onClick={() => setIsMockExpired(!isMockExpired)}
+                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 border-2 ${isMockExpired
+                                        ? 'bg-theme-purple-lighter text-theme-purple border-theme-purple-lighter shadow-[0_0_15px_rgba(180,160,255,0.4)]'
+                                        : 'bg-transparent text-theme-purple-lighter border-theme-purple-lighter/50 hover:bg-theme-purple-lighter/10'
+                                        }`}
+                                >
+                                    {isMockExpired ? '✅ Mocking Expired' : 'Simuleer Verlopen Account'}
+                                </button>
+                            </div>
                         </div>
                     )}
-                <div className="flex flex-col sm:flex-row gap-6 p-6 sm:p-10">
-                    <section className="w-full sm:w-1/2 bg-gradient-theme rounded-3xl shadow-lg p-6 sm:p-8">
-                        <h1 className="text-3xl font-bold text-theme-white mb-6">
+                <div className="flex flex-col sm:flex-row gap-6 px-6 py-8 sm:py-10 md:py-12">
+                    <section className="w-full sm:w-1/2 bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl shadow-lg p-6 sm:p-8">
+                        <h1 className="text-3xl font-bold text-theme-purple dark:text-theme-white mb-6">
                             {formTitle}
                         </h1>
 
@@ -304,7 +325,7 @@ export default function SignUp() {
                             <div className="text-theme-white">
                                 <div className="bg-green-500/20 p-4 rounded-lg mb-6">
                                     <p className="font-bold text-green-400 text-lg mb-1">✓ Actief Lid</p>
-                                    <p className="text-sm text-theme-white/90">Je bent een volwaardig lid van Salve Mundi.</p>
+                                    <p className="text-sm text-theme-text-subtle dark:text-theme-text-subtle">Je bent een volwaardig lid van Salve Mundi.</p>
                                 </div>
 
                                 <p className="mb-4 text-lg">
@@ -314,15 +335,15 @@ export default function SignUp() {
                                 <div className="bg-theme-white/10 p-4 rounded-lg mb-6">
                                     <p className="text-sm text-theme-purple-lighter font-semibold uppercase tracking-wide">Jouw gegevens</p>
                                     <p className="text-theme-white font-medium">{user.first_name} {user.last_name}</p>
-                                    <p className="text-theme-white/80 text-sm">{user.email}</p>
+                                    <p className="text-theme-text-muted dark:text-theme-text-muted text-sm">{user.email}</p>
                                     {user.membership_expiry && (
-                                        <p className="text-theme-white/60 text-xs mt-2">
+                                        <p className="text-theme-text-light dark:text-theme-text-light text-xs mt-2">
                                             Geldig tot: {new Date(user.membership_expiry).toLocaleDateString('nl-NL')}
                                         </p>
                                     )}
                                 </div>
 
-                                <p className="text-sm text-theme-white/60 italic">
+                                <p className="text-sm text-theme-text-light dark:text-theme-text-light italic">
                                     Je hoeft op dit moment geen actie te ondernemen.
                                 </p>
                             </div>
@@ -335,63 +356,69 @@ export default function SignUp() {
                                 <p className="mb-4 text-lg">
                                     Welkom terug, <span className="font-bold text-theme-purple-lighter">{user.first_name}</span>.
                                 </p>
-                                <p className="mb-6 text-theme-white/90">
+                                <p className="mb-6 text-theme-text-subtle dark:text-theme-text-subtle">
                                     Je lidmaatschap is verlopen. Om weer toegang te krijgen tot alle activiteiten en je account te behouden, vragen we je de jaarlijkse contributie te voldoen.
                                 </p>
 
                                 <button
                                     onClick={() => { setIsProcessing(true); initiateContributionPayment(); }}
                                     disabled={isProcessing}
-                                    className="w-full bg-theme-purple-lighter text-theme-purple-darker font-bold py-3 px-6 rounded-xl shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="form-button"
                                 >
-                                    {isProcessing ? 'Verwerken...' : 'Nu Verlengen (€20,00)'}
+                                    {isProcessing ? 'Verwerken...' : `Nu Verlengen (€${baseAmount.toFixed(2).replace('.', ',')})`}
                                 </button>
                             </div>
                         )}
 
                         {isGuest && (
                             <form className="flex text-start flex-col gap-4" onSubmit={handleSubmit}>
-                                <p className="text-theme-white mb-2">Vul je gegevens in om een account aan te maken en lid te worden.</p>
+                                <p className="text-theme-text dark:text-theme-white mb-2">Vul je gegevens in om een account aan te maken en lid te worden.</p>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <label className="font-semibold text-theme-white">
+                                    <label className="form-label">
                                         Voornaam
-                                        <input type="text" name="voornaam" value={form.voornaam} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple" />
+                                        <input type="text" name="voornaam" value={form.voornaam} onChange={handleChange} required className="form-input mt-1" />
                                     </label>
-                                    <label className="font-semibold text-theme-white">
+                                    <label className="form-label">
                                         Achternaam
-                                        <input type="text" name="achternaam" value={form.achternaam} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple" />
+                                        <input type="text" name="achternaam" value={form.achternaam} onChange={handleChange} required className="form-input mt-1" />
                                     </label>
                                 </div>
 
-                                <label className="font-semibold text-theme-white">
+                                <label className="form-label">
                                     E-mail
-                                    <input type="email" name="email" value={form.email} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple" />
+                                    <input type="email" name="email" value={form.email} onChange={handleChange} required className="form-input mt-1" />
                                 </label>
 
-                                <label className="font-semibold text-theme-white">Geboortedatum</label>
-                                <div className="w-full">
-                                    <DatePicker
-                                        selected={form.geboortedatum}
-                                        onChange={(date) => setForm({ ...form, geboortedatum: date })}
-                                        dateFormat="dd-MM-yyyy"
-                                        locale={nl}
-                                        className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple"
-                                        placeholderText="Selecteer datum"
-                                        showYearDropdown
-                                        scrollableYearDropdown
-                                        yearDropdownItemNumber={100}
-                                    />
-                                </div>
+                                <label className="form-label">
+                                    Geboortedatum
+                                    <div className="w-full">
+                                        <DatePicker
+                                            selected={form.geboortedatum}
+                                            onChange={(date) => setForm({ ...form, geboortedatum: date })}
+                                            dateFormat="dd-MM-yyyy"
+                                            locale={nl}
+                                            className="form-input mt-1"
+                                            placeholderText="Selecteer datum"
+                                            showYearDropdown
+                                            scrollableYearDropdown
+                                            yearDropdownItemNumber={100}
+                                        />
+                                    </div>
+                                </label>
 
-                                <label className="font-semibold text-theme-purple-lighter">
+                                <label className="form-label">
                                     Telefoonnummer
-                                    <input type="tel" name="telefoon" value={form.telefoon} onChange={handleChange} required className="mt-1 p-2 rounded w-full bg-theme-white text-theme-purple" />
-                                    {phoneError && <p className="text-red-300 text-sm mt-1">{phoneError}</p>}
+                                    <PhoneNumberInput
+                                        value={form.telefoon}
+                                        onChange={(val) => handleChange({ target: { name: 'telefoon', value: val || '' } } as any)}
+                                        required
+                                        error={phoneError || undefined}
+                                    />
                                 </label>
 
                                 <div className="border-t border-theme-white/20 pt-4 mt-2">
-                                    <label className="font-semibold text-theme-white block mb-2">Heb je een coupon code?</label>
+                                    <label className="form-label mb-2 text-white">Heb je een coupon code?</label>
                                     <div className="flex gap-2">
                                         <input
                                             type="text"
@@ -399,13 +426,13 @@ export default function SignUp() {
                                             value={form.coupon}
                                             onChange={handleChange}
                                             placeholder="Bijv. ACTIE2024"
-                                            className="p-2 rounded w-full bg-theme-white text-theme-purple uppercase"
+                                            className="form-input uppercase"
                                         />
                                         <button
                                             type="button"
                                             onClick={verifyCoupon}
                                             disabled={!form.coupon || verifyingCoupon}
-                                            className="bg-theme-purple-lighter text-theme-purple-darker font-bold px-4 rounded hover:bg-white disabled:opacity-50"
+                                            className="bg-theme-white text-theme-purple font-bold px-4 rounded-xl hover:bg-white-soft disabled:opacity-50 transition-all shadow-md"
                                         >
                                             {verifyingCoupon ? '...' : 'Check'}
                                         </button>
@@ -417,12 +444,12 @@ export default function SignUp() {
                                     )}
 
                                     {/* Summary of price */}
-                                    <div className="mt-4 flex justify-between items-center text-theme-white font-bold text-lg">
+                                    <div className="mt-4 flex justify-between items-center text-white font-bold text-lg">
                                         <span>Totaal:</span>
                                         <span>
                                             {couponStatus?.valid && couponStatus.discount ? (
                                                 <>
-                                                    <span className="line-through text-theme-white/50 text-sm mr-2">€20,00</span>
+                                                    <span className="line-through text-white/50 text-sm mr-2">€20,00</span>
                                                     <span>
                                                         {couponStatus.type === 'percentage'
                                                             ? `€${(20 * (1 - couponStatus.discount / 100)).toFixed(2).replace('.', ',')}`
@@ -437,19 +464,19 @@ export default function SignUp() {
                                     </div>
                                 </div>
 
-                                <button type="submit" disabled={isProcessing} className="bg-theme-white text-theme-purple-darker font-bold py-2 px-4 rounded shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl mt-4 disabled:opacity-50 disabled:cursor-not-allowed">
-                                    {isProcessing ? 'Verwerken...' : 'Betalen en Inschrijven (€20,00)'}
+                                <button type="submit" disabled={isProcessing} className="form-button mt-4">
+                                    {isProcessing ? 'Verwerken...' : `Betalen en Inschrijven (€${baseAmount.toFixed(2).replace('.', ',')})`}
                                 </button>
                             </form>
                         )}
                     </section>
 
                     <div className="w-full sm:w-1/2 flex flex-col gap-6">
-                        <div className="w-full text-center bg-gradient-theme rounded-3xl p-6">
-                            <h2 className="text-2xl font-bold text-theme-white mb-2">
+                        <div className="w-full text-center bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl p-6">
+                            <h2 className="text-2xl font-bold text-theme-purple dark:text-theme-white mb-2">
                                 Waarom lid worden?
                             </h2>
-                            <p className="text-lg mb-4 text-theme-white">
+                            <p className="text-lg mb-4 text-theme-text dark:text-theme-white/90">
                                 Als lid van Salve Mundi krijg je toegang tot exclusieve
                                 activiteiten, workshops, borrels en nog veel meer! Word vandaag
                                 nog lid en ontdek de wereld van ICT samen met ons.
@@ -461,3 +488,4 @@ export default function SignUp() {
         </>
     );
 }
+

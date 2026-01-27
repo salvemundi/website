@@ -11,6 +11,7 @@ function SignUpConfirmationContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const transactionId = searchParams.get('transaction_id');
+    const type = searchParams.get('type');
     const [status, setStatus] = useState<'loading' | 'paid' | 'open' | 'failed' | 'error'>('loading');
     const [retryCount, setRetryCount] = useState(0);
 
@@ -53,13 +54,27 @@ function SignUpConfirmationContent() {
                     </div>
                 );
             case 'paid':
+                if (type === 'renewal') {
+                    return (
+                        <>
+                            <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <CheckCircle className="w-12 h-12 text-green-400" />
+                            </div>
+                            <h1 className="text-3xl sm:text-4xl font-bold text-theme-white mb-4">Verlenging Geslaagd!</h1>
+                            <p className="text-lg text-theme-text-subtle dark:text-theme-text-subtle mb-8 max-w-lg mx-auto">
+                                Welkom terug! Je lidmaatschap is succesvol verlengd. Je betaling is verwerkt en je hebt weer toegang tot alle activiteiten.
+                                We hebben een bevestigingsmail naar je gestuurd.
+                            </p>
+                        </>
+                    );
+                }
                 return (
                     <>
                         <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                             <CheckCircle className="w-12 h-12 text-green-400" />
                         </div>
                         <h1 className="text-3xl sm:text-4xl font-bold text-theme-white mb-4">Inschrijving Geslaagd!</h1>
-                        <p className="text-lg text-theme-white/90 mb-8 max-w-lg mx-auto">
+                        <p className="text-lg text-theme-text-subtle dark:text-theme-text-subtle mb-8 max-w-lg mx-auto">
                             Bedankt voor je inschrijving bij Salve Mundi. Je betaling is verwerkt en je bent nu officieel lid!
                             We hebben een bevestigingsmail naar je gestuurd.
                         </p>
@@ -72,7 +87,7 @@ function SignUpConfirmationContent() {
                             <XCircle className="w-12 h-12 text-red-500" />
                         </div>
                         <h1 className="text-3xl font-bold text-theme-white mb-4">Betaling Mislukt</h1>
-                        <p className="text-lg text-theme-white/90 mb-8 max-w-lg mx-auto">
+                        <p className="text-lg text-theme-text-subtle dark:text-theme-text-subtle mb-8 max-w-lg mx-auto">
                             Helaas is de betaling voor je lidmaatschap niet gelukt. Je kunt het opnieuw proberen om je inschrijving te voltooien.
                         </p>
                         <button
@@ -90,7 +105,7 @@ function SignUpConfirmationContent() {
                             <AlertTriangle className="w-12 h-12 text-yellow-500" />
                         </div>
                         <h1 className="text-3xl font-bold text-theme-white mb-4">Betaling nog in verwerking</h1>
-                        <p className="text-lg text-theme-white/90 mb-8 max-w-lg mx-auto">
+                        <p className="text-lg text-theme-text-subtle dark:text-theme-text-subtle mb-8 max-w-lg mx-auto">
                             We wachten nog op bevestiging van de betaling. Zodra dit verwerkt is, wordt je account geactiveerd en ontvang je een mail.
                         </p>
                     </>
@@ -152,3 +167,4 @@ export default function SignUpConfirmation() {
         </>
     );
 }
+

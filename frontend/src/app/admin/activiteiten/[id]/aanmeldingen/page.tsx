@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
+import { sendActivityCancellationEmail } from '@/shared/lib/services/email-service';
+import { eventsApi } from '@/shared/lib/api/salvemundi';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { Search, Download, Mail, Phone, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Search, Download, Mail, Phone, CheckCircle, XCircle, Clock, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
@@ -32,6 +34,7 @@ export default function AanmeldingenPage() {
     const [signups, setSignups] = useState<Signup[]>([]);
     const [filteredSignups, setFilteredSignups] = useState<Signup[]>([]);
     const [eventName, setEventName] = useState<string>('');
+    const [eventData, setEventData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -46,9 +49,10 @@ export default function AanmeldingenPage() {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            // Load event name
-            const event = await directusFetch<any>(`/items/events/${eventId}?fields=name`);
+            // Load event name and details (including committee info via eventsApi)
+            const event = await eventsApi.getById(eventId);
             setEventName(event.name);
+            setEventData(event);
 
             // Load signups
             const signupsData = await directusFetch<Signup[]>(
@@ -59,6 +63,39 @@ export default function AanmeldingenPage() {
             console.error('Failed to load data:', error);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleDelete = async (signupId: number) => {
+        if (!confirm('Weet je zeker dat je deze aanmelding wilt verwijderen? Dit kan niet ongedaan worden gemaakt.')) {
+            return;
+        }
+
+        const signup = signups.find(s => s.id === signupId);
+
+        try {
+            // Send cancellation email if signup found
+            if (signup) {
+                const email = getEmail(signup);
+                if (email && email !== '-') {
+                    await sendActivityCancellationEmail({
+                        recipientEmail: email,
+                        recipientName: getName(signup),
+                        eventName: eventName,
+                        committeeName: eventData?.committee_name,
+                        committeeEmail: eventData?.committee_email
+                    });
+                }
+            }
+
+            await directusFetch(`/items/event_signups/${signupId}`, {
+                method: 'DELETE',
+            });
+            // Update local state
+            setSignups(prev => prev.filter(s => s.id !== signupId));
+        } catch (error) {
+            console.error('Failed to delete signup:', error);
+            alert('Kon aanmelding niet verwijderen. Probeer het later opnieuw.');
         }
     };
 
@@ -73,7 +110,7 @@ export default function AanmeldingenPage() {
             const name = getName(signup).toLowerCase();
             const email = getEmail(signup).toLowerCase();
             const phone = getPhone(signup).toLowerCase();
-            
+
             return name.includes(query) || email.includes(query) || phone.includes(query);
         });
 
@@ -163,35 +200,35 @@ export default function AanmeldingenPage() {
             <div className="container mx-auto px-4 py-8 max-w-7xl">
                 {/* Stats Cards */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-4">
-                        <p className="text-slate-600 dark:text-slate-300 text-sm mb-1">Totaal</p>
+                    <div className="bg-admin-card rounded-xl shadow p-4">
+                        <p className="text-admin-muted text-sm mb-1">Totaal</p>
                         <p className="text-3xl font-bold text-theme-purple">{stats.total}</p>
                     </div>
-                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-4">
-                        <p className="text-slate-600 dark:text-slate-300 text-sm mb-1">Betaald</p>
+                    <div className="bg-admin-card rounded-xl shadow p-4">
+                        <p className="text-admin-muted text-sm mb-1">Betaald</p>
                         <p className="text-3xl font-bold text-green-600 dark:text-green-300">{stats.paid}</p>
                     </div>
-                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-4">
-                        <p className="text-slate-600 dark:text-slate-300 text-sm mb-1">Open</p>
+                    <div className="bg-admin-card rounded-xl shadow p-4">
+                        <p className="text-admin-muted text-sm mb-1">Open</p>
                         <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-300">{stats.open}</p>
                     </div>
-                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-4">
-                        <p className="text-slate-600 dark:text-slate-300 text-sm mb-1">Mislukt</p>
+                    <div className="bg-admin-card rounded-xl shadow p-4">
+                        <p className="text-admin-muted text-sm mb-1">Mislukt</p>
                         <p className="text-3xl font-bold text-red-600 dark:text-red-300">{stats.failed}</p>
                     </div>
                 </div>
 
                 {/* Search & Export */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-6 mb-6">
+                <div className="bg-admin-card rounded-2xl shadow-lg p-6 mb-6">
                     <div className="flex flex-col sm:flex-row gap-4">
                         <div className="flex-1 relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-admin-muted" />
                             <input
                                 type="text"
                                 placeholder="Zoek op naam, email of telefoon..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                                className="w-full pl-12 pr-4 py-3 rounded-lg border border-admin bg-transparent text-admin placeholder-admin-muted focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
                             />
                         </div>
                         <button
@@ -210,38 +247,39 @@ export default function AanmeldingenPage() {
                         <div className="h-12 w-12 animate-spin rounded-full border-4 border-theme-purple/20 border-t-theme-purple" />
                     </div>
                 ) : filteredSignups.length === 0 ? (
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-12 text-center">
-                        <p className="text-slate-600 dark:text-slate-300 text-lg">
+                    <div className="bg-admin-card rounded-2xl shadow-lg p-12 text-center">
+                        <p className="text-admin-muted text-lg">
                             {searchQuery ? 'Geen aanmeldingen gevonden' : 'Nog geen aanmeldingen'}
                         </p>
                     </div>
                 ) : (
                     <>
                         {/* Desktop View */}
-                        <div className="hidden md:block bg-white dark:bg-slate-900 rounded-2xl shadow-lg overflow-hidden">
+                        <div className="hidden md:block bg-admin-card rounded-2xl shadow-lg overflow-hidden">
                             <table className="w-full">
-                                <thead className="bg-gradient-to-r from-theme-purple to-paars text-white">
+                                <thead className="bg-admin-card-soft text-admin border-b border-admin">
                                     <tr>
-                                        <th className="px-6 py-4 text-left text-sm font-bold uppercase">Naam</th>
-                                        <th className="px-6 py-4 text-left text-sm font-bold uppercase">Email</th>
-                                        <th className="px-6 py-4 text-left text-sm font-bold uppercase">Telefoon</th>
-                                        <th className="px-6 py-4 text-left text-sm font-bold uppercase">Status</th>
-                                        <th className="px-6 py-4 text-left text-sm font-bold uppercase">Datum</th>
+                                        <th className="px-6 py-4 text-left text-sm font-bold uppercase text-admin-muted">Naam</th>
+                                        <th className="px-6 py-4 text-left text-sm font-bold uppercase text-admin-muted">Email</th>
+                                        <th className="px-6 py-4 text-left text-sm font-bold uppercase text-admin-muted">Telefoon</th>
+                                        <th className="px-6 py-4 text-left text-sm font-bold uppercase text-admin-muted">Status</th>
+                                        <th className="px-6 py-4 text-left text-sm font-bold uppercase text-admin-muted">Datum</th>
+                                        <th className="px-6 py-4 text-left text-sm font-bold uppercase text-admin-muted">Acties</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                                <tbody className="divide-y divide-admin">
                                     {filteredSignups.map((signup) => (
-                                        <tr key={signup.id} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition">
-                                            <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">
+                                        <tr key={signup.id} className="hover:bg-admin-hover transition">
+                                            <td className="px-6 py-4 font-medium text-admin">
                                                 {getName(signup)}
                                             </td>
-                                            <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
+                                            <td className="px-6 py-4 text-admin-muted">
                                                 <a href={`mailto:${getEmail(signup)}`} className="flex items-center gap-2 hover:text-theme-purple transition">
                                                     <Mail className="h-4 w-4" />
                                                     {getEmail(signup)}
                                                 </a>
                                             </td>
-                                            <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
+                                            <td className="px-6 py-4 text-admin-muted">
                                                 {getPhone(signup) !== '-' ? (
                                                     <a href={`tel:${getPhone(signup)}`} className="flex items-center gap-2 hover:text-theme-purple transition">
                                                         <Phone className="h-4 w-4" />
@@ -254,8 +292,17 @@ export default function AanmeldingenPage() {
                                             <td className="px-6 py-4">
                                                 {getStatusBadge(signup.payment_status)}
                                             </td>
-                                            <td className="px-6 py-4 text-slate-600 dark:text-slate-300 text-sm">
+                                            <td className="px-6 py-4 text-admin-muted text-sm">
                                                 {format(new Date(signup.created_at), 'dd MMM yyyy HH:mm', { locale: nl })}
+                                            </td>
+                                            <td className="px-6 py-4 text-admin-muted text-sm">
+                                                <button
+                                                    onClick={() => handleDelete(signup.id)}
+                                                    className="p-2 text-admin-muted hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                                                    title="Verwijder aanmelding"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
                                             </td>
                                         </tr>
                                     ))}
@@ -266,23 +313,32 @@ export default function AanmeldingenPage() {
                         {/* Mobile View */}
                         <div className="md:hidden space-y-4">
                             {filteredSignups.map((signup) => (
-                                <div key={signup.id} className="bg-white dark:bg-slate-800 rounded-xl shadow p-4">
+                                <div key={signup.id} className="bg-admin-card rounded-xl shadow p-4 relative">
                                     <div className="flex items-start justify-between mb-3">
                                         <div>
-                                            <p className="font-bold text-slate-900 dark:text-slate-100">{getName(signup)}</p>
-                                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                                            <p className="font-bold text-admin">{getName(signup)}</p>
+                                            <p className="text-sm text-admin-muted">
                                                 {format(new Date(signup.created_at), 'dd MMM yyyy HH:mm', { locale: nl })}
                                             </p>
                                         </div>
-                                        {getStatusBadge(signup.payment_status)}
+                                        <div className="flex gap-2">
+                                            {getStatusBadge(signup.payment_status)}
+                                            <button
+                                                onClick={() => handleDelete(signup.id)}
+                                                className="p-1 text-admin-muted hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                                                title="Verwijder aanmelding"
+                                            >
+                                                <Trash2 className="h-5 w-5" />
+                                            </button>
+                                        </div>
                                     </div>
                                     <div className="space-y-2 text-sm">
-                                        <a href={`mailto:${getEmail(signup)}`} className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-theme-purple">
+                                        <a href={`mailto:${getEmail(signup)}`} className="flex items-center gap-2 text-admin-muted hover:text-theme-purple">
                                             <Mail className="h-4 w-4" />
                                             {getEmail(signup)}
                                         </a>
                                         {getPhone(signup) !== '-' && (
-                                            <a href={`tel:${getPhone(signup)}`} className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-theme-purple">
+                                            <a href={`tel:${getPhone(signup)}`} className="flex items-center gap-2 text-admin-muted hover:text-theme-purple">
                                                 <Phone className="h-4 w-4" />
                                                 {getPhone(signup)}
                                             </a>

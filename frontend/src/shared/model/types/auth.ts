@@ -6,7 +6,8 @@ export interface User {
     entra_id?: string;
     fontys_email?: string;
     phone_number?: string;
-    avatar?: string;  
+    date_of_birth?: string; // ISO date string
+    avatar?: string;
     is_member: boolean;
     member_id?: number;
     membership_status?: 'active' | 'expired' | 'none';

@@ -4,34 +4,25 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
-import { stickersApi, eventsApi } from '@/shared/lib/api/salvemundi';
+import { stickersApi, eventsApi, siteSettingsApi } from '@/shared/lib/api/salvemundi';
 import {
     Users,
     Calendar,
     Award,
     Cake,
-    TrendingUp,
     UserCheck,
     Plus,
     FileText,
-    Sticker,
-    Mail,
-    Heart,
     AlertCircle,
     Activity,
     Ticket,
-    Shield
 } from 'lucide-react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 
-// Helper function to clean committee names
-function cleanCommitteeName(name: string): string {
-    return name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim();
-}
 
 interface DashboardStats {
     totalSignups: number;
-    upcomingBirthdays: Array<{ id: string; first_name: string; last_name: string; birthday: string }>;
+    upcomingBirthdays: Array<{ id: string; first_name: string; last_name: string; birthday: string; isToday?: boolean }>;
     topStickers: Array<{ id: string; first_name: string; last_name: string; count: number }>;
     totalCommitteeMembers: number;
     upcomingEvents: number;
@@ -43,12 +34,14 @@ interface DashboardStats {
     systemErrors: number;
     mostLikedPost?: { id: string; title: string; likes: number; slug: string };
     upcomingEventsWithSignups: Array<{ id: string; name: string; event_date: string; signups: number }>;
+    latestEventsWithSignups: Array<{ id: string; name: string; event_date?: string; signups: number }>;
     topCommittee?: { name: string; count: number };
     totalCoupons: number;
     pubCrawlSignups: number;
     upcomingPubCrawl?: { id: number; name: string; date: string };
     pubCrawlTickets?: number;
     pubCrawlGroups?: number;
+    reisSignups: number;
 }
 
 function StatCard({
@@ -57,14 +50,16 @@ function StatCard({
     icon,
     subtitle,
     onClick,
-    colorClass = 'purple'
+    colorClass = 'purple',
+    nowrap = false
 }: {
     title: string;
     value: string | number;
     icon: React.ReactNode;
     subtitle?: string;
     onClick?: () => void;
-    colorClass?: 'purple' | 'orange' | 'blue' | 'green' | 'red';
+    colorClass?: 'purple' | 'orange' | 'blue' | 'green' | 'red' | 'amber' | 'teal';
+    nowrap?: boolean;
 }) {
     const Component = onClick ? 'button' : 'div';
 
@@ -80,6 +75,18 @@ function StatCard({
             iconBg: 'bg-white/20',
             text: 'text-white',
             subtitleText: 'text-orange-100'
+        },
+        amber: {
+            gradient: 'from-amber-500 to-amber-600',
+            iconBg: 'bg-white/20',
+            text: 'text-white',
+            subtitleText: 'text-amber-100'
+        },
+        teal: {
+            gradient: 'from-teal-500 to-teal-600',
+            iconBg: 'bg-white/20',
+            text: 'text-white',
+            subtitleText: 'text-teal-100'
         },
         blue: {
             gradient: 'from-blue-500 to-blue-600',
@@ -108,15 +115,15 @@ function StatCard({
             onClick={onClick}
             className={`w-full bg-gradient-to-br ${colors.gradient} rounded-2xl shadow-lg p-4 sm:p-6 relative overflow-hidden ${onClick ? 'hover:shadow-2xl transition-all cursor-pointer hover:-translate-y-1 hover:scale-[1.02]' : ''}`}
         >
-            <div className="absolute top-0 right-0 w-28 h-28 sm:w-32 sm:h-32 bg-white/10 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16" />
+            <div className={`absolute top-0 right-0 w-28 h-28 sm:w-32 sm:h-32 -mr-12 sm:-mr-16 -mt-12 sm:-mt-16 bg-white/10 rounded-full`} />
             <div className="relative z-10">
-                <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-3">
-                    <div className="flex-1 text-center sm:text-left sm:pr-2">
+                <div className={`${nowrap ? 'flex flex-row items-center justify-between gap-2' : 'flex flex-col sm:flex-row items-center sm:items-start justify-between gap-3'} min-h-0`}>
+                    <div className={`flex-1 min-w-0 text-center sm:text-left sm:pr-2 ${nowrap ? 'whitespace-nowrap' : ''}`}>
                         <p className={`${colors.subtitleText} text-sm font-medium mb-2`}>{title}</p>
-                        <p className={`${typeof value === 'string' && value.length > 10 ? 'text-2xl' : 'text-3xl sm:text-4xl'} font-bold ${colors.text} mb-1 break-words`}>{value}</p>
+                        <p className={`${typeof value === 'string' && value.length > 10 ? 'text-2xl' : 'text-3xl sm:text-4xl'} font-bold ${colors.text} mb-1 ${nowrap ? 'whitespace-nowrap' : 'break-words'}`}>{value}</p>
                         {subtitle && <p className={`${colors.subtitleText} text-xs line-clamp-2`} title={subtitle}>{subtitle}</p>}
                     </div>
-                    <div className={`hidden sm:block ${colors.iconBg} p-3 rounded-xl ${colors.text} backdrop-blur-sm flex-shrink-0`}>
+                    <div className={`hidden sm:block ${colors.iconBg} p-3 rounded-xl ${colors.text} backdrop-blur-sm flex-shrink-0 relative -mt-3 sm:-mt-4 z-20 self-start`}>
                         {icon}
                     </div>
                 </div>
@@ -135,21 +142,66 @@ function ListCard({
     children: React.ReactNode;
 }) {
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg dark:shadow-slate-900/50 p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
             <div className="flex items-center gap-3 mb-4">
-                <div className="bg-theme-purple/10 dark:bg-theme-purple/20 p-2 rounded-xl text-theme-purple dark:text-theme-purple-light">
+                <div className="bg-theme-purple/10 dark:bg-theme-purple/20 p-2 rounded-xl text-theme-purple">
                     {icon}
                 </div>
-                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">{title}</h3>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h3>
             </div>
             {children}
         </div>
     );
 }
 
+function ActionCard({
+    title,
+    subtitle,
+    icon,
+    onClick,
+    colorClass = 'purple',
+    disabled = false
+}: {
+    title: string;
+    subtitle?: string;
+    icon: React.ReactNode;
+    onClick?: () => void;
+    colorClass?: 'purple' | 'blue' | 'red' | 'green' | 'orange' | 'teal';
+    disabled?: boolean;
+}) {
+    const colorMap: Record<string, string> = {
+        purple: 'bg-gradient-to-br from-purple-500 to-purple-600',
+        blue: 'bg-gradient-to-br from-blue-500 to-blue-600',
+        red: 'bg-gradient-to-br from-red-500 to-red-600',
+        green: 'bg-gradient-to-br from-green-500 to-green-600',
+        orange: 'bg-gradient-to-br from-orange-500 to-orange-600',
+        teal: 'bg-gradient-to-br from-teal-500 to-teal-600'
+    };
+
+    return (
+        <button
+            onClick={!disabled ? onClick : undefined}
+            disabled={disabled}
+            className={`w-full flex items-center gap-4 p-3 rounded-2xl shadow-sm ${colorMap[colorClass]} text-white ${disabled ? 'opacity-60 cursor-not-allowed hover:scale-100' : 'hover:scale-[1.01] transition'}`}
+        >
+            <div className={`${disabled ? 'p-2 bg-white/10' : 'p-2 bg-white/20'} rounded-lg flex items-center justify-center`}>{icon}</div>
+            <div className="text-left">
+                <p className="text-sm opacity-90">{title}</p>
+                {subtitle && <p className="font-bold text-lg">{subtitle}</p>}
+            </div>
+        </button>
+    );
+}
+
 export default function AdminDashboardPage() {
     const router = useRouter();
     const { user } = useAuth();
+
+    // Local dev bypass: when running on localhost, allow viewing admin without login
+    const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    const localBypass = isLocalhost && !user;
+    const fakeLocalUser = localBypass ? ({ id: 'local-admin', first_name: 'Local', last_name: 'Admin', committees: [] } as any) : null;
+    const effectiveUser = user ?? fakeLocalUser;
     const [stats, setStats] = useState<DashboardStats>({
         totalSignups: 0,
         upcomingBirthdays: [],
@@ -164,30 +216,57 @@ export default function AdminDashboardPage() {
         systemErrors: 0,
         mostLikedPost: undefined,
         upcomingEventsWithSignups: [],
+        latestEventsWithSignups: [],
         topCommittee: undefined,
         totalCoupons: 0,
         pubCrawlSignups: 0,
         upcomingPubCrawl: undefined,
         pubCrawlTickets: 0,
         pubCrawlGroups: 0,
+        reisSignups: 0,
     });
     const [isIctMember, setIsIctMember] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [visibilitySettings, setVisibilitySettings] = useState<{
+        intro: boolean;
+        kroegentocht: boolean;
+        reis: boolean;
+    }>({ intro: false, kroegentocht: false, reis: false });
 
     useEffect(() => {
         loadDashboardData();
-        checkIctMembership();
-    }, []);
+        checkIctMembership(effectiveUser?.id);
+        loadVisibilitySettings();
+        // Re-run membership check if effectiveUser changes (e.g. after login)
+    }, [effectiveUser?.id]);
 
-    const checkIctMembership = async () => {
-        if (!user?.id) return;
+    const checkIctMembership = async (userId?: string | number) => {
+        if (!userId) return;
         try {
             // Check if user is member of ICT committee (committee with name 'ICT' or 'ict')
-            const committees = await directusFetch<any[]>('/items/committee_members?fields=committee_id.name&filter[user_id][_eq]=' + user.id);
+            const committees = await directusFetch<any[]>('/items/committee_members?fields=committee_id.name&filter[user_id][_eq]=' + userId);
             const isIct = committees.some(cm => cm.committee_id?.name?.toLowerCase() === 'ict');
             setIsIctMember(isIct);
         } catch (error) {
             console.error('Failed to check ICT membership:', error);
+        }
+    };
+
+    const loadVisibilitySettings = async () => {
+        try {
+            const [introSettings, kroegentochtsSettings, reisSettings] = await Promise.all([
+                siteSettingsApi.get('intro'),
+                siteSettingsApi.get('kroegentocht'),
+                siteSettingsApi.get('reis')
+            ]);
+
+            setVisibilitySettings({
+                intro: introSettings?.show ?? false,
+                kroegentocht: kroegentochtsSettings?.show ?? false,
+                reis: reisSettings?.show ?? false
+            });
+        } catch (error) {
+            console.error('Failed to load visibility settings:', error);
         }
     };
 
@@ -205,9 +284,11 @@ export default function AdminDashboardPage() {
                 introStats,
                 systemHealth,
                 upcomingEventsDetail,
+                latestEventsDetail,
                 topCommittee,
                 couponsData,
-                pubCrawlStats
+                pubCrawlStats,
+                reisStats
             ] = await Promise.all([
                 // Total event signups
                 directusFetch<any>('/items/event_signups?aggregate[count]=*'),
@@ -227,12 +308,17 @@ export default function AdminDashboardPage() {
                 fetchSystemHealth(),
                 // Upcoming events with signup counts
                 fetchUpcomingEventsWithSignups(),
+                // Latest activities (most recent 4) with signup counts
+                fetchLatestEventsWithSignups(),
                 // Top committee by activities this year
                 fetchTopCommitteeByActivities(),
                 // Total active coupons
+                // (moved for ordering above)
                 directusFetch<any>('/items/coupons?aggregate[count]=*&filter[is_active][_eq]=true').catch(() => [{ count: 0 }]),
                 // Pub crawl stats
-                fetchPubCrawlStats()
+                fetchPubCrawlStats(),
+                // Reis signups
+                fetchReisStats()
             ]);
 
             setStats({
@@ -249,12 +335,14 @@ export default function AdminDashboardPage() {
                 systemErrors: systemHealth.errors,
                 mostLikedPost: introStats.mostLikedPost,
                 upcomingEventsWithSignups: upcomingEventsDetail,
+                latestEventsWithSignups: latestEventsDetail,
                 topCommittee: topCommittee,
                 totalCoupons: couponsData?.[0]?.count || 0,
                 pubCrawlSignups: pubCrawlStats.signups,
                 upcomingPubCrawl: pubCrawlStats.upcomingEvent,
                 pubCrawlTickets: pubCrawlStats.totalTickets || 0,
                 pubCrawlGroups: pubCrawlStats.groups || 0,
+                reisSignups: reisStats,
             });
         } catch (error) {
             console.error('Failed to load dashboard data:', error);
@@ -266,27 +354,68 @@ export default function AdminDashboardPage() {
     const fetchUpcomingBirthdays = async () => {
         try {
             // Fetch all users with birthdays
-            const users = await directusFetch<any[]>('/users?fields=id,first_name,last_name,date_of_birth&filter[date_of_birth][_nnull]=true');
+            // Use limit=-1 to fetch ALL users, otherwise default is 100
+            const users = await directusFetch<any[]>('/users?fields=id,first_name,last_name,date_of_birth&filter[date_of_birth][_nnull]=true&limit=-1');
 
             const today = new Date();
-            const nextWeek = new Date();
-            nextWeek.setDate(today.getDate() + 7);
+            today.setHours(0, 0, 0, 0);
 
-            const upcoming = users.filter(user => {
-                if (!user.date_of_birth) return false;
+            // Calculate next birthdays for all users and pick the next 5 upcoming
 
-                const birthday = new Date(user.date_of_birth);
-                const thisYearBirthday = new Date(today.getFullYear(), birthday.getMonth(), birthday.getDate());
+            type BirthdayItem = {
+                id: string;
+                first_name: string;
+                last_name: string;
+                birthday: string;
+                nextBirthday: Date;
+                isToday: boolean;
+            };
 
-                return thisYearBirthday >= today && thisYearBirthday <= nextWeek;
-            }).map(user => ({
-                id: user.id,
-                first_name: user.first_name,
-                last_name: user.last_name,
-                birthday: user.date_of_birth
-            }));
+            const upcomingItems = users
+                .map(user => {
+                    const dob = user.date_of_birth;
+                    if (!dob) return null;
 
-            return upcoming.slice(0, 5); // Top 5
+                    let month = 0;
+                    let day = 0;
+
+                    const isoMatch = String(dob).match(/(\d{4})-(\d{2})-(\d{2})/);
+                    if (isoMatch) {
+                        month = parseInt(isoMatch[2], 10) - 1; // Month is 0-indexed
+                        day = parseInt(isoMatch[3], 10);
+                    } else {
+                        const parsed = new Date(dob);
+                        if (isNaN(parsed.getTime())) return null;
+                        month = parsed.getMonth();
+                        day = parsed.getDate();
+                    }
+
+                    // Calculate next birthday
+                    const currentYear = today.getFullYear();
+                    const nextBirthday = new Date(currentYear, month, day);
+                    nextBirthday.setHours(0, 0, 0, 0);
+
+                    if (nextBirthday.getTime() < today.getTime()) {
+                        nextBirthday.setFullYear(currentYear + 1);
+                    }
+
+                    const isToday = nextBirthday.getTime() === today.getTime();
+
+                    return {
+                        id: user.id,
+                        first_name: user.first_name,
+                        last_name: user.last_name,
+                        birthday: user.date_of_birth,
+                        nextBirthday,
+                        isToday
+                    } as BirthdayItem;
+                })
+                .filter((u): u is BirthdayItem => u !== null)
+                .sort((a, b) => a.nextBirthday.getTime() - b.nextBirthday.getTime())
+                .map(u => ({ id: u.id, first_name: u.first_name, last_name: u.last_name, birthday: u.birthday, isToday: u.isToday }));
+
+            // Return only the next 5 upcoming birthdays
+            return upcomingItems.slice(0, 5);
         } catch (error) {
             console.error('Failed to fetch birthdays:', error);
             return [];
@@ -413,7 +542,7 @@ export default function AdminDashboardPage() {
                 const likes = typeof blog.likes === 'string' ? parseInt(blog.likes, 10) : (blog.likes || 0);
                 return sum + (isNaN(likes) ? 0 : likes);
             }, 0);
-            
+
             const mostLiked = blogsData.length > 0
                 ? blogsData.reduce((max: any, blog: any) => {
                     const blogLikes = typeof blog.likes === 'string' ? parseInt(blog.likes, 10) : (blog.likes || 0);
@@ -546,6 +675,50 @@ export default function AdminDashboardPage() {
         }
     };
 
+    const fetchLatestEventsWithSignups = async () => {
+        try {
+            // Try to fetch using start_date if available, but fallback to event_date-only on permission errors
+            let allEvents: any[] = [];
+            try {
+                allEvents = await directusFetch<any[]>('/items/events?fields=id,name,event_date,start_date&sort=-start_date,-event_date&limit=4');
+            } catch (err: any) {
+                const message = err?.message || '';
+                // If start_date is forbidden or doesn't exist, retry without it
+                if (message.includes('start_date') || message.includes('403') || message.toLowerCase().includes('forbidden')) {
+                    allEvents = await directusFetch<any[]>('/items/events?fields=id,name,event_date&sort=-event_date&limit=4');
+                } else {
+                    throw err;
+                }
+            }
+
+            const eventsWithSignups = await Promise.all(
+                (allEvents || []).map(async (event) => {
+                    try {
+                        const signups = await directusFetch<any>(`/items/event_signups?aggregate[count]=*&filter[event_id][_eq]=${event.id}`);
+                        return {
+                            id: event.id,
+                            name: event.name,
+                            event_date: event.event_date || event.start_date,
+                            signups: signups?.[0]?.count || 0
+                        };
+                    } catch (error) {
+                        return {
+                            id: event.id,
+                            name: event.name,
+                            event_date: event.event_date || event.start_date,
+                            signups: 0
+                        };
+                    }
+                })
+            );
+
+            return eventsWithSignups;
+        } catch (error) {
+            console.error('Failed to fetch latest events with signups:', error);
+            return [];
+        }
+    };
+
     const fetchPubCrawlStats = async () => {
         try {
             // Get upcoming pub crawl event
@@ -586,6 +759,17 @@ export default function AdminDashboardPage() {
         }
     };
 
+    const fetchReisStats = async () => {
+        try {
+            // Get all trip signups
+            const signupsData = await directusFetch<any[]>('/items/trip_signups?aggregate[count]=*');
+            return signupsData?.[0]?.count || 0;
+        } catch (error) {
+            console.error('Failed to fetch reis signups:', error);
+            return 0;
+        }
+    };
+
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
@@ -615,269 +799,240 @@ export default function AdminDashboardPage() {
             />
 
             <div className="container mx-auto px-4 py-8 max-w-7xl">
-                {/* Quick Actions */}
-                <div className="mb-8 flex flex-col sm:flex-row gap-4">
-                    <button
-                        onClick={() => router.push('/admin/activiteiten/nieuw')}
-                        className="bg-theme-purple hover:bg-theme-purple-dark dark:bg-theme-purple-light dark:hover:bg-theme-purple text-white px-4 sm:px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2 w-full sm:w-auto justify-center"
-                    >
-                        <Plus className="h-5 w-5" />
-                        Nieuwe Activiteit
-                    </button>
-                    <button
-                        onClick={() => router.push('/admin/activiteiten')}
-                        className="bg-white dark:bg-slate-800 text-theme-purple dark:text-theme-purple-light hover:bg-slate-50 dark:hover:bg-slate-700 px-4 sm:px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl dark:shadow-slate-900/50 transition-all hover:-translate-y-0.5 flex items-center gap-2 w-full sm:w-auto justify-center"
-                    >
-                        <FileText className="h-5 w-5" />
-                        Beheer Activiteiten
-                    </button>
-                </div>
-
-                {/* Financieel & Beheer */}
-                <div className="mb-8">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Quick Actions Section */}
+                    <div className="mb-8">
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <StatCard
-                            title="Coupons"
-                            value={stats.totalCoupons}
-                            icon={<Ticket className="h-6 w-6" />}
-                            subtitle="Actieve coupons"
-                            onClick={() => router.push('/admin/coupons')}
+                            title="Overzicht"
+                            value="Activiteiten"
+                            icon={<Calendar className="h-6 w-6" />}
+                            subtitle="Bekijk alle activiteiten"
+                            onClick={() => router.push('/admin/activiteiten')}
+                            colorClass="purple"
+                        />
+                        <StatCard
+                            title="Beheer"
+                            value="intro"
+                            icon={<FileText className="h-6 w-6" />}
+                            subtitle={`aanmeldingen:  ${stats.introSignups}`}
+                            onClick={() => router.push('/admin/intro')}
+                            colorClass="blue"
+                        />
+                        <StatCard
+                            title="Overzicht"
+                            value="Leden"
+                            icon={<Users className="h-6 w-6" />}
+                            subtitle="Bekijk alle leden"
+                            onClick={() => router.push('/admin/leden')}
                             colorClass="green"
                         />
+                        <StatCard
+                            title="beheer"
+                            value="reis"
+                            icon={<FileText className="h-6 w-6" />}
+                            subtitle={`aanmeldingen:  ${stats.reisSignups}`}
+                            onClick={() => router.push('/admin/reis')}
+                            colorClass="teal"
+                        />
+                    </div>
 
-                        {user?.entra_id && (
-                            <StatCard
-                                title="Signups"
-                                value="Beheer"
-                                icon={<Shield className="h-6 w-6" />}
-                                subtitle="Alle aanmeldingen"
-                                onClick={() => router.push('/admin/dev-signups')}
-                                colorClass="red"
-                            />
-                        )}
-
-                        {stats.upcomingPubCrawl && (
-                            <StatCard
-                                title="Kroegentocht Aanmeldingen"
-                                value={stats.pubCrawlTickets ?? 0}
-                                icon={<Ticket className="h-6 w-6" />}
-                                subtitle={`${stats.upcomingPubCrawl.name} • ${stats.pubCrawlGroups ?? 0} groepen`}
-                                onClick={() => router.push('/admin/kroegentocht')}
-                                colorClass="purple"
-                            />
-                        )}
+                    {/* Mobile-only: show Intro and Kroegentocht below the first 4 cards */}
+                    <div className="mt-4 md:hidden grid grid-cols-2 gap-4">
+                        <StatCard
+                            title="beheer"
+                            value="kroegentocht"
+                            icon={<Ticket className="h-6 w-6" />}
+                            subtitle={`aanmeldingen:  ${stats.pubCrawlSignups}`}
+                            onClick={() => router.push('/admin/kroegentocht')}
+                            colorClass="orange"
+                        />
                     </div>
                 </div>
 
-                {/* Grouped Cards - Horizontal Layout */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                    {/* Left Column */}
-                    <div className="space-y-6">
-                        {/* Events & Activiteiten - Purple Theme */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <StatCard
-                                title="Aankomende Events"
-                                value={stats.upcomingEvents}
-                                icon={<Calendar className="h-6 w-6" />}
-                                subtitle={`Van ${stats.totalEvents} totaal`}
-                                onClick={() => router.push('/admin/activiteiten')}
-                                colorClass="purple"
-                            />
+                {/* Stats Section */}
+                <div className="mb-8">
 
-                            <StatCard
-                                title="Totaal Inschrijvingen"
-                                value={stats.totalSignups}
-                                icon={<UserCheck className="h-6 w-6" />}
-                                subtitle="Alle activiteiten"
-                                onClick={() => router.push('/activiteiten')}
-                                colorClass="purple"
-                            />
-
-                            <div className="col-span-2 w-full">
-                                <StatCard
-                                    title="Meeste Activiteiten"
-                                    value={stats.topCommittee ? cleanCommitteeName(stats.topCommittee.name) : 'Geen data'}
-                                    icon={<FileText className="h-6 w-6" />}
-                                    subtitle={stats.topCommittee ? `${stats.topCommittee.count} ${stats.topCommittee.count === 1 ? 'activiteit' : 'activiteiten'} dit jaar` : undefined}
-                                    onClick={() => router.push('/commissies')}
-                                    colorClass="purple"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Stickers - Orange Theme */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <StatCard
-                                title="Totaal Stickers"
-                                value={stats.totalStickers}
-                                icon={<Sticker className="h-6 w-6" />}
-                                subtitle="Alle verzamelde stickers"
-                                onClick={() => router.push('/stickers')}
-                                colorClass="orange"
-                            />
-
-                            <StatCard
-                                title="Sticker Groei"
-                                value={`${stats.stickerGrowthRate}%`}
-                                icon={<TrendingUp className="h-6 w-6" />}
-                                subtitle="Laatste 7 dagen"
-                                onClick={() => router.push('/stickers')}
-                                colorClass="orange"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Right Column */}
-                    <div className="space-y-6">
-                        {/* Intro - Blue Theme */}
-                        <div className="grid grid-cols-2 gap-4">
-                            {stats.mostLikedPost && (
-                                <div className="col-span-2 w-full">
-                                    <div className="w-full h-full">
-                                        <StatCard
-                                            title="Populairste Post"
-                                            value={stats.mostLikedPost.title}
-                                            icon={<Heart className="h-6 w-6" />}
-                                            subtitle={`${stats.mostLikedPost.likes} likes`}
-                                            onClick={() => router.push('/intro/blog')}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+                        {/* Snelle Acties - Left side */}
+                        <div>
+                            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Snelle Acties</h3>
+                                <div className="space-y-4">
+                                    {/* Standard actions */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <ActionCard
+                                            title="Nieuwe"
+                                            subtitle="Activiteit"
+                                            icon={<Plus className="h-6 w-6" />}
+                                            onClick={() => router.push('/admin/activiteiten/nieuw')}
+                                            colorClass="purple"
+                                        />
+                                        <ActionCard
+                                            title="Nieuwe"
+                                            subtitle="Intro Post"
+                                            icon={<FileText className="h-6 w-6" />}
+                                            onClick={() => router.push('/admin/intro?tab=blogs&create=1')}
                                             colorClass="blue"
+                                            disabled={!visibilitySettings.intro}
                                         />
                                     </div>
+
+                                    {/* Removed small 'Beheer' buttons here per request */}
                                 </div>
-                            )}
+                            </div>
 
-                            <StatCard
-                                title="Intro Aanmeldingen"
-                                value={stats.introSignups}
-                                icon={<Mail className="h-6 w-6" />}
-                                subtitle="Totaal aanmeldingen"
-                                onClick={() => router.push('/intro')}
-                                colorClass="blue"
-                            />
+                            {/* Additional cards below Snelle Acties */}
+                            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+                                <div className="col-span-1">
+                                    <ListCard
+                                        title="Aankomende Jarigen "
+                                        icon={<Cake className="h-5 w-5" />}
+                                    >
+                                        {stats.upcomingBirthdays.length > 0 ? (
+                                            <div className="space-y-3">
+                                                {stats.upcomingBirthdays.map(person => (
+                                                    <div
+                                                        key={person.id}
+                                                        className={`flex items-center justify-between p-3 rounded-xl ${person.isToday
+                                                                ? 'bg-gradient-to-r from-yellow-100 to-yellow-50 dark:from-yellow-900/40 dark:to-yellow-900/20 border-2 border-yellow-400 dark:border-yellow-600'
+                                                                : 'bg-slate-100 dark:bg-slate-700'
+                                                            }`}
+                                                    >
+                                                        <div>
+                                                            <p className={`font-semibold ${person.isToday ? 'text-yellow-900 dark:text-yellow-100' : 'text-slate-700 dark:text-slate-200'}`}>
+                                                                {person.first_name} {person.last_name}
+                                                                {person.isToday}
+                                                            </p>
+                                                            <p className={`text-sm ${person.isToday ? 'text-yellow-700 dark:text-yellow-300' : 'text-slate-500 dark:text-slate-400'}`}>
+                                                                {formatDate(person.birthday)}
+                                                            </p>
+                                                        </div>
+                                                        <Cake className={`h-5 w-5 ${person.isToday ? 'text-yellow-600 dark:text-yellow-400' : 'text-theme-purple'}`} />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="text-slate-500 dark:text-slate-400 text-center py-4">Geen jarigen gevonden</p>
+                                        )}
+                                    </ListCard>
+                                </div>
+                                <div className="col-span-1">
+                                    <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
+                                       
 
-                            <StatCard
-                                title="Blog Likes"
-                                value={stats.introBlogLikes}
-                                icon={<Heart className="h-6 w-6" />}
-                                subtitle="Alle intro blogs"
-                                onClick={() => router.push('/intro/blog')}
-                                colorClass="blue"
-                            />
+                               
+
+                                        {/* Top 3 Sticker Collectors moved here */}
+                                        <div className="mt-2">
+                                            <ListCard
+                                                title="Top 3 Sticker Verzamelaars"
+                                                icon={<Award className="h-5 w-5" />}
+                                            >
+                                                {stats.topStickers.length > 0 ? (
+                                                    <div className="space-y-3">
+                                                        {stats.topStickers.map((person, index) => (
+                                                            <div key={person.id} className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-700 rounded-xl">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${index === 0 ? 'bg-yellow-500 dark:bg-yellow-600' : index === 1 ? 'bg-slate-400 dark:bg-slate-500' : 'bg-orange-600 dark:bg-orange-700'}`}>
+                                                                        {index + 1}
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="font-semibold text-slate-700 dark:text-slate-200">
+                                                                            {person.first_name} {person.last_name}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-2xl font-bold text-theme-purple">{person.count}</span>
+                                                                    <Award className="h-5 w-5 text-theme-purple" />
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-slate-500 dark:text-slate-400 text-center py-4">Geen stickers gevonden</p>
+                                                )}
+                                            </ListCard>
+                                        </div>
+                                        {/* Kroegentocht card moved to the right column under Activiteiten aanmeldingen */}
+
+                                        {/* Reis card moved under 'Activiteiten aanmeldingen' on the right side */}
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
 
-                        {/* Kroegentocht stat moved to top row */}
+                        {/* Right side stats */}
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <StatCard
+                                    title="Beheer"
+                                    value="Kroegentocht"
+                                    icon={<Ticket className="h-6 w-6" />}
+                                    subtitle={`aanmeldingen: ${stats.pubCrawlSignups ?? 0}`}
+                                    onClick={() => router.push('/admin/kroegentocht')}
+                                    colorClass="orange"
+                                />
+                            </div>
+                            {/* Activiteiten aanmeldingen - Now on the right side */}
+                            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div>
+                                        <h3 className="text-slate-900 dark:text-white font-bold">Activiteiten aanmeldingen</h3>
+                                    </div>
+                                    <Activity className="h-6 w-6 text-theme-purple" />
+                                </div>
+                                <div className="space-y-2">
+                                    {stats.latestEventsWithSignups && stats.latestEventsWithSignups.length > 0 ? (
+                                        stats.latestEventsWithSignups.map(ev => {
+                                            const eventDate = ev.event_date ? new Date(ev.event_date) : null;
+                                            const now = new Date();
+                                            const isPast = eventDate && eventDate < now;
 
-                        {/* Members - Green Theme */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <StatCard
-                                title="Commissieleden"
-                                value={stats.totalCommitteeMembers}
-                                icon={<Users className="h-6 w-6" />}
-                                subtitle="Actieve leden"
-                                onClick={() => router.push('/commissies')}
-                                colorClass="green"
-                            />
+                                            return (
+                                                <button
+                                                    key={ev.id}
+                                                    type="button"
+                                                    onClick={isPast ? undefined : () => router.push(`/admin/activiteiten/${ev.id}/aanmeldingen`)}
+                                                    disabled={!!isPast}
+                                                    aria-disabled={!!isPast}
+                                                    className={`w-full text-left flex items-center justify-between p-3 rounded-lg transition hover:shadow-sm active:scale-[.997] ${isPast
+                                                        ? 'bg-slate-200 dark:bg-slate-700/50 opacity-75 cursor-default'
+                                                        : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200/50 dark:hover:bg-slate-600 cursor-pointer'
+                                                        }`}
+                                                >
+                                                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                        <div className="text-sm text-slate-700 dark:text-slate-200 truncate pr-2">{ev.name}</div>
+                                                        {isPast && (
+                                                            <span className="text-xs bg-slate-400 dark:bg-slate-600 text-white px-2 py-0.5 rounded-full whitespace-nowrap">
+                                                                Afgelopen
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`text-lg font-bold ${isPast ? 'text-slate-500 dark:text-slate-400' : 'text-theme-purple'}`}>
+                                                            {ev.signups}
+                                                        </span>
+                                                        <UserCheck className={`h-4 w-4 ${isPast ? 'text-slate-500 dark:text-slate-400' : 'text-theme-purple'}`} />
+                                                    </div>
+                                                </button>
+                                            );
+                                        })
+                                    ) : (
+                                        <p className="text-slate-500 dark:text-slate-400 text-sm text-center py-2">Geen recente activiteiten</p>
+                                    )}
+                                </div>
+                            </div>
 
-                            <StatCard
-                                title="Jarigen Komende Week"
-                                value={stats.upcomingBirthdays.length}
-                                icon={<Cake className="h-6 w-6" />}
-                                subtitle="Vergeet niet te feliciteren!"
-                                colorClass="green"
-                            />
+                            {/* Kroegentocht and Reis counts moved into their respective quick-action cards above */}
                         </div>
                     </div>
+
+
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-                    {/* Upcoming Events with Signups */}
-                    <ListCard
-                        title="Aankomende Events"
-                        icon={<Calendar className="h-5 w-5" />}
-                    >
-                        {stats.upcomingEventsWithSignups.length > 0 ? (
-                            <div className="space-y-3">
-                                {stats.upcomingEventsWithSignups.map(event => (
-                                    <button
-                                        key={event.id}
-                                        onClick={() => router.push(`/activiteiten/${event.id}`)}
-                                        className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl w-full hover:bg-purple-100 dark:hover:bg-purple-900/30 transition"
-                                    >
-                                        <div className="text-left">
-                                            <p className="font-semibold text-slate-800 dark:text-slate-100 line-clamp-1">
-                                                {event.name}
-                                            </p>
-                                            <p className="text-sm text-slate-500 dark:text-slate-400">{formatDate(event.event_date)}</p>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-lg font-bold text-purple-700 dark:text-purple-400">{event.signups}</span>
-                                            <UserCheck className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-slate-500 dark:text-slate-400 text-center py-4">Geen aankomende events</p>
-                        )}
-                    </ListCard>
-
-                    {/* Upcoming Birthdays */}
-                    <ListCard
-                        title="Aankomende Jarigen"
-                        icon={<Cake className="h-5 w-5" />}
-                    >
-                        {stats.upcomingBirthdays.length > 0 ? (
-                            <div className="space-y-3">
-                                {stats.upcomingBirthdays.map(person => (
-                                    <div key={person.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-                                        <div>
-                                            <p className="font-semibold text-slate-800 dark:text-slate-100">
-                                                {person.first_name} {person.last_name}
-                                            </p>
-                                            <p className="text-sm text-slate-500 dark:text-slate-400">{formatDate(person.birthday)}</p>
-                                        </div>
-                                        <Cake className="h-5 w-5 text-theme-purple dark:text-theme-purple-light" />
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-slate-500 dark:text-slate-400 text-center py-4">Geen jarigen deze week</p>
-                        )}
-                    </ListCard>
-
-                    {/* Top Sticker Collectors */}
-                    <ListCard
-                        title="Top 3 Sticker Verzamelaars"
-                        icon={<Award className="h-5 w-5" />}
-                    >
-                        {stats.topStickers.length > 0 ? (
-                            <div className="space-y-3">
-                                {stats.topStickers.map((person, index) => (
-                                    <div key={person.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${index === 0 ? 'bg-yellow-500 dark:bg-yellow-600' :
-                                                index === 1 ? 'bg-slate-400 dark:bg-slate-500' :
-                                                    'bg-orange-600 dark:bg-orange-700'
-                                                }`}>
-                                                {index + 1}
-                                            </div>
-                                            <div>
-                                                <p className="font-semibold text-slate-800 dark:text-slate-100">
-                                                    {person.first_name} {person.last_name}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-2xl font-bold text-theme-purple dark:text-theme-purple-light">{person.count}</span>
-                                            <Award className="h-5 w-5 text-theme-purple dark:text-theme-purple-light" />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-slate-500 dark:text-slate-400 text-center py-4">Geen stickers gevonden</p>
-                        )}
-                    </ListCard>
                 </div>
 
                 {/* System Health - ICT Only */}
@@ -888,30 +1043,25 @@ export default function AdminDashboardPage() {
                             icon={<Activity className="h-5 w-5" />}
                         >
                             <div className="space-y-3">
-                                <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-xl">
+                                <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/30 rounded-xl">
                                     <div className="flex items-center gap-3">
                                         <div className="w-3 h-3 rounded-full bg-green-500 dark:bg-green-400 animate-pulse" />
                                         <div>
-                                            <p className="font-semibold text-slate-800 dark:text-slate-100">API Status</p>
-                                            <p className="text-sm text-slate-500 dark:text-slate-400">Operationeel</p>
+                                            <p className="font-semibold text-admin">API Status</p>
+                                            <p className="text-sm text-admin-muted">Operationeel</p>
                                         </div>
                                     </div>
                                     <span className="text-green-600 dark:text-green-400 font-bold">✓</span>
                                 </div>
-                                <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
+                                <div className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-700 rounded-xl">
                                     <div className="flex items-center gap-3">
-                                        <AlertCircle className="h-5 w-5 text-slate-400 dark:text-slate-500" />
+                                        <AlertCircle className="h-5 w-5 text-slate-500 dark:text-slate-400" />
                                         <div>
-                                            <p className="font-semibold text-slate-800 dark:text-slate-100">Recente Fouten</p>
+                                            <p className="font-semibold text-slate-700 dark:text-slate-200">Recente Fouten</p>
                                             <p className="text-sm text-slate-500 dark:text-slate-400">Laatste 24 uur</p>
                                         </div>
                                     </div>
-                                    <span className="text-2xl font-bold text-slate-600 dark:text-slate-300">{stats.systemErrors}</span>
-                                </div>
-                                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                                    <p className="text-sm text-blue-700 dark:text-blue-300">
-                                        <strong>ICT Dashboard:</strong> Alleen zichtbaar voor ICT commissieleden.
-                                    </p>
+                                    <span className="text-2xl font-bold text-admin-muted">{stats.systemErrors}</span>
                                 </div>
                             </div>
                         </ListCard>

@@ -46,9 +46,14 @@ export interface Transaction {
     id: number;
     user_id: string;
     amount: number;
-    description: string;
-    transaction_type: 'payment' | 'membership' | 'event' | 'other';
-    status: 'pending' | 'completed' | 'failed';
+    description?: string;
+    product_name?: string;
+    transaction_type?: 'payment' | 'membership' | 'event' | 'other';
+    registration?: any;
+    pub_crawl_signup?: any;
+    trip_signup?: any;
+    status?: 'pending' | 'completed' | 'failed' | 'paid';
+    payment_status?: 'pending' | 'completed' | 'failed' | 'paid' | 'open';
     created_at: string;
     updated_at?: string;
 }
@@ -71,6 +76,9 @@ export interface PaymentRequest {
     email?: string;
     registrationId: number | string;
     isContribution?: boolean;
+    registrationType?: 'event_signup' | 'pub_crawl_signup' | 'trip_signup';
+    firstName?: string;
+    lastName?: string;
 }
 
 export interface PaymentResponse {
@@ -258,6 +266,26 @@ export const eventsApi = {
                 // Dit zorgt ervoor dat de gebruiker opnieuw kan proberen te betalen
                 return existing;
             }
+        } else if (signupData.email) {
+            // Check bestaande inschrijving op basis van email (voor gasten)
+            const existingQuery = buildQueryString({
+                filter: {
+                    event_id: { _eq: signupData.event_id },
+                    participant_email: { _eq: signupData.email }
+                },
+                fields: ['id', 'payment_status', 'qr_token']
+            });
+
+            const existingSignups = await directusFetch<any[]>(`/items/event_signups?${existingQuery}`);
+
+            if (existingSignups && existingSignups.length > 0) {
+                const existing = existingSignups[0];
+
+                if (existing.payment_status === 'paid') {
+                    throw new Error('Er is al een inschrijving met dit emailadres voor deze activiteit.');
+                }
+                return existing;
+            }
         }
 
         // 2. Nieuwe inschrijving maken
@@ -323,20 +351,25 @@ export const eventsApi = {
                         console.error('eventsApi.createSignup: failed to fetch event details for contact info', { eventId: signupData.event_id, error: e });
                     }
 
-                    await sendEventSignupEmail({
-                        recipientEmail: signupData.email,
-                        recipientName: signupData.name,
-                        eventName: signupData.event_name || '',
-                        eventDate: signupData.event_date || '',
-                        eventPrice: signupData.event_price || 0,
-                        phoneNumber: signupData.phone_number,
-                        userName: signupData.user_id || 'Gast',
-                        qrCodeDataUrl: qrDataUrl,
-                        committeeName,
-                        committeeEmail,
-                        contactName,
-                        contactPhone,
-                    });
+                    if (signupData.event_price === 0) {
+                        console.log('eventsApi.createSignup: qrDataUrl present?', !!qrDataUrl, qrDataUrl ? `len=${qrDataUrl.length}` : 'none');
+                        await sendEventSignupEmail({
+                            recipientEmail: signupData.email,
+                            recipientName: signupData.name,
+                            eventName: signupData.event_name || '',
+                            eventDate: signupData.event_date || '',
+                            eventPrice: signupData.event_price || 0,
+                            phoneNumber: signupData.phone_number,
+                            userName: signupData.user_id || 'Gast',
+                            qrCodeDataUrl: qrDataUrl,
+                            committeeName,
+                            committeeEmail,
+                            contactName,
+                            contactPhone,
+                        });
+                    } else {
+                        console.log('paymentApi.createSignup: skipping email for paid event (will be sent on payment confirmation)', { signupId: signup.id });
+                    }
                 } catch (e) {
                     console.error('eventsApi.createSignup: failed to send signup email', { signupId: signup.id, error: e });
                 }
@@ -541,14 +574,16 @@ export interface SafeHavenAvailability {
 export const safeHavensApi = {
     getAll: async () => {
         const query = buildQueryString({
-            fields: ['id', 'user_id.id', 'user_id.first_name', 'user_id.last_name', 'contact_name', 'phone_number', 'email', 'image', 'is_available_today', 'availability_times', 'availability_week', 'created_at'],
+            // availability fields removed from Directus schema -- do not request them
+            fields: ['id', 'user_id.id', 'user_id.first_name', 'user_id.last_name', 'contact_name', 'phone_number', 'email', 'image', 'created_at'],
             sort: ['contact_name']
         });
         return directusFetch<SafeHaven[]>(`/items/safe_havens?${query}`);
     },
     getByUserId: async (userId: string) => {
         const query = buildQueryString({
-            fields: ['id', 'user_id.id', 'user_id.first_name', 'user_id.last_name', 'contact_name', 'phone_number', 'email', 'image', 'is_available_today', 'availability_times', 'availability_week', 'created_at'],
+            // availability fields removed from Directus schema -- do not request them
+            fields: ['id', 'user_id.id', 'user_id.first_name', 'user_id.last_name', 'contact_name', 'phone_number', 'email', 'image', 'created_at'],
             filter: { 'user_id': { _eq: userId } }
         });
         const results = await directusFetch<SafeHaven[]>(`/items/safe_havens?${query}`);
@@ -729,6 +764,48 @@ export const siteSettingsApi = {
     }
 };
 
+// Add create/update helper for site settings (client code will use this for toggles)
+export const siteSettingsMutations = {
+    // Create a new site_settings record for a page
+    create: async (data: { page: string; show?: boolean; disabled_message?: string }) => {
+        return directusFetch<any>(`/items/site_settings`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    },
+
+    // Update an existing site_settings record by id
+    update: async (id: number, data: { show?: boolean; disabled_message?: string }) => {
+        return directusFetch<any>(`/items/site_settings/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data),
+        });
+    },
+
+    // Upsert: if a settings row exists update it, otherwise create
+    upsertByPage: async (page: string, data: { show?: boolean; disabled_message?: string }) => {
+        // Try to fetch existing
+        const existing = await siteSettingsApi.get(page);
+        if (existing && existing.id) {
+            return siteSettingsMutations.update(existing.id, data);
+        }
+        // Create new
+        return siteSettingsMutations.create({ page, ...data });
+    }
+};
+
+export interface IntroSignup {
+    id: number;
+    first_name: string;
+    middle_name?: string;
+    last_name: string;
+    date_of_birth: string;
+    email: string;
+    phone_number: string;
+    favorite_gif?: string;
+    created_at: string;
+}
+
 export const introSignupsApi = {
     create: async (data: {
         first_name: string;
@@ -742,6 +819,22 @@ export const introSignupsApi = {
         return directusFetch<any>(`/items/intro_signups`, {
             method: 'POST',
             body: JSON.stringify(data)
+        });
+    },
+    getAll: async (): Promise<IntroSignup[]> => {
+        return directusFetch<IntroSignup[]>(
+            `/items/intro_signups?fields=*&sort=-created_at`
+        );
+    },
+    update: async (id: number, data: Partial<IntroSignup>) => {
+        return directusFetch<IntroSignup>(`/items/intro_signups/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        });
+    },
+    delete: async (id: number) => {
+        return directusFetch(`/items/intro_signups/${id}`, {
+            method: 'DELETE'
         });
     }
 };
@@ -764,6 +857,19 @@ export const introBlogsApi = {
     getAll: async (): Promise<IntroBlog[]> => {
         const rows = await directusFetch<IntroBlog[]>(
             `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,likes,updated_at,is_published,blog_type,created_at&filter[is_published][_eq]=true&sort=-updated_at`
+        );
+        return (rows || []).map((r) => {
+            const raw = (r as any).likes;
+            let likes = 0;
+            if (raw !== undefined && raw !== null) {
+                likes = typeof raw === 'number' ? raw : parseInt(String(raw), 10) || 0;
+            }
+            return { ...r, likes };
+        });
+    },
+    getAllAdmin: async (): Promise<IntroBlog[]> => {
+        const rows = await directusFetch<IntroBlog[]>(
+            `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,likes,updated_at,is_published,blog_type,created_at&sort=-updated_at`
         );
         return (rows || []).map((r) => {
             const raw = (r as any).likes;
@@ -797,6 +903,23 @@ export const introBlogsApi = {
             }
             return { ...r, likes };
         });
+    },
+    create: async (data: Partial<IntroBlog>) => {
+        return directusFetch<IntroBlog>(`/items/intro_blogs`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    update: async (id: number, data: Partial<IntroBlog>) => {
+        return directusFetch<IntroBlog>(`/items/intro_blogs/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        });
+    },
+    delete: async (id: number) => {
+        return directusFetch(`/items/intro_blogs/${id}`, {
+            method: 'DELETE'
+        });
     }
 };
 
@@ -813,6 +936,7 @@ export interface IntroPlanningItem {
     // optional icon name selected in Directus (e.g. 'MapPin', 'Clock')
     icon?: string;
     sort_order: number;
+    status?: 'published' | 'draft' | 'archived';
 }
 
 export const introPlanningApi = {
@@ -820,6 +944,28 @@ export const introPlanningApi = {
         return directusFetch<IntroPlanningItem[]>(
             `/items/intro_planning?fields=id,day,date,time_start,time_end,title,description,location,is_mandatory,icon,sort_order&filter[status][_eq]=published&sort=sort_order`
         );
+    },
+    getAllAdmin: async (): Promise<IntroPlanningItem[]> => {
+        return directusFetch<IntroPlanningItem[]>(
+            `/items/intro_planning?fields=id,day,date,time_start,time_end,title,description,location,is_mandatory,icon,sort_order,status&sort=sort_order`
+        );
+    },
+    create: async (data: Partial<IntroPlanningItem>) => {
+        return directusFetch<IntroPlanningItem>(`/items/intro_planning`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    update: async (id: number, data: Partial<IntroPlanningItem>) => {
+        return directusFetch<IntroPlanningItem>(`/items/intro_planning/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        });
+    },
+    delete: async (id: number) => {
+        return directusFetch(`/items/intro_planning/${id}`, {
+            method: 'DELETE'
+        });
     }
 };
 
@@ -846,6 +992,22 @@ export const introParentSignupsApi = {
         return directusFetch<IntroParentSignup[]>(
             `/items/intro_parent_signups?fields=*&filter[user_id][_eq]=${userId}`
         );
+    },
+    getAll: async (): Promise<IntroParentSignup[]> => {
+        return directusFetch<IntroParentSignup[]>(
+            `/items/intro_parent_signups?fields=*&sort=-created_at`
+        );
+    },
+    update: async (id: number, data: Partial<IntroParentSignup>) => {
+        return directusFetch<IntroParentSignup>(`/items/intro_parent_signups/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        });
+    },
+    delete: async (id: number) => {
+        return directusFetch(`/items/intro_parent_signups/${id}`, {
+            method: 'DELETE'
+        });
     }
 };
 
@@ -929,79 +1091,188 @@ export const heroBannersApi = {
 
 // Safe Haven Availability Functions
 export async function getSafeHavenAvailability(userId: string): Promise<SafeHavenAvailability | null> {
-    try {
-        const safeHaven = await safeHavensApi.getByUserId(userId);
-        if (!safeHaven) return null;
-
-        // If Directus stores weekly availability in `availability_week`, return that
-        const rawWeek: any = (safeHaven as any).availability_week;
-        if (rawWeek && Array.isArray(rawWeek)) {
-            return { week: rawWeek };
-        }
-
-        // Fallback to legacy fields
-        return {
-            isAvailableToday: !!safeHaven.is_available_today,
-            timeSlots: safeHaven.availability_times || [],
-        };
-    } catch (error) {
-        console.error('Error fetching safe haven availability:', error);
-        return null;
-    }
+    // Availability fields were removed from the Directus schema.
+    // To prevent runtime errors, this helper no longer attempts to read availability fields
+    // and returns null to indicate availability data is not available.
+    console.warn('[getSafeHavenAvailability] Availability support removed; returning null for userId:', userId);
+    return null;
 }
+
+// Trip API
+export interface Trip {
+    id: number;
+    name: string;
+    description: string;
+    image?: string;
+    // For compatibility with single-day trips we keep `event_date`.
+    // New multi-day support uses `start_date` and optional `end_date`.
+    event_date: string;
+    start_date?: string;
+    end_date?: string;
+    registration_open: boolean;
+    max_participants: number;
+    base_price: number;
+    crew_discount: number;
+    deposit_amount: number;
+    is_bus_trip: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface TripActivity {
+    id: number;
+    trip_id: number;
+    name: string;
+    description: string;
+    price: number;
+    image?: string;
+    max_participants?: number;
+    is_active: boolean;
+    display_order: number;
+}
+
+export interface TripSignup {
+    id: number;
+    trip_id: number;
+    first_name: string;
+    middle_name?: string;
+    last_name: string;
+    email: string;
+    phone_number: string;
+    date_of_birth?: string;
+    id_document_type?: 'passport' | 'id_card';
+    allergies?: string;
+    special_notes?: string;
+    willing_to_drive?: boolean;
+    role: 'participant' | 'crew';
+    status: 'registered' | 'waitlist' | 'confirmed' | 'cancelled';
+    deposit_paid: boolean;
+    deposit_paid_at?: string;
+    full_payment_paid: boolean;
+    full_payment_paid_at?: string;
+    terms_accepted: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export const tripsApi = {
+    getAll: async () => {
+        const query = buildQueryString({
+            fields: ['id', 'name', 'description', 'image', 'event_date', 'start_date', 'end_date', 'registration_open', 'max_participants', 'base_price', 'crew_discount', 'deposit_amount', 'is_bus_trip', 'created_at', 'updated_at'],
+            sort: ['-event_date']
+        });
+        return directusFetch<Trip[]>(`/items/trips?${query}`);
+    },
+    getById: async (id: number) => {
+        return directusFetch<Trip>(`/items/trips/${id}?fields=*`);
+    },
+    create: async (data: Partial<Trip>) => {
+        return directusFetch<Trip>(`/items/trips`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    update: async (id: number, data: Partial<Trip>) => {
+        return directusFetch<Trip>(`/items/trips/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        });
+    },
+    delete: async (id: number) => {
+        return directusFetch(`/items/trips/${id}`, {
+            method: 'DELETE'
+        });
+    },
+};
+
+export const tripActivitiesApi = {
+    getByTripId: async (tripId: number) => {
+        const query = buildQueryString({
+            filter: { trip_id: { _eq: tripId }, is_active: { _eq: true } },
+            sort: ['display_order', 'name']
+        });
+        return directusFetch<TripActivity[]>(`/items/trip_activities?${query}`);
+    },
+    getAllByTripId: async (tripId: number) => {
+        // Get all activities including inactive ones for admin purposes
+        const query = buildQueryString({
+            filter: { trip_id: { _eq: tripId } },
+            sort: ['display_order', 'name']
+        });
+        return directusFetch<TripActivity[]>(`/items/trip_activities?${query}`);
+    },
+    create: async (data: Partial<TripActivity>) => {
+        return directusFetch<TripActivity>(`/items/trip_activities`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    update: async (id: number, data: Partial<TripActivity>) => {
+        return directusFetch<TripActivity>(`/items/trip_activities/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        });
+    },
+    delete: async (id: number) => {
+        return directusFetch(`/items/trip_activities/${id}`, {
+            method: 'DELETE'
+        });
+    },
+};
+
+export const tripSignupsApi = {
+    create: async (data: Partial<TripSignup>) => {
+        return directusFetch<TripSignup>(`/items/trip_signups`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    getById: async (id: number) => {
+        return directusFetch<TripSignup>(`/items/trip_signups/${id}?fields=*`);
+    },
+    update: async (id: number, data: Partial<TripSignup>) => {
+        return directusFetch<TripSignup>(`/items/trip_signups/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        });
+    },
+    getByTripId: async (tripId: number) => {
+        const query = buildQueryString({
+            filter: { trip_id: { _eq: tripId } },
+            sort: ['-created_at']
+        });
+        return directusFetch<TripSignup[]>(`/items/trip_signups?${query}`);
+    },
+};
+
+export const tripSignupActivitiesApi = {
+    create: async (data: { trip_signup_id: number; trip_activity_id: number }) => {
+        return directusFetch<any>(`/items/trip_signup_activities`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    delete: async (id: number) => {
+        return directusFetch<void>(`/items/trip_signup_activities/${id}`, {
+            method: 'DELETE'
+        });
+    },
+    getBySignupId: async (signupId: number) => {
+        const query = buildQueryString({
+            filter: { trip_signup_id: { _eq: signupId } },
+            fields: ['id', 'trip_activity_id.*']
+        });
+        return directusFetch<any[]>(`/items/trip_signup_activities?${query}`);
+    },
+};
 
 export async function updateSafeHavenAvailability(
     userId: string,
-    availability: SafeHavenAvailability,
-    token: string
+    _availability: SafeHavenAvailability,
+    _token: string
 ): Promise<void> {
-    try {
-        console.log('[updateSafeHavenAvailability] Starting update for userId:', userId);
-        console.log('[updateSafeHavenAvailability] Availability data:', availability);
-
-        const safeHaven = await safeHavensApi.getByUserId(userId);
-        if (!safeHaven) {
-            console.error('[updateSafeHavenAvailability] Safe haven record not found for userId:', userId);
-            throw new Error('Safe haven record not found');
-        }
-
-        console.log('[updateSafeHavenAvailability] Found safe haven record:', { id: safeHaven.id, contact_name: safeHaven.contact_name });
-
-        // Prepare payload. Prefer weekly structure if provided.
-        let payload: any = {};
-        if (availability.week) {
-            payload.availability_week = availability.week;
-        }
-
-        // Backwards-compatible legacy fields
-        if (availability.isAvailableToday !== undefined) {
-            payload.is_available_today = !!availability.isAvailableToday;
-        }
-        if (availability.timeSlots) {
-            payload.availability_times = availability.timeSlots;
-        }
-
-        console.log('[updateSafeHavenAvailability] PATCH payload:', payload);
-        console.log('[updateSafeHavenAvailability] Endpoint:', `/items/safe_havens/${safeHaven.id}`);
-
-        const response = await directusFetch(`/items/safe_havens/${safeHaven.id}`, {
-            method: 'PATCH',
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload),
-        });
-
-        console.log('[updateSafeHavenAvailability] PATCH response:', response);
-        console.log('[updateSafeHavenAvailability] Update successful');
-    } catch (error: any) {
-        console.error('[updateSafeHavenAvailability] Error updating safe haven availability:', error);
-        console.error('[updateSafeHavenAvailability] Error details:', {
-            message: error?.message,
-            status: error?.status,
-            response: error?.response
-        });
-        throw error;
-    }
+    // Availability editing has been removed. Do not attempt to PATCH Directus.
+    // Keep a no-op implementation so callers won't cause network errors.
+    console.warn('[updateSafeHavenAvailability] Availability updates disabled for userId:', userId);
+    return Promise.resolve();
 }

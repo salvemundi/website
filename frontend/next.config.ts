@@ -90,6 +90,33 @@ const nextConfig: NextConfig = {
     // All /api/admin, /api/payments, and /api/coupons are now handled via file-based routes
     // to allow for better debugging, logging, and consistency across environments.
     // Catches for Directus should also be handled via src/app/api/[...path]/route.ts
+
+    // Custom headers for Stale-While-Revalidate caching
+    async headers() {
+        return [
+            {
+                // Static images: 1h cache, 24h stale-while-revalidate
+                source: '/:path*.(jpg|jpeg|png|gif|webp|avif|svg|ico)',
+                headers: [
+                    {
+                        key: 'Cache-Control',
+                        value: 'public, max-age=3600, stale-while-revalidate=86400',
+                    },
+                ],
+            },
+
+            {
+                // Next.js optimized images: 1h cache, 24h stale-while-revalidate
+                source: '/_next/image/:path*',
+                headers: [
+                    {
+                        key: 'Cache-Control',
+                        value: 'public, max-age=3600, stale-while-revalidate=86400',
+                    },
+                ],
+            },
+        ];
+    },
 };
 
 export default nextConfig;

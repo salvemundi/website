@@ -151,7 +151,7 @@ function appendContactFooterToHtml(html) {
 app.post('/send-email', async (req, res) => {
   try {
     // Log some request metadata to help diagnose 404s coming from browsers
-    console.log('Incoming /send-email request', {
+    console.log('📧 [email-api] Incoming /send-email request', {
       origin: req.headers.origin,
       host: req.headers.host,
       method: req.method,
@@ -161,14 +161,45 @@ app.post('/send-email', async (req, res) => {
 
     const { to, subject, html, from, fromName, attachments } = req.body || {};
 
+    console.log('📧 [email-api] Email details:', {
+      to,
+      subject,
+      from: from || 'using default',
+      fromName: fromName || 'using default',
+      hasHtml: !!html,
+      htmlLength: html ? html.length : 0,
+      attachmentsCount: attachments?.length || 0
+    });
+
     // Validate required fields
     if (!to || !subject || !html) {
+      console.error('❌ [email-api] Missing required fields');
       return res.status(400).json({
         error: 'Missing required fields: to, subject, html'
       });
     }
 
-    console.log('📧 Sending email to:', to);
+    // Debug: log attachments summary received from proxy
+    if (attachments && Array.isArray(attachments) && attachments.length > 0) {
+      console.log('📎 [email-api] Processing', attachments.length, 'attachment(s)');
+      try {
+        const summary = attachments.map(att => ({
+          name: att.name,
+          contentType: att.contentType,
+          isInline: Boolean(att.isInline),
+          contentId: att.contentId || null,
+          bytesLength: att.contentBytes ? String(att.contentBytes).length : 0,
+          firstChars: att.contentBytes ? String(att.contentBytes).substring(0, 30) : null
+        }));
+        console.log('📎 [email-api] Attachments summary:', JSON.stringify(summary, null, 2));
+      } catch (e) {
+        console.warn('⚠️ [email-api] Unable to summarize attachments:', e && e.message ? e.message : e);
+      }
+    } else {
+      console.log('📎 [email-api] No attachments in request');
+    }
+
+    console.log('📧 [email-api] Preparing to send email to:', to);
 
     // Step 1: Validate required environment variables
     const requiredVars = {
@@ -233,6 +264,19 @@ app.post('/send-email', async (req, res) => {
     const senderName = process.env.MS_GRAPH_SENDER_NAME || fromName || 'Salve Mundi';
     console.log('Using sender for Graph API:', { senderEmail, senderName });
 
+    // Handle multiple recipients (comma-separated string or array)
+    let recipientAddresses = [];
+    if (typeof to === 'string') {
+      // Split comma-separated string and trim whitespace
+      recipientAddresses = to.split(',').map(addr => addr.trim()).filter(addr => addr.length > 0);
+    } else if (Array.isArray(to)) {
+      recipientAddresses = to.filter(addr => addr && addr.trim().length > 0);
+    } else {
+      recipientAddresses = [to];
+    }
+
+    console.log('📧 [email-api] Recipient addresses:', recipientAddresses);
+
     const emailPayload = {
       message: {
         subject: subject,
@@ -240,13 +284,11 @@ app.post('/send-email', async (req, res) => {
           contentType: 'HTML',
           content: appendContactFooterToHtml(ensureAdaptiveEmailHtml(html)),
         },
-        toRecipients: [
-          {
-            emailAddress: {
-              address: to,
-            },
+        toRecipients: recipientAddresses.map(address => ({
+          emailAddress: {
+            address: address,
           },
-        ],
+        })),
         // Explicitly set the 'from' in the message body to the configured sender
         from: {
           emailAddress: {
@@ -273,7 +315,8 @@ app.post('/send-email', async (req, res) => {
 
     // Add attachments if provided
     if (Array.isArray(attachments) && attachments.length > 0) {
-      emailPayload.message.attachments = attachments.map((attachment) => {
+      console.log('📎 [email-api] Building Microsoft Graph attachments...');
+      emailPayload.message.attachments = attachments.map((attachment, index) => {
         const attachmentObj = {
           '@odata.type': '#microsoft.graph.fileAttachment',
           name: attachment.name,
@@ -286,21 +329,31 @@ app.post('/send-email', async (req, res) => {
         if (attachment.isInline && attachment.contentId) {
           // Ensure contentId is in the correct format
           attachmentObj.contentId = attachment.contentId;
+          console.log(`📎 [email-api] Attachment ${index + 1}: Inline with contentId="${attachment.contentId}"`);
         }
 
         return attachmentObj;
       });
 
-      console.log('📎 Prepared attachments:', emailPayload.message.attachments.map(att => ({
+      console.log('📎 [email-api] Prepared attachments for Graph API:', emailPayload.message.attachments.map(att => ({
         name: att.name,
         contentType: att.contentType,
         isInline: att.isInline,
         contentId: att.contentId,
         bytesLength: att.contentBytes ? att.contentBytes.length : 0,
       })));
+    } else {
+      console.log('📎 [email-api] No attachments to add to email payload');
     }
 
-    console.log('📤 Sending to Graph API...');
+    console.log('📤 [email-api] Sending email via Microsoft Graph API...');
+    console.log('📤 [email-api] Payload summary:', {
+      to: emailPayload.message.toRecipients.map(r => r.emailAddress.address),
+      subject: emailPayload.message.subject,
+      hasBody: !!emailPayload.message.body,
+      bodyLength: emailPayload.message.body?.content?.length || 0,
+      attachmentsCount: emailPayload.message.attachments?.length || 0
+    });
 
     const sendResponse = await fetch(
       `https://graph.microsoft.com/v1.0/users/${senderEmail}/sendMail`,
@@ -316,14 +369,18 @@ app.post('/send-email', async (req, res) => {
 
     if (!sendResponse.ok) {
       const errorText = await sendResponse.text();
-      console.error('Graph API error:', errorText);
+      console.error('❌ [email-api] Microsoft Graph API error:', {
+        status: sendResponse.status,
+        statusText: sendResponse.statusText,
+        error: errorText
+      });
       return res.status(sendResponse.status).json({
-        error: 'Failed to send email',
+        error: 'Failed to send email via Microsoft Graph',
         details: errorText,
       });
     }
 
-    console.log('✅ Email sent successfully!');
+    console.log('✅ [email-api] Email sent successfully via Microsoft Graph API!');
 
     res.json({
       success: true,
@@ -337,6 +394,39 @@ app.post('/send-email', async (req, res) => {
       error: 'Internal server error',
       message: error.message,
     });
+  }
+});
+
+// Lightweight debug endpoint to validate attachments locally without contacting Graph.
+// Useful during development: POST the same payload you would to /send-email and
+// the server will log attachment summaries and return success without performing any external calls.
+app.post('/send-email-debug', async (req, res) => {
+  try {
+    console.log('🔧 /send-email-debug called - will echo attachments and return success');
+    const { to, subject, html, from, fromName, attachments } = req.body || {};
+
+    if (!to || !subject || !html) {
+      return res.status(400).json({ error: 'Missing required fields: to, subject, html' });
+    }
+
+    if (attachments && Array.isArray(attachments) && attachments.length > 0) {
+      const summary = attachments.map(att => ({
+        name: att.name,
+        contentType: att.contentType,
+        isInline: Boolean(att.isInline),
+        contentId: att.contentId || null,
+        bytesLength: att.contentBytes ? String(att.contentBytes).length : 0,
+      }));
+      console.log('📎 Attachments summary (debug):', summary);
+    } else {
+      console.log('📎 No attachments received (debug)');
+    }
+
+    // Echo back the payload so callers can inspect server-side parsing
+    return res.json({ success: true, received: { to, subject, attachmentsCount: attachments ? attachments.length : 0 } });
+  } catch (err) {
+    console.error('Error in /send-email-debug:', err);
+    return res.status(500).json({ error: 'Internal error in debug endpoint' });
   }
 });
 

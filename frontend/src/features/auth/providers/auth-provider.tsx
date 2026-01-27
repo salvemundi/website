@@ -31,6 +31,7 @@ export interface AuthContextType {
     logout: () => void;
     signup: (userData: SignupData) => Promise<void>;
     refreshUser: () => Promise<void>;
+    isLoggingOut: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,6 +39,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isMsalInitializing, setIsMsalInitializing] = useState(true);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     // Check for existing session on mount
     useEffect(() => {
@@ -134,7 +137,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Handle MSAL redirect promise on component mount
     useEffect(() => {
         const handleRedirect = async () => {
-            if (!msalInstance) return;
+            if (!msalInstance) {
+                setIsMsalInitializing(false);
+                return;
+            }
+
+            // Check if noAuto is in the URL - if so, skip MSAL redirect processing
+            // to prevent auto-login after explicit logout
+            if (typeof window !== 'undefined') {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('noAuto') === 'true') {
+                    setIsMsalInitializing(false);
+                    return;
+                }
+            }
 
             try {
                 await msalInstance.initialize();
@@ -146,6 +162,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }
             } catch (error) {
                 console.error('Error handling redirect promise:', error);
+            } finally {
+                setIsMsalInitializing(false);
             }
         };
 
@@ -255,6 +273,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const logout = async () => {
+        setIsLoggingOut(true);
         const refreshToken = localStorage.getItem('refresh_token');
         if (refreshToken) {
             try {
@@ -267,7 +286,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Only clear local session, don't logout from Microsoft
         localStorage.removeItem('auth_token');
         localStorage.removeItem('refresh_token');
+
+        // Clear user-specific committees cache
+        if (user?.id) {
+            localStorage.removeItem(`user_committees_${user.id}`);
+        }
+
+        // Thoroughly clear MSAL cache and other auth-related items from localStorage
+        // to prevent automatic re-login loops.
+        try {
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (key.startsWith('msal.') || key.startsWith('user_committees_'))) {
+                    keysToRemove.push(key);
+                }
+            }
+            keysToRemove.forEach(k => localStorage.removeItem(k));
+
+            // Also clear session storage
+            sessionStorage.clear();
+        } catch (e) {
+            // ignore localStorage/sessionStorage access errors
+        }
+
+        // If MSAL is initialized, clear the active account
+        if (msalInstance) {
+            try {
+                msalInstance.setActiveAccount(null);
+            } catch (e) {
+                // ignore
+            }
+        }
+
         setUser(null);
+        // We keep isLoggingOut true until the page is reloaded or redirected
     };
 
     const refreshUser = async () => {
@@ -295,7 +348,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             value={{
                 user,
                 isAuthenticated: !!user,
-                isLoading,
+                isLoading: isLoading || isMsalInitializing,
+                isLoggingOut,
                 loginWithMicrosoft,
                 logout,
                 signup,

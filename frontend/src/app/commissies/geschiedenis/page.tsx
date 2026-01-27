@@ -70,12 +70,12 @@ export default function BoardHistoryPage() {
                             ))}
                         </div>
                     ) : error ? (
-                        <div className="rounded-3xl bg-white/80 p-8 text-center shadow-lg">
+                        <div className="rounded-3xl bg-[var(--bg-card)] p-8 text-center shadow-lg">
                             <p className="mb-2 text-lg font-semibold text-paars">Fout bij laden van bestuursgeschiedenis</p>
                             <p className="text-sm text-slate-600">{String(error)}</p>
                         </div>
                     ) : boards.length === 0 ? (
-                        <div className="rounded-3xl bg-white/80 p-8 text-center shadow-lg">
+                        <div className="rounded-3xl bg-[var(--bg-card)] p-8 text-center shadow-lg">
                             <p className="text-lg text-slate-600">Geen bestuursgeschiedenis gevonden</p>
                         </div>
                     ) : (
@@ -87,3 +87,4 @@ export default function BoardHistoryPage() {
         </>
     );
 }
+

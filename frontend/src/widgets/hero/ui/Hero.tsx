@@ -36,9 +36,15 @@ export default function Hero() {
         loadHeroBanners?.();
     }, [loadEvents, loadHeroBanners]);
 
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
     // GSAP Animations
     useEffect(() => {
-        if (!heroRef.current) return;
+        if (!heroRef.current || !isMounted) return;
 
         const ctx = gsap.context(() => {
             // Timeline for hero entrance
@@ -46,13 +52,6 @@ export default function Hero() {
 
             // Animate title with character-by-character reveal
             if (titleRef.current) {
-                // First, apply the gradient background directly to the h1
-                titleRef.current.style.background = 'linear-gradient(135deg, var(--theme-gradient-start), var(--theme-gradient-end), var(--theme-gradient-start))';
-                titleRef.current.style.backgroundSize = '200% 200%';
-                titleRef.current.style.webkitBackgroundClip = 'text';
-                titleRef.current.style.backgroundClip = 'text';
-                titleRef.current.style.webkitTextFillColor = 'transparent';
-
                 const spans = titleRef.current.querySelectorAll('span');
 
                 // Split each span into individual characters
@@ -122,7 +121,8 @@ export default function Hero() {
         }, heroRef);
 
         return () => ctx.revert();
-    }, []);
+    }, [isMounted]);
+
 
     const nextEvent = useMemo(() => {
         if (!events?.length) return null;
@@ -273,7 +273,7 @@ export default function Hero() {
     // Only apply a min-height on medium+ screens so mobile won't force a
     // large empty area. On md+ we ensure the hero fills the viewport minus the header.
     return (
-        <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full min-h-[600px] md:min-h-[500px] py-6 sm:py-10 md:py-16 lg:py-20 transition-colors duration-300">
+        <section ref={heroRef} id="home" className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full min-h-[450px] md:min-h-[500px] py-4 sm:py-8 lg:py-12 transition-colors duration-300">
 
             {/* Mobile-only fallback image (shows ONLY on very small screens, for robustness)
                 This ensures even if Swiper fails or images don't load, we have a visual.
@@ -286,8 +286,8 @@ export default function Hero() {
                     <div className="grid gap-5 sm:gap-6 md:grid-cols-2 md:gap-10 lg:gap-16 xl:gap-20 md:items-center">
                         <div className="space-y-5 sm:space-y-6 md:space-y-8 lg:space-y-10 min-w-0">
                             <div className="space-y-3 sm:space-y-4 md:space-y-6">
-                                <h1 ref={titleRef} className="text-2xl font-black leading-tight sm:text-3xl md:text-5xl lg:text-6xl pb-1">
-                                    <span className="text-gradient">Studievereniging</span>
+                                <h1 ref={titleRef} className="text-gradient-animated text-2xl font-black leading-tight sm:text-3xl md:text-5xl lg:text-6xl pb-1">
+                                    <span>Studievereniging</span>
                                     <br />
                                     <span className="inline-block w-full">Salve Mundi</span>
                                 </h1>
@@ -300,24 +300,30 @@ export default function Hero() {
 
                             <div className="w-full max-w-full">
                                 <div className="flex flex-wrap gap-3 sm:gap-4 min-h-[100px]">
-                                    {showMembershipLink ? (
+                                    {authLoading ? (
+                                        <div className="w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/10 p-4 sm:p-6 shadow-lg backdrop-blur min-h-[90px] sm:min-h-[100px] animate-pulse border border-theme-purple/10">
+                                            <div className="h-4 w-24 bg-theme-purple/10 rounded mb-3"></div>
+                                            <div className="h-6 w-3/4 bg-theme-purple/10 rounded mb-2"></div>
+                                            <div className="h-4 w-1/2 bg-theme-purple/10 rounded"></div>
+                                        </div>
+                                    ) : showMembershipLink ? (
                                         <Link
                                             href="/lidmaatschap"
-                                            className="block w-full transition-transform hover:scale-[1.02]"
+                                            className="block w-full transition-transform hover:scale-[1.02] group/lid"
                                         >
-                                            <div className="w-full max-w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-3 sm:p-4 md:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-3 sm:gap-4 min-h-[90px] sm:min-h-[100px] overflow-hidden">
+                                            <div className="w-full max-w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-3 sm:p-4 md:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-3 sm:gap-4 min-h-[90px] sm:min-h-[100px] overflow-hidden">
                                                 <div className="flex-1 min-w-0 overflow-hidden">
-                                                    <p className="text-[0.6rem] sm:text-xs font-semibold uppercase tracking-wide text-theme-white">
+                                                    <p className="text-[0.6rem] sm:text-xs font-semibold uppercase tracking-wide text-theme-purple/60 dark:text-theme-white/60">
                                                         Word lid
                                                     </p>
-                                                    <p className="mt-1 sm:mt-2 text-sm sm:text-base md:text-lg font-bold text-theme-white truncate">
+                                                    <p className="mt-1 sm:mt-2 text-sm sm:text-base md:text-lg font-bold text-theme-purple dark:text-theme-white truncate">
                                                         Sluit je aan bij Salve Mundi
                                                     </p>
-                                                    <p className="mt-0.5 sm:mt-1 text-[0.7rem] sm:text-xs md:text-sm text-theme-white line-clamp-2">
+                                                    <p className="mt-0.5 sm:mt-1 text-[0.7rem] sm:text-xs md:text-sm text-theme-text-muted dark:text-theme-text-muted line-clamp-2">
                                                         Ontdek alle voordelen van een lidmaatschap!
                                                     </p>
                                                 </div>
-                                                <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white text-theme-purple flex items-center justify-center shadow-md transition-transform group-hover:scale-110"
+                                                <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-theme-purple/10 dark:bg-white/10 text-theme-purple dark:text-theme-white flex items-center justify-center shadow-md transition-all group-hover/lid:bg-gradient-theme group-hover/lid:text-white"
                                                     onMouseEnter={() => setHoverWordLid(true)}
                                                     onMouseLeave={() => setHoverWordLid(false)}
                                                 >
@@ -328,21 +334,21 @@ export default function Hero() {
                                     ) : nextEvent ? (
                                         <Link
                                             href={`/activiteiten/${nextEvent.id}`}
-                                            className="block w-full transition-transform hover:scale-[1.02]"
+                                            className="block w-full transition-transform hover:scale-[1.02] group/event"
                                         >
-                                            <div className="w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4 min-h-[90px] sm:min-h-[100px]">
+                                            <div className="w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4 min-h-[90px] sm:min-h-[100px]">
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-white">
+                                                    <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-purple/60 dark:text-theme-white/60">
                                                         Volgende evenement
                                                     </p>
-                                                    <p className="mt-2 text-base sm:text-lg font-bold text-theme-white truncate">
+                                                    <p className="mt-2 text-base sm:text-lg font-bold text-theme-purple dark:text-theme-white truncate">
                                                         {nextEvent.name} • {formatEventDate(nextEvent.event_date)}
                                                     </p>
-                                                    <p className="mt-1 text-xs sm:text-sm text-theme-white line-clamp-2">
+                                                    <p className="mt-1 text-xs sm:text-sm text-theme-text-muted dark:text-theme-text-muted line-clamp-2">
                                                         {nextEvent.description || "Kom gezellig langs bij ons volgende evenement!"}
                                                     </p>
                                                 </div>
-                                                <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white text-theme-purple flex items-center justify-center shadow-md transition-transform group-hover:scale-110"
+                                                <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-theme-purple/10 dark:bg-white/10 text-theme-purple dark:text-theme-white flex items-center justify-center shadow-md transition-all group-hover/event:bg-gradient-theme group-hover/event:text-white"
                                                     onMouseEnter={() => setHoverNextEvent(true)}
                                                     onMouseLeave={() => setHoverNextEvent(false)}
                                                 >
@@ -351,21 +357,21 @@ export default function Hero() {
                                             </div>
                                         </Link>
                                     ) : (
-                                        <div className="w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur min-h-[90px] sm:min-h-[100px]">
-                                            <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-white">
+                                        <div className="w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-4 sm:p-6 shadow-lg backdrop-blur min-h-[90px] sm:min-h-[100px]">
+                                            <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-purple/60 dark:text-theme-white/60">
                                                 Volgende evenement
                                             </p>
                                             {eventsLoading ? (
                                                 <div className="mt-2 space-y-2">
-                                                    <div className="h-5 sm:h-6 w-3/4 animate-pulse rounded bg-theme-purple/20"></div>
-                                                    <div className="h-3 sm:h-4 w-full animate-pulse rounded bg-theme-purple/20"></div>
+                                                    <div className="h-5 sm:h-6 w-3/4 animate-pulse rounded bg-theme-purple/10"></div>
+                                                    <div className="h-3 sm:h-4 w-full animate-pulse rounded bg-theme-purple/10"></div>
                                                 </div>
                                             ) : (
                                                 <>
-                                                    <p className="mt-2 text-base sm:text-lg font-bold text-theme">
+                                                    <p className="mt-2 text-base sm:text-lg font-bold text-theme-purple dark:text-theme-white">
                                                         Binnenkort meer activiteiten
                                                     </p>
-                                                    <p className="mt-1 text-xs sm:text-sm text-theme-muted line-clamp-2">
+                                                    <p className="mt-1 text-xs sm:text-sm text-theme-text-muted dark:text-theme-text-muted line-clamp-2">
                                                         Check regelmatig onze agenda voor nieuwe evenementen en activiteiten.
                                                     </p>
                                                 </>

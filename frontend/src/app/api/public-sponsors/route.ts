@@ -10,15 +10,21 @@ export async function GET() {
             return NextResponse.json({ error: 'Directus API key not configured' }, { status: 500 });
         }
 
-        const url = `${directusUrl}/items/sponsors?fields=sponsor_id,image,website_url&sort=sponsor_id&limit=-1`;
+        // Include `dark_bg` so the frontend can honor per-sponsor background preference
+        const url = `${directusUrl}/items/sponsors?fields=sponsor_id,image,website_url,dark_bg&sort=sponsor_id&limit=-1`;
 
         const resp = await fetch(url, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${directusToken}`,
                 'Accept': 'application/json'
+            },
+            next: {
+                revalidate: 3600, // 1 uur cache, sponsors veranderen weinig
+                tags: ['sponsors'],
             }
         });
+
 
         if (!resp.ok) {
             const text = await resp.text().catch(() => null);

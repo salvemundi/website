@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, Suspense, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { stickersApi, calculateStickerStats, geocodeAddress, reverseGeocode, CreateStickerData, Sticker } from '@/shared/lib/api/salvemundi';
@@ -23,6 +24,7 @@ function StickersContent() {
     const { user } = useAuth();
     const queryClient = useQueryClient();
     const [showAddModal, setShowAddModal] = useState(false);
+    const searchParams = typeof window !== 'undefined' ? useSearchParams?.() : null;
     const [showFullscreenMap, setShowFullscreenMap] = useState(false);
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -195,6 +197,22 @@ function StickersContent() {
             body.classList.remove('overflow-hidden');
         };
     }, [showFullscreenMap, showAddModal]);
+
+    // Open add modal when query param ?add=1 is present (from admin quick action)
+    useEffect(() => {
+        try {
+            if (!searchParams) return;
+            const add = searchParams.get('add');
+            if (add === '1') {
+                // only show modal if user is logged in
+                if (user) setShowAddModal(true);
+            }
+        } catch (err) {
+            // ignore
+        }
+        // we only want to run this once on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

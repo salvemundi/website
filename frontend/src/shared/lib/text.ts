@@ -1,8 +1,12 @@
+import he from 'he';
+
 // Small text utilities
 export const stripHtml = (input?: string | null): string => {
     if (!input) return '';
-    // Decode basic HTML entities (handle cases where tags are escaped like &lt;p&gt;)
-    let decoded = input.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+
+    // First decode HTML entities properly using 'he' library
+    const decoded = he.decode(input);
+
     // Remove any HTML tags and trim whitespace
     return decoded.replace(/<[^>]*>/g, '').trim();
 };

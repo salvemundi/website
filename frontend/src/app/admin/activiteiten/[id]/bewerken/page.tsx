@@ -5,7 +5,8 @@ import { useAuth } from '@/features/auth/providers/auth-provider';
 import { useRouter, useParams } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { Save, ArrowLeft, Upload, X } from 'lucide-react';
+import { Save, ArrowLeft, Upload, X, ShieldAlert, Home } from 'lucide-react';
+import Link from 'next/link';
 
 interface Committee {
     id: number;
@@ -41,11 +42,12 @@ export default function BewerkenActiviteitPage() {
     const [committees, setCommittees] = useState<Committee[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [isAuthorized, setIsAuthorized] = useState(true);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [currentImageId, setCurrentImageId] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
-    
+
     const [formData, setFormData] = useState({
         name: '',
         description: '',
@@ -102,12 +104,12 @@ export default function BewerkenActiviteitPage() {
 
             // Load event
             const event = await directusFetch<Event>(`/items/events/${eventId}?fields=*`);
-            
+
             // Parse date for input (needs YYYY-MM-DD format)
             const eventDate = event.event_date ? new Date(event.event_date).toISOString().split('T')[0] : '';
-            
+
             // Parse deadline for datetime-local input
-            const deadline = event.inschrijf_deadline 
+            const deadline = event.inschrijf_deadline
                 ? new Date(event.inschrijf_deadline).toISOString().slice(0, 16)
                 : '';
 
@@ -131,20 +133,22 @@ export default function BewerkenActiviteitPage() {
             // Check membership: only allow editing if user is member of event's committee
             try {
                 const user = auth.user;
-                const eventCommitteeId = event.committee_id ? String(event.committee_id) : null;
-                const memberships = user?.committees || [];
-                const isMember = memberships.some((c: any) => String(c.id) === eventCommitteeId);
-                const hasPriv = memberships.some((c: any) => {
-                    const name = (c?.name || '').toString().toLowerCase();
-                    return name === 'bestuur' || name === 'ict';
-                });
-                if (!(isMember || hasPriv)) {
-                    alert('Je bent geen lid van de commissie die deze activiteit organiseert. Je kunt deze niet bewerken.');
-                    router.push('/admin/activiteiten');
-                    return;
+                if (user) {
+                    const eventCommitteeId = event.committee_id ? String(event.committee_id) : null;
+                    const memberships = user?.committees || [];
+
+                    const isMember = eventCommitteeId ? memberships.some((c: any) => String(c.id) === eventCommitteeId) : false;
+                    const hasPriv = memberships.some((c: any) => {
+                        const name = (c?.name || '').toString().toLowerCase();
+                        return name === 'bestuur' || name === 'ict';
+                    });
+
+                    if (!(isMember || hasPriv)) {
+                        setIsAuthorized(false);
+                    }
                 }
             } catch (e) {
-                // if auth not ready, proceed and let server-side guard block if unauthorized
+                // handle unexpected auth object structure
             }
 
             // Set existing image if present
@@ -165,12 +169,12 @@ export default function BewerkenActiviteitPage() {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
         const checked = (e.target as HTMLInputElement).checked;
-        
+
         setFormData(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : value
         }));
-        
+
         // Clear error when user starts typing
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: '' }));
@@ -197,11 +201,11 @@ export default function BewerkenActiviteitPage() {
 
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
-        
+
         if (!formData.name.trim()) newErrors.name = 'Naam is verplicht';
         if (!formData.event_date) newErrors.event_date = 'Datum is verplicht';
         if (!formData.description.trim()) newErrors.description = 'Beschrijving is verplicht';
-        
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -238,7 +242,7 @@ export default function BewerkenActiviteitPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!validateForm()) {
             showToast('Controleer de verplichte velden', 'error');
             return;
@@ -312,6 +316,52 @@ export default function BewerkenActiviteitPage() {
         );
     }
 
+    if (!isAuthorized) {
+        return (
+            <>
+                <PageHeader
+                    title="Geen Toegang"
+                    description="Onvoldoende rechten"
+                />
+                <div className="container mx-auto px-4 py-12 max-w-2xl">
+                    <div className="bg-admin-card rounded-3xl shadow-xl p-8 text-center ring-1 ring-admin-border">
+                        <div className="mb-6 flex justify-center">
+                            <div className="rounded-full bg-red-100 dark:bg-red-900/30 p-6">
+                                <ShieldAlert className="h-16 w-16 text-red-600 dark:text-red-400" />
+                            </div>
+                        </div>
+
+                        <h1 className="text-3xl font-bold text-admin mb-4">
+                            Toegang Geweigerd
+                        </h1>
+
+                        <p className="text-lg text-admin-muted mb-8">
+                            Je hebt geen rechten om deze activiteit te bewerken. Dit kan alleen als je lid bent van de organiserende commissie, het bestuur of de ICT-commissie.
+                        </p>
+
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                            <button
+                                onClick={() => router.back()}
+                                className="inline-flex items-center justify-center gap-2 rounded-full bg-theme-purple hover:bg-theme-purple-dark text-white px-8 py-3 font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+                            >
+                                <ArrowLeft className="h-5 w-5" />
+                                Terug
+                            </button>
+
+                            <Link
+                                href="/admin/activiteiten"
+                                className="inline-flex items-center justify-center gap-2 rounded-full bg-admin-card text-admin-muted border-2 border-admin px-8 py-3 font-semibold hover:bg-admin-hover transition-all"
+                            >
+                                <Home className="h-5 w-5" />
+                                Overzicht
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </>
+        );
+    }
+
     return (
         <>
             <PageHeader
@@ -328,10 +378,10 @@ export default function BewerkenActiviteitPage() {
                     Terug
                 </button>
 
-                <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6">
+                <form onSubmit={handleSubmit} className="bg-admin-card rounded-2xl shadow-lg p-6 sm:p-8 space-y-6">
                     {/* Basic Info */}
                     <div>
-                        <label htmlFor="name" className="block text-sm font-bold text-slate-700 mb-2">
+                        <label htmlFor="name" className="block text-sm font-bold text-admin-muted mb-2">
                             Naam *
                         </label>
                         <input
@@ -340,7 +390,7 @@ export default function BewerkenActiviteitPage() {
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
-                            className={`w-full px-4 py-3 rounded-lg border ${errors.name ? 'border-red-500' : 'border-slate-300'} focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition`}
+                            className={`w-full px-4 py-3 rounded-lg border bg-admin-card text-admin ${errors.name ? 'border-red-500' : 'border-admin'} focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition`}
                             placeholder="Bijv. Borrel: Back to School"
                         />
                         {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
@@ -348,7 +398,7 @@ export default function BewerkenActiviteitPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label htmlFor="event_date" className="block text-sm font-bold text-slate-700 mb-2">
+                            <label htmlFor="event_date" className="block text-sm font-bold text-admin-muted mb-2">
                                 Datum *
                             </label>
                             <input
@@ -357,13 +407,13 @@ export default function BewerkenActiviteitPage() {
                                 name="event_date"
                                 value={formData.event_date}
                                 onChange={handleChange}
-                                className={`w-full px-4 py-3 rounded-lg border ${errors.event_date ? 'border-red-500' : 'border-slate-300'} focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition`}
+                                className={`w-full px-4 py-3 rounded-lg border bg-admin-card text-admin ${errors.event_date ? 'border-red-500' : 'border-admin'} focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition`}
                             />
                             {errors.event_date && <p className="text-red-500 text-sm mt-1">{errors.event_date}</p>}
                         </div>
 
                         <div>
-                            <label htmlFor="inschrijf_deadline" className="block text-sm font-bold text-slate-700 mb-2">
+                            <label htmlFor="inschrijf_deadline" className="block text-sm font-bold text-admin-muted mb-2">
                                 Inschrijfdeadline
                             </label>
                             <input
@@ -372,14 +422,14 @@ export default function BewerkenActiviteitPage() {
                                 name="inschrijf_deadline"
                                 value={formData.inschrijf_deadline}
                                 onChange={handleChange}
-                                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                                className="w-full px-4 py-3 rounded-lg border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
                             />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label htmlFor="event_time" className="block text-sm font-bold text-slate-700 mb-2">
+                            <label htmlFor="event_time" className="block text-sm font-bold text-admin-muted mb-2">
                                 Starttijd
                             </label>
                             <input
@@ -388,12 +438,12 @@ export default function BewerkenActiviteitPage() {
                                 name="event_time"
                                 value={formData.event_time}
                                 onChange={handleChange}
-                                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                                className="w-full px-4 py-3 rounded-lg border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="event_time_end" className="block text-sm font-bold text-slate-700 mb-2">
+                            <label htmlFor="event_time_end" className="block text-sm font-bold text-admin-muted mb-2">
                                 Eindtijd
                             </label>
                             <input
@@ -402,13 +452,13 @@ export default function BewerkenActiviteitPage() {
                                 name="event_time_end"
                                 value={formData.event_time_end}
                                 onChange={handleChange}
-                                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                                className="w-full px-4 py-3 rounded-lg border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
                             />
                         </div>
                     </div>
 
                     <div>
-                        <label htmlFor="location" className="block text-sm font-bold text-slate-700 mb-2">
+                        <label htmlFor="location" className="block text-sm font-bold text-admin-muted mb-2">
                             Locatie
                         </label>
                         <input
@@ -417,13 +467,13 @@ export default function BewerkenActiviteitPage() {
                             name="location"
                             value={formData.location}
                             onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                            className="w-full px-4 py-3 rounded-lg border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
                             placeholder="Bijv. R10 Building"
                         />
                     </div>
 
                     <div>
-                        <label htmlFor="description" className="block text-sm font-bold text-slate-700 mb-2">
+                        <label htmlFor="description" className="block text-sm font-bold text-admin-muted mb-2">
                             Beschrijving *
                         </label>
                         <textarea
@@ -432,14 +482,14 @@ export default function BewerkenActiviteitPage() {
                             value={formData.description}
                             onChange={handleChange}
                             rows={5}
-                            className={`w-full px-4 py-3 rounded-lg border ${errors.description ? 'border-red-500' : 'border-slate-300'} focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition`}
+                            className={`w-full px-4 py-3 rounded-lg border bg-admin-card text-admin ${errors.description ? 'border-red-500' : 'border-admin'} focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition`}
                             placeholder="Beschrijving van de activiteit"
                         />
                         {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
                     </div>
 
                     <div>
-                        <label htmlFor="description_logged_in" className="block text-sm font-bold text-slate-700 mb-2">
+                        <label htmlFor="description_logged_in" className="block text-sm font-bold text-admin-muted mb-2">
                             Extra beschrijving voor ingelogde gebruikers
                         </label>
                         <textarea
@@ -448,7 +498,7 @@ export default function BewerkenActiviteitPage() {
                             value={formData.description_logged_in}
                             onChange={handleChange}
                             rows={3}
-                            className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                            className="w-full px-4 py-3 rounded-lg border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
                             placeholder="Extra informatie die alleen zichtbaar is voor ingelogde gebruikers"
                         />
                     </div>
@@ -456,7 +506,7 @@ export default function BewerkenActiviteitPage() {
                     {/* Capacity & Pricing */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
-                            <label htmlFor="capacity" className="block text-sm font-bold text-slate-700 mb-2">
+                            <label htmlFor="capacity" className="block text-sm font-bold text-admin-muted mb-2">
                                 Capaciteit
                             </label>
                             <input
@@ -466,13 +516,13 @@ export default function BewerkenActiviteitPage() {
                                 value={formData.capacity}
                                 onChange={handleChange}
                                 min="0"
-                                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                                className="w-full px-4 py-3 rounded-lg border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
                                 placeholder="Max deelnemers"
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="price_members" className="block text-sm font-bold text-slate-700 mb-2">
+                            <label htmlFor="price_members" className="block text-sm font-bold text-admin-muted mb-2">
                                 Prijs Leden (€)
                             </label>
                             <input
@@ -483,13 +533,13 @@ export default function BewerkenActiviteitPage() {
                                 onChange={handleChange}
                                 min="0"
                                 step="0.01"
-                                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                                className="w-full px-4 py-3 rounded-lg border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
                                 placeholder="0.00"
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="price_non_members" className="block text-sm font-bold text-slate-700 mb-2">
+                            <label htmlFor="price_non_members" className="block text-sm font-bold text-admin-muted mb-2">
                                 Prijs Niet-leden (€)
                             </label>
                             <input
@@ -500,7 +550,7 @@ export default function BewerkenActiviteitPage() {
                                 onChange={handleChange}
                                 min="0"
                                 step="0.01"
-                                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                                className="w-full px-4 py-3 rounded-lg border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
                                 placeholder="0.00"
                             />
                         </div>
@@ -508,7 +558,7 @@ export default function BewerkenActiviteitPage() {
 
                     {/* Committee & Contact */}
                     <div>
-                        <label htmlFor="committee_id" className="block text-sm font-bold text-slate-700 mb-2">
+                        <label htmlFor="committee_id" className="block text-sm font-bold text-admin-muted mb-2">
                             Commissie
                         </label>
                         <select
@@ -516,7 +566,7 @@ export default function BewerkenActiviteitPage() {
                             name="committee_id"
                             value={formData.committee_id}
                             onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                            className="w-full px-4 py-3 rounded-lg border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
                         >
                             <option value="">Selecteer een commissie...</option>
                             {committees.map(committee => (
@@ -528,7 +578,7 @@ export default function BewerkenActiviteitPage() {
                     </div>
 
                     <div>
-                        <label htmlFor="contact" className="block text-sm font-bold text-slate-700 mb-2">
+                        <label htmlFor="contact" className="block text-sm font-bold text-admin-muted mb-2">
                             Contact (email of telefoon)
                         </label>
                         <input
@@ -537,22 +587,22 @@ export default function BewerkenActiviteitPage() {
                             name="contact"
                             value={formData.contact}
                             onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                            className="w-full px-4 py-3 rounded-lg border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
                             placeholder="naam@salvemundi.nl of +31 6 12345678"
                         />
                     </div>
 
                     {/* Image Upload */}
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">
+                        <label className="block text-sm font-bold text-admin-muted mb-2">
                             Afbeelding
                         </label>
                         {!imagePreview ? (
                             <label
-                                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-theme-purple transition"
+                                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-admin rounded-lg cursor-pointer hover:border-theme-purple transition"
                             >
-                                <Upload className="h-8 w-8 text-slate-400 mb-2" />
-                                <span className="text-sm text-slate-500">Klik om een afbeelding te uploaden</span>
+                                <Upload className="h-8 w-8 text-admin-muted mb-2" />
+                                <span className="text-sm text-admin-muted">Klik om een afbeelding te uploaden</span>
                                 <input
                                     ref={fileInputRef}
                                     type="file"
@@ -572,7 +622,7 @@ export default function BewerkenActiviteitPage() {
                                     <button
                                         type="button"
                                         onClick={() => window.open(imagePreview || '', '_blank')}
-                                        className="bg-white text-slate-700 p-2 rounded-full hover:bg-slate-100 transition shadow"
+                                        className="bg-admin-card text-admin p-2 rounded-full hover:bg-admin-hover transition shadow"
                                         title="Bekijk afbeelding"
                                     >
                                         View
@@ -580,7 +630,7 @@ export default function BewerkenActiviteitPage() {
                                     <button
                                         type="button"
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="bg-white text-slate-700 p-2 rounded-full hover:bg-slate-100 transition shadow"
+                                        className="bg-admin-card text-admin p-2 rounded-full hover:bg-admin-hover transition shadow"
                                         title="Wijzig afbeelding"
                                     >
                                         Change
@@ -613,9 +663,9 @@ export default function BewerkenActiviteitPage() {
                             name="only_members"
                             checked={formData.only_members}
                             onChange={handleChange}
-                            className="w-5 h-5 text-theme-purple border-slate-300 rounded focus:ring-theme-purple"
+                            className="w-5 h-5 text-theme-purple border-admin rounded focus:ring-theme-purple"
                         />
-                        <label htmlFor="only_members" className="text-sm font-medium text-slate-700">
+                        <label htmlFor="only_members" className="text-sm font-medium text-admin-muted">
                             Alleen voor leden
                         </label>
                     </div>
@@ -653,9 +703,8 @@ export default function BewerkenActiviteitPage() {
             {/* Toast Notification */}
             {toast && (
                 <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
-                    <div className={`px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 ${
-                        toast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-                    }`}>
+                    <div className={`px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 ${toast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                        }`}>
                         {toast.type === 'success' ? (
                             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

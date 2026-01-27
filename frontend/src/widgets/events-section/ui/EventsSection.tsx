@@ -50,18 +50,18 @@ export default function EventsSection() {
     const skeletonItems = Array.from({ length: 4 });
 
     return (
-        <section id="kalender" className="py-12 sm:py-16 md:py-20 bg-[var(--bg-main)]">
+        <section id="kalender" className="py-8 sm:py-10 md:py-12 bg-[var(--bg-main)]">
             <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
-                <div className="flex flex-col gap-6 rounded-xl bg-gradient-primary px-6 sm:px-10 pt-12 sm:pt-16 lg:pt-24 pb-12 shadow-xl">
+                <div className="flex flex-col gap-6 rounded-xl bg-gradient-theme px-6 sm:px-10 pt-8 sm:pt-10 md:pt-12 pb-8 sm:pb-10 md:pb-12 shadow-xl">
                     <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-                            <div className="space-y-3">
-                            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-white">
+                        <div className="space-y-3">
+                            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-theme-purple dark:text-theme-white">
                                 <CalendarClock className="h-3 w-3" /> Agenda
                             </p>
-                            <h2 className="text-3xl font-black text-white sm:text-4xl">
+                            <h2 className="text-3xl font-black text-theme-purple dark:text-theme-white sm:text-4xl">
                                 Aankomende evenementen
                             </h2>
-                            <p className="max-w-xl text-sm text-white/90">
+                            <p className="max-w-xl text-sm text-theme-text-muted dark:text-theme-text-muted">
                                 Hier vind je een overzicht van al onze evenementen.
                             </p>
                         </div>
@@ -86,20 +86,21 @@ export default function EventsSection() {
                             ))}
                         </div>
                     ) : displayEvents.length === 0 && !eventsError ? (
-                        <div className="rounded-3xl bg-white/70 dark:bg-surface-dark/70 p-10 text-center text-sm text-secondary">
+                        <div className="w-full rounded-3xl bg-white/90 dark:bg-black/40 p-10 flex items-center justify-center text-sm text-theme-purple dark:text-white font-medium">
                             Nog geen aankomende evenementen. Check later opnieuw!
                         </div>
                     ) : (
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 content-loaded">
                             {displayEvents.map((event, index) => (
-                                    <div key={event.id} className="stagger-item" style={{ animationDelay: `${index * 0.05}s` }}>
+                                <div key={event.id} className="stagger-item" style={{ animationDelay: `${index * 0.05}s` }}>
                                     <EventCard
                                         title={event.name}
                                         category={event.committee_name || 'Salve Mundi'}
                                         date={renderDate(event.event_date)}
+                                        href={`/activiteiten/${event.id}`}
                                     />
-                                    </div>
-                                ))}
+                                </div>
+                            ))}
                         </div>
                     )}
                 </div>
@@ -107,3 +108,4 @@ export default function EventsSection() {
         </section>
     );
 }
+
