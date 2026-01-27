@@ -17,7 +17,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
         console.warn(`[Payment][${traceId}] Incoming Payment Creation Request`);
 
         try {
-            const { amount, description, redirectUrl, userId, email, registrationId, registrationType, isContribution, firstName, lastName, couponCode, dateOfBirth, qrToken } = req.body;
+            const { amount, description, redirectUrl, userId, email, registrationId, registrationType, isContribution, firstName, lastName, couponCode, dateOfBirth, phoneNumber, qrToken } = req.body;
 
             console.warn(`[Payment][${traceId}] Payload:`, JSON.stringify({ amount, description, redirectUrl, userId, email, registrationId, registrationType, isContribution, couponCode, qrToken: qrToken ? 'provided' : 'missing' }));
 
@@ -384,6 +384,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 lastName: lastName || null,
                 couponId: couponId,
                 dateOfBirth: dateOfBirth || null,
+                phoneNumber: phoneNumber || null,
                 qrToken: qrToken || null // Add QR token to Mollie metadata
             };
 

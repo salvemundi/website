@@ -180,28 +180,32 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
             let firstName = transaction.first_name;
             let lastName = transaction.last_name;
             let email = transaction.email;
+            let dateOfBirth = transaction.date_of_birth;
+            let phoneNumber = null; // Not typically stored in transaction table yet
 
-            // Only fetch from Mollie if we ARE missing data and have a valid Mollie ID
-            if ((!userId && (!firstName || !lastName || !email)) &&
-                transaction.transaction_id &&
-                transaction.transaction_id.startsWith('tr_')) {
-
-                console.log(`[AdminRoutes] Missing data in Directus, fetching from Mollie: ${transaction.transaction_id}`);
-                try {
-                    const molliePayment = await axios.get(
-                        `https://api.mollie.com/v2/payments/${transaction.transaction_id}`,
-                        {
-                            headers: { 'Authorization': `Bearer ${process.env.MOLLIE_API_KEY}` },
-                            timeout: 5000 // 5s timeout for Mollie
-                        }
-                    );
-                    const metadata = molliePayment.data.metadata || {};
-                    userId = userId || metadata.userId;
-                    firstName = firstName || metadata.firstName;
-                    lastName = lastName || metadata.lastName;
-                    email = email || metadata.email;
-                } catch (error) {
-                    console.error('[AdminRoutes] Could not fetch Mollie payment metadata:', error.message);
+            // Fetch from Mollie if we are missing essential data OR if we want extra metadata like phone number
+            if (transaction.transaction_id && transaction.transaction_id.startsWith('tr_')) {
+                // If we miss core data OR we just want to try getting phone number
+                if ((!userId && (!firstName || !lastName || !email)) || !phoneNumber) {
+                    console.log(`[AdminRoutes] Fetching additional metadata from Mollie: ${transaction.transaction_id}`);
+                    try {
+                        const molliePayment = await axios.get(
+                            `https://api.mollie.com/v2/payments/${transaction.transaction_id}`,
+                            {
+                                headers: { 'Authorization': `Bearer ${process.env.MOLLIE_API_KEY}` },
+                                timeout: 5000
+                            }
+                        );
+                        const metadata = molliePayment.data.metadata || {};
+                        userId = userId || metadata.userId;
+                        firstName = firstName || metadata.firstName;
+                        lastName = lastName || metadata.lastName;
+                        email = email || metadata.email;
+                        dateOfBirth = dateOfBirth || metadata.dateOfBirth;
+                        phoneNumber = phoneNumber || metadata.phoneNumber;
+                    } catch (error) {
+                        console.error('[AdminRoutes] Could not fetch Mollie payment metadata:', error.message);
+                    }
                 }
             }
 
@@ -236,7 +240,9 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                     MEMBERSHIP_API_URL,
                     firstName,
                     lastName,
-                    email
+                    email,
+                    phoneNumber,
+                    dateOfBirth
                 );
 
                 if (credentials) {
@@ -256,7 +262,9 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                             status: 'active',
                             membership_status: 'active',
                             membership_expiry: expiryStr,
-                            entra_id: credentials.user_id
+                            entra_id: credentials.user_id,
+                            phone_number: phoneNumber,
+                            date_of_birth: dateOfBirth
                         });
                         console.log(`[AdminRoutes] Created and linked Directus user for ${email}`);
                     } catch (err) {

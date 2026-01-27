@@ -12,13 +12,17 @@ async function provisionMember(membershipApiUrl, userId) {
     }
 }
 
-async function createMember(membershipApiUrl, firstName, lastName, email) {
+async function createMember(membershipApiUrl, firstName, lastName, email, phoneNumber = null, dateOfBirth = null) {
     try {
-        const response = await axios.post(`${membershipApiUrl}/create-user`, {
+        const payload = {
             first_name: firstName,
             last_name: lastName,
             personal_email: email
-        }, { timeout: 30000 });
+        };
+        if (phoneNumber) payload.phone_number = phoneNumber;
+        if (dateOfBirth) payload.date_of_birth = dateOfBirth;
+
+        const response = await axios.post(`${membershipApiUrl}/create-user`, payload, { timeout: 30000 });
         return response.data;
     } catch (error) {
         console.error(`[MembershipService] User creation failed: ${error.message}`);

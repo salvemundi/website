@@ -22,6 +22,8 @@ class CreateMemberRequest(BaseModel):
     first_name: str
     last_name: str
     personal_email: str
+    phone_number: str = None
+    date_of_birth: str = None
 
 class MembershipRequest(BaseModel):
     user_id: str
@@ -86,6 +88,9 @@ async def create_azure_user(data: CreateMemberRequest, token: str):
         "surname": data.last_name,
         "otherMails": [data.personal_email] 
     }
+    if data.phone_number:
+        user_payload["mobilePhone"] = data.phone_number
+        
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     async with httpx.AsyncClient() as client:
         response = await client.post("https://graph.microsoft.com/v1.0/users", json=user_payload, headers=headers)
@@ -94,7 +99,7 @@ async def create_azure_user(data: CreateMemberRequest, token: str):
         user_data = response.json()
         return {"id": user_data["id"], "upn": user_data["userPrincipalName"], "password": password}
 
-async def update_user_attributes(user_id: str):
+async def update_user_attributes(user_id: str, date_of_birth: str = None):
     try:
         token = await get_graph_token()
         headers = { "Authorization": f"Bearer {token}", "Content-Type": "application/json" }
@@ -126,6 +131,8 @@ async def update_user_attributes(user_id: str):
                     }
                 }
             }
+            if date_of_birth:
+                payload["customSecurityAttributes"][ATTRIBUTE_SET_NAME]["Geboortedatum"] = date_of_birth
             
             # Schrijven doen we via v1.0, dat is nu bewezen werkend met de type hint
             url_v1 = f"https://graph.microsoft.com/v1.0/users/{user_id}"
@@ -157,7 +164,9 @@ async def update_user_attributes(user_id: str):
 async def create_user_endpoint(request: CreateMemberRequest, background_tasks: BackgroundTasks):
     token = await get_graph_token()
     new_user_data = await create_azure_user(request, token)
-    await update_user_attributes(new_user_data["id"])
+    # We pass date_of_birth to attribute update if provided
+    dob_str = request.date_of_birth.replace("-", "") if request.date_of_birth else None
+    await update_user_attributes(new_user_data["id"], date_of_birth=dob_str)
     return {
         "status": "created",
         "user_id": new_user_data["id"],
