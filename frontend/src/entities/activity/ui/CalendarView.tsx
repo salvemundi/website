@@ -70,7 +70,7 @@ export default function CalendarView({
                 <div className="flex items-center gap-2">
                     <button
                         onClick={onPrevMonth}
-                        className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                        className="p-2 hover:bg-theme-purple/10 dark:hover:bg-white/20 rounded-full transition-colors"
                         aria-label="Vorige maand"
                     >
                         <ChevronLeft className="w-6 h-6" />
@@ -81,13 +81,13 @@ export default function CalendarView({
                             onSelectDay(today);
                             onGoToDate?.(today);
                         }}
-                        className="px-4 py-1.5 bg-white/20 hover:bg-white/30 rounded-full text-sm font-semibold transition-colors"
+                        className="px-4 py-1.5 bg-theme-purple/10 dark:bg-white/20 hover:bg-theme-purple/20 dark:hover:bg-white/30 rounded-full text-sm font-semibold transition-colors"
                     >
                         Vandaag
                     </button>
                     <button
                         onClick={onNextMonth}
-                        className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                        className="p-2 hover:bg-theme-purple/10 dark:hover:bg-white/20 rounded-full transition-colors"
                         aria-label="Volgende maand"
                     >
                         <ChevronRight className="w-6 h-6" />

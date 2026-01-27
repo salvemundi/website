@@ -135,7 +135,7 @@ function ActivitiesContent() {
                                         }
                                     }
                                 }}
-                                className="px-4 py-2 text-sm font-semibold bg-white dark:bg-surface-dark text-samu dark:text-white rounded-lg hover:bg-oranje/5 dark:hover:bg-white/5 transition-colors  shadow-sm flex items-center gap-2"
+                                className="px-4 py-2 text-sm font-semibold bg-[var(--bg-card)] dark:bg-surface-dark text-theme-purple dark:text-white rounded-lg hover:bg-theme-purple/5 dark:hover:bg-white/5 transition-colors shadow-sm flex items-center gap-2"
                             >
                                 📅 Sync Agenda
                             </button>
@@ -143,9 +143,9 @@ function ActivitiesContent() {
                             {/* Past Activities Toggle */}
                             <button
                                 onClick={() => setShowPastActivities(!showPastActivities)}
-                                className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all  ${showPastActivities
-                                    ? 'bg-gradient-primary text-white shadow-md'
-                                    : 'bg-white dark:bg-surface-dark text-samu dark:text-white hover:bg-oranje/5 dark:hover:bg-white/5'
+                                className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${showPastActivities
+                                    ? 'bg-theme-purple/10 dark:bg-white/10 text-theme-purple dark:text-white shadow-sm'
+                                    : 'bg-[var(--bg-card)] dark:bg-surface-dark text-theme-purple dark:text-white hover:bg-theme-purple/5 dark:hover:bg-white/5'
                                     }`}
                             >
                                 {showPastActivities ? 'Verberg Afgelopen' : 'Toon Afgelopen'}
@@ -180,12 +180,12 @@ function ActivitiesContent() {
                         {/* Main View Area */}
                         <div className="flex-1 space-y-6">
                             {/* View Mode Toggles - Hidden on mobile */}
-                            <div className="hidden md:flex rounded-lg  bg-white dark:bg-surface-dark overflow-hidden shadow-sm">
+                            <div className="hidden md:flex rounded-lg bg-[var(--bg-card)] dark:bg-surface-dark overflow-hidden shadow-sm">
                                 <button
                                     onClick={() => setViewMode('list')}
                                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${viewMode === 'list'
-                                        ? 'bg-gradient-primary text-white shadow-md'
-                                        : 'text-samu dark:text-white hover:bg-oranje/5 dark:hover:bg-white/5'
+                                        ? 'bg-theme-purple/10 dark:bg-white/10 text-theme-purple dark:text-white shadow-sm'
+                                        : 'text-theme-purple dark:text-white hover:bg-theme-purple/5 dark:hover:bg-white/5'
                                         }`}
                                 >
                                     <span className="flex items-center gap-2">
@@ -203,8 +203,8 @@ function ActivitiesContent() {
                                 <button
                                     onClick={() => setViewMode('grid')}
                                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${viewMode === 'grid'
-                                        ? 'bg-gradient-primary text-white shadow-md'
-                                        : 'text-samu dark:text-white hover:bg-oranje/5 dark:hover:bg-white/5'
+                                        ? 'bg-theme-purple/10 dark:bg-white/10 text-theme-purple dark:text-white shadow-sm'
+                                        : 'text-theme-purple dark:text-white hover:bg-theme-purple/5 dark:hover:bg-white/5'
                                         }`}
                                 >
                                     <span className="flex items-center gap-2">
@@ -221,8 +221,8 @@ function ActivitiesContent() {
                                 <button
                                     onClick={() => setViewMode('calendar')}
                                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${viewMode === 'calendar'
-                                        ? 'bg-gradient-primary text-white shadow-md'
-                                        : 'text-samu dark:text-white hover:bg-oranje/5 dark:hover:bg-white/5'
+                                        ? 'bg-theme-purple/10 dark:bg-white/10 text-theme-purple dark:text-white shadow-sm'
+                                        : 'text-theme-purple dark:text-white hover:bg-theme-purple/5 dark:hover:bg-white/5'
                                         }`}
                                 >
                                     <span className="flex items-center gap-2">
