@@ -270,6 +270,20 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                     if (isContribution) {
                         if (userId) {
                             await membershipService.provisionMember(MEMBERSHIP_API_URL, userId);
+
+                            // Update Directus status and expiry immediately for renewals
+                            const now = new Date();
+                            const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+                            const expiryStr = expiryDate.toISOString().split('T')[0];
+                            try {
+                                await directusService.updateDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'users', userId, {
+                                    membership_status: 'active',
+                                    membership_expiry: expiryStr
+                                });
+                            } catch (err) {
+                                console.error(`[Payment][${traceId}] Failed to update Directus user for renewal (Zero Amount):`, err?.message || err);
+                            }
+
                             // Trigger sync for existing user renewal
                             await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, userId);
 
@@ -282,6 +296,11 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                                 mockMetadata, description
                             );
                         } else if (firstName && lastName && email) {
+                            // Calculate expiry date (1 year from now)
+                            const now = new Date();
+                            const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+                            const expiryStr = expiryDate.toISOString().split('T')[0];
+
                             // Try to create a Directus user so we have the date_of_birth set
                             let directusUser = null;
                             try {
@@ -290,7 +309,9 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                                     last_name: lastName,
                                     email: email,
                                     date_of_birth: dateOfBirth || null,
-                                    status: 'active'
+                                    status: 'active',
+                                    membership_status: 'active',
+                                    membership_expiry: expiryStr
                                 });
                                 console.warn(`[Payment][${traceId}] Created Directus user ${directusUser.id} for ${email} (Zero Amount)`);
                             } catch (err) {
@@ -609,6 +630,20 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 if (notContribution === "false") {
                     if (userId) {
                         await membershipService.provisionMember(MEMBERSHIP_API_URL, userId);
+
+                        // Update Directus status and expiry immediately for renewals
+                        const now = new Date();
+                        const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+                        const expiryStr = expiryDate.toISOString().split('T')[0];
+                        try {
+                            await directusService.updateDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'users', userId, {
+                                membership_status: 'active',
+                                membership_expiry: expiryStr
+                            });
+                        } catch (err) {
+                            console.error(`[Webhook][${traceId}] Failed to update Directus user for renewal:`, err?.message || err);
+                        }
+
                         // Trigger sync for existing user renewal
                         await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, userId);
 
@@ -626,6 +661,11 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                             // Coupon increment logic skipped for now
                         }
                     } else if (firstName && lastName && email) {
+                        // Calculate expiry date (1 year from now)
+                        const now = new Date();
+                        const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+                        const expiryStr = expiryDate.toISOString().split('T')[0];
+
                         // Try to create a Directus user so we have the date_of_birth set
                         let directusUser = null;
                         try {
@@ -634,7 +674,9 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                                 last_name: lastName,
                                 email: email,
                                 date_of_birth: dateOfBirth || null,
-                                status: 'active'
+                                status: 'active',
+                                membership_status: 'active',
+                                membership_expiry: expiryStr
                             });
                             console.warn(`[Payment][${traceId}] Created Directus user ${directusUser?.id} for ${email}`);
                         } catch (err) {
