@@ -39,7 +39,8 @@ export default function KroegentochtPage() {
         email: '',
         association: '',
         customAssociation: '',
-        amount_tickets: 1,
+        // keep as string to allow temporary empty value while editing
+        amount_tickets: '1',
     });
     const [participants, setParticipants] = useState<Participant[]>([{ name: '', initial: '' }]);
     const [loading, setLoading] = useState(false);
@@ -111,9 +112,16 @@ export default function KroegentochtPage() {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         if (name === 'amount_tickets') {
+            // allow empty string while the user is editing
+            if (value === '') {
+                setForm({ ...form, amount_tickets: '' });
+                setParticipants([]);
+                return;
+            }
+
             const parsed = parseInt(value, 10);
             const clamped = Number.isNaN(parsed) ? 1 : Math.min(10, Math.max(1, parsed));
-            setForm({ ...form, amount_tickets: clamped });
+            setForm({ ...form, amount_tickets: String(clamped) });
 
             // Update participants array based on ticket count
             const newParticipants = Array.from({ length: clamped }, (_, i) =>
@@ -123,6 +131,17 @@ export default function KroegentochtPage() {
             return;
         }
         setForm({ ...form, [name]: value });
+    };
+
+    const handleAmountBlur = () => {
+        // ensure we have a valid clamped number after leaving the input
+        const parsed = parseInt(String(form.amount_tickets), 10);
+        const clamped = Number.isNaN(parsed) ? 1 : Math.min(10, Math.max(1, parsed));
+        setForm({ ...form, amount_tickets: String(clamped) });
+        const newParticipants = Array.from({ length: clamped }, (_, i) =>
+            participants[i] || { name: '', initial: '' }
+        );
+        setParticipants(newParticipants);
     };
 
     const handleParticipantChange = (index: number, field: 'name' | 'initial', value: string) => {
@@ -168,11 +187,17 @@ export default function KroegentochtPage() {
 
 
             // Create signup with status 'open' (just like standard activity signups)
+            const finalAmount = Number(form.amount_tickets) || 1;
+
+            if (participants.length !== finalAmount) {
+                throw new Error('Aantal deelnemers komt niet overeen met het opgegeven aantal tickets.');
+            }
+
             const signup = await pubCrawlSignupsApi.create({
                 name: form.name,
                 email: form.email,
                 association: finalAssociation,
-                amount_tickets: form.amount_tickets,
+                amount_tickets: finalAmount,
                 pub_crawl_event_id: nextEvent.id,
                 name_initials: nameInitials,
                 payment_status: 'open',
@@ -182,12 +207,12 @@ export default function KroegentochtPage() {
                 throw new Error('Kon inschrijving niet aanmaken.');
             }
 
-            const totalPrice = (form.amount_tickets * 1).toFixed(2); // 1 euro per ticket
+            const totalPrice = (Number(form.amount_tickets) * 1).toFixed(2); // 1 euro per ticket
             const traceId = Math.random().toString(36).substring(7);
 
             const paymentPayload = {
                 amount: totalPrice,
-                description: `Kroegentocht Tickets - ${form.amount_tickets}x`,
+                description: `Kroegentocht Tickets - ${Number(form.amount_tickets) || 1}x`,
                 redirectUrl: window.location.origin + `/kroegentocht/bevestiging?id=${signup.id}`,
                 registrationId: signup.id,
                 registrationType: 'pub_crawl_signup', // Tell backend which collection to update
@@ -237,6 +262,9 @@ export default function KroegentochtPage() {
         }
     };
 
+    // compute display ticket count for UI
+    const displayTicketCount = form.amount_tickets === '' ? 0 : Number(form.amount_tickets);
+
     return (
         <>
             <div className="flex flex-col w-full">
@@ -279,7 +307,7 @@ export default function KroegentochtPage() {
                                         Je ontvangt binnenkort een bevestigingsmail met alle details op <strong>{form.email}</strong>.
                                     </p>
                                     <p className="text-white/90 mb-6">
-                                        Aantal tickets: <strong>{form.amount_tickets}</strong>
+                                        Aantal tickets: <strong>{Number(form.amount_tickets) || 1}</strong>
                                     </p>
                                     <button
                                         onClick={() => {
@@ -289,7 +317,7 @@ export default function KroegentochtPage() {
                                                 email: '',
                                                 association: '',
                                                 customAssociation: '',
-                                                amount_tickets: 1,
+                                                amount_tickets: '1',
                                             });
                                             setParticipants([{ name: '', initial: '' }]);
                                         }}
@@ -383,6 +411,7 @@ export default function KroegentochtPage() {
                                             name="amount_tickets"
                                             value={form.amount_tickets}
                                             onChange={handleChange}
+                                            onBlur={handleAmountBlur}
                                             required
                                             min="1"
                                             max="10"
@@ -396,7 +425,7 @@ export default function KroegentochtPage() {
                                     {/* Participant Names and Initials */}
                                     <div className="bg-white/10 rounded-lg p-4 space-y-3">
                                         <h3 className="font-semibold text-white text-lg mb-2">
-                                            Deelnemers ({form.amount_tickets} {form.amount_tickets === 1 ? 'ticket' : 'tickets'})
+                                            Deelnemers ({displayTicketCount} {displayTicketCount === 1 ? 'ticket' : 'tickets'})
                                         </h3>
                                         <p className="text-sm text-white/80 mb-3">
                                             Vul voor elk ticket een naam en eerste letter van de achternaam in.
@@ -439,7 +468,7 @@ export default function KroegentochtPage() {
                                         {loading
                                             ? 'Bezig met inschrijven...'
                                             : canSignUp
-                                                ? `Inschrijven (€${(form.amount_tickets * 1).toFixed(2).replace('.', ',')})`
+                                                ? `Inschrijven (€${(Number(form.amount_tickets) * 1).toFixed(2).replace('.', ',')})`
                                                 : 'Inschrijving nog niet beschikbaar'}
                                     </button>
                                 </form>
