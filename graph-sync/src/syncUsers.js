@@ -1260,6 +1260,22 @@ app.post('/sync/dob-fix', bodyParser.json(), async (req, res) => {
                         cleanDob = cleanDob.split('T')[0];
                     }
 
+                    // Check if user is on-prem synced AND if birthday is accessible
+                    const userCheckReq = await fetch(`https://graph.microsoft.com/v1.0/users/${user.entra_id}?$select=id,userPrincipalName,onPremisesSyncEnabled,birthday`, {
+                        headers: { 'Authorization': `Bearer ${accessToken}` }
+                    });
+
+                    if (userCheckReq.ok) {
+                        const userData = await userCheckReq.json();
+                        console.log(`[FIX] Check ${user.email}: OnPrem=${userData.onPremisesSyncEnabled}, BirthdayField=${userData.birthday === undefined ? 'UNDEFINED' : (userData.birthday || 'NULL')}`);
+
+                        if (userData.onPremisesSyncEnabled === true) {
+                            console.warn(`⚠️ [FIX] Skipping ${user.email} (DOB: ${cleanDob}): User is Synced from On-Premises AD (Read-Only in Azure).`);
+                            skipped++;
+                            continue;
+                        }
+                    }
+
                     // Proceed with PATCH
                     console.log(`[FIX] Attempting PATCH (Raw) for ${user.email} (DOB: ${cleanDob})...`);
                     const patchRes = await fetch(`https://graph.microsoft.com/v1.0/users/${user.entra_id}`, {
