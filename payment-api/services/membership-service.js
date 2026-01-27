@@ -25,8 +25,12 @@ async function createMember(membershipApiUrl, firstName, lastName, email, phoneN
         const response = await axios.post(`${membershipApiUrl}/create-user`, payload, { timeout: 30000 });
         return response.data;
     } catch (error) {
-        console.error(`[MembershipService] User creation failed: ${error.message}`);
-        return null;
+        console.error(`[MembershipService] User creation failed:`, error.message);
+        if (error.response) {
+            console.error(`[MembershipService] Response status:`, error.response.status);
+            console.error(`[MembershipService] Response data:`, error.response.data);
+        }
+        throw new Error(`Membership API error: ${error.response?.data?.detail || error.message}`);
     }
 }
 

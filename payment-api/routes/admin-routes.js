@@ -245,56 +245,48 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                     dateOfBirth
                 );
 
-                if (credentials) {
-                    console.log(`[AdminRoutes] Account created. User ID: ${credentials.user_id}`);
+                console.log(`[AdminRoutes] Account created. User ID: ${credentials.user_id}`);
 
-                    // Calculate expiry date (1 year from now)
-                    const now = new Date();
-                    const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
-                    const expiryStr = expiryDate.toISOString().split('T')[0];
+                // Calculate expiry date (1 year from now)
+                const now = new Date();
+                const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+                const expiryStr = expiryDate.toISOString().split('T')[0];
 
-                    // Create Directus user immediately so the status is 'active' and linked to Entra
-                    try {
-                        await directusService.createDirectusUser(DIRECTUS_URL, DIRECTUS_API_TOKEN, {
-                            first_name: firstName,
-                            last_name: lastName,
-                            email: email,
-                            status: 'active',
-                            membership_status: 'active',
-                            membership_expiry: expiryStr,
-                            entra_id: credentials.user_id,
-                            phone_number: phoneNumber,
-                            date_of_birth: dateOfBirth
-                        });
-                        console.log(`[AdminRoutes] Created and linked Directus user for ${email}`);
-                    } catch (err) {
-                        console.error(`[AdminRoutes] Failed to create/link Directus user:`, err.message);
-                    }
-
-                    // Trigger sync for newly created user
-                    if (credentials.user_id) {
-                        await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, credentials.user_id);
-                    }
-
-                    // Send welcome email with credentials
-                    try {
-                        await notificationService.sendWelcomeEmail(
-                            EMAIL_SERVICE_URL,
-                            email,
-                            firstName,
-                            credentials
-                        );
-                        console.log(`[AdminRoutes] Welcome email sent to: ${email}`);
-                    } catch (emailErr) {
-                        console.error(`[AdminRoutes] Failed to send welcome email to ${email}:`, emailErr.message);
-                        // Don't fail the whole request if only email fails, the account is created.
-                    }
-                } else {
-                    console.error(`[AdminRoutes] Failed to create member account for ${email} (no credentials returned)`);
-                    return res.status(500).json({
-                        error: 'Account creation failed',
-                        message: 'Membership API did not return credentials.'
+                // Create Directus user immediately so the status is 'active' and linked to Entra
+                try {
+                    await directusService.createDirectusUser(DIRECTUS_URL, DIRECTUS_API_TOKEN, {
+                        first_name: firstName,
+                        last_name: lastName,
+                        email: email,
+                        status: 'active',
+                        membership_status: 'active',
+                        membership_expiry: expiryStr,
+                        entra_id: credentials.user_id,
+                        phone_number: phoneNumber,
+                        date_of_birth: dateOfBirth
                     });
+                    console.log(`[AdminRoutes] Created and linked Directus user for ${email}`);
+                } catch (err) {
+                    console.error(`[AdminRoutes] Failed to create/link Directus user:`, err.message);
+                }
+
+                // Trigger sync for newly created user
+                if (credentials.user_id) {
+                    await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, credentials.user_id);
+                }
+
+                // Send welcome email with credentials
+                try {
+                    await notificationService.sendWelcomeEmail(
+                        EMAIL_SERVICE_URL,
+                        email,
+                        firstName,
+                        credentials
+                    );
+                    console.log(`[AdminRoutes] Welcome email sent to: ${email}`);
+                } catch (emailErr) {
+                    console.error(`[AdminRoutes] Failed to send welcome email to ${email}:`, emailErr.message);
+                    // Don't fail the whole request if only email fails, the account is created.
                 }
             } else {
                 console.warn(`[AdminRoutes] Insufficient data to create account for transaction ${transactionId}. Missing userId AND (name/email).`);
