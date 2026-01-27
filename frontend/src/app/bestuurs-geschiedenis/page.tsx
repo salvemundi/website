@@ -44,7 +44,7 @@ export default function BoardHistoryPage() {
   return (
     <>
       <div className="relative z-10">
-        <PageHeader title="BESTUURSGESCHIEDENIS">
+        <PageHeader title="BESTUURSGESCHIEDENIS" titleClassName="text-3xl sm:text-4xl md:text-6xl text-theme-purple dark:!text-white">
           <p className="text-lg sm:text-xl text-white/90 max-w-3xl mx-auto mt-4">
             Ontdek alle eerdere besturen van Salve Mundi
           </p>
@@ -64,7 +64,7 @@ export default function BoardHistoryPage() {
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div
                   key={i}
-                  className="h-96 animate-pulse rounded-3xl bg-white/60"
+                  className="h-96 animate-pulse rounded-3xl bg-[var(--bg-card)]/60"
                 />
               ))}
             </div>
