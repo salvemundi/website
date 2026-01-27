@@ -90,6 +90,8 @@ async def create_azure_user(data: CreateMemberRequest, token: str):
     }
     if data.phone_number:
         user_payload["mobilePhone"] = data.phone_number
+    if data.date_of_birth:
+        user_payload["birthday"] = f"{data.date_of_birth}T00:00:00Z"
         
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     async with httpx.AsyncClient() as client:
@@ -141,23 +143,14 @@ async def update_user_attributes(user_id: str, date_of_birth: str = None):
                 print(f"Graph Patch Error (Dates): {res.status_code} - {res.text}")
                 return # Critical failure
 
-            # 2. Optional Update: Date of Birth (might fail if attribute missing in tenant)
+            # 2. Update Date of Birth (Standard Property)
             if date_of_birth:
-                try:
-                    payload_dob = {
-                        "customSecurityAttributes": {
-                            ATTRIBUTE_SET_NAME: {
-                                "@odata.type": "#microsoft.graph.customSecurityAttributeValue",
-                                "Geboortedatum": date_of_birth
-                            }
-                        }
-                    }
-                    print(f"DEBUG: Sending PATCH (DoB) to {url_v1} with payload: {payload_dob}")
-                    res_dob = await client.patch(url_v1, json=payload_dob, headers=headers)
-                    if res_dob.status_code not in [200, 204]:
-                         print(f"⚠️ Warning: perform DoB update failed: {res_dob.status_code} - {res_dob.text}. Attribute might be missing in Azure.")
-                except Exception as e:
-                    print(f"⚠️ Warning: Exception during DoB update: {e}")
+                # Ensure ISO 8601 format
+                dob_payload = {"birthday": f"{date_of_birth}T00:00:00Z" if "T" not in date_of_birth else date_of_birth}
+                print(f"DEBUG: Sending PATCH (Birthday) to {url_v1} with: {dob_payload}")
+                res_dob = await client.patch(url_v1, json=dob_payload, headers=headers)
+                if res_dob.status_code not in [200, 204]:
+                     print(f"⚠️ Warning: perform Birthday update failed: {res_dob.status_code} - {res_dob.text}")
             
             # VERIFICATION LOOP: Wait until Azure AD actually shows the new attributes
             print(f"DEBUG: Starting verification for {user_id}...")
@@ -180,9 +173,8 @@ async def update_user_attributes(user_id: str, date_of_birth: str = None):
 async def create_user_endpoint(request: CreateMemberRequest, background_tasks: BackgroundTasks):
     token = await get_graph_token()
     new_user_data = await create_azure_user(request, token)
-    # We pass date_of_birth to attribute update if provided
-    dob_str = request.date_of_birth.replace("-", "") if request.date_of_birth else None
-    await update_user_attributes(new_user_data["id"], date_of_birth=dob_str)
+    # Wacht even zodat user gepropageerd is
+    await update_user_attributes(new_user_data["id"], date_of_birth=request.date_of_birth)
     return {
         "status": "created",
         "user_id": new_user_data["id"],
