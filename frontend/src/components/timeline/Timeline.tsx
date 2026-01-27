@@ -13,12 +13,12 @@ type TimelineProps = {
 export default function Timeline({ boards, getImageUrl, getMemberFullName }: TimelineProps) {
     if (!boards || boards.length === 0) return null;
 
-    // Sort by year ascending (oldest to newest)
+    // Sort by year descending (newest to oldest)
     const sortedBoards = useMemo(() => {
         return [...boards].sort((a, b) => {
             const ya = a?.year ?? a?.jaar ?? a?.id ?? 0;
             const yb = b?.year ?? b?.jaar ?? b?.id ?? 0;
-            return Number(ya) - Number(yb);
+            return Number(yb) - Number(ya);
         });
     }, [boards]);
 
@@ -91,15 +91,17 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
     };
 
     return (
-        <div className="w-full">
+        <div className="w-full [&_.timeline-card-content]:!max-h-none [&_.timeline-card-content]:!overflow-visible [&_.card-content-wrapper]:!max-h-none [&_.card-content-wrapper]:!overflow-visible">
             <Chrono
                 items={items}
                 mode="VERTICAL_ALTERNATING"
                 slideShow={false}
-                cardHeight={500}
+                scrollable={true}
                 theme={chronoTheme}
-                hideControls={false}
-                enableOutline={true}
+                hideControls={true}
+                enableOutline={false}
+                cardHeight="auto"
+                disableAutoScrollOnClick={true}
                 fontSizes={{
                     cardSubtitle: '0.875rem',
                     cardTitle: '1.25rem',
@@ -136,7 +138,7 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                                     <span>Bestuursleden</span>
                                 </div>
 
-                                <div className="grid grid-cols-1 gap-2 max-h-[250px] overflow-y-auto pr-2">
+                                <div className="grid grid-cols-1 gap-2">
                                     {board.members.map((member: any) => {
                                         const avatarRef = resolvePicture(member);
                                         let avatarSrc = '/img/placeholder.svg';

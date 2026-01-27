@@ -81,6 +81,50 @@ export default function CommitteeDetailPage() {
     const cleanName = cleanCommitteeName(committee.name);
     const members = committee.committee_members?.filter((m: any) => m.is_visible) || [];
 
+    function getMemberFullName(member: any) {
+        // Prefer nested relation fields (legacy), then fallback to plain text fields
+        if (member?.member_id) {
+            const m = member.member_id;
+            const first = m.first_name || m.firstname || m.name || m.display_name;
+            const last = m.last_name || m.lastname || m.surname || '';
+            const combined = `${first || ''} ${last || ''}`.trim();
+            if (combined) return combined;
+        }
+
+        if (member?.user_id) {
+            const u = member.user_id;
+            const first = u.first_name || u.firstname || u.name || u.display_name;
+            const last = u.last_name || u.lastname || u.surname || '';
+            const combined = `${first || ''} ${last || ''}`.trim();
+            if (combined) return combined;
+        }
+
+        // Direct text fields on member row (for plain-text entries)
+        if (member?.name) return member.name;
+        if (member?.full_name) return member.full_name;
+        if (member?.first_name || member?.last_name) return `${member.first_name || ''} ${member.last_name || ''}`.trim();
+
+        return 'Onbekend';
+    }
+
+    function getMemberEmail(member: any) {
+        return member?.user_id?.email || member?.email || '';
+    }
+
+    function resolveMemberAvatar(member: any) {
+        // Try common avatar/picture fields, return falsy when none
+        const candidates = [
+            member?.user_id?.avatar,
+            member?.user_id?.picture,
+            member?.member_id?.avatar,
+            member?.member_id?.picture,
+            member?.picture,
+            member?.avatar
+        ];
+        for (const c of candidates) if (c) return c;
+        return null;
+    }
+
     const leader = members.find((m: any) => m.is_leader);
     const isLeader = Boolean(isLeaderFromStorage || (user && leader && String(leader.user_id.id) === String(user.id)));
 
@@ -278,28 +322,30 @@ export default function CommitteeDetailPage() {
                                 <div className="rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-lg">
                                     <h3 className="mb-4 text-lg font-bold text-theme-purple dark:text-theme-white">Commissieleider</h3>
                                     <div className="flex items-center gap-4">
-                                        <div className="relative h-16 w-16 rounded-full overflow-hidden border-2 border-theme-purple/20">
-                                            <SmartImage
-                                                src={getImageUrl(leader.user_id.avatar)}
-                                                alt={`${leader.user_id.first_name} ${leader.user_id.last_name}`}
-                                                fill
-                                                sizes="64px"
-                                                className="object-cover"
-                                                loading="lazy"
-                                                placeholder="blur"
-                                                blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZGRkIi8+PC9zdmc+"
-                                            />
+                                        <div className="relative h-16 w-16 rounded-full overflow-hidden border-2 border-theme-purple/20 flex items-center justify-center bg-slate-100 dark:bg-slate-800">
+                                            {resolveMemberAvatar(leader) ? (
+                                                <SmartImage
+                                                    src={getImageUrl(resolveMemberAvatar(leader))}
+                                                    alt={getMemberFullName(leader)}
+                                                    fill
+                                                    sizes="64px"
+                                                    className="object-cover"
+                                                    loading="lazy"
+                                                />
+                                            ) : (
+                                                <span className="font-semibold text-theme-purple dark:text-theme-white">{getMemberFullName(leader).split(' ').map(n=>n[0]).join('').slice(0,2)}</span>
+                                            )}
                                         </div>
                                         <div>
                                             <p className="font-semibold text-theme-purple dark:text-theme-white">
-                                                {leader.user_id.first_name} {leader.user_id.last_name}
+                                                {getMemberFullName(leader)}
                                             </p>
                                             <p className="text-sm text-theme-purple/60 dark:text-theme-white/60">Commissieleider</p>
                                         </div>
                                     </div>
-                                    {leader.user_id.email && (
+                                    {getMemberEmail(leader) && (
                                         <a
-                                            href={`mailto:${leader.user_id.email}`}
+                                            href={`mailto:${getMemberEmail(leader)}`}
                                             className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-theme-purple/10 dark:bg-white/10 px-4 py-2 text-sm font-semibold text-theme-purple dark:text-theme-white shadow-sm transition hover:bg-theme-purple/20 dark:hover:bg-white/20"
                                         >
                                             <Mail className="h-4 w-4" />
@@ -319,20 +365,22 @@ export default function CommitteeDetailPage() {
                                     <div className="grid grid-cols-3 gap-4">
                                         {members.map((member: any) => (
                                             <div key={member.id} className="text-center group/member">
-                                                <div className="relative mx-auto h-16 w-16 rounded-full overflow-hidden border-2 border-transparent group-hover/member:border-theme-purple transition-colors">
-                                                    <SmartImage
-                                                        src={getImageUrl(member.user_id.avatar)}
-                                                        alt={`${member.user_id.first_name}`}
-                                                        fill
-                                                        sizes="64px"
-                                                        className="object-cover"
-                                                        loading="lazy"
-                                                        placeholder="blur"
-                                                        blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZGRkIi8+PC9zdmc+"
-                                                    />
+                                                <div className="relative mx-auto h-16 w-16 rounded-full overflow-hidden border-2 border-transparent group-hover/member:border-theme-purple transition-colors flex items-center justify-center bg-slate-100 dark:bg-slate-800">
+                                                    {resolveMemberAvatar(member) ? (
+                                                        <SmartImage
+                                                            src={getImageUrl(resolveMemberAvatar(member))}
+                                                            alt={getMemberFullName(member)}
+                                                            fill
+                                                            sizes="64px"
+                                                            className="object-cover"
+                                                            loading="lazy"
+                                                        />
+                                                    ) : (
+                                                        <span className="font-semibold text-theme-purple dark:text-theme-white">{getMemberFullName(member).split(' ').map(n=>n[0]).join('').slice(0,2)}</span>
+                                                    )}
                                                 </div>
                                                 <p className="mt-2 text-xs font-bold text-theme-purple dark:text-theme-white">
-                                                    {member.user_id.first_name}
+                                                    {getMemberFullName(member)}
                                                 </p>
                                                 {isLeader && (
                                                     <div className="mt-2 flex flex-col items-center gap-1">
