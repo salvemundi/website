@@ -100,7 +100,7 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                 theme={chronoTheme}
                 hideControls={true}
                 enableOutline={false}
-                cardHeight="auto"
+
                 disableAutoScrollOnClick={true}
                 fontSizes={{
                     cardSubtitle: '0.875rem',
@@ -112,7 +112,7 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                     <div key={board.id || `board-${index}`} className="p-4" data-testid={`timeline-item-${index}`}>
                         {/* Board image */}
                         {board.image && (
-                                <div className="w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-700 mb-4">
+                            <div className="w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-700 mb-4">
                                 <img
                                     src={
                                         (typeof board.image === 'string' && (board.image.startsWith('http') || board.image.startsWith('/')))
