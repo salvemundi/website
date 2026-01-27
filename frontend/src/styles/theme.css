@@ -219,6 +219,10 @@ a:hover {
 
 
 .text-gradient {
+  color: var(--theme-purple);
+}
+
+.dark .text-gradient {
   background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -241,6 +245,10 @@ a:hover {
 }
 
 .text-gradient-animated {
+  color: var(--theme-purple);
+}
+
+.dark .text-gradient-animated {
   background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end), var(--gradient-start));
   background-size: 200% 200%;
   -webkit-background-clip: text;
