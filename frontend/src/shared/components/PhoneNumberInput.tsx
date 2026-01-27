@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import nl from 'react-phone-number-input/locale/nl';
 import 'react-phone-number-input/style.css';
