@@ -413,7 +413,7 @@ export default function SignUp() {
                                         value={form.telefoon}
                                         onChange={(val) => handleChange({ target: { name: 'telefoon', value: val || '' } } as any)}
                                         required
-                                        error={phoneError}
+                                        error={phoneError || undefined}
                                     />
                                 </label>
 
