@@ -96,11 +96,9 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                 items={items}
                 mode="VERTICAL_ALTERNATING"
                 slideShow={false}
-                scrollable={{ scrollbar: false }}
                 theme={chronoTheme}
                 hideControls={true}
                 enableOutline={false}
-                disableAutoScrollOnClick={true}
                 fontSizes={{
                     cardSubtitle: '0.875rem',
                     cardTitle: '1.25rem',

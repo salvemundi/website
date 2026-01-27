@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import { isUserAuthorizedForReis, isUserAuthorizedForKroegentocht } from '@/shared/lib/committee-utils';
 import { directusFetch } from '@/shared/lib/directus';
 import { stickersApi, eventsApi, siteSettingsApi } from '@/shared/lib/api/salvemundi';
 import {
@@ -15,8 +14,6 @@ import {
     Plus,
     FileText,
     Sticker,
-    Mail,
-    Heart,
     AlertCircle,
     Activity,
     Ticket,
@@ -24,10 +21,6 @@ import {
 } from 'lucide-react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 
-// Helper function to clean committee names
-function cleanCommitteeName(name: string): string {
-    return name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim();
-}
 
 interface DashboardStats {
     totalSignups: number;
@@ -211,8 +204,6 @@ export default function AdminDashboardPage() {
     const localBypass = isLocalhost && !user;
     const fakeLocalUser = localBypass ? ({ id: 'local-admin', first_name: 'Local', last_name: 'Admin', committees: [] } as any) : null;
     const effectiveUser = user ?? fakeLocalUser;
-    const canManageReis = isUserAuthorizedForReis(effectiveUser);
-    const canManageKroegentocht = isUserAuthorizedForKroegentocht(effectiveUser);
     const [stats, setStats] = useState<DashboardStats>({
         totalSignups: 0,
         upcomingBirthdays: [],
@@ -371,8 +362,7 @@ export default function AdminDashboardPage() {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
-            // Fetch birthdays for the next 14 days to be safe, then filter strictly
-            const maxDays = 7;
+            // Calculate next birthdays for all users and pick the next 5 upcoming
 
             type BirthdayItem = {
                 id: string;
@@ -423,15 +413,11 @@ export default function AdminDashboardPage() {
                     } as BirthdayItem;
                 })
                 .filter((u): u is BirthdayItem => u !== null)
-                .filter(u => {
-                    const diffTime = u.nextBirthday.getTime() - today.getTime();
-                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                    return diffDays >= 0 && diffDays <= maxDays;
-                })
                 .sort((a, b) => a.nextBirthday.getTime() - b.nextBirthday.getTime())
                 .map(u => ({ id: u.id, first_name: u.first_name, last_name: u.last_name, birthday: u.birthday, isToday: u.isToday }));
 
-            return upcomingItems.slice(0, 10);
+            // Return only the next 5 upcoming birthdays
+            return upcomingItems.slice(0, 5);
         } catch (error) {
             console.error('Failed to fetch birthdays:', error);
             return [];
@@ -791,12 +777,6 @@ export default function AdminDashboardPage() {
         return date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
     };
 
-    const activeAdmin = visibilitySettings.kroegentocht
-        ? { title: 'Kroegentocht', link: '/admin/kroegentocht', color: 'orange' as const }
-        : visibilitySettings.reis
-            ? { title: 'Reis', link: '/admin/reis', color: 'teal' as const }
-            : { title: 'Stickers', link: '/stickers', color: 'red' as const };
-
     if (isLoading) {
         return (
             <>
@@ -822,8 +802,8 @@ export default function AdminDashboardPage() {
 
             <div className="container mx-auto px-4 py-8 max-w-7xl">
                 {/* Quick Actions Section */}
-                <div className="mb-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="mb-8">
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <StatCard
                             title="Overzicht"
                             value="Activiteiten"
@@ -833,10 +813,10 @@ export default function AdminDashboardPage() {
                             colorClass="purple"
                         />
                         <StatCard
-                            title="Intro"
-                            value="Admin"
+                            title="Beheer"
+                            value="intro"
                             icon={<FileText className="h-6 w-6" />}
-                            subtitle="Beheer intro pagina"
+                            subtitle={`aanmeldingen:  ${stats.introSignups}`}
                             onClick={() => router.push('/admin/intro')}
                             colorClass="blue"
                         />
@@ -850,15 +830,36 @@ export default function AdminDashboardPage() {
                         />
                         <StatCard
                             title="Beheer"
-                            value={activeAdmin.title}
-                            icon={<Activity className="h-6 w-6" />}
-                            subtitle={`Beheer ${activeAdmin.title.toLowerCase()}`}
-                            onClick={() => router.push(activeAdmin.link)}
-                            colorClass={activeAdmin.color}
+                            value="Stickers"
+                            icon={<Sticker className="h-6 w-6" />}
+                            subtitle={`Sticker aantal: ${stats.totalStickers}`}
+                            onClick={() => router.push('/stickers')}
+                            colorClass="red"
                         />
                     </div>
 
                     {/* titles moved into the stats grid so they align with the top of the stats column */}
+
+                    {/* Mobile-only: show Intro and Kroegentocht below the first 4 cards */}
+                    <div className="mt-4 md:hidden grid grid-cols-2 gap-4">
+                        <StatCard
+                            title="beheer"
+                            value="reis"
+                            icon={<FileText className="h-6 w-6" />}
+                            subtitle={`aanmeldingen:  ${stats.reisSignups}`}
+                            onClick={() => router.push('/admin/reis')}
+                            colorClass="teal"
+                        />
+
+                        <StatCard
+                            title="beheer"
+                            value="kroegentocht"
+                            icon={<Ticket className="h-6 w-6" />}
+                            subtitle={`aanmeldingen:  ${stats.pubCrawlSignups}`}
+                            onClick={() => router.push('/admin/kroegentocht')}
+                            colorClass="orange"
+                        />
+                    </div>
                 </div>
 
                 {/* Stats Section */}
@@ -896,27 +897,7 @@ export default function AdminDashboardPage() {
                                         />
                                     </div>
 
-                                    {/* Reis and Kroegentocht - Separated section */}
-                                    <div className="border-t border-admin-muted pt-4">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <ActionCard
-                                                title="Beheer"
-                                                subtitle="Reis"
-                                                icon={<Activity className="h-6 w-6" />}
-                                                onClick={() => router.push('/admin/reis')}
-                                                colorClass="teal"
-                                                disabled={!canManageReis}
-                                            />
-                                            <ActionCard
-                                                title="Beheer"
-                                                subtitle="Kroegentocht"
-                                                icon={<Ticket className="h-6 w-6" />}
-                                                onClick={() => router.push('/admin/kroegentocht')}
-                                                colorClass="orange"
-                                                disabled={!canManageKroegentocht}
-                                            />
-                                        </div>
-                                    </div>
+                                    {/* Removed small 'Beheer' buttons here per request */}
                                 </div>
                             </div>
 
@@ -924,7 +905,7 @@ export default function AdminDashboardPage() {
                             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
                                 <div className="col-span-1">
                                     <ListCard
-                                        title="Aankomende Jarigen (7 dagen)"
+                                        title="Aankomende Jarigen "
                                         icon={<Cake className="h-5 w-5" />}
                                     >
                                         {stats.upcomingBirthdays.length > 0 ? (
@@ -940,11 +921,7 @@ export default function AdminDashboardPage() {
                                                         <div>
                                                             <p className={`font-semibold ${person.isToday ? 'text-yellow-900 dark:text-yellow-100' : 'text-slate-700 dark:text-slate-200'}`}>
                                                                 {person.first_name} {person.last_name}
-                                                                {person.isToday && (
-                                                                    <span className="ml-2 text-xs font-bold bg-yellow-500 text-white px-2 py-0.5 rounded-full">
-                                                                        VANDAAG! 🎉
-                                                                    </span>
-                                                                )}
+                                                                {person.isToday}
                                                             </p>
                                                             <p className={`text-sm ${person.isToday ? 'text-yellow-700 dark:text-yellow-300' : 'text-slate-500 dark:text-slate-400'}`}>
                                                                 {formatDate(person.birthday)}
@@ -955,33 +932,15 @@ export default function AdminDashboardPage() {
                                                 ))}
                                             </div>
                                         ) : (
-                                            <p className="text-slate-500 dark:text-slate-400 text-center py-4">Geen jarigen in de komende 7 dagen</p>
+                                            <p className="text-slate-500 dark:text-slate-400 text-center py-4">Geen jarigen gevonden</p>
                                         )}
                                     </ListCard>
                                 </div>
                                 <div className="col-span-1">
                                     <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
-                                        {visibilitySettings.intro && (
-                                            <StatCard
-                                                title="Intro Aanmeldingen"
-                                                value={stats.introSignups}
-                                                icon={<Mail className="h-6 w-6" />}
-                                                subtitle="Totaal aanmeldingen"
-                                                onClick={() => router.push('/intro')}
-                                                colorClass="blue"
-                                            />
-                                        )}
+                                       
 
-                                        {visibilitySettings.intro && (
-                                            <StatCard
-                                                title="Blog Likes"
-                                                value={stats.introBlogLikes}
-                                                icon={<Heart className="h-6 w-6" />}
-                                                subtitle="Alle intro blogs"
-                                                onClick={() => router.push('/intro/blog')}
-                                                colorClass="blue"
-                                            />
-                                        )}
+                               
 
                                         {/* Top 3 Sticker Collectors moved here */}
                                         <div className="mt-2">
@@ -1026,35 +985,25 @@ export default function AdminDashboardPage() {
 
                         {/* Right side stats */}
                         <div className="space-y-4">
-                            <StatCard
-                                title="Meeste Activiteiten"
-                                value={stats.topCommittee ? cleanCommitteeName(stats.topCommittee.name) : 'Geen data'}
-                                icon={<Sticker className="h-6 w-6" />}
-                                subtitle={stats.topCommittee ? `${stats.topCommittee.count} ${stats.topCommittee.count === 1 ? 'activiteit' : 'activiteiten'} dit jaar` : 'Geen data'}
-                                onClick={() => router.push('/commissies')}
-                                colorClass="purple"
-                            />
-
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <StatCard
-                                    title="Commissieleden"
-                                    value={stats.totalCommitteeMembers}
-                                    icon={<Users className="h-6 w-6" />}
-                                    subtitle="Actieve leden"
-                                    onClick={() => router.push('/commissies')}
-                                    colorClass="green"
+                                    title="Beheer"
+                                    value="Reis"
+                                    icon={<Plane className="h-6 w-6" />}
+                                    subtitle={`aanmeldingen: ${stats.reisSignups}`}
+                                    onClick={() => router.push('/admin/reis')}
+                                    colorClass="teal"
                                 />
 
                                 <StatCard
-                                    title="Totaal Stickers"
-                                    value={stats.totalStickers}
-                                    icon={<Sticker className="h-6 w-6" />}
-                                    subtitle="Alle verzamelde stickers"
-                                    onClick={() => router.push('/stickers')}
-                                    colorClass="red"
+                                    title="Beheer"
+                                    value="Kroegentocht"
+                                    icon={<Ticket className="h-6 w-6" />}
+                                    subtitle={`aanmeldingen: ${stats.pubCrawlSignups ?? 0}`}
+                                    onClick={() => router.push('/admin/kroegentocht')}
+                                    colorClass="orange"
                                 />
                             </div>
-
                             {/* Activiteiten aanmeldingen - Now on the right side */}
                             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
                                 <div className="flex items-center justify-between mb-3">
@@ -1071,11 +1020,15 @@ export default function AdminDashboardPage() {
                                             const isPast = eventDate && eventDate < now;
 
                                             return (
-                                                <div
+                                                <button
                                                     key={ev.id}
-                                                    className={`flex items-center justify-between p-3 rounded-lg ${isPast
-                                                            ? 'bg-slate-200 dark:bg-slate-700/50 opacity-75'
-                                                            : 'bg-slate-100 dark:bg-slate-700'
+                                                    type="button"
+                                                    onClick={isPast ? undefined : () => router.push(`/admin/activiteiten/${ev.id}/aanmeldingen`)}
+                                                    disabled={!!isPast}
+                                                    aria-disabled={!!isPast}
+                                                    className={`w-full text-left flex items-center justify-between p-3 rounded-lg transition hover:shadow-sm active:scale-[.997] ${isPast
+                                                        ? 'bg-slate-200 dark:bg-slate-700/50 opacity-75 cursor-default'
+                                                        : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200/50 dark:hover:bg-slate-600 cursor-pointer'
                                                         }`}
                                                 >
                                                     <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -1092,7 +1045,7 @@ export default function AdminDashboardPage() {
                                                         </span>
                                                         <UserCheck className={`h-4 w-4 ${isPast ? 'text-slate-500 dark:text-slate-400' : 'text-theme-purple'}`} />
                                                     </div>
-                                                </div>
+                                                </button>
                                             );
                                         })
                                     ) : (
@@ -1101,30 +1054,7 @@ export default function AdminDashboardPage() {
                                 </div>
                             </div>
 
-                            {/* Kroegentocht & Reis aanmeldingen shown under Activiteiten aanmeldingen */}
-                            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {visibilitySettings.reis && (
-                                    <StatCard
-                                        title="Reis Aanmeldingen"
-                                        value={stats.reisSignups}
-                                        icon={<Plane className="h-6 w-6" />}
-                                        subtitle="Totaal deelnemers"
-                                        onClick={() => router.push('/admin/reis')}
-                                        colorClass="teal"
-                                    />
-                                )}
-
-                                {visibilitySettings.kroegentocht && (
-                                    <StatCard
-                                        title="Kroegentocht Aanmeldingen"
-                                        value={stats.pubCrawlSignups ?? 0}
-                                        icon={<Ticket className="h-6 w-6" />}
-                                        subtitle={stats.upcomingPubCrawl ? `${stats.upcomingPubCrawl.name}` : 'Geen data'}
-                                        onClick={() => router.push('/admin/kroegentocht')}
-                                        colorClass="orange"
-                                    />
-                                )}
-                            </div>
+                            {/* Kroegentocht and Reis counts moved into their respective quick-action cards above */}
                         </div>
                     </div>
 
