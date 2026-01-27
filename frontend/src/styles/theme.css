@@ -48,9 +48,9 @@
   --radius-xl: 0.75rem;
   --radius-2xl: 1rem;
 
-  /* Gradients */
-  --gradient-start: #eac8e7;
-  --gradient-end: #d8a6d4;
+  /* Gradients - Light Mode: Soft white-purple to match card style preference */
+  --gradient-start: #fdfbff;
+  --gradient-end: #f4eef5;
 
   /* Header & UI */
   --header-height: 64px;
@@ -170,7 +170,7 @@ a:hover {
   background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
 }
 
-/* Improve text contrast for gradient-themed cards (kroegentocht, reis, etc.) */
+/* Text contrast for gradient-themed sections */
 .bg-gradient-theme,
 .bg-gradient-theme h1,
 .bg-gradient-theme h2,
@@ -182,6 +182,20 @@ a:hover {
 .bg-gradient-theme li,
 .bg-gradient-theme label,
 .bg-gradient-theme strong {
+  color: var(--text-main);
+}
+
+.dark .bg-gradient-theme,
+.dark .bg-gradient-theme h1,
+.dark .bg-gradient-theme h2,
+.dark .bg-gradient-theme h3,
+.dark .bg-gradient-theme h4,
+.dark .bg-gradient-theme p,
+.dark .bg-gradient-theme span,
+.dark .bg-gradient-theme a,
+.dark .bg-gradient-theme li,
+.dark .bg-gradient-theme label,
+.dark .bg-gradient-theme strong {
   color: rgba(255, 255, 255, 0.95) !important;
 }
 
