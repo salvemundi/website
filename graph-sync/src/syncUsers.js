@@ -583,7 +583,11 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null, forceL
 
         // Try to get birthday from Entra
         if (u.birthday) {
-            dateOfBirth = new Date(u.birthday).toISOString().split('T')[0];
+            const rawDob = new Date(u.birthday).toISOString().split('T')[0];
+            // Ignore default/empty dates like year 1
+            if (!rawDob.startsWith('0001-')) {
+                dateOfBirth = rawDob;
+            }
         } else if (attributes?.Geboortedatum) {
             const v = attributes.Geboortedatum; // Assuming yyyyMMdd if it's a string
             if (v && v.length === 8) {
@@ -745,7 +749,11 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null, forceL
             status: 'active',
             ...(role ? { role } : {}),
             membership_expiry: membershipExpiry || (existingUser?.membership_expiry || null),
-            date_of_birth: dateOfBirth || (existingUser?.date_of_birth || null),
+            date_of_birth: dateOfBirth || (
+                (existingUser?.date_of_birth && !existingUser.date_of_birth.startsWith('0001-') && !existingUser.date_of_birth.startsWith('1-01-'))
+                    ? existingUser.date_of_birth
+                    : null
+            ),
             title: u.jobTitle || (existingUser?.title || null),
         };
 
