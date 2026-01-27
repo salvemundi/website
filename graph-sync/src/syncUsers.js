@@ -1251,7 +1251,7 @@ app.post('/sync/dob-fix', bodyParser.json(), async (req, res) => {
                         cleanDob = cleanDob.split('T')[0];
                     }
 
-                    await client.api(`/users/${user.entra_id}`).patch({
+                    await client.api(`/users/${user.entra_id}`).version('beta').patch({
                         birthday: `${cleanDob}T04:04:04Z`
                     });
                     success++;
