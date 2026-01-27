@@ -152,13 +152,15 @@ const Header: React.FC = () => {
         <header
             ref={headerRef}
             className="sticky top-0 z-50 w-full"
+            style={{ marginTop: 'calc(-1 * env(safe-area-inset-top))' }}
         >
-            <div className="relative">
+            <div className="relative" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
                 <div
                     className={`pointer-events-none absolute inset-0 -z-10 transition-all duration-300 ${isScrolled
                         ? "bg-[var(--bg-main)]/98 backdrop-blur-2xl shadow-xl shadow-black/10 opacity-100 border-b border-theme-purple/10"
                         : "bg-transparent backdrop-blur-none opacity-0"
                         }`}
+                    style={{ top: 'calc(-1 * env(safe-area-inset-top))', paddingTop: 'env(safe-area-inset-top)' }}
                 />
                 <div className="mx-auto flex items-center max-w-app justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8 z-10 relative">
                     <Link
