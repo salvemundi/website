@@ -557,7 +557,7 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null, forceL
 
         const u = await client.api(`/users/${userId}`)
             .version('beta')
-            .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,customSecurityAttributes,jobTitle,birthday')
+            .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,customSecurityAttributes,jobTitle,birthday,otherMails')
             .get();
 
         const attributes = u.customSecurityAttributes?.SalveMundiLidmaatschap;
@@ -592,6 +592,9 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null, forceL
         }
 
         const email = (u.mail || u.userPrincipalName || '').toLowerCase();
+        const otherEmails = (u.otherMails || []).map(e => e.toLowerCase());
+        const allEmails = Array.from(new Set([email, ...otherEmails])).filter(Boolean);
+
         const firstName = u.givenName || (u.displayName ? u.displayName.split(' ')[0] : '').trim();
         const lastName = u.surname || (u.displayName ? u.displayName.split(' ').slice(1).join(' ') : '').trim();
 
@@ -637,9 +640,10 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null, forceL
         );
         const existingByEntra = entraIdRes.data?.data?.[0] || null;
 
-        // Priority 2: Search by email (for warnings/manual linking)
+        // Priority 2: Search by all known emails (for warnings/manual linking)
+        const emailList = allEmails.join(',');
         const emailRes = await axios.get(
-            `${process.env.DIRECTUS_URL}/users?filter[email][_eq]=${encodeURIComponent(email)}&fields=id,email,first_name,last_name,phone_number,status,role,membership_expiry,fontys_email,date_of_birth,title,entra_id`,
+            `${process.env.DIRECTUS_URL}/users?filter[email][_in]=${encodeURIComponent(emailList)}&fields=id,email,first_name,last_name,phone_number,status,role,membership_expiry,fontys_email,date_of_birth,title,entra_id`,
             { headers: DIRECTUS_HEADERS }
         );
         const existingByEmail = emailRes.data?.data || [];
@@ -677,14 +681,14 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null, forceL
 
         if (warning) {
             // If no linked account exists and we have a warning, we skip to prevent further duplication
-            // UNLESS forceLink is true and it's a LINK_REQUIRED case (single email match with no entra_id)
+            // UNLESS it's a LINK_REQUIRED case (single email match with no entra_id), in which case we link automatically
             if (!existingUser) {
-                if (forceLink && warning?.type === 'LINK_REQUIRED' && existingByEmail.length === 1) {
-                    console.log(`[SYNC] 🔗 Force linking ${email} (ID: ${existingByEmail[0].id}) to Entra ID ${userId}`);
+                if ((forceLink || warning?.type === 'LINK_REQUIRED') && existingByEmail.length === 1) {
+                    console.log(`[SYNC] 🔗 Auto-linking ${email} (ID: ${existingByEmail[0].id}) to Entra ID ${userId}`);
                     existingUser = existingByEmail[0];
                     // Don't add warning since we're successfully linking
                 } else {
-                    // Only add warning if we're NOT force linking
+                    // Only add warning if we're NOT force linking or it's not a simple link
                     syncStatus.warningCount++;
                     syncStatus.warnings.push(warning);
                     console.log(`[SYNC] ⚠️ Warning for ${email}: ${warning.message}`);
