@@ -1285,7 +1285,7 @@ app.post('/sync/dob-fix', bodyParser.json(), async (req, res) => {
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            birthday: `${cleanDob}T04:04:04Z`
+                            birthday: `${cleanDob}T00:00:00Z`
                         })
                     });
 
