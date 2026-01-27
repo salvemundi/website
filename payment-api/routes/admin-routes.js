@@ -164,17 +164,6 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                 return res.status(400).json({ error: 'Payment not completed yet' });
             }
 
-            await directusService.updateDirectusTransaction(
-                DIRECTUS_URL,
-                DIRECTUS_API_TOKEN,
-                transactionId,
-                {
-                    approval_status: 'approved',
-                    approved_by: req.user.id,
-                    approved_at: new Date().toISOString()
-                }
-            );
-
             // Extract user info - Prioritize Directus transaction fields
             let userId = transaction.user_id;
             let firstName = transaction.first_name;
@@ -295,6 +284,18 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                     message: 'Cannot create account - missing user information (email/name)'
                 });
             }
+
+            // Mark as approved only after successful account creation
+            await directusService.updateDirectusTransaction(
+                DIRECTUS_URL,
+                DIRECTUS_API_TOKEN,
+                transactionId,
+                {
+                    approval_status: 'approved',
+                    approved_by: req.user.id,
+                    approved_at: new Date().toISOString()
+                }
+            );
 
             res.json({
                 success: true,
