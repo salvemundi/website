@@ -816,7 +816,7 @@ export default function AdminDashboardPage() {
             <div className="container mx-auto px-4 py-8 max-w-7xl">
                 {/* Quick Actions Section */}
                 <div className="mb-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <StatCard
                             title="Overzicht"
                             value="Activiteiten"
@@ -826,8 +826,8 @@ export default function AdminDashboardPage() {
                             colorClass="purple"
                         />
                         <StatCard
-                            title="Intro"
-                            value="Admin"
+                            title="Admin"
+                            value="Intro"
                             icon={<FileText className="h-6 w-6" />}
                             subtitle="Beheer intro pagina"
                             onClick={() => router.push('/admin/intro')}
