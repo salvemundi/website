@@ -1251,13 +1251,28 @@ app.post('/sync/dob-fix', bodyParser.json(), async (req, res) => {
                         cleanDob = cleanDob.split('T')[0];
                     }
 
+                    // DEBUG: Verify we can at least READ the user (checks User.Read.All)
+                    try {
+                        await client.api(`/users/${user.entra_id}`).select('id,userPrincipalName').get();
+                    } catch (readErr) {
+                        console.error(`❌ [FIX] READ Check Failed for ${user.email}: ${readErr.statusCode} - ${readErr.message}`);
+                    }
+
+                    // Proceed with PATCH
+                    console.log(`[FIX] Attempting PATCH for ${user.email} (DOB: ${cleanDob})...`);
                     await client.api(`/users/${user.entra_id}`).version('beta').patch({
                         birthday: `${cleanDob}T04:04:04Z`
                     });
+
                     success++;
                     if (success % 10 === 0) console.log(`[FIX] Progress: ${success} updated...`);
+
                 } catch (e) {
-                    console.error(`❌ [FIX] Failed for ${user.email} (${user.entra_id}): ${e.message}`);
+                    console.error(`❌ [FIX] Failed for ${user.email} (${user.entra_id}):`);
+                    console.error(`   Status: ${e.statusCode}`);
+                    console.error(`   Code: ${e.body?.error?.code || e.code}`);
+                    console.error(`   Message: ${e.body?.error?.message || e.message}`);
+                    if (e.body) console.error(`   Full Body: ${JSON.stringify(e.body)}`);
                     failed++;
                 }
 
