@@ -555,12 +555,23 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null, forceL
     try {
         const client = await getGraphClient();
 
-        const u = await client.api(`/users/${userId}`)
+        let u = await client.api(`/users/${userId}`)
             .version('beta')
             .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,customSecurityAttributes,jobTitle,birthday,otherMails')
             .get();
 
-        const attributes = u.customSecurityAttributes?.SalveMundiLidmaatschap;
+        let attributes = u.customSecurityAttributes?.SalveMundiLidmaatschap;
+
+        // Microsoft Graph propagation delay: if attributes are missing, wait 2 seconds and retry once
+        if (!attributes?.VerloopdatumStr && !attributes?.Verloopdatum) {
+            console.log(`[SYNC] Attributes missing for ${u.mail || userId}, retrying in 2s...`);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            u = await client.api(`/users/${userId}`)
+                .version('beta')
+                .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,customSecurityAttributes,jobTitle,birthday,otherMails')
+                .get();
+            attributes = u.customSecurityAttributes?.SalveMundiLidmaatschap;
+        }
         // Minimal logging: expiry and missing fields summary
 
         let membershipExpiry = null;
@@ -962,7 +973,14 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null, forceL
 
             console.log(`[SYNC] ${email} membership: active=${isMember} (group=${isInActieveLeden}, expiry=${isExpiryActive}, expiryDate=${membershipExpiry})`);
 
-            await setDirectusMembershipStatus(directusUserId, isMember ? 'active' : 'none');
+            // PROTECTION: If membership determination is null/false but the user is ALREADY active in Directus,
+            // do not override to 'none' if we couldn't find any expiry attributes. 
+            // This prevents race conditions during new registrations.
+            if (!isMember && existingUser?.membership_status === 'active' && !membershipExpiry && !isInActieveLeden) {
+                console.log(`[SYNC] 🛡️ Protecting 'active' status for ${email} (no new data to justify removal)`);
+            } else {
+                await setDirectusMembershipStatus(directusUserId, isMember ? 'active' : 'none');
+            }
         } catch (e) {
             console.error('❌ [SYNC] Error setting membership_status after committee sync:', e.response?.data || e.message);
         }
