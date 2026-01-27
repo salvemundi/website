@@ -49,9 +49,6 @@ body {
   padding: 0;
   min-height: 100vh;
   overflow-x: hidden;
-  /* iOS safe area support */
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* 4. Scrollbar Styles */
