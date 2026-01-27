@@ -502,7 +502,7 @@ export default function AdminDashboardPage() {
             });
 
             const sorted = Object.values(counts).sort((a, b) => b.count - a.count);
-            return sorted.slice(0, 3); // Top 3
+            return sorted.slice(0, 5); // Top 5: Meer laten zien omdat het blok veel ruimte heeft
         } catch (error) {
             console.error('Failed to fetch sticker stats:', error);
             return [];
@@ -938,29 +938,36 @@ export default function AdminDashboardPage() {
                         {/* Lists: Top 3 Stickers & Birthdays */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <ListCard
-                                title="Top 3 Sticker Verzamelaars"
+                                title="Top Sticker Verzamelaars"
                                 icon={<Award className="h-5 w-5" />}
                             >
                                 {stats.topStickers.length > 0 ? (
                                     <div className="space-y-3">
-                                        {stats.topStickers.map((person, index) => (
-                                            <div key={person.id} className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-700 rounded-xl">
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${index === 0 ? 'bg-yellow-500 dark:bg-yellow-600' : index === 1 ? 'bg-slate-400 dark:bg-slate-500' : 'bg-orange-600 dark:bg-orange-700'}`}>
-                                                        {index + 1}
+                                        {stats.topStickers.map((person, index) => {
+                                            let badgeColor = 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300';
+                                            if (index === 0) badgeColor = 'bg-yellow-500 dark:bg-yellow-600 text-white';
+                                            else if (index === 1) badgeColor = 'bg-slate-400 dark:bg-slate-500 text-white';
+                                            else if (index === 2) badgeColor = 'bg-orange-600 dark:bg-orange-700 text-white';
+
+                                            return (
+                                                <div key={person.id} className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-700/50 rounded-xl">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-sm ${badgeColor}`}>
+                                                            {index + 1}
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-semibold text-slate-700 dark:text-slate-200">
+                                                                {person.first_name} {person.last_name}
+                                                            </p>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <p className="font-semibold text-slate-700 dark:text-slate-200">
-                                                            {person.first_name} {person.last_name}
-                                                        </p>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xl font-bold text-theme-purple">{person.count}</span>
+                                                        <Award className="h-4 w-4 text-theme-purple" />
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-2xl font-bold text-theme-purple">{person.count}</span>
-                                                    <Award className="h-5 w-5 text-theme-purple" />
-                                                </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 ) : (
                                     <p className="text-slate-500 dark:text-slate-400 text-center py-4">Geen stickers gevonden</p>
