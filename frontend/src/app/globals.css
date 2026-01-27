@@ -154,12 +154,14 @@ body {
   .activity,
   .beheer-activiteit,
   .directus-card {
-    background-color: rgba(255, 255, 255, 0.03) !important;
-    border: 1px solid rgba(255, 255, 255, 0.06) !important;
-    color: var(--text-on-dark, #ffffff);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-    /* keep rounded corners consistent with other cards */
+    /* Use the design-system card background so cards contrast the page */
+    background-color: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-main) !important;
+    /* Prefer elevated shadow from theme with a safe fallback */
+    box-shadow: var(--shadow-card-elevated, 0 1px 2px rgba(0, 0, 0, 0.5)) !important;
     border-radius: 0.5rem;
+    backdrop-filter: blur(4px);
   }
 }
 
@@ -169,11 +171,12 @@ body {
 .dark .activity,
 .dark .beheer-activiteit,
 .dark .directus-card {
-  background-color: rgba(255, 255, 255, 0.03) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  color: var(--text-on-dark, #ffffff);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-main) !important;
+  box-shadow: var(--shadow-card-elevated, 0 1px 2px rgba(0, 0, 0, 0.5)) !important;
   border-radius: 0.5rem;
+  backdrop-filter: blur(4px);
 }
 /* 8. Timeline / Chrono Component Overrides */
 /* Remove scrollbars and height constraints from timeline cards */

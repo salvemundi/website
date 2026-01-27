@@ -83,6 +83,14 @@
   --theme-text-light: var(--text-light);
   --bg-card-dark: var(--bg-card);
   /* Fallback for tailwind config */
+
+  /* --- Admin specific tokens (light mode defaults) --- */
+  --theme-admin-card: var(--bg-card);
+  --theme-admin-card-soft: var(--bg-soft);
+  --theme-admin-text: var(--text-main);
+  --theme-admin-text-muted: var(--text-muted);
+  --theme-admin-border: var(--border-color);
+  --theme-admin-hover: rgba(0,0,0,0.02);
 }
 
 /* --- 3. DARK MODE OVERRIDES --- */
@@ -129,6 +137,14 @@
   --theme-text-muted: var(--text-muted);
   --theme-text-light: var(--text-light);
   --bg-card-dark: var(--bg-card);
+
+  /* Admin tokens for dark mode - ensure cards are visibly distinct from the page background */
+  --theme-admin-card: var(--bg-card);
+  --theme-admin-card-soft: rgba(255,255,255,0.02);
+  --theme-admin-text: var(--text-main);
+  --theme-admin-text-muted: var(--text-muted);
+  --theme-admin-border: rgba(255,255,255,0.06);
+  --theme-admin-hover: rgba(255,255,255,0.03);
 }
 
 /* --- 4. LEGACY & COMPATIBILITY ALIASES --- */
@@ -204,6 +220,39 @@ a:hover {
 .bg-gradient-theme .subtle,
 .bg-gradient-theme small {
   color: rgba(255, 255, 255, 0.82) !important;
+}
+
+/* -------------------------------------------------------------------------
+   Admin UI Utilities
+   - Utility helpers used throughout admin pages (bg-admin-card, text-admin, etc.)
+   - These map to `--theme-admin-*` variables so dark mode can override them
+   ------------------------------------------------------------------------- */
+.bg-admin-card {
+  background-color: var(--theme-admin-card) !important;
+}
+
+.bg-admin-card-soft {
+  background-color: var(--theme-admin-card-soft) !important;
+}
+
+.text-admin {
+  color: var(--theme-admin-text) !important;
+}
+
+.text-admin-muted {
+  color: var(--theme-admin-text-muted) !important;
+}
+
+.border-admin {
+  border-color: var(--theme-admin-border) !important;
+}
+
+.hover\:bg-admin-hover:hover {
+  background-color: var(--theme-admin-hover) !important;
+}
+
+.ring-admin-border {
+  box-shadow: 0 0 0 1px var(--theme-admin-border) inset !important;
 }
 
 /* Page header gradient (fallback when no image) */
