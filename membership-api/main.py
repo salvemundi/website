@@ -127,15 +127,29 @@ async def update_user_attributes(user_id: str):
                 }
             }
             
-            # Schrijven doen we via v1.0, dat is nu bewezen werkend met de type hint
-            url_v1 = f"https://graph.microsoft.com/v1.0/users/{user_id}"
-            print(f"DEBUG: Sending PATCH to {url_v1} with payload: {payload}")
-            res = await client.patch(url_v1, json=payload, headers=headers)
-            
-            if res.status_code not in [200, 204]:
-                print(f"Graph Patch Error: {res.status_code} - {res.text}")
-            else:
-                print(f"Attributes successfully updated for {user_id}. New expiry: {verloop_datum}")
+        # Schrijven doen we via v1.0, dat is nu bewezen werkend met de type hint
+        url_v1 = f"https://graph.microsoft.com/v1.0/users/{user_id}"
+        print(f"DEBUG: Sending PATCH to {url_v1} with payload: {payload}")
+        res = await client.patch(url_v1, json=payload, headers=headers)
+        
+        if res.status_code not in [200, 204]:
+            print(f"Graph Patch Error: {res.status_code} - {res.text}")
+            return
+
+        # VERIFICATION LOOP: Wait until Azure AD actually shows the new attributes
+        print(f"DEBUG: Starting verification for {user_id}...")
+        for i in range(10):  # Max 10 attempts (10 seconds)
+            await asyncio.sleep(1)
+            check_res = await client.get(f"{url_beta}?$select=customSecurityAttributes", headers=headers)
+            if check_res.status_code == 200:
+                attr_data = check_res.json().get("customSecurityAttributes", {})
+                current_expiry = attr_data.get(ATTRIBUTE_SET_NAME, {}).get("VerloopdatumStr")
+                if current_expiry == verloop_datum:
+                    print(f"✅ Verified! Azure AD now reflects expiry {verloop_datum} for {user_id} after {i+1}s")
+                    return
+            print(f"DEBUG: Verification attempt {i+1} failed for {user_id}, retrying...")
+        
+        print(f"⚠️ Warning: Attributes updated but could not be verified within 10s for {user_id}")
     except Exception as e:
         print(f"Attribute update error: {e}")
 

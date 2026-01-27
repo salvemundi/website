@@ -224,12 +224,7 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                     }
 
                     await membershipService.provisionMember(MEMBERSHIP_API_URL, targetEntraId);
-                    console.log(`[AdminRoutes] Provisioning call completed for ${targetEntraId}. Waiting 2s for Azure propagation...`);
 
-                    // Small delay to ensure Azure has propagated the custom attributes before we sync back
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-
-                    // Trigger sync to update Directus immediately
                     await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, targetEntraId);
                 } catch (provError) {
                     console.error(`[AdminRoutes] Provisioning FAILED for ${userId}:`, provError.message);
@@ -246,6 +241,27 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
 
                 if (credentials) {
                     console.log(`[AdminRoutes] Account created. User ID: ${credentials.user_id}`);
+
+                    // Calculate expiry date (1 year from now)
+                    const now = new Date();
+                    const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+                    const expiryStr = expiryDate.toISOString().split('T')[0];
+
+                    // Create Directus user immediately so the status is 'active' and linked to Entra
+                    try {
+                        await directusService.createDirectusUser(DIRECTUS_URL, DIRECTUS_API_TOKEN, {
+                            first_name: firstName,
+                            last_name: lastName,
+                            email: email,
+                            status: 'active',
+                            membership_status: 'active',
+                            membership_expiry: expiryStr,
+                            entra_id: credentials.user_id
+                        });
+                        console.log(`[AdminRoutes] Created and linked Directus user for ${email}`);
+                    } catch (err) {
+                        console.error(`[AdminRoutes] Failed to create/link Directus user:`, err.message);
+                    }
 
                     // Trigger sync for newly created user
                     if (credentials.user_id) {

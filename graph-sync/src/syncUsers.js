@@ -555,23 +555,12 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null, forceL
     try {
         const client = await getGraphClient();
 
-        let u = await client.api(`/users/${userId}`)
+        const u = await client.api(`/users/${userId}`)
             .version('beta')
             .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,customSecurityAttributes,jobTitle,birthday,otherMails')
             .get();
 
-        let attributes = u.customSecurityAttributes?.SalveMundiLidmaatschap;
-
-        // Microsoft Graph propagation delay: if attributes are missing, wait 2 seconds and retry once
-        if (!attributes?.VerloopdatumStr && !attributes?.Verloopdatum) {
-            console.log(`[SYNC] Attributes missing for ${u.mail || userId}, retrying in 2s...`);
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            u = await client.api(`/users/${userId}`)
-                .version('beta')
-                .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,customSecurityAttributes,jobTitle,birthday,otherMails')
-                .get();
-            attributes = u.customSecurityAttributes?.SalveMundiLidmaatschap;
-        }
+        const attributes = u.customSecurityAttributes?.SalveMundiLidmaatschap;
         // Minimal logging: expiry and missing fields summary
 
         let membershipExpiry = null;
