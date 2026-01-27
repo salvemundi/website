@@ -364,13 +364,14 @@ export default function AdminDashboardPage() {
     const fetchUpcomingBirthdays = async () => {
         try {
             // Fetch all users with birthdays
-            const users = await directusFetch<any[]>('/users?fields=id,first_name,last_name,date_of_birth&filter[date_of_birth][_nnull]=true');
+            // Use limit=-1 to fetch ALL users, otherwise default is 100 and we might miss people!
+            const users = await directusFetch<any[]>('/users?fields=id,first_name,last_name,date_of_birth&filter[date_of_birth][_nnull]=true&limit=-1');
 
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            const nextSevenDays = new Date(today);
-            nextSevenDays.setDate(today.getDate() + 7);
-            nextSevenDays.setHours(23, 59, 59, 999);
+
+            // Fetch birthdays for the next 14 days to be safe, then filter strictly
+            const maxDays = 7;
 
             type BirthdayItem = {
                 id: string;
@@ -386,28 +387,33 @@ export default function AdminDashboardPage() {
                     const dob = user.date_of_birth;
                     if (!dob) return null;
 
-                    // Parse date_of_birth defensively (prefer YYYY-MM-DD or ISO-like strings)
                     let month = 0;
                     let day = 0;
 
+                    // Robust parsing of date string YYYY-MM-DD
                     const isoMatch = String(dob).match(/(\d{4})-(\d{2})-(\d{2})/);
                     if (isoMatch) {
-                        month = parseInt(isoMatch[2], 10) - 1;
+                        month = parseInt(isoMatch[2], 10) - 1; // Month is 0-indexed
                         day = parseInt(isoMatch[3], 10);
                     } else {
-                        // Fallback to Date parsing, then extract month/day
                         const parsed = new Date(dob);
                         if (isNaN(parsed.getTime())) return null;
                         month = parsed.getMonth();
                         day = parsed.getDate();
                     }
 
-                    // Next occurrence of birthday
-                    const nextBirthday = new Date(today.getFullYear(), month, day);
+                    // Calculate next birthday relative to today
+                    const currentYear = today.getFullYear();
+                    const nextBirthday = new Date(currentYear, month, day);
                     nextBirthday.setHours(0, 0, 0, 0);
+
+                    // If birthday in current year has already passed (yesterday or earlier), move to next year
+                    // Note: If birthday is TODAY, nextBirthday time == today time, so checks false, stays in current year
                     if (nextBirthday.getTime() < today.getTime()) {
-                        nextBirthday.setFullYear(nextBirthday.getFullYear() + 1);
+                        nextBirthday.setFullYear(currentYear + 1);
                     }
+
+                    const isToday = nextBirthday.getTime() === today.getTime();
 
                     return {
                         id: user.id,
@@ -415,11 +421,17 @@ export default function AdminDashboardPage() {
                         last_name: user.last_name,
                         birthday: user.date_of_birth,
                         nextBirthday,
-                        isToday: nextBirthday.getTime() === today.getTime()
+                        isToday
                     } as BirthdayItem;
                 })
                 .filter((u): u is BirthdayItem => u !== null)
-                .filter(u => u.nextBirthday.getTime() >= today.getTime() && u.nextBirthday.getTime() <= nextSevenDays.getTime())
+                .filter(u => {
+                    // Calculate difference in days
+                    const diffTime = u.nextBirthday.getTime() - today.getTime();
+                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    // Allow 0 (today) to 7 (next week)
+                    return diffDays >= 0 && diffDays <= maxDays;
+                })
                 .sort((a, b) => a.nextBirthday.getTime() - b.nextBirthday.getTime())
                 .map(u => ({ id: u.id, first_name: u.first_name, last_name: u.last_name, birthday: u.birthday, isToday: u.isToday }));
 
