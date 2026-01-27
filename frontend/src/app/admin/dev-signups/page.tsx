@@ -436,6 +436,35 @@ export default function DevSignupsPage() {
         }
     };
 
+    const handleSyncDobFix = async () => {
+        if (!confirm('Weet je zeker dat je alle Date of Births van Directus naar Azure wilt pushen? Dit update alle users in Azure.')) return;
+        setIsSyncing(true);
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (!token) throw new Error('No auth token');
+
+            const response = await fetch('/api/admin/sync-dob-fix', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to start sync');
+            }
+
+            const data = await response.json();
+            alert(`Sync gestart! ${data.message || ''}`);
+        } catch (error: any) {
+            console.error('Failed to sync dob:', error);
+            alert(`Fout bij starten sync: ${error.message}`);
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
     const formatAmount = (amount: string | number): string => {
         const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
         return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(numAmount);
@@ -572,6 +601,15 @@ export default function DevSignupsPage() {
                                 {showStatus ? 'Status Verbergen' : 'Laatste Sync'}
                             </button>
                         )}
+                        <button
+                            onClick={handleSyncDobFix}
+                            disabled={isSyncing}
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-xl border border-amber-500/30 transition-all font-semibold disabled:opacity-50"
+                            title="Fix: Push Date of Births from Directus to Azure"
+                        >
+                            <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                            Sync DOB (Fix)
+                        </button>
                         <button
                             onClick={handleSyncUsers}
                             disabled={isSyncing}
