@@ -225,6 +225,8 @@ export default function EventDetailPage() {
 
     const isPaidAndHasQR = signupStatus.isSignedUp && signupStatus.paymentStatus === 'paid' && !!signupStatus.qrToken;
 
+    
+
     // Form handlers
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -233,6 +235,8 @@ export default function EventDetailPage() {
             setErrors((prev) => ({ ...prev, [name]: "" }));
         }
     };
+
+    
 
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
@@ -528,7 +532,7 @@ export default function EventDetailPage() {
                                 </div>
                             ) : (
                                 // Signup Form
-                                <div className="h-full flex flex-col">
+                                <div className="signup-form-container h-full flex flex-col">
                                     <h3 className="text-2xl font-bold text-theme-purple mb-6 flex items-center gap-2">
                                         <Users className="h-6 w-6 text-theme-purple" />
                                         Inschrijven
@@ -536,14 +540,14 @@ export default function EventDetailPage() {
                                     <form onSubmit={handleSubmit} className="space-y-4 flex flex-col">
                                         {/* Name */}
                                         <div>
-                                            <label htmlFor="name" className="block text-sm font-semibold text-theme-purple mb-1">Naam *</label>
+                                            <label htmlFor="name" className="block text-sm font-semibold text-theme-purple dark:text-white mb-1">Naam *</label>
                                             <input
                                                 type="text"
                                                 id="name"
                                                 name="name"
                                                 value={formData.name}
                                                 onChange={handleInputChange}
-                                                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-paars transition-all ${errors.name ? "ring-2 ring-red-500" : ""}`}
+                                                className={`w-full px-4 py-3 rounded-xl dark:!bg-white/10 dark:!border-white/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-paars focus:border-paars transition-all ${errors.name ? "ring-2 ring-red-500 !border-red-500" : ""}`}
                                                 placeholder="Jouw naam"
                                             />
                                             {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
@@ -551,14 +555,14 @@ export default function EventDetailPage() {
 
                                         {/* Email */}
                                         <div>
-                                            <label htmlFor="email" className="block text-sm font-semibold text-theme-purple mb-1">Email *</label>
+                                            <label htmlFor="email" className="block text-sm font-semibold text-theme-purple dark:text-white mb-1">Email *</label>
                                             <input
                                                 type="email"
                                                 id="email"
                                                 name="email"
                                                 value={formData.email}
                                                 onChange={handleInputChange}
-                                                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-paars transition-all ${errors.email ? "ring-2 ring-red-500" : ""}`}
+                                                className={`w-full px-4 py-3 rounded-xl dark:!bg-white/10 dark:!border-white/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-paars focus:border-paars transition-all ${errors.email ? "ring-2 ring-red-500 !border-red-500" : ""}`}
                                                 placeholder="naam.achternaam@salvemundi.nl"
                                             />
                                             {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
@@ -566,14 +570,14 @@ export default function EventDetailPage() {
 
                                         {/* Phone */}
                                         <div>
-                                            <label htmlFor="phone" className="block text-sm font-semibold text-theme-purple mb-1">Telefoonnummer *</label>
+                                            <label htmlFor="phone" className="block text-sm font-semibold text-theme-purple dark:text-white mb-1">Telefoonnummer *</label>
                                             <input
                                                 type="tel"
                                                 id="phone"
                                                 name="phoneNumber"
                                                 value={formData.phoneNumber}
                                                 onChange={handleInputChange}
-                                                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-paars transition-all ${errors.phoneNumber ? "ring-2 ring-red-500" : ""}`}
+                                                className={`w-full px-4 py-3 rounded-xl dark:!bg-white/10 dark:!border-white/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-paars focus:border-paars transition-all ${errors.phoneNumber ? "ring-2 ring-red-500 !border-red-500" : ""}`}
                                                 placeholder="0612345678"
                                             />
                                             {errors.phoneNumber && <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>}
