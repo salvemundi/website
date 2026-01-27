@@ -101,7 +101,12 @@ async def update_user_attributes(user_id: str):
         
         # Wij berekenen de verloopdatum (vandaag + 1 jaar)
         vandaag = datetime.date.today()
-        volgend_jaar = vandaag.replace(year=vandaag.year + 1)
+        try:
+            volgend_jaar = vandaag.replace(year=vandaag.year + 1)
+        except ValueError:
+            # Handle Feb 29th Case: move to Feb 28th
+            volgend_jaar = vandaag.replace(year=vandaag.year + 1, day=28)
+
         betaal_datum = vandaag.strftime("%Y%m%d")
         verloop_datum = volgend_jaar.strftime("%Y%m%d")
         
