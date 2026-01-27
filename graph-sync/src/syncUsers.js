@@ -1276,17 +1276,28 @@ app.post('/sync/dob-fix', bodyParser.json(), async (req, res) => {
                         }
                     }
 
-                    // Proceed with PATCH
-                    console.log(`[FIX] Attempting PATCH (Raw) for ${user.email} (DOB: ${cleanDob})...`);
+                    // Proceed with PATCH (Custom Security Attribute)
+                    // Format Directus YYYY-MM-DD to YYYYMMDD
+                    const dobString = cleanDob.replace(/-/g, '');
+
+                    console.log(`[FIX] Attempting PATCH (CustomAttr) for ${user.email} (DOB: ${dobString})...`);
+
+                    const payload = {
+                        "customSecurityAttributes": {
+                            "SalveMundiLidmaatschap": {
+                                "@odata.type": "#microsoft.graph.customSecurityAttributeValue",
+                                "Geboortedatum": dobString
+                            }
+                        }
+                    };
+
                     const patchRes = await fetch(`https://graph.microsoft.com/v1.0/users/${user.entra_id}`, {
                         method: 'PATCH',
                         headers: {
                             'Authorization': `Bearer ${accessToken}`,
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({
-                            birthday: `${cleanDob}T00:00:00Z`
-                        })
+                        body: JSON.stringify(payload)
                     });
 
                     if (!patchRes.ok) {
