@@ -599,11 +599,141 @@ export default function DevSignupsPage() {
                                     </button>
                                 }
                             >
-                                {/* simplified content for brevity */}
-                                <div className="space-y-4">
-                                    <div className="font-bold text-theme-purple-lighter">
-                                        {syncStatus.processed} / {syncStatus.total} ({syncStatus.status})
+                                <div className="space-y-6">
+                                    <div>
+                                        <div className="flex justify-between items-end mb-2">
+                                            <div>
+                                                <span className="text-sm font-medium text-theme-purple-lighter/70 block mb-1">Voortgang</span>
+                                                <span className="2xl font-bold text-theme-purple-lighter">
+                                                    {syncStatus.total > 0 ? Math.round((syncStatus.processed / syncStatus.total) * 100) : 0}%
+                                                </span>
+                                            </div>
+                                            <div className="text-right text-sm text-theme-purple-lighter/60">
+                                                {syncStatus.processed} van {syncStatus.total} gebruikers
+                                            </div>
+                                        </div>
+                                        <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                                            <div
+                                                className="h-full bg-gradient-to-r from-theme-purple to-theme-purple-lighter transition-all duration-500 ease-out"
+                                                style={{ width: `${syncStatus.total > 0 ? (syncStatus.processed / syncStatus.total) * 100 : 0}%` }}
+                                            />
+                                        </div>
                                     </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                                        <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                                            <div className="text-sm text-theme-purple-lighter/60 mb-1">Status</div>
+                                            <div className={`font-bold capitalize ${syncStatus.status === 'completed' ? 'text-green-400' :
+                                                syncStatus.status === 'failed' ? 'text-red-400' : 'text-theme-purple-lighter'
+                                                }`}>
+                                                {syncStatus.status === 'running' ? 'Bezig...' :
+                                                    syncStatus.status === 'completed' ? 'Voltooid' :
+                                                        syncStatus.status === 'failed' ? 'Mislukt' : 'Inactief'}
+                                            </div>
+                                        </div>
+                                        <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                                            <div className="text-sm text-theme-purple-lighter/60 mb-1">Waarschuwingen</div>
+                                            <div className={`font-bold ${(syncStatus.warningCount || 0) > 0 ? 'text-amber-400' : 'text-theme-purple-lighter'}`}>
+                                                {syncStatus.warningCount || 0}
+                                            </div>
+                                        </div>
+                                        <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                                            <div className="text-sm text-theme-purple-lighter/60 mb-1">Missende Data</div>
+                                            <div className={`font-bold ${(syncStatus.missingDataCount || 0) > 0 ? 'text-blue-400' : 'text-theme-purple-lighter'}`}>
+                                                {syncStatus.missingDataCount}
+                                            </div>
+                                        </div>
+                                        <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                                            <div className="text-sm text-theme-purple-lighter/60 mb-1">Fouten</div>
+                                            <div className={`font-bold ${syncStatus.errorCount > 0 ? 'text-red-500' : 'text-theme-purple-lighter'}`}>
+                                                {syncStatus.errorCount}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {/* Sync Result Filter Tabs */}
+                                    <div className="flex p-1 bg-black/20 rounded-xl border border-white/5 overflow-x-auto max-w-full custom-scrollbar">
+                                        {[
+                                            { id: 'all' as const, label: 'Alles', count: syncStatus.processed },
+                                            { id: 'success' as const, label: 'Geslaagd', count: syncStatus.successCount || 0 },
+                                            { id: 'warnings' as const, label: 'Waarschuwingen', count: syncStatus.warningCount || 0 },
+                                            { id: 'missing' as const, label: 'Missende Data', count: syncStatus.missingDataCount || 0 },
+                                            { id: 'errors' as const, label: 'Fouten', count: syncStatus.errorCount },
+                                            { id: 'excluded' as const, label: 'Uitgesloten', count: syncStatus.excludedCount || 0 },
+                                        ].map((tab) => (
+                                            <button
+                                                key={tab.id}
+                                                onClick={() => setSyncResultFilter(tab.id)}
+                                                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${syncResultFilter === tab.id
+                                                    ? 'bg-theme-purple/20 text-theme-purple-lighter border border-theme-purple/30'
+                                                    : 'text-theme-purple-lighter/60 hover:text-theme-purple-lighter hover:bg-white/5'
+                                                    }`}
+                                            >
+                                                {tab.label} ({tab.count})
+                                            </button>
+                                        ))}
+                                    </div>
+                                    {/* Filtered Results */}
+                                    {(syncResultFilter === 'all' || syncResultFilter === 'success') && syncStatus.successfulUsers && syncStatus.successfulUsers.length > 0 && (
+                                        <div className="mt-4">
+                                            <div className="text-xs font-medium text-green-400/80 mb-2 px-1">✅ Succesvol gesynchroniseerd</div>
+                                            <div className="max-h-48 overflow-y-auto rounded-xl bg-green-400/5 border border-green-400/10 p-2 space-y-1 custom-scrollbar">
+                                                {syncStatus.successfulUsers.map((user, idx) => (
+                                                    <div key={idx} className="p-2 text-xs border-b border-green-400/10 last:border-0">
+                                                        <div className="text-green-300">{user.email}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {(syncResultFilter === 'all' || syncResultFilter === 'warnings') && syncStatus.warnings && syncStatus.warnings.length > 0 && (
+                                        <div className="mt-4">
+                                            <div className="text-xs font-medium text-amber-400/80 mb-2 px-1">⚠️ Aandacht vereist (Mogelijke duplicaten)</div>
+                                            <div className="max-h-48 overflow-y-auto rounded-xl bg-amber-400/5 border border-amber-400/10 p-2 space-y-1 custom-scrollbar">
+                                                {syncStatus.warnings.map((warn, idx) => (
+                                                    <div key={idx} className="p-2 text-xs border-b border-amber-400/10 last:border-0">
+                                                        <div className="font-bold text-amber-300">{warn.email}</div>
+                                                        <div className="text-amber-200/70">{warn.message}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {(syncResultFilter === 'all' || syncResultFilter === 'missing') && syncStatus.missingData && syncStatus.missingData.length > 0 && (
+                                        <div className="mt-4">
+                                            <div className="text-xs font-medium text-blue-400/80 mb-2 px-1">ℹ️ Missende velden in Entra ID</div>
+                                            <div className="max-h-48 overflow-y-auto rounded-xl bg-blue-400/5 border border-blue-400/10 p-2 space-y-1 custom-scrollbar">
+                                                {syncStatus.missingData.map((item, idx) => (
+                                                    <div key={idx} className="p-2 text-xs border-b border-blue-400/10 last:border-0">
+                                                        <div className="font-bold text-blue-300">{item.email}</div>
+                                                        <div className="text-blue-200/70">{item.reason}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {(syncResultFilter === 'all' || syncResultFilter === 'excluded') && syncStatus.excludedUsers && syncStatus.excludedUsers.length > 0 && (
+                                        <div className="mt-4">
+                                            <div className="text-xs font-medium text-gray-400/80 mb-2 px-1">⛔ Uitgesloten van synchronisatie</div>
+                                            <div className="max-h-48 overflow-y-auto rounded-xl bg-gray-400/5 border border-gray-400/10 p-2 space-y-1 custom-scrollbar">
+                                                {syncStatus.excludedUsers.map((user, idx) => (
+                                                    <div key={idx} className="p-2 text-xs border-b border-gray-400/10 last:border-0">
+                                                        <div className="text-gray-300">{user.email}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {(syncResultFilter === 'all' || syncResultFilter === 'errors') && syncStatus.errors.length > 0 && (
+                                        <div className="mt-4">
+                                            <div className="text-xs font-medium text-red-400/80 mb-2 px-1">❌ Fouten tijdens synchronisatie</div>
+                                            <div className="max-h-48 overflow-y-auto rounded-xl bg-red-400/5 border border-red-400/10 p-2 space-y-1 custom-scrollbar">
+                                                {syncStatus.errors.map((err, idx) => (
+                                                    <div key={idx} className="p-2 text-xs border-b border-red-400/10 last:border-0">
+                                                        <span className="text-red-300">{err.email}: {err.error}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </Tile>
                         </div>
