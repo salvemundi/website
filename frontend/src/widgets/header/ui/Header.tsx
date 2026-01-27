@@ -152,11 +152,6 @@ const Header: React.FC = () => {
         <header
             ref={headerRef}
             className="sticky top-0 z-50 w-full"
-            style={{ 
-                position: '-webkit-sticky' as any,
-                WebkitBackfaceVisibility: 'hidden',
-                transform: 'translateZ(0)'
-            }}
         >
             <div className="relative">
                 <div
