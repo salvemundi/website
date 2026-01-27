@@ -1245,8 +1245,14 @@ app.post('/sync/dob-fix', bodyParser.json(), async (req, res) => {
                 }
 
                 try {
+                    // Clean up date: extract YYYY-MM-DD part if it includes time
+                    let cleanDob = user.date_of_birth;
+                    if (cleanDob.includes('T')) {
+                        cleanDob = cleanDob.split('T')[0];
+                    }
+
                     await client.api(`/users/${user.entra_id}`).patch({
-                        birthday: `${user.date_of_birth}T04:04:04Z`
+                        birthday: `${cleanDob}T04:04:04Z`
                     });
                     success++;
                     if (success % 10 === 0) console.log(`[FIX] Progress: ${success} updated...`);
