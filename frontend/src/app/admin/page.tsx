@@ -11,7 +11,6 @@ import {
     Calendar,
     Award,
     Cake,
-    UserCheck,
     Plus,
     FileText,
     Sticker,
