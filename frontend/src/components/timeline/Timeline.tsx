@@ -96,9 +96,13 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                 items={items}
                 mode="VERTICAL_ALTERNATING"
                 slideShow={false}
+                scrollable={true}
                 theme={chronoTheme}
                 hideControls={true}
                 enableOutline={false}
+                // @ts-expect-error: disableAutoScrollOnClick does not exist in types yet
+                disableAutoScrollOnClick={true}
+
                 fontSizes={{
                     cardSubtitle: '0.875rem',
                     cardTitle: '1.25rem',
