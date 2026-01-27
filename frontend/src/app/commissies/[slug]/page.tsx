@@ -376,7 +376,7 @@ export default function CommitteeDetailPage() {
                                                             loading="lazy"
                                                         />
                                                     ) : (
-                                                        <span className="font-semibold text-theme-purple dark:text-theme-white">{getMemberFullName(member).split(' ').map(n => n[0]).join('').slice(0, 2)}</span>
+                                                        <span className="font-semibold text-theme-purple dark:text-theme-white">{getMemberFullName(member).split(' ').map((n: string) => n[0]).join('').slice(0, 2)}</span>
                                                     )}
                                                 </div>
                                                 <p className="mt-2 text-xs font-bold text-theme-purple dark:text-theme-white">
