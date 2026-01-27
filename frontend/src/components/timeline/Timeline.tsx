@@ -96,7 +96,7 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                 items={items}
                 mode="VERTICAL_ALTERNATING"
                 slideShow={false}
-                scrollable={{ scrollbar: false }}
+                scrollable={true}
                 theme={chronoTheme}
                 hideControls={true}
                 enableOutline={false}
