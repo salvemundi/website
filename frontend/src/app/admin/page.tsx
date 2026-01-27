@@ -829,20 +829,6 @@ export default function AdminDashboardPage() {
                             colorClass="green"
                         />
                         <StatCard
-                            title="Beheer"
-                            value="Stickers"
-                            icon={<Sticker className="h-6 w-6" />}
-                            subtitle={`Sticker aantal: ${stats.totalStickers}`}
-                            onClick={() => router.push('/stickers')}
-                            colorClass="red"
-                        />
-                    </div>
-
-                    {/* titles moved into the stats grid so they align with the top of the stats column */}
-
-                    {/* Mobile-only: show Intro and Kroegentocht below the first 4 cards */}
-                    <div className="mt-4 md:hidden grid grid-cols-2 gap-4">
-                        <StatCard
                             title="beheer"
                             value="reis"
                             icon={<FileText className="h-6 w-6" />}
@@ -850,7 +836,10 @@ export default function AdminDashboardPage() {
                             onClick={() => router.push('/admin/reis')}
                             colorClass="teal"
                         />
+                    </div>
 
+                    {/* Mobile-only: show Intro and Kroegentocht below the first 4 cards */}
+                    <div className="mt-4 md:hidden grid grid-cols-2 gap-4">
                         <StatCard
                             title="beheer"
                             value="kroegentocht"
@@ -887,13 +876,6 @@ export default function AdminDashboardPage() {
                                             onClick={() => router.push('/admin/intro?tab=blogs&create=1')}
                                             colorClass="blue"
                                             disabled={!visibilitySettings.intro}
-                                        />
-                                        <ActionCard
-                                            title="Nieuwe"
-                                            subtitle="Sticker"
-                                            icon={<Sticker className="h-6 w-6" />}
-                                            onClick={() => router.push('/stickers?add=1')}
-                                            colorClass="red"
                                         />
                                     </div>
 
@@ -986,15 +968,6 @@ export default function AdminDashboardPage() {
                         {/* Right side stats */}
                         <div className="space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <StatCard
-                                    title="Beheer"
-                                    value="Reis"
-                                    icon={<Plane className="h-6 w-6" />}
-                                    subtitle={`aanmeldingen: ${stats.reisSignups}`}
-                                    onClick={() => router.push('/admin/reis')}
-                                    colorClass="teal"
-                                />
-
                                 <StatCard
                                     title="Beheer"
                                     value="Kroegentocht"
