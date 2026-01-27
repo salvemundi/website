@@ -13,11 +13,9 @@ import {
     UserCheck,
     Plus,
     FileText,
-    Sticker,
     AlertCircle,
     Activity,
     Ticket,
-    Plane,
 } from 'lucide-react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 
