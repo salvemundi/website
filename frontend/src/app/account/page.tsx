@@ -57,7 +57,7 @@ function Tile({
   return (
     <section
       className={[
-        "relative overflow-hidden rounded-3xl bg-white dark:bg-surface-dark shadow-xl border border-theme-purple/5",
+        "relative overflow-hidden rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 shadow-lg transition-all hover:shadow-xl",
         className,
       ].join(" ")}
     >
@@ -66,7 +66,7 @@ function Tile({
           <header className="mb-6 flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-3">
               {icon ? (
-                <div className="shrink-0 rounded-xl bg-theme-purple/5 p-2 text-theme-purple dark:text-theme-purple-light">
+                <div className="shrink-0 rounded-2xl bg-theme-purple/10 dark:bg-white/10 p-2.5 text-theme-purple dark:text-white">
                   {React.cloneElement(icon as React.ReactElement, {
                     className: "h-5 w-5"
                   })}
@@ -74,8 +74,7 @@ function Tile({
               ) : null}
               {title ? (
                 <h2
-                  className="truncate font-black text-theme-purple dark:text-white uppercase tracking-[0.2em]"
-                  style={{ fontSize: 'var(--font-size-xl)' }}
+                  className="truncate text-2xl font-bold text-theme-purple dark:text-white"
                 >
                   {title}
                 </h2>
@@ -110,20 +109,20 @@ function QuickLink({
   external?: boolean;
 }) {
   const common =
-    "group flex items-center gap-4 rounded-2xl bg-theme-purple/5 dark:bg-white/5 p-4 transition hover:bg-theme-purple/10 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-theme-purple/30 border border-transparent hover:border-theme-purple/20 shadow-sm w-full";
+    "group flex items-center gap-4 rounded-2xl bg-slate-50 dark:bg-black/20 p-5 transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-theme-purple/30 border border-slate-200 dark:border-white/10 hover:border-theme-purple/30 dark:hover:border-white/20 shadow-sm w-full hover:-translate-y-0.5";
   const inner = (
     <>
-      <div className="rounded-xl bg-theme-purple/10 dark:bg-white/10 p-2.5 text-theme-purple dark:text-white transition-transform group-hover:scale-105">
+      <div className="rounded-xl bg-theme-purple/10 dark:bg-white/10 p-2.5 text-theme-purple dark:text-white transition-transform group-hover:scale-110 shadow-sm">
         {React.cloneElement(icon as React.ReactElement, { className: "h-5 w-5" })}
       </div>
-      <span className="flex-1 flex items-center justify-between text-sm font-bold text-theme-purple/90 dark:text-white/90">
+      <span className="flex-1 flex items-center justify-between text-sm font-bold text-theme-purple dark:text-white">
         <span>{label}</span>
         <div className="flex items-center gap-2">
           {locked ? <Lock className="h-3 w-3 opacity-50" /> : null}
           {external ? (
             <ExternalLink className="h-3 w-3 opacity-50" />
           ) : null}
-          <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1" />
         </div>
       </span>
     </>
@@ -556,28 +555,28 @@ export default function AccountPage() {
 
                   <div className="mt-4 flex flex-wrap justify-center gap-2">
                     {user.is_member ? (
-                      <span className="px-3 py-1 bg-theme-purple text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-sm">
+                      <span className="px-4 py-1.5 bg-theme-purple text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-lg">
                         Fontys Student
                       </span>
                     ) : (
-                      <span className="px-3 py-1 bg-theme-purple/5 border border-theme-purple/10 text-theme-purple dark:text-white text-[9px] font-black uppercase tracking-widest rounded-full">
+                      <span className="px-4 py-1.5 bg-slate-100 dark:bg-white/5 border border-theme-purple/20 text-theme-purple dark:text-white text-[10px] font-black uppercase tracking-wider rounded-full">
                         Gebruiker
                       </span>
                     )}
 
                     <span
-                      className={`px-3 py-1 ${membershipStatus.color} ${membershipStatus.textColor} text-[9px] font-black uppercase tracking-widest rounded-full shadow-sm`}
+                      className={`px-4 py-1.5 ${membershipStatus.color} ${membershipStatus.textColor} text-[10px] font-black uppercase tracking-wider rounded-full shadow-lg`}
                     >
                       {membershipStatus.text}
                     </span>
                   </div>
 
                   <div className="mt-6 flex flex-col gap-3">
-                    <div className="rounded-2xl bg-theme-purple/5 border border-theme-purple/10 px-4 py-3">
-                      <p className="text-[9px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-widest mb-1">
+                    <div className="rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 px-5 py-4 shadow-sm">
+                      <p className="text-[10px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-wider mb-1.5">
                         Lidmaatschap tot
                       </p>
-                      <p className="text-sm font-bold text-theme-purple dark:text-white">
+                      <p className="text-base font-bold text-theme-purple dark:text-white">
                         {user.membership_expiry
                           ? format(new Date(user.membership_expiry), "d MMM yyyy")
                           : "N/A"}
@@ -594,15 +593,15 @@ export default function AccountPage() {
               icon={<Gamepad2 />}
               className="h-fit"
             >
-              <div className="rounded-2xl bg-theme-purple/5 p-4 border border-theme-purple/10">
+              <div className="rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
                 <div className="flex items-center justify-between gap-2 mb-3">
-                  <p className="text-[10px] font-black uppercase text-theme-purple/60 dark:text-white/40 tracking-widest text-left">
+                  <p className="text-[11px] font-bold uppercase text-theme-purple/70 dark:text-white/50 tracking-wide text-left">
                     Minecraft Username
                   </p>
                   {!isEditingMinecraft && (
                     <button
                       onClick={() => setIsEditingMinecraft(true)}
-                      className="shrink-0 rounded-xl bg-theme-purple/10 px-3 py-1.5 text-[9px] font-black uppercase text-theme-purple dark:text-white hover:bg-theme-purple/20 transition shadow-sm border border-theme-purple/10"
+                      className="shrink-0 rounded-xl bg-theme-purple px-3 py-1.5 text-[10px] font-bold uppercase text-white hover:bg-theme-purple-light transition shadow-md"
                     >
                       {user.minecraft_username ? "Wijzig" : "Instellen"}
                     </button>
@@ -655,17 +654,16 @@ export default function AccountPage() {
               className="h-fit"
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex items-center gap-4 rounded-2xl bg-theme-purple/5 p-4 border border-theme-purple/5">
-                  <div className="shrink-0 rounded-xl bg-white/50 dark:bg-black/20 p-2.5 text-theme-purple dark:text-white shadow-sm">
+                <div className="flex items-center gap-4 rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
+                  <div className="shrink-0 rounded-xl bg-theme-purple/10 dark:bg-white/10 p-3 text-theme-purple dark:text-white shadow-sm">
                     <Mail className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] text-theme-purple/40 dark:text-white/30 font-black uppercase tracking-wider mb-0.5">
+                    <p className="text-[11px] text-theme-purple/60 dark:text-white/40 font-bold uppercase tracking-wide mb-1">
                       E-mailadres
                     </p>
                     <p
-                      className="font-bold text-theme-purple dark:text-white truncate"
-                      style={{ fontSize: 'var(--font-size-base)' }}
+                      className="font-bold text-theme-purple dark:text-white truncate text-sm"
                       title={user.email}
                     >
                       {user.email}
@@ -674,17 +672,16 @@ export default function AccountPage() {
                 </div>
 
                 {user.fontys_email ? (
-                  <div className="flex items-center gap-4 rounded-2xl bg-theme-purple/5 p-4 border border-theme-purple/5">
-                    <div className="shrink-0 rounded-xl bg-white/50 dark:bg-black/20 p-2.5 text-theme-purple dark:text-white shadow-sm">
+                  <div className="flex items-center gap-4 rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
+                    <div className="shrink-0 rounded-xl bg-theme-purple/10 dark:bg-white/10 p-3 text-theme-purple dark:text-white shadow-sm">
                       <Mail className="h-5 w-5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] text-theme-purple/40 dark:text-white/30 font-black uppercase tracking-wider mb-0.5">
+                      <p className="text-[11px] text-theme-purple/60 dark:text-white/40 font-bold uppercase tracking-wide mb-1">
                         Fontys e-mail
                       </p>
                       <p
-                        className="font-bold text-theme-purple dark:text-white truncate"
-                        style={{ fontSize: 'var(--font-size-base)' }}
+                        className="font-bold text-theme-purple dark:text-white truncate text-sm"
                         title={user.fontys_email}
                       >
                         {user.fontys_email}
@@ -693,15 +690,15 @@ export default function AccountPage() {
                   </div>
                 ) : null}
 
-                <div className="rounded-2xl bg-theme-purple/5 p-4 border border-theme-purple/5">
+                <div className="rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
                   <div className="flex items-center justify-between gap-2 mb-3">
-                    <p className="text-[10px] font-black uppercase text-theme-purple/60 dark:text-white/40 tracking-widest text-left">
+                    <p className="text-[11px] font-bold uppercase text-theme-purple/70 dark:text-white/50 tracking-wide text-left">
                       Telefoonnummer
                     </p>
                     {!isEditingPhoneNumber && (
                       <button
                         onClick={() => setIsEditingPhoneNumber(true)}
-                        className="shrink-0 rounded-xl bg-theme-purple/10 px-3 py-1.5 text-[9px] font-black uppercase text-theme-purple dark:text-white hover:bg-theme-purple/20 transition shadow-sm border border-theme-purple/10"
+                        className="shrink-0 rounded-xl bg-theme-purple px-3 py-1.5 text-[10px] font-bold uppercase text-white hover:bg-theme-purple-light transition shadow-md"
                       >
                         {user.phone_number ? "Wijzig" : "Instellen"}
                       </button>
@@ -740,28 +737,25 @@ export default function AccountPage() {
                     </div>
                   ) : (
                     <div className="flex items-center gap-4">
-                      <div className="shrink-0 rounded-xl bg-white/50 dark:bg-black/20 p-2.5 text-theme-purple dark:text-white shadow-sm">
+                      <div className="shrink-0 rounded-xl bg-theme-purple/10 dark:bg-white/10 p-3 text-theme-purple dark:text-white shadow-sm">
                         <Phone className="h-5 w-5" />
                       </div>
-                      <p
-                        className="font-bold text-theme-purple dark:text-white"
-                        style={{ fontSize: 'var(--font-size-base)' }}
-                      >
+                      <p className="font-bold text-theme-purple dark:text-white text-sm">
                         {user.phone_number || "Niet ingesteld"}
                       </p>
                     </div>
                   )}
                 </div>
 
-                <div className="rounded-2xl bg-theme-purple/5 p-4 border border-theme-purple/5">
+                <div className="rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
                   <div className="flex items-center justify-between gap-2 mb-3">
-                    <p className="text-[10px] font-black uppercase text-theme-purple/60 dark:text-white/40 tracking-widest text-left">
+                    <p className="text-[11px] font-bold uppercase text-theme-purple/70 dark:text-white/50 tracking-wide text-left">
                       Geboortedatum
                     </p>
                     {!isEditingDateOfBirth && (
                       <button
                         onClick={() => setIsEditingDateOfBirth(true)}
-                        className="shrink-0 rounded-xl bg-theme-purple/10 px-3 py-1.5 text-[9px] font-black uppercase text-theme-purple dark:text-white hover:bg-theme-purple/20 transition shadow-sm border border-theme-purple/10"
+                        className="shrink-0 rounded-xl bg-theme-purple px-3 py-1.5 text-[10px] font-bold uppercase text-white hover:bg-theme-purple-light transition shadow-md"
                       >
                         {user.date_of_birth ? "Wijzig" : "Instellen"}
                       </button>
@@ -799,13 +793,10 @@ export default function AccountPage() {
                     </div>
                   ) : (
                     <div className="flex items-center gap-4">
-                      <div className="shrink-0 rounded-xl bg-white/50 dark:bg-black/20 p-2.5 text-theme-purple dark:text-white shadow-sm">
+                      <div className="shrink-0 rounded-xl bg-theme-purple/10 dark:bg-white/10 p-3 text-theme-purple dark:text-white shadow-sm">
                         <Calendar className="h-5 w-5" />
                       </div>
-                      <p
-                        className="font-bold text-theme-purple dark:text-white"
-                        style={{ fontSize: 'var(--font-size-base)' }}
-                      >
+                      <p className="font-bold text-theme-purple dark:text-white text-sm">
                         {user.date_of_birth ? format(new Date(user.date_of_birth), "d MMMM yyyy") : "Niet ingesteld"}
                       </p>
                     </div>
@@ -882,13 +873,16 @@ export default function AccountPage() {
                   </p>
                 </div>
               ) : eventSignups.length === 0 ? (
-                <div className="rounded-3xl border-2 border-dashed border-theme-purple/20 bg-theme-purple/5 p-12 text-center">
-                  <p className="text-theme-purple dark:text-white font-bold text-lg">
+                <div className="rounded-3xl border-2 border-dashed border-slate-300 dark:border-white/20 bg-slate-50 dark:bg-black/10 p-12 text-center shadow-inner">
+                  <p className="text-theme-purple dark:text-white font-bold text-lg mb-2">
                     Je hebt je nog niet ingeschreven voor evenementen.
+                  </p>
+                  <p className="text-theme-purple/60 dark:text-white/60 text-sm mb-6">
+                    Bekijk de kalender om aankomende activiteiten te ontdekken
                   </p>
                   <button
                     onClick={() => router.push("/activiteiten")}
-                    className="mt-6 rounded-full bg-theme-purple px-10 py-3 text-sm font-bold text-white shadow-xl transition hover:-translate-y-0.5 hover:bg-theme-purple-light"
+                    className="inline-flex items-center gap-2 rounded-full bg-theme-purple px-8 py-3 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl hover:bg-theme-purple-light"
                   >
                     Ontdek evenementen
                   </button>
@@ -912,10 +906,10 @@ export default function AccountPage() {
                         type="button"
                         onClick={() => router.push(`/activiteiten/${signup.event_id.id}`)}
                         className={[
-                          "group h-full flex flex-col gap-4 rounded-3xl p-5 text-left transition focus:outline-none focus:ring-2 focus:ring-theme-purple/30 border border-theme-purple/10 shadow-sm",
+                          "group h-full flex flex-col gap-4 rounded-3xl p-5 text-left transition-all focus:outline-none focus:ring-2 focus:ring-theme-purple/30 border shadow-sm",
                           isPast
-                            ? "bg-theme-purple/5 opacity-60 grayscale border-transparent"
-                            : "bg-white dark:bg-black/20 hover:bg-theme-purple/5 hover:border-theme-purple/30",
+                            ? "bg-slate-50 dark:bg-black/10 opacity-60 grayscale border-slate-200 dark:border-white/5"
+                            : "bg-slate-50 dark:bg-black/20 border-slate-200 dark:border-white/10 hover:shadow-lg hover:border-theme-purple/30 dark:hover:border-white/20 hover:-translate-y-0.5",
                         ].join(" ")}
                       >
                         <div className="flex items-start justify-between gap-4">
