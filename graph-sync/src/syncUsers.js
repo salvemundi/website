@@ -1223,6 +1223,7 @@ app.post('/sync/dob-fix', bodyParser.json(), async (req, res) => {
     // Background process
     (async () => {
         try {
+            console.log(`[FIX] Using Client ID: ${process.env.CLIENT_ID}`);
             // Ensure token is fresh
             const client = await getGraphClient();
 
@@ -1260,7 +1261,7 @@ app.post('/sync/dob-fix', bodyParser.json(), async (req, res) => {
 
                     // Proceed with PATCH
                     console.log(`[FIX] Attempting PATCH for ${user.email} (DOB: ${cleanDob})...`);
-                    await client.api(`/users/${user.entra_id}`).version('beta').patch({
+                    await client.api(`/users/${user.entra_id}`).patch({
                         birthday: `${cleanDob}T04:04:04Z`
                     });
 
