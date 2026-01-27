@@ -738,15 +738,15 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null, forceL
         const payload = {
             email,
             entra_id: userId,
-            first_name: firstName || null,
-            last_name: lastName || null,
-            fontys_email: email.includes('@student.fontys.nl') ? email : null,
-            phone_number: formatDutchMobile(u.mobilePhone),
+            first_name: firstName || (existingUser?.first_name || null),
+            last_name: lastName || (existingUser?.last_name || null),
+            fontys_email: email.includes('@student.fontys.nl') ? email : (existingUser?.fontys_email || null),
+            phone_number: formatDutchMobile(u.mobilePhone) || (existingUser?.phone_number || null),
             status: 'active',
             ...(role ? { role } : {}),
-            membership_expiry: membershipExpiry,
-            date_of_birth: dateOfBirth,
-            title: u.jobTitle || null,
+            membership_expiry: membershipExpiry || (existingUser?.membership_expiry || null),
+            date_of_birth: dateOfBirth || (existingUser?.date_of_birth || null),
+            title: u.jobTitle || (existingUser?.title || null),
         };
 
         console.log(`[SYNC] 📦 Payload for ${email} includes role: ${role ? 'YES (' + role + ')' : 'NO (role field omitted)'}`);
