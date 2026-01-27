@@ -5,6 +5,7 @@ import axios from 'axios';
 import express from 'express';
 import bodyParser from 'body-parser';
 import { Client } from '@microsoft/microsoft-graph-client';
+import { ClientSecretCredential } from '@azure/identity';
 import 'isomorphic-fetch';
 
 const app = express();
@@ -1224,8 +1225,25 @@ app.post('/sync/dob-fix', bodyParser.json(), async (req, res) => {
     (async () => {
         try {
             console.log(`[FIX] Using Client ID: ${process.env.CLIENT_ID}`);
-            // Ensure token is fresh
-            const client = await getGraphClient();
+
+            // Bypass getGraphClient() and create a custom privileged client to ensure correct scopes
+            const credential = new ClientSecretCredential(
+                process.env.TENANT_ID,
+                process.env.CLIENT_ID,
+                process.env.CLIENT_SECRET
+            );
+
+            const client = Client.init({
+                authProvider: async (done) => {
+                    try {
+                        const token = await credential.getToken(['https://graph.microsoft.com/.default']);
+                        done(null, token.token);
+                    } catch (err) {
+                        console.error("Error getting token for FIX:", err);
+                        done(err, null);
+                    }
+                }
+            });
 
             // Fetch all users with date_of_birth from Directus
             const url = `${process.env.DIRECTUS_URL}/users?fields=id,email,first_name,last_name,date_of_birth,entra_id&filter[date_of_birth][_nnull]=true&limit=-1`;
