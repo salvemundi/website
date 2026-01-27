@@ -149,7 +149,11 @@ const Header: React.FC = () => {
     }
 
     return (
-        <header ref={headerRef} className="sticky top-0 z-50 w-full">
+        <header
+            ref={headerRef}
+            className="sticky top-0 z-50 w-full"
+            style={{ top: 'env(safe-area-inset-top)', paddingTop: 'env(safe-area-inset-top)' }}
+        >
             <div className="relative">
                 <div
                     className={`pointer-events-none absolute inset-0 -z-10 transition-all duration-300 ${isScrolled
@@ -282,8 +286,9 @@ const Header: React.FC = () => {
                     aria-hidden={!menuOpen}
                 />
                 <nav
-                    className={`fixed top-0 right-0 z-50 flex h-full w-full max-w-xs flex-col gap-6 bg-[var(--bg-main)] px-6 py-8 shadow-xl transition-transform duration-300 ${menuOpen ? "translate-x-0" : "translate-x-full"
+                    className={`fixed right-0 z-50 flex h-full w-full max-w-xs flex-col gap-6 bg-[var(--bg-main)] px-6 py-8 shadow-xl transition-transform duration-300 ${menuOpen ? "translate-x-0" : "translate-x-full"
                         }`}
+                    style={{ top: 'env(safe-area-inset-top)' }}
                 >
                     <div className="flex items-center justify-between">
                         <Link
