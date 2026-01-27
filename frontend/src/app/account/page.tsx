@@ -651,24 +651,22 @@ export default function AccountPage() {
                   </div>
                 ) : null}
 
-                {user.date_of_birth ? (
-                  <div className="flex items-center gap-4 rounded-2xl bg-theme-purple/5 p-4 border border-theme-purple/5">
-                    <div className="shrink-0 rounded-xl bg-white/50 dark:bg-black/20 p-2.5 text-theme-purple dark:text-white shadow-sm">
-                      <Calendar className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] text-theme-purple/40 dark:text-white/30 font-black uppercase tracking-wider mb-0.5">
-                        Geboortedatum
-                      </p>
-                      <p
-                        className="font-bold text-theme-purple dark:text-white"
-                        style={{ fontSize: 'var(--font-size-base)' }}
-                      >
-                        {format(new Date(user.date_of_birth), "d MMMM yyyy")}
-                      </p>
-                    </div>
+                <div className="flex items-center gap-4 rounded-2xl bg-theme-purple/5 p-4 border border-theme-purple/5">
+                  <div className="shrink-0 rounded-xl bg-white/50 dark:bg-black/20 p-2.5 text-theme-purple dark:text-white shadow-sm">
+                    <Calendar className="h-5 w-5" />
                   </div>
-                ) : null}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] text-theme-purple/40 dark:text-white/30 font-black uppercase tracking-wider mb-0.5">
+                      Geboortedatum
+                    </p>
+                    <p
+                      className="font-bold text-theme-purple dark:text-white"
+                      style={{ fontSize: 'var(--font-size-base)' }}
+                    >
+                      {user.date_of_birth ? format(new Date(user.date_of_birth), "d MMMM yyyy") : "Niet ingesteld"}
+                    </p>
+                  </div>
+                </div>
               </div>
             </Tile>
 
