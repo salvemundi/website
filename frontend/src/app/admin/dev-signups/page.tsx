@@ -522,6 +522,47 @@ export default function DevSignupsPage() {
 
                 <div className="flex flex-col items-end gap-3 mb-6">
                     {/* Sync Controls */}
+                    <div className="flex flex-wrap gap-2 justify-end max-w-xl">
+                        {syncFieldOptions.map(option => (
+                            <button
+                                key={option.id}
+                                onClick={() => toggleField(option.id)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${selectedSyncFields.includes(option.id)
+                                    ? 'bg-theme-purple/20 border-theme-purple/40 text-theme-purple-lighter'
+                                    : 'bg-white/5 border-white/10 text-theme-purple-lighter/40 hover:bg-white/10'
+                                    }`}
+                            >
+                                {option.label}
+                            </button>
+                        ))}
+                    </div>
+                    {/* Force Link Checkbox */}
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="checkbox"
+                            id="forceLink"
+                            checked={forceLink}
+                            onChange={(e) => setForceLink(e.target.checked)}
+                            className="w-4 h-4 rounded border-white/20 bg-white/5 text-theme-purple focus:ring-theme-purple focus:ring-offset-0"
+                        />
+                        <label htmlFor="forceLink" className="text-xs text-theme-purple-lighter/70 cursor-pointer">
+                            Koppel bestaande accounts op e-mail (eenmalige migratie)
+                        </label>
+                    </div>
+                    {/* Active Only Checkbox */}
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="checkbox"
+                            id="activeOnly"
+                            checked={activeOnly}
+                            onChange={(e) => setActiveOnly(e.target.checked)}
+                            className="w-4 h-4 rounded border-white/20 bg-white/5 text-theme-purple focus:ring-theme-purple focus:ring-offset-0"
+                        />
+                        <label htmlFor="activeOnly" className="text-xs text-theme-purple-lighter/70 cursor-pointer">
+                            Alleen actieve leden synchroniseren (sneller)
+                        </label>
+                    </div>
+
                     <div className="flex gap-2">
                         {syncStatus && !syncStatus.active && syncStatus.status !== 'idle' && (
                             <button
