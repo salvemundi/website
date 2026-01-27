@@ -79,6 +79,7 @@
     "react-hook-form": "^7.55.0",
     "react-leaflet": "^4.2.1",
     "react-map-gl": "^8.1.0",
+    "react-phone-number-input": "^3.4.14",
     "react-resizable-panels": "^2.1.7",
     "recharts": "^2.15.2",
     "satori": "^0.11.0",

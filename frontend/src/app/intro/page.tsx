@@ -6,7 +6,7 @@ import { introSignupsApi, introParentSignupsApi } from '@/shared/lib/api/salvemu
 import { sendIntroSignupEmail } from '@/shared/lib/services/email-service';
 import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import { isValidPhoneNumber } from '@/shared/lib/phone';
+import { PhoneNumberInput, isValidPhoneNumber } from '@/shared/components/PhoneNumberInput';
 import { Users, Heart, CheckCircle2 } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
@@ -288,13 +288,11 @@ export default function IntroPage() {
                           </div>
                           <div>
                             <label className="form-label">Telefoonnummer</label>
-                            <input
-                              type="tel"
-                              name="telefoonnummer"
+                            <PhoneNumberInput
                               value={form.telefoonnummer}
-                              onChange={handleChange}
+                              onChange={(val) => handleChange({ target: { name: 'telefoonnummer', value: val || '' } } as any)}
                               required
-                              className="form-input"
+                              error={phoneError || undefined}
                             />
                             {phoneError && <p className="text-red-200 text-xs lg:text-sm mt-1">{phoneError}</p>}
                           </div>
@@ -387,13 +385,11 @@ export default function IntroPage() {
                         </div>
                         <div>
                           <label className="form-label">Telefoonnummer *</label>
-                          <input
-                            type="tel"
-                            name="telefoonnummer"
+                          <PhoneNumberInput
                             value={form.telefoonnummer}
-                            onChange={handleChange}
+                            onChange={(val) => handleChange({ target: { name: 'telefoonnummer', value: val || '' } } as any)}
                             required
-                            className="form-input"
+                            error={phoneError || undefined}
                           />
                           {phoneError && <p className="text-red-200 text-xs lg:text-sm mt-1">{phoneError}</p>}
                         </div>
