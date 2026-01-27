@@ -150,15 +150,65 @@ export default function AdminActiviteitenPage() {
             <div className="container mx-auto px-4 py-8 max-w-7xl">
                 {/* Actions Bar */}
                 <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                    <button
-                        onClick={() => router.push('/admin/activiteiten/nieuw')}
-                        className="bg-theme-purple text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2"
-                    >
-                        <Plus className="h-5 w-5" />
-                        Nieuwe Activiteit
-                    </button>
+                    <div className="w-full flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={() => router.push('/admin/activiteiten/nieuw')}
+                                className="bg-theme-purple text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2"
+                            >
+                                <Plus className="h-5 w-5" />
+                                Nieuwe Activiteit
+                            </button>
 
-                    <div className="flex gap-2 flex-wrap">
+                            {/* Move selector next to the button on mobile */}
+                            <div className="flex items-center gap-3">
+                                <label className="text-sm text-admin-muted sr-only sm:not-sr-only">Toon</label>
+                                <select
+                                    value={pageSize === -1 ? 'all' : pageSize}
+                                    onChange={(e) => setPageSize(e.target.value === 'all' ? -1 : parseInt(e.target.value, 10))}
+                                    className="rounded-full border border-admin bg-admin-card text-admin text-sm px-3 py-1 outline-none"
+                                >
+                                    <option value="10">10</option>
+                                    <option value="15">15</option>
+                                    <option value="all">Alles</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Keep filter buttons on the right for larger screens */}
+                        <div className="hidden sm:flex gap-2 flex-wrap">
+                            <button
+                                onClick={() => setFilter('all')}
+                                className={`px-4 py-2 rounded-full font-medium transition ${filter === 'all'
+                                        ? 'bg-theme-purple text-white'
+                                        : 'bg-admin-card-soft text-admin-muted hover:bg-admin-hover'
+                                    }`}
+                            >
+                                Alle
+                            </button>
+                            <button
+                                onClick={() => setFilter('upcoming')}
+                                className={`px-4 py-2 rounded-full font-medium transition ${filter === 'upcoming'
+                                        ? 'bg-theme-purple text-white'
+                                        : 'bg-admin-card-soft text-admin-muted hover:bg-admin-hover'
+                                    }`}
+                            >
+                                Aankomend
+                            </button>
+                            <button
+                                onClick={() => setFilter('past')}
+                                className={`px-4 py-2 rounded-full font-medium transition ${filter === 'past'
+                                        ? 'bg-theme-purple text-white'
+                                        : 'bg-admin-card-soft text-admin-muted hover:bg-admin-hover'
+                                    }`}
+                            >
+                                Verleden
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* On mobile, show filters below the main row */}
+                    <div className="flex gap-2 flex-wrap sm:hidden">
                         <button
                             onClick={() => setFilter('all')}
                             className={`px-4 py-2 rounded-full font-medium transition ${filter === 'all'
@@ -187,30 +237,18 @@ export default function AdminActiviteitenPage() {
                             Verleden
                         </button>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <label className="text-sm text-admin-muted">Toon</label>
-                        <select
-                            value={pageSize === -1 ? 'all' : pageSize}
-                            onChange={(e) => setPageSize(e.target.value === 'all' ? -1 : parseInt(e.target.value, 10))}
-                            className="rounded-full border border-admin bg-admin-card text-admin text-sm px-3 py-1 outline-none"
-                        >
-                            <option value="10">10</option>
-                            <option value="15">15</option>
-                            <option value="all">Alles</option>
-                        </select>
-                    </div>
                 </div>
 
                 {/* Search */}
                 <div className="mb-6">
                     <div className="relative max-w-md">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-admin-muted" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-admin-muted pointer-events-none z-20" />
                         <input
                             type="text"
                             placeholder="Zoek activiteiten..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 rounded-full border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                            className="form-input block w-full pl-12 pr-4 py-3 h-12 min-h-[44px] rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition z-10 shadow-sm appearance-none"
                         />
                     </div>
                 </div>

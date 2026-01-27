@@ -236,22 +236,27 @@ body {
   overflow: visible !important;
 }
 
-/* Hide timeline controls completely */
-.timeline-controls,
-[class*="timeline-controls"],
-[class*="chrono-controls"],
-.chrono-timeline-toolbar,
-[class*="toolbar"][class*="timeline"],
-[class*="outline-"],
-[class*="timeline-outline"],
-.timeline-outline-wrapper,
-[class*="jump"],
-[class*="layout-switch"],
-[class*="mode-switch"],
-button[class*="outline"],
-button[class*="jump"],
-button[class*="mode"],
-button[class*="layout"] {
+/* Hide timeline controls completely, scoped to chrono/chrono-wrapper elements only
+   to avoid accidentally matching similarly-named UI classes elsewhere in the app. */
+.chrono, .chrono-wrapper, [class*="chrono"] {
+  --_chrono-scope: 1;
+}
+
+.chrono [class*="timeline-controls"],
+.chrono .timeline-controls,
+.chrono [class*="chrono-controls"],
+.chrono .chrono-timeline-toolbar,
+.chrono [class*="toolbar"][class*="timeline"],
+.chrono [class*="outline-"],
+.chrono [class*="timeline-outline"],
+.chrono .timeline-outline-wrapper,
+.chrono [class*="jump"],
+.chrono [class*="layout-switch"],
+.chrono [class*="mode-switch"],
+.chrono button[class*="outline"],
+.chrono button[class*="jump"],
+.chrono button[class*="mode"],
+.chrono button[class*="layout"] {
   display: none !important;
   visibility: hidden !important;
 }

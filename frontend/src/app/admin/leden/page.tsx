@@ -163,13 +163,13 @@ export default function LedenOverzichtPage() {
                     </div>
 
                     <div className="relative w-full md:w-96">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-admin-muted" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-admin-muted pointer-events-none z-20" />
                         <input
                             type="text"
                             placeholder="Zoek op naam, email of geboortedatum..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 rounded-2xl bg-admin-card border-none shadow-lg focus:ring-2 focus:ring-theme-purple outline-none text-admin placeholder:text-admin-muted"
+                            className="form-input block w-full pl-10 pr-4 py-3 h-12 min-h-[44px] rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 shadow-lg focus:ring-2 focus:ring-theme-purple outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 z-10 appearance-none"
                         />
                     </div>
 
