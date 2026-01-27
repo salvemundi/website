@@ -84,6 +84,7 @@ async function mapDirectusUserToUser(rawUser: any): Promise<User> {
         entra_id: rawUser.entra_id,
         fontys_email: rawUser.fontys_email,
         phone_number: rawUser.phone_number,
+        date_of_birth: rawUser.date_of_birth,
         // Normalize avatar to a file id string when Directus returns an object
         avatar: rawUser?.avatar && typeof rawUser.avatar === 'object' && 'id' in rawUser.avatar ? rawUser.avatar.id : rawUser.avatar,
         is_member: isMember,
