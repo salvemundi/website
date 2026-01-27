@@ -175,3 +175,68 @@ body {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   border-radius: 0.5rem;
 }
+/* 8. Timeline / Chrono Component Overrides */
+/* Remove scrollbars and height constraints from timeline cards */
+.timeline-card-content,
+.card-content-wrapper,
+[class*="timeline"] [class*="card-content"] {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Ensure timeline vertical wrapper allows natural flow */
+.timeline-vertical-wrapper,
+[class*="timeline-vertical"] {
+  overflow: visible !important;
+}
+
+/* Fix card container overflow */
+[class*="timeline"] [class*="card-description"],
+[class*="chrono"] [class*="card"],
+.chrono-card-content {
+  max-height: none !important;
+  overflow: visible !important;
+  height: auto !important;
+}
+
+/* Additional fixes for Chrono timeline scrolling */
+.timeline-main-wrapper,
+[class*="timeline-main"],
+[class*="chrono-wrapper"] {
+  overflow: visible !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+/* Ensure timeline items container is not fixed height */
+.timeline-items-container,
+[class*="timeline-items"] {
+  overflow: visible !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+/* Remove any scroll containers */
+[class*="scroll-container"] {
+  overflow: visible !important;
+}
+
+/* Hide timeline controls completely */
+.timeline-controls,
+[class*="timeline-controls"],
+[class*="chrono-controls"],
+.chrono-timeline-toolbar,
+[class*="toolbar"][class*="timeline"],
+[class*="outline-"],
+[class*="timeline-outline"],
+.timeline-outline-wrapper,
+[class*="jump"],
+[class*="layout-switch"],
+[class*="mode-switch"],
+button[class*="outline"],
+button[class*="jump"],
+button[class*="mode"],
+button[class*="layout"] {
+  display: none !important;
+  visibility: hidden !important;
+}
