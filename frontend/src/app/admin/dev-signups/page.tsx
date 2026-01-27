@@ -317,7 +317,7 @@ export default function DevSignupsPage() {
 
             if (!response.ok) {
                 const error = await response.json().catch(() => ({}));
-                const msg = error.error || error.message || 'Failed to approve';
+                const msg = error.details || error.error || error.message || 'Failed to approve';
                 throw new Error(msg);
             }
             if (!silent) {
