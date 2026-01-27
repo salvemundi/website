@@ -91,7 +91,7 @@ async def create_azure_user(data: CreateMemberRequest, token: str):
     if data.phone_number:
         user_payload["mobilePhone"] = data.phone_number
     if data.date_of_birth:
-        user_payload["birthday"] = f"{data.date_of_birth}T00:00:00Z"
+        user_payload["birthday"] = f"{data.date_of_birth}T04:04:04Z"
         
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     async with httpx.AsyncClient() as client:
@@ -145,8 +145,8 @@ async def update_user_attributes(user_id: str, date_of_birth: str = None):
 
             # 2. Update Date of Birth (Standard Property)
             if date_of_birth:
-                # Ensure ISO 8601 format
-                dob_payload = {"birthday": f"{date_of_birth}T00:00:00Z" if "T" not in date_of_birth else date_of_birth}
+                # Ensure ISO 8601 format with Easter Egg time (404: Time Not Found)
+                dob_payload = {"birthday": f"{date_of_birth}T04:04:04Z" if "T" not in date_of_birth else date_of_birth}
                 print(f"DEBUG: Sending PATCH (Birthday) to {url_v1} with: {dob_payload}")
                 res_dob = await client.patch(url_v1, json=dob_payload, headers=headers)
                 if res_dob.status_code not in [200, 204]:
