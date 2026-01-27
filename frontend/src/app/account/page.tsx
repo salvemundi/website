@@ -174,9 +174,14 @@ export default function AccountPage() {
   const [isEditingDateOfBirth, setIsEditingDateOfBirth] = useState(false);
   const [isSavingDateOfBirth, setIsSavingDateOfBirth] = useState(false);
 
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [isEditingPhoneNumber, setIsEditingPhoneNumber] = useState(false);
+  const [isSavingPhoneNumber, setIsSavingPhoneNumber] = useState(false);
+
   useEffect(() => {
     if (user?.minecraft_username) setMinecraftUsername(user.minecraft_username);
     if (user?.date_of_birth) setDateOfBirth(user.date_of_birth);
+    if (user?.phone_number) setPhoneNumber(user.phone_number);
   }, [user]);
 
 
@@ -288,6 +293,31 @@ export default function AccountPage() {
       alert('Fout bij opslaan');
     } finally {
       setIsSavingDateOfBirth(false);
+    }
+  };
+
+  const handleSavePhoneNumber = async () => {
+    if (!phoneNumber) {
+      alert('Voer een geldig telefoonnummer in');
+      return;
+    }
+    setIsSavingPhoneNumber(true);
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch('/api/user/update-phone-number', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ phone_number: phoneNumber }),
+      });
+      if (!response.ok) throw new Error('Failed to update');
+      await refreshUser();
+      setIsEditingPhoneNumber(false);
+      alert('Telefoonnummer opgeslagen!');
+    } catch (error) {
+      console.error('Failed to update phone number:', error);
+      alert('Fout bij opslaan');
+    } finally {
+      setIsSavingPhoneNumber(false);
     }
   };
 
@@ -663,24 +693,65 @@ export default function AccountPage() {
                   </div>
                 ) : null}
 
-                {user.phone_number ? (
-                  <div className="flex items-center gap-4 rounded-2xl bg-theme-purple/5 p-4 border border-theme-purple/5">
-                    <div className="shrink-0 rounded-xl bg-white/50 dark:bg-black/20 p-2.5 text-theme-purple dark:text-white shadow-sm">
-                      <Phone className="h-5 w-5" />
+                <div className="rounded-2xl bg-theme-purple/5 p-4 border border-theme-purple/5">
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <p className="text-[10px] font-black uppercase text-theme-purple/60 dark:text-white/40 tracking-widest text-left">
+                      Telefoonnummer
+                    </p>
+                    {!isEditingPhoneNumber && (
+                      <button
+                        onClick={() => setIsEditingPhoneNumber(true)}
+                        className="shrink-0 rounded-xl bg-theme-purple/10 px-3 py-1.5 text-[9px] font-black uppercase text-theme-purple dark:text-white hover:bg-theme-purple/20 transition shadow-sm border border-theme-purple/10"
+                      >
+                        {user.phone_number ? "Wijzig" : "Instellen"}
+                      </button>
+                    )}
+                  </div>
+
+                  {isEditingPhoneNumber ? (
+                    <div className="space-y-3">
+                      <input
+                        type="tel"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        placeholder="+31612345678"
+                        className="w-full rounded-xl border border-theme-purple/20 bg-white dark:bg-surface-dark px-4 py-2.5 text-theme-purple dark:text-white focus:outline-none focus:ring-2 focus:ring-theme-purple/50 transition"
+                        disabled={isSavingPhoneNumber}
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleSavePhoneNumber}
+                          disabled={isSavingPhoneNumber}
+                          className="flex-1 rounded-xl bg-theme-purple px-4 py-2 text-sm font-bold text-white hover:bg-theme-purple-light transition disabled:opacity-50"
+                        >
+                          {isSavingPhoneNumber ? 'Opslaan...' : 'Opslaan'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setIsEditingPhoneNumber(false);
+                            setPhoneNumber(user.phone_number || "");
+                          }}
+                          disabled={isSavingPhoneNumber}
+                          className="flex-1 rounded-xl border border-theme-purple/20 px-4 py-2 text-sm font-bold text-theme-purple dark:text-white hover:bg-theme-purple/10 transition disabled:opacity-50"
+                        >
+                          Annuleren
+                        </button>
+                      </div>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] text-theme-purple/40 dark:text-white/30 font-black uppercase tracking-wider mb-0.5">
-                        Telefoonnummer
-                      </p>
+                  ) : (
+                    <div className="flex items-center gap-4">
+                      <div className="shrink-0 rounded-xl bg-white/50 dark:bg-black/20 p-2.5 text-theme-purple dark:text-white shadow-sm">
+                        <Phone className="h-5 w-5" />
+                      </div>
                       <p
                         className="font-bold text-theme-purple dark:text-white"
                         style={{ fontSize: 'var(--font-size-base)' }}
                       >
-                        {user.phone_number}
+                        {user.phone_number || "Niet ingesteld"}
                       </p>
                     </div>
-                  </div>
-                ) : null}
+                  )}
+                </div>
 
                 <div className="rounded-2xl bg-theme-purple/5 p-4 border border-theme-purple/5">
                   <div className="flex items-center justify-between gap-2 mb-3">
