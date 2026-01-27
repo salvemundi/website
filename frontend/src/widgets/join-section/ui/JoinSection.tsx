@@ -41,7 +41,7 @@ export default function JoinSection() {
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Link
                             href="/lidmaatschap"
-                            className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-theme px-8 py-4 text-base font-semibold text-theme-white shadow-xl transition hover:scale-105"
+                            className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-theme px-8 py-4 text-base font-semibold text-theme-purple dark:text-white shadow-xl transition hover:scale-105"
                         >
                             {buttonText}
                         </Link>
