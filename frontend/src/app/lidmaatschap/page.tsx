@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { isValidPhoneNumber } from '@/shared/lib/phone';
+import { PhoneNumberInput, isValidPhoneNumber } from '@/shared/components/PhoneNumberInput';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { User } from '@/shared/model/types/auth';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
@@ -409,8 +409,12 @@ export default function SignUp() {
 
                                 <label className="form-label">
                                     Telefoonnummer
-                                    <input type="tel" name="telefoon" value={form.telefoon} onChange={handleChange} required className="form-input mt-1" />
-                                    {phoneError && <p className="text-red-300 text-sm mt-1">{phoneError}</p>}
+                                    <PhoneNumberInput
+                                        value={form.telefoon}
+                                        onChange={(val) => handleChange({ target: { name: 'telefoon', value: val || '' } } as any)}
+                                        required
+                                        error={phoneError}
+                                    />
                                 </label>
 
                                 <div className="border-t border-theme-white/20 pt-4 mt-2">
