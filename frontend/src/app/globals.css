@@ -216,6 +216,21 @@ body {
   height: auto !important;
 }
 
+/* Ensure signup form inputs are visible when a global rule hides them.
+   Targets the signup form container on the activiteit detail page and forces inputs
+   to display. This is a scoped, intentional override (keeps high specificity).
+   Remove or refine once the root cause is addressed. */
+.signup-form-container input,
+.signup-form-container textarea,
+.signup-form-container select,
+.signup-form-container .PhoneInputInput {
+  display: block !important;
+  visibility: visible !important;
+  width: 100% !important;
+  height: auto !important;
+  opacity: 1 !important;
+}
+
 /* Remove any scroll containers */
 [class*="scroll-container"] {
   overflow: visible !important;
