@@ -170,8 +170,13 @@ export default function AccountPage() {
   const [isEditingMinecraft, setIsEditingMinecraft] = useState(false);
   const [isSavingMinecraft, setIsSavingMinecraft] = useState(false);
 
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [isEditingDateOfBirth, setIsEditingDateOfBirth] = useState(false);
+  const [isSavingDateOfBirth, setIsSavingDateOfBirth] = useState(false);
+
   useEffect(() => {
     if (user?.minecraft_username) setMinecraftUsername(user.minecraft_username);
+    if (user?.date_of_birth) setDateOfBirth(user.date_of_birth);
   }, [user]);
 
 
@@ -242,21 +247,47 @@ export default function AccountPage() {
   };
 
   const handleSaveMinecraftUsername = async () => {
-    if (!user?.id) return;
-
     setIsSavingMinecraft(true);
     try {
-      const token = localStorage.getItem("auth_token");
-      if (!token) throw new Error("No auth token");
-
-      await updateMinecraftUsername(user.id, minecraftUsername, token);
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch('/api/user/update-minecraft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ minecraft_username: minecraftUsername }),
+      });
+      if (!response.ok) throw new Error('Failed to update');
       await refreshUser();
       setIsEditingMinecraft(false);
     } catch (error) {
-      console.error("Failed to update minecraft username:", error);
-      alert("Kon Minecraft gebruikersnaam niet bijwerken. Probeer het opnieuw.");
+      console.error('Failed to update Minecraft username:', error);
+      alert('Fout bij opslaan');
     } finally {
       setIsSavingMinecraft(false);
+    }
+  };
+
+  const handleSaveDateOfBirth = async () => {
+    if (!dateOfBirth) {
+      alert('Voer een geldige geboortedatum in');
+      return;
+    }
+    setIsSavingDateOfBirth(true);
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch('/api/user/update-date-of-birth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ date_of_birth: dateOfBirth }),
+      });
+      if (!response.ok) throw new Error('Failed to update');
+      await refreshUser();
+      setIsEditingDateOfBirth(false);
+      alert('Geboortedatum opgeslagen!');
+    } catch (error) {
+      console.error('Failed to update date of birth:', error);
+      alert('Fout bij opslaan');
+    } finally {
+      setIsSavingDateOfBirth(false);
     }
   };
 
@@ -651,21 +682,63 @@ export default function AccountPage() {
                   </div>
                 ) : null}
 
-                <div className="flex items-center gap-4 rounded-2xl bg-theme-purple/5 p-4 border border-theme-purple/5">
-                  <div className="shrink-0 rounded-xl bg-white/50 dark:bg-black/20 p-2.5 text-theme-purple dark:text-white shadow-sm">
-                    <Calendar className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[10px] text-theme-purple/40 dark:text-white/30 font-black uppercase tracking-wider mb-0.5">
+                <div className="rounded-2xl bg-theme-purple/5 p-4 border border-theme-purple/5">
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <p className="text-[10px] font-black uppercase text-theme-purple/60 dark:text-white/40 tracking-widest text-left">
                       Geboortedatum
                     </p>
-                    <p
-                      className="font-bold text-theme-purple dark:text-white"
-                      style={{ fontSize: 'var(--font-size-base)' }}
-                    >
-                      {user.date_of_birth ? format(new Date(user.date_of_birth), "d MMMM yyyy") : "Niet ingesteld"}
-                    </p>
+                    {!isEditingDateOfBirth && (
+                      <button
+                        onClick={() => setIsEditingDateOfBirth(true)}
+                        className="shrink-0 rounded-xl bg-theme-purple/10 px-3 py-1.5 text-[9px] font-black uppercase text-theme-purple dark:text-white hover:bg-theme-purple/20 transition shadow-sm border border-theme-purple/10"
+                      >
+                        {user.date_of_birth ? "Wijzig" : "Instellen"}
+                      </button>
+                    )}
                   </div>
+
+                  {isEditingDateOfBirth ? (
+                    <div className="space-y-3">
+                      <input
+                        type="date"
+                        value={dateOfBirth}
+                        onChange={(e) => setDateOfBirth(e.target.value)}
+                        className="w-full rounded-xl border border-theme-purple/20 bg-white dark:bg-surface-dark px-4 py-2.5 text-theme-purple dark:text-white focus:outline-none focus:ring-2 focus:ring-theme-purple/50 transition"
+                        disabled={isSavingDateOfBirth}
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleSaveDateOfBirth}
+                          disabled={isSavingDateOfBirth}
+                          className="flex-1 rounded-xl bg-theme-purple px-4 py-2 text-sm font-bold text-white hover:bg-theme-purple-light transition disabled:opacity-50"
+                        >
+                          {isSavingDateOfBirth ? 'Opslaan...' : 'Opslaan'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setIsEditingDateOfBirth(false);
+                            setDateOfBirth(user.date_of_birth || "");
+                          }}
+                          disabled={isSavingDateOfBirth}
+                          className="flex-1 rounded-xl border border-theme-purple/20 px-4 py-2 text-sm font-bold text-theme-purple dark:text-white hover:bg-theme-purple/10 transition disabled:opacity-50"
+                        >
+                          Annuleren
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-4">
+                      <div className="shrink-0 rounded-xl bg-white/50 dark:bg-black/20 p-2.5 text-theme-purple dark:text-white shadow-sm">
+                        <Calendar className="h-5 w-5" />
+                      </div>
+                      <p
+                        className="font-bold text-theme-purple dark:text-white"
+                        style={{ fontSize: 'var(--font-size-base)' }}
+                      >
+                        {user.date_of_birth ? format(new Date(user.date_of_birth), "d MMMM yyyy") : "Niet ingesteld"}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </Tile>
