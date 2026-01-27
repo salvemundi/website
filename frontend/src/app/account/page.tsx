@@ -63,7 +63,7 @@ function Tile({
     >
       <div className="relative p-6 sm:p-8">
         {(title || actions) && (
-          <header className="mb-6 flex items-center justify-between gap-4">
+          <header className="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 items-center gap-3">
               {icon ? (
                 <div className="shrink-0 rounded-2xl bg-theme-purple/10 dark:bg-white/10 p-2.5 text-theme-purple dark:text-white">
@@ -74,14 +74,16 @@ function Tile({
               ) : null}
               {title ? (
                 <h2
-                  className="truncate text-2xl font-bold text-theme-purple dark:text-white"
+                  className="min-w-0 break-words whitespace-normal text-2xl font-bold text-theme-purple dark:text-white"
                 >
                   {title}
                 </h2>
               ) : null}
             </div>
 
-            {actions ? <div className="shrink-0">{actions}</div> : null}
+            {actions ? (
+              <div className="w-full sm:w-auto flex justify-start sm:justify-end">{actions}</div>
+            ) : null}
           </header>
         )}
 
