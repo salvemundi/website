@@ -13,6 +13,7 @@ import { CheckCircle2, Calendar } from 'lucide-react';
 import { splitDutchLastName } from '@/shared/lib/utils/dutch-name';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
+import { isUserAuthorizedForReis } from '@/shared/lib/committee-utils';
 
 export default function ReisPage() {
     const [form, setForm] = useState({
@@ -27,6 +28,7 @@ export default function ReisPage() {
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isCommitteeMember, setIsCommitteeMember] = useState(false);
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
@@ -179,6 +181,7 @@ export default function ReisPage() {
                         phone_number: prev.phone_number || user.phone_number || '',
                         date_of_birth: prev.date_of_birth || (user.date_of_birth ? new Date(user.date_of_birth) : null),
                     }));
+                    setIsCommitteeMember(isUserAuthorizedForReis(user));
                 })
                 .catch(() => {
                     // ignore failures - user may not be logged in
@@ -223,7 +226,7 @@ export default function ReisPage() {
                 date_of_birth: form.date_of_birth.toISOString().split('T')[0],
                 terms_accepted: form.terms_accepted,
                 status: shouldBeWaitlisted ? 'waitlist' as const : 'registered' as const,
-                role: 'participant' as const,
+                role: isCommitteeMember ? 'crew' as const : 'participant' as const,
                 deposit_paid: false,
                 full_payment_paid: false,
             };
