@@ -404,6 +404,18 @@ textarea.form-input {
 /* --- 8. VENDOR OVERRIDES (React DatePicker, etc.) --- */
 /* Custom styling for the date picker popup to match our premium look */
 
+/* Fix for browser-native select/input elements in dark mode */
+.dark select,
+.dark input {
+  color-scheme: dark;
+}
+
+select option {
+  background-color: var(--bg-card) !important;
+  color: var(--text-main) !important;
+  font-weight: normal !important;
+}
+
 .react-datepicker {
   font-family: inherit !important;
   border: 1px solid var(--border-color) !important;
