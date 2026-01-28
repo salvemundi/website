@@ -146,7 +146,7 @@ We follow a consistent Way of Working across the team:
 
 *   **Setup Instructions**: [Wiki / Docs](https://github.com/salvemundi/website/wiki)
 *   **Authentication**: [Entra ID Setup](readme/AUTH_SETUP.md)
-*   **Email**: [Email Flow](readme/email-flow.md)
+*   **Email**: [Email Flow](readme/EMAIL_SETUP.md)
 
 ---
 
