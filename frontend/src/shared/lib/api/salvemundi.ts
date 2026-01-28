@@ -1129,7 +1129,8 @@ export interface TripActivity {
     max_participants?: number;
     is_active: boolean;
     display_order: number;
-    options?: { name: string }[];
+    options?: { name: string; price: number }[];
+    max_selections?: number; // 1 = radio/single, null/undefined = unlimited/checkbox
 }
 
 export interface TripSignup {
