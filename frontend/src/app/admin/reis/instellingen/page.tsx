@@ -9,6 +9,7 @@ import { Loader2, Plus, Edit2, Trash2, Save, X, Upload, Calendar, Users, DollarS
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
+import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 
 
@@ -68,8 +69,8 @@ export default function ReisInstellingenPage() {
                 c.name.toLowerCase().includes('reis') &&
                 c.name.toLowerCase().includes('commissie')
             );
-            if (reisCie && reisCie.members) {
-                crewCount = reisCie.members.length;
+            if (reisCie && reisCie.committee_members) {
+                crewCount = reisCie.committee_members.length;
             }
         } catch (e) {
             console.warn('Could not fetch committee members for default crew size', e);
@@ -161,9 +162,6 @@ export default function ReisInstellingenPage() {
                 // Prefer explicit start/end dates for multi-day events.
                 start_date: form.start_date || undefined,
                 end_date: form.end_date || undefined,
-                // Keep event_date for backward compatibility when present
-                event_date: form.event_date || undefined,
-                registration_start_date: form.registration_start_date ? form.registration_start_date.toISOString() : null,
                 // Keep event_date for backward compatibility when present
                 event_date: form.event_date || undefined,
                 registration_start_date: form.registration_start_date ? form.registration_start_date.toISOString() : null,
