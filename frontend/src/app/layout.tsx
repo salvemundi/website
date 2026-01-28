@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import '@/shared/lib/silence-dev-logs';
+import ConsoleArt from '@/shared/lib/console-art';
 import { RootProviders } from './providers';
 import Header from '@/widgets/header/ui/Header';
 import Footer from '@/widgets/footer/ui/Footer';
@@ -86,6 +87,8 @@ export default function RootLayout({
             <body className="min-h-screen bg-background dark:bg-background-darker text-ink dark:text-white relative transition-colors duration-300">
                 <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-oranje/10/80 via-transparent to-oranje/20/60 dark:from-oranje/5/40 dark:to-paars/10/40" aria-hidden="true" />
                 <RootProviders>
+                    {/* Client-only: prints ASCII art + GitHub link to browser console on page load */}
+                    <ConsoleArt />
                     <ServiceWorkerRegistration />
                     <Header />
                     <div className="relative z-10">
