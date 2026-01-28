@@ -22,6 +22,8 @@ export default function ActiviteitenBeheerPage() {
         max_participants: null as number | null,
         is_active: true,
         display_order: 0,
+        options: [] as { name: string; price: number }[],
+        max_selections: null as number | null,
     });
 
     useEffect(() => {
@@ -72,6 +74,8 @@ export default function ActiviteitenBeheerPage() {
             max_participants: null,
             is_active: true,
             display_order: activities.length,
+            options: [],
+            max_selections: null,
         });
     };
 
@@ -86,6 +90,8 @@ export default function ActiviteitenBeheerPage() {
             max_participants: activity.max_participants || null,
             is_active: activity.is_active,
             display_order: activity.display_order,
+            options: activity.options?.map(o => ({ ...o, price: o.price || 0 })) || [],
+            max_selections: activity.max_selections || null,
         });
     };
 
@@ -100,6 +106,8 @@ export default function ActiviteitenBeheerPage() {
             max_participants: null,
             is_active: true,
             display_order: 0,
+            options: [],
+            max_selections: null,
         });
     };
 
@@ -123,6 +131,8 @@ export default function ActiviteitenBeheerPage() {
                 max_participants: form.max_participants || undefined,
                 is_active: form.is_active,
                 display_order: form.display_order,
+                options: form.options,
+                max_selections: form.max_selections || undefined,
             };
 
             if (addingNew) {
@@ -342,6 +352,86 @@ export default function ActiviteitenBeheerPage() {
                                     />
                                     <span className="ml-2 text-sm text-admin-muted">Actief (zichtbaar voor deelnemers)</span>
                                 </label>
+                            </div>
+
+                            <div className="md:col-span-2 border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
+                                <label className="block text-sm font-medium text-admin-muted mb-2">
+                                    Sub-opties configuratie
+                                </label>
+
+                                <div className="flex gap-6 mb-4">
+                                    <label className="flex items-center">
+                                        <input
+                                            type="radio"
+                                            name="selection_type"
+                                            checked={form.max_selections === null}
+                                            onChange={() => setForm({ ...form, max_selections: null })}
+                                            className="h-4 w-4 text-theme-purple focus:ring-theme-purple border-admin"
+                                        />
+                                        <span className="ml-2 text-sm text-admin">Meerdere opties mogelijk (Checkbox)</span>
+                                    </label>
+                                    <label className="flex items-center">
+                                        <input
+                                            type="radio"
+                                            name="selection_type"
+                                            checked={form.max_selections === 1}
+                                            onChange={() => setForm({ ...form, max_selections: 1 })}
+                                            className="h-4 w-4 text-theme-purple focus:ring-theme-purple border-admin"
+                                        />
+                                        <span className="ml-2 text-sm text-admin">Slechts 1 optie kiezen (Radio)</span>
+                                    </label>
+                                </div>
+
+                                <label className="block text-sm font-medium text-admin-muted mb-2">
+                                    Opties & Extra Kosten
+                                </label>
+                                <div className="space-y-3">
+                                    {form.options.map((opt, idx) => (
+                                        <div key={idx} className="flex gap-2 items-center">
+                                            <input
+                                                type="text"
+                                                value={opt.name}
+                                                onChange={(e) => {
+                                                    const newOpts = [...form.options];
+                                                    newOpts[idx] = { ...newOpts[idx], name: e.target.value };
+                                                    setForm({ ...form, options: newOpts });
+                                                }}
+                                                placeholder={`Optie ${idx + 1}`}
+                                                className="flex-1 px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
+                                            />
+                                            <div className="relative w-32">
+                                                <span className="absolute left-3 top-2 text-admin-muted">€</span>
+                                                <input
+                                                    type="number"
+                                                    value={opt.price}
+                                                    onChange={(e) => {
+                                                        const newOpts = [...form.options];
+                                                        newOpts[idx] = { ...newOpts[idx], price: parseFloat(e.target.value) || 0 };
+                                                        setForm({ ...form, options: newOpts });
+                                                    }}
+                                                    className="w-full pl-8 pr-3 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
+                                                    placeholder="0.00"
+                                                />
+                                            </div>
+                                            <button
+                                                onClick={() => {
+                                                    const newOpts = form.options.filter((_, i) => i !== idx);
+                                                    setForm({ ...form, options: newOpts });
+                                                }}
+                                                className="px-3 py-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
+                                            >
+                                                <Trash2 className="h-5 w-5" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    <button
+                                        onClick={() => setForm({ ...form, options: [...form.options, { name: '', price: 0 }] })}
+                                        className="text-sm text-theme-purple font-medium hover:underline flex items-center"
+                                    >
+                                        <Plus className="h-4 w-4 mr-1" />
+                                        Optie toevoegen
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
