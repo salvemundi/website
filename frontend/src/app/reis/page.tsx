@@ -8,7 +8,7 @@ import { useSalvemundiTrips, useSalvemundiSiteSettings, useSalvemundiTripSignups
 import { fetchUserDetails } from '@/shared/lib/auth';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { splitDutchLastName } from '@/shared/lib/utils/dutch-name';
+
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { isUserInReisCommittee } from '@/shared/lib/committee-utils';
@@ -195,24 +195,10 @@ export default function ReisPage() {
                 .then((user) => {
                     if (!user) return;
 
-                    let firstName = user.first_name || '';
-                    let middleName = user.middle_name || '';
-                    let lastName = user.last_name || '';
-
-                    // If middle name is empty, try to extract it from the last name
-                    if (!middleName && lastName) {
-                        const split = splitDutchLastName(lastName);
-                        if (split.prefix) {
-                            middleName = split.prefix;
-                            lastName = split.lastName;
-                        }
-                    }
 
                     setForm((prev) => ({
                         ...prev,
-                        first_name: prev.first_name || firstName,
-                        middle_name: prev.middle_name || middleName,
-                        last_name: prev.last_name || lastName,
+                        // Name fields are NOT auto-filled - user must enter legal name as on ID
                         email: prev.email || user.email || '',
                         phone_number: prev.phone_number || user.phone_number || '',
                         date_of_birth: prev.date_of_birth || (user.date_of_birth ? new Date(user.date_of_birth) : null),
