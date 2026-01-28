@@ -337,7 +337,7 @@ export default function ReisInstellingenPage() {
 
                             <div>
                                 <label className="block text-sm font-medium text-admin-muted mb-2">
-                                    Aantal Crew ({form.max_crew > 0 ? 'Automatisch ingevuld' : 'Handmatig'})
+                                    Aantal Crew *
                                 </label>
                                 <input
                                     type="number"
@@ -346,9 +346,6 @@ export default function ReisInstellingenPage() {
                                     onFocus={(e) => e.target.select()}
                                     className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
-                                <p className="text-xs text-admin-muted mt-1">
-                                    Wordt bij 'Nieuwe Reis' automatisch ingevuld op basis van Reiscommissie ledenaantal.
-                                </p>
                             </div>
 
                             <div>
