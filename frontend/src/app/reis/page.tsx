@@ -9,7 +9,7 @@ import { fetchUserDetails } from '@/shared/lib/auth';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { CheckCircle2, Calendar } from 'lucide-react';
-import { PhoneNumberInput, isValidPhoneNumber } from '@/shared/components/PhoneNumberInput';
+
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -26,7 +26,6 @@ export default function ReisPage() {
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [phoneError, setPhoneError] = useState<string | null>(null);
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
@@ -158,15 +157,9 @@ export default function ReisPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
-        setPhoneError(null);
 
         if (!form.first_name || !form.last_name || !form.email || !form.phone_number || !form.date_of_birth) {
             setError('Vul alle verplichte velden in.');
-            return;
-        }
-
-        if (!isValidPhoneNumber(form.phone_number)) {
-            setPhoneError('Ongeldig telefoonnummer');
             return;
         }
 
@@ -400,11 +393,14 @@ export default function ReisPage() {
 
                                             <label className="form-label">
                                                 Telefoonnummer
-                                                <PhoneNumberInput
+                                                <input
+                                                    type="tel"
+                                                    name="phone_number"
                                                     value={form.phone_number}
-                                                    onChange={(val) => setForm({ ...form, phone_number: val || '' })}
+                                                    onChange={handleChange}
                                                     required
-                                                    error={phoneError || undefined}
+                                                    placeholder="+31 6 12345678"
+                                                    className="form-input mt-1"
                                                 />
                                             </label>
                                         </div>
