@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
 
         // Fetch trip data from Directus using internal API proxy with token
         console.log(`[trip-email/payment-request] Fetching trip via internal API`);
-        const tripResponse = await fetch(`${frontendUrl}/api/items/trips/${tripId}?fields=id,name,event_date,base_price,deposit_amount,crew_discount,is_bus_trip`, {
+        const tripResponse = await fetch(`${frontendUrl}/api/items/trips/${tripId}?fields=id,name,event_date,start_date,end_date,base_price,deposit_amount,crew_discount,is_bus_trip`, {
             headers: {
                 'Authorization': `Bearer ${directusToken}`,
             }
@@ -121,11 +121,27 @@ async function sendTripPaymentRequestEmail(emailServiceUrl: string, tripSignup: 
     const amount = paymentType === 'deposit' ? Number(trip.deposit_amount) || 0 : 0; // Final amount calculated on frontend
     const paymentUrl = `${frontendUrl}/reis/${paymentType === 'deposit' ? 'aanbetaling' : 'restbetaling'}/${tripSignup.id}`;
 
+    // Date formatting logic
+    const displayStartDate = trip.start_date || trip.event_date;
+    let dateDisplay = 'Datum onbekend';
+
+    if (displayStartDate) {
+        const start = new Date(displayStartDate);
+        const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+
+        if (trip.end_date) {
+            const end = new Date(trip.end_date);
+            dateDisplay = `${start.toLocaleDateString('nl-NL', options)} t/m ${end.toLocaleDateString('nl-NL', options)}`;
+        } else {
+            dateDisplay = start.toLocaleDateString('nl-NL', options);
+        }
+    }
+
     const emailHtml = `
         <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #7B2CBF;">Betaalverzoek voor ${trip.name}</h2>
             <p>Beste ${fullName},</p>
-            <p>Het is tijd om ${paymentType === 'deposit' ? 'de aanbetaling' : 'de restbetaling'} te doen voor je deelname aan <strong>${trip.name}</strong>.</p>
+            <p>Het is tijd om ${paymentType === 'deposit' ? 'de aanbetaling' : 'de restbetaling'} te doen voor je deelname aan <strong>${trip.name}</strong> (${dateDisplay}).</p>
             
             <div style="background-color: #f3f3f3; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
                 ${paymentType === 'deposit' ? `
@@ -176,12 +192,12 @@ async function sendTripPaymentRequestEmail(emailServiceUrl: string, tripSignup: 
     `;
 
     // Build the email service URL, avoiding double /send-email
-    const emailUrl = emailServiceUrl.endsWith('/send-email') 
-        ? emailServiceUrl 
+    const emailUrl = emailServiceUrl.endsWith('/send-email')
+        ? emailServiceUrl
         : `${emailServiceUrl}/send-email`;
-    
+
     console.log(`[sendTripPaymentRequestEmail] Sending to email service: ${emailUrl}`);
-    
+
     const response = await fetch(emailUrl, {
         method: 'POST',
         headers: {

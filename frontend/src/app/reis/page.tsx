@@ -13,7 +13,7 @@ import { CheckCircle2, Calendar } from 'lucide-react';
 import { splitDutchLastName } from '@/shared/lib/utils/dutch-name';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
-import { isUserAuthorizedForReis } from '@/shared/lib/committee-utils';
+import { isUserInReisCommittee } from '@/shared/lib/committee-utils';
 
 export default function ReisPage() {
     const [form, setForm] = useState({
@@ -181,7 +181,7 @@ export default function ReisPage() {
                         phone_number: prev.phone_number || user.phone_number || '',
                         date_of_birth: prev.date_of_birth || (user.date_of_birth ? new Date(user.date_of_birth) : null),
                     }));
-                    setIsCommitteeMember(isUserAuthorizedForReis(user));
+                    setIsCommitteeMember(isUserInReisCommittee(user));
                 })
                 .catch(() => {
                     // ignore failures - user may not be logged in

@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Fetch trip
-        const tripResponse = await fetch(`${frontendUrl}/api/items/trips/${effectiveTripId}?fields=id,name,event_date,base_price,deposit_amount,crew_discount,is_bus_trip`, {
+        const tripResponse = await fetch(`${frontendUrl}/api/items/trips/${effectiveTripId}?fields=id,name,event_date,start_date,end_date,base_price,deposit_amount,crew_discount,is_bus_trip`, {
             headers: { 'Authorization': `Bearer ${directusToken}` }
         });
 
@@ -80,6 +80,22 @@ async function sendTripPaymentConfirmationEmail(emailServiceUrl: string, tripSig
     // Normalize numeric values
     const depositAmount = Number(trip.deposit_amount) || 0;
 
+    // Date formatting logic
+    const displayStartDate = trip.start_date || trip.event_date;
+    let dateDisplay = 'Datum onbekend';
+
+    if (displayStartDate) {
+        const start = new Date(displayStartDate);
+        const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+
+        if (trip.end_date) {
+            const end = new Date(trip.end_date);
+            dateDisplay = `${start.toLocaleDateString('nl-NL', options)} t/m ${end.toLocaleDateString('nl-NL', options)}`;
+        } else {
+            dateDisplay = start.toLocaleDateString('nl-NL', options);
+        }
+    }
+
     const emailHtml = `
         <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #2E7D32;">✓ Betaling ontvangen!</h2>
@@ -101,7 +117,7 @@ async function sendTripPaymentConfirmationEmail(emailServiceUrl: string, tripSig
             <div style="background-color: #f3f3f3; padding: 20px; border-radius: 8px; margin: 20px 0;">
                 <h3 style="margin-top: 0;">Reisdetails:</h3>
                 <p style="margin: 5px 0;"><strong>Reis:</strong> ${trip.name}</p>
-                <p style="margin: 5px 0;"><strong>Datum:</strong> ${new Date(trip.event_date).toLocaleDateString('nl-NL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <p style="margin: 5px 0;"><strong>Datum:</strong> ${dateDisplay}</p>
                 <p style="margin: 5px 0;"><strong>Deelnemer:</strong> ${fullName}</p>
                 ${paymentType === 'deposit' ? `<p style="margin: 5px 0;"><strong>Aanbetalingsbedrag:</strong> €${depositAmount.toFixed(2)}</p>` : ''}
             </div>
