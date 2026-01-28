@@ -97,13 +97,16 @@ export default function ReisPage() {
     const now = new Date();
 
     // Logic: 
-    // 1. Master switch (registration_open) MUST be true.
-    // 2. If registration_start_date is set, current time must be after it.
-    const isRegistrationStarted = registrationStartDate ? now >= registrationStartDate : true;
-    const canSignUp = Boolean(nextTrip && nextTrip.registration_open && isRegistrationStarted);
+    // 1. If registration_open is TRUE -> OPEN.
+    // 2. If registration_open is FALSE, but start date is passed -> OPEN.
+    const isRegistrationDateReached = registrationStartDate ? now >= registrationStartDate : false;
+    const canSignUp = Boolean(nextTrip && (nextTrip.registration_open || isRegistrationDateReached));
 
-    const registrationStartText = registrationStartDate && !isRegistrationStarted
-        ? `Inschrijving opent op ${format(registrationStartDate, 'd MMMM yyyy HH:mm', { locale: nl })}`
+    // Show start text only if it's NOT open yet, but there IS a start date planned
+    const showStartText = !canSignUp && registrationStartDate;
+
+    const registrationStartText = showStartText
+        ? `Inschrijving opent op ${format(registrationStartDate!, 'd MMMM yyyy HH:mm', { locale: nl })}`
         : 'Inschrijving nog niet beschikbaar';
     const headerBackgroundImage = nextTrip?.image
         ? getImageUrl(nextTrip.image)
