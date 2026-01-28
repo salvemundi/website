@@ -7,6 +7,7 @@ import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Save, ArrowLeft, Upload, X, ShieldAlert, Home } from 'lucide-react';
 import Link from 'next/link';
+import { format } from 'date-fns';
 
 interface Committee {
     id: number;
@@ -106,11 +107,11 @@ export default function BewerkenActiviteitPage() {
             const event = await directusFetch<Event>(`/items/events/${eventId}?fields=*`);
 
             // Parse date for input (needs YYYY-MM-DD format)
-            const eventDate = event.event_date ? new Date(event.event_date).toISOString().split('T')[0] : '';
+            const eventDate = event.event_date ? format(new Date(event.event_date), 'yyyy-MM-dd') : '';
 
             // Parse deadline for datetime-local input
             const deadline = event.inschrijf_deadline
-                ? new Date(event.inschrijf_deadline).toISOString().slice(0, 16)
+                ? format(new Date(event.inschrijf_deadline), "yyyy-MM-dd'T'HH:mm")
                 : '';
 
             setFormData({
