@@ -132,7 +132,7 @@ export default function ActiviteitenBeheerPage() {
                 is_active: form.is_active,
                 display_order: form.display_order,
                 options: form.options,
-                max_selections: form.max_selections,
+                max_selections: form.max_selections || undefined,
             };
 
             if (addingNew) {
