@@ -234,7 +234,7 @@ export default function ActiviteitenAanpassenPage() {
                     <div className="bg-white dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border-t-4 border-blue-600 mb-8">
                         <div className="flex items-center mb-6">
                             <Utensils className="h-6 w-6 text-blue-600 mr-3" />
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Beschikbare Activiteiten</h2>
+                            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white break-words">Beschikbare Activiteiten</h2>
                         </div>
 
                         <div className="space-y-4">
@@ -243,14 +243,14 @@ export default function ActiviteitenAanpassenPage() {
                                     key={activity.id}
                                     onClick={() => toggleActivity(activity.id)}
                                     className={`flex items-start gap-4 p-4 rounded-lg cursor-pointer transition-all ${selectedActivities.includes(activity.id)
-                                            ? 'bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-500'
-                                            : 'bg-gray-50 dark:bg-[var(--bg-soft-dark)] border-2 border-transparent hover:border-gray-300'
+                                        ? 'bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-500'
+                                        : 'bg-gray-50 dark:bg-[var(--bg-soft-dark)] border-2 border-transparent hover:border-gray-300'
                                         }`}
                                 >
                                     <div className="flex-shrink-0 mt-1">
                                         <div className={`w-6 h-6 rounded-md flex items-center justify-center ${selectedActivities.includes(activity.id)
-                                                ? 'bg-blue-500 text-white'
-                                                : 'bg-white border-2 border-gray-300'
+                                            ? 'bg-blue-500 text-white'
+                                            : 'bg-white border-2 border-gray-300'
                                             }`}>
                                             {selectedActivities.includes(activity.id) && (
                                                 <CheckCircle2 className="h-4 w-4" />
@@ -269,7 +269,7 @@ export default function ActiviteitenAanpassenPage() {
                                     )}
 
                                     <div className="flex-1">
-                                        <h3 className="font-bold text-gray-900 dark:text-white">{activity.name}</h3>
+                                        <h3 className="font-bold text-gray-900 dark:text-white break-words">{activity.name}</h3>
                                         <p className="text-sm text-gray-600 dark:text-[var(--text-muted-dark)]">{activity.description}</p>
                                     </div>
 
