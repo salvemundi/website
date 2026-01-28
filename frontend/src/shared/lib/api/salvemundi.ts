@@ -1191,7 +1191,8 @@ export const tripActivitiesApi = {
     getByTripId: async (tripId: number) => {
         const query = buildQueryString({
             filter: { trip_id: { _eq: tripId }, is_active: { _eq: true } },
-            sort: ['display_order', 'name']
+            sort: ['display_order', 'name'],
+            fields: ['*', 'options', 'max_selections']
         });
         return directusFetch<TripActivity[]>(`/items/trip_activities?${query}`);
     },
@@ -1199,7 +1200,8 @@ export const tripActivitiesApi = {
         // Get all activities including inactive ones for admin purposes
         const query = buildQueryString({
             filter: { trip_id: { _eq: tripId } },
-            sort: ['display_order', 'name']
+            sort: ['display_order', 'name'],
+            fields: ['*', 'options', 'max_selections']
         });
         return directusFetch<TripActivity[]>(`/items/trip_activities?${query}`);
     },
