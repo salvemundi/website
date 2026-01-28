@@ -27,7 +27,6 @@ export default function ReisPage() {
         terms_accepted: false,
     });
     const [loading, setLoading] = useState(false);
-    const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isCommitteeMember, setIsCommitteeMember] = useState(false);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -135,9 +134,8 @@ export default function ReisPage() {
         return () => window.removeEventListener('keydown', onKey);
     }, [lightboxOpen]);
 
-    // Calculate participants stats
+    // Calculate participants count for waitlist check
     const participantsCount = signups?.filter(s => s.status === 'confirmed' || s.status === 'registered').length || 0;
-    const spotsLeft = nextTrip ? Math.max(0, nextTrip.max_participants - participantsCount) : 0;
 
     const userSignup = useMemo(() => {
         if (!signups || !currentUser) return null;
@@ -269,18 +267,8 @@ export default function ReisPage() {
 
             await tripSignupsApi.create(signupData);
 
-            // TODO: Send confirmation email
-
-            setSubmitted(true);
-            setForm({
-                first_name: '',
-                middle_name: '',
-                last_name: '',
-                email: '',
-                phone_number: '',
-                date_of_birth: null,
-                terms_accepted: false,
-            });
+            // Reload page to show user's new status immediately
+            window.location.reload();
         } catch (err: any) {
             console.error('Error submitting signup:', err);
             setError(err?.message || 'Er is een fout opgetreden bij het verzenden van je aanmelding. Probeer het opnieuw.');
@@ -334,7 +322,7 @@ export default function ReisPage() {
                                     Inschrijven voor de Reis
                                 </h1>
 
-                                {userSignup && !submitted ? (
+                                {userSignup ? (
                                     <div className="bg-gradient-to-br from-theme-purple/5 to-theme-purple/10 rounded-2xl p-6 border border-theme-purple/20">
                                         <div className="flex items-center gap-4 mb-6">
                                             <div className="w-14 h-14 rounded-full bg-theme-purple/20 flex items-center justify-center">
@@ -411,63 +399,6 @@ export default function ReisPage() {
                                         </div>
 
 
-                                    </div>
-                                ) : submitted ? (
-                                    <div className="text-white text-center">
-                                        <div className="flex items-center justify-center mb-6">
-                                            <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center">
-                                                <CheckCircle2 className="w-12 h-12 text-white" />
-                                            </div>
-                                        </div>
-                                        <h2 className="text-3xl font-black mb-4">Aanmelding Voltooid!</h2>
-
-                                        <div className="bg-white/10 rounded-2xl p-6 mb-8 backdrop-blur-sm border border-white/20">
-                                            <p className="text-lg font-medium mb-4">
-                                                {spotsLeft > 0
-                                                    ? 'Je bent succesvol ingeschreven voor de reis!'
-                                                    : 'De reis is momenteel vol. Je bent op de wachtlijst geplaatst.'}
-                                            </p>
-
-                                            <div className="inline-block px-4 py-2 bg-white text-theme-purple rounded-full font-bold text-sm uppercase tracking-wider mb-4">
-                                                Status: {spotsLeft > 0 ? 'Geregistreerd' : 'Wachtrij'}
-                                            </div>
-
-                                            <p className="text-white/80 text-sm leading-relaxed">
-                                                Je aanmelding is ontvangen. Zodra deze is goedgekeurd door de commissie ontvang je een e-mail met de betaalinstructies op <span className="font-bold underline">{form.email}</span>.
-                                            </p>
-                                        </div>
-
-                                        <div className="flex flex-col gap-4">
-                                            {spotsLeft > 0 && (
-                                                <p className="text-sm font-medium mb-1 italic opacity-80">
-                                                    Na goedkeuring kun je hier direct de aanbetaling voldoen.
-                                                </p>
-                                            )}
-
-                                            {/* We can't easily get the ID here without fetching again, 
-                                                but userSignup in useMemo will eventually catch it.
-                                                For now, we can tell them to check their email or refresh. 
-                                                Actually, Query will probably update.
-                                            */}
-
-                                            <button
-                                                onClick={() => {
-                                                    setSubmitted(false);
-                                                    setForm({
-                                                        first_name: '',
-                                                        middle_name: '',
-                                                        last_name: '',
-                                                        email: '',
-                                                        phone_number: '',
-                                                        date_of_birth: null,
-                                                        terms_accepted: false,
-                                                    });
-                                                }}
-                                                className="w-full py-4 bg-white text-theme-purple font-bold rounded-2xl hover:bg-white/90 transition-all shadow-xl active:scale-[0.98]"
-                                            >
-                                                Klaar / Nieuwe inschrijving
-                                            </button>
-                                        </div>
                                     </div>
                                 ) : (
                                     <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
@@ -688,7 +619,7 @@ export default function ReisPage() {
                                             { icon: '📧', text: 'Je ontvangt een bevestigingsmail na inschrijving' },
                                             { icon: '🔞', text: 'Minimumleeftijd: 18 jaar' },
                                             { icon: '🪪', text: 'Gebruik je volledige naam zoals op je paspoort/ID' },
-                                            { icon: '📞', text: 'Bij vragen? Neem contact op via <a href="/contact" class="text-theme-purple underline font-semibold">onze contactpagina</a>' },
+                                            { icon: '📞', text: 'Bij vragen? Neem contact op via <a href="mailto:reis@salvemundi.nl" class="text-theme-purple underline font-semibold">reis@salvemundi.nl</a>' },
                                         ].map((item, i) => (
                                             <li key={i} className="flex items-start gap-4">
                                                 <span className="text-xl flex-shrink-0">{item.icon}</span>
