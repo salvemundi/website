@@ -8,6 +8,7 @@ import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { nl } from 'date-fns/locale';
+import { format } from 'date-fns';
 
 const DeletionTimer = ({ expiryDateStr }: { expiryDateStr: string }) => {
     const [timeLeft, setTimeLeft] = useState<{ days: number, hours: number, minutes: number } | null>(null);
@@ -163,7 +164,7 @@ export default function SignUp() {
                 firstName: user ? undefined : form.voornaam,
                 lastName: user ? undefined : form.achternaam,
                 email: user ? user.email : form.email,
-                dateOfBirth: form.geboortedatum ? form.geboortedatum.toISOString().split('T')[0] : undefined,
+                dateOfBirth: form.geboortedatum ? format(form.geboortedatum, 'yyyy-MM-dd') : undefined,
                 phoneNumber: form.telefoon,
                 couponCode: couponStatus?.valid ? form.coupon : undefined
             };
