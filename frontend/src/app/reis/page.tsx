@@ -51,8 +51,9 @@ export default function ReisPage() {
             }
 
             // Otherwise use event_date (start date)
-            if (!trip.event_date) return false;
-            const eventDate = new Date(trip.event_date);
+            const dateStr = trip.event_date || trip.start_date;
+            if (!dateStr) return false;
+            const eventDate = new Date(dateStr);
             eventDate.setHours(23, 59, 59, 999); // Even if it started today, it's still valid
             return eventDate >= today;
         });
@@ -60,8 +61,8 @@ export default function ReisPage() {
         if (validTrips.length === 0) return null;
 
         validTrips.sort((a, b) => {
-            const dateA = new Date(a.event_date!);
-            const dateB = new Date(b.event_date!);
+            const dateA = new Date((a.event_date || a.start_date)!);
+            const dateB = new Date((b.event_date || b.start_date)!);
             return dateA.getTime() - dateB.getTime();
         });
 
