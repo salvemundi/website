@@ -320,7 +320,7 @@ export default function ReisInstellingenPage() {
 
                             <div>
                                 <label className="block text-sm font-medium text-admin-muted mb-2">
-                                    Basisprijs (€) *
+                                    Prijs per deelnemer excl. Activiteiten *
                                 </label>
                                 <input
                                     type="number"
