@@ -1129,6 +1129,7 @@ export interface TripActivity {
     max_participants?: number;
     is_active: boolean;
     display_order: number;
+    options?: { name: string }[];
 }
 
 export interface TripSignup {
