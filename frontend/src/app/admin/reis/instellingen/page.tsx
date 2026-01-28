@@ -582,6 +582,12 @@ export default function ReisInstellingenPage() {
                                                                 <p className="font-semibold text-green-600">-€{fmt(trip.crew_discount)}</p>
                                                             </div>
                                                         )}
+                                                        {trip.max_crew > 0 && (
+                                                            <div>
+                                                                <span className="text-admin-muted">Crew Grootte:</span>
+                                                                <p className="font-semibold text-admin">{trip.max_crew}</p>
+                                                            </div>
+                                                        )}
                                                     </div>
 
                                                     <div className="flex gap-2 flex-wrap">
