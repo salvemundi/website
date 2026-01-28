@@ -36,20 +36,25 @@ export default function ReisPage() {
     const isReisEnabled = siteSettings?.show ?? true;
     const reisDisabledMessage = siteSettings?.disabled_message || 'De inschrijvingen voor de reis zijn momenteel gesloten.';
 
-    // Get the next upcoming trip
+    // Get the next upcoming or currently active trip
     const nextTrip = useMemo(() => {
         if (!trips || trips.length === 0) return null;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
         const validTrips = trips.filter((trip) => {
-            if (!trip.event_date) return false;
-            const parsed = new Date(trip.event_date);
-            if (isNaN(parsed.getTime())) return false;
+            // If it has an end_date, use that to check if the trip is still relevant
+            if (trip.end_date) {
+                const endDate = new Date(trip.end_date);
+                endDate.setHours(23, 59, 59, 999);
+                return endDate >= today;
+            }
 
-            const normalized = new Date(parsed);
-            normalized.setHours(0, 0, 0, 0);
-            return normalized.getTime() >= today.getTime();
+            // Otherwise use event_date (start date)
+            if (!trip.event_date) return false;
+            const eventDate = new Date(trip.event_date);
+            eventDate.setHours(23, 59, 59, 999); // Even if it started today, it's still valid
+            return eventDate >= today;
         });
 
         if (validTrips.length === 0) return null;
