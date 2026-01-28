@@ -488,30 +488,39 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                     if (payment.metadata.registrationType === 'pub_crawl_signup') {
                         collection = 'pub_crawl_signups';
 
-                        // Fetch the signup to get the pub_crawl_event_id for QR token generation
+                        // Fetch the signup to get the pub_crawl_event_id and amount_tickets for QR token generation
                         let pubCrawlEventId = 0;
+                        let amountTickets = 1;
                         try {
                             const signup = await directusService.getDirectusItem(
                                 DIRECTUS_URL,
                                 DIRECTUS_API_TOKEN,
                                 collection,
                                 registrationId,
-                                'pub_crawl_event_id'
+                                'pub_crawl_event_id,amount_tickets'
                             );
                             pubCrawlEventId = signup?.pub_crawl_event_id || 0;
-                            console.warn(`[Webhook][${traceId}] Fetched pub_crawl_event_id: ${pubCrawlEventId}`);
+                            amountTickets = signup?.amount_tickets || 1;
+                            console.warn(`[Webhook][${traceId}] Fetched pub_crawl_event_id: ${pubCrawlEventId}, amount_tickets: ${amountTickets}`);
                         } catch (err) {
                             console.error(`[Webhook][${traceId}] Failed to fetch pub_crawl_event_id:`, err);
                         }
 
-                        // Generate QR token for pub crawl signup
-                        console.warn(`[Webhook][${traceId}] Generating QR token for pub crawl signup ${registrationId}`);
-                        const qrToken = generateQRToken(registrationId, pubCrawlEventId);
-                        updatePayload.qr_token = qrToken;
-                        console.warn(`[Webhook][${traceId}] Generated QR token: ${qrToken}`);
+                        // Generate multiple QR tokens (one per ticket) for pub crawl signup
+                        console.warn(`[Webhook][${traceId}] Generating ${amountTickets} QR token(s) for pub crawl signup ${registrationId}`);
+                        const qrTokens = [];
+                        for (let i = 0; i < amountTickets; i++) {
+                            const ticketQrToken = generateQRToken(registrationId, pubCrawlEventId) + `-t${i + 1}`;
+                            qrTokens.push(ticketQrToken);
+                        }
+                        
+                        // Store the first token in qr_token for backward compatibility
+                        updatePayload.qr_token = qrTokens[0];
+                        console.warn(`[Webhook][${traceId}] Generated QR tokens: ${qrTokens.join(', ')}`);
 
-                        // Add QR token to metadata for email
-                        payment.metadata.qrToken = qrToken;
+                        // Pass all tokens to metadata for email
+                        payment.metadata.qrToken = qrTokens[0]; // backward compatibility
+                        payment.metadata.qrTokens = qrTokens; // array of all tokens
                     } else if (payment.metadata.registrationType === 'trip_signup') {
                         collection = 'trip_signups';
                         // For trip signups, check description to determine if it's deposit or final payment

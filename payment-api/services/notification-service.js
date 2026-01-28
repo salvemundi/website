@@ -88,7 +88,9 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
                     const ticketCount = isPubCrawl ? (registration.amount_tickets || 1) : 1;
                     const nameInitials = isPubCrawl && registration.name_initials ? JSON.parse(registration.name_initials) : [];
                     
-                    console.log('[NotificationService] Generating', ticketCount, 'QR code(s)...');
+                    // Check if we have multiple unique QR tokens from metadata
+                    const qrTokens = metadata.qrTokens || [qrTokenToUse];
+                    console.log('[NotificationService] Generating', ticketCount, 'QR code(s)...', qrTokens.length > 1 ? 'with unique tokens' : 'using base token');
 
                     // For pub crawl with multiple tickets we attach one image per ticket
                     if (isPubCrawl && ticketCount > 1) {
@@ -96,14 +98,15 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
                         qrHtml += `<h3 style="color: #7B2CBF; text-align: center; margin-bottom: 20px;">Jouw Toegangstickets (${ticketCount}x)</h3>`;
 
                         for (let i = 0; i < ticketCount; i++) {
-                            // generate QR image for each ticket (currently using same token for each)
-                            const qrDataUrl = await QRCode.toDataURL(qrTokenToUse, {
+                            // Use unique QR token for each ticket
+                            const ticketQrToken = qrTokens[i] || qrTokenToUse;
+                            const qrDataUrl = await QRCode.toDataURL(ticketQrToken, {
                                 color: { dark: '#7B2CBF', light: '#FFFFFF' },
                                 width: 300
                             });
                             const base64Data = qrDataUrl.split(',')[1];
 
-                            console.log('[NotificationService] QR code generated for ticket', i + 1, 'base64 length:', base64Data.length);
+                            console.log('[NotificationService] QR code generated for ticket', i + 1, 'base64 length:', base64Data.length, 'token:', ticketQrToken);
 
                             const contentId = `qrcode-image-${i + 1}`;
                             attachments.push({
@@ -121,7 +124,7 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
                                 <div style="margin: 15px 0; text-align: center; background-color: #f9f9f9; padding: 20px; border-radius: 12px; border: 2px dashed #7B2CBF;">
                                     <p style="font-weight: bold; color: #7B2CBF; margin-top: 0;">${ticketLabel}</p>
                                     <img src="cid:${contentId}" alt="QR Ticket" style="width: 200px; height: 200px; border-radius: 8px;" />
-                                    <p style="font-size: 11px; color: #999; margin-bottom: 0;">Ticket ID: ${qrTokenToUse}</p>
+                                    <p style="font-size: 11px; color: #999; margin-bottom: 0;">Ticket ID: ${ticketQrToken}</p>
                                 </div>
                             `;
                         }
