@@ -9,6 +9,10 @@ import { Loader2, Plus, Edit2, Trash2, Save, X, Upload, Calendar, Users, DollarS
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
+import "react-datepicker/dist/react-datepicker.css";
+
+import "react-datepicker/dist/react-datepicker.css";
+
 export default function ReisInstellingenPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
@@ -24,6 +28,7 @@ export default function ReisInstellingenPage() {
         event_date: '',
         start_date: '',
         end_date: '',
+        registration_start_date: null as Date | null,
         registration_open: true,
         max_participants: 0,
         base_price: 0,
@@ -60,6 +65,8 @@ export default function ReisInstellingenPage() {
             event_date: '',
             start_date: '',
             end_date: '',
+            end_date: '',
+            registration_start_date: null,
             registration_open: true,
             max_participants: 30,
             base_price: 0,
@@ -79,6 +86,7 @@ export default function ReisInstellingenPage() {
             event_date: trip.event_date ? trip.event_date.split('T')[0] : '',
             start_date: trip.start_date ? String(trip.start_date).split('T')[0] : (trip.event_date ? String(trip.event_date).split('T')[0] : ''),
             end_date: trip.end_date ? String(trip.end_date).split('T')[0] : '',
+            registration_start_date: trip.registration_start_date ? new Date(trip.registration_start_date) : null,
             registration_open: trip.registration_open,
             max_participants: trip.max_participants,
             base_price: trip.base_price,
@@ -98,6 +106,9 @@ export default function ReisInstellingenPage() {
             event_date: '',
             start_date: '',
             end_date: '',
+            registration_start_date: null,
+            end_date: '',
+            registration_start_date: null,
             registration_open: true,
             max_participants: 0,
             base_price: 0,
@@ -135,6 +146,10 @@ export default function ReisInstellingenPage() {
                 end_date: form.end_date || undefined,
                 // Keep event_date for backward compatibility when present
                 event_date: form.event_date || undefined,
+                registration_start_date: form.registration_start_date ? form.registration_start_date.toISOString() : null,
+                // Keep event_date for backward compatibility when present
+                event_date: form.event_date || undefined,
+                registration_start_date: form.registration_start_date ? form.registration_start_date.toISOString() : null,
                 registration_open: form.registration_open,
                 max_participants: form.max_participants,
                 base_price: form.base_price,
@@ -375,8 +390,31 @@ export default function ReisInstellingenPage() {
                                         onChange={(e) => setForm({ ...form, registration_open: e.target.checked })}
                                         className="h-4 w-4 text-theme-purple focus:ring-theme-purple border-admin rounded bg-admin-card"
                                     />
-                                    <span className="ml-2 text-sm text-admin-muted">Inschrijving open</span>
+                                    <span className="ml-2 text-sm text-admin-muted">Inschrijving open (Master Switch)</span>
                                 </label>
+
+                                <div className="mt-4">
+                                    <label className="block text-sm font-semibold text-admin-muted mb-2">
+                                        Inschrijving start op (Optioneel)
+                                    </label>
+                                    <p className="text-xs text-admin-muted mb-2">
+                                        Als je dit invult, gaat de inschrijving pas open op dit moment (tenzij 'Master Switch' uit staat).
+                                        Zo kun je een datum en tijd plannen.
+                                    </p>
+                                    <DatePicker
+                                        selected={form.registration_start_date}
+                                        onChange={(date) => setForm({ ...form, registration_start_date: date })}
+                                        showTimeSelect
+                                        timeFormat="HH:mm"
+                                        timeIntervals={15}
+                                        dateFormat="d MMMM yyyy HH:mm"
+                                        locale={nl}
+                                        className="w-full px-4 py-2 border border-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent bg-admin-card text-admin"
+                                        placeholderText="Selecteer startdatum en tijd..."
+                                        isClearable
+                                        showYearDropdown
+                                    />
+                                </div>
 
                                 <label className="flex items-center">
                                     <input

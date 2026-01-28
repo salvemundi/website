@@ -1109,6 +1109,7 @@ export interface Trip {
     event_date: string;
     start_date?: string;
     end_date?: string;
+    registration_start_date?: string;
     registration_open: boolean;
     max_participants: number;
     base_price: number;
