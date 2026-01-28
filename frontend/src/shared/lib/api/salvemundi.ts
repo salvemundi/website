@@ -1112,6 +1112,7 @@ export interface Trip {
     registration_start_date?: string;
     registration_open: boolean;
     max_participants: number;
+    max_crew: number;
     base_price: number;
     crew_discount: number;
     deposit_amount: number;
