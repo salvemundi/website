@@ -269,7 +269,7 @@ export default function ReisPage() {
                 last_name: form.last_name,
                 email: form.email,
                 phone_number: form.phone_number,
-                date_of_birth: form.date_of_birth.toISOString().split('T')[0],
+                date_of_birth: format(form.date_of_birth, 'yyyy-MM-dd'),
                 terms_accepted: form.terms_accepted,
                 status: shouldBeWaitlisted ? 'waitlist' as const : 'registered' as const,
                 role: isCommitteeMember ? 'crew' as const : 'participant' as const,
