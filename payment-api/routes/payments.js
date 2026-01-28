@@ -506,21 +506,15 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                             console.error(`[Webhook][${traceId}] Failed to fetch pub_crawl_event_id:`, err);
                         }
 
-                        // Generate multiple QR tokens (one per ticket) for pub crawl signup
-                        console.warn(`[Webhook][${traceId}] Generating ${amountTickets} QR token(s) for pub crawl signup ${registrationId}`);
-                        const qrTokens = [];
-                        for (let i = 0; i < amountTickets; i++) {
-                            const ticketQrToken = generateQRToken(registrationId, pubCrawlEventId) + `-t${i + 1}`;
-                            qrTokens.push(ticketQrToken);
-                        }
+                        // Generate single QR token for pub crawl signup
+                        const qrToken = generateQRToken(registrationId, pubCrawlEventId);
+                        console.warn(`[Webhook][${traceId}] Generated QR token for pub crawl signup ${registrationId}: ${qrToken}`);
                         
-                        // Store the first token in qr_token for backward compatibility
-                        updatePayload.qr_token = qrTokens[0];
-                        console.warn(`[Webhook][${traceId}] Generated QR tokens: ${qrTokens.join(', ')}`);
+                        // Store the token in qr_token
+                        updatePayload.qr_token = qrToken;
 
-                        // Pass all tokens to metadata for email
-                        payment.metadata.qrToken = qrTokens[0]; // backward compatibility
-                        payment.metadata.qrTokens = qrTokens; // array of all tokens
+                        // Pass token to metadata for email
+                        payment.metadata.qrToken = qrToken;
                     } else if (payment.metadata.registrationType === 'trip_signup') {
                         collection = 'trip_signups';
                         // For trip signups, check description to determine if it's deposit or final payment
