@@ -139,7 +139,7 @@ export default function ReisPage() {
                     setForm((prev) => ({
                         ...prev,
                         first_name: prev.first_name || user.first_name || '',
-                        middle_name: prev.middle_name || '',
+                        middle_name: prev.middle_name || user.middle_name || '',
                         last_name: prev.last_name || user.last_name || '',
                         email: prev.email || user.email || '',
                         phone_number: prev.phone_number || user.phone_number || '',
