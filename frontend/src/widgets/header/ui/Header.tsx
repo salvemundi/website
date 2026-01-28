@@ -47,33 +47,27 @@ const Header: React.FC = () => {
             try {
                 // Prefer committees that were fetched during auth
                 const committees = (user as any).committees;
-                console.log('[Header] Checking committee membership for user:', user.id);
-                console.log('[Header] User committees:', committees);
 
                 if (Array.isArray(committees)) {
                     // User has committees data loaded
                     const isMember = committees.length > 0;
-                    console.log('[Header] User is committee member:', isMember);
                     setIsCommitteeMember(isMember);
                     return;
                 }
 
                 // Fallback: fetch from API if committees not loaded yet
-                console.log('[Header] Committees not loaded, checking via API');
 
                 // Get user's committee memberships with committee details including is_visible
                 const memberships = await directusFetch<any[]>(
                     `/items/committee_members?filter[user_id][_eq]=${user.id}&fields=committee_id.id,committee_id.is_visible`
                 );
-                console.log('[Header] API response:', memberships);
 
                 // Check if user is member of at least one visible committee
                 const isMember = Array.isArray(memberships) &&
                     memberships.some(m => m.committee_id?.is_visible !== false);
-                console.log('[Header] User is committee member via API:', isMember);
                 setIsCommitteeMember(isMember);
             } catch (error) {
-                console.error('[Header] Error checking committee membership:', error);
+                // Error checking committee membership
                 setIsCommitteeMember(false);
             }
         };

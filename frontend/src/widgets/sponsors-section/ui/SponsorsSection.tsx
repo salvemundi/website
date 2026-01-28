@@ -26,7 +26,6 @@ export default function SponsorsSection() {
                 }
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to load sponsors');
-                console.error('Error fetching sponsors:', err);
             } finally {
                 setLoading(false);
             }
