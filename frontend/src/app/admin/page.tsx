@@ -747,8 +747,35 @@ export default function AdminDashboardPage() {
 
     const fetchReisStats = async () => {
         try {
-            // Get all trip signups
-            const signupsData = await directusFetch<any[]>('/items/trip_signups?aggregate[count]=*');
+            // Find active trip
+            const allTrips = await directusFetch<any[]>('/items/trips?filter[status][_eq]=published&sort=-start_date');
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Find the most relevant upcoming/active trip
+            const activeTrip = allTrips.find(trip => {
+                // If trip has end_date, check if it's not finished
+                if (trip.end_date) {
+                    const endDate = new Date(trip.end_date);
+                    endDate.setHours(23, 59, 59, 999);
+                    return endDate >= today;
+                }
+
+                // Otherwise use start/event date
+                const dateStr = trip.event_date || trip.start_date;
+                if (!dateStr) return false;
+                const eventDate = new Date(dateStr);
+                eventDate.setHours(23, 59, 59, 999);
+                return eventDate >= today;
+            });
+
+            if (!activeTrip) {
+                return 0;
+            }
+
+            // Get signups for active trip, exclude cancelled
+            const signupsData = await directusFetch<any>(`/items/trip_signups?aggregate[count]=*&filter[trip_id][_eq]=${activeTrip.id}&filter[status][_neq]=cancelled`);
             return signupsData?.[0]?.count || 0;
         } catch (error) {
             console.error('Failed to fetch reis signups:', error);
@@ -786,7 +813,7 @@ export default function AdminDashboardPage() {
 
             <div className="container mx-auto px-4 py-8 max-w-7xl">
                 {/* Quick Actions Section */}
-                    <div className="mb-8">
+                <div className="mb-8">
                     <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4">
                         <StatCard
                             title="Overzicht"
@@ -877,8 +904,8 @@ export default function AdminDashboardPage() {
                                                     <div
                                                         key={person.id}
                                                         className={`flex items-center justify-between p-3 rounded-xl ${person.isToday
-                                                                ? 'bg-gradient-to-r from-yellow-100 to-yellow-50 dark:from-yellow-900/40 dark:to-yellow-900/20 border-2 border-yellow-400 dark:border-yellow-600'
-                                                                : 'bg-slate-100 dark:bg-slate-700'
+                                                            ? 'bg-gradient-to-r from-yellow-100 to-yellow-50 dark:from-yellow-900/40 dark:to-yellow-900/20 border-2 border-yellow-400 dark:border-yellow-600'
+                                                            : 'bg-slate-100 dark:bg-slate-700'
                                                             }`}
                                                     >
                                                         <div>
@@ -901,9 +928,9 @@ export default function AdminDashboardPage() {
                                 </div>
                                 <div className="col-span-1">
                                     <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
-                                       
 
-                               
+
+
 
                                         {/* Top 3 Sticker Collectors moved here */}
                                         <div className="mt-2">
