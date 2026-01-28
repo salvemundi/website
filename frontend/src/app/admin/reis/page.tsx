@@ -9,7 +9,7 @@ import { isUserAuthorizedForReis } from '@/shared/lib/committee-utils';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { siteSettingsMutations } from '@/shared/lib/api/salvemundi';
 import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
-import { Search, Download, Users, Plane, Mail, Edit, Trash2, Loader2, AlertCircle, UserCheck, UserX, Send } from 'lucide-react';
+import { Search, Download, Users, Plane, Edit, Trash2, Loader2, AlertCircle, UserCheck, UserX, Send } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
@@ -563,13 +563,6 @@ export default function ReisAanmeldingenPage() {
                             className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto">
                             <Download className="h-5 w-5" />
                             Export naar Excel
-                        </button>
-
-                        <button
-                            onClick={() => router.push(`/admin/reis/mail${selectedTrip ? `?trip=${selectedTrip.id}` : ''}`)}
-                            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition w-full sm:w-auto">
-                            <Mail className="h-5 w-5" />
-                            Mail alle deelnemers
                         </button>
                     </div>
                 </div>
