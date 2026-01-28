@@ -5,7 +5,7 @@ import Link from 'next/link';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { getImageUrl, tripSignupsApi } from '@/shared/lib/api/salvemundi';
 import { useSalvemundiTrips, useSalvemundiSiteSettings, useSalvemundiTripSignups } from '@/shared/lib/hooks/useSalvemundiApi';
-import { fetchUserDetails } from '@/shared/lib/auth';
+import { fetchUserDetails, fetchAndPersistUserCommittees } from '@/shared/lib/auth';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
@@ -192,9 +192,8 @@ export default function ReisPage() {
 
             // fetchUserDetails will throw or return null if token invalid
             fetchUserDetails(token)
-                .then((user) => {
+                .then(async (user) => {
                     if (!user) return;
-
 
                     setForm((prev) => ({
                         ...prev,
@@ -204,7 +203,12 @@ export default function ReisPage() {
                         date_of_birth: prev.date_of_birth || (user.date_of_birth ? new Date(user.date_of_birth) : null),
                     }));
                     setCurrentUser(user as User);
-                    setIsCommitteeMember(isUserInReisCommittee(user));
+
+                    // Fetch committees separately since fetchUserDetails returns empty committees
+                    const committees = await fetchAndPersistUserCommittees(user.id, token);
+                    const userWithCommittees = { ...user, committees };
+                    console.log('[ReisPage] User committees:', committees);
+                    setIsCommitteeMember(isUserInReisCommittee(userWithCommittees));
                 })
                 .catch(() => {
                     // ignore failures - user may not be logged in
