@@ -390,16 +390,16 @@ export default function ReisInstellingenPage() {
                                         onChange={(e) => setForm({ ...form, registration_open: e.target.checked })}
                                         className="h-4 w-4 text-theme-purple focus:ring-theme-purple border-admin rounded bg-admin-card"
                                     />
-                                    <span className="ml-2 text-sm text-admin-muted">Inschrijving open (Master Switch)</span>
+                                    <span className="ml-2 text-sm text-admin-muted">Inschrijving nu direct openen (Forceer Open)</span>
                                 </label>
 
                                 <div className="mt-4">
                                     <label className="block text-sm font-semibold text-admin-muted mb-2">
-                                        Inschrijving start op (Optioneel)
+                                        Automatisch openen vanaf (Optioneel)
                                     </label>
                                     <p className="text-xs text-admin-muted mb-2">
-                                        Als je dit invult, gaat de inschrijving pas open op dit moment (tenzij 'Master Switch' uit staat).
-                                        Zo kun je een datum en tijd plannen.
+                                        Als je dit invult, gaat de inschrijving automatisch open op dit tijdstip,
+                                        ook al staat 'Forceer Open' hierboven uit.
                                     </p>
                                     <DatePicker
                                         selected={form.registration_start_date}
