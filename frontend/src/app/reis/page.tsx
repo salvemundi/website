@@ -93,7 +93,18 @@ export default function ReisPage() {
             ? format(nextTripEndDate, 'd MMMM yyyy', { locale: nl })
             : null;
 
-    const canSignUp = Boolean(nextTrip && nextTrip.registration_open);
+    const registrationStartDate = nextTrip?.registration_start_date ? new Date(nextTrip.registration_start_date) : null;
+    const now = new Date();
+
+    // Logic: 
+    // 1. Master switch (registration_open) MUST be true.
+    // 2. If registration_start_date is set, current time must be after it.
+    const isRegistrationStarted = registrationStartDate ? now >= registrationStartDate : true;
+    const canSignUp = Boolean(nextTrip && nextTrip.registration_open && isRegistrationStarted);
+
+    const registrationStartText = registrationStartDate && !isRegistrationStarted
+        ? `Inschrijving opent op ${format(registrationStartDate, 'd MMMM yyyy HH:mm', { locale: nl })}`
+        : 'Inschrijving nog niet beschikbaar';
     const headerBackgroundImage = nextTrip?.image
         ? getImageUrl(nextTrip.image)
         : '/img/placeholder.svg';
@@ -453,7 +464,7 @@ export default function ReisPage() {
                                                     ? 'Bezig met aanmelden...'
                                                     : (canSignUp && nextTrip)
                                                         ? 'Aanmelden voor de reis'
-                                                        : 'Inschrijving nog niet beschikbaar'}
+                                                        : registrationStartText}
                                             </span>
                                             {!loading && (canSignUp && nextTrip) && <span className="group-hover:translate-x-1 transition-transform">→</span>}
                                         </button>
