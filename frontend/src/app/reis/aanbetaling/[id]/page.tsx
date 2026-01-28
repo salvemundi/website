@@ -11,8 +11,7 @@ import {
     getImageUrl
 } from '@/shared/lib/api/salvemundi';
 import type { Trip, TripActivity, TripSignup } from '@/shared/lib/api/salvemundi';
-import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
+
 import {
     CheckCircle2,
     Loader2,
@@ -44,6 +43,9 @@ export default function AanbetalingPage() {
     const [paymentSuccess, setPaymentSuccess] = useState(false);
 
     const [form, setForm] = useState({
+        first_name: '',
+        middle_name: '',
+        last_name: '',
         date_of_birth: '',
         id_document_type: '' as '' | 'passport' | 'id_card',
         allergies: '',
@@ -92,6 +94,9 @@ export default function AanbetalingPage() {
 
             // Pre-fill form with existing data
             setForm({
+                first_name: signupData.first_name,
+                middle_name: signupData.middle_name || '',
+                last_name: signupData.last_name,
                 date_of_birth: signupData.date_of_birth || '',
                 id_document_type: (signupData.id_document_type as 'passport' | 'id_card') || '',
                 allergies: signupData.allergies || '',
@@ -143,6 +148,9 @@ export default function AanbetalingPage() {
         try {
             // Update signup with additional data
             await tripSignupsApi.update(signupId, {
+                first_name: form.first_name,
+                middle_name: form.middle_name || undefined,
+                last_name: form.last_name,
                 date_of_birth: form.date_of_birth,
                 id_document_type: form.id_document_type,
                 allergies: form.allergies || undefined,
@@ -321,9 +329,7 @@ export default function AanbetalingPage() {
                                 <User className="h-6 w-6 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />
                                 <div>
                                     <h3 className="text-blue-800 dark:text-blue-200 font-bold mb-2">Welkom, {signup.first_name}!</h3>
-                                    <p className="text-blue-700 dark:text-blue-200 text-sm">
-                                        {trip.event_date ? format(new Date(trip.event_date), 'd MMMM yyyy', { locale: nl }) : (trip.start_date ? format(new Date(trip.start_date), 'd MMMM yyyy', { locale: nl }) : 'N.t.b.')}.
-                                    </p>
+
                                     <p className="text-blue-700 text-sm mt-2">
                                         Om je aanmelding definitief te maken, hebben we nog wat extra informatie nodig en
                                         vragen we je om een aanbetaling van <strong>€{Number(trip.deposit_amount).toFixed(2)}</strong> te doen.
@@ -342,6 +348,46 @@ export default function AanbetalingPage() {
                                 </div>
 
                                 <div className="space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">
+                                                Voornaam <span className="text-red-500">*</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="first_name"
+                                                value={form.first_name}
+                                                onChange={handleChange}
+                                                required
+                                                className="w-full px-4 py-3 border border-gray-300 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent bg-white dark:bg-[var(--bg-soft-dark)] dark:text-white"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">
+                                                Tussenvoegsel
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="middle_name"
+                                                value={form.middle_name}
+                                                onChange={handleChange}
+                                                className="w-full px-4 py-3 border border-gray-300 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent bg-white dark:bg-[var(--bg-soft-dark)] dark:text-white"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">
+                                                Achternaam <span className="text-red-500">*</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="last_name"
+                                                value={form.last_name}
+                                                onChange={handleChange}
+                                                required
+                                                className="w-full px-4 py-3 border border-gray-300 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent bg-white dark:bg-[var(--bg-soft-dark)] dark:text-white"
+                                            />
+                                        </div>
+                                    </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">
@@ -445,8 +491,8 @@ export default function AanbetalingPage() {
                                                 key={activity.id}
                                                 onClick={() => toggleActivity(activity.id)}
                                                 className={`cursor-pointer border-2 rounded-lg p-4 transition-all ${selectedActivities.includes(activity.id)
-                                                        ? 'border-purple-600 bg-purple-50 dark:bg-[var(--bg-card-dark)]'
-                                                        : 'border-gray-200 hover:border-purple-300 dark:border-gray-700 dark:hover:border-purple-300 dark:bg-[var(--bg-card-dark)]'
+                                                    ? 'border-purple-600 bg-purple-50 dark:bg-[var(--bg-card-dark)]'
+                                                    : 'border-gray-200 hover:border-purple-300 dark:border-gray-700 dark:hover:border-purple-300 dark:bg-[var(--bg-card-dark)]'
                                                     }`}
                                             >
                                                 <div className="flex items-start">
