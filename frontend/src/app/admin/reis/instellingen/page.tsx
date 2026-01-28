@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { tripsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
+import { directusUrl } from '@/shared/lib/directus';
 import { Loader2, Plus, Edit2, Trash2, Save, X, Upload, Calendar, Users, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
@@ -175,7 +176,6 @@ export default function ReisInstellingenPage() {
         if (!file) return;
 
         const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-        const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_API_URL;
 
         const formData = new FormData();
         formData.append('file', file);
