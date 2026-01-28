@@ -585,14 +585,11 @@ export default function AdminDashboardPage() {
             // Use eventsApi to respect permissions
             const allEvents = await eventsApi.getAll();
 
-            // Filter events from this year - also include events without start_date
+            // Filter events from this year using `event_date`
             const eventsThisYear = allEvents.filter((event: any) => {
-                if (!event.start_date) {
-                    return true; // Include events without date
-                }
-                const eventDate = new Date(event.start_date);
-                const eventYear = eventDate.getFullYear();
-                return eventYear === currentYear;
+                if (!event.event_date) return true; // include if date missing
+                const eventDate = new Date(event.event_date);
+                return eventDate.getFullYear() === currentYear;
             });
 
             // Count events per committee
@@ -677,19 +674,8 @@ export default function AdminDashboardPage() {
 
     const fetchLatestEventsWithSignups = async () => {
         try {
-            // Try to fetch using start_date if available, but fallback to event_date-only on permission errors
-            let allEvents: any[] = [];
-            try {
-                allEvents = await directusFetch<any[]>('/items/events?fields=id,name,event_date,start_date&sort=-start_date,-event_date&limit=4');
-            } catch (err: any) {
-                const message = err?.message || '';
-                // If start_date is forbidden or doesn't exist, retry without it
-                if (message.includes('start_date') || message.includes('403') || message.toLowerCase().includes('forbidden')) {
-                    allEvents = await directusFetch<any[]>('/items/events?fields=id,name,event_date&sort=-event_date&limit=4');
-                } else {
-                    throw err;
-                }
-            }
+            // Fetch latest events (use `event_date` only)
+            const allEvents = await directusFetch<any[]>('/items/events?fields=id,name,event_date&sort=-event_date&limit=4');
 
             const eventsWithSignups = await Promise.all(
                 (allEvents || []).map(async (event) => {
@@ -698,14 +684,14 @@ export default function AdminDashboardPage() {
                         return {
                             id: event.id,
                             name: event.name,
-                            event_date: event.event_date || event.start_date,
+                            event_date: event.event_date,
                             signups: signups?.[0]?.count || 0
                         };
                     } catch (error) {
                         return {
                             id: event.id,
                             name: event.name,
-                            event_date: event.event_date || event.start_date,
+                            event_date: event.event_date,
                             signups: 0
                         };
                     }
