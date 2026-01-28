@@ -1117,6 +1117,7 @@ export interface Trip {
     crew_discount: number;
     deposit_amount: number;
     is_bus_trip: boolean;
+    allow_final_payments?: boolean;
     created_at: string;
     updated_at: string;
 }
@@ -1154,6 +1155,8 @@ export interface TripSignup {
     deposit_paid_at?: string;
     full_payment_paid: boolean;
     full_payment_paid_at?: string;
+    deposit_email_sent?: boolean;
+    final_email_sent?: boolean;
     terms_accepted: boolean;
     created_at: string;
     updated_at: string;
@@ -1162,7 +1165,7 @@ export interface TripSignup {
 export const tripsApi = {
     getAll: async () => {
         const query = buildQueryString({
-            fields: ['id', 'name', 'description', 'image', 'event_date', 'start_date', 'end_date', 'registration_start_date', 'registration_open', 'max_participants', 'max_crew', 'base_price', 'crew_discount', 'deposit_amount', 'is_bus_trip', 'created_at', 'updated_at'],
+            fields: ['id', 'name', 'description', 'image', 'event_date', 'start_date', 'end_date', 'registration_start_date', 'registration_open', 'max_participants', 'max_crew', 'base_price', 'crew_discount', 'deposit_amount', 'is_bus_trip', 'allow_final_payments', 'created_at', 'updated_at'],
             sort: ['-event_date']
         });
         return directusFetch<Trip[]>(`/items/trips?${query}`);

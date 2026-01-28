@@ -27,6 +27,7 @@ interface Trip {
     crew_discount: number;
     deposit_amount: number;
     is_bus_trip: boolean;
+    allow_final_payments?: boolean;
 }
 
 interface TripSignup {
@@ -47,6 +48,8 @@ interface TripSignup {
     deposit_paid_at: string | null;
     full_payment_paid: boolean;
     full_payment_paid_at: string | null;
+    deposit_email_sent?: boolean;
+    final_email_sent?: boolean;
     created_at: string;
 }
 
@@ -92,7 +95,7 @@ export default function ReisAanmeldingenPage() {
         setIsLoading(true);
         try {
             const tripsData = await directusFetch<Trip[]>(
-                '/items/trips?fields=id,name,event_date,start_date,end_date,registration_open,max_participants,base_price,crew_discount,deposit_amount,is_bus_trip&sort=-event_date'
+                '/items/trips?fields=id,name,event_date,start_date,end_date,registration_open,max_participants,base_price,crew_discount,deposit_amount,is_bus_trip,allow_final_payments&sort=-event_date'
             );
             setTrips(tripsData);
 
@@ -268,6 +271,12 @@ export default function ReisAanmeldingenPage() {
             }
 
             alert(`${paymentType === 'deposit' ? 'Aanbetaling' : 'Restbetaling'}sverzoek is succesvol verzonden naar ${signup.email}`);
+
+            // Update local state to reflect email sent
+            setSignups(prev => prev.map(s => s.id === signupId ? {
+                ...s,
+                [paymentType === 'deposit' ? 'deposit_email_sent' : 'final_email_sent']: true
+            } : s));
         } catch (error: any) {
             console.error('Failed to send payment email:', error);
             alert(`Er is een fout opgetreden bij het verzenden van de email: ${error.message}`);
@@ -291,7 +300,8 @@ export default function ReisAanmeldingenPage() {
             // Send email notification to participant
             if (signup && selectedTrip && oldStatus !== newStatus) {
                 try {
-                    await fetch('https://api.salvemundi.nl/trip-email/status-update', {
+                    // Always send status update email
+                    await fetch('/api/trip-email/status-update', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -301,8 +311,24 @@ export default function ReisAanmeldingenPage() {
                             oldStatus
                         })
                     });
+
+                    // If changed to confirmed, ALSO send the deposit payment request
+                    if (newStatus === 'confirmed' && !signup.deposit_paid) {
+                        console.log('[handleStatusChange] Auto-triggering deposit payment request email');
+                        await fetch('/api/trip-email/payment-request', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                signupId: id,
+                                tripId: selectedTrip.id,
+                                paymentType: 'deposit'
+                            })
+                        });
+                        // Update local state to reflect email sent
+                        setSignups(prev => prev.map(s => s.id === id ? { ...s, deposit_email_sent: true } : s));
+                    }
                 } catch (emailErr) {
-                    console.warn('Failed to send status update email:', emailErr);
+                    console.warn('Failed to send status update or payment request email:', emailErr);
                 }
             }
         } catch (error) {
@@ -689,36 +715,42 @@ export default function ReisAanmeldingenPage() {
                                                             <div className="border-t border-admin pt-4 mt-4">
                                                                 <p className="text-sm font-semibold text-admin mb-2">Betaalverzoek versturen</p>
                                                                 <div className="flex gap-2">
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            handleResendPaymentEmail(signup.id, 'deposit');
-                                                                        }}
-                                                                        disabled={sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'deposit'}
-                                                                        className="flex items-center gap-2 px-4 py-2 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                                                    >
-                                                                        {sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'deposit' ? (
-                                                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                                                        ) : (
-                                                                            <Send className="h-4 w-4" />
-                                                                        )}
-                                                                        Aanbetaling
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            handleResendPaymentEmail(signup.id, 'final');
-                                                                        }}
-                                                                        disabled={sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'final'}
-                                                                        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                                                    >
-                                                                        {sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'final' ? (
-                                                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                                                        ) : (
-                                                                            <Send className="h-4 w-4" />
-                                                                        )}
-                                                                        Restbetaling
-                                                                    </button>
+                                                                    <div className="flex flex-col gap-1 items-start">
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                handleResendPaymentEmail(signup.id, 'deposit');
+                                                                            }}
+                                                                            disabled={sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'deposit'}
+                                                                            className={`flex items-center gap-2 px-4 py-2 ${signup.deposit_email_sent ? 'bg-admin-hover text-admin' : 'bg-yellow-600 text-white'} text-sm rounded-lg hover:opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                                        >
+                                                                            {sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'deposit' ? (
+                                                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                                            ) : (
+                                                                                <Send className="h-4 w-4" />
+                                                                            )}
+                                                                            Aanbetaling {signup.deposit_email_sent && <span className="ml-1 text-[10px] font-bold uppercase opacity-60">(Verzonden)</span>}
+                                                                        </button>
+                                                                    </div>
+                                                                    <div className="flex flex-col gap-1 items-start">
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                handleResendPaymentEmail(signup.id, 'final');
+                                                                            }}
+                                                                            disabled={(sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'final') || !selectedTrip?.allow_final_payments}
+                                                                            className={`flex items-center gap-2 px-4 py-2 ${signup.final_email_sent ? 'bg-admin-hover text-admin' : 'bg-green-600 text-white'} text-sm rounded-lg hover:opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                                            title={!selectedTrip?.allow_final_payments ? 'Restbetalingen zijn nog niet opengesteld voor deze reis' : ''}
+                                                                        >
+                                                                            {sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'final' ? (
+                                                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                                            ) : (
+                                                                                <Send className="h-4 w-4" />
+                                                                            )}
+                                                                            Restbetaling {signup.final_email_sent && <span className="ml-1 text-[10px] font-bold uppercase opacity-60">(Verzonden)</span>}
+                                                                        </button>
+                                                                        {!selectedTrip?.allow_final_payments && <span className="text-[10px] text-red-500 italic mt-1 leading-tight">Restbetalingen nog niet geopend</span>}
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </td>

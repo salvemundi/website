@@ -100,6 +100,23 @@ export async function POST(request: NextRequest) {
         // Send email via email service
         try {
             await sendTripPaymentRequestEmail(emailServiceUrl, tripSignup, trip, paymentType, frontendUrl);
+
+            // Update Directus that email has been sent
+            console.log(`[trip-email/payment-request] Updating signup ${signupId} email sent status`);
+            const updatePayload = paymentType === 'deposit'
+                ? { deposit_email_sent: true }
+                : { final_email_sent: true };
+
+            await fetch(`${frontendUrl}/api/items/trip_signups/${signupId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${directusToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatePayload)
+            });
+            console.log(`[trip-email/payment-request] Successfully updated email sent status for ${signupId}`);
+
         } catch (emailError: any) {
             console.error(`[trip-email/payment-request] Email service error:`, emailError);
             throw new Error(`Failed to send email via email service: ${emailError.message}`);
