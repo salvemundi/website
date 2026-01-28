@@ -118,9 +118,9 @@ function StatCard({
             <div className={`absolute top-0 right-0 w-28 h-28 sm:w-32 sm:h-32 -mr-12 sm:-mr-16 -mt-12 sm:-mt-16 bg-white/10 rounded-full`} />
             <div className="relative z-10">
                 <div className={`${nowrap ? 'flex flex-row items-center justify-between gap-2' : 'flex flex-col sm:flex-row items-center sm:items-start justify-between gap-3'} min-h-0`}>
-                    <div className={`flex-1 min-w-0 text-center sm:text-left sm:pr-2 ${nowrap ? 'whitespace-nowrap' : ''}`}>
+                    <div className={`flex-1 min-w-0 text-center sm:text-left sm:pr-2`}>
                         <p className={`${colors.subtitleText} text-sm font-medium mb-2`}>{title}</p>
-                        <p className={`${typeof value === 'string' && value.length > 10 ? 'text-2xl' : 'text-3xl sm:text-4xl'} font-bold ${colors.text} mb-1 ${nowrap ? 'whitespace-nowrap' : 'break-words'}`}>{value}</p>
+                        <p className={`${typeof value === 'string' && value.length > 10 ? 'text-lg sm:text-xl' : 'text-3xl sm:text-4xl'} font-bold ${colors.text} mb-1 break-words`}>{value}</p>
                         {subtitle && <p className={`${colors.subtitleText} text-xs line-clamp-2`} title={subtitle}>{subtitle}</p>}
                     </div>
                     <div className={`hidden sm:block ${colors.iconBg} p-3 rounded-xl ${colors.text} backdrop-blur-sm flex-shrink-0 relative -mt-3 sm:-mt-4 z-20 self-start`}>
@@ -951,16 +951,6 @@ export default function AdminDashboardPage() {
 
                         {/* Right side stats */}
                         <div className="space-y-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <StatCard
-                                    title="Beheer"
-                                    value="Kroegentocht"
-                                    icon={<Ticket className="h-6 w-6" />}
-                                    subtitle={`aanmeldingen: ${stats.pubCrawlSignups ?? 0}`}
-                                    onClick={() => router.push('/admin/kroegentocht')}
-                                    colorClass="orange"
-                                />
-                            </div>
                             {/* Activiteiten aanmeldingen - Now on the right side */}
                             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
                                 <div className="flex items-center justify-between mb-3">
