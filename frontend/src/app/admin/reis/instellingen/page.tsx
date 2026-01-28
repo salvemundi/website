@@ -330,6 +330,7 @@ export default function ReisInstellingenPage() {
                                     type="number"
                                     value={form.max_participants}
                                     onChange={(e) => setForm({ ...form, max_participants: parseInt(e.target.value) || 0 })}
+                                    onFocus={(e) => e.target.select()}
                                     className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
                             </div>
@@ -342,6 +343,7 @@ export default function ReisInstellingenPage() {
                                     type="number"
                                     value={form.max_crew}
                                     onChange={(e) => setForm({ ...form, max_crew: parseInt(e.target.value) || 0 })}
+                                    onFocus={(e) => e.target.select()}
                                     className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
                                 <p className="text-xs text-admin-muted mt-1">
@@ -358,6 +360,7 @@ export default function ReisInstellingenPage() {
                                     step="0.01"
                                     value={form.base_price}
                                     onChange={(e) => setForm({ ...form, base_price: parseFloat(e.target.value) || 0 })}
+                                    onFocus={(e) => e.target.select()}
                                     className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
                             </div>
@@ -371,6 +374,7 @@ export default function ReisInstellingenPage() {
                                     step="0.01"
                                     value={form.crew_discount}
                                     onChange={(e) => setForm({ ...form, crew_discount: parseFloat(e.target.value) || 0 })}
+                                    onFocus={(e) => e.target.select()}
                                     className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
                             </div>
@@ -384,6 +388,7 @@ export default function ReisInstellingenPage() {
                                     step="0.01"
                                     value={form.deposit_amount}
                                     onChange={(e) => setForm({ ...form, deposit_amount: parseFloat(e.target.value) || 0 })}
+                                    onFocus={(e) => e.target.select()}
                                     className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
                             </div>
