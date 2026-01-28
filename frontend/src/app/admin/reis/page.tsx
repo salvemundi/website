@@ -286,8 +286,16 @@ export default function ReisAanmeldingenPage() {
     };
 
     const handleStatusChange = async (id: number, newStatus: string) => {
+        const signup = signups.find(s => s.id === id);
+
+        // Confirmation for sending email when switching to confirmed without payment
+        if (signup && newStatus === 'confirmed' && !signup.deposit_paid) {
+            if (!confirm(`Let op: Door de status naar 'Bevestigd' te wijzigen, wordt er automatisch een e-mail met het aanbetalingsverzoek naar ${signup.first_name} gestuurd.\n\nWeet je zeker dat je door wilt gaan?`)) {
+                return;
+            }
+        }
+
         try {
-            const signup = signups.find(s => s.id === id);
             const oldStatus = signup?.status;
 
             await directusFetch(`/items/trip_signups/${id}`, {
