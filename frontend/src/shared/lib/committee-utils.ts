@@ -46,11 +46,12 @@ export function isUserAuthorizedForKroegentocht(user: any): boolean {
 }
 
 // Returns true ONLY if the user is in the Reiscommissie.
-// This is used for automatic role assignment during trip signup.
+// This is used for automatic crew role assignment during trip signup.
 export function isUserInReisCommittee(user: any): boolean {
     if (!user) return false;
 
-    const allowedTokens = ['reiscommissie', 'reis'];
+    // Only Reiscommissie members should be crew
+    const crewTokens = ['reiscommissie'];
 
     const committees: any[] = (user as any).committees || [];
     const names = committees.map((c: any) => {
@@ -61,10 +62,16 @@ export function isUserInReisCommittee(user: any): boolean {
         return '';
     });
 
+    console.log('[isUserInReisCommittee] Checking committees:', committees);
+    console.log('[isUserInReisCommittee] Normalized names:', names);
+
     for (const n of names) {
         if (!n) continue;
-        for (const token of allowedTokens) {
-            if (n.includes(token)) return true;
+        for (const token of crewTokens) {
+            if (n.includes(token)) {
+                console.log('[isUserInReisCommittee] Match found:', n, 'includes', token);
+                return true;
+            }
         }
     }
 

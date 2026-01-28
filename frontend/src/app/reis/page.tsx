@@ -11,7 +11,7 @@ import { nl } from 'date-fns/locale';
 import { splitDutchLastName } from '@/shared/lib/utils/dutch-name';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
-import { isUserAuthorizedForReis } from '@/shared/lib/committee-utils';
+import { isUserInReisCommittee } from '@/shared/lib/committee-utils';
 import { TripSignup } from '@/shared/lib/api/salvemundi';
 import { User } from '@/shared/model/types/auth';
 import { CheckCircle2, Calendar, CreditCard, Loader2, Utensils } from 'lucide-react';
@@ -218,7 +218,7 @@ export default function ReisPage() {
                         date_of_birth: prev.date_of_birth || (user.date_of_birth ? new Date(user.date_of_birth) : null),
                     }));
                     setCurrentUser(user as User);
-                    setIsCommitteeMember(isUserAuthorizedForReis(user));
+                    setIsCommitteeMember(isUserInReisCommittee(user));
                 })
                 .catch(() => {
                     // ignore failures - user may not be logged in
