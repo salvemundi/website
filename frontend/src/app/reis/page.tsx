@@ -197,7 +197,9 @@ export default function ReisPage() {
 
                     setForm((prev) => ({
                         ...prev,
-                        // Name fields are NOT auto-filled - user must enter legal name as on ID
+                        // Only first_name is NOT auto-filled - user must enter legal first name as on ID
+                        middle_name: prev.middle_name || user.middle_name || '',
+                        last_name: prev.last_name || user.last_name || '',
                         email: prev.email || user.email || '',
                         phone_number: prev.phone_number || user.phone_number || '',
                         date_of_birth: prev.date_of_birth || (user.date_of_birth ? new Date(user.date_of_birth) : null),
