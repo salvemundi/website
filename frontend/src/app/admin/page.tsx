@@ -120,7 +120,7 @@ function StatCard({
                 <div className={`${nowrap ? 'flex flex-row items-center justify-between gap-2' : 'flex flex-col sm:flex-row items-center sm:items-start justify-between gap-3'} min-h-0`}>
                     <div className={`flex-1 min-w-0 text-center sm:text-left sm:pr-2`}>
                         <p className={`${colors.subtitleText} text-sm font-medium mb-2`}>{title}</p>
-                        <p className={`${typeof value === 'string' && value.length > 10 ? 'text-lg sm:text-xl' : 'text-3xl sm:text-4xl'} font-bold ${colors.text} mb-1 break-words`}>{value}</p>
+                        <p className={`${typeof value === 'string' && value.length > 10 ? 'text-lg sm:text-xl' : 'text-3xl sm:text-4xl'} font-bold ${colors.text} mb-1 ${nowrap ? 'whitespace-normal sm:whitespace-nowrap' : 'break-words'}`}>{value}</p>
                         {subtitle && <p className={`${colors.subtitleText} text-xs line-clamp-2`} title={subtitle}>{subtitle}</p>}
                     </div>
                     <div className={`hidden sm:block ${colors.iconBg} p-3 rounded-xl ${colors.text} backdrop-blur-sm flex-shrink-0 relative -mt-3 sm:-mt-4 z-20 self-start`}>
@@ -787,7 +787,7 @@ export default function AdminDashboardPage() {
             <div className="container mx-auto px-4 py-8 max-w-7xl">
                 {/* Quick Actions Section */}
                     <div className="mb-8">
-                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4">
                         <StatCard
                             title="Overzicht"
                             value="Activiteiten"
@@ -820,10 +820,6 @@ export default function AdminDashboardPage() {
                             onClick={() => router.push('/admin/reis')}
                             colorClass="teal"
                         />
-                    </div>
-
-                    {/* Mobile-only: show Intro and Kroegentocht below the first 4 cards */}
-                    <div className="mt-4 md:hidden grid grid-cols-2 gap-4">
                         <StatCard
                             title="beheer"
                             value="kroegentocht"
@@ -831,6 +827,7 @@ export default function AdminDashboardPage() {
                             subtitle={`aanmeldingen:  ${stats.pubCrawlSignups}`}
                             onClick={() => router.push('/admin/kroegentocht')}
                             colorClass="orange"
+                            nowrap
                         />
                     </div>
                 </div>
