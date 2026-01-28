@@ -37,6 +37,7 @@ export default function ReisInstellingenPage() {
         crew_discount: 0,
         deposit_amount: 0,
         is_bus_trip: false,
+        allow_final_payments: false,
     });
 
     useEffect(() => {
@@ -91,6 +92,7 @@ export default function ReisInstellingenPage() {
             crew_discount: 0,
             deposit_amount: 0,
             is_bus_trip: false,
+            allow_final_payments: false,
         });
     };
 
@@ -112,6 +114,7 @@ export default function ReisInstellingenPage() {
             crew_discount: trip.crew_discount,
             deposit_amount: trip.deposit_amount,
             is_bus_trip: trip.is_bus_trip,
+            allow_final_payments: trip.allow_final_payments || false,
         });
     };
 
@@ -133,6 +136,7 @@ export default function ReisInstellingenPage() {
             crew_discount: 0,
             deposit_amount: 0,
             is_bus_trip: false,
+            allow_final_payments: false,
         });
     };
 
@@ -172,6 +176,7 @@ export default function ReisInstellingenPage() {
                 crew_discount: form.crew_discount,
                 deposit_amount: form.deposit_amount,
                 is_bus_trip: form.is_bus_trip,
+                allow_final_payments: form.allow_final_payments,
             };
 
             if (addingNew) {
@@ -458,6 +463,17 @@ export default function ReisInstellingenPage() {
                                     />
                                     <span className="ml-2 text-sm text-admin-muted">Busreis (vraag rijbewijs en bereidheid om te rijden)</span>
                                 </label>
+
+                                <label className="flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        checked={form.allow_final_payments}
+                                        onChange={(e) => setForm({ ...form, allow_final_payments: e.target.checked })}
+                                        className="h-4 w-4 text-theme-purple focus:ring-theme-purple border-admin rounded bg-admin-card"
+                                    />
+                                    <span className="ml-2 text-sm font-bold text-admin">Restbetalingen openstellen</span>
+                                </label>
+                                <p className="text-xs text-admin-muted ml-6 italic">Als dit uit staat, kunnen reizigers de restbetaling nog niet voldoen en kunnen er geen restbetalingsmails verstuurd worden.</p>
                             </div>
                         </div>
 

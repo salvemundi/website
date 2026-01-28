@@ -8,12 +8,13 @@ import { useSalvemundiTrips, useSalvemundiSiteSettings, useSalvemundiTripSignups
 import { fetchUserDetails } from '@/shared/lib/auth';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { CheckCircle2, Calendar } from 'lucide-react';
-
 import { splitDutchLastName } from '@/shared/lib/utils/dutch-name';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
-import { isUserInReisCommittee } from '@/shared/lib/committee-utils';
+import { isUserAuthorizedForReis } from '@/shared/lib/committee-utils';
+import { TripSignup } from '@/shared/lib/api/salvemundi';
+import { User } from '@/shared/model/types/auth';
+import { CheckCircle2, Calendar, CreditCard, Loader2 } from 'lucide-react';
 
 export default function ReisPage() {
     const [form, setForm] = useState({
@@ -29,6 +30,7 @@ export default function ReisPage() {
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isCommitteeMember, setIsCommitteeMember] = useState(false);
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
@@ -137,6 +139,40 @@ export default function ReisPage() {
     const participantsCount = signups?.filter(s => s.status === 'confirmed' || s.status === 'registered').length || 0;
     const spotsLeft = nextTrip ? Math.max(0, nextTrip.max_participants - participantsCount) : 0;
 
+    const userSignup = useMemo(() => {
+        if (!signups || !currentUser) return null;
+        return signups.find(s => s.email.toLowerCase() === currentUser.email.toLowerCase() && s.status !== 'cancelled');
+    }, [signups, currentUser]);
+
+    const getSignupStatusDisplay = (signup: TripSignup) => {
+        if (signup.status === 'waitlist') return 'Wachtrij';
+        if (signup.status === 'cancelled') return 'Geannuleerd';
+        if (signup.status === 'registered') return 'Geregistreerd';
+        if (signup.status === 'confirmed') {
+            if (signup.full_payment_paid) return 'Geregistreerd (Betaald)';
+            if (!signup.deposit_paid) return 'Aanbetaling verwacht';
+            return 'Restbetaling verwacht';
+        }
+        return 'In afwachting';
+    };
+
+    const handleCancelSignup = async () => {
+        if (!userSignup) return;
+        if (!confirm('Weet je zeker dat je je aanmelding wilt annuleren? Dit kan niet ongedaan gemaakt worden.')) return;
+
+        setLoading(true);
+        try {
+            await tripSignupsApi.update(userSignup.id, { status: 'cancelled' });
+            // Refresh logic - in a real app you might use a query client cache invalidate
+            window.location.reload();
+        } catch (err: any) {
+            console.error('Error cancelling signup:', err);
+            setError('Er is een fout opgetreden bij het annuleren van je aanmelding.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target as HTMLInputElement;
         if (type === 'checkbox') {
@@ -181,7 +217,8 @@ export default function ReisPage() {
                         phone_number: prev.phone_number || user.phone_number || '',
                         date_of_birth: prev.date_of_birth || (user.date_of_birth ? new Date(user.date_of_birth) : null),
                     }));
-                    setIsCommitteeMember(isUserInReisCommittee(user));
+                    setCurrentUser(user as User);
+                    setIsCommitteeMember(isUserAuthorizedForReis(user));
                 })
                 .catch(() => {
                     // ignore failures - user may not be logged in
@@ -213,6 +250,13 @@ export default function ReisPage() {
 
         setLoading(true);
         try {
+            // Check for existing signup (duplicate prevention)
+            if (signups && signups.some(s => s.email.toLowerCase() === form.email.toLowerCase() && s.status !== 'cancelled')) {
+                setError('Er is al een actieve aanmelding gevonden met dit e-mailadres.');
+                setLoading(false);
+                return;
+            }
+
             // Determine if user should be on waitlist
             const shouldBeWaitlisted = participantsCount >= nextTrip.max_participants;
 
@@ -298,37 +342,142 @@ export default function ReisPage() {
                                     Inschrijven voor de Reis
                                 </h1>
 
-                                {submitted ? (
-                                    <div className="text-white">
-                                        <div className="flex items-center justify-center mb-4">
-                                            <CheckCircle2 className="w-12 h-12 lg:w-16 lg:h-16 text-white" />
+                                {userSignup && !submitted ? (
+                                    <div className="bg-gradient-to-br from-theme-purple/5 to-theme-purple/10 rounded-2xl p-6 border border-theme-purple/20">
+                                        <div className="flex items-center gap-4 mb-6">
+                                            <div className="w-14 h-14 rounded-full bg-theme-purple/20 flex items-center justify-center">
+                                                <CheckCircle2 className="h-8 w-8 text-theme-purple" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-xl font-bold text-theme-purple dark:text-theme-white">Jouw Status</h3>
+                                                <p className="text-theme-text-muted text-sm">Je bent al aangemeld voor deze reis</p>
+                                            </div>
                                         </div>
-                                        <h2 className="text-2xl font-semibold mb-4 text-center">Aanmelding Voltooid!</h2>
-                                        <p className="text-lg mb-4">
-                                            {spotsLeft > 1
-                                                ? 'Je bent succesvol ingeschreven voor de reis!'
-                                                : 'Je bent succesvol ingeschreven en op de wachtlijst geplaatst!'}
-                                        </p>
-                                        <p className="text-white/90 mb-2">
-                                            Je ontvangt binnenkort een bevestigingsmail met alle details op <strong>{form.email}</strong>.
-                                        </p>
-                                        <button
-                                            onClick={() => {
-                                                setSubmitted(false);
-                                                setForm({
-                                                    first_name: '',
-                                                    middle_name: '',
-                                                    last_name: '',
-                                                    email: '',
-                                                    phone_number: '',
-                                                    date_of_birth: null,
-                                                    terms_accepted: false,
-                                                });
-                                            }}
-                                            className="bg-white text-theme-purple font-bold py-2 px-4 rounded hover:bg-white/90 transition mt-4"
-                                        >
-                                            Nieuwe inschrijving
-                                        </button>
+
+                                        <div className="bg-white/50 dark:bg-white/5 rounded-2xl p-6 border border-theme-purple/10 mb-6">
+                                            <p className="text-sm font-semibold text-theme-text-muted uppercase tracking-wider mb-2">Huidige status</p>
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <p className="text-3xl font-black text-theme-purple dark:text-theme-white">
+                                                        {getSignupStatusDisplay(userSignup)}
+                                                    </p>
+                                                    {userSignup.status === 'registered' && (
+                                                        <p className="text-xs text-theme-text-muted mt-1 italic">
+                                                            Je aanmelding wordt momenteel beoordeeld door de commissie.
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <div className="px-3 py-1 bg-theme-purple/10 rounded-full text-xs font-bold text-theme-purple uppercase">
+                                                    {userSignup.status}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {userSignup.status === 'confirmed' && !userSignup.full_payment_paid && (
+                                            <div className="mt-4 pt-4 border-t border-theme-purple/20">
+                                                {(!userSignup.deposit_paid || nextTrip?.allow_final_payments) ? (
+                                                    <Link
+                                                        href={!userSignup.deposit_paid ? `/reis/aanbetaling/${userSignup.id}` : `/reis/restbetaling/${userSignup.id}`}
+                                                        className="inline-flex items-center gap-2 px-6 py-2 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition group"
+                                                    >
+                                                        <CreditCard className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                                                        Ga naar betaling
+                                                    </Link>
+                                                ) : (
+                                                    <p className="text-sm italic text-gray-500">
+                                                        Restbetaling is momenteel nog niet geopend. Je ontvangt bericht zodra dit mogelijk is.
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        <div className="mt-8 flex flex-col gap-3">
+                                            <button
+                                                onClick={handleCancelSignup}
+                                                disabled={loading}
+                                                className="w-full py-3 border border-red-500/30 text-red-500 rounded-xl font-semibold hover:bg-red-500/5 transition-all flex items-center justify-center gap-2"
+                                            >
+                                                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                                                <span>Aanmelding annuleren</span>
+                                            </button>
+                                        </div>
+
+                                        <div className="mt-8 pt-6 border-t border-theme-purple/10">
+                                            <p className="text-sm text-theme-text-muted text-center mb-4">
+                                                Wil je iemand anders inschrijven?
+                                            </p>
+                                            <button
+                                                onClick={() => {
+                                                    // This allows them to see the form again by temporarily 
+                                                    // "forgetting" they are logged in for this view
+                                                    setCurrentUser(null);
+                                                }}
+                                                className="w-full py-3 bg-theme-white-soft dark:bg-white/5 text-theme-purple dark:text-theme-white rounded-xl font-semibold hover:bg-theme-purple/5 transition-all mb-4"
+                                            >
+                                                Nieuwe inschrijving starten
+                                            </button>
+
+                                            <p className="text-xs text-theme-text-muted text-center italic">
+                                                Let op: Je kunt per persoon slechts één keer deelnemen aan de reis.
+                                            </p>
+                                        </div>
+                                    </div>
+                                ) : submitted ? (
+                                    <div className="text-white text-center">
+                                        <div className="flex items-center justify-center mb-6">
+                                            <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center">
+                                                <CheckCircle2 className="w-12 h-12 text-white" />
+                                            </div>
+                                        </div>
+                                        <h2 className="text-3xl font-black mb-4">Aanmelding Voltooid!</h2>
+
+                                        <div className="bg-white/10 rounded-2xl p-6 mb-8 backdrop-blur-sm border border-white/20">
+                                            <p className="text-lg font-medium mb-4">
+                                                {spotsLeft > 0
+                                                    ? 'Je bent succesvol ingeschreven voor de reis!'
+                                                    : 'De reis is momenteel vol. Je bent op de wachtlijst geplaatst.'}
+                                            </p>
+
+                                            <div className="inline-block px-4 py-2 bg-white text-theme-purple rounded-full font-bold text-sm uppercase tracking-wider mb-4">
+                                                Status: {spotsLeft > 0 ? 'Geregistreerd' : 'Wachtrij'}
+                                            </div>
+
+                                            <p className="text-white/80 text-sm leading-relaxed">
+                                                Je aanmelding is ontvangen. Zodra deze is goedgekeurd door de commissie ontvang je een e-mail met de betaalinstructies op <span className="font-bold underline">{form.email}</span>.
+                                            </p>
+                                        </div>
+
+                                        <div className="flex flex-col gap-4">
+                                            {spotsLeft > 0 && (
+                                                <p className="text-sm font-medium mb-1 italic opacity-80">
+                                                    Na goedkeuring kun je hier direct de aanbetaling voldoen.
+                                                </p>
+                                            )}
+
+                                            {/* We can't easily get the ID here without fetching again, 
+                                                but userSignup in useMemo will eventually catch it.
+                                                For now, we can tell them to check their email or refresh. 
+                                                Actually, Query will probably update.
+                                            */}
+
+                                            <button
+                                                onClick={() => {
+                                                    setSubmitted(false);
+                                                    setForm({
+                                                        first_name: '',
+                                                        middle_name: '',
+                                                        last_name: '',
+                                                        email: '',
+                                                        phone_number: '',
+                                                        date_of_birth: null,
+                                                        terms_accepted: false,
+                                                    });
+                                                }}
+                                                className="w-full py-4 bg-white text-theme-purple font-bold rounded-2xl hover:bg-white/90 transition-all shadow-xl active:scale-[0.98]"
+                                            >
+                                                Klaar / Nieuwe inschrijving
+                                            </button>
+                                        </div>
                                     </div>
                                 ) : (
                                     <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
