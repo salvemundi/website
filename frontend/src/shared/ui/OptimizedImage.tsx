@@ -41,7 +41,6 @@ export default function OptimizedImage({
 
     const handleError = () => {
         if (!hasError) {
-            console.warn(`Failed to load image: ${imgSrc}`);
             setHasError(true);
             setImgSrc(fallbackSrc);
             onError?.();

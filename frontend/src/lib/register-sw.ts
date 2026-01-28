@@ -4,15 +4,13 @@ export function registerServiceWorker() {
       navigator.serviceWorker
         .register('/sw.js')
         .then((registration) => {
-          console.log('Service Worker registered:', registration.scope);
-          
-          // Check for updates periodically
+          // Service worker registered; periodically check for updates
           setInterval(() => {
             registration.update();
           }, 60000); // Check every minute
         })
-        .catch((error) => {
-          console.error('Service Worker registration failed:', error);
+        .catch(() => {
+          // ignore registration errors
         });
     });
   }
@@ -24,8 +22,8 @@ export function unregisterServiceWorker() {
       .then((registration) => {
         registration.unregister();
       })
-      .catch((error) => {
-        console.error('Service Worker unregistration failed:', error);
+      .catch(() => {
+        // ignore unregistration errors
       });
   }
 }

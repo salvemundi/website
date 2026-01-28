@@ -40,24 +40,10 @@ export const msalConfig: Configuration = {
     },
     system: {
         loggerOptions: {
-            loggerCallback: (level: LogLevel, message: string, containsPii: boolean) => {
-                if (containsPii) {
-                    return;
-                }
-                switch (level) {
-                    case LogLevel.Error:
-                        console.error(message);
-                        return;
-                    case LogLevel.Info:
-                        return;
-                    case LogLevel.Verbose:
-                        return;
-                    case LogLevel.Warning:
-                        console.warn(message);
-                        return;
-                    default:
-                        return;
-                }
+            loggerCallback: (_level: LogLevel, _message: string, containsPii: boolean) => {
+                // Disable MSAL logging in browser console for privacy and cleanliness
+                if (containsPii) return;
+                return;
             },
             logLevel: LogLevel.Warning,
         },
