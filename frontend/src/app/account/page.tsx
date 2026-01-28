@@ -611,24 +611,24 @@ export default function AccountPage() {
                 </div>
 
                 {isEditingMinecraft ? (
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <input
                       type="text"
                       value={minecraftUsername}
                       onChange={(e) => setMinecraftUsername(e.target.value)}
-                      className="flex-1 rounded-xl bg-white dark:bg-black/40 px-3.5 py-2 text-sm text-theme-purple dark:text-white outline-none focus:ring-2 focus:ring-theme-purple shadow-inner"
+                      className="flex-1 min-w-0 rounded-xl bg-white dark:bg-black/40 px-3.5 py-2 text-sm text-theme-purple dark:text-white outline-none focus:ring-2 focus:ring-theme-purple shadow-inner"
                       placeholder="Username"
                     />
                     <button
                       onClick={handleSaveMinecraftUsername}
                       disabled={isSavingMinecraft}
-                      className="rounded-xl bg-theme-purple px-4 py-2 text-sm font-bold text-white hover:bg-theme-purple-light transition disabled:opacity-50 shadow-md"
+                      className="shrink-0 rounded-xl bg-theme-purple px-4 py-2 text-sm font-bold text-white hover:bg-theme-purple-light transition disabled:opacity-50 shadow-md"
                     >
                       {isSavingMinecraft ? "..." : "Save"}
                     </button>
                     <button
                       onClick={() => setIsEditingMinecraft(false)}
-                      className="rounded-xl bg-theme-purple/5 px-3 py-2 text-sm font-bold text-theme-purple dark:text-white border border-theme-purple/10"
+                      className="shrink-0 rounded-xl bg-theme-purple/5 px-3 py-2 text-sm font-bold text-theme-purple dark:text-white border border-theme-purple/10"
                     >
                       <X className="h-4 w-4" />
                     </button>
