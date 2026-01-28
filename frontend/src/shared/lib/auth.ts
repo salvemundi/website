@@ -71,6 +71,7 @@ async function mapDirectusUserToUser(rawUser: any): Promise<User> {
         id: rawUser.id,
         email: rawUser.email || '',
         first_name: rawUser.first_name || '',
+        middle_name: rawUser.middle_name || rawUser.tussenvoegsel || undefined,
         last_name: rawUser.last_name || '',
         entra_id: rawUser.entra_id,
         fontys_email: rawUser.fontys_email,
