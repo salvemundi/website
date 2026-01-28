@@ -9,6 +9,9 @@ import { fetchUserDetails } from '@/shared/lib/auth';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { CheckCircle2, Calendar } from 'lucide-react';
+import { PhoneNumberInput, isValidPhoneNumber } from '@/shared/components/PhoneNumberInput';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
 
 export default function ReisPage() {
     const [form, setForm] = useState({
@@ -17,11 +20,13 @@ export default function ReisPage() {
         last_name: '',
         email: '',
         phone_number: '',
+        date_of_birth: null as Date | null,
         terms_accepted: false,
     });
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [phoneError, setPhoneError] = useState<string | null>(null);
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
@@ -138,6 +143,7 @@ export default function ReisPage() {
                         last_name: prev.last_name || user.last_name || '',
                         email: prev.email || user.email || '',
                         phone_number: prev.phone_number || user.phone_number || '',
+                        date_of_birth: prev.date_of_birth || (user.date_of_birth ? new Date(user.date_of_birth) : null),
                     }));
                 })
                 .catch(() => {
@@ -152,9 +158,15 @@ export default function ReisPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
+        setPhoneError(null);
 
-        if (!form.first_name || !form.last_name || !form.email || !form.phone_number) {
+        if (!form.first_name || !form.last_name || !form.email || !form.phone_number || !form.date_of_birth) {
             setError('Vul alle verplichte velden in.');
+            return;
+        }
+
+        if (!isValidPhoneNumber(form.phone_number)) {
+            setPhoneError('Ongeldig telefoonnummer');
             return;
         }
 
@@ -180,6 +192,7 @@ export default function ReisPage() {
                 last_name: form.last_name,
                 email: form.email,
                 phone_number: form.phone_number,
+                date_of_birth: form.date_of_birth.toISOString().split('T')[0],
                 terms_accepted: form.terms_accepted,
                 status: shouldBeWaitlisted ? 'waitlist' as const : 'registered' as const,
                 role: 'participant' as const,
@@ -198,6 +211,7 @@ export default function ReisPage() {
                 last_name: '',
                 email: '',
                 phone_number: '',
+                date_of_birth: null,
                 terms_accepted: false,
             });
         } catch (err: any) {
@@ -276,6 +290,7 @@ export default function ReisPage() {
                                                     last_name: '',
                                                     email: '',
                                                     phone_number: '',
+                                                    date_of_birth: null,
                                                     terms_accepted: false,
                                                 });
                                             }}
@@ -366,15 +381,30 @@ export default function ReisPage() {
                                             </label>
 
                                             <label className="form-label">
+                                                Geboortedatum
+                                                <div className="w-full">
+                                                    <DatePicker
+                                                        selected={form.date_of_birth}
+                                                        onChange={(date) => setForm({ ...form, date_of_birth: date })}
+                                                        dateFormat="dd-MM-yyyy"
+                                                        locale={nl}
+                                                        className="form-input mt-1"
+                                                        placeholderText="Selecteer datum"
+                                                        showYearDropdown
+                                                        scrollableYearDropdown
+                                                        yearDropdownItemNumber={100}
+                                                        required
+                                                    />
+                                                </div>
+                                            </label>
+
+                                            <label className="form-label">
                                                 Telefoonnummer
-                                                <input
-                                                    type="tel"
-                                                    name="phone_number"
+                                                <PhoneNumberInput
                                                     value={form.phone_number}
-                                                    onChange={handleChange}
+                                                    onChange={(val) => setForm({ ...form, phone_number: val || '' })}
                                                     required
-                                                    placeholder="+31 6 12345678"
-                                                    className="form-input mt-1"
+                                                    error={phoneError || undefined}
                                                 />
                                             </label>
                                         </div>
