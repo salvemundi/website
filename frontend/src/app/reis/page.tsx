@@ -280,6 +280,7 @@ export default function ReisPage() {
             await tripSignupsApi.create(signupData);
 
             // Reload page to show user's new status immediately
+            window.scrollTo(0, 0);
             window.location.reload();
         } catch (err: any) {
             console.error('Error submitting signup:', err);
@@ -348,9 +349,9 @@ export default function ReisPage() {
 
                                         <div className="bg-white/50 dark:bg-white/5 rounded-2xl p-6 border border-theme-purple/10 mb-6">
                                             <p className="text-sm font-semibold text-theme-text-muted uppercase tracking-wider mb-2">Huidige status</p>
-                                            <div className="flex items-center justify-between">
+                                            <div className="flex flex-wrap items-center justify-between gap-4">
                                                 <div>
-                                                    <p className="text-3xl font-black text-theme-purple dark:text-theme-white">
+                                                    <p className="text-2xl sm:text-3xl font-black text-theme-purple dark:text-theme-white break-words">
                                                         {getSignupStatusDisplay(userSignup)}
                                                     </p>
                                                     {userSignup.status === 'registered' && (
@@ -359,7 +360,7 @@ export default function ReisPage() {
                                                         </p>
                                                     )}
                                                 </div>
-                                                <div className="px-3 py-1 bg-theme-purple/10 rounded-full text-xs font-bold text-theme-purple uppercase">
+                                                <div className="px-3 py-1 bg-theme-purple/10 rounded-full text-xs font-bold text-theme-purple uppercase shrink-0">
                                                     {userSignup.status}
                                                 </div>
                                             </div>

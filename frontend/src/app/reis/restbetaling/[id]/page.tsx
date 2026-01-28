@@ -470,7 +470,7 @@ export default function RestbetalingPage() {
                     <div className="bg-purple-50 rounded-xl shadow-lg p-8 border-t-4 border-blue-600 mb-8">
                         <div className="flex items-center mb-6">
                             <Utensils className="h-6 w-6 text-blue-600 mr-3" />
-                            <h2 className="text-2xl font-bold text-gray-900">Geselecteerde activiteiten</h2>
+                            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 break-words">Geselecteerde activiteiten</h2>
                         </div>
 
                         <div className="space-y-4">
@@ -486,7 +486,7 @@ export default function RestbetalingPage() {
                                         />
                                     )}
                                     <div className="flex-1">
-                                        <h3 className="font-bold text-gray-900">{activity.name}</h3>
+                                        <h3 className="font-bold text-gray-900 break-words">{activity.name}</h3>
                                         <p className="text-sm text-gray-600">{activity.description}</p>
                                     </div>
                                     <div className="text-right">
