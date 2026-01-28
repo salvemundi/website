@@ -418,25 +418,7 @@ export default function ReisPage() {
                                             </button>
                                         </div>
 
-                                        <div className="mt-8 pt-6 border-t border-theme-purple/10">
-                                            <p className="text-sm text-theme-text-muted text-center mb-4">
-                                                Wil je iemand anders inschrijven?
-                                            </p>
-                                            <button
-                                                onClick={() => {
-                                                    // This allows them to see the form again by temporarily 
-                                                    // "forgetting" they are logged in for this view
-                                                    setCurrentUser(null);
-                                                }}
-                                                className="w-full py-3 bg-theme-white-soft dark:bg-white/5 text-theme-purple dark:text-theme-white rounded-xl font-semibold hover:bg-theme-purple/5 transition-all mb-4"
-                                            >
-                                                Nieuwe inschrijving starten
-                                            </button>
 
-                                            <p className="text-xs text-theme-text-muted text-center italic">
-                                                Let op: Je kunt per persoon slechts één keer deelnemen aan de reis.
-                                            </p>
-                                        </div>
                                     </div>
                                 ) : submitted ? (
                                     <div className="text-white text-center">
