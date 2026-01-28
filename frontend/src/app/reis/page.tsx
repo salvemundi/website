@@ -14,7 +14,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { isUserAuthorizedForReis } from '@/shared/lib/committee-utils';
 import { TripSignup } from '@/shared/lib/api/salvemundi';
 import { User } from '@/shared/model/types/auth';
-import { CheckCircle2, Calendar, CreditCard, Loader2 } from 'lucide-react';
+import { CheckCircle2, Calendar, CreditCard, Loader2, Utensils } from 'lucide-react';
 
 export default function ReisPage() {
     const [form, setForm] = useState({
@@ -388,6 +388,22 @@ export default function ReisPage() {
                                                         Restbetaling is momenteel nog niet geopend. Je ontvangt bericht zodra dit mogelijk is.
                                                     </p>
                                                 )}
+                                            </div>
+                                        )}
+
+                                        {/* Edit Activities link - only show if deposit paid but not full payment */}
+                                        {userSignup.status === 'confirmed' && userSignup.deposit_paid && !userSignup.full_payment_paid && (
+                                            <div className="mt-4 pt-4 border-t border-theme-purple/20">
+                                                <Link
+                                                    href={`/reis/activiteiten/${userSignup.id}`}
+                                                    className="inline-flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition group"
+                                                >
+                                                    <Utensils className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                                                    Activiteiten aanpassen
+                                                </Link>
+                                                <p className="text-xs text-theme-text-muted mt-2 italic">
+                                                    Je kunt je activiteiten aanpassen tot je de restbetaling hebt voldaan.
+                                                </p>
                                             </div>
                                         )}
 

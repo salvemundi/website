@@ -496,10 +496,27 @@ export default function RestbetalingPage() {
                             ))}
                         </div>
 
-                        <div className="mt-4 p-4 bg-blue-50 rounded-lg text-sm text-blue-700">
-                            <strong>Let op:</strong> Wijzigingen in activiteiten zijn niet meer mogelijk via deze pagina.
-                            Neem contact op met de reiscommissie als je wijzigingen wilt doorvoeren.
-                        </div>
+                        {!success && (
+                            <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                                <p className="text-sm text-blue-700 mb-3">
+                                    <strong>Tip:</strong> Je kunt je activiteiten nog aanpassen tot je de restbetaling hebt voldaan.
+                                </p>
+                                <a
+                                    href={`/reis/activiteiten/${signupId}`}
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
+                                >
+                                    <Edit className="h-4 w-4" />
+                                    Activiteiten aanpassen
+                                </a>
+                            </div>
+                        )}
+
+                        {success && (
+                            <div className="mt-4 p-4 bg-gray-100 rounded-lg text-sm text-gray-600">
+                                <strong>Let op:</strong> Wijzigingen in activiteiten zijn niet meer mogelijk.
+                                Neem contact op met de reiscommissie als je wijzigingen wilt doorvoeren.
+                            </div>
+                        )}
                     </div>
                 )}
 
