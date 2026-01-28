@@ -367,7 +367,7 @@ export default function ReisAanmeldingenPage() {
             <div className="container mx-auto px-4 py-8 max-w-6xl">
                 {/* Trip Selection */}
                 <div className="mb-6">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-admin-muted mb-2">
                         Selecteer Reis
                     </label>
                     <select
@@ -376,7 +376,7 @@ export default function ReisAanmeldingenPage() {
                             const trip = trips.find(t => t.id === parseInt(e.target.value));
                             setSelectedTrip(trip || null);
                         }}
-                        className="w-full md:w-auto px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                        className="w-full md:w-auto px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                     >
                         {trips.map(trip => {
                             const displayStartDate = trip.start_date || trip.event_date;
@@ -459,7 +459,7 @@ export default function ReisAanmeldingenPage() {
                                     placeholder="Zoek op naam of email..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                    className="w-full pl-10 pr-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
                             </div>
                         </div>
@@ -469,7 +469,7 @@ export default function ReisAanmeldingenPage() {
                             <select
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value)}
-                                className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                             >
                                 <option value="all">Alle statussen</option>
                                 <option value="registered">Geregistreerd</option>
@@ -484,7 +484,7 @@ export default function ReisAanmeldingenPage() {
                             <select
                                 value={roleFilter}
                                 onChange={(e) => setRoleFilter(e.target.value)}
-                                className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                             >
                                 <option value="all">Alle rollen</option>
                                 <option value="participant">Deelnemer</option>
@@ -686,7 +686,7 @@ export default function ReisAanmeldingenPage() {
                                                             </div>
 
                                                             {/* Email buttons */}
-                                                            <div className="border-t pt-4 mt-4">
+                                                            <div className="border-t border-admin pt-4 mt-4">
                                                                 <p className="text-sm font-semibold text-admin mb-2">Betaalverzoek versturen</p>
                                                                 <div className="flex gap-2">
                                                                     <button
