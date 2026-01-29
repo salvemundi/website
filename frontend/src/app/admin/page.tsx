@@ -17,6 +17,8 @@ import {
     AlertCircle,
     Activity,
     Ticket,
+    RefreshCw,
+    Shield,
 } from 'lucide-react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 
@@ -893,6 +895,20 @@ export default function AdminDashboardPage() {
                                                 disabled={!visibilitySettings.intro}
                                             />
                                         )}
+                                        <ActionCard
+                                            title="Sync"
+                                            subtitle="Functies"
+                                            icon={<RefreshCw className="h-6 w-6" />}
+                                            onClick={() => router.push('/admin/sync')}
+                                            colorClass="teal"
+                                        />
+                                        <ActionCard
+                                            title="Log"
+                                            subtitle="Signups"
+                                            icon={<Shield className="h-6 w-6" />}
+                                            onClick={() => router.push('/admin/logging')}
+                                            colorClass="orange"
+                                        />
                                     </div>
 
                                     {/* Removed small 'Beheer' buttons here per request */}

@@ -19,26 +19,6 @@ interface Signup {
     coupon_code?: string;
 }
 
-interface SyncStatus {
-    active: boolean;
-    status: 'idle' | 'running' | 'completed' | 'failed';
-    total: number;
-    processed: number;
-    errorCount: number;
-    warningCount?: number;
-    missingDataCount?: number;
-    successCount?: number;
-    excludedCount?: number;
-    errors: { email: string; error: string; timestamp: string }[];
-    warnings?: { email: string; message: string }[];
-    missingData?: { email: string; reason: string }[];
-    successfulUsers?: { email: string }[];
-    excludedUsers?: { email: string }[];
-    startTime?: string;
-    endTime?: string;
-    lastRunSuccess?: boolean | null;
-}
-
 interface PaymentSettings {
     manual_approval: boolean;
 }
@@ -92,26 +72,12 @@ function Tile({
     );
 }
 
-export default function DevSignupsPage() {
+export default function LoggingPage() {
     const router = useRouter();
     const { user, isLoading: authLoading } = useAuth();
     const [signups, setSignups] = useState<Signup[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState<string | null>(null);
-    const [isSyncing, setIsSyncing] = useState(false);
-    const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
-    const [showStatus, setShowStatus] = useState(false);
-    const [selectedSyncFields, setSelectedSyncFields] = useState<string[]>([
-        'membership_expiry',
-        'first_name',
-        'last_name',
-        'phone_number',
-        'display_name',
-        'committees'
-    ]);
-    const [forceLink, setForceLink] = useState(false);
-    const [activeOnly, setActiveOnly] = useState(false);
-    const [syncResultFilter, setSyncResultFilter] = useState<'all' | 'success' | 'warnings' | 'missing' | 'errors' | 'excluded'>('all');
 
     // Filters
     const [filterStatus, setFilterStatus] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
@@ -124,22 +90,21 @@ export default function DevSignupsPage() {
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isBatchProcessing, setIsBatchProcessing] = useState(false);
 
-    const syncFieldOptions = [
-        { id: 'membership_expiry', label: 'Lidmaatschap vervaldatum' },
-        { id: 'first_name', label: 'Voornaam' },
-        { id: 'last_name', label: 'Achternaam' },
-        { id: 'display_name', label: 'Display naam' },
-        { id: 'phone_number', label: 'Mobiel nummer (Entra → Directus)' },
-        { id: 'committees', label: 'Commissies (Entra → Directus)' },
-    ];
+    const tabs = [
+        { id: 'pending', label: 'Te Keuren' },
+        { id: 'approved', label: 'Goedgekeurd' },
+        { id: 'rejected', label: 'Afgewezen' },
+        { id: 'all', label: 'Alles' },
+    ] as const;
 
-    const toggleField = (fieldId: string) => {
-        setSelectedSyncFields(prev =>
-            prev.includes(fieldId)
-                ? prev.filter(id => id !== fieldId)
-                : [...prev, fieldId]
-        );
-    };
+    const typeTabs = [
+        { id: 'all', label: 'Alles' },
+        { id: 'membership_new', label: 'Leden Inschrijvingen' },
+        { id: 'membership_renewal', label: 'Lidmaatschap Verlengingen' },
+        { id: 'event', label: 'Events' },
+        { id: 'pub_crawl', label: 'Kroegentocht' },
+        { id: 'trip', label: 'Reis' },
+    ] as const;
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -210,43 +175,9 @@ export default function DevSignupsPage() {
     useEffect(() => {
         if (user?.entra_id) {
             loadSignups();
-            fetchSyncStatus();
             loadSettings();
         }
     }, [user, filterStatus, filterType, showFailed]);
-
-    useEffect(() => {
-        let interval: NodeJS.Timeout;
-        if (isSyncing || (syncStatus?.active)) {
-            interval = setInterval(fetchSyncStatus, 2000);
-        }
-        return () => clearInterval(interval);
-    }, [isSyncing, syncStatus]);
-
-    const fetchSyncStatus = async () => {
-        try {
-            const token = localStorage.getItem('auth_token');
-            if (!token) return;
-
-            const response = await fetch('/api/admin/sync-status', {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-            if (response.ok) {
-                const data = await response.json();
-                setSyncStatus(data);
-                if (data.active) {
-                    setIsSyncing(true);
-                    setShowStatus(true);
-                } else if (isSyncing && !data.active) {
-                    setIsSyncing(false);
-                }
-            }
-        } catch (error) {
-            console.error('Failed to fetch sync status:', error);
-        }
-    };
 
     const loadSignups = async () => {
         setIsLoading(true);
@@ -388,8 +319,6 @@ export default function DevSignupsPage() {
                 }
                 successCount++;
             } catch (e) {
-                // Error is alerted by the handle function if silent was false, but here it is true.
-                // We just count failures.
                 failCount++;
             }
         }
@@ -403,39 +332,6 @@ export default function DevSignupsPage() {
             alert(`Batch mislukt.\nSucces: 0\nMislukt: ${failCount}`);
         }
     };
-
-
-    const handleSyncUsers = async () => {
-        setIsSyncing(true);
-        try {
-            const token = localStorage.getItem('auth_token');
-            if (!token) throw new Error('No auth token');
-
-            const response = await fetch('/api/admin/sync-users', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ fields: selectedSyncFields, forceLink, activeOnly }),
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Failed to start sync');
-            }
-
-            alert('Synchronisatie gestart op de achtergrond.');
-            setShowStatus(true);
-            fetchSyncStatus();
-        } catch (error: any) {
-            console.error('Failed to sync users:', error);
-            alert(`Fout bij starten synchronisatie: ${error.message}`);
-        } finally {
-            setIsSyncing(false);
-        }
-    };
-
 
 
     const formatAmount = (amount: string | number): string => {
@@ -463,22 +359,6 @@ export default function DevSignupsPage() {
         );
     }
 
-    const tabs = [
-        { id: 'pending', label: 'Te Keuren' },
-        { id: 'approved', label: 'Goedgekeurd' },
-        { id: 'rejected', label: 'Afgewezen' },
-        { id: 'all', label: 'Alles' },
-    ] as const;
-
-    const typeTabs = [
-        { id: 'all', label: 'Alles' },
-        { id: 'membership_new', label: 'Leden Inschrijvingen' },
-        { id: 'membership_renewal', label: 'Lidmaatschap Verlengingen' },
-        { id: 'event', label: 'Events' },
-        { id: 'pub_crawl', label: 'Kroegentocht' },
-        { id: 'trip', label: 'Reis' },
-    ] as const;
-
     return (
         <div className="min-h-screen bg-[var(--bg-main)]">
             <div className="mx-auto max-w-app px-4 py-8 sm:px-6 lg:px-8">
@@ -487,261 +367,52 @@ export default function DevSignupsPage() {
                     <div>
                         <h1 className="text-3xl font-bold text-theme-purple-lighter flex items-center gap-3">
                             <Shield className="h-8 w-8" />
-                            Signups Dashboard
+                            Logging & Goedkeuring
                         </h1>
                         <p className="mt-1 text-sm text-theme-purple-lighter/60">
-                            Beheer inschrijvingen en synchroniseer gebruikers met Microsoft Entra ID.
+                            Beheer inschrijvingen, logboek en handmatige goedkeuring.
                         </p>
                     </div>
-                    <button
-                        onClick={toggleManualApproval}
-                        disabled={isDevEnv}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all shadow-sm ${isDevEnv
-                            ? 'bg-slate-800/50 text-slate-500 border border-slate-700/50 cursor-not-allowed'
-                            : paymentSettings.manual_approval
-                                ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30 hover:bg-orange-500/30'
-                                : 'bg-[var(--bg-highlight)] text-slate-400 border border-white/5 hover:border-white/10'
-                            }`}
-                        title={isDevEnv
-                            ? "Ontwikkelomgeving: Altijd 'Manual Approval' (Pending) forced door backend."
-                            : paymentSettings.manual_approval
-                                ? "Alle nieuwe aanmeldingen worden handmatig gecontroleerd (ook in productie)"
-                                : "Aanmeldingen worden automatisch goedgekeurd in productie"}
-                    >
-                        {paymentSettings.manual_approval || isDevEnv ? (
-                            <>
-                                <Shield className="w-3.5 h-3.5" />
-                                {isDevEnv ? 'Dev Force: PENDING' : 'Handmatige Goedkeuring: AAN'}
-                            </>
-                        ) : (
-                            <>
-                                <CheckCircle className="w-3.5 h-3.5" />
-                                Handmatige Goedkeuring: UIT
-                            </>
-                        )}
-                    </button>
                 </div>
 
-                <div className="flex flex-col items-end gap-3 mb-6">
-                    {/* Sync Controls */}
-                    <div className="flex flex-wrap gap-2 justify-end max-w-xl">
-                        {syncFieldOptions.map(option => (
+                {/* dev approval control tile */}
+                <div className="mb-6">
+                    <Tile title="Instellingen" className="mb-6">
+                        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                            <div className="text-theme-purple-lighter/80">
+                                Beheer hier de goedkeuringsflow.
+                            </div>
                             <button
-                                key={option.id}
-                                onClick={() => toggleField(option.id)}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${selectedSyncFields.includes(option.id)
-                                    ? 'bg-theme-purple/20 border-theme-purple/40 text-theme-purple-lighter'
-                                    : 'bg-white/5 border-white/10 text-theme-purple-lighter/40 hover:bg-white/10'
+                                onClick={toggleManualApproval}
+                                disabled={isDevEnv}
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all shadow-sm ${isDevEnv
+                                    ? 'bg-slate-800/50 text-slate-500 border border-slate-700/50 cursor-not-allowed'
+                                    : paymentSettings.manual_approval
+                                        ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30 hover:bg-orange-500/30'
+                                        : 'bg-[var(--bg-highlight)] text-slate-400 border border-white/5 hover:border-white/10'
                                     }`}
+                                title={isDevEnv
+                                    ? "Ontwikkelomgeving: Altijd 'Manual Approval' (Pending) forced door backend."
+                                    : paymentSettings.manual_approval
+                                        ? "Alle nieuwe aanmeldingen worden handmatig gecontroleerd (ook in productie)"
+                                        : "Aanmeldingen worden automatisch goedgekeurd in productie"}
                             >
-                                {option.label}
+                                {paymentSettings.manual_approval || isDevEnv ? (
+                                    <>
+                                        <Shield className="w-3.5 h-3.5" />
+                                        {isDevEnv ? 'Dev Force: PENDING' : 'Handmatige Goedkeuring: AAN'}
+                                    </>
+                                ) : (
+                                    <>
+                                        <CheckCircle className="w-3.5 h-3.5" />
+                                        Handmatige Goedkeuring: UIT
+                                    </>
+                                )}
                             </button>
-                        ))}
-                    </div>
-                    {/* Force Link Checkbox */}
-                    <div className="flex items-center gap-2">
-                        <input
-                            type="checkbox"
-                            id="forceLink"
-                            checked={forceLink}
-                            onChange={(e) => setForceLink(e.target.checked)}
-                            className="w-4 h-4 rounded border-white/20 bg-white/5 text-theme-purple focus:ring-theme-purple focus:ring-offset-0"
-                        />
-                        <label htmlFor="forceLink" className="text-xs text-theme-purple-lighter/70 cursor-pointer">
-                            Koppel bestaande accounts op e-mail (eenmalige migratie)
-                        </label>
-                    </div>
-                    {/* Active Only Checkbox */}
-                    <div className="flex items-center gap-2">
-                        <input
-                            type="checkbox"
-                            id="activeOnly"
-                            checked={activeOnly}
-                            onChange={(e) => setActiveOnly(e.target.checked)}
-                            className="w-4 h-4 rounded border-white/20 bg-white/5 text-theme-purple focus:ring-theme-purple focus:ring-offset-0"
-                        />
-                        <label htmlFor="activeOnly" className="text-xs text-theme-purple-lighter/70 cursor-pointer">
-                            Alleen actieve leden synchroniseren (sneller)
-                        </label>
-                    </div>
-
-                    <div className="flex gap-2">
-                        {syncStatus && !syncStatus.active && syncStatus.status !== 'idle' && (
-                            <button
-                                onClick={() => setShowStatus(!showStatus)}
-                                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-theme-purple-lighter rounded-xl border border-white/10 transition-all text-sm font-medium"
-                            >
-                                {showStatus ? 'Status Verbergen' : 'Laatste Sync'}
-                            </button>
-                        )}
-
-                        <button
-                            onClick={handleSyncUsers}
-                            disabled={isSyncing}
-                            className="flex items-center justify-center gap-2 px-4 py-2 bg-theme-purple/20 hover:bg-theme-purple/30 text-theme-purple-lighter rounded-xl border border-theme-purple/30 transition-all font-semibold disabled:opacity-50"
-                        >
-                            <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                            {isSyncing ? 'Synchroniseren...' : 'Sync Gebruikers'}
-                        </button>
-                    </div>
+                        </div>
+                    </Tile>
                 </div>
 
-                {/* Sync Status Tile (Optional) */}
-                {
-                    showStatus && syncStatus && (
-                        <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
-                            <Tile
-                                title="Synchronisatie Status"
-                                icon={<RefreshCw className={`h-5 w-5 ${syncStatus.active ? 'animate-spin' : ''}`} />}
-                                actions={
-                                    <button
-                                        onClick={() => setShowStatus(false)}
-                                        className="text-theme-purple-lighter/60 hover:text-theme-purple-lighter text-sm"
-                                    >
-                                        Sluiten
-                                    </button>
-                                }
-                            >
-                                <div className="space-y-6">
-                                    <div>
-                                        <div className="flex justify-between items-end mb-2">
-                                            <div>
-                                                <span className="text-sm font-medium text-theme-purple-lighter/70 block mb-1">Voortgang</span>
-                                                <span className="2xl font-bold text-theme-purple-lighter">
-                                                    {syncStatus.total > 0 ? Math.round((syncStatus.processed / syncStatus.total) * 100) : 0}%
-                                                </span>
-                                            </div>
-                                            <div className="text-right text-sm text-theme-purple-lighter/60">
-                                                {syncStatus.processed} van {syncStatus.total} gebruikers
-                                            </div>
-                                        </div>
-                                        <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
-                                            <div
-                                                className="h-full bg-gradient-to-r from-theme-purple to-theme-purple-lighter transition-all duration-500 ease-out"
-                                                style={{ width: `${syncStatus.total > 0 ? (syncStatus.processed / syncStatus.total) * 100 : 0}%` }}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                                        <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
-                                            <div className="text-sm text-theme-purple-lighter/60 mb-1">Status</div>
-                                            <div className={`font-bold capitalize ${syncStatus.status === 'completed' ? 'text-green-400' :
-                                                syncStatus.status === 'failed' ? 'text-red-400' : 'text-theme-purple-lighter'
-                                                }`}>
-                                                {syncStatus.status === 'running' ? 'Bezig...' :
-                                                    syncStatus.status === 'completed' ? 'Voltooid' :
-                                                        syncStatus.status === 'failed' ? 'Mislukt' : 'Inactief'}
-                                            </div>
-                                        </div>
-                                        <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
-                                            <div className="text-sm text-theme-purple-lighter/60 mb-1">Waarschuwingen</div>
-                                            <div className={`font-bold ${(syncStatus.warningCount || 0) > 0 ? 'text-amber-400' : 'text-theme-purple-lighter'}`}>
-                                                {syncStatus.warningCount || 0}
-                                            </div>
-                                        </div>
-                                        <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
-                                            <div className="text-sm text-theme-purple-lighter/60 mb-1">Missende Data</div>
-                                            <div className={`font-bold ${(syncStatus.missingDataCount || 0) > 0 ? 'text-blue-400' : 'text-theme-purple-lighter'}`}>
-                                                {syncStatus.missingDataCount}
-                                            </div>
-                                        </div>
-                                        <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
-                                            <div className="text-sm text-theme-purple-lighter/60 mb-1">Fouten</div>
-                                            <div className={`font-bold ${syncStatus.errorCount > 0 ? 'text-red-500' : 'text-theme-purple-lighter'}`}>
-                                                {syncStatus.errorCount}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {/* Sync Result Filter Tabs */}
-                                    <div className="flex p-1 bg-black/20 rounded-xl border border-white/5 overflow-x-auto max-w-full custom-scrollbar">
-                                        {[
-                                            { id: 'all' as const, label: 'Alles', count: syncStatus.processed },
-                                            { id: 'success' as const, label: 'Geslaagd', count: syncStatus.successCount || 0 },
-                                            { id: 'warnings' as const, label: 'Waarschuwingen', count: syncStatus.warningCount || 0 },
-                                            { id: 'missing' as const, label: 'Missende Data', count: syncStatus.missingDataCount || 0 },
-                                            { id: 'errors' as const, label: 'Fouten', count: syncStatus.errorCount },
-                                            { id: 'excluded' as const, label: 'Uitgesloten', count: syncStatus.excludedCount || 0 },
-                                        ].map((tab) => (
-                                            <button
-                                                key={tab.id}
-                                                onClick={() => setSyncResultFilter(tab.id)}
-                                                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${syncResultFilter === tab.id
-                                                    ? 'bg-theme-purple/20 text-theme-purple-lighter border border-theme-purple/30'
-                                                    : 'text-theme-purple-lighter/60 hover:text-theme-purple-lighter hover:bg-white/5'
-                                                    }`}
-                                            >
-                                                {tab.label} ({tab.count})
-                                            </button>
-                                        ))}
-                                    </div>
-                                    {/* Filtered Results */}
-                                    {(syncResultFilter === 'all' || syncResultFilter === 'success') && syncStatus.successfulUsers && syncStatus.successfulUsers.length > 0 && (
-                                        <div className="mt-4">
-                                            <div className="text-xs font-medium text-green-400/80 mb-2 px-1">✅ Succesvol gesynchroniseerd</div>
-                                            <div className="max-h-48 overflow-y-auto rounded-xl bg-green-400/5 border border-green-400/10 p-2 space-y-1 custom-scrollbar">
-                                                {syncStatus.successfulUsers.map((user, idx) => (
-                                                    <div key={idx} className="p-2 text-xs border-b border-green-400/10 last:border-0">
-                                                        <div className="text-green-300">{user.email}</div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                    {(syncResultFilter === 'all' || syncResultFilter === 'warnings') && syncStatus.warnings && syncStatus.warnings.length > 0 && (
-                                        <div className="mt-4">
-                                            <div className="text-xs font-medium text-amber-400/80 mb-2 px-1">⚠️ Aandacht vereist (Mogelijke duplicaten)</div>
-                                            <div className="max-h-48 overflow-y-auto rounded-xl bg-amber-400/5 border border-amber-400/10 p-2 space-y-1 custom-scrollbar">
-                                                {syncStatus.warnings.map((warn, idx) => (
-                                                    <div key={idx} className="p-2 text-xs border-b border-amber-400/10 last:border-0">
-                                                        <div className="font-bold text-amber-300">{warn.email}</div>
-                                                        <div className="text-amber-200/70">{warn.message}</div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                    {(syncResultFilter === 'all' || syncResultFilter === 'missing') && syncStatus.missingData && syncStatus.missingData.length > 0 && (
-                                        <div className="mt-4">
-                                            <div className="text-xs font-medium text-blue-400/80 mb-2 px-1">ℹ️ Missende velden in Entra ID</div>
-                                            <div className="max-h-48 overflow-y-auto rounded-xl bg-blue-400/5 border border-blue-400/10 p-2 space-y-1 custom-scrollbar">
-                                                {syncStatus.missingData.map((item, idx) => (
-                                                    <div key={idx} className="p-2 text-xs border-b border-blue-400/10 last:border-0">
-                                                        <div className="font-bold text-blue-300">{item.email}</div>
-                                                        <div className="text-blue-200/70">{item.reason}</div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                    {(syncResultFilter === 'all' || syncResultFilter === 'excluded') && syncStatus.excludedUsers && syncStatus.excludedUsers.length > 0 && (
-                                        <div className="mt-4">
-                                            <div className="text-xs font-medium text-gray-400/80 mb-2 px-1">⛔ Uitgesloten van synchronisatie</div>
-                                            <div className="max-h-48 overflow-y-auto rounded-xl bg-gray-400/5 border border-gray-400/10 p-2 space-y-1 custom-scrollbar">
-                                                {syncStatus.excludedUsers.map((user, idx) => (
-                                                    <div key={idx} className="p-2 text-xs border-b border-gray-400/10 last:border-0">
-                                                        <div className="text-gray-300">{user.email}</div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                    {(syncResultFilter === 'all' || syncResultFilter === 'errors') && syncStatus.errors.length > 0 && (
-                                        <div className="mt-4">
-                                            <div className="text-xs font-medium text-red-400/80 mb-2 px-1">❌ Fouten tijdens synchronisatie</div>
-                                            <div className="max-h-48 overflow-y-auto rounded-xl bg-red-400/5 border border-red-400/10 p-2 space-y-1 custom-scrollbar">
-                                                {syncStatus.errors.map((err, idx) => (
-                                                    <div key={idx} className="p-2 text-xs border-b border-red-400/10 last:border-0">
-                                                        <span className="text-red-300">{err.email}: {err.error}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </Tile>
-                        </div>
-                    )
-                }
 
                 {/* Filters & Content */}
                 <Tile
