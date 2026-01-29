@@ -41,12 +41,12 @@ const DeletionTimer = ({ expiryDateStr }: { expiryDateStr: string }) => {
     if (!timeLeft || (timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0)) return null;
 
     return (
-        <div className="bg-theme-purple/10 rounded-lg p-4 mb-6 text-center">
-            <p className="text-theme-purple font-bold uppercase text-sm mb-1">⚠️ Account Verwijdering (AVG)</p>
-            <p className="text-theme-white text-sm mb-2">
+        <div className="bg-theme-purple/10 rounded-2xl p-4 mb-6 text-center border border-theme-purple/20">
+            <p className="text-theme-purple font-bold uppercase text-xs tracking-wider mb-2">⚠️ Account Verwijdering (AVG)</p>
+            <p className="text-theme-text-subtle text-sm mb-3">
                 Je lidmaatschap is verlopen. Als je niet verlengt, worden je gegevens permanent verwijderd over:
             </p>
-            <div className="text-2xl font-mono font-bold text-theme-purple-lighter">
+            <div className="text-2xl font-mono font-bold text-theme-purple">
                 {timeLeft.days}d {timeLeft.hours}u {timeLeft.minutes}m
             </div>
         </div>
@@ -292,14 +292,14 @@ export default function SignUp() {
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-theme-purple-lighter opacity-75"></span>
                                     <span className="relative inline-flex rounded-full h-3 w-3 bg-theme-purple-lighter"></span>
                                 </span>
-                                <span className="text-theme-purple-lighter font-bold text-xs uppercase tracking-widest">Dev Mode</span>
+                                <span className="text-theme-purple font-bold text-xs uppercase tracking-widest">Dev Mode</span>
                             </div>
                             <div className="flex gap-2">
                                 <button
                                     onClick={() => setIsMockCommittee(!isMockCommittee)}
                                     className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 border-2 ${isMockCommittee
-                                        ? 'bg-theme-purple-lighter text-theme-purple border-theme-purple-lighter shadow-[0_0_15px_rgba(180,160,255,0.4)]'
-                                        : 'bg-transparent text-theme-purple-lighter border-theme-purple-lighter/50 hover:bg-theme-purple-lighter/10'
+                                        ? 'bg-theme-purple text-white border-theme-purple shadow-[0_0_15px_rgba(102,50,101,0.2)]'
+                                        : 'bg-transparent text-theme-purple border-theme-purple/50 hover:bg-theme-purple/10'
                                         }`}
                                 >
                                     {isMockCommittee ? '✅ Committee' : 'Simuleer Commissie'}
@@ -307,8 +307,8 @@ export default function SignUp() {
                                 <button
                                     onClick={() => setIsMockExpired(!isMockExpired)}
                                     className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 border-2 ${isMockExpired
-                                        ? 'bg-theme-purple-lighter text-theme-purple border-theme-purple-lighter shadow-[0_0_15px_rgba(180,160,255,0.4)]'
-                                        : 'bg-transparent text-theme-purple-lighter border-theme-purple-lighter/50 hover:bg-theme-purple-lighter/10'
+                                        ? 'bg-theme-purple text-white border-theme-purple shadow-[0_0_15px_rgba(102,50,101,0.2)]'
+                                        : 'bg-transparent text-theme-purple border-theme-purple/50 hover:bg-theme-purple/10'
                                         }`}
                                 >
                                     {isMockExpired ? '✅ Mocking Expired' : 'Simuleer Verlopen Account'}
@@ -323,51 +323,68 @@ export default function SignUp() {
                         </h1>
 
                         {isValidMember && (
-                            <div className="text-theme-white">
-                                <div className="bg-green-500/20 p-4 rounded-lg mb-6">
-                                    <p className="font-bold text-green-400 text-lg mb-1">✓ Actief Lid</p>
-                                    <p className="text-sm text-theme-text-subtle dark:text-theme-text-subtle">Je bent een volwaardig lid van Salve Mundi.</p>
+                            <div className="text-theme-text">
+                                <div className="bg-green-500/10 border border-green-500/20 p-5 rounded-2xl mb-6 flex items-start gap-4">
+                                    <div className="bg-green-500 rounded-full p-1 mt-0.5">
+                                        <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-green-600 dark:text-green-400 text-lg">Actief Lid</p>
+                                        <p className="text-sm text-theme-text-subtle">Je bent een volwaardig lid van Salve Mundi.</p>
+                                    </div>
                                 </div>
 
-                                <p className="mb-4 text-lg">
-                                    Welkom terug, <span className="font-bold text-theme-purple-lighter">{user.first_name}</span>!
+                                <p className="mb-6 text-lg">
+                                    Welkom terug, <span className="font-bold text-theme-purple">{user.first_name}</span>!
                                 </p>
 
-                                <div className="bg-theme-white/10 p-4 rounded-lg mb-6">
-                                    <p className="text-sm text-theme-purple-lighter font-semibold uppercase tracking-wide">Jouw gegevens</p>
-                                    <p className="text-theme-white font-medium">{user.first_name} {user.last_name}</p>
-                                    <p className="text-theme-text-muted dark:text-theme-text-muted text-sm">{user.email}</p>
+                                <div className="bg-theme-purple/5 border border-theme-purple/10 p-5 rounded-2xl mb-8">
+                                    <p className="text-xs text-theme-purple font-bold uppercase tracking-widest mb-3">Jouw gegevens</p>
+                                    <div className="space-y-1">
+                                        <p className="text-theme-text font-bold text-lg">{user.first_name} {user.last_name}</p>
+                                        <p className="text-theme-text-muted">{user.email}</p>
+                                    </div>
                                     {user.membership_expiry && (
-                                        <p className="text-theme-text-light dark:text-theme-text-light text-xs mt-2">
-                                            Geldig tot: {new Date(user.membership_expiry).toLocaleDateString('nl-NL')}
-                                        </p>
+                                        <div className="mt-4 pt-4 border-t border-theme-purple/10">
+                                            <p className="text-theme-text-muted text-sm flex items-center gap-2">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-theme-purple/40"></span>
+                                                Geldig tot: <span className="font-semibold text-theme-text">{new Date(user.membership_expiry).toLocaleDateString('nl-NL')}</span>
+                                            </p>
+                                        </div>
                                     )}
                                 </div>
 
-                                <p className="text-sm text-theme-text-light dark:text-theme-text-light italic">
+                                <p className="text-sm text-theme-text-light italic text-center">
                                     Je hoeft op dit moment geen actie te ondernemen.
                                 </p>
                             </div>
                         )}
 
                         {isExpired && (
-                            <div className="text-theme-white">
+                            <div className="text-theme-text">
                                 {user.membership_expiry && <DeletionTimer expiryDateStr={user.membership_expiry} />}
 
-                                <p className="mb-4 text-lg">
-                                    Welkom terug, <span className="font-bold text-theme-purple-lighter">{user.first_name}</span>.
-                                </p>
-                                <p className="mb-6 text-theme-text-subtle dark:text-theme-text-subtle">
-                                    Je lidmaatschap is verlopen. Om weer toegang te krijgen tot alle activiteiten en je account te behouden, vragen we je de jaarlijkse contributie te voldoen.
-                                </p>
+                                <div className="mb-6">
+                                    <p className="mb-2 text-2xl font-bold text-theme-purple">
+                                        Welkom terug, {user.first_name}.
+                                    </p>
+                                    <p className="text-theme-text-subtle text-lg leading-relaxed">
+                                        Je lidmaatschap is verlopen. Om weer toegang te krijgen tot alle activiteiten en je account te behouden, vragen we je de jaarlijkse contributie te voldoen.
+                                    </p>
+                                </div>
 
-                                <button
-                                    onClick={() => { setIsProcessing(true); initiateContributionPayment(); }}
-                                    disabled={isProcessing}
-                                    className="form-button"
-                                >
-                                    {isProcessing ? 'Verwerken...' : `Nu Verlengen (€${baseAmount.toFixed(2).replace('.', ',')})`}
-                                </button>
+                                <div className="bg-theme-purple/5 border border-theme-purple/10 rounded-2xl p-6 mb-8">
+                                    <p className="text-sm font-bold text-theme-purple uppercase tracking-widest mb-4">Verlenging</p>
+                                    <button
+                                        onClick={() => { setIsProcessing(true); initiateContributionPayment(); }}
+                                        disabled={isProcessing}
+                                        className="form-button shadow-glow transition-transform active:scale-95"
+                                    >
+                                        {isProcessing ? 'Verwerken...' : `Nu Verlengen (€${baseAmount.toFixed(2).replace('.', ',')})`}
+                                    </button>
+                                </div>
                             </div>
                         )}
 
@@ -418,8 +435,8 @@ export default function SignUp() {
                                     />
                                 </label>
 
-                                <div className="border-t border-theme-white/20 pt-4 mt-2">
-                                    <label className="form-label mb-2 text-white">Heb je een coupon code?</label>
+                                <div className="border-t border-theme-purple/10 pt-6 mt-6">
+                                    <label className="form-label mb-2">Heb je een coupon code?</label>
                                     <div className="flex gap-2">
                                         <input
                                             type="text"
@@ -433,7 +450,7 @@ export default function SignUp() {
                                             type="button"
                                             onClick={verifyCoupon}
                                             disabled={!form.coupon || verifyingCoupon}
-                                            className="bg-theme-white text-theme-purple font-bold px-4 rounded-xl hover:bg-white-soft disabled:opacity-50 transition-all shadow-md"
+                                            className="bg-theme-purple text-white font-bold px-4 rounded-xl hover:bg-theme-purple-light disabled:opacity-50 transition-all shadow-md"
                                         >
                                             {verifyingCoupon ? '...' : 'Check'}
                                         </button>
@@ -445,13 +462,13 @@ export default function SignUp() {
                                     )}
 
                                     {/* Summary of price */}
-                                    <div className="mt-4 flex justify-between items-center text-white font-bold text-lg">
+                                    <div className="mt-6 flex justify-between items-center text-theme-text font-bold text-lg p-4 bg-theme-purple/5 rounded-2xl">
                                         <span>Totaal:</span>
                                         <span>
                                             {couponStatus?.valid && couponStatus.discount ? (
                                                 <>
-                                                    <span className="line-through text-white/50 text-sm mr-2">€20,00</span>
-                                                    <span>
+                                                    <span className="line-through text-theme-text-muted/50 text-sm mr-2">€20,00</span>
+                                                    <span className="text-theme-purple">
                                                         {couponStatus.type === 'percentage'
                                                             ? `€${(20 * (1 - couponStatus.discount / 100)).toFixed(2).replace('.', ',')}`
                                                             : `€${Math.max(0, 20 - couponStatus.discount).toFixed(2).replace('.', ',')}`
@@ -459,7 +476,7 @@ export default function SignUp() {
                                                     </span>
                                                 </>
                                             ) : (
-                                                <span>€20,00</span>
+                                                <span className="text-theme-purple">€20,00</span>
                                             )}
                                         </span>
                                     </div>

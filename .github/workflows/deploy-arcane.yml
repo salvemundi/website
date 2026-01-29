@@ -1,0 +1,47 @@
+name: Deploy Arcane Dashboard
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'arcane/**'
+      - '.github/workflows/deploy-arcane.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy docker-compose.yml to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "arcane/docker-compose.yml"
+          target: "/opt/arcane"
+          strip_components: 1
+
+      - name: Deploy on Server
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          ARCANE_ENCRYPTION_KEY: ${{ secrets.ARCANE_ENCRYPTION_KEY }}
+          ARCANE_JWT_SECRET: ${{ secrets.ARCANE_JWT_SECRET }}
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: ARCANE_ENCRYPTION_KEY,ARCANE_JWT_SECRET
+          script: |
+            mkdir -p /opt/arcane/data
+            cd /opt/arcane
+
+            # Generate .env safely
+            printf "ARCANE_ENCRYPTION_KEY=%s\n" "$ARCANE_ENCRYPTION_KEY" > .env
+            printf "ARCANE_JWT_SECRET=%s\n" "$ARCANE_JWT_SECRET" >> .env
+
+            docker compose pull
+            docker compose up -d --remove-orphans

@@ -1,0 +1,20 @@
+services:
+  arcane:
+    image: arcaneui/arcane:latest
+    container_name: arcane
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      - ARCANE_ENCRYPTION_KEY=${ARCANE_ENCRYPTION_KEY}
+      - ARCANE_JWT_SECRET=${ARCANE_JWT_SECRET}
+      - TZ=Europe/Amsterdam
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./data:/app/data
+    networks:
+      - proxy-network
+
+networks:
+  proxy-network:
+    external: true
