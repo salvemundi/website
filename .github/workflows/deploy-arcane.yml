@@ -3,6 +3,7 @@ name: Deploy Arcane Dashboard
 on:
   push:
     branches:
+      - 'Development'
       - 'main'
     paths:
       - 'arcane/**'
@@ -28,14 +29,19 @@ jobs:
       - name: Deploy on Server
         uses: appleboy/ssh-action@v1.0.3
         env:
+          GH_REGISTRY: ghcr.io
+          GH_USERNAME: ${{ github.actor }}
+          GH_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
           ARCANE_ENCRYPTION_KEY: ${{ secrets.ARCANE_ENCRYPTION_KEY }}
           ARCANE_JWT_SECRET: ${{ secrets.ARCANE_JWT_SECRET }}
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: ARCANE_ENCRYPTION_KEY,ARCANE_JWT_SECRET
+          envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,ARCANE_ENCRYPTION_KEY,ARCANE_JWT_SECRET
           script: |
+            echo $GH_PASSWORD | docker login $GH_REGISTRY -u $GH_USERNAME --password-stdin
+
             mkdir -p /opt/arcane/data
             cd /opt/arcane
 
@@ -45,3 +51,5 @@ jobs:
 
             docker compose pull
             docker compose up -d --remove-orphans
+
+            docker image prune -f
