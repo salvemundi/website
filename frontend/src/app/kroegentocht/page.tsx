@@ -287,7 +287,7 @@ export default function KroegentochtPage() {
                 />
             </div>
 
-            <main className="relative overflow-hidden bg-white dark:bg-gray-900">
+            <main className="relative overflow-hidden" style={{ backgroundColor: 'var(--bg-main)' }}>
                 {!isKroegentochtEnabled ? (
                     <section className="px-4 sm:px-6 lg:px-10 py-12 lg:py-16">
                         <div className="max-w-4xl mx-auto bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl lg:rounded-3xl p-6 lg:p-8 text-center shadow-2xl">
@@ -365,7 +365,7 @@ export default function KroegentochtPage() {
                                                 onChange={handleChange}
                                                 required
                                                 placeholder="Voornaam"
-                                                className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
+                                                className="mt-1 p-2 rounded w-full text-theme-purple" style={{ backgroundColor: 'var(--bg-card)' }}
                                             />
                                         </label>
                                         <label className="font-semibold text-white">
@@ -374,11 +374,11 @@ export default function KroegentochtPage() {
                                                 type="text"
                                                 name="last_initial"
                                                 value={form.last_initial}
-                                                onChange={(e) => setForm({ ...form, last_initial: e.target.value.slice(0,1).toUpperCase() })}
+                                                onChange={(e) => setForm({ ...form, last_initial: e.target.value.slice(0, 1).toUpperCase() })}
                                                 required
                                                 placeholder="Bijv. S"
                                                 maxLength={1}
-                                                className="mt-1 p-2 rounded w-full bg-white text-theme-purple text-sm uppercase dark:bg-gray-800 dark:text-theme"
+                                                className="mt-1 p-2 rounded w-full text-theme-purple text-sm uppercase" style={{ backgroundColor: 'var(--bg-card)' }}
                                             />
                                         </label>
                                     </div>
@@ -393,7 +393,7 @@ export default function KroegentochtPage() {
                                             onChange={handleChange}
                                             required
                                             placeholder="jouw@email.nl"
-                                            className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
+                                            className="mt-1 p-2 rounded w-full text-theme-purple" style={{ backgroundColor: 'var(--bg-card)' }}
                                         />
                                     </label>
 
@@ -405,7 +405,7 @@ export default function KroegentochtPage() {
                                             value={form.association}
                                             onChange={handleChange}
                                             required
-                                            className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
+                                            className="mt-1 p-2 rounded w-full text-theme-purple" style={{ backgroundColor: 'var(--bg-card)' }}
                                         >
                                             <option value="">Selecteer een vereniging</option>
                                             {ASSOCIATIONS.map((assoc) => (
@@ -427,7 +427,7 @@ export default function KroegentochtPage() {
                                                 onChange={handleChange}
                                                 required
                                                 placeholder="Naam van je vereniging"
-                                                className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
+                                                className="mt-1 p-2 rounded w-full text-theme-purple" style={{ backgroundColor: 'var(--bg-card)' }}
                                             />
                                         </label>
                                     )}
@@ -444,7 +444,7 @@ export default function KroegentochtPage() {
                                             required
                                             min="1"
                                             max="10"
-                                            className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
+                                            className="mt-1 p-2 rounded w-full text-theme-purple" style={{ backgroundColor: 'var(--bg-card)' }}
                                         />
                                         <span className="text-sm text-white/80 mt-1 block">
                                             Maximum 10 tickets per inschrijving
@@ -469,7 +469,7 @@ export default function KroegentochtPage() {
                                                         onChange={(e) => handleParticipantChange(index, 'name', e.target.value)}
                                                         required
                                                         placeholder="Voornaam + eventueel tussenvoegsel"
-                                                        className="mt-1 p-2 rounded w-full bg-white text-theme-purple text-sm dark:bg-gray-800 dark:text-theme"
+                                                        className="mt-1 p-2 rounded w-full text-theme-purple text-sm" style={{ backgroundColor: 'var(--bg-card)' }}
                                                     />
                                                 </label>
                                                 <label className="block text-sm font-semibold text-white">
@@ -481,7 +481,7 @@ export default function KroegentochtPage() {
                                                         required
                                                         placeholder="Bijv. S"
                                                         maxLength={1}
-                                                        className="mt-1 p-2 rounded w-20 bg-white text-theme-purple text-sm uppercase dark:bg-gray-800 dark:text-theme"
+                                                        className="mt-1 p-2 rounded w-20 text-theme-purple text-sm uppercase" style={{ backgroundColor: 'var(--bg-card)' }}
                                                     />
                                                 </label>
                                             </div>
