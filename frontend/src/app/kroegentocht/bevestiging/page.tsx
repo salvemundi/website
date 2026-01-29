@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { CheckCircle, Home, XCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { useEffect, useState, Suspense, useRef } from 'react';
 import { pubCrawlSignupsApi, transactionsApi } from '@/shared/lib/api/salvemundi';
+import qrService from '@/shared/lib/qr-service';
 
 function KroegentochtConfirmationContent() {
     const router = useRouter();
@@ -93,6 +94,73 @@ function KroegentochtConfirmationContent() {
         checkStatus();
     }, [signupId, transactionId, retryCount]);
 
+    const downloadTicket = async (index: number, name: string, initial: string, qrToken: string) => {
+        try {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+
+            // Set dimensions
+            const width = 600;
+            const height = 800;
+            canvas.width = width;
+            canvas.height = height;
+
+            // Background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, width, height);
+
+            // Purple header band
+            ctx.fillStyle = '#7B2CBF';
+            ctx.fillRect(0, 0, width, 100);
+
+            // Title "TICKET X"
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 30px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(`TICKET ${index + 1}`, width / 2, 60);
+
+            // Event Name
+            ctx.fillStyle = '#333333';
+            ctx.font = '24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(signupData?.pub_crawl_event_id?.name || 'Kroegentocht', width / 2, 160);
+
+            // Participant Name
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 40px Arial';
+            ctx.fillText(`${name} ${initial}`, width / 2, 220);
+
+            // Generate QR Image
+            const qrDataUrl = await qrService.generateQRCode(qrToken);
+            const qrImg = new Image();
+            qrImg.crossOrigin = "anonymous";
+            qrImg.onload = () => {
+                // Draw QR
+                const qrSize = 400;
+                ctx.drawImage(qrImg, (width - qrSize) / 2, 280, qrSize, qrSize);
+
+                // Footer text
+                ctx.fillStyle = '#666666';
+                ctx.font = '20px Arial';
+                ctx.fillText('Scan bij ingang / Scan at entrance', width / 2, 720);
+
+                ctx.font = '16px Arial';
+                ctx.fillText('Salve Mundi', width / 2, 760);
+
+                // Trigger download
+                const link = document.createElement('a');
+                link.download = `Ticket-${index + 1}-${name.replace(/\s+/g, '-')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            };
+            qrImg.src = qrDataUrl;
+
+        } catch (e) {
+            console.error('Download ticket failed', e);
+        }
+    };
+
     const renderContent = () => {
         switch (status) {
             case 'loading':
@@ -142,7 +210,17 @@ function KroegentochtConfirmationContent() {
                                                 <QRDisplay qrToken={`${signupData.qr_token}#${index}`} size={180} />
                                             </div>
 
-                                            <p className="text-white/50 text-xs mt-3">Scan bij ingang</p>
+                                            <p className="text-white/50 text-xs mt-3 mb-4">Scan bij ingang</p>
+
+                                            <button
+                                                onClick={() => downloadTicket(index, p.name, p.initial, `${signupData.qr_token}#${index}`)}
+                                                className="bg-theme-purple hover:bg-theme-purple-dark text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                </svg>
+                                                Download
+                                            </button>
                                         </div>
                                     ))}
                                 </div>
