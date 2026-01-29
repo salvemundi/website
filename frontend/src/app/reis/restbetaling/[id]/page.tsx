@@ -130,7 +130,7 @@ export default function RestbetalingPage() {
         setSubmitting(true);
 
         try {
-            await updateTripSignup(signupId, {
+            const updateResult = await updateTripSignup(signupId, {
                 first_name: form.first_name,
                 middle_name: form.middle_name || undefined,
                 last_name: form.last_name,
@@ -141,6 +141,10 @@ export default function RestbetalingPage() {
                 allergies: form.allergies || undefined,
                 special_notes: form.special_notes || undefined,
             });
+
+            if (!updateResult.success) {
+                throw new Error(updateResult.error);
+            }
 
             setEditMode(false);
             await loadData(); // Reload to get updated data
