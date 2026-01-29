@@ -6,16 +6,31 @@ import { useAuth } from '@/features/auth/providers/auth-provider';
 import qrService from '@/shared/lib/qr-service';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
-import { Search, Camera, Download, RefreshCw, X, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Search, Camera, RefreshCw, X, CheckCircle, XCircle, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { format } from 'date-fns';
+
+interface FlatParticipant {
+    uniqueId: string; // signupId-index
+    signupId: number;
+    index: number;
+    name: string;
+    initial: string;
+    email: string;
+    association: string;
+    checkedIn: boolean;
+    checkedInAt: string | null;
+    ticketCount: number; // Total in group
+    _justToggled?: boolean;
+}
 
 export default function PubCrawlAttendancePage() {
     const params = useParams();
     const eventId = Number(params?.id);
     const { user } = useAuth();
     const [authorized, setAuthorized] = useState(false);
-    const [signups, setSignups] = useState<any[]>([]);
+    const [participants, setParticipants] = useState<FlatParticipant[]>([]);
+    const [rawSignups, setRawSignups] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
     const [eventTitle, setEventTitle] = useState<string | null>(null);
@@ -31,7 +46,43 @@ export default function PubCrawlAttendancePage() {
         setLoading(true);
         try {
             const list = await qrService.getPubCrawlSignupsWithCheckIn(eventId);
-            setSignups(list);
+            setRawSignups(list);
+
+            // Flatten signups to participants
+            const flat: FlatParticipant[] = [];
+            list.forEach((signup: any) => {
+                let parts: any[] = [];
+                try {
+                    parts = signup.name_initials ? JSON.parse(signup.name_initials) : [];
+                } catch (e) { parts = []; }
+
+                // Fallback for old records without JSON or empty JSON
+                if (parts.length === 0) {
+                    parts = Array.from({ length: signup.amount_tickets }).map((_, i) => ({
+                        name: i === 0 ? signup.name : `Deelnemer ${i + 1}`,
+                        initial: '',
+                        checked_in: !!signup.checked_in, // Legacy field fallback
+                        checked_in_at: signup.checked_in_at
+                    }));
+                }
+
+                parts.forEach((p, idx) => {
+                    flat.push({
+                        uniqueId: `${signup.id}-${idx}`,
+                        signupId: signup.id,
+                        index: idx,
+                        name: p.name,
+                        initial: p.initial,
+                        email: signup.email,
+                        association: signup.association,
+                        checkedIn: !!p.checked_in,
+                        checkedInAt: p.checked_in_at,
+                        ticketCount: signup.amount_tickets
+                    });
+                });
+            });
+            setParticipants(flat);
+
         } catch (err) {
             console.error(err);
             showMessage('Kon inschrijvingen niet laden', 'error');
@@ -55,9 +106,9 @@ export default function PubCrawlAttendancePage() {
         const loadTitle = async () => {
             try {
                 const { directusFetch } = await import('@/shared/lib/directus');
-                const data = await directusFetch(`/items/pub_crawl_events/${eventId}?fields=id,name,image`);
-                const title = (data as any)?.name || null;
-                const img = (data as any)?.image || null;
+                const data = await directusFetch<any>(`/items/pub_crawl_events/${eventId}?fields=id,name,image`);
+                const title = data?.name || null;
+                const img = data?.image || null;
                 const imageUrl = img ? getImageUrl(img) : null;
                 setEventTitle(title);
                 setEventImageUrl(imageUrl);
@@ -73,24 +124,73 @@ export default function PubCrawlAttendancePage() {
         setTimeout(() => setMessage(null), 3000);
     };
 
-    const toggleCheckIn = async (row: any) => {
-        const newCheckedIn = !row.checked_in;
+    const toggleCheckIn = async (participant: FlatParticipant) => {
         try {
+            const signup = rawSignups.find(s => s.id === participant.signupId);
+            if (!signup) return;
+
+            let participantsData = [];
+            try {
+                participantsData = signup.name_initials ? JSON.parse(signup.name_initials) : [];
+            } catch (e) { participantsData = []; }
+
+            // Construct data if missing (migration on the fly)
+            if (participantsData.length === 0) {
+                participantsData = Array.from({ length: signup.amount_tickets }).map((_, i) => ({
+                    name: i === 0 ? signup.name : `Deelnemer ${i + 1}`,
+                    initial: '',
+                    checked_in: !!signup.checked_in,
+                    checked_in_at: signup.checked_in_at
+                }));
+            }
+
+            // Update specific participant
+            const idx = participant.index;
+            if (idx >= participantsData.length) return; // Should not happen
+
+            const newStatus = !participantsData[idx].checked_in;
+            participantsData[idx].checked_in = newStatus;
+            participantsData[idx].checked_in_at = newStatus ? new Date().toISOString() : null;
+
+            // Also update legacy root field if ALL are checked in (optional, but keep consistent)
+            const allCheckedIn = participantsData.every((p: any) => p.checked_in);
+
             const { directusFetch } = await import('@/shared/lib/directus');
-            await directusFetch(`/items/pub_crawl_signups/${row.id}`, {
+            await directusFetch(`/items/pub_crawl_signups/${signup.id}`, {
                 method: 'PATCH',
                 body: JSON.stringify({
-                    checked_in: newCheckedIn,
-                    checked_in_at: newCheckedIn ? new Date().toISOString() : null
+                    name_initials: JSON.stringify(participantsData),
+                    checked_in: allCheckedIn, // Legacy update
+                    checked_in_at: allCheckedIn ? new Date().toISOString() : null
                 })
             });
-            setSignups(prev => prev.map(s => s.id === row.id ? { ...s, checked_in: newCheckedIn, checked_in_at: newCheckedIn ? new Date().toISOString() : null, _justToggled: true } : s));
-            showMessage(newCheckedIn ? 'Groep ingecheckt!' : 'Check-in ongedaan gemaakt', 'success');
 
-            // Remove visual indicator after a short delay
+            // Optimistic update
+            setParticipants(prev => prev.map(p =>
+                p.uniqueId === participant.uniqueId
+                    ? { ...p, checkedIn: newStatus, checkedInAt: participantsData[idx].checked_in_at, _justToggled: true }
+                    : p
+            ));
+
+            // Update raw signups to keep consistent for next toggles
+            setRawSignups(prev => prev.map(s =>
+                s.id === signup.id
+                    ? { ...s, name_initials: JSON.stringify(participantsData), checked_in: allCheckedIn }
+                    : s
+            ));
+
+            showMessage(newStatus ? 'Deelnemer ingecheckt!' : 'Check-in ongedaan gemaakt', 'success');
+
             setTimeout(() => {
-                setSignups(prev => prev.map(s => s.id === row.id ? (() => { const { _justToggled, ...rest } = s as any; return rest; })() : s));
+                setParticipants(prev => prev.map(p => {
+                    if (p.uniqueId === participant.uniqueId) {
+                        const { _justToggled, ...rest } = p;
+                        return rest;
+                    }
+                    return p;
+                }));
             }, 700);
+
         } catch (err) {
             console.error(err);
             showMessage('Fout bij het wijzigen van check-in status', 'error');
@@ -101,24 +201,21 @@ export default function PubCrawlAttendancePage() {
         if (!token.trim()) return;
         const res = await qrService.checkInPubCrawlParticipant(token);
 
-        const groupName = res.signup?.name || 'Groep';
-
         if (res.success) {
             setScanResult({
-                name: groupName,
+                name: res.signup?.name || 'Gast',
                 status: 'success',
                 message: res.message || 'Succesvol ingecheckt!'
             });
-            await load();
+            await load(); // Reload all data to refresh state
         } else {
             setScanResult({
-                name: groupName,
+                name: 'Unknown',
                 status: 'error',
                 message: res.message || 'Fout bij inchecken'
             });
         }
 
-        // Auto-hide popup after 3 seconds
         setTimeout(() => setScanResult(null), 3000);
     };
 
@@ -126,26 +223,17 @@ export default function PubCrawlAttendancePage() {
         try {
             setScannerError(null);
             setShowScanner(true);
-
-            // Dynamically import html5-qrcode
             const { Html5Qrcode } = await import('html5-qrcode');
 
             if (videoRef.current && !scannerRef.current) {
                 scannerRef.current = new Html5Qrcode('qr-reader');
-
                 await scannerRef.current.start(
                     { facingMode: 'environment' },
-                    {
-                        fps: 10,
-                        qrbox: { width: 250, height: 250 }
-                    },
+                    { fps: 10, qrbox: { width: 250, height: 250 } },
                     async (decodedText: string) => {
                         await handleScan(decodedText);
-                        // Don't stop scanner - keep it open for next scan
                     },
-                    (_errorMessage: string) => {
-                        // Ignore decode errors (normal when no QR in view)
-                    }
+                    (_errorMessage: string) => { }
                 );
             }
         } catch (err: any) {
@@ -175,33 +263,32 @@ export default function PubCrawlAttendancePage() {
         };
     }, []);
 
-    // Filter signups based on search
-    const filteredSignups = signups.filter(s => {
+    // Filter participants
+    const filteredParticipants = participants.filter(p => {
         if (!searchQuery.trim()) return true;
         const query = searchQuery.toLowerCase();
-        const name = s.name || '';
-        const email = s.email || '';
-        const association = s.association || '';
-        return name.toLowerCase().includes(query) || email.toLowerCase().includes(query) || association.toLowerCase().includes(query);
+        return (
+            p.name.toLowerCase().includes(query) ||
+            p.email.toLowerCase().includes(query) ||
+            p.association.toLowerCase().includes(query)
+        );
     });
 
     const stats = {
-        total: signups.length,
-        checkedIn: signups.filter(s => s.checked_in).length,
-        notCheckedIn: signups.filter(s => !s.checked_in).length,
-        totalTickets: signups.reduce((sum, s) => sum + (s.amount_tickets || 0), 0)
+        totalParticipants: participants.length,
+        checkedIn: participants.filter(p => p.checkedIn).length,
+        notCheckedIn: participants.filter(p => !p.checkedIn).length,
+        groups: rawSignups.length
     };
 
     const exportToExcel = () => {
-        const rows = filteredSignups.map((s, idx) => ({
-            'Groep': idx + 1,
-            'Naam': s.name || '-',
-            'Email': s.email || '-',
-            'Vereniging': s.association || '-',
-            'Tickets': s.amount_tickets || 0,
-            'Ingecheckt': s.checked_in ? 'Ja' : 'Nee',
-            'Ingecheckt op': s.checked_in_at ? new Date(s.checked_in_at).toLocaleString('nl-NL') : '-',
-            'Aangemeld op': s.created_at ? new Date(s.created_at).toLocaleString('nl-NL') : '-'
+        const rows = filteredParticipants.map((p) => ({
+            'Naam': `${p.name} ${p.initial}`,
+            'Email': p.email || '-',
+            'Vereniging': p.association || '-',
+            'Ticket Index': p.index + 1,
+            'Ingecheckt': p.checkedIn ? 'Ja' : 'Nee',
+            'Ingecheckt op': p.checkedInAt ? new Date(p.checkedInAt).toLocaleString('nl-NL') : '-'
         }));
 
         const ws = XLSX.utils.json_to_sheet(rows);
@@ -209,14 +296,12 @@ export default function PubCrawlAttendancePage() {
         XLSX.utils.book_append_sheet(wb, ws, 'Aanwezigheid');
 
         ws['!cols'] = [
-            { wch: 8 },  // Groep
             { wch: 25 }, // Naam
             { wch: 30 }, // Email
             { wch: 20 }, // Vereniging
-            { wch: 10 }, // Tickets
+            { wch: 10 }, // Index
             { wch: 12 }, // Ingecheckt
             { wch: 20 }, // Ingecheckt op
-            { wch: 20 }  // Aangemeld op
         ];
 
         const filename = `kroegentocht-aanwezigheid-${format(new Date(), 'yyyy-MM-dd-HHmm')}.xlsx`;
@@ -225,22 +310,16 @@ export default function PubCrawlAttendancePage() {
 
     if (!user) {
         return (
-            <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, var(--gradient-start), var(--gradient-end))' }}>
-                <div className="rounded-3xl shadow-xl p-8 max-w-md mx-4" style={{ backgroundColor: 'var(--bg-card)' }}>
-                    <h2 className="text-2xl font-bold text-theme-purple mb-4">Inloggen vereist</h2>
-                    <p style={{ color: 'var(--text-muted)' }}>Je moet ingelogd zijn om deze pagina te zien.</p>
-                </div>
+            <div className="min-h-screen flex items-center justify-center p-4">
+                <p>Inloggen vereist</p>
             </div>
         );
     }
 
     if (!authorized) {
         return (
-            <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, var(--gradient-start), var(--gradient-end))' }}>
-                <div className="rounded-3xl shadow-xl p-8 max-w-md mx-4" style={{ backgroundColor: 'var(--bg-card)' }}>
-                    <h2 className="text-2xl font-bold text-theme-purple mb-4">Geen toegang</h2>
-                    <p style={{ color: 'var(--text-muted)' }}>Je bent niet gemachtigd om aanwezigheden te beheren voor kroegentochten. Alleen commissieleden hebben toegang.</p>
-                </div>
+            <div className="min-h-screen flex items-center justify-center p-4">
+                <p>Geen toegang</p>
             </div>
         );
     }
@@ -253,351 +332,123 @@ export default function PubCrawlAttendancePage() {
             />
 
             <main className="mx-auto max-w-7xl px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
-                {/* Message Toast */}
                 {message && (
-                    <div className={`mb-6 p-4 rounded-xl shadow-lg flex items-center gap-3 ${message.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-                        }`}>
+                    <div className={`mb-6 p-4 rounded-xl shadow-lg flex items-center gap-3 ${message.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
                         {message.type === 'success' ? <CheckCircle className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
                         <span className="font-semibold">{message.text}</span>
                     </div>
                 )}
 
-                {/* Stats Cards - Mobile: 2 columns, Desktop: 4 columns */}
-                <div className="mb-6 md:mb-8">
-                    {/* Mobile: 2x2 grid */}
-                    <div className="grid grid-cols-2 gap-3 md:hidden">
-                        <div className="bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end rounded-2xl p-3 shadow-lg">
-                            <div className="flex items-center gap-2">
-                                <div className="h-8 w-8 rounded-xl bg-paars/10 flex items-center justify-center shrink-0">
-                                    <Clock className="h-4 w-4 text-theme-purple-dark" />
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-xs text-theme-purple-dark dark:text-white font-semibold truncate">Groepen</p>
-                                    <p className="text-xl font-bold text-theme-purple dark:text-white">{stats.total}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-2xl p-3 shadow-lg">
-                            <div className="flex items-center gap-2">
-                                <div className="h-8 w-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                                    <CheckCircle className="h-4 w-4 text-white" />
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-xs text-white/90 font-semibold truncate">Ingecheckt</p>
-                                    <p className="text-xl font-bold text-white">{stats.checkedIn}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl p-3 shadow-lg">
-                            <div className="flex items-center gap-2">
-                                <div className="h-8 w-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                                    <XCircle className="h-4 w-4 text-white" />
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-xs text-white/90 font-semibold truncate">Niet ingecheckt</p>
-                                    <p className="text-xl font-bold text-white">{stats.notCheckedIn}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl p-3 shadow-lg">
-                            <div className="flex items-center gap-2">
-                                <div className="h-8 w-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                                    <Clock className="h-4 w-4 text-white" />
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-xs text-white/90 font-semibold truncate">Totaal Tickets</p>
-                                    <p className="text-xl font-bold text-white">{stats.totalTickets}</p>
-                                </div>
-                            </div>
-                        </div>
+                {/* Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div className="bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end rounded-2xl p-4 shadow-lg text-white">
+                        <p className="text-sm font-semibold opacity-80">Deelnemers</p>
+                        <p className="text-2xl font-bold">{stats.totalParticipants}</p>
                     </div>
-
-                    {/* Desktop: 4 cards in a row */}
-                    <div className="hidden md:grid md:grid-cols-4 gap-4">
-                        <div className="bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end rounded-3xl p-6 shadow-lg">
-                            <div className="flex items-center gap-3">
-                                <div className="h-12 w-12 rounded-2xl bg-paars/10 flex items-center justify-center shrink-0">
-                                    <Clock className="h-6 w-6 text-theme-purple-dark" />
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-sm text-theme-purple-dark dark:text-white font-semibold truncate">Groepen</p>
-                                    <p className="text-3xl font-bold text-theme-purple dark:text-white">{stats.total}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-3xl p-6 shadow-lg">
-                            <div className="flex items-center gap-3">
-                                <div className="h-12 w-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
-                                    <CheckCircle className="h-6 w-6 text-white" />
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-sm text-white/90 font-semibold truncate">Ingecheckt</p>
-                                    <p className="text-3xl font-bold text-white">{stats.checkedIn}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-gradient-to-br from-orange-400 to-red-500 rounded-3xl p-6 shadow-lg">
-                            <div className="flex items-center gap-3">
-                                <div className="h-12 w-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
-                                    <XCircle className="h-6 w-6 text-white" />
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-sm text-white/90 font-semibold truncate">Niet ingecheckt</p>
-                                    <p className="text-3xl font-bold text-white">{stats.notCheckedIn}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-gradient-to-br from-purple-400 to-purple-600 rounded-3xl p-6 shadow-lg">
-                            <div className="flex items-center gap-3">
-                                <div className="h-12 w-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
-                                    <Clock className="h-6 w-6 text-white" />
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-sm text-white/90 font-semibold truncate">Totaal Tickets</p>
-                                    <p className="text-3xl font-bold text-white">{stats.totalTickets}</p>
-                                </div>
-                            </div>
-                        </div>
+                    <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-2xl p-4 shadow-lg text-white">
+                        <p className="text-sm font-semibold opacity-80">Ingecheckt</p>
+                        <p className="text-2xl font-bold">{stats.checkedIn}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl p-4 shadow-lg text-white">
+                        <p className="text-sm font-semibold opacity-80">Niet Ingecheckt</p>
+                        <p className="text-2xl font-bold">{stats.notCheckedIn}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl p-4 shadow-lg text-white">
+                        <p className="text-sm font-semibold opacity-80">Groepen</p>
+                        <p className="text-2xl font-bold">{stats.groups}</p>
                     </div>
                 </div>
 
-                {/* Action Buttons */}
+                {/* Actions */}
                 <div className="flex flex-wrap gap-3 mb-6">
-                    <button
-                        type="button"
-                        onClick={load}
-                        disabled={loading}
-                        className="inline-flex items-center gap-2 px-4 py-3 text-theme-purple font-semibold rounded-xl shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 disabled:opacity-50"
-                        style={{ backgroundColor: 'var(--bg-card)' }}
-                    >
-                        <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
-                        Ververs
+                    <button onClick={load} className="action-btn bg-white dark:bg-gray-800 text-theme-purple p-3 rounded-xl shadow font-semibold flex items-center gap-2">
+                        <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} /> Ververs
                     </button>
-
-                    <button
-                        type="button"
-                        onClick={exportToExcel}
-                        className="inline-flex items-center gap-2 px-4 py-3 text-theme-purple font-semibold rounded-xl shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
-                        style={{ backgroundColor: 'var(--bg-card)' }}
-                    >
-                        <Download className="h-5 w-5" />
-                        Exporteer Excel
+                    <button onClick={exportToExcel} className="action-btn bg-white dark:bg-gray-800 text-green-600 p-3 rounded-xl shadow font-semibold flex items-center gap-2">
+                        <Download className="h-5 w-5" /> Excel
                     </button>
-
-                    <button
-                        type="button"
-                        onClick={showScanner ? stopScanner : startScanner}
-                        className={`inline-flex items-center gap-2 px-4 py-3 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 ${showScanner ? 'bg-red-500 text-white' : 'bg-theme-purple text-white'
-                            }`}
-                    >
-                        {showScanner ? <X className="h-5 w-5" /> : <Camera className="h-5 w-5" />}
-                        {showScanner ? 'Sluit Scanner' : 'Open Camera'}
+                    <button onClick={showScanner ? stopScanner : startScanner} className={`action-btn p-3 rounded-xl shadow font-semibold flex items-center gap-2 text-white ${showScanner ? 'bg-red-500' : 'bg-theme-purple'}`}>
+                        {showScanner ? <X className="h-5 w-5" /> : <Camera className="h-5 w-5" />} {showScanner ? 'Sluit' : 'Camera'}
                     </button>
-                </div>
-
-                {/* Search Bar */}
-                <div className="mb-6 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg" style={{ backgroundColor: 'var(--bg-card)' }}>
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5" style={{ color: 'var(--text-muted)' }} />
-                        <input
-                            type="text"
-                            placeholder="Zoek op naam, email of vereniging..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 rounded-xl focus:ring-2 focus:ring-theme-purple focus:border-transparent"
-                            style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
-                        />
-                    </div>
                 </div>
 
                 {/* Scanner Error */}
                 {scannerError && (
-                    <div className="mb-6 p-4 bg-red-100 border border-red-300 text-red-700 rounded-xl">
+                    <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-xl">
                         <p className="font-semibold">Camera fout:</p>
                         <p>{scannerError}</p>
                     </div>
                 )}
 
-                {/* QR Scanner */}
+                {/* Scanner View */}
                 {showScanner && (
-                    <div className="mb-6 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg relative" style={{ backgroundColor: 'var(--bg-card)' }}>
-                        <h3 className="text-lg md:text-xl font-bold text-theme-purple mb-3 md:mb-4">Scan QR Code</h3>
-                        <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>Houd de QR code voor de camera. De scanner blijft actief voor meerdere scans.</p>
-
-                        <div className="relative">
-                            <div id="qr-reader" ref={videoRef} className="rounded-xl overflow-hidden max-w-md mx-auto"></div>
-
-                            {/* Scan Result Popup */}
-                            {scanResult && (
-                                <div className="absolute top-0 left-0 right-0 mx-4 mt-4 z-10 animate-in slide-in-from-top duration-300">
-                                    <div className={`p-4 rounded-xl shadow-2xl backdrop-blur-sm ${scanResult.status === 'success'
-                                        ? 'bg-green-500/95 text-white'
-                                        : 'bg-red-500/95 text-white'
-                                        }`}>
-                                        <div className="flex items-start gap-3">
-                                            {scanResult.status === 'success' ? (
-                                                <CheckCircle className="h-6 w-6 shrink-0 mt-0.5" />
-                                            ) : (
-                                                <XCircle className="h-6 w-6 shrink-0 mt-0.5" />
-                                            )}
-                                            <div className="flex-1 min-w-0">
-                                                <p className="font-bold text-lg mb-1">{scanResult.name}</p>
-                                                <p className="text-sm opacity-90">{scanResult.message}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        <p className="text-xs mt-4 text-center" style={{ color: 'var(--text-muted)' }}>
-                            💡 Tip: Houd je telefoon stabiel en zorg voor goede verlichting
-                        </p>
+                    <div className="mb-6 bg-white dark:bg-gray-800 p-4 rounded-xl shadow relative">
+                        <div id="qr-reader" ref={videoRef} className="rounded-xl overflow-hidden max-w-md mx-auto"></div>
+                        {scanResult && (
+                            <div className={`absolute top-4 left-4 right-4 p-4 rounded-xl text-white shadow-xl ${scanResult.status === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+                                <p className="font-bold text-lg">{scanResult.name}</p>
+                                <p>{scanResult.message}</p>
+                            </div>
+                        )}
                     </div>
                 )}
 
-                {/* Signups List - Desktop Table View */}
-                <div className="rounded-3xl shadow-lg overflow-hidden hidden md:block" style={{ backgroundColor: 'var(--bg-card)' }}>
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="bg-gradient-to-r from-theme-purple to-theme-purple-light text-white">
-                                <tr>
-                                    <th className="px-6 py-4 text-left text-sm font-bold uppercase">Groep</th>
-                                    <th className="px-6 py-4 text-left text-sm font-bold uppercase">Naam</th>
-                                    <th className="px-6 py-4 text-left text-sm font-bold uppercase">Email</th>
-                                    <th className="px-6 py-4 text-left text-sm font-bold uppercase">Vereniging</th>
-                                    <th className="px-6 py-4 text-center text-sm font-bold uppercase">Tickets</th>
-                                    <th className="px-6 py-4 text-center text-sm font-bold uppercase">Status</th>
-                                    <th className="px-6 py-4 text-center text-sm font-bold uppercase">Acties</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y" style={{ borderColor: 'var(--border-color)' }}>
-                                {loading ? (
-                                    <tr>
-                                        <td colSpan={7} className="px-6 py-12 text-center" style={{ color: 'var(--text-muted)' }}>
-                                            Laden...
-                                        </td>
-                                    </tr>
-                                ) : filteredSignups.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={7} className="px-6 py-12 text-center" style={{ color: 'var(--text-muted)' }}>
-                                            {searchQuery ? 'Geen resultaten gevonden' : 'Nog geen inschrijvingen'}
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    filteredSignups.map((s, idx) => (
-                                        <tr key={s.id} className="hover:bg-[var(--theme-admin-hover)]">
-                                            <td className="px-6 py-4 font-semibold" style={{ color: 'var(--text-main)' }}>
-                                                #{idx + 1}
-                                            </td>
-                                            <td className="px-6 py-4 font-medium" style={{ color: 'var(--text-main)' }}>
-                                                {s.name || '—'}
-                                            </td>
-                                            <td className="px-6 py-4" style={{ color: 'var(--text-muted)' }}>
-                                                {s.email || '—'}
-                                            </td>
-                                            <td className="px-6 py-4" style={{ color: 'var(--text-muted)' }}>
-                                                {s.association || '—'}
-                                            </td>
-                                            <td className="px-6 py-4 text-center font-semibold" style={{ color: 'var(--text-main)' }}>
-                                                {s.amount_tickets || 0}
-                                            </td>
-                                            <td className="px-6 py-4 text-center">
-                                                {s.checked_in ? (
-                                                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700 font-semibold text-sm">
-                                                        <CheckCircle className="h-4 w-4" />
-                                                        Ingecheckt
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-orange-100 text-orange-700 font-semibold text-sm">
-                                                        <Clock className="h-4 w-4" />
-                                                        Niet ingecheckt
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => toggleCheckIn(s)}
-                                                    className={`px-4 py-2 rounded-lg font-semibold transition-all transform transition-transform duration-150 ${s.checked_in
-                                                        ? 'bg-red-500 text-white hover:bg-red-600'
-                                                        : 'bg-green-500 text-white hover:bg-green-600'
-                                                        } ${s._justToggled ? 'scale-105 shadow-2xl' : ''}`}
-                                                >
-                                                    {s.checked_in ? 'Uitchecken' : 'Inchecken'}
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                {/* Search */}
+                <div className="mb-6 relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
+                        type="text"
+                        placeholder="Zoek op naam..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                    />
                 </div>
 
-                {/* Mobile Card View */}
-                <div className="md:hidden space-y-3">
-                    {loading ? (
-                        <div className="rounded-2xl p-6 text-center" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-muted)' }}>
-                            Laden...
-                        </div>
-                    ) : filteredSignups.length === 0 ? (
-                        <div className="rounded-2xl p-6 text-center" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-muted)' }}>
-                            {searchQuery ? 'Geen resultaten gevonden' : 'Nog geen inschrijvingen'}
-                        </div>
-                    ) : (
-                        filteredSignups.map((s, idx) => {
-                            return (
-                                <div key={s.id} className="rounded-2xl p-4 shadow-md" style={{ backgroundColor: 'var(--bg-card)' }}>
-                                    <div className="flex justify-between items-start mb-3">
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className="text-xs font-bold text-theme-purple bg-theme-purple/10 px-2 py-1 rounded">
-                                                    Groep #{idx + 1}
-                                                </span>
-                                                <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
-                                                    {s.amount_tickets} {s.amount_tickets === 1 ? 'ticket' : 'tickets'}
-                                                </span>
-                                            </div>
-                                            <h3 className="font-bold text-lg truncate" style={{ color: 'var(--text-main)' }}>{s.name || '—'}</h3>
-                                            <p className="text-sm truncate" style={{ color: 'var(--text-muted)' }}>{s.email || '—'}</p>
-                                            <p className="text-sm truncate" style={{ color: 'var(--text-muted)' }}>{s.association || '—'}</p>
-                                        </div>
+                {/* List */}
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden">
+                    <table className="w-full">
+                        <thead className="bg-theme-purple text-white">
+                            <tr>
+                                <th className="px-4 py-3 text-left">Naam</th>
+                                <th className="px-4 py-3 text-left hidden sm:table-cell">Ticket</th>
+                                <th className="px-4 py-3 text-center">Status</th>
+                                <th className="px-4 py-3 text-right">Actie</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                            {filteredParticipants.map(p => (
+                                <tr key={p.uniqueId} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                    <td className="px-4 py-3">
+                                        <p className="font-bold">{p.name} {p.initial}</p>
+                                        <p className="text-xs text-gray-500">{p.email}</p>
+                                    </td>
+                                    <td className="px-4 py-3 hidden sm:table-cell">
+                                        Ticket {p.index + 1}
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        {p.checkedIn ?
+                                            <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-bold">Ingecheckt</span> :
+                                            <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded-full text-xs font-bold">Nee</span>
+                                        }
+                                    </td>
+                                    <td className="px-4 py-3 text-right">
                                         <button
-                                            type="button"
-                                            onClick={() => toggleCheckIn(s)}
-                                            className={`shrink-0 px-4 py-2 rounded-lg font-semibold text-sm transition-all active:scale-95 transform duration-150 ${s.checked_in
-                                                ? 'bg-red-500 text-white'
-                                                : 'bg-green-500 text-white'
-                                                } ${s._justToggled ? 'scale-105 shadow-2xl' : ''}`}
+                                            onClick={() => toggleCheckIn(p)}
+                                            className={`px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-transform ${p.checkedIn ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} ${p._justToggled ? 'scale-110' : ''}`}
                                         >
-                                            {s.checked_in ? 'Uitchecken' : 'Inchecken'}
+                                            {p.checkedIn ? 'Uit' : 'In'}
                                         </button>
-                                    </div>
-                                    <div className="pt-3" style={{ borderTop: '1px solid var(--border-color)' }}>
-                                        <div className="flex gap-2">
-                                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${s.checked_in ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'}`}>
-                                                <CheckCircle className="h-3 w-3" />
-                                                Ingecheckt
-                                            </span>
-
-                                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${!s.checked_in ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'}`}>
-                                                <XCircle className="h-3 w-3" />
-                                                Niet ingecheckt
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })
-                    )}
+                                    </td>
+                                </tr>
+                            ))}
+                            {filteredParticipants.length === 0 && (
+                                <tr><td colSpan={4} className="p-8 text-center text-gray-500">Geen deelnemers gevonden</td></tr>
+                            )}
+                        </tbody>
+                    </table>
                 </div>
+
             </main>
         </div>
     );
