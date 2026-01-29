@@ -196,7 +196,7 @@ export async function POST(
 
         const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
         // Special case: login/auth/refresh should be allowed
-        const isAuthPath = path.startsWith('auth/') || path === 'users/me';
+        const isAuthPath = path.startsWith('auth/') || path === 'users/me' || path.includes('/auth/') || path.startsWith('directus-extension-');
 
         let canBypass = false;
         const authHeader = request.headers.get('Authorization');
