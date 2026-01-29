@@ -4,10 +4,14 @@ import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { pubCrawlSignupsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
+import { useAuth } from '@/features/auth/providers/auth-provider';
+import { directusFetch } from '@/shared/lib/directus';
+import qrService from '@/shared/lib/qr-service';
+import QRDisplay from '@/entities/activity/ui/QRDisplay';
 
 import { useSalvemundiPubCrawlEvents, useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { format } from 'date-fns';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Download } from 'lucide-react';
 
 const ASSOCIATIONS = [
     'Salve Mundi',
@@ -47,6 +51,81 @@ export default function KroegentochtPage() {
     const [error, setError] = useState<string | null>(null);
     const { data: pubCrawlEvents, isLoading: eventsLoading } = useSalvemundiPubCrawlEvents();
     const { data: siteSettings, isLoading: isSettingsLoading } = useSalvemundiSiteSettings('kroegentocht');
+
+    // Auth & Existing Tickets
+    const { user, isAuthenticated } = useAuth();
+    const [existingSignups, setExistingSignups] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchSignups = async () => {
+            if (isAuthenticated && user?.email) {
+                try {
+                    const signups = await directusFetch<any[]>(`/items/pub_crawl_signups?filter[email][_eq]=${encodeURIComponent(user.email)}&filter[payment_status][_eq]=paid&fields=*,pub_crawl_event_id.name&sort=-created_at`);
+                    setExistingSignups(signups || []);
+                } catch (e) {
+                    console.error('Failed to fetch existing kroegentocht signups', e);
+                }
+            }
+        };
+        fetchSignups();
+    }, [isAuthenticated, user?.email]);
+
+    const downloadTicket = async (index: number, name: string, initial: string, qrToken: string, eventName: string) => {
+        try {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+
+            const width = 600;
+            const height = 800;
+            canvas.width = width;
+            canvas.height = height;
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.fillStyle = '#7B2CBF';
+            ctx.fillRect(0, 0, width, 100);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 30px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(`TICKET ${index + 1}`, width / 2, 60);
+
+            ctx.fillStyle = '#333333';
+            ctx.font = '24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(eventName, width / 2, 160);
+
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 40px Arial';
+            ctx.fillText(`${name} ${initial}`, width / 2, 220);
+
+            const qrDataUrl = await qrService.generateQRCode(qrToken);
+            const qrImg = new Image();
+            qrImg.crossOrigin = "anonymous";
+            qrImg.onload = () => {
+                const qrSize = 400;
+                ctx.drawImage(qrImg, (width - qrSize) / 2, 280, qrSize, qrSize);
+
+                ctx.fillStyle = '#666666';
+                ctx.font = '20px Arial';
+                ctx.fillText('Scan bij de kroegentocht leiders', width / 2, 720);
+
+                ctx.font = '16px Arial';
+                ctx.fillText('Salve Mundi', width / 2, 760);
+
+                const link = document.createElement('a');
+                link.download = `Ticket-${index + 1}-${name.replace(/\s+/g, '-')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            };
+            qrImg.src = qrDataUrl;
+
+        } catch (e) {
+            console.error('Download ticket failed', e);
+        }
+    };
 
     const isKroegentochtEnabled = siteSettings?.show ?? true;
     const kroegentochtDisabledMessage = siteSettings?.disabled_message || 'De inschrijvingen voor de kroegentocht zijn momenteel gesloten.';
@@ -302,6 +381,53 @@ export default function KroegentochtPage() {
                     </section>
                 ) : (
                     <div className="mx-auto max-w-7xl px-4 py-8 sm:py-10 md:py-12">
+                        {/* Existing Tickets Section for Logged in Users */}
+                        {existingSignups.length > 0 && (
+                            <section className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-lg p-5 sm:p-6 md:p-8 mb-8">
+                                <h1 className="text-2xl sm:text-3xl font-bold text-theme-purple dark:text-white mb-2">
+                                    Jouw Tickets ({existingSignups.reduce((sum: number, s: any) => sum + (Number(s.amount_tickets) || 0), 0)})
+                                </h1>
+                                <p className="text-theme-text-muted dark:text-white/70 mb-6 max-w-3xl">
+                                    Je hebt al tickets voor de kroegentocht. Hieronder kun je ze downloaden. <br />
+                                    <strong>Let op:</strong> Iedere deelnemer heeft een eigen QR-code nodig. Stuur de tickets door naar je vrienden.
+                                    <br /><br />
+                                    Wil je <strong>extra tickets</strong> kopen? Vul dan het formulier hieronder in.
+                                </p>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                    {existingSignups.flatMap((signup) => {
+                                        const parts = signup.name_initials ? JSON.parse(signup.name_initials) : Array.from({ length: signup.amount_tickets }).map((_, i) => ({ name: `Deelnemer ${i + 1}`, initial: '' }));
+                                        return parts.map((p: any, index: number) => ({
+                                            ...p,
+                                            qrToken: `${signup.qr_token}#${index}`,
+                                            eventName: signup.pub_crawl_event_id?.name || 'Kroegentocht',
+                                            uniqueKey: `${signup.id}-${index}`
+                                        }));
+                                    }).map((ticket: any, i: number) => (
+                                        <div key={ticket.uniqueKey} className="bg-white/5 p-4 rounded-xl border border-white/10 flex flex-col items-center text-center">
+                                            <div className="bg-theme-purple text-white text-xs font-bold px-3 py-1 rounded-full mb-2">
+                                                TICKET {i + 1}
+                                            </div>
+                                            <h3 className="font-bold text-theme-purple dark:text-white text-lg mb-1">{ticket.name} {ticket.initial}</h3>
+                                            <p className="text-theme-text-muted dark:text-white/60 text-sm mb-4">{ticket.eventName}</p>
+
+                                            <div className="bg-white p-2 rounded-lg shadow-sm mb-4">
+                                                <QRDisplay qrToken={ticket.qrToken} size={150} />
+                                            </div>
+
+                                            <button
+                                                onClick={() => downloadTicket(i, ticket.name, ticket.initial, ticket.qrToken, ticket.eventName)}
+                                                className="bg-theme-purple/10 hover:bg-theme-purple/20 text-theme-purple dark:text-theme-purple-light px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 w-full justify-center"
+                                            >
+                                                <Download className="w-4 h-4" />
+                                                Download
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
                         <div className="flex flex-col lg:flex-row gap-8 items-start">
                             {/* Form Section */}
                             <section className="w-full lg:w-1/2 bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-lg p-5 sm:p-6 md:p-8">
