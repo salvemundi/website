@@ -78,9 +78,9 @@ export async function GET(
     console.warn(`[Directus Proxy] GET ${path} -> ${targetUrl}`);
 
     try {
-    const forwardHeaders: Record<string, string> = {};
-    const auth = request.headers.get('Authorization');
-    if (auth) forwardHeaders['Authorization'] = auth;
+        const forwardHeaders: Record<string, string> = {};
+        const auth = request.headers.get('Authorization');
+        if (auth) forwardHeaders['Authorization'] = auth;
 
         const contentType = request.headers.get('Content-Type');
         if (contentType) forwardHeaders['Content-Type'] = contentType;
@@ -186,6 +186,36 @@ export async function POST(
                 }
             }
         }
+
+        // Server-side Spam & Mandatory Field Guard for Signups
+        // This prevents bots from hitting the API directly and skipping frontend validation
+        if (path === 'items/event_signups' || path === 'items/pub_crawl_signups' || path === 'items/intro_signups') {
+            const signup = body || {};
+
+            // 1. Check for missing mandatory fields (common in API-only bots)
+            const name = signup.participant_name || signup.name || signup.first_name || '';
+            const email = signup.participant_email || signup.email || '';
+            const phone = signup.participant_phone || signup.phone_number || signup.phone || '';
+
+            if (!name || !email) {
+                console.error(`[Spam Guard] Rejected signup for ${path}: Missing name or email`);
+                return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+            }
+
+            // phone is mandatory for events and intro
+            if ((path === 'items/event_signups' || path === 'items/intro_signups') && !phone) {
+                console.error(`[Spam Guard] Rejected signup for ${path}: Missing phone number`);
+                return NextResponse.json({ error: 'Missing phone number' }, { status: 400 });
+            }
+
+            // 2. Content-based spam detection (URLs in name field)
+            const nameStr = String(name).toLowerCase();
+            if (nameStr.includes('http://') || nameStr.includes('https://') || nameStr.includes('www.')) {
+                console.error(`[Spam Guard] Rejected signup for ${path}: URL detected in name "${name}"`);
+                return NextResponse.json({ error: 'Invalid input (Spam detected)' }, { status: 400 });
+            }
+        }
+
 
         // Default to JSON content-type for POST when body is present
         forwardHeaders['Content-Type'] = 'application/json';
