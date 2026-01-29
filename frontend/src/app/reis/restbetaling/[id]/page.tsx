@@ -51,6 +51,7 @@ export default function RestbetalingPage() {
         phone_number: '',
         date_of_birth: '',
         id_document_type: '' as '' | 'passport' | 'id_card',
+        document_number: '',
         allergies: '',
         special_notes: '',
     });
@@ -108,6 +109,7 @@ export default function RestbetalingPage() {
                 phone_number: signupData.phone_number,
                 date_of_birth: signupData.date_of_birth || '',
                 id_document_type: (signupData.id_document_type || (signupData as any).id_document as 'passport' | 'id_card') || '',
+                document_number: signupData.document_number || '',
                 allergies: signupData.allergies || (signupData as any).alergies || '',
                 special_notes: signupData.special_notes || '',
             });
@@ -138,6 +140,7 @@ export default function RestbetalingPage() {
                 phone_number: form.phone_number,
                 date_of_birth: form.date_of_birth,
                 id_document_type: form.id_document_type || undefined,
+                document_number: form.document_number || undefined,
                 allergies: form.allergies || undefined,
                 special_notes: form.special_notes || undefined,
             });
@@ -400,6 +403,16 @@ export default function RestbetalingPage() {
                                         <option value="id_card">ID Kaart</option>
                                     </select>
                                 </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Document nummer</label>
+                                    <input
+                                        type="text"
+                                        name="document_number"
+                                        value={form.document_number || ''}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                    />
+                                </div>
                             </div>
 
                             <div>
@@ -474,6 +487,12 @@ export default function RestbetalingPage() {
                                 <p className="text-gray-500 mb-1">ID Type</p>
                                 <p className="font-semibold text-gray-900 dark:text-white">
                                     {form.id_document_type === 'passport' ? 'Paspoort' : form.id_document_type === 'id_card' ? 'ID Kaart' : '-'}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-gray-500 mb-1">Document nummer</p>
+                                <p className="font-semibold text-gray-900 dark:text-white">
+                                    {form.document_number || '-'}
                                 </p>
                             </div>
                             {form.allergies && (
