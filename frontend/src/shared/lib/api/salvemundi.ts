@@ -1147,6 +1147,7 @@ export interface TripSignup {
     date_of_birth?: string;
     id_document_type?: 'passport' | 'id_card';
     id_document?: 'passport' | 'id_card'; // Legacy/Typo support
+    document_number?: string;
     allergies?: string;
     alergies?: string; // Legacy/Typo support
     special_notes?: string;
