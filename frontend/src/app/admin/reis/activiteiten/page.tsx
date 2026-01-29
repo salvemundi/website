@@ -274,12 +274,11 @@ export default function ActiviteitenBeheerPage() {
                                     Prijs (€) *
                                 </label>
                                 <input
-                                    type="number"
-                                    step="0.01"
+                                    type="text"
                                     value={form.price}
                                     onChange={(e) => setForm({ ...form, price: e.target.value })}
                                     onBlur={(e) => {
-                                        const val = parseFloat(e.target.value);
+                                        const val = parseFloat(e.target.value.replace(',', '.'));
                                         setForm({ ...form, price: isNaN(val) ? 0 : val });
                                     }}
                                     className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
@@ -417,7 +416,7 @@ export default function ActiviteitenBeheerPage() {
                                             <div className="relative w-32">
                                                 <span className="absolute left-3 top-2 text-admin-muted">€</span>
                                                 <input
-                                                    type="number"
+                                                    type="text"
                                                     value={opt.price}
                                                     onChange={(e) => {
                                                         const newOpts = [...form.options];
@@ -426,7 +425,7 @@ export default function ActiviteitenBeheerPage() {
                                                     }}
                                                     onBlur={(e) => {
                                                         const newOpts = [...form.options];
-                                                        const val = parseFloat(e.target.value);
+                                                        const val = parseFloat(e.target.value.replace(',', '.'));
                                                         newOpts[idx] = { ...newOpts[idx], price: isNaN(val) ? 0 : val };
                                                         setForm({ ...form, options: newOpts });
                                                     }}
