@@ -179,11 +179,19 @@ export async function POST(
             'trip_activities',
             'site_settings',
             'boards',
+            'Board',
             'history',
             'attendance_officers',
             'whats_app_groups',
+            'whatsapp_groups',
             'transactions',
             'feedback',
+            'members',
+            'clubs',
+            'pub_crawl_events',
+            'jobs',
+            'safe_havens',
+            'documents',
         ];
 
         const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
@@ -201,12 +209,13 @@ export async function POST(
                     if (meResp.ok) {
                         const meJson = await meResp.json().catch(() => null);
                         const userId = meJson?.data?.id;
-                        const membershipsResp = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name&limit=-1`, { headers: { Authorization: authHeader } });
+                        const membershipsResp = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name,is_leader&limit=-1`, { headers: { Authorization: authHeader } });
                         const membershipsJson = await membershipsResp.json().catch(() => null);
                         const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
                         canBypass = memberships.some((m: any) => {
                             const name = (m?.committee_id?.name || '').toString().toLowerCase();
-                            return name === 'bestuur' || name === 'ict';
+                            const isLeader = m.is_leader === true;
+                            return name === 'bestuur' || name === 'ict' || name.includes('kandidaat') || isLeader;
                         });
                     }
                 } catch {
@@ -244,7 +253,8 @@ export async function POST(
 
                 const isPrivileged = memberships.some((m: any) => {
                     const name = (m?.committee_id?.name || '').toString().toLowerCase();
-                    return name === 'bestuur' || name === 'ict';
+                    const isLeader = m.is_leader === true;
+                    return name === 'bestuur' || name === 'ict' || name.includes('kandidaat') || isLeader;
                 });
 
                 if (!isPrivileged) {
@@ -373,10 +383,19 @@ export async function PATCH(
             'trips',
             'trip_activities',
             'boards',
+            'Board',
             'history',
             'attendance_officers',
             'whats_app_groups',
+            'whatsapp_groups',
             'transactions',
+            'feedback',
+            'members',
+            'clubs',
+            'pub_crawl_events',
+            'jobs',
+            'safe_havens',
+            'documents',
         ];
 
         const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
@@ -392,12 +411,13 @@ export async function PATCH(
                     if (meResp.ok) {
                         const meJson = await meResp.json().catch(() => null);
                         const userId = meJson?.data?.id;
-                        const membershipsResp = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name&limit=-1`, { headers: { Authorization: authHeader } });
+                        const membershipsResp = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name,is_leader&limit=-1`, { headers: { Authorization: authHeader } });
                         const membershipsJson = await membershipsResp.json().catch(() => null);
                         const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
                         canBypass = memberships.some((m: any) => {
                             const name = (m?.committee_id?.name || '').toString().toLowerCase();
-                            return name === 'bestuur' || name === 'ict';
+                            const isLeader = m.is_leader === true;
+                            return name === 'bestuur' || name === 'ict' || name.includes('kandidaat') || isLeader;
                         });
                     }
                 } catch {
@@ -430,13 +450,14 @@ export async function PATCH(
                 const userId = meJson?.data?.id;
 
                 // Get user's committees once
-                const membershipsResp = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.id,committee_id.name&limit=-1`, { headers: { Authorization: auth } });
+                const membershipsResp = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.id,committee_id.name,is_leader&limit=-1`, { headers: { Authorization: auth } });
                 const membershipsJson = await membershipsResp.json().catch(() => null);
                 const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
 
                 const isPrivileged = memberships.some((m: any) => {
                     const name = (m?.committee_id?.name || '').toString().toLowerCase();
-                    return name === 'bestuur' || name === 'ict';
+                    const isLeader = m.is_leader === true;
+                    return name === 'bestuur' || name === 'ict' || name.includes('kandidaat') || isLeader;
                 });
 
                 if (!isPrivileged) {
@@ -511,7 +532,8 @@ export async function PATCH(
                     const memberships2 = Array.isArray(privJson2?.data) ? privJson2.data : [];
                     const privileged2 = memberships2.some((m: any) => {
                         const name = (m?.committee_id?.name || '').toString().toLowerCase();
-                        return name === 'bestuur' || name === 'ict';
+                        const isLeader = m.is_leader === true;
+                        return name === 'bestuur' || name === 'ict' || name.includes('kandidaat') || isLeader;
                     });
                     if (!(isOfficer || isMember || privileged2)) {
                         return NextResponse.json({ error: 'Forbidden', message: 'Not authorized to edit signups for this event' }, { status: 403 });
@@ -577,8 +599,19 @@ export async function DELETE(
             'trips',
             'trip_activities',
             'boards',
+            'Board',
             'history',
             'attendance_officers',
+            'whats_app_groups',
+            'whatsapp_groups',
+            'transactions',
+            'feedback',
+            'members',
+            'clubs',
+            'pub_crawl_events',
+            'jobs',
+            'safe_havens',
+            'documents',
         ];
 
         const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
@@ -593,12 +626,13 @@ export async function DELETE(
                     if (meResp.ok) {
                         const meJson = await meResp.json().catch(() => null);
                         const userId = meJson?.data?.id;
-                        const membershipsResp = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name&limit=-1`, { headers: { Authorization: authHeader } });
+                        const membershipsResp = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name,is_leader&limit=-1`, { headers: { Authorization: authHeader } });
                         const membershipsJson = await membershipsResp.json().catch(() => null);
                         const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
                         canBypass = memberships.some((m: any) => {
                             const name = (m?.committee_id?.name || '').toString().toLowerCase();
-                            return name === 'bestuur' || name === 'ict';
+                            const isLeader = m.is_leader === true;
+                            return name === 'bestuur' || name === 'ict' || name.includes('kandidaat') || isLeader;
                         });
                     }
                 } catch {
