@@ -11,6 +11,7 @@ import {
     getImageUrl
 } from '@/shared/lib/api/salvemundi';
 import type { Trip, TripActivity, TripSignup } from '@/shared/lib/api/salvemundi';
+import { updateTripSignup } from '../../actions';
 
 import {
     CheckCircle2,
@@ -174,7 +175,8 @@ export default function AanbetalingPage() {
         setSubmitting(true);
         try {
             // Update signup with additional data
-            await tripSignupsApi.update(signupId, {
+            // Update signup with additional data using Server Action (admin permissions)
+            await updateTripSignup(signupId, {
                 first_name: form.first_name,
                 middle_name: form.middle_name || undefined,
                 last_name: form.last_name,

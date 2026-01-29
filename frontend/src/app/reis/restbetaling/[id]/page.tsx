@@ -11,6 +11,7 @@ import {
     getImageUrl
 } from '@/shared/lib/api/salvemundi';
 import type { Trip, TripActivity, TripSignup } from '@/shared/lib/api/salvemundi';
+import { updateTripSignup } from '../../actions';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import {
@@ -129,7 +130,7 @@ export default function RestbetalingPage() {
         setSubmitting(true);
 
         try {
-            await tripSignupsApi.update(signupId, {
+            await updateTripSignup(signupId, {
                 first_name: form.first_name,
                 middle_name: form.middle_name || undefined,
                 last_name: form.last_name,
