@@ -9,12 +9,41 @@ on:
       - 'arcane/**'
       - '.github/workflows/deploy-arcane.yml'
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: salvemundi/arcane
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set Environment Variables
+        run: |
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            echo "TAG=latest" >> $GITHUB_ENV
+          else
+            echo "TAG=dev" >> $GITHUB_ENV
+          fi
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./arcane
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
 
       - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.7
@@ -29,16 +58,17 @@ jobs:
       - name: Deploy on Server
         uses: appleboy/ssh-action@v1.0.3
         env:
-          GH_REGISTRY: ghcr.io
+          GH_REGISTRY: ${{ env.REGISTRY }}
           GH_USERNAME: ${{ github.actor }}
           GH_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ env.TAG }}
           ARCANE_ENCRYPTION_KEY: ${{ secrets.ARCANE_ENCRYPTION_KEY }}
           ARCANE_JWT_SECRET: ${{ secrets.ARCANE_JWT_SECRET }}
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,ARCANE_ENCRYPTION_KEY,ARCANE_JWT_SECRET
+          envs: GH_REGISTRY,GH_USERNAME,GH_PASSWORD,TAG,ARCANE_ENCRYPTION_KEY,ARCANE_JWT_SECRET
           script: |
             echo $GH_PASSWORD | docker login $GH_REGISTRY -u $GH_USERNAME --password-stdin
 
@@ -46,7 +76,8 @@ jobs:
             cd /opt/arcane
 
             # Generate .env safely
-            printf "ARCANE_ENCRYPTION_KEY=%s\n" "$ARCANE_ENCRYPTION_KEY" > .env
+            echo "TAG=$TAG" > .env
+            printf "ARCANE_ENCRYPTION_KEY=%s\n" "$ARCANE_ENCRYPTION_KEY" >> .env
             printf "ARCANE_JWT_SECRET=%s\n" "$ARCANE_JWT_SECRET" >> .env
 
             docker compose pull
