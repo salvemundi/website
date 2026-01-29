@@ -68,6 +68,18 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
         cardDetailsColor: isDarkMode ? 'rgba(255,255,255,0.8)' : '#475569',
     }), [isDarkMode]);
 
+    // Detect mobile for better timeline layout
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     // Helper to resolve member picture
     const resolvePicture = (m: any) => {
         const candidates = [
@@ -97,7 +109,7 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
         <div className="w-full [&_.timeline-card-content]:!max-h-none [&_.timeline-card-content]:!overflow-visible [&_.card-content-wrapper]:!max-h-none [&_.card-content-wrapper]:!overflow-visible [&_.card-description]:!line-clamp-none dark:[&_.timeline-card-content]:bg-[var(--bg-card)] dark:[&_.timeline-card-content]:!text-white dark:[&_.card-title]:!text-white dark:[&_.card-subtitle]:!text-white dark:[&_.card-description]:!text-white dark:[&_.title]:!text-white dark:[&_.timeline-card-title]:!text-white dark:[&_.timeline-title]:!text-white">
             <Chrono
                 items={items}
-                mode="VERTICAL_ALTERNATING"
+                mode={isMobile ? "VERTICAL" : "VERTICAL_ALTERNATING"}
                 slideShow={false}
                 scrollable={true}
                 theme={chronoTheme}
@@ -105,7 +117,8 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                 enableOutline={false}
                 // @ts-expect-error: disableAutoScrollOnClick does not exist in types yet
                 disableAutoScrollOnClick={true}
-
+                cardPositionHorizontal="TOP"
+                mediaHeight={200}
                 fontSizes={{
                     cardSubtitle: '0.875rem',
                     cardTitle: '1.25rem',
@@ -129,7 +142,7 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                                             : (getImageUrl ? getImageUrl(board.image, { width: 1200, height: 600 }) : '/img/group-jump.gif')
                                     }
                                     alt={board.naam}
-                                    className="w-full max-h-48 object-contain bg-center"
+                                    className="aspect-video w-full object-cover rounded-xl"
                                     loading="lazy"
                                     onError={(e) => {
                                         const t = e.target as HTMLImageElement;
@@ -147,10 +160,10 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                                     <span>Bestuursleden ({board.members.length})</span>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-3">
                                     {board.members.map((member: any) => {
                                         const avatarRef = resolvePicture(member);
-                                            let avatarSrc = '/img/placeholder.svg';
+                                        let avatarSrc = '/img/placeholder.svg';
                                         if (avatarRef) {
                                             if (typeof avatarRef === 'string' && (avatarRef.startsWith('http://') || avatarRef.startsWith('https://') || avatarRef.startsWith('/'))) {
                                                 avatarSrc = avatarRef;
