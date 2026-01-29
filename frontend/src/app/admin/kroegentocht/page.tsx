@@ -292,51 +292,43 @@ export default function KroegentochtAanmeldingenPage() {
                     {selectedEvent ? (
                         <>
                             {/* Stats Cards */}
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                                <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg p-6 text-white text-center sm:text-left">
-                                    <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2">
-                                        <div>
-                                            <p className="text-purple-100 text-sm font-medium mb-1">Inschrijvingen (Betaald)</p>
-                                            <p className="text-4xl font-bold">{stats.total}</p>
-                                        </div>
-                                        <Users className="h-12 w-12 text-white/30 hidden sm:block" />
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+                                <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 text-white">
+                                    <div className="flex flex-col items-center text-center">
+                                        <p className="text-purple-100 text-xs sm:text-sm font-medium mb-1">Inschrijvingen (Betaald)</p>
+                                        <p className="text-3xl sm:text-4xl font-bold">{stats.total}</p>
+                                        <Users className="h-8 w-8 sm:h-10 sm:w-10 text-white/30 mt-2" />
                                     </div>
                                 </div>
 
-                                <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl shadow-lg p-6 text-white text-center sm:text-left">
-                                    <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2">
-                                        <div>
-                                            <p className="text-orange-100 text-sm font-medium mb-1">Tickets (Betaald)</p>
-                                            <p className="text-4xl font-bold">{stats.totalTickets}</p>
-                                        </div>
-                                        <Beer className="h-12 w-12 text-white/30 hidden sm:block" />
+                                <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 text-white">
+                                    <div className="flex flex-col items-center text-center">
+                                        <p className="text-orange-100 text-xs sm:text-sm font-medium mb-1">Tickets (Betaald)</p>
+                                        <p className="text-3xl sm:text-4xl font-bold">{stats.totalTickets}</p>
+                                        <Beer className="h-8 w-8 sm:h-10 sm:w-10 text-white/30 mt-2" />
                                     </div>
                                 </div>
 
-                                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-6 text-white text-center sm:text-left">
-                                    <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2">
-                                        <div>
-                                            <p className="text-blue-100 text-sm font-medium mb-1">Verenigingen (Betaald)</p>
-                                            <p className="text-4xl font-bold">{stats.associations}</p>
-                                        </div>
-                                        <Users className="h-12 w-12 text-white/30 hidden sm:block" />
+                                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 text-white">
+                                    <div className="flex flex-col items-center text-center">
+                                        <p className="text-blue-100 text-xs sm:text-sm font-medium mb-1">Verenigingen (Betaald)</p>
+                                        <p className="text-3xl sm:text-4xl font-bold">{stats.associations}</p>
+                                        <Users className="h-8 w-8 sm:h-10 sm:w-10 text-white/30 mt-2" />
                                     </div>
                                 </div>
 
-                                <div className="bg-admin-card-soft border-2 border-dashed border-admin rounded-2xl p-6 text-admin-muted text-center sm:text-left">
-                                    <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2">
-                                        <div>
-                                            <p className="text-sm font-medium mb-1">Onbetaald / Open</p>
-                                            <p className="text-4xl font-bold">{stats.failedCount}</p>
-                                        </div>
-                                        <AlertCircle className="h-12 w-12 text-admin-muted/30 hidden sm:block" />
+                                <div className="bg-admin-card-soft border-2 border-dashed border-admin rounded-xl sm:rounded-2xl p-4 sm:p-6 text-admin-muted">
+                                    <div className="flex flex-col items-center text-center">
+                                        <p className="text-xs sm:text-sm font-medium mb-1">Onbetaald / Open</p>
+                                        <p className="text-3xl sm:text-4xl font-bold">{stats.failedCount}</p>
+                                        <AlertCircle className="h-8 w-8 sm:h-10 sm:w-10 text-admin-muted/30 mt-2" />
                                     </div>
                                 </div>
                             </div>
 
                             {/* Search and Export */}
-                            <div className="bg-admin-card rounded-2xl shadow-lg p-6 mb-6">
-                                <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
+                            <div className="bg-admin-card rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 mb-6">
+                                <div className="flex flex-col gap-4">
                                     <div className="relative flex-1 w-full lg:max-w-md">
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-admin-muted" />
                                         <input
@@ -348,11 +340,11 @@ export default function KroegentochtAanmeldingenPage() {
                                         />
                                     </div>
 
-                                    <div className="flex flex-wrap items-center justify-center gap-4 w-full lg:w-auto">
+                                    <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 w-full">
                                         {/* Toggle button for showing all signups */}
                                         <button
                                             onClick={() => setShowAllSignups(!showAllSignups)}
-                                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition whitespace-nowrap border-2 ${showAllSignups
+                                            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-bold transition border-2 w-full sm:w-auto ${showAllSignups
                                                 ? 'bg-amber-100 border-amber-300 text-amber-700 dark:bg-amber-900/30 dark:border-amber-700 dark:text-amber-300'
                                                 : 'bg-admin-card-soft border-admin text-admin-muted hover:border-theme-purple'
                                                 }`}
@@ -362,7 +354,7 @@ export default function KroegentochtAanmeldingenPage() {
                                         </button>
 
                                         {/* Visibility toggle for Kroegentocht (ICT/admin only) */}
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
                                             <label className="text-sm font-medium">Kroegentocht zichtbaar</label>
                                             <button
                                                 onClick={async () => {
@@ -384,16 +376,14 @@ export default function KroegentochtAanmeldingenPage() {
 
                                         <button
                                             onClick={exportToExcel}
-                                            className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition whitespace-nowrap"
-                                        >
+                                            className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition w-full sm:w-auto">
                                             <Download className="h-5 w-5" />
                                             Export (Gefilterd)
                                         </button>
                                         {authorizedForAttendance && selectedEvent && (
                                             <button
                                                 onClick={() => router.push(`/kroegentocht/${selectedEvent.id}/attendance`)}
-                                                className="flex items-center gap-2 px-4 py-2 bg-theme-purple text-white font-bold rounded-lg transition whitespace-nowrap"
-                                            >
+                                                className="flex items-center justify-center gap-2 px-4 py-2 bg-theme-purple text-white font-bold rounded-lg transition w-full sm:w-auto">
                                                 Aanwezigheid Beheren
                                             </button>
                                         )}
@@ -407,22 +397,22 @@ export default function KroegentochtAanmeldingenPage() {
                                     <table className="w-full">
                                         <thead className="bg-admin-card-soft">
                                             <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
+                                                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
                                                     Naam
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider text-center">
+                                                <th className="px-3 sm:px-6 py-3 text-center text-xs font-medium text-admin-muted uppercase tracking-wider">
                                                     Tickets
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
+                                                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider hidden sm:table-cell">
                                                     Betaalstatus
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
+                                                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider hidden md:table-cell">
                                                     Email & Vereniging
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
+                                                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider hidden lg:table-cell">
                                                     Aangemeld op
                                                 </th>
-                                                <th className="px-6 py-3 text-right text-xs font-medium text-admin-muted uppercase tracking-wider">
+                                                <th className="px-2 sm:px-6 py-3 text-right text-xs font-medium text-admin-muted uppercase tracking-wider">
                                                     Acties
                                                 </th>
                                             </tr>
@@ -440,8 +430,8 @@ export default function KroegentochtAanmeldingenPage() {
                                                     const participants = parseParticipants(signup.name_initials);
                                                     return (
                                                         <tr key={signup.id} className="hover:bg-admin-hover">
-                                                            <td className="px-6 py-4">
-                                                                <div className="font-bold text-admin">
+                                                            <td className="px-3 sm:px-6 py-3 sm:py-4">
+                                                                <div className="font-bold text-admin text-xs sm:text-sm">
                                                                     {signup.name}
                                                                 </div>
                                                                 {participants.length > 0 && (
@@ -454,12 +444,12 @@ export default function KroegentochtAanmeldingenPage() {
                                                                     </div>
                                                                 )}
                                                             </td>
-                                                            <td className="px-6 py-4 text-center">
-                                                                <span className="inline-flex items-center justify-center w-8 h-8 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-bold">
+                                                            <td className="px-3 sm:px-6 py-3 sm:py-4 text-center">
+                                                                <span className="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs sm:text-sm font-bold">
                                                                     {signup.amount_tickets}
                                                                 </span>
                                                             </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                            <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap hidden sm:table-cell">
                                                                 <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${signup.payment_status === 'paid'
                                                                     ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                                                                     : signup.payment_status === 'open'
@@ -469,7 +459,7 @@ export default function KroegentochtAanmeldingenPage() {
                                                                     {signup.payment_status === 'paid' ? 'Betaald' : signup.payment_status === 'open' ? 'Open' : signup.payment_status || 'Fout'}
                                                                 </span>
                                                             </td>
-                                                            <td className="px-6 py-4">
+                                                            <td className="px-3 sm:px-6 py-3 sm:py-4 hidden md:table-cell">
                                                                 <div className="text-sm">
                                                                     <a href={`mailto:${signup.email}`} className="text-theme-purple hover:underline font-medium block">
                                                                         {signup.email}
@@ -479,27 +469,27 @@ export default function KroegentochtAanmeldingenPage() {
                                                                     </div>
                                                                 </div>
                                                             </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-admin-muted">
+                                                            <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-admin-muted hidden lg:table-cell">
                                                                 {format(new Date(signup.created_at), 'd MMM HH:mm', { locale: nl })}
                                                             </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-right">
-                                                                <div className="inline-flex items-center space-x-2">
+                                                            <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right">
+                                                                <div className="inline-flex items-center gap-1 sm:gap-2">
                                                                     {canEdit && (
                                                                         <>
                                                                             <button
                                                                                 onClick={() => router.push(`/admin/kroegentocht/deelnemer/${signup.id}`)}
-                                                                                className="text-admin-muted hover:text-admin p-2 rounded-lg hover:bg-admin-hover transition-colors"
+                                                                                className="text-admin-muted hover:text-admin p-1 sm:p-2 rounded-lg hover:bg-admin-hover transition-colors"
                                                                                 title="Bewerk inschrijving"
                                                                             >
-                                                                                <Edit className="h-5 w-5" />
+                                                                                <Edit className="h-4 w-4 sm:h-5 sm:w-5" />
                                                                             </button>
 
                                                                             <button
                                                                                 onClick={() => handleDelete(signup.id)}
-                                                                                className="text-red-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                                                                className="text-red-400 hover:text-red-600 p-1 sm:p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                                                                 title="Verwijder inschrijving"
                                                                             >
-                                                                                <Trash2 className="h-5 w-5" />
+                                                                                <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
                                                                             </button>
                                                                         </>
                                                                     )}

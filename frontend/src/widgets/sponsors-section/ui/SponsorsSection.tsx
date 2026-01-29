@@ -26,7 +26,6 @@ export default function SponsorsSection() {
                 }
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to load sponsors');
-                console.error('Error fetching sponsors:', err);
             } finally {
                 setLoading(false);
             }
@@ -34,6 +33,11 @@ export default function SponsorsSection() {
 
         fetchSponsors();
     }, []);
+
+    // Sponsors state updates (no debug logging)
+    useEffect(() => {
+        // Intentionally left blank for future side-effects
+    }, [sponsors]);
 
     if (loading) {
         return (
@@ -100,32 +104,50 @@ export default function SponsorsSection() {
 
             <div className="sponsors-scroll-container">
                 <div className="sponsors-scroll-track">
-                    {duplicatedSponsors.map((sponsor, index) => (
-                        <a
-                            key={`${sponsor.id}-${index}`}
-                            href={sponsor.website_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="sponsor-item"
-                        >
-                            {(() => {
-                                const imageId = typeof sponsor.image === 'string'
-                                    ? sponsor.image
-                                    : sponsor.image && typeof sponsor.image === 'object'
-                                        ? sponsor.image.id
-                                        : null;
-                                const src = imageId ? `/api/assets/${imageId}` : '/img/placeholder.png';
-                                return (
-                                    <img
-                                        src={src}
-                                        alt={sponsor.website_url || 'Sponsor'}
-                                        className="sponsor-logo"
-                                        loading="lazy"
-                                    />
-                                );
-                            })()}
-                        </a>
-                    ))}
+                    {duplicatedSponsors.map((sponsor, index) => {
+                        // Normalize id (Directus may return `sponsor_id`)
+                        const sponsorKey = (sponsor as any).id ?? (sponsor as any).sponsor_id ?? index;
+
+                        // Coerce any DB value to boolean (accept 1/"1"/true/"true")
+                        const parseBool = (v: any) => {
+                            if (v === true || v === 1) return true;
+                            if (typeof v === 'string') {
+                                const s = v.trim().toLowerCase();
+                                return s === '1' || s === 'true' || s === 'yes' || s === 'y';
+                            }
+                            return false;
+                        };
+
+                        const forcedDark = parseBool((sponsor as any).dark_bg) || parseBool((sponsor as any).dark_Bg) || false;
+
+                        // Decision computed for per-sponsor background (no debug logging)
+
+                        const imageId = typeof sponsor.image === 'string'
+                            ? sponsor.image
+                            : sponsor.image && typeof sponsor.image === 'object'
+                                ? sponsor.image.id
+                                : null;
+                        const src = imageId ? `/api/assets/${imageId}` : '/img/placeholder.png';
+
+                        const cls = 'sponsor-item ' + (forcedDark ? 'sponsor-dark-bg' : 'sponsor-light-bg');
+
+                        return (
+                            <a
+                                key={`${sponsorKey}-${index}`}
+                                href={sponsor.website_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={cls}
+                            >
+                                <img
+                                    src={src}
+                                    alt={sponsor.website_url || 'Sponsor'}
+                                    className="sponsor-logo"
+                                    loading="lazy"
+                                />
+                            </a>
+                        );
+                    })}
                 </div>
             </div>
         </section>

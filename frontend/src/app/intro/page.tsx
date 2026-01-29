@@ -6,8 +6,12 @@ import { introSignupsApi, introParentSignupsApi } from '@/shared/lib/api/salvemu
 import { sendIntroSignupEmail } from '@/shared/lib/services/email-service';
 import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import { isValidPhoneNumber } from '@/shared/lib/phone';
+import { PhoneNumberInput, isValidPhoneNumber } from '@/shared/components/PhoneNumberInput';
 import { Users, Heart, CheckCircle2 } from 'lucide-react';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
+import { nl } from 'date-fns/locale';
+import { format } from 'date-fns';
 
 export default function IntroPage() {
   const { isAuthenticated, user } = useAuth();
@@ -16,7 +20,7 @@ export default function IntroPage() {
     voornaam: '',
     tussenvoegsel: '',
     achternaam: '',
-    geboortedatum: '',
+    geboortedatum: null as Date | null,
     email: '',
     telefoonnummer: user?.phone_number || '',
     favorieteGif: '',
@@ -122,7 +126,7 @@ export default function IntroPage() {
           first_name: form.voornaam,
           middle_name: form.tussenvoegsel || undefined,
           last_name: form.achternaam,
-          date_of_birth: form.geboortedatum,
+          date_of_birth: (form.geboortedatum ? format(form.geboortedatum, 'yyyy-MM-dd') : '') as any,
           email: form.email,
           phone_number: form.telefoonnummer,
           favorite_gif: form.favorieteGif || undefined,
@@ -133,7 +137,7 @@ export default function IntroPage() {
           participantFirstName: form.voornaam,
           participantLastName: form.achternaam,
           phoneNumber: form.telefoonnummer,
-          dateOfBirth: form.geboortedatum || undefined,
+          dateOfBirth: (form.geboortedatum ? format(form.geboortedatum, 'yyyy-MM-dd') : undefined) as any,
           favoriteGif: form.favorieteGif || undefined,
         }).catch(() => { });
       }
@@ -271,10 +275,10 @@ export default function IntroPage() {
                           <p className="text-theme-text-muted dark:text-theme-text-muted">Bedankt! Je inschrijving is ontvangen. Als je iets wilt aanpassen, neem contact op met de intro commissie.</p>
                         </div>
                       ) : (
-                        <form onSubmit={handleSubmit} className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4">
+                        <form onSubmit={handleSubmit} className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4">
                           <div className="flex items-center gap-2 mb-4">
-                            <Heart className="w-5 h-5 lg:w-6 lg:h-6 text-theme-purple dark:text-white" />
-                            <h3 className="text-xl lg:text-2xl font-bold text-theme-purple dark:text-theme-white">Word Intro Ouder!</h3>
+                            <Heart className="w-5 h-5 lg:w-6 lg:h-6 text-theme-purple" />
+                            <h3 className="text-xl lg:text-2xl font-bold text-theme-purple">Word Intro Ouder!</h3>
                           </div>
                           <div className="bg-white/10 rounded-lg p-3 lg:p-4 mb-4">
                             <p className="text-white text-xs lg:text-sm">
@@ -284,126 +288,128 @@ export default function IntroPage() {
                             </p>
                           </div>
                           <div>
-                            <label className="block font-semibold text-theme-white mb-2 text-sm lg:text-base">Telefoonnummer</label>
-                            <input
-                              type="tel"
-                              name="telefoonnummer"
+                            <label className="form-label">Telefoonnummer</label>
+                            <PhoneNumberInput
                               value={form.telefoonnummer}
-                              onChange={handleChange}
+                              onChange={(val) => handleChange({ target: { name: 'telefoonnummer', value: val || '' } } as any)}
                               required
-                              className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                              error={phoneError || undefined}
                             />
                             {phoneError && <p className="text-red-200 text-xs lg:text-sm mt-1">{phoneError}</p>}
                           </div>
                           <div>
-                            <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Motivatie *</label>
+                            <label className="form-label">Motivatie *</label>
                             <textarea
                               name="motivation"
                               value={(parentForm as any).motivation}
                               onChange={handleParentChange}
                               required
                               rows={4}
-                              className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                              className="form-input"
                             />
                           </div>
                           {error && <p className="text-red-200 text-xs lg:text-sm">{error}</p>}
                           <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full bg-theme-purple-lighter text-theme-purple-darker font-bold py-3 px-6 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm lg:text-base"
+                            className="form-button"
                           >
                             {isSubmitting ? 'Bezig...' : 'Meld je aan als Introouder'}
                           </button>
                         </form>
                       )
                     ) : (
-                      <form onSubmit={handleSubmit} className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4">
+                      <form onSubmit={handleSubmit} className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4">
                         <div className="flex items-center gap-2 mb-4">
-                          <Users className="w-5 h-5 lg:w-6 lg:h-6 text-theme-purple dark:text-white" />
-                          <h3 className="text-xl lg:text-2xl font-bold text-theme-purple dark:text-white">Meld je aan!</h3>
+                          <Users className="w-5 h-5 lg:w-6 lg:h-6 text-theme-purple" />
+                          <h3 className="text-xl lg:text-2xl font-bold text-theme-purple">Meld je aan!</h3>
                         </div>
                         <div>
-                          <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Voornaam *</label>
+                          <label className="form-label">Voornaam *</label>
                           <input
                             type="text"
                             name="voornaam"
                             value={form.voornaam}
                             onChange={handleChange}
                             required
-                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                            className="form-input"
                           />
                         </div>
                         <div>
-                          <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Tussenvoegsel</label>
+                          <label className="form-label">Tussenvoegsel</label>
                           <input
                             type="text"
                             name="tussenvoegsel"
                             value={form.tussenvoegsel}
                             onChange={handleChange}
-                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                            className="form-input"
                           />
                         </div>
                         <div>
-                          <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Achternaam *</label>
+                          <label className="form-label">Achternaam *</label>
                           <input
                             type="text"
                             name="achternaam"
                             value={form.achternaam}
                             onChange={handleChange}
                             required
-                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                            className="form-input"
                           />
                         </div>
                         <div>
-                          <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Geboortedatum *</label>
-                          <input
-                            type="date"
-                            name="geboortedatum"
-                            value={form.geboortedatum}
-                            onChange={handleChange}
-                            required
-                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
-                          />
+                          <label className="form-label">Geboortedatum *</label>
+                          <div className="w-full">
+                            <DatePicker
+                              selected={form.geboortedatum}
+                              onChange={(date) => setForm(prev => ({ ...prev, geboortedatum: date }))}
+                              dateFormat="dd-MM-yyyy"
+                              locale={nl}
+                              className="form-input"
+                              placeholderText="Selecteer datum"
+                              showYearDropdown
+                              scrollableYearDropdown
+                              yearDropdownItemNumber={100}
+                              required
+                            />
+                          </div>
                         </div>
                         <div>
-                          <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Email *</label>
+                          <label className="form-label">Email *</label>
                           <input
                             type="email"
                             name="email"
                             value={form.email}
                             onChange={handleChange}
                             required
-                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                            className="form-input"
                           />
                         </div>
                         <div>
-                          <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Telefoonnummer *</label>
-                          <input
-                            type="tel"
-                            name="telefoonnummer"
+                          <label className="form-label">Telefoonnummer *</label>
+                          <PhoneNumberInput
                             value={form.telefoonnummer}
-                            onChange={handleChange}
+                            onChange={(val) => handleChange({ target: { name: 'telefoonnummer', value: val || '' } } as any)}
                             required
-                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                            error={phoneError || undefined}
                           />
                           {phoneError && <p className="text-red-200 text-xs lg:text-sm mt-1">{phoneError}</p>}
                         </div>
                         <div>
-                          <label className="block font-semibold text-theme-purple dark:text-theme-white mb-2 text-sm lg:text-base">Favoriete GIF URL (optioneel)</label>
+                          <label className="form-label">Favoriete GIF URL (optioneel)</label>
                           <input
                             type="url"
                             name="favorieteGif"
                             value={form.favorieteGif}
                             onChange={handleChange}
                             placeholder="https://..."
-                            className="w-full p-2.5 lg:p-3 bg-theme-white text-theme-purple rounded-lg text-sm lg:text-base"
+                            className="form-input"
                           />
                         </div>
                         {error && <p className="text-red-200 text-xs lg:text-sm">{error}</p>}
                         <button
                           type="submit"
                           disabled={isSubmitting}
-                          className="w-full bg-theme-purple-lighter text-theme-purple-darker font-bold py-3 px-6 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm lg:text-base"
+                          className="form-button"
                         >
                           {isSubmitting ? 'Bezig...' : 'Verstuur'}
                         </button>

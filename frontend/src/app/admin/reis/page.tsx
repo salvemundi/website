@@ -9,7 +9,7 @@ import { isUserAuthorizedForReis } from '@/shared/lib/committee-utils';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { siteSettingsMutations } from '@/shared/lib/api/salvemundi';
 import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
-import { Search, Download, Users, Plane, Mail, Edit, Trash2, Loader2, AlertCircle, UserCheck, UserX, Send } from 'lucide-react';
+import { Search, Download, Users, Plane, Edit, Trash2, Loader2, AlertCircle, UserCheck, UserX, Send } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
@@ -19,12 +19,15 @@ interface Trip {
     id: number;
     name: string;
     event_date: string;
+    start_date?: string;
+    end_date?: string;
     registration_open: boolean;
     max_participants: number;
     base_price: number;
     crew_discount: number;
     deposit_amount: number;
     is_bus_trip: boolean;
+    allow_final_payments?: boolean;
 }
 
 interface TripSignup {
@@ -45,6 +48,8 @@ interface TripSignup {
     deposit_paid_at: string | null;
     full_payment_paid: boolean;
     full_payment_paid_at: string | null;
+    deposit_email_sent?: boolean;
+    final_email_sent?: boolean;
     created_at: string;
 }
 
@@ -90,7 +95,7 @@ export default function ReisAanmeldingenPage() {
         setIsLoading(true);
         try {
             const tripsData = await directusFetch<Trip[]>(
-                '/items/trips?fields=id,name,event_date,registration_open,max_participants,base_price,crew_discount,deposit_amount,is_bus_trip&sort=-event_date'
+                '/items/trips?fields=id,name,event_date,start_date,end_date,registration_open,max_participants,base_price,crew_discount,deposit_amount,is_bus_trip,allow_final_payments&sort=-event_date'
             );
             setTrips(tripsData);
 
@@ -266,6 +271,12 @@ export default function ReisAanmeldingenPage() {
             }
 
             alert(`${paymentType === 'deposit' ? 'Aanbetaling' : 'Restbetaling'}sverzoek is succesvol verzonden naar ${signup.email}`);
+
+            // Update local state to reflect email sent
+            setSignups(prev => prev.map(s => s.id === signupId ? {
+                ...s,
+                [paymentType === 'deposit' ? 'deposit_email_sent' : 'final_email_sent']: true
+            } : s));
         } catch (error: any) {
             console.error('Failed to send payment email:', error);
             alert(`Er is een fout opgetreden bij het verzenden van de email: ${error.message}`);
@@ -275,8 +286,16 @@ export default function ReisAanmeldingenPage() {
     };
 
     const handleStatusChange = async (id: number, newStatus: string) => {
+        const signup = signups.find(s => s.id === id);
+
+        // Confirmation for sending email when switching to confirmed without payment
+        if (signup && newStatus === 'confirmed' && !signup.deposit_paid) {
+            if (!confirm(`Let op: Door de status naar 'Bevestigd' te wijzigen, wordt er automatisch een e-mail met het aanbetalingsverzoek naar ${signup.first_name} gestuurd.\n\nWeet je zeker dat je door wilt gaan?`)) {
+                return;
+            }
+        }
+
         try {
-            const signup = signups.find(s => s.id === id);
             const oldStatus = signup?.status;
 
             await directusFetch(`/items/trip_signups/${id}`, {
@@ -289,7 +308,8 @@ export default function ReisAanmeldingenPage() {
             // Send email notification to participant
             if (signup && selectedTrip && oldStatus !== newStatus) {
                 try {
-                    await fetch('https://api.salvemundi.nl/trip-email/status-update', {
+                    // Always send status update email
+                    await fetch('/api/trip-email/status-update', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -299,8 +319,24 @@ export default function ReisAanmeldingenPage() {
                             oldStatus
                         })
                     });
+
+                    // If changed to confirmed, ALSO send the deposit payment request
+                    if (newStatus === 'confirmed' && !signup.deposit_paid) {
+                        console.log('[handleStatusChange] Auto-triggering deposit payment request email');
+                        await fetch('/api/trip-email/payment-request', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                signupId: id,
+                                tripId: selectedTrip.id,
+                                paymentType: 'deposit'
+                            })
+                        });
+                        // Update local state to reflect email sent
+                        setSignups(prev => prev.map(s => s.id === id ? { ...s, deposit_email_sent: true } : s));
+                    }
                 } catch (emailErr) {
-                    console.warn('Failed to send status update email:', emailErr);
+                    console.warn('Failed to send status update or payment request email:', emailErr);
                 }
             }
         } catch (error) {
@@ -365,7 +401,7 @@ export default function ReisAanmeldingenPage() {
             <div className="container mx-auto px-4 py-8 max-w-6xl">
                 {/* Trip Selection */}
                 <div className="mb-6">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-admin-muted mb-2">
                         Selecteer Reis
                     </label>
                     <select
@@ -374,74 +410,80 @@ export default function ReisAanmeldingenPage() {
                             const trip = trips.find(t => t.id === parseInt(e.target.value));
                             setSelectedTrip(trip || null);
                         }}
-                        className="w-full md:w-auto px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                        className="w-full md:w-auto px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                     >
-                        {trips.map(trip => (
-                            <option key={trip.id} value={trip.id}>
-                                {trip.name} - {format(new Date(trip.event_date), 'd MMMM yyyy', { locale: nl })}
-                            </option>
-                        ))}
+                        {trips.map(trip => {
+                            const displayStartDate = trip.start_date || trip.event_date;
+                            const dateDisplay = trip.end_date
+                                ? `${format(new Date(displayStartDate), 'd MMMM yyyy', { locale: nl })} - ${format(new Date(trip.end_date), 'd MMMM yyyy', { locale: nl })}`
+                                : format(new Date(displayStartDate), 'd MMMM yyyy', { locale: nl });
+                            return (
+                                <option key={trip.id} value={trip.id}>
+                                    {trip.name} - {dateDisplay}
+                                </option>
+                            );
+                        })}
                     </select>
                 </div>
 
                 {/* Statistics */}
                 {selectedTrip && (
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-                        <div className="bg-admin-card rounded-lg shadow p-6 border-l-4 border-blue-500">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 mb-8">
+                        <div className="bg-admin-card rounded-lg shadow p-4 sm:p-4 sm:p-6 border-l-4 border-blue-500">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-admin-muted text-sm">Totaal</p>
-                                    <p className="text-2xl font-bold text-admin">{stats.total}</p>
+                                    <p className="text-admin-muted text-xs sm:text-sm">Totaal</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-admin">{stats.total}</p>
                                 </div>
-                                <Users className="h-8 w-8 text-blue-500" />
+                                <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500" />
                             </div>
                         </div>
 
-                        <div className="bg-admin-card rounded-lg shadow p-6 border-l-4 border-green-500">
+                        <div className="bg-admin-card rounded-lg shadow p-4 sm:p-6 border-l-4 border-green-500">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-admin-muted text-sm">Bevestigd</p>
-                                    <p className="text-2xl font-bold text-admin">{stats.confirmed}</p>
+                                    <p className="text-admin-muted text-xs sm:text-sm">Bevestigd</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-admin">{stats.confirmed}</p>
                                 </div>
-                                <UserCheck className="h-8 w-8 text-green-500" />
+                                <UserCheck className="h-6 w-6 sm:h-8 sm:w-8 text-green-500" />
                             </div>
                         </div>
 
-                        <div className="bg-admin-card rounded-lg shadow p-6 border-l-4 border-orange-500">
+                        <div className="bg-admin-card rounded-lg shadow p-4 sm:p-6 border-l-4 border-orange-500">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-admin-muted text-sm">Wachtlijst</p>
-                                    <p className="text-2xl font-bold text-admin">{stats.waitlist}</p>
+                                    <p className="text-admin-muted text-xs sm:text-sm">Wachtlijst</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-admin">{stats.waitlist}</p>
                                 </div>
-                                <UserX className="h-8 w-8 text-orange-500" />
+                                <UserX className="h-6 w-6 sm:h-8 sm:w-8 text-orange-500" />
                             </div>
                         </div>
 
-                        <div className="bg-admin-card rounded-lg shadow p-6 border-l-4 border-yellow-500">
+                        <div className="bg-admin-card rounded-lg shadow p-4 sm:p-6 border-l-4 border-yellow-500">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-admin-muted text-sm">Aanbetaling</p>
-                                    <p className="text-2xl font-bold text-admin">{stats.depositPaid}</p>
+                                    <p className="text-admin-muted text-xs sm:text-sm">Aanbetaling</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-admin">{stats.depositPaid}</p>
                                 </div>
-                                <Plane className="h-8 w-8 text-yellow-500" />
+                                <Plane className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500" />
                             </div>
                         </div>
 
-                        <div className="bg-admin-card rounded-lg shadow p-6 border-l-4 border-purple-500">
+                        <div className="bg-admin-card rounded-lg shadow p-4 sm:p-6 border-l-4 border-purple-500">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-admin-muted text-sm">Volledig betaald</p>
-                                    <p className="text-2xl font-bold text-admin">{stats.fullPaid}</p>
+                                    <p className="text-admin-muted text-xs sm:text-sm">Volledig betaald</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-admin">{stats.fullPaid}</p>
                                 </div>
-                                <Plane className="h-8 w-8 text-purple-500" />
+                                <Plane className="h-6 w-6 sm:h-8 sm:w-8 text-purple-500" />
                             </div>
                         </div>
                     </div>
                 )}
 
                 {/* Filters and Actions */}
-                <div className="bg-admin-card rounded-lg shadow p-6 mb-6">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="bg-admin-card rounded-lg shadow p-4 sm:p-6 mb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4">
                         {/* Search */}
                         <div className="md:col-span-2">
                             <div className="relative">
@@ -451,7 +493,7 @@ export default function ReisAanmeldingenPage() {
                                     placeholder="Zoek op naam of email..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                    className="w-full pl-10 pr-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
                             </div>
                         </div>
@@ -461,7 +503,7 @@ export default function ReisAanmeldingenPage() {
                             <select
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value)}
-                                className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                             >
                                 <option value="all">Alle statussen</option>
                                 <option value="registered">Geregistreerd</option>
@@ -476,7 +518,7 @@ export default function ReisAanmeldingenPage() {
                             <select
                                 value={roleFilter}
                                 onChange={(e) => setRoleFilter(e.target.value)}
-                                className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                             >
                                 <option value="all">Alle rollen</option>
                                 <option value="participant">Deelnemer</option>
@@ -486,17 +528,17 @@ export default function ReisAanmeldingenPage() {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex flex-wrap gap-4 mt-4">
+                    <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mt-4">
                         <button
                             onClick={() => router.push('/admin/reis/instellingen')}
-                            className="flex items-center gap-2 px-4 py-2 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition"
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition w-full sm:w-auto"
                         >
                             <Edit className="h-5 w-5" />
                             Reis Instellingen
                         </button>
 
                         {/* Visibility toggle for Reis (only shown to users who can manage Reis; permission check is earlier) */}
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
                             <label className="text-sm font-medium">Reis zichtbaar</label>
                             <button
                                 onClick={async () => {
@@ -518,8 +560,7 @@ export default function ReisAanmeldingenPage() {
 
                         <button
                             onClick={() => router.push('/admin/reis/activiteiten')}
-                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-                        >
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition w-full sm:w-auto">
                             <Plane className="h-5 w-5" />
                             Activiteiten Beheren
                         </button>
@@ -527,18 +568,9 @@ export default function ReisAanmeldingenPage() {
                         <button
                             onClick={downloadExcel}
                             disabled={filteredSignups.length === 0}
-                            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto">
                             <Download className="h-5 w-5" />
                             Export naar Excel
-                        </button>
-
-                        <button
-                            onClick={() => router.push(`/admin/reis/mail${selectedTrip ? `?trip=${selectedTrip.id}` : ''}`)}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                        >
-                            <Mail className="h-5 w-5" />
-                            Mail alle deelnemers
                         </button>
                     </div>
                 </div>
@@ -559,22 +591,22 @@ export default function ReisAanmeldingenPage() {
                             <table className="w-full">
                                 <thead className="bg-admin-card-soft border-b border-admin">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
+                                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
                                             Naam
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
+                                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider hidden sm:table-cell">
                                             Geboortedatum
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
+                                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider hidden md:table-cell">
                                             Rol
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
+                                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
                                             Status
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
+                                        <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider hidden sm:table-cell">
                                             Betalingstatus
                                         </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-admin-muted uppercase tracking-wider">
+                                        <th className="px-2 sm:px-6 py-3 text-right text-xs font-medium text-admin-muted uppercase tracking-wider">
                                             Acties
                                         </th>
                                     </tr>
@@ -587,60 +619,63 @@ export default function ReisAanmeldingenPage() {
                                         return (
                                             <Fragment key={signup.id}>
                                                 <tr key={signup.id} onClick={() => toggleExpand(signup)} className="hover:bg-admin-hover cursor-pointer">
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="text-sm font-medium text-admin">
+                                                    <td className="px-3 sm:px-6 py-3 sm:py-4">
+                                                        <div className="text-xs sm:text-sm font-medium text-admin">
                                                             {signup.first_name} {signup.middle_name} {signup.last_name}
                                                         </div>
-                                                        <div className="text-sm text-admin-muted">{signup.email}</div>
+                                                        <div className="text-xs sm:text-sm text-admin-muted">{signup.email}</div>
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-admin">
+                                                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-admin hidden sm:table-cell">
                                                         {signup.date_of_birth
                                                             ? format(new Date(signup.date_of_birth), 'dd-MM-yyyy')
                                                             : '-'}
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap hidden md:table-cell">
                                                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${signup.role === 'crew' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'}`}>
                                                             {signup.role === 'crew' ? 'Crew' : 'Deelnemer'}
                                                         </span>
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                                                         <select
                                                             value={signup.status}
                                                             onClick={(e) => e.stopPropagation()}
                                                             onChange={(e) => handleStatusChange(signup.id, e.target.value)}
-                                                            className={`px-2 py-1 text-xs font-semibold rounded-full border-0 ${statusBadge.color} dark:bg-opacity-20`}
-                                                        >
+                                                            className={`px-1.5 sm:px-2 py-1 text-xs font-semibold rounded-full border-0 ${statusBadge.color} dark:bg-opacity-20 w-full sm:w-auto`}>
                                                             <option value="registered">Geregistreerd</option>
                                                             <option value="confirmed">Bevestigd</option>
                                                             <option value="waitlist">Wachtlijst</option>
                                                             <option value="cancelled">Geannuleerd</option>
                                                         </select>
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap hidden sm:table-cell">
                                                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${paymentStatus.color}`}>
                                                             {paymentStatus.label}
                                                         </span>
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); router.push(`/admin/reis/deelnemer/${signup.id}`); }}
-                                                            className="text-theme-purple hover:text-theme-purple-dark mr-4"
-                                                        >
-                                                            <Edit className="h-5 w-5" />
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); handleDelete(signup.id); }}
-                                                            className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
-                                                        >
-                                                            <Trash2 className="h-5 w-5" />
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); toggleExpand(signup); }}
-                                                            className="ml-3 text-admin-muted hover:text-admin"
-                                                            title="Toon details"
-                                                        >
-                                                            {expandedIds.includes(signup.id) ? '▲' : '▼'}
-                                                        </button>
+                                                    <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                        <div className="flex justify-end gap-1 sm:gap-2">
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); router.push(`/admin/reis/deelnemer/${signup.id}`); }}
+                                                                className="text-theme-purple hover:text-theme-purple-dark p-1 sm:p-0"
+                                                                title="Bewerken"
+                                                            >
+                                                                <Edit className="h-4 w-4 sm:h-5 sm:w-5" />
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); handleDelete(signup.id); }}
+                                                                className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1 sm:p-0"
+                                                                title="Verwijderen"
+                                                            >
+                                                                <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); toggleExpand(signup); }}
+                                                                className="text-admin-muted hover:text-admin p-1 sm:p-0"
+                                                                title="Toon details"
+                                                            >
+                                                                <span className="text-xs sm:text-sm">{expandedIds.includes(signup.id) ? '▲' : '▼'}</span>
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                                 {expandedIds.includes(signup.id) && (
@@ -678,39 +713,45 @@ export default function ReisAanmeldingenPage() {
                                                             </div>
 
                                                             {/* Email buttons */}
-                                                            <div className="border-t pt-4 mt-4">
+                                                            <div className="border-t border-admin pt-4 mt-4">
                                                                 <p className="text-sm font-semibold text-admin mb-2">Betaalverzoek versturen</p>
                                                                 <div className="flex gap-2">
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            handleResendPaymentEmail(signup.id, 'deposit');
-                                                                        }}
-                                                                        disabled={sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'deposit'}
-                                                                        className="flex items-center gap-2 px-4 py-2 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                                                    >
-                                                                        {sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'deposit' ? (
-                                                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                                                        ) : (
-                                                                            <Send className="h-4 w-4" />
-                                                                        )}
-                                                                        Aanbetaling
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            handleResendPaymentEmail(signup.id, 'final');
-                                                                        }}
-                                                                        disabled={sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'final'}
-                                                                        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                                                    >
-                                                                        {sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'final' ? (
-                                                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                                                        ) : (
-                                                                            <Send className="h-4 w-4" />
-                                                                        )}
-                                                                        Restbetaling
-                                                                    </button>
+                                                                    <div className="flex flex-col gap-1 items-start">
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                handleResendPaymentEmail(signup.id, 'deposit');
+                                                                            }}
+                                                                            disabled={sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'deposit'}
+                                                                            className={`flex items-center gap-2 px-4 py-2 ${signup.deposit_email_sent ? 'bg-admin-hover text-admin' : 'bg-yellow-600 text-white'} text-sm rounded-lg hover:opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                                        >
+                                                                            {sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'deposit' ? (
+                                                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                                            ) : (
+                                                                                <Send className="h-4 w-4" />
+                                                                            )}
+                                                                            Aanbetaling {signup.deposit_email_sent && <span className="ml-1 text-[10px] font-bold uppercase opacity-60">(Verzonden)</span>}
+                                                                        </button>
+                                                                    </div>
+                                                                    <div className="flex flex-col gap-1 items-start">
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                handleResendPaymentEmail(signup.id, 'final');
+                                                                            }}
+                                                                            disabled={(sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'final') || !selectedTrip?.allow_final_payments}
+                                                                            className={`flex items-center gap-2 px-4 py-2 ${signup.final_email_sent ? 'bg-admin-hover text-admin' : 'bg-green-600 text-white'} text-sm rounded-lg hover:opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                                            title={!selectedTrip?.allow_final_payments ? 'Restbetalingen zijn nog niet opengesteld voor deze reis' : ''}
+                                                                        >
+                                                                            {sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'final' ? (
+                                                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                                            ) : (
+                                                                                <Send className="h-4 w-4" />
+                                                                            )}
+                                                                            Restbetaling {signup.final_email_sent && <span className="ml-1 text-[10px] font-bold uppercase opacity-60">(Verzonden)</span>}
+                                                                        </button>
+                                                                        {!selectedTrip?.allow_final_payments && <span className="text-[10px] text-red-500 italic mt-1 leading-tight">Restbetalingen nog niet geopend</span>}
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </td>

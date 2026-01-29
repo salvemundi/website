@@ -23,7 +23,7 @@ export async function generateQRCode(data: string): Promise<string> {
         });
         return dataUrl;
     } catch (err) {
-        console.error('Error generating QR code:', err);
+        // Error generating QR code
         throw new Error('Failed to generate QR code');
     }
 }
@@ -34,7 +34,6 @@ export async function updateSignupWithQRToken(signupId: number, token: string) {
         // This is necessary because the QR token is set automatically during signup creation,
         // and the user may not have permission to edit their own signup record.
         const apiKey = process.env.NEXT_PUBLIC_DIRECTUS_API_KEY || '';
-        console.log('[updateSignupWithQRToken] Using API key, length:', apiKey.length, 'signupId:', signupId);
         await directusFetch(`/items/event_signups/${signupId}`, {
             method: 'PATCH',
             body: JSON.stringify({ qr_token: token }),
@@ -42,9 +41,9 @@ export async function updateSignupWithQRToken(signupId: number, token: string) {
                 Authorization: `Bearer ${apiKey}`
             }
         });
-        console.log('[updateSignupWithQRToken] Successfully updated QR token for signup', signupId);
+        // Successfully updated QR token
     } catch (err) {
-        console.error('Error updating signup with QR token:', err);
+        // Error updating signup with QR token
         throw err;
     }
 }
@@ -69,7 +68,7 @@ export async function checkInParticipant(qrToken: string) {
         const updated = await directusFetch(`/items/event_signups/${signup.id}?fields=id,event_id.*,directus_relations.*,checked_in,checked_in_at,participant_name,participant_email,participant_phone`);
         return { success: true, message: 'Succesvol ingecheckt!', signup: updated };
     } catch (err) {
-        console.error('Error checking in participant:', err);
+        // Error checking in participant
         return { success: false, message: 'Er is een fout opgetreden bij het inchecken. Probeer het opnieuw.' };
     }
 }
@@ -79,7 +78,7 @@ export async function getEventSignupsWithCheckIn(eventId: number) {
         const list = await directusFetch<any[]>(`/items/event_signups?filter[event_id][_eq]=${eventId}&fields=id,event_id,directus_relations.*,checked_in,checked_in_at,created_at,participant_name,participant_email,participant_phone,qr_token&sort=checked_in_at,-created_at`);
         return list || [];
     } catch (err) {
-        console.error('Error fetching event signups:', err);
+        // Error fetching event signups
         return [];
     }
 }
@@ -102,7 +101,7 @@ export async function isUserAuthorizedForAttendance(userId: string, eventId: num
 
         return false;
     } catch (err) {
-        console.error('Error checking attendance authorization:', err);
+        // Error checking attendance authorization
         return false;
     }
 }
@@ -112,7 +111,6 @@ export async function isUserAuthorizedForAttendance(userId: string, eventId: num
 export async function updatePubCrawlSignupWithQRToken(signupId: number, token: string) {
     try {
         const apiKey = process.env.NEXT_PUBLIC_DIRECTUS_API_KEY || '';
-        console.log('[updatePubCrawlSignupWithQRToken] Using API key, length:', apiKey.length, 'signupId:', signupId);
         await directusFetch(`/items/pub_crawl_signups/${signupId}`, {
             method: 'PATCH',
             body: JSON.stringify({ qr_token: token }),
@@ -120,9 +118,9 @@ export async function updatePubCrawlSignupWithQRToken(signupId: number, token: s
                 Authorization: `Bearer ${apiKey}`
             }
         });
-        console.log('[updatePubCrawlSignupWithQRToken] Successfully updated QR token for pub crawl signup', signupId);
+        // Successfully updated pub crawl QR token
     } catch (err) {
-        console.error('Error updating pub crawl signup with QR token:', err);
+        // Error updating pub crawl signup with QR token
         throw err;
     }
 }
@@ -147,7 +145,7 @@ export async function checkInPubCrawlParticipant(qrToken: string) {
         const updated = await directusFetch(`/items/pub_crawl_signups/${signup.id}?fields=id,pub_crawl_event_id.*,checked_in,checked_in_at,name,email,association,amount_tickets,name_initials`);
         return { success: true, message: 'Succesvol ingecheckt!', signup: updated };
     } catch (err) {
-        console.error('Error checking in pub crawl participant:', err);
+        // Error checking in pub crawl participant
         return { success: false, message: 'Er is een fout opgetreden bij het inchecken. Probeer het opnieuw.' };
     }
 }
@@ -157,7 +155,7 @@ export async function getPubCrawlSignupsWithCheckIn(eventId: number) {
         const list = await directusFetch<any[]>(`/items/pub_crawl_signups?filter[pub_crawl_event_id][_eq]=${eventId}&fields=id,pub_crawl_event_id,checked_in,checked_in_at,created_at,name,email,association,amount_tickets,name_initials,qr_token&sort=checked_in_at,-created_at`);
         return list || [];
     } catch (err) {
-        console.error('Error fetching pub crawl signups:', err);
+        // Error fetching pub crawl signups
         return [];
     }
 }
@@ -168,7 +166,7 @@ export async function isUserAuthorizedForPubCrawlAttendance(userId: string) {
         const committees = await directusFetch<any[]>(`/items/committee_members?filter[user_id][_eq]=${userId}&fields=id`);
         return committees && committees.length > 0;
     } catch (err) {
-        console.error('Error checking pub crawl attendance authorization:', err);
+        // Error checking pub crawl attendance authorization
         return false;
     }
 }

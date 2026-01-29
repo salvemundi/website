@@ -35,3 +35,45 @@ export function isUserAuthorizedForReis(user: any): boolean {
 
     return false;
 }
+
+// Returns true if the given user object (from useAuth) belongs to any committee.
+export function isUserAuthorizedForKroegentocht(user: any): boolean {
+    if (!user) return false;
+
+    const committees: any[] = (user as any).committees || [];
+    // Anyone in any committee can access kroegentocht management
+    return committees.length > 0;
+}
+
+// Returns true ONLY if the user is in the Reiscommissie.
+// This is used for automatic crew role assignment during trip signup.
+export function isUserInReisCommittee(user: any): boolean {
+    if (!user) return false;
+
+    // Only Reiscommissie members should be crew
+    const crewTokens = ['reiscommissie'];
+
+    const committees: any[] = (user as any).committees || [];
+    const names = committees.map((c: any) => {
+        if (!c) return '';
+        if (typeof c === 'string') return normalizeCommitteeName(c);
+        if (c.name) return normalizeCommitteeName(c.name);
+        if (c.committee_id && c.committee_id.name) return normalizeCommitteeName(c.committee_id.name);
+        return '';
+    });
+
+    console.log('[isUserInReisCommittee] Checking committees:', committees);
+    console.log('[isUserInReisCommittee] Normalized names:', names);
+
+    for (const n of names) {
+        if (!n) continue;
+        for (const token of crewTokens) {
+            if (n.includes(token)) {
+                console.log('[isUserInReisCommittee] Match found:', n, 'includes', token);
+                return true;
+            }
+        }
+    }
+
+    return false;
+}

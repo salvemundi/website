@@ -47,33 +47,27 @@ const Header: React.FC = () => {
             try {
                 // Prefer committees that were fetched during auth
                 const committees = (user as any).committees;
-                console.log('[Header] Checking committee membership for user:', user.id);
-                console.log('[Header] User committees:', committees);
 
                 if (Array.isArray(committees)) {
                     // User has committees data loaded
                     const isMember = committees.length > 0;
-                    console.log('[Header] User is committee member:', isMember);
                     setIsCommitteeMember(isMember);
                     return;
                 }
 
                 // Fallback: fetch from API if committees not loaded yet
-                console.log('[Header] Committees not loaded, checking via API');
 
                 // Get user's committee memberships with committee details including is_visible
                 const memberships = await directusFetch<any[]>(
                     `/items/committee_members?filter[user_id][_eq]=${user.id}&fields=committee_id.id,committee_id.is_visible`
                 );
-                console.log('[Header] API response:', memberships);
 
                 // Check if user is member of at least one visible committee
                 const isMember = Array.isArray(memberships) &&
                     memberships.some(m => m.committee_id?.is_visible !== false);
-                console.log('[Header] User is committee member via API:', isMember);
                 setIsCommitteeMember(isMember);
             } catch (error) {
-                console.error('[Header] Error checking committee membership:', error);
+                // Error checking committee membership
                 setIsCommitteeMember(false);
             }
         };
@@ -149,13 +143,18 @@ const Header: React.FC = () => {
     }
 
     return (
-        <header ref={headerRef} className="sticky top-0 z-50 w-full">
-            <div className="relative">
+        <header
+            ref={headerRef}
+            className="sticky top-0 z-50 w-full"
+            style={{ marginTop: 'calc(-1 * env(safe-area-inset-top))' }}
+        >
+            <div className="relative" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
                 <div
                     className={`pointer-events-none absolute inset-0 -z-10 transition-all duration-300 ${isScrolled
                         ? "bg-[var(--bg-main)]/98 backdrop-blur-2xl shadow-xl shadow-black/10 opacity-100 border-b border-theme-purple/10"
                         : "bg-transparent backdrop-blur-none opacity-0"
                         }`}
+                    style={{ top: 'calc(-1 * env(safe-area-inset-top))', paddingTop: 'env(safe-area-inset-top)' }}
                 />
                 <div className="mx-auto flex items-center max-w-app justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8 z-10 relative">
                     <Link
@@ -282,8 +281,9 @@ const Header: React.FC = () => {
                     aria-hidden={!menuOpen}
                 />
                 <nav
-                    className={`fixed top-0 right-0 z-50 flex h-full w-full max-w-xs flex-col gap-6 bg-[var(--bg-main)] px-6 py-8 shadow-xl transition-transform duration-300 ${menuOpen ? "translate-x-0" : "translate-x-full"
+                    className={`fixed right-0 z-50 flex h-full w-full max-w-xs flex-col gap-6 bg-[var(--bg-main)] px-6 py-8 shadow-xl transition-transform duration-300 ${menuOpen ? "translate-x-0" : "translate-x-full"
                         }`}
+                    style={{ top: 'env(safe-area-inset-top)' }}
                 >
                     <div className="flex items-center justify-between">
                         <Link
@@ -384,7 +384,13 @@ const Header: React.FC = () => {
                                             // ignore
                                         }
                                         setMenuOpen(false);
-                                        router.push(ROUTES.HOME);
+                                        // Use window.location.href for logout redirect to ensure a clean state
+                                        // and break potential auto-login loops.
+                                        if (typeof window !== 'undefined') {
+                                            window.location.href = "/?noAuto=true";
+                                        } else {
+                                            router.push("/");
+                                        }
                                     }}
                                     className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-red-600 text-white shadow-sm"
                                     aria-label="Logout"

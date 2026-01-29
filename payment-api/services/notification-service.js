@@ -83,59 +83,40 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
                 if (qrTokenToUse) {
                     console.log('[NotificationService] ✅ QR token found:', qrTokenToUse);
                     
-                    // For pub crawl, generate multiple QR codes (one per ticket)
-                    const isPubCrawl = collection === 'pub_crawl_signups';
-                    const ticketCount = isPubCrawl ? (registration.amount_tickets || 1) : 1;
-                    const nameInitials = isPubCrawl && registration.name_initials ? JSON.parse(registration.name_initials) : [];
-                    
-                    console.log('[NotificationService] Generating', ticketCount, 'QR code(s)...');
+                    // Generate single QR code for all registrations
+                    console.log('[NotificationService] Generating QR code with token:', qrTokenToUse);
                     
                     const qrDataUrl = await QRCode.toDataURL(qrTokenToUse, {
                         color: { dark: '#7B2CBF', light: '#FFFFFF' },
                         width: 300
                     });
                     const base64Data = qrDataUrl.split(',')[1];
-
                     console.log('[NotificationService] QR code generated, base64 length:', base64Data.length);
 
+                    const contentId = 'qrcode-image';
                     attachments.push({
                         name: 'ticket-qr.png',
                         contentType: 'image/png',
                         contentBytes: base64Data,
                         isInline: true,
-                        contentId: 'qrcode-image'
+                        contentId: contentId
                     });
 
-                    console.log('[NotificationService] ✅ QR attachment added to attachments array');
-
-                    // Generate HTML for multiple tickets if pub crawl
-                    if (isPubCrawl && ticketCount > 1) {
-                        qrHtml = '<div style="margin: 20px 0;">';
-                        qrHtml += `<h3 style="color: #7B2CBF; text-align: center; margin-bottom: 20px;">Jouw Toegangstickets (${ticketCount}x)</h3>`;
-                        
-                        for (let i = 0; i < ticketCount; i++) {
-                            const participant = nameInitials[i];
-                            const ticketLabel = participant ? `${participant.name} ${participant.initial}.` : `Ticket ${i + 1}`;
-                            
-                            qrHtml += `
-                                <div style="margin: 15px 0; text-align: center; background-color: #f9f9f9; padding: 20px; border-radius: 12px; border: 2px dashed #7B2CBF;">
-                                    <p style="font-weight: bold; color: #7B2CBF; margin-top: 0;">${ticketLabel}</p>
-                                    <img src="cid:qrcode-image" alt="QR Ticket" style="width: 200px; height: 200px; border-radius: 8px;" />
-                                    <p style="font-size: 11px; color: #999; margin-bottom: 0;">Ticket ID: ${qrTokenToUse}</p>
-                                </div>
-                            `;
-                        }
-                        
-                        qrHtml += '</div>';
-                    } else {
-                        qrHtml = `
-                            <div style="margin: 20px 0; text-align: center; background-color: #f9f9f9; padding: 20px; border-radius: 12px; border: 2px dashed #7B2CBF;">
-                                <p style="font-weight: bold; color: #7B2CBF; margin-top: 0;">Jouw Toegangsticket</p>
-                                <img src="cid:qrcode-image" alt="QR Ticket" style="width: 200px; height: 200px; border-radius: 8px;" />
+                    const isPubCrawl = collection === 'pub_crawl_signups';
+                    const ticketCount = isPubCrawl ? (registration.amount_tickets || 1) : 1;
+                    
+                    qrHtml = `
+                        <div style="margin: 20px 0; text-align: center;">
+                            <h3 style="color: #7B2CBF; text-align: center; margin-bottom: 20px;">Jouw Toegangsticket${ticketCount > 1 ? 's' : ''}</h3>
+                            <div style="background-color: #f9f9f9; padding: 20px; border-radius: 12px; border: 2px dashed #7B2CBF; display: inline-block;">
+                                <img src="cid:${contentId}" alt="QR Ticket" style="width: 200px; height: 200px; border-radius: 8px;" />
                                 <p style="font-size: 11px; color: #999; margin-bottom: 0;">Ticket ID: ${qrTokenToUse}</p>
+                                ${ticketCount > 1 ? `<p style="font-size: 13px; color: #7B2CBF; margin-top: 10px; font-weight: bold;">Geldig voor ${ticketCount} personen</p>` : ''}
                             </div>
-                        `;
-                    }
+                        </div>
+                    `;
+
+                    console.log('[NotificationService] ✅ QR code attachment added');
                 } else {
                     console.warn('[NotificationService] ⚠️ No QR token found in metadata or registration!');
                 }

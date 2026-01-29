@@ -40,9 +40,9 @@ function BetalingContent() {
         if (!loading && signup && !signup.full_payment_paid && !checkingPayment) {
             // Check URL parameters or referrer to detect return from payment
             const urlParams = new URLSearchParams(window.location.search);
-            const hasPaymentReturn = urlParams.toString().length > 0 || 
-                                    document.referrer.includes('mollie.com');
-            
+            const hasPaymentReturn = urlParams.toString().length > 0 ||
+                document.referrer.includes('mollie.com');
+
             if (hasPaymentReturn) {
                 console.log('[restbetaling] Detected return from payment, checking status...');
                 setPaymentStatus('checking');
@@ -55,14 +55,14 @@ function BetalingContent() {
     const checkPaymentStatus = async () => {
         let attempts = 0;
         const maxAttempts = 20; // Check for up to 40 seconds
-        
+
         const interval = setInterval(async () => {
             attempts++;
             console.log(`[restbetaling] Checking payment status (attempt ${attempts}/${maxAttempts})...`);
-            
+
             try {
                 const signupData = await tripSignupsApi.getById(signupId);
-                
+
                 if (signupData.full_payment_paid) {
                     console.log('[restbetaling] Payment confirmed! Showing success page');
                     clearInterval(interval);
@@ -71,7 +71,7 @@ function BetalingContent() {
                     setCheckingPayment(false);
                     setShowManualRefresh(false);
                 }
-                
+
                 if (attempts >= maxAttempts) {
                     console.log('[restbetaling] Max attempts reached, showing manual refresh option');
                     clearInterval(interval);
@@ -88,11 +88,11 @@ function BetalingContent() {
         setShowManualRefresh(false);
         setCheckingPayment(true);
         setPaymentStatus('checking');
-        
+
         try {
             const signupData = await tripSignupsApi.getById(signupId);
             setSignup(signupData);
-            
+
             if (signupData.full_payment_paid) {
                 setPaymentStatus('success');
             } else {
@@ -273,7 +273,7 @@ function BetalingContent() {
                             Bedankt voor je betaling van <strong>€{costs.remaining.toFixed(2)}</strong> voor {trip.name}!
                         </p>
                         <p className="text-gray-600 mb-8">
-                            Je bent nu volledig ingeschreven voor de reis. Je ontvangt binnenkort een bevestigingsmail 
+                            Je bent nu volledig ingeschreven voor de reis. Je ontvangt binnenkort een bevestigingsmail
                             met alle details en verdere instructies.
                         </p>
                         <div className="bg-purple-50 border-l-4 border-purple-400 p-4 rounded mb-8 text-left">
@@ -389,19 +389,19 @@ function BetalingContent() {
                         <div className="flex justify-between items-center mb-4">
                             <span className="text-gray-700">Datum</span>
                             <span className="font-semibold text-gray-900">
-                                {format(new Date(trip.event_date), 'd MMMM yyyy', { locale: nl })}
+                                {trip.event_date ? format(new Date(trip.event_date), 'd MMMM yyyy', { locale: nl }) : (trip.start_date ? format(new Date(trip.start_date), 'd MMMM yyyy', { locale: nl }) : 'N.t.b.')}
                             </span>
                         </div>
-                        
+
                         <div className="border-t border-gray-300 my-4"></div>
-                        
+
                         {/* Cost Breakdown */}
                         <div className="space-y-3">
                             <div className="flex justify-between items-center">
                                 <span className="text-gray-700">Basisprijs</span>
                                 <span className="text-gray-900">€{costs.base.toFixed(2)}</span>
                             </div>
-                            
+
                             {selectedActivities.length > 0 && (
                                 <div>
                                     <div className="flex justify-between items-center mb-2">
@@ -416,14 +416,14 @@ function BetalingContent() {
                                     ))}
                                 </div>
                             )}
-                            
+
                             {costs.crewDiscount > 0 && (
                                 <div className="flex justify-between items-center text-green-600">
                                     <span>Crew korting</span>
                                     <span>-€{costs.crewDiscount.toFixed(2)}</span>
                                 </div>
                             )}
-                            
+
                             <div className="border-t border-gray-300 pt-3 mt-3">
                                 <div className="flex justify-between items-center">
                                     <span className="text-xl font-bold text-gray-900">Te betalen</span>
@@ -437,7 +437,7 @@ function BetalingContent() {
 
                     <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded mb-8">
                         <p className="text-sm text-blue-700">
-                            <strong>Let op:</strong> Dit is de restbetaling voor je reis. Na het voltooien van deze betaling 
+                            <strong>Let op:</strong> Dit is de restbetaling voor je reis. Na het voltooien van deze betaling
                             ben je volledig ingeschreven en ontvang je een bevestigingsmail.
                         </p>
                     </div>

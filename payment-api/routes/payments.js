@@ -17,7 +17,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
         console.warn(`[Payment][${traceId}] Incoming Payment Creation Request`);
 
         try {
-            const { amount, description, redirectUrl, userId, email, registrationId, registrationType, isContribution, firstName, lastName, couponCode, dateOfBirth, qrToken } = req.body;
+            const { amount, description, redirectUrl, userId, email, registrationId, registrationType, isContribution, firstName, lastName, couponCode, dateOfBirth, phoneNumber, qrToken } = req.body;
 
             console.warn(`[Payment][${traceId}] Payload:`, JSON.stringify({ amount, description, redirectUrl, userId, email, registrationId, registrationType, isContribution, couponCode, qrToken: qrToken ? 'provided' : 'missing' }));
 
@@ -270,6 +270,20 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                     if (isContribution) {
                         if (userId) {
                             await membershipService.provisionMember(MEMBERSHIP_API_URL, userId);
+
+                            // Update Directus status and expiry immediately for renewals
+                            const now = new Date();
+                            const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+                            const expiryStr = expiryDate.toISOString().split('T')[0];
+                            try {
+                                await directusService.updateDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'users', userId, {
+                                    membership_status: 'active',
+                                    membership_expiry: expiryStr
+                                });
+                            } catch (err) {
+                                console.error(`[Payment][${traceId}] Failed to update Directus user for renewal (Zero Amount):`, err?.message || err);
+                            }
+
                             // Trigger sync for existing user renewal
                             await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, userId);
 
@@ -282,10 +296,45 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                                 mockMetadata, description
                             );
                         } else if (firstName && lastName && email) {
+                            // Calculate expiry date (1 year from now)
+                            const now = new Date();
+                            const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+                            const expiryStr = expiryDate.toISOString().split('T')[0];
+
+                            // Try to create a Directus user so we have the date_of_birth set
+                            let directusUser = null;
+                            try {
+                                directusUser = await directusService.createDirectusUser(DIRECTUS_URL, DIRECTUS_API_TOKEN, {
+                                    first_name: firstName,
+                                    last_name: lastName,
+                                    email: email,
+                                    date_of_birth: dateOfBirth || null,
+                                    status: 'active',
+                                    membership_status: 'active',
+                                    membership_expiry: expiryStr
+                                });
+                                console.warn(`[Payment][${traceId}] Created Directus user ${directusUser.id} for ${email} (Zero Amount)`);
+                            } catch (err) {
+                                console.error(`[Payment][${traceId}] Failed to create Directus user before membership create (Zero Amount):`, err?.message || err);
+                            }
+
                             const credentials = await membershipService.createMember(
                                 MEMBERSHIP_API_URL, firstName, lastName, email
                             );
                             if (credentials) {
+                                // Explicitly link the Directus user if we created one
+                                if (directusUser && directusUser.id) {
+                                    try {
+                                        await directusService.updateDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'users', directusUser.id, {
+                                            entra_id: credentials.user_id,
+                                            external_identifier: credentials.user_id
+                                        });
+                                        console.warn(`[Payment][${traceId}] Linked Directus user ${directusUser.id} to Entra ID ${credentials.user_id} (Zero Amount)`);
+                                    } catch (linkErr) {
+                                        console.error(`[Payment][${traceId}] Failed to link user after creation (Zero Amount):`, linkErr.message);
+                                    }
+                                }
+
                                 // Trigger sync for newly created user to sync membership_expiry to Directus
                                 await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, credentials.user_id);
 
@@ -335,6 +384,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 lastName: lastName || null,
                 couponId: couponId,
                 dateOfBirth: dateOfBirth || null,
+                phoneNumber: phoneNumber || null,
                 qrToken: qrToken || null // Add QR token to Mollie metadata
             };
 
@@ -437,43 +487,46 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
 
                     if (payment.metadata.registrationType === 'pub_crawl_signup') {
                         collection = 'pub_crawl_signups';
-                        
-                        // Fetch the signup to get the pub_crawl_event_id for QR token generation
+
+                        // Fetch the signup to get the pub_crawl_event_id and amount_tickets for QR token generation
                         let pubCrawlEventId = 0;
+                        let amountTickets = 1;
                         try {
                             const signup = await directusService.getDirectusItem(
                                 DIRECTUS_URL,
                                 DIRECTUS_API_TOKEN,
                                 collection,
                                 registrationId,
-                                'pub_crawl_event_id'
+                                'pub_crawl_event_id,amount_tickets'
                             );
                             pubCrawlEventId = signup?.pub_crawl_event_id || 0;
-                            console.warn(`[Webhook][${traceId}] Fetched pub_crawl_event_id: ${pubCrawlEventId}`);
+                            amountTickets = signup?.amount_tickets || 1;
+                            console.warn(`[Webhook][${traceId}] Fetched pub_crawl_event_id: ${pubCrawlEventId}, amount_tickets: ${amountTickets}`);
                         } catch (err) {
                             console.error(`[Webhook][${traceId}] Failed to fetch pub_crawl_event_id:`, err);
                         }
-                        
-                        // Generate QR token for pub crawl signup
-                        console.warn(`[Webhook][${traceId}] Generating QR token for pub crawl signup ${registrationId}`);
+
+                        // Generate single QR token for pub crawl signup
                         const qrToken = generateQRToken(registrationId, pubCrawlEventId);
-                        updatePayload.qr_token = qrToken;
-                        console.warn(`[Webhook][${traceId}] Generated QR token: ${qrToken}`);
+                        console.warn(`[Webhook][${traceId}] Generated QR token for pub crawl signup ${registrationId}: ${qrToken}`);
                         
-                        // Add QR token to metadata for email
+                        // Store the token in qr_token
+                        updatePayload.qr_token = qrToken;
+
+                        // Pass token to metadata for email
                         payment.metadata.qrToken = qrToken;
                     } else if (payment.metadata.registrationType === 'trip_signup') {
                         collection = 'trip_signups';
                         // For trip signups, check description to determine if it's deposit or final payment
                         if (payment.description.toLowerCase().includes('aanbetaling')) {
-                            updatePayload = { 
+                            updatePayload = {
                                 deposit_paid: true,
-                                deposit_paid_at: new Date().toISOString() 
+                                deposit_paid_at: new Date().toISOString()
                             };
                         } else if (payment.description.toLowerCase().includes('restbetaling')) {
-                            updatePayload = { 
+                            updatePayload = {
                                 full_payment_paid: true,
-                                full_payment_paid_at: new Date().toISOString() 
+                                full_payment_paid_at: new Date().toISOString()
                             };
                         }
                     }
@@ -513,10 +566,10 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                                 registrationId,
                                 'id,first_name,middle_name,last_name,email,role,trip_id'
                             );
-                            console.warn(`[Webhook][${traceId}] Trip signup fetched:`, { 
-                                id: tripSignup.id, 
+                            console.warn(`[Webhook][${traceId}] Trip signup fetched:`, {
+                                id: tripSignup.id,
                                 email: tripSignup.email,
-                                trip_id: tripSignup.trip_id 
+                                trip_id: tripSignup.trip_id
                             });
 
                             const trip = await directusService.getDirectusItem(
@@ -526,15 +579,15 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                                 tripSignup.trip_id,
                                 'id,name,event_date,base_price,deposit_amount,crew_discount,is_bus_trip'
                             );
-                            console.warn(`[Webhook][${traceId}] Trip fetched:`, { 
-                                id: trip.id, 
-                                name: trip.name 
+                            console.warn(`[Webhook][${traceId}] Trip fetched:`, {
+                                id: trip.id,
+                                name: trip.name
                             });
 
                             const paymentType = payment.description.toLowerCase().includes('aanbetaling') ? 'deposit' : 'final';
                             console.warn(`[Webhook][${traceId}] Payment type detected: ${paymentType}`);
                             console.warn(`[Webhook][${traceId}] Calling sendTripPaymentConfirmation...`);
-                            
+
                             await notificationService.sendTripPaymentConfirmation(
                                 EMAIL_SERVICE_URL,
                                 tripSignup,
@@ -581,6 +634,20 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 if (notContribution === "false") {
                     if (userId) {
                         await membershipService.provisionMember(MEMBERSHIP_API_URL, userId);
+
+                        // Update Directus status and expiry immediately for renewals
+                        const now = new Date();
+                        const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+                        const expiryStr = expiryDate.toISOString().split('T')[0];
+                        try {
+                            await directusService.updateDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'users', userId, {
+                                membership_status: 'active',
+                                membership_expiry: expiryStr
+                            });
+                        } catch (err) {
+                            console.error(`[Webhook][${traceId}] Failed to update Directus user for renewal:`, err?.message || err);
+                        }
+
                         // Trigger sync for existing user renewal
                         await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, userId);
 
@@ -598,16 +665,24 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                             // Coupon increment logic skipped for now
                         }
                     } else if (firstName && lastName && email) {
+                        // Calculate expiry date (1 year from now)
+                        const now = new Date();
+                        const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+                        const expiryStr = expiryDate.toISOString().split('T')[0];
+
                         // Try to create a Directus user so we have the date_of_birth set
+                        let directusUser = null;
                         try {
-                            await directusService.createDirectusUser(DIRECTUS_URL, DIRECTUS_API_TOKEN, {
+                            directusUser = await directusService.createDirectusUser(DIRECTUS_URL, DIRECTUS_API_TOKEN, {
                                 first_name: firstName,
                                 last_name: lastName,
                                 email: email,
                                 date_of_birth: dateOfBirth || null,
-                                status: 'active'
+                                status: 'active',
+                                membership_status: 'active',
+                                membership_expiry: expiryStr
                             });
-                            console.warn(`[Payment][${traceId}] Created Directus user for ${email}`);
+                            console.warn(`[Payment][${traceId}] Created Directus user ${directusUser?.id} for ${email}`);
                         } catch (err) {
                             console.error(`[Payment][${traceId}] Failed to create Directus user before membership create:`, err?.message || err);
                         }
@@ -617,6 +692,19 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                         );
 
                         if (credentials) {
+                            // Explicitly link the Directus user if we just created one
+                            if (directusUser && directusUser.id) {
+                                try {
+                                    await directusService.updateDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'users', directusUser.id, {
+                                        entra_id: credentials.user_id,
+                                        external_identifier: credentials.user_id
+                                    });
+                                    console.warn(`[Payment][${traceId}] Linked Directus user ${directusUser.id} to Entra ID ${credentials.user_id}`);
+                                } catch (linkErr) {
+                                    console.error(`[Payment][${traceId}] Failed to link user after creation:`, linkErr.message);
+                                }
+                            }
+
                             // Trigger sync for newly created user to sync membership_expiry to Directus
                             await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, credentials.user_id);
 

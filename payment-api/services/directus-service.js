@@ -246,6 +246,7 @@ async function checkUserCommittee(directusUrl, directusToken, userId, committeeN
 
 module.exports = {
     createDirectusTransaction,
+    createDirectusUser,
     updateDirectusTransaction,
     updateDirectusRegistration,
     updateDirectusItem,

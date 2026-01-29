@@ -3,6 +3,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { USE_MODERN_UI } from '../config/ui-config';
+import ModernHero from './modern/ModernHero';
 
 export interface HeroBannerProps {
   title: string;
@@ -20,13 +22,20 @@ export interface HeroBannerProps {
   gradient?: boolean;
 }
 
-export default function HeroBanner({
-  title,
-  subtitle,
-  image,
-  cta,
-  gradient = true,
-}: HeroBannerProps) {
+export default function HeroBanner(props: HeroBannerProps) {
+  // Global Switch for Modern UI
+  if (USE_MODERN_UI) {
+    return <ModernHero {...props} />;
+  }
+
+  const {
+    title,
+    subtitle,
+    image,
+    cta,
+    gradient = true,
+  } = props;
+
   return (
     <div className="relative w-full overflow-hidden rounded-2xl lg:rounded-3xl shadow-2xl mb-8 lg:mb-12">
       {/* Background Image or Gradient */}
@@ -63,8 +72,8 @@ export default function HeroBanner({
             <Link
               href={cta.href}
               className={`inline-flex items-center gap-2 px-6 py-3 lg:px-8 lg:py-4 text-sm lg:text-base font-semibold rounded-full transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 ${cta.variant === 'secondary'
-                  ? 'bg-white text-theme-purple hover:bg-gray-100'
-                  : 'bg-gradient-theme text-white hover:brightness-110'
+                ? 'bg-white text-theme-purple hover:bg-gray-100'
+                : 'bg-gradient-theme text-white hover:brightness-110'
                 }`}
             >
               {cta.label}

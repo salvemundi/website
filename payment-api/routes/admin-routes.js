@@ -164,44 +164,37 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                 return res.status(400).json({ error: 'Payment not completed yet' });
             }
 
-            await directusService.updateDirectusTransaction(
-                DIRECTUS_URL,
-                DIRECTUS_API_TOKEN,
-                transactionId,
-                {
-                    approval_status: 'approved',
-                    approved_by: req.user.id,
-                    approved_at: new Date().toISOString()
-                }
-            );
-
             // Extract user info - Prioritize Directus transaction fields
             let userId = transaction.user_id;
             let firstName = transaction.first_name;
             let lastName = transaction.last_name;
             let email = transaction.email;
+            let dateOfBirth = transaction.date_of_birth;
+            let phoneNumber = null; // Not typically stored in transaction table yet
 
-            // Only fetch from Mollie if we ARE missing data and have a valid Mollie ID
-            if ((!userId && (!firstName || !lastName || !email)) &&
-                transaction.transaction_id &&
-                transaction.transaction_id.startsWith('tr_')) {
-
-                console.log(`[AdminRoutes] Missing data in Directus, fetching from Mollie: ${transaction.transaction_id}`);
-                try {
-                    const molliePayment = await axios.get(
-                        `https://api.mollie.com/v2/payments/${transaction.transaction_id}`,
-                        {
-                            headers: { 'Authorization': `Bearer ${process.env.MOLLIE_API_KEY}` },
-                            timeout: 5000 // 5s timeout for Mollie
-                        }
-                    );
-                    const metadata = molliePayment.data.metadata || {};
-                    userId = userId || metadata.userId;
-                    firstName = firstName || metadata.firstName;
-                    lastName = lastName || metadata.lastName;
-                    email = email || metadata.email;
-                } catch (error) {
-                    console.error('[AdminRoutes] Could not fetch Mollie payment metadata:', error.message);
+            // Fetch from Mollie if we are missing essential data OR if we want extra metadata like phone number
+            if (transaction.transaction_id && transaction.transaction_id.startsWith('tr_')) {
+                // If we miss core data OR we just want to try getting phone number
+                if ((!userId && (!firstName || !lastName || !email)) || !phoneNumber) {
+                    console.log(`[AdminRoutes] Fetching additional metadata from Mollie: ${transaction.transaction_id}`);
+                    try {
+                        const molliePayment = await axios.get(
+                            `https://api.mollie.com/v2/payments/${transaction.transaction_id}`,
+                            {
+                                headers: { 'Authorization': `Bearer ${process.env.MOLLIE_API_KEY}` },
+                                timeout: 5000
+                            }
+                        );
+                        const metadata = molliePayment.data.metadata || {};
+                        userId = userId || metadata.userId;
+                        firstName = firstName || metadata.firstName;
+                        lastName = lastName || metadata.lastName;
+                        email = email || metadata.email;
+                        dateOfBirth = dateOfBirth || metadata.dateOfBirth;
+                        phoneNumber = phoneNumber || metadata.phoneNumber;
+                    } catch (error) {
+                        console.error('[AdminRoutes] Could not fetch Mollie payment metadata:', error.message);
+                    }
                 }
             }
 
@@ -224,12 +217,7 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                     }
 
                     await membershipService.provisionMember(MEMBERSHIP_API_URL, targetEntraId);
-                    console.log(`[AdminRoutes] Provisioning call completed for ${targetEntraId}. Waiting 2s for Azure propagation...`);
 
-                    // Small delay to ensure Azure has propagated the custom attributes before we sync back
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-
-                    // Trigger sync to update Directus immediately
                     await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, targetEntraId);
                 } catch (provError) {
                     console.error(`[AdminRoutes] Provisioning FAILED for ${userId}:`, provError.message);
@@ -241,36 +229,53 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                     MEMBERSHIP_API_URL,
                     firstName,
                     lastName,
-                    email
+                    email,
+                    phoneNumber,
+                    dateOfBirth
                 );
 
-                if (credentials) {
-                    console.log(`[AdminRoutes] Account created. User ID: ${credentials.user_id}`);
+                console.log(`[AdminRoutes] Account created. User ID: ${credentials.user_id}`);
 
-                    // Trigger sync for newly created user
-                    if (credentials.user_id) {
-                        await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, credentials.user_id);
-                    }
+                // Calculate expiry date (1 year from now)
+                const now = new Date();
+                const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+                const expiryStr = expiryDate.toISOString().split('T')[0];
 
-                    // Send welcome email with credentials
-                    try {
-                        await notificationService.sendWelcomeEmail(
-                            EMAIL_SERVICE_URL,
-                            email,
-                            firstName,
-                            credentials
-                        );
-                        console.log(`[AdminRoutes] Welcome email sent to: ${email}`);
-                    } catch (emailErr) {
-                        console.error(`[AdminRoutes] Failed to send welcome email to ${email}:`, emailErr.message);
-                        // Don't fail the whole request if only email fails, the account is created.
-                    }
-                } else {
-                    console.error(`[AdminRoutes] Failed to create member account for ${email} (no credentials returned)`);
-                    return res.status(500).json({
-                        error: 'Account creation failed',
-                        message: 'Membership API did not return credentials.'
+                // Create Directus user immediately so the status is 'active' and linked to Entra
+                try {
+                    await directusService.createDirectusUser(DIRECTUS_URL, DIRECTUS_API_TOKEN, {
+                        first_name: firstName,
+                        last_name: lastName,
+                        email: email,
+                        status: 'active',
+                        membership_status: 'active',
+                        membership_expiry: expiryStr,
+                        entra_id: credentials.user_id,
+                        phone_number: phoneNumber,
+                        date_of_birth: dateOfBirth
                     });
+                    console.log(`[AdminRoutes] Created and linked Directus user for ${email}`);
+                } catch (err) {
+                    console.error(`[AdminRoutes] Failed to create/link Directus user:`, err.message);
+                }
+
+                // Trigger sync for newly created user
+                if (credentials.user_id) {
+                    await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, credentials.user_id);
+                }
+
+                // Send welcome email with credentials
+                try {
+                    await notificationService.sendWelcomeEmail(
+                        EMAIL_SERVICE_URL,
+                        email,
+                        firstName,
+                        credentials
+                    );
+                    console.log(`[AdminRoutes] Welcome email sent to: ${email}`);
+                } catch (emailErr) {
+                    console.error(`[AdminRoutes] Failed to send welcome email to ${email}:`, emailErr.message);
+                    // Don't fail the whole request if only email fails, the account is created.
                 }
             } else {
                 console.warn(`[AdminRoutes] Insufficient data to create account for transaction ${transactionId}. Missing userId AND (name/email).`);
@@ -280,13 +285,26 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
                 });
             }
 
+            // Mark as approved only after successful account creation
+            await directusService.updateDirectusTransaction(
+                DIRECTUS_URL,
+                DIRECTUS_API_TOKEN,
+                transactionId,
+                {
+                    approval_status: 'approved',
+                    approved_by: req.user.id,
+                    approved_at: new Date().toISOString()
+                }
+            );
+
             res.json({
                 success: true,
                 message: 'Signup approved and account created',
                 transaction_id: transactionId
             });
         } catch (error) {
-            console.error('[AdminRoutes] Approval failed:', error.message);
+            console.error('[AdminRoutes] Approval failed:', error);
+            console.error('[AdminRoutes] Error stack:', error.stack);
             res.status(500).json({ error: 'Failed to approve signup', details: error.message });
         }
     });

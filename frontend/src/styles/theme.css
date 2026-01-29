@@ -16,6 +16,10 @@
   --color-purple-800: #5e2b52;
   --color-purple-900: #471e3b;
 
+  /* Helper RGB tokens for opacity-based styles */
+  --color-purple-500-rgb: 164, 83, 155;
+  --color-purple-400-rgb: 180, 113, 173;
+
   --color-white: #ffffff;
   --color-white-soft: #faf7fb;
   --color-white-mute: #f0ebf0;
@@ -44,14 +48,34 @@
   --radius-xl: 0.75rem;
   --radius-2xl: 1rem;
 
-  /* Gradients */
-  --gradient-start: #eac8e7;
-  --gradient-end: #d8a6d4;
+  /* Gradients - Light Mode: Soft white-purple to match card style preference */
+  --gradient-start: #fdfbff;
+  --gradient-end: #f4eef5;
 
   /* Header & UI */
   --header-height: 64px;
 
-  /* --- SEMANTIC THEME ALIASES (Tailwind Compatibility) --- */
+  /* --- 3. TYPOGRAPHY TOKENS --- */
+  --font-size-xs: 0.75rem;
+  /* 12px */
+  --font-size-sm: 0.875rem;
+  /* 14px */
+  --font-size-base: 1rem;
+  /* 16px */
+  --font-size-lg: 1.125rem;
+  /* 18px */
+  --font-size-xl: 1.25rem;
+  /* 20px */
+  --font-size-2xl: 1.5rem;
+  /* 24px */
+  --font-size-3xl: 1.875rem;
+  /* 30px */
+  --font-size-4xl: 2.25rem;
+  /* 36px */
+  --font-size-5xl: 3rem;
+  /* 48px */
+
+  /* --- 4. SEMANTIC THEME ALIASES (Tailwind Compatibility) --- */
   --theme-white: var(--color-white);
   --theme-text: var(--text-main);
   --theme-text-subtle: var(--text-subtle);
@@ -59,17 +83,23 @@
   --theme-text-light: var(--text-light);
   --bg-card-dark: var(--bg-card);
   /* Fallback for tailwind config */
+
+  /* --- Admin specific tokens (light mode defaults) --- */
+  --theme-admin-card: var(--bg-card);
+  --theme-admin-card-soft: var(--bg-soft);
+  --theme-admin-text: var(--text-main);
+  --theme-admin-text-muted: var(--text-muted);
+  --theme-admin-border: var(--border-color);
+  --theme-admin-hover: rgba(0, 0, 0, 0.02);
 }
 
 /* --- 3. DARK MODE OVERRIDES --- */
 .dark {
-  --theme-purple: #d9a3d6;
-  --theme-purple-light: #e8c4e6;
-
   --bg-main: #1a141b;
   /* slightly adjust soft and card backgrounds so cards contrast from the page */
   --bg-soft: #161116;
-  --bg-card: #241824; /* darker but distinct from --bg-main */
+  --bg-card: #241824;
+  /* darker but distinct from --bg-main */
 
   --text-main: #ffffff;
   --text-subtle: #e8dce9;
@@ -88,16 +118,16 @@
 
   /* Ensure Tailwind-generated elements that use the bg-[var(--bg-card)] utility
      get a subtle border and elevated shadow in dark mode so they read as cards */
-.dark [class*="bg-[var(--bg-card)]"] {
-  /* Respect Tailwind opacity modifiers (e.g. /80, /10) so we don't force solid backgrounds */
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  box-shadow: var(--shadow-card-elevated);
-  /* Gentle backdrop blur helps separate translucent cards from the page */
-  backdrop-filter: blur(4px);
-}
+  .dark [class*="bg-[var(--bg-card)]"] {
+    /* Respect Tailwind opacity modifiers (e.g. /80, /10) so we don't force solid backgrounds */
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    box-shadow: var(--shadow-card-elevated);
+    /* Gentle backdrop blur helps separate translucent cards from the page */
+    backdrop-filter: blur(4px);
+  }
 
-  --gradient-start: #a16ca1;
-  --gradient-end: #c47bbb;
+  --gradient-start: #805480;
+  --gradient-end: #905E8E;
 
   /* Dark mode specific mappings */
   --theme-white: var(--color-white);
@@ -107,6 +137,14 @@
   --theme-text-muted: var(--text-muted);
   --theme-text-light: var(--text-light);
   --bg-card-dark: var(--bg-card);
+
+  /* Admin tokens for dark mode - ensure cards are visibly distinct from the page background */
+  --theme-admin-card: var(--bg-card);
+  --theme-admin-card-soft: rgba(255, 255, 255, 0.02);
+  --theme-admin-text: var(--text-main);
+  --theme-admin-text-muted: var(--text-muted);
+  --theme-admin-border: rgba(255, 255, 255, 0.06);
+  --theme-admin-hover: rgba(255, 255, 255, 0.03);
 }
 
 /* --- 4. LEGACY & COMPATIBILITY ALIASES --- */
@@ -119,7 +157,7 @@
   --color-oranje: var(--theme-purple);
   --theme-purple-dark: var(--color-purple-800);
   --theme-purple-darker: var(--color-purple-900);
-  --theme-purple-lighter: var(--color-purple-200);
+  --theme-purple-lighter: var(--color-purple-100);
   /* Legacy mapping */
 }
 
@@ -147,17 +185,93 @@ a:hover {
 .bg-gradient-theme {
   background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
 }
+
+/* Text contrast for gradient-themed sections */
+.bg-gradient-theme,
+.bg-gradient-theme h1,
+.bg-gradient-theme h2,
+.bg-gradient-theme h3,
+.bg-gradient-theme h4,
+.bg-gradient-theme p,
+.bg-gradient-theme span,
+.bg-gradient-theme a,
+.bg-gradient-theme li,
+.bg-gradient-theme label,
+.bg-gradient-theme strong {
+  color: var(--text-main);
+}
+
+.dark .bg-gradient-theme,
+.dark .bg-gradient-theme h1,
+.dark .bg-gradient-theme h2,
+.dark .bg-gradient-theme h3,
+.dark .bg-gradient-theme h4,
+.dark .bg-gradient-theme p,
+.dark .bg-gradient-theme span,
+.dark .bg-gradient-theme a,
+.dark .bg-gradient-theme li,
+.dark .bg-gradient-theme label,
+.dark .bg-gradient-theme strong {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Slightly muted items (bullets, helper text) but still high contrast */
+.bg-gradient-theme .muted,
+.bg-gradient-theme .subtle,
+.bg-gradient-theme small {
+  color: rgba(255, 255, 255, 0.82) !important;
+}
+
+/* -------------------------------------------------------------------------
+   Admin UI Utilities
+   - Utility helpers used throughout admin pages (bg-admin-card, text-admin, etc.)
+   - These map to `--theme-admin-*` variables so dark mode can override them
+   ------------------------------------------------------------------------- */
+.bg-admin-card {
+  background-color: var(--theme-admin-card) !important;
+}
+
+.bg-admin-card-soft {
+  background-color: var(--theme-admin-card-soft) !important;
+}
+
+.text-admin {
+  color: var(--theme-admin-text) !important;
+}
+
+.text-admin-muted {
+  color: var(--theme-admin-text-muted) !important;
+}
+
+.border-admin {
+  border-color: var(--theme-admin-border) !important;
+}
+
+.hover\:bg-admin-hover:hover {
+  background-color: var(--theme-admin-hover) !important;
+}
+
+.ring-admin-border {
+  box-shadow: 0 0 0 1px var(--theme-admin-border) inset !important;
+}
+
 /* Page header gradient (fallback when no image) */
 .bg-gradient-theme-page-alt {
-  background: linear-gradient(135deg, #f4e9f3, #e4cbe2);  /* Light pink/purple in light mode */
+  background: linear-gradient(135deg, #f4e9f3, #e4cbe2);
+  /* Light pink/purple in light mode */
 }
 
 .dark .bg-gradient-theme-page-alt {
-  background: linear-gradient(135deg, #a16ca1, #c47bbb);  /* Keep darker purple in dark mode */
+  background: linear-gradient(135deg, #a16ca1, #c47bbb);
+  /* Keep darker purple in dark mode */
 }
 
 
 .text-gradient {
+  color: var(--theme-purple);
+}
+
+.dark .text-gradient {
   background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -180,10 +294,328 @@ a:hover {
 }
 
 .text-gradient-animated {
+  color: var(--theme-purple);
+}
+
+.dark .text-gradient-animated {
   background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end), var(--gradient-start));
   background-size: 200% 200%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  --webkit-text-fill-color: transparent;
   background-clip: text;
   animation: gradientShift 3s ease infinite;
+}
+
+/* --- 7. SHARED FORM ELEMENTS --- */
+/* Matches the 'perfect' activity form style: clean, solid, and professional */
+.form-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--theme-purple);
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-xl);
+  background-color: #f8fafc;
+  /* slate-50 */
+  border: none;
+  color: #0f172a;
+  /* slate-900 */
+  font-weight: 500;
+  font-size: var(--font-size-base);
+  transition: all 0.2s ease;
+}
+
+.dark .form-input {
+  background-color: rgba(0, 0, 0, 0.3);
+  color: #ffffff;
+}
+
+.form-input::placeholder {
+  color: #94a3b8;
+  /* slate-400 */
+}
+
+.dark .form-input::placeholder {
+  color: #64748b;
+  /* slate-500 */
+}
+
+.form-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--theme-purple);
+}
+
+textarea.form-input {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Form Buttons */
+.form-button {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius-xl);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: none;
+  font-size: var(--font-size-base);
+
+  background-color: var(--theme-purple);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.form-button:hover:not(:disabled) {
+  transform: scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.form-button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.form-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* White variant for dark backgrounds */
+.bg-gradient-theme .form-button {
+  background-color: #ffffff;
+  color: var(--color-purple-800);
+}
+
+.bg-gradient-theme .form-button:hover:not(:disabled) {
+  background-color: var(--color-white-soft);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* --- 8. VENDOR OVERRIDES (React DatePicker, etc.) --- */
+/* Custom styling for the date picker popup to match our premium look */
+
+/* Fix for browser-native select/input elements in dark mode */
+.dark select,
+.dark input {
+  color-scheme: dark;
+}
+
+select option {
+  background-color: var(--bg-card) !important;
+  color: var(--text-main) !important;
+  font-weight: normal !important;
+}
+
+.react-datepicker {
+  font-family: inherit !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-2xl) !important;
+  background-color: var(--bg-card) !important;
+  box-shadow: var(--shadow-card-elevated) !important;
+  overflow: hidden;
+  color: var(--text-main) !important;
+}
+
+.react-datepicker__header {
+  background-color: var(--theme-purple) !important;
+  border-bottom: none !important;
+  padding-top: 1rem !important;
+  border-radius: 0 !important;
+}
+
+.react-datepicker__current-month,
+.react-datepicker-time__header,
+.react-datepicker-year-header {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.9rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.react-datepicker__day-name {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-weight: 600 !important;
+}
+
+.react-datepicker__day {
+  color: var(--text-main) !important;
+  border-radius: 0.5rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-datepicker__day:hover {
+  background-color: var(--color-purple-50) !important;
+  color: var(--color-purple-600) !important;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: var(--theme-purple) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 10px rgba(var(--color-purple-500-rgb), 0.3) !important;
+}
+
+.react-datepicker__day--outside-month {
+  color: var(--text-muted) !important;
+  opacity: 0.4 !important;
+}
+
+.react-datepicker__navigation {
+  top: 1rem !important;
+}
+
+.react-datepicker__navigation-icon::before {
+  border-color: #ffffff !important;
+}
+
+/* Dark Mode support for DatePicker */
+.dark .react-datepicker {
+  background-color: var(--bg-card) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .react-datepicker__header {
+  background-color: #2d1b2d !important;
+  /* Slightly darker than card */
+}
+
+.dark .react-datepicker__day {
+  color: #ffffff !important;
+}
+
+.dark .react-datepicker__day:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+.dark .react-datepicker__day--selected {
+  background-color: var(--theme-purple) !important;
+}
+
+/* Dropdown/Year Picker Styles */
+.react-datepicker__year-read-view--down-arrow,
+.react-datepicker__month-read-view--down-arrow {
+  border-color: #ffffff !important;
+}
+
+.react-datepicker__year-dropdown,
+.react-datepicker__month-dropdown {
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0.5rem !important;
+  box-shadow: var(--shadow-card-elevated) !important;
+}
+
+.react-datepicker__year-option:hover,
+.react-datepicker__month-option:hover {
+  background-color: var(--color-purple-50) !important;
+}
+
+.dark .react-datepicker__year-option:hover,
+.dark .react-datepicker__month-option:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* --- Mobile Optimizations for DatePicker --- */
+@media (max-width: 640px) {
+  .react-datepicker {
+    width: 300px !important;
+    font-size: 0.95rem !important;
+  }
+
+  .react-datepicker__day-name,
+  .react-datepicker__day {
+    width: 2.5rem !important;
+    /* Larger touch targets for mobile */
+    line-height: 2.5rem !important;
+    margin: 0.1rem !important;
+  }
+
+  .react-datepicker__month {
+    margin: 0.4rem !important;
+  }
+
+  .react-datepicker__header {
+    padding-top: 1rem !important;
+  }
+
+  .react-datepicker__day-names {
+    margin-bottom: -0.5rem !important;
+  }
+}
+
+/* Time Picker Styling */
+.react-datepicker__time-container {
+  border-left: 1px solid var(--border-color) !important;
+  width: 100px !important;
+}
+
+.react-datepicker__time-container .react-datepicker__time {
+  background-color: var(--bg-card) !important;
+  border-bottom-right-radius: var(--radius-2xl) !important;
+}
+
+.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box {
+  width: 100% !important;
+  border-bottom-right-radius: var(--radius-2xl) !important;
+}
+
+.react-datepicker__time-list-item {
+  background-color: transparent !important;
+  color: var(--text-main) !important;
+  transition: all 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 10px 5px !important;
+  height: auto !important;
+}
+
+.react-datepicker__time-list-item:hover {
+  background-color: var(--color-purple-50) !important;
+  color: var(--color-purple-600) !important;
+}
+
+.react-datepicker__time-list-item--selected {
+  background-color: var(--theme-purple) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+/* Dark Mode Overrides for Time Picker */
+.dark .react-datepicker__time-container {
+  border-left-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .react-datepicker__time-list-item {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.dark .react-datepicker__time-list-item:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+.dark .react-datepicker__time-list-item--selected {
+  background-color: var(--theme-purple) !important;
+  color: #ffffff !important;
+}
+
+/* Ensure the wrapper respects container width */
+.react-datepicker-wrapper {
+  display: block !important;
+  width: 100% !important;
 }

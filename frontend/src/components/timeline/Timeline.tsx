@@ -13,12 +13,12 @@ type TimelineProps = {
 export default function Timeline({ boards, getImageUrl, getMemberFullName }: TimelineProps) {
     if (!boards || boards.length === 0) return null;
 
-    // Sort by year ascending (oldest to newest)
+    // Sort by year descending (newest to oldest)
     const sortedBoards = useMemo(() => {
         return [...boards].sort((a, b) => {
             const ya = a?.year ?? a?.jaar ?? a?.id ?? 0;
             const yb = b?.year ?? b?.jaar ?? b?.id ?? 0;
-            return Number(ya) - Number(yb);
+            return Number(yb) - Number(ya);
         });
     }, [boards]);
 
@@ -56,8 +56,11 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
     // Theme configuration based on mode
     const chronoTheme = useMemo(() => ({
         primary: '#663265',
+        // keep secondary subtle; use card variable for actual card background
         secondary: isDarkMode ? '#1a141b' : '#f8f9fa',
-        cardBgColor: isDarkMode ? '#1f1921' : '#ffffff',
+        // use CSS variable so cards match site's card background in both themes
+        cardBgColor: 'var(--bg-card)',
+        // title colors should adapt to theme so they're readable on the card
         titleColor: isDarkMode ? '#ffffff' : '#663265',
         titleColorActive: '#ff6b35',
         cardTitleColor: isDarkMode ? '#ffffff' : '#1a141b',
@@ -91,15 +94,18 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
     };
 
     return (
-        <div className="w-full">
+        <div className="w-full [&_.timeline-card-content]:!max-h-none [&_.timeline-card-content]:!overflow-visible [&_.card-content-wrapper]:!max-h-none [&_.card-content-wrapper]:!overflow-visible [&_.card-description]:!line-clamp-none dark:[&_.timeline-card-content]:bg-[var(--bg-card)] dark:[&_.timeline-card-content]:!text-white dark:[&_.card-title]:!text-white dark:[&_.card-subtitle]:!text-white dark:[&_.card-description]:!text-white dark:[&_.title]:!text-white dark:[&_.timeline-card-title]:!text-white dark:[&_.timeline-title]:!text-white">
             <Chrono
                 items={items}
                 mode="VERTICAL_ALTERNATING"
                 slideShow={false}
-                cardHeight={500}
+                scrollable={true}
                 theme={chronoTheme}
-                hideControls={false}
-                enableOutline={true}
+                hideControls={true}
+                enableOutline={false}
+                // @ts-expect-error: disableAutoScrollOnClick does not exist in types yet
+                disableAutoScrollOnClick={true}
+
                 fontSizes={{
                     cardSubtitle: '0.875rem',
                     cardTitle: '1.25rem',
@@ -107,7 +113,12 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                 }}
             >
                 {sortedBoards.map((board, index) => (
-                    <div key={board.id || `board-${index}`} className="p-4" data-testid={`timeline-item-${index}`}>
+                    <div key={board.id || `board-${index}`} className="p-6 space-y-4 rounded-3xl bg-[var(--bg-card)] shadow-lg border border-slate-200/5 overflow-visible" data-testid={`timeline-item-${index}`}>                        {/* Board description */}
+                        {board.omschrijving && (
+                            <div className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
+                                <p>{board.omschrijving}</p>
+                            </div>
+                        )}
                         {/* Board image */}
                         {board.image && (
                             <div className="w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-700 mb-4">
@@ -118,7 +129,7 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                                             : (getImageUrl ? getImageUrl(board.image, { width: 1200, height: 600 }) : '/img/group-jump.gif')
                                     }
                                     alt={board.naam}
-                                    className="h-48 w-full object-cover"
+                                    className="w-full max-h-48 object-contain bg-center"
                                     loading="lazy"
                                     onError={(e) => {
                                         const t = e.target as HTMLImageElement;
@@ -130,16 +141,16 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
 
                         {/* Members */}
                         {Array.isArray(board.members) && board.members.length > 0 && (
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 <div className="flex items-center gap-2 text-sm font-semibold text-paars dark:text-purple-400">
-                                    <Users className="h-4 w-4" />
-                                    <span>Bestuursleden</span>
+                                    <Users className="h-5 w-5" />
+                                    <span>Bestuursleden ({board.members.length})</span>
                                 </div>
 
-                                <div className="grid grid-cols-1 gap-2 max-h-[250px] overflow-y-auto pr-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {board.members.map((member: any) => {
                                         const avatarRef = resolvePicture(member);
-                                        let avatarSrc = '/img/placeholder.svg';
+                                            let avatarSrc = '/img/placeholder.svg';
                                         if (avatarRef) {
                                             if (typeof avatarRef === 'string' && (avatarRef.startsWith('http://') || avatarRef.startsWith('https://') || avatarRef.startsWith('/'))) {
                                                 avatarSrc = avatarRef;
@@ -159,12 +170,12 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                                         return (
                                             <div
                                                 key={member.id ?? `${board.id}-${Math.random()}`}
-                                                className="flex items-center gap-3 rounded-lg bg-slate-50 dark:bg-[#2a232b] dark:border dark:border-white/10 p-3"
+                                                className="flex items-center gap-3 rounded-xl bg-[var(--bg-card)] border border-slate-200/50 dark:border-white/10 p-3 shadow-sm hover:shadow-md transition-shadow"
                                             >
                                                 <img
                                                     src={avatarSrc}
                                                     alt={fullName}
-                                                    className="h-10 w-10 flex-shrink-0 rounded-full object-cover"
+                                                    className="h-12 w-12 flex-shrink-0 rounded-full object-cover bg-slate-100 dark:bg-slate-700 border-2 border-white/50 dark:border-slate-600"
                                                     loading="lazy"
                                                     onError={(e) => {
                                                         const t = e.target as HTMLImageElement;
@@ -176,7 +187,7 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                                                         {fullName}
                                                     </p>
                                                     {member.functie && (
-                                                        <p className="text-xs text-paars dark:text-purple-400 truncate">{member.functie}</p>
+                                                        <p className="text-xs text-paars dark:text-purple-400 truncate font-medium">{member.functie}</p>
                                                     )}
                                                 </div>
                                             </div>

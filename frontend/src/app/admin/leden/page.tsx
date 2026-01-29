@@ -51,21 +51,21 @@ function isRealUser(member: Member) {
 
 export default function LedenOverzichtPage() {
     const router = useRouter();
-    const { user, isLoading: authLoading } = useAuth();
+    const { user, isLoading: authLoading, isLoggingOut } = useAuth();
     const [members, setMembers] = useState<Member[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState<'active' | 'inactive'>('active');
 
     useEffect(() => {
-        if (!authLoading && !user) {
+        if (!authLoading && !user && !isLoggingOut) {
             const returnTo = window.location.pathname + window.location.search;
             router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
         }
-        if (user && !user.entra_id) {
+        if (user && !user.entra_id && !isLoggingOut) {
             router.push('/admin/no-access');
         }
-    }, [user, authLoading, router]);
+    }, [user, authLoading, router, isLoggingOut]);
 
     const loadMembers = async () => {
         setIsLoading(true);
@@ -163,13 +163,13 @@ export default function LedenOverzichtPage() {
                     </div>
 
                     <div className="relative w-full md:w-96">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-admin-muted" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-admin-muted pointer-events-none z-20" />
                         <input
                             type="text"
                             placeholder="Zoek op naam, email of geboortedatum..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 rounded-2xl bg-admin-card border-none shadow-lg focus:ring-2 focus:ring-theme-purple outline-none text-admin placeholder:text-admin-muted"
+                            className="form-input block w-full pl-10 pr-4 py-3 h-12 min-h-[44px] rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 shadow-lg focus:ring-2 focus:ring-theme-purple outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 z-10 appearance-none"
                         />
                     </div>
 

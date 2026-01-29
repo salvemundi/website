@@ -12,15 +12,9 @@ let msalInstance: PublicClientApplication | null = null;
 try {
     if (typeof window !== 'undefined') {
         msalInstance = new PublicClientApplication(msalConfig);
-        console.log('MSAL runtime config', {
-            // clientId: process.env.NEXT_PUBLIC_ENTRA_CLIENT_ID,
-            // tenantId: process.env.NEXT_PUBLIC_ENTRA_TENANT_ID,
-            redirectUri: process.env.NEXT_PUBLIC_AUTH_REDIRECT_URI,
-            // directusAPI: process.env.NEXT_PUBLIC_DIRECTUS_API_KEY,
-        });
     }
 } catch (error) {
-    console.error('Error details:', error);
+    // MSAL initialization failed
 }
 
 export interface AuthContextType {
@@ -31,6 +25,7 @@ export interface AuthContextType {
     logout: () => void;
     signup: (userData: SignupData) => Promise<void>;
     refreshUser: () => Promise<void>;
+    isLoggingOut: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isMsalInitializing, setIsMsalInitializing] = useState(true);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     // Check for existing session on mount
     useEffect(() => {
@@ -57,9 +53,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setIsLoading(false);
         };
 
+        // Listen for external auth refresh events (from directusFetch)
+        const onAuthRefreshed = (e: CustomEvent) => {
+            const payload = e.detail;
+            if (payload && payload.user) {
+                // If payload includes user data, use it
+                setUser(payload.user);
+            } else {
+                // Otherwise refresh our local state from the new token
+                refreshUser();
+            }
+        };
+
         window.addEventListener('auth:expired', onAuthExpired as EventListener);
+        window.addEventListener('auth:refreshed', onAuthRefreshed as EventListener);
+
+        // Proactive background refresh every 10 minutes
+        const refreshInterval = setInterval(() => {
+            const refreshToken = localStorage.getItem('refresh_token');
+            if (refreshToken && !isLoading && !isMsalInitializing && !isLoggingOut) {
+                console.log('[AuthProvider] Proactively refreshing token...');
+                authApi.refreshAccessToken(refreshToken)
+                    .then(response => {
+                        localStorage.setItem('auth_token', response.access_token);
+                        localStorage.setItem('refresh_token', response.refresh_token);
+                        setUser(response.user);
+                    })
+                    .catch(e => {
+                        console.error('[AuthProvider] Proactive refresh failed:', e);
+                    });
+            }
+        }, 10 * 60 * 1000);
+
         return () => {
             window.removeEventListener('auth:expired', onAuthExpired as EventListener);
+            window.removeEventListener('auth:refreshed', onAuthRefreshed as EventListener);
+            clearInterval(refreshInterval);
         };
     }, []);
 
@@ -157,9 +186,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 if (response && response.account) {
                     msalInstance.setActiveAccount(response.account);
                     await handleLoginSuccess(response);
+                } else {
+                    // Proactively restore active account from cache if nothing was returned by redirect
+                    const accounts = msalInstance.getAllAccounts();
+                    if (accounts.length > 0) {
+                        const account = accounts[0];
+                        msalInstance.setActiveAccount(account);
+
+                        // If we are not currently authenticated with Directus, 
+                        // attempt a silent token acquisition to log back in
+                        const currentToken = localStorage.getItem('auth_token');
+                        if (!user && !currentToken) {
+                            console.log('[AuthProvider] Active MSAL account found, attempting silent login...');
+                            try {
+                                const silentResult = await msalInstance.acquireTokenSilent({
+                                    ...loginRequest,
+                                    account: account
+                                });
+                                if (silentResult) {
+                                    await handleLoginSuccess(silentResult);
+                                }
+                            } catch (silentError) {
+                                // Silent acquisition failed, user might need to click login
+                                console.warn('[AuthProvider] Silent MSAL token acquisition failed:', silentError);
+                            }
+                        }
+                    }
                 }
             } catch (error) {
-                console.error('Error handling redirect promise:', error);
+                console.error('Error handling MSAL initialization:', error);
             } finally {
                 setIsMsalInitializing(false);
             }
@@ -271,6 +326,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const logout = async () => {
+        setIsLoggingOut(true);
         const refreshToken = localStorage.getItem('refresh_token');
         if (refreshToken) {
             try {
@@ -317,6 +373,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         setUser(null);
+        // We keep isLoggingOut true until the page is reloaded or redirected
     };
 
     const refreshUser = async () => {
@@ -345,6 +402,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 user,
                 isAuthenticated: !!user,
                 isLoading: isLoading || isMsalInitializing,
+                isLoggingOut,
                 loginWithMicrosoft,
                 logout,
                 signup,
