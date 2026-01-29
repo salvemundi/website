@@ -119,28 +119,36 @@ function KroegentochtConfirmationContent() {
                             We hebben een bevestigingsmail naar je gestuurd met de details.
                         </p>
 
-                        {/* Display QR code if available */}
+                        {/* Display QR codes if available */}
                         {signupData && signupData.qr_token && (
                             <div className="mt-8">
-                                <h2 className="text-2xl font-bold text-white">Jouw Ticket{signupData.amount_tickets > 1 ? 's' : ''}</h2>
-                                <p className="text-white/90 mb-4">
-                                    Bewaar deze QR-code of laat deze zien bij de ingang.
-                                    {signupData.amount_tickets > 1 && ` Dit ticket is geldig voor ${signupData.amount_tickets} personen.`}
+                                <h2 className="text-2xl font-bold text-white mb-2">Jouw Tickets</h2>
+                                <p className="text-white/90 mb-6 font-medium">
+                                    Hieronder vind je de {signupData.amount_tickets} tickets voor jouw groep.
+                                    <br />
+                                    <strong>Let op:</strong> Iedere deelnemer heeft een eigen QR-code nodig. Maak screenshots en stuur ze door naar je vrienden, of gebruik de e-mail die we net hebben gestuurd.
                                 </p>
 
-                                <div className="bg-white/10 p-4 rounded-xl">
-                                    <div className="flex justify-center">
-                                        <QRDisplay qrToken={signupData.qr_token} size={200} />
-                                    </div>
-                                    {signupData.amount_tickets > 1 && (
-                                        <p className="text-center text-white/80 mt-2 text-sm">
-                                            Geldig voor {signupData.amount_tickets} personen
-                                        </p>
-                                    )}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {(signupData.name_initials ? JSON.parse(signupData.name_initials) : Array.from({ length: signupData.amount_tickets }).map((_, i) => ({ name: `Deelnemer ${i + 1}`, initial: '' }))).map((p: any, index: number) => (
+                                        <div key={index} className="bg-white/10 p-6 rounded-xl border border-white/10 flex flex-col items-center text-center">
+                                            <div className="bg-theme-purple text-white text-xs font-bold px-3 py-1 rounded-full mb-3">
+                                                TICKET {index + 1}
+                                            </div>
+                                            <h3 className="font-bold text-white text-lg mb-1">{p.name} {p.initial}</h3>
+                                            <p className="text-white/60 text-sm mb-4">{signupData.pub_crawl_event_id?.name || 'Kroegentocht'}</p>
+
+                                            <div className="bg-white p-2 rounded-lg shadow-lg">
+                                                <QRDisplay qrToken={`${signupData.qr_token}#${index}`} size={180} />
+                                            </div>
+
+                                            <p className="text-white/50 text-xs mt-3">Scan bij ingang</p>
+                                        </div>
+                                    ))}
                                 </div>
 
-                                <p className="text-center text-sm text-white/70 mt-4">
-                                    Deze QR-code is ook per e-mail naar je verzonden.
+                                <p className="text-center text-sm text-white/70 mt-8">
+                                    Deze tickets zijn ook per e-mail naar je verzonden.
                                 </p>
                             </div>
                         )}
