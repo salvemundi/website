@@ -588,7 +588,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                                 DIRECTUS_API_TOKEN,
                                 'trips',
                                 tripSignup.trip_id,
-                                'id,name,event_date,base_price,deposit_amount,crew_discount,is_bus_trip'
+                                'id,name,event_date,start_date,end_date,base_price,deposit_amount,crew_discount,is_bus_trip'
                             );
                             console.warn(`[Webhook][${traceId}] Trip fetched:`, {
                                 id: trip.id,
