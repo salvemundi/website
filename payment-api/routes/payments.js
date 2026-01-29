@@ -64,7 +64,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                     // Fetch trip signup and trip data
                     const tripSignup = registrationId ? await directusService.getDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'trip_signups', registrationId, 'id,trip_id,role,deposit_paid,full_payment_paid') : null;
                     if (tripSignup) {
-                        const trip = await directusService.getDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'trips', tripSignup.trip_id, 'id,base_price,crew_discount');
+                        const trip = await directusService.getDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'trips', tripSignup.trip_id, 'id,base_price,crew_discount,deposit_amount');
                         if (trip) {
                             // Get selected activities for signup
                             const signupActivities = await directusService.getTripSignupActivities(DIRECTUS_URL, DIRECTUS_API_TOKEN, registrationId);
@@ -86,9 +86,10 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
 
                             const base = Number(trip.base_price) || 0;
                             const discount = tripSignup.role === 'crew' ? (Number(trip.crew_discount) || 0) : 0;
-                            const authoritativeTotal = base + activitiesTotal - discount;
-                            finalAmount = authoritativeTotal;
-                            console.warn(`[Payment][${traceId}] Recalculated authoritative amount: ${finalAmount}`);
+                            const deposit = Number(trip.deposit_amount) || 0;
+                            const authoritativeTotal = base + activitiesTotal - discount - deposit;
+                            finalAmount = Math.max(0, authoritativeTotal);
+                            console.warn(`[Payment][${traceId}] Recalculated authoritative amount (with deposit correction): ${finalAmount}`);
                         }
                     }
                 }
@@ -509,7 +510,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                         // Generate single QR token for pub crawl signup
                         const qrToken = generateQRToken(registrationId, pubCrawlEventId);
                         console.warn(`[Webhook][${traceId}] Generated QR token for pub crawl signup ${registrationId}: ${qrToken}`);
-                        
+
                         // Store the token in qr_token
                         updatePayload.qr_token = qrToken;
 
