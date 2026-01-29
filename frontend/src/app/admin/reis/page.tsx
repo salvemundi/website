@@ -180,28 +180,87 @@ export default function ReisAanmeldingenPage() {
         return statusMap[status] || { label: status, color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' };
     };
 
-    const downloadExcel = () => {
+    const downloadExcel = async () => {
         if (filteredSignups.length === 0) return;
 
-        const excelData = filteredSignups.map(signup => ({
-            'Voornaam': signup.first_name,
-            'Tussenvoegsel': signup.middle_name || '',
-            'Achternaam': signup.last_name,
-            'Volledige naam': `${signup.first_name} ${signup.middle_name || ''} ${signup.last_name}`.trim(),
-            'Email': signup.email,
-            'Telefoonnummer': signup.phone_number,
-            'Geboortedatum': signup.date_of_birth ? format(new Date(signup.date_of_birth), 'dd-MM-yyyy') : '',
-            'ID Type': signup.id_document_type || '',
-            'Allergieën': signup.allergies || '',
-            'Bijzonderheden': signup.special_notes || '',
-            'Wil rijden': signup.willing_to_drive ? 'Ja' : 'Nee',
-            'Rol': signup.role === 'crew' ? 'Crew' : 'Deelnemer',
-            'Status': getStatusBadge(signup.status).label,
-            'Betalingstatus': getPaymentStatus(signup).label,
-            'Aanbetaling betaald op': signup.deposit_paid_at ? format(new Date(signup.deposit_paid_at), 'dd-MM-yyyy HH:mm') : '',
-            'Volledige betaling op': signup.full_payment_paid_at ? format(new Date(signup.full_payment_paid_at), 'dd-MM-yyyy HH:mm') : '',
-            'Aangemeld op': format(new Date(signup.created_at), 'dd-MM-yyyy HH:mm'),
-        }));
+        // Clone current map to avoid mutating state directly during calculation
+        let currentMap = { ...signupActivitiesMap };
+
+        // Ensure all activities for filtered signups are loaded
+        const missingIds = filteredSignups
+            .filter(s => !currentMap[s.id])
+            .map(s => s.id);
+
+        if (missingIds.length > 0) {
+            try {
+                // Fetch all activities for missing signups in one go
+                const allActivities = await directusFetch<any[]>(
+                    `/items/trip_signup_activities?filter[trip_signup_id][_in]=${missingIds.join(',')}&fields=trip_signup_id,trip_activity_id.*,selected_options`
+                );
+
+                allActivities.forEach(it => {
+                    const signupId = it.trip_signup_id;
+                    if (!currentMap[signupId]) currentMap[signupId] = [];
+
+                    const a = it.trip_activity_id;
+                    if (!a) return;
+
+                    let activityName = a.name || a.title || '';
+                    let activityPrice = Number(a.price) || 0;
+
+                    const selectedOptions = it.selected_options;
+                    if (selectedOptions && Array.isArray(selectedOptions) && a.options) {
+                        const addedOptions: string[] = [];
+                        selectedOptions.forEach((optName: string) => {
+                            const optDef = a.options.find((o: any) => o.name === optName);
+                            if (optDef) {
+                                activityPrice += Number(optDef.price) || 0;
+                                addedOptions.push(optName);
+                            }
+                        });
+                        if (addedOptions.length > 0) {
+                            activityName += ` (+ ${addedOptions.join(', ')})`;
+                        }
+                    }
+                    currentMap[signupId].push({ id: a.id, name: activityName, price: activityPrice });
+                });
+
+                // Update state for future use
+                setSignupActivitiesMap(currentMap);
+            } catch (err) {
+                console.error('Failed to pre-fetch activities for export:', err);
+            }
+        }
+
+        const excelData = filteredSignups.map(signup => {
+            const idDoc = signup.id_document_type || (signup as any).id_document || '';
+            const idDocLabel = idDoc === 'passport' ? 'Paspoort' : idDoc === 'id_card' ? 'ID Kaart' : idDoc;
+
+            const activities = currentMap[signup.id] || [];
+            const activitiesStr = activities.map(a => a.name).join(', ');
+
+            return {
+                'Voornaam': signup.first_name,
+                'Tussenvoegsel': signup.middle_name || '',
+                'Achternaam': signup.last_name,
+                'Volledige naam': `${signup.first_name} ${signup.middle_name || ''} ${signup.last_name}`.trim(),
+                'Email': signup.email,
+                'Telefoonnummer': signup.phone_number,
+                'Geboortedatum': signup.date_of_birth ? format(new Date(signup.date_of_birth), 'dd-MM-yyyy') : '',
+                'ID Type': idDocLabel,
+                'Document nummer': signup.document_number || '',
+                'Allergieën': signup.allergies || '',
+                'Bijzonderheden': signup.special_notes || '',
+                'Activiteiten': activitiesStr,
+                'Wil rijden': signup.willing_to_drive ? 'Ja' : 'Nee',
+                'Rol': signup.role === 'crew' ? 'Crew' : 'Deelnemer',
+                'Status': getStatusBadge(signup.status).label,
+                'Betalingstatus': getPaymentStatus(signup).label,
+                'Aanbetaling betaald op': signup.deposit_paid_at ? format(new Date(signup.deposit_paid_at), 'dd-MM-yyyy HH:mm') : '',
+                'Volledige betaling op': signup.full_payment_paid_at ? format(new Date(signup.full_payment_paid_at), 'dd-MM-yyyy HH:mm') : '',
+                'Aangemeld op': format(new Date(signup.created_at), 'dd-MM-yyyy HH:mm'),
+            };
+        });
 
         const worksheet = XLSX.utils.json_to_sheet(excelData);
         const workbook = XLSX.utils.book_new();
