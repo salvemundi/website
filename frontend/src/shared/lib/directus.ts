@@ -172,8 +172,8 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit, 
             // ignore logging errors
         }
 
-        // Add diagnostic logging for 403 Forbidden responses to help debug permission issues.
-        if (response.status === 403) {
+        // Add diagnostic logging for 403 Forbidden responses (development only)
+        if (response.status === 403 && process.env.NODE_ENV === 'development') {
             (async () => {
                 try {
                     // Prepare headers for diagnostic calls but avoid printing secret tokens

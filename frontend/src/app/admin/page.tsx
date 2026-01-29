@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
 import { stickersApi, eventsApi, siteSettingsApi } from '@/shared/lib/api/salvemundi';
+import { isUserAuthorizedForReis, isUserAuthorizedForIntro, isUserAuthorizedForKroegentocht } from '@/shared/lib/committee-utils';
 import {
     Users,
     Calendar,
@@ -291,7 +292,7 @@ export default function AdminDashboardPage() {
                 reisStats
             ] = await Promise.all([
                 // Total event signups
-                directusFetch<any>('/items/event_signups?aggregate[count]=*'),
+                directusFetch<any>('/items/event_signups?aggregate[count]=*').catch(() => [{ count: 0 }]),
                 // Users with birthdays in next 7 days
                 fetchUpcomingBirthdays(),
                 // Top sticker collectors
@@ -303,22 +304,21 @@ export default function AdminDashboardPage() {
                 // Sticker stats (total + growth)
                 fetchStickerStats(),
                 // Intro newsletter/blog stats
-                fetchIntroStats(),
-                // System health
-                fetchSystemHealth(),
+                isUserAuthorizedForIntro(effectiveUser) ? fetchIntroStats() : Promise.resolve({ signups: 0, blogLikes: 0, mostLikedPost: undefined }),
+                // System health - only for ICT/Bestuur
+                isIctMember ? fetchSystemHealth() : Promise.resolve({ errors: 0 }),
                 // Upcoming events with signup counts
                 fetchUpcomingEventsWithSignups(),
                 // Latest activities (most recent 4) with signup counts
                 fetchLatestEventsWithSignups(),
                 // Top committee by activities this year
-                fetchTopCommitteeByActivities(),
+                fetchTopStickerCollectors().then(() => fetchTopCommitteeByActivities()), // chaining ensure we don't spam
                 // Total active coupons
-                // (moved for ordering above)
                 directusFetch<any>('/items/coupons?aggregate[count]=*&filter[is_active][_eq]=true').catch(() => [{ count: 0 }]),
                 // Pub crawl stats
-                fetchPubCrawlStats(),
+                isUserAuthorizedForKroegentocht(effectiveUser) ? fetchPubCrawlStats() : Promise.resolve({ signups: 0, upcomingEvent: undefined }),
                 // Reis signups
-                fetchReisStats()
+                isUserAuthorizedForReis(effectiveUser) ? fetchReisStats() : Promise.resolve(0)
             ]);
 
             setStats({
@@ -355,7 +355,7 @@ export default function AdminDashboardPage() {
         try {
             // Fetch all users with birthdays
             // Use limit=-1 to fetch ALL users, otherwise default is 100
-            const users = await directusFetch<any[]>('/users?fields=id,first_name,last_name,date_of_birth&filter[date_of_birth][_nnull]=true&limit=-1');
+            const users = await directusFetch<any[]>('/users?fields=id,first_name,last_name,date_of_birth&filter[date_of_birth][_nnull]=true&limit=-1').catch(() => []);
 
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -427,7 +427,7 @@ export default function AdminDashboardPage() {
             // Get only visible committees
             const committees = await directusFetch<any[]>(
                 '/items/committees?fields=id&filter[is_visible][_eq]=true'
-            );
+            ).catch(() => []);
 
             if (committees.length === 0) {
                 return 0;
@@ -438,7 +438,7 @@ export default function AdminDashboardPage() {
             // Fetch user ids for members and deduplicate so a user in multiple committees is counted once
             const members = await directusFetch<any[]>(
                 `/items/committee_members?fields=user_id.id,user_id&filter[committee_id][_in]=${committeeIds.join(',')}&limit=-1`
-            );
+            ).catch(() => []);
 
             const userIds = members
                 .map(m => {
@@ -491,7 +491,7 @@ export default function AdminDashboardPage() {
 
     const fetchEventsStats = async () => {
         try {
-            const allEvents = await directusFetch<any[]>('/items/events?fields=id,event_date&limit=-1');
+            const allEvents = await directusFetch<any[]>('/items/events?fields=id,event_date&limit=-1').catch(() => []);
             const now = new Date();
 
             const upcoming = allEvents.filter(event => new Date(event.event_date) >= now);
@@ -583,7 +583,7 @@ export default function AdminDashboardPage() {
             const currentYear = new Date().getFullYear();
 
             // Use eventsApi to respect permissions
-            const allEvents = await eventsApi.getAll();
+            const allEvents = await eventsApi.getAll().catch(() => []);
 
             // Filter events from this year using `event_date`
             const eventsThisYear = allEvents.filter((event: any) => {
@@ -596,7 +596,7 @@ export default function AdminDashboardPage() {
             const committeeCounts: Record<string, { name: string; count: number }> = {};
 
             // Fetch all committees to map IDs to names
-            const committees = await directusFetch<any[]>('/items/committees?fields=id,name');
+            const committees = await directusFetch<any[]>('/items/committees?fields=id,name').catch(() => []);
             const committeeMap = new Map(committees.map(c => [c.id, c.name]));
 
             eventsThisYear.forEach((event: any) => {
@@ -638,7 +638,7 @@ export default function AdminDashboardPage() {
 
     const fetchUpcomingEventsWithSignups = async () => {
         try {
-            const allEvents = await directusFetch<any[]>('/items/events?fields=id,name,event_date&limit=-1');
+            const allEvents = await directusFetch<any[]>('/items/events?fields=id,name,event_date&limit=-1').catch(() => []);
             const now = new Date();
 
             const upcoming = allEvents.filter(event => new Date(event.event_date) >= now);
@@ -647,7 +647,7 @@ export default function AdminDashboardPage() {
             const eventsWithSignups = await Promise.all(
                 upcoming.slice(0, 5).map(async (event) => {
                     try {
-                        const signups = await directusFetch<any>(`/items/event_signups?aggregate[count]=*&filter[event_id][_eq]=${event.id}`);
+                        const signups = await directusFetch<any>(`/items/event_signups?aggregate[count]=*&filter[event_id][_eq]=${event.id}`).catch(() => []);
                         return {
                             id: event.id,
                             name: event.name,
@@ -675,12 +675,12 @@ export default function AdminDashboardPage() {
     const fetchLatestEventsWithSignups = async () => {
         try {
             // Fetch latest events (use `event_date` only)
-            const allEvents = await directusFetch<any[]>('/items/events?fields=id,name,event_date&sort=-event_date&limit=4');
+            const allEvents = await directusFetch<any[]>('/items/events?fields=id,name,event_date&sort=-event_date&limit=4').catch(() => []);
 
             const eventsWithSignups = await Promise.all(
                 (allEvents || []).map(async (event) => {
                     try {
-                        const signups = await directusFetch<any>(`/items/event_signups?aggregate[count]=*&filter[event_id][_eq]=${event.id}`);
+                        const signups = await directusFetch<any>(`/items/event_signups?aggregate[count]=*&filter[event_id][_eq]=${event.id}`).catch(() => []);
                         return {
                             id: event.id,
                             name: event.name,
@@ -708,7 +708,7 @@ export default function AdminDashboardPage() {
     const fetchPubCrawlStats = async () => {
         try {
             // Get upcoming pub crawl event
-            const allEvents = await directusFetch<any[]>('/items/pub_crawl_events?fields=id,name,date&sort=-date');
+            const allEvents = await directusFetch<any[]>('/items/pub_crawl_events?fields=id,name,date&sort=-date').catch(() => []);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
@@ -723,7 +723,7 @@ export default function AdminDashboardPage() {
             }
 
             // Get all signups for upcoming event so we can compute total tickets and groups
-            const signupsItems = await directusFetch<any[]>(`/items/pub_crawl_signups?filter[pub_crawl_event_id][_eq]=${upcomingEvent.id}&limit=-1&fields=id,amount_tickets`);
+            const signupsItems = await directusFetch<any[]>(`/items/pub_crawl_signups?filter[pub_crawl_event_id][_eq]=${upcomingEvent.id}&limit=-1&fields=id,amount_tickets`).catch(() => []);
             const groups = Array.isArray(signupsItems) ? signupsItems.length : 0;
             const totalTickets = Array.isArray(signupsItems)
                 ? signupsItems.reduce((sum, s) => sum + (Number(s.amount_tickets) || 0), 0)
@@ -823,14 +823,16 @@ export default function AdminDashboardPage() {
                             onClick={() => router.push('/admin/activiteiten')}
                             colorClass="purple"
                         />
-                        <StatCard
-                            title="Beheer"
-                            value="intro"
-                            icon={<FileText className="h-6 w-6" />}
-                            subtitle={`aanmeldingen:  ${stats.introSignups}`}
-                            onClick={() => router.push('/admin/intro')}
-                            colorClass="blue"
-                        />
+                        {isUserAuthorizedForIntro(effectiveUser) && (
+                            <StatCard
+                                title="Beheer"
+                                value="intro"
+                                icon={<FileText className="h-6 w-6" />}
+                                subtitle={`aanmeldingen: ${stats.introSignups}`}
+                                onClick={() => router.push('/admin/intro')}
+                                colorClass="blue"
+                            />
+                        )}
                         <StatCard
                             title="Overzicht"
                             value="Leden"
@@ -839,23 +841,27 @@ export default function AdminDashboardPage() {
                             onClick={() => router.push('/admin/leden')}
                             colorClass="green"
                         />
-                        <StatCard
-                            title="beheer"
-                            value="reis"
-                            icon={<FileText className="h-6 w-6" />}
-                            subtitle="Beheer reis instellingen"
-                            onClick={() => router.push('/admin/reis')}
-                            colorClass="teal"
-                        />
-                        <StatCard
-                            title="beheer"
-                            value="kroegentocht"
-                            icon={<Ticket className="h-6 w-6" />}
-                            subtitle={`aanmeldingen:  ${stats.pubCrawlSignups}`}
-                            onClick={() => router.push('/admin/kroegentocht')}
-                            colorClass="orange"
-                            nowrap
-                        />
+                        {isUserAuthorizedForReis(effectiveUser) && (
+                            <StatCard
+                                title="beheer"
+                                value="reis"
+                                icon={<FileText className="h-6 w-6" />}
+                                subtitle={`aanmeldingen: ${stats.reisSignups}`}
+                                onClick={() => router.push('/admin/reis')}
+                                colorClass="teal"
+                            />
+                        )}
+                        {isUserAuthorizedForKroegentocht(effectiveUser) && (
+                            <StatCard
+                                title="beheer"
+                                value="kroegentocht"
+                                icon={<Ticket className="h-6 w-6" />}
+                                subtitle={`aanmeldingen: ${stats.pubCrawlSignups}`}
+                                onClick={() => router.push('/admin/kroegentocht')}
+                                colorClass="orange"
+                                nowrap
+                            />
+                        )}
                     </div>
                 </div>
 
@@ -877,14 +883,16 @@ export default function AdminDashboardPage() {
                                             onClick={() => router.push('/admin/activiteiten/nieuw')}
                                             colorClass="purple"
                                         />
-                                        <ActionCard
-                                            title="Nieuwe"
-                                            subtitle="Intro Post"
-                                            icon={<FileText className="h-6 w-6" />}
-                                            onClick={() => router.push('/admin/intro?tab=blogs&create=1')}
-                                            colorClass="blue"
-                                            disabled={!visibilitySettings.intro}
-                                        />
+                                        {isUserAuthorizedForIntro(effectiveUser) && (
+                                            <ActionCard
+                                                title="Nieuwe"
+                                                subtitle="Intro Post"
+                                                icon={<FileText className="h-6 w-6" />}
+                                                onClick={() => router.push('/admin/intro?tab=blogs&create=1')}
+                                                colorClass="blue"
+                                                disabled={!visibilitySettings.intro}
+                                            />
+                                        )}
                                     </div>
 
                                     {/* Removed small 'Beheer' buttons here per request */}
