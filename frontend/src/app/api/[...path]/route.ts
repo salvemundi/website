@@ -192,11 +192,18 @@ export async function POST(
             'jobs',
             'safe_havens',
             'documents',
+            'files',
+            'assets',
         ];
 
         const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
         // Special case: login/auth/refresh should be allowed
-        const isAuthPath = path.startsWith('auth/') || path === 'users/me' || path.includes('/auth/') || path.startsWith('directus-extension-');
+        const isAuthPath =
+            path.startsWith('auth/') ||
+            path.startsWith('users/me') ||
+            path.includes('/auth/') ||
+            path.startsWith('directus-extension-') ||
+            path.startsWith('extensions/');
 
         let canBypass = false;
         const authHeader = request.headers.get('Authorization');
@@ -396,10 +403,17 @@ export async function PATCH(
             'jobs',
             'safe_havens',
             'documents',
+            'files',
+            'assets',
         ];
 
         const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
-        const isUserSelfUpdate = path === 'users/me';
+        const isAuthPath =
+            path.startsWith('auth/') ||
+            path.startsWith('users/me') ||
+            path.includes('/auth/') ||
+            path.startsWith('directus-extension-') ||
+            path.startsWith('extensions/');
 
         let canBypass = false;
         const authHeader = request.headers.get('Authorization');
@@ -426,7 +440,7 @@ export async function PATCH(
             }
         }
 
-        if (!isAllowed && !isUserSelfUpdate && !canBypass) {
+        if (!isAllowed && !isAuthPath && !canBypass) {
             console.warn(`[Directus Proxy] BLOCKED PATCH attempt to unauthorized path: ${path} from IP: ${ip}`);
             return NextResponse.json({ error: 'Forbidden', message: 'Unauthorized path' }, { status: 403 });
         }
@@ -612,9 +626,17 @@ export async function DELETE(
             'jobs',
             'safe_havens',
             'documents',
+            'files',
+            'assets',
         ];
 
         const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
+        const isAuthPath =
+            path.startsWith('auth/') ||
+            path.startsWith('users/me') ||
+            path.includes('/auth/') ||
+            path.startsWith('directus-extension-') ||
+            path.startsWith('extensions/');
 
         let canBypass = false;
         const authHeader = request.headers.get('Authorization');
@@ -641,7 +663,7 @@ export async function DELETE(
             }
         }
 
-        if (!isAllowed && !canBypass) {
+        if (!isAllowed && !isAuthPath && !canBypass) {
             console.warn(`[Directus Proxy] BLOCKED DELETE attempt to unauthorized path: ${path} from IP: ${ip}`);
             return NextResponse.json({ error: 'Forbidden', message: 'Unauthorized path' }, { status: 403 });
         }

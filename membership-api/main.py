@@ -7,6 +7,8 @@ import unidecode
 from fastapi import FastAPI, HTTPException, Request, BackgroundTasks, APIRouter
 from pydantic import BaseModel
 import httpx
+import asyncio
+
 
 app = FastAPI()
 
