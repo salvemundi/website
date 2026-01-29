@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isRateLimited, getClientIp } from '@/shared/lib/rate-limit';
+
 
 const DIRECTUS_URL = 'https://admin.salvemundi.nl';
 
@@ -142,6 +144,39 @@ export async function POST(
     console.warn(`[Directus Proxy] POST ${path} -> ${targetUrl}`);
 
     try {
+        // 1. Rate Limiting for writes
+        const ip = getClientIp(request);
+        if (isRateLimited(`proxy_write_${ip}`, { windowMs: 60 * 1000, max: 10 })) {
+            return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+        }
+
+        // 2. Path Whitelisting (Security Guard)
+        // Only allow POST to specific public-facing collections via the proxy.
+        // Internal collections (directus_*) should never be accessible here.
+        const allowedCollections = [
+            'event_signups',
+            'pub_crawl_signups',
+            'intro_signups',
+            'intro_parent_signups',
+            'intro_newsletter_subscribers',
+            'Stickers', // for adding stickers in the field
+            'blog_likes',
+            'trip_signups',
+            'trip_signup_activities',
+            'events', // for committee members creating activities
+            'intro_blogs',
+            'intro_planning',
+        ];
+
+        const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
+        // Special case: login/auth/refresh should be allowed
+        const isAuthPath = path.startsWith('auth/') || path === 'users/me';
+
+        if (!isAllowed && !isAuthPath) {
+            console.warn(`[Directus Proxy] BLOCKED POST attempt to unauthorized path: ${path} from IP: ${ip}`);
+            return NextResponse.json({ error: 'Forbidden', message: 'Unauthorized path' }, { status: 403 });
+        }
+
         const forwardHeaders: Record<string, string> = {};
         const auth = request.headers.get('Authorization');
         if (auth) forwardHeaders['Authorization'] = auth;
@@ -265,6 +300,34 @@ export async function PATCH(
     console.warn(`[Directus Proxy] PATCH ${path} -> ${targetUrl}`);
 
     try {
+        // 1. Rate Limiting for writes
+        const ip = getClientIp(request);
+        if (isRateLimited(`proxy_write_${ip}`, { windowMs: 60 * 1000, max: 10 })) {
+            return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+        }
+
+        // 2. Path Whitelisting
+        const allowedCollections = [
+            'event_signups',
+            'pub_crawl_signups',
+            'intro_signups',
+            'intro_parent_signups',
+            'Stickers',
+            'trip_signups',
+            'events',
+            'intro_blogs',
+            'intro_planning',
+            'site_settings', // for admin toggles
+        ];
+
+        const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
+        const isUserSelfUpdate = path === 'users/me';
+
+        if (!isAllowed && !isUserSelfUpdate) {
+            console.warn(`[Directus Proxy] BLOCKED PATCH attempt to unauthorized path: ${path} from IP: ${ip}`);
+            return NextResponse.json({ error: 'Forbidden', message: 'Unauthorized path' }, { status: 403 });
+        }
+
         const forwardHeaders: Record<string, string> = {};
         const auth = request.headers.get('Authorization');
         if (auth) forwardHeaders['Authorization'] = auth;
@@ -404,6 +467,33 @@ export async function DELETE(
     console.warn(`[Directus Proxy] DELETE ${path} -> ${targetUrl}`);
 
     try {
+        // 1. Rate Limiting
+        const ip = getClientIp(request);
+        if (isRateLimited(`proxy_write_${ip}`, { windowMs: 60 * 1000, max: 10 })) {
+            return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+        }
+
+        // 2. Path Whitelisting
+        const allowedCollections = [
+            'event_signups',
+            'pub_crawl_signups',
+            'Stickers',
+            'trip_signups',
+            'trip_signup_activities',
+            'events',
+            'intro_signups',
+            'intro_parent_signups',
+            'intro_blogs',
+            'intro_planning',
+        ];
+
+        const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
+
+        if (!isAllowed) {
+            console.warn(`[Directus Proxy] BLOCKED DELETE attempt to unauthorized path: ${path} from IP: ${ip}`);
+            return NextResponse.json({ error: 'Forbidden', message: 'Unauthorized path' }, { status: 403 });
+        }
+
         const response = await fetch(targetUrl, {
             method: 'DELETE',
             headers: {

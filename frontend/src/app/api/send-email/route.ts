@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isRateLimited, getClientIp } from '@/shared/lib/rate-limit';
+
 
 /**
  * API Route: /api/send-email
@@ -9,7 +11,26 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
     try {
         console.log('📧 /api/send-email: Request received');
+
+        // 1. Rate Limiting (Prevent DoS/Spam)
+        const ip = getClientIp(request);
+        if (isRateLimited(`email_${ip}`, { windowMs: 60 * 1000, max: 5 })) {
+            console.warn(`📧 /api/send-email: Rate limit exceeded for IP: ${ip}`);
+            return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+        }
+
+        // 2. Secret Token Verification (Prevent unauthorized relay)
+        // If NEXT_PUBLIC_INTERNAL_API_SECRET is set, we require it in the headers.
+        const secret = process.env.NEXT_PUBLIC_INTERNAL_API_SECRET;
+        const incomingSecret = request.headers.get('x-internal-api-secret');
+
+        if (secret && incomingSecret !== secret) {
+            console.error('📧 /api/send-email: Unauthorized access attempt (invalid secret)');
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const body = await request.json();
+
 
         const { to, from, fromName, subject, html, attachments } = body;
 

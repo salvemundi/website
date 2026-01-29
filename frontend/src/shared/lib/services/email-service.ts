@@ -135,6 +135,7 @@ async function sendEmail(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-internal-api-secret': process.env.NEXT_PUBLIC_INTERNAL_API_SECRET || '',
       },
       body: JSON.stringify({
         to,

@@ -134,6 +134,7 @@ export default function EventDetailPage() {
                 name: fullName || "",
                 email: user.email || "",
                 phoneNumber: user.phone_number || "",
+                website: "",
             });
         }
     }, [user]);
