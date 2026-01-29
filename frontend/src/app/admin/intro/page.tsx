@@ -385,7 +385,10 @@ export default function IntroAdminPage() {
             'Email': s.email,
             'Telefoonnummer': s.phone_number,
             'Favoriete GIF': s.favorite_gif || '',
-            'Aangemeld op': format(new Date(s.created_at), 'dd-MM-yyyy HH:mm', { locale: nl })
+            'Aangemeld op': (() => {
+                const d = parseDirectusDate(s.created_at);
+                return d ? format(d, 'dd-MM-yyyy HH:mm', { locale: nl }) : '';
+            })()
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(data);
@@ -401,7 +404,10 @@ export default function IntroAdminPage() {
             'Email': s.email,
             'Telefoonnummer': s.phone_number,
             'Motivatie': s.motivation || '',
-            'Aangemeld op': s.created_at ? format(new Date(s.created_at), 'dd-MM-yyyy HH:mm', { locale: nl }) : ''
+            'Aangemeld op': (() => {
+                const d = parseDirectusDate(s.created_at);
+                return d ? format(d, 'dd-MM-yyyy HH:mm', { locale: nl }) : '';
+            })()
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(data);
