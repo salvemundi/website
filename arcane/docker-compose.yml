@@ -1,3 +1,4 @@
+services:
   arcane:
     image: getarcaneapp/arcane:latest
     container_name: arcane
