@@ -18,7 +18,7 @@ docker:
     - "directus"
     - "directus_db"
     - "frontend-dev"
-    - "payment-api"
+    - "payment-api-dev"
 
 functional:
   http_checks:
