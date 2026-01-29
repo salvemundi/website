@@ -62,6 +62,7 @@ export default function EventDetailPage() {
         name: "",
         email: "",
         phoneNumber: "",
+        website: "", // Honeypot field
     });
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -225,7 +226,7 @@ export default function EventDetailPage() {
 
     const isPaidAndHasQR = signupStatus.isSignedUp && signupStatus.paymentStatus === 'paid' && !!signupStatus.qrToken;
 
-    
+
 
     // Form handlers
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -236,7 +237,7 @@ export default function EventDetailPage() {
         }
     };
 
-    
+
 
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
@@ -250,6 +251,24 @@ export default function EventDetailPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // A Honeypot check: If the hidden website field is filled, it's a bot.
+        if (formData.website) {
+            console.log("Bot detected via honeypot");
+            // Pretend success to fool the bot
+            setSignupStatus({
+                isSignedUp: true,
+                paymentStatus: 'paid'
+            });
+            return;
+        }
+
+        // B Name content check: simple spam filter for URLs in name
+        if (formData.name.match(/https?:\/\//) || formData.name.includes('www.') || formData.name.includes('http')) {
+            console.log("Bot detected via name content");
+            setSubmitError('Ongeldige invoer (spam gedetecteerd).');
+            return;
+        }
 
         // Safety check: prevent submission if deadline has passed
         if (isDeadlinePassed) {
@@ -538,6 +557,20 @@ export default function EventDetailPage() {
                                         Inschrijven
                                     </h3>
                                     <form onSubmit={handleSubmit} className="space-y-4 flex flex-col">
+                                        {/* Honeypot field - hidden from users */}
+                                        <div className="opacity-0 absolute top-0 left-0 h-0 w-0 -z-10 pointer-events-none overflow-hidden" aria-hidden="true">
+                                            <label htmlFor="website">Website</label>
+                                            <input
+                                                type="text"
+                                                id="website"
+                                                name="website"
+                                                value={formData.website}
+                                                onChange={handleInputChange}
+                                                tabIndex={-1}
+                                                autoComplete="off"
+                                            />
+                                        </div>
+
                                         {/* Name */}
                                         <div>
                                             <label htmlFor="name" className="block text-sm font-semibold text-theme-purple dark:text-white mb-1">Naam *</label>
