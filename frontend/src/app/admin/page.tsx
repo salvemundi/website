@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
-import { stickersApi, eventsApi } from '@/shared/lib/api/salvemundi';
+import { stickersApi, eventsApi, siteSettingsApi } from '@/shared/lib/api/salvemundi';
 import { isUserAuthorizedForReis, isUserAuthorizedForIntro, isUserAuthorizedForKroegentocht } from '@/shared/lib/committee-utils';
 import {
     Users,
