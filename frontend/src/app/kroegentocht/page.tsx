@@ -35,7 +35,8 @@ interface Participant {
 
 export default function KroegentochtPage() {
     const [form, setForm] = useState({
-        name: '',
+        first_name: '',
+        last_initial: '',
         email: '',
         association: '',
         customAssociation: '',
@@ -162,10 +163,21 @@ export default function KroegentochtPage() {
             return;
         }
 
-        // Validate all participants have name and initial
-        const invalidParticipants = participants.some(p => !p.name.trim() || !p.initial.trim());
+        // Validate registrant first name and last-initial
+        if (!form.first_name || !form.first_name.trim()) {
+            setError('Vul je voornaam in.');
+            return;
+        }
+
+        if (!/^[A-Za-z]$/.test(String(form.last_initial).trim())) {
+            setError('Vul de eerste letter van de achternaam in (exact 1 letter).');
+            return;
+        }
+
+        // Validate all participants have name and initial (initial must be exactly 1 letter)
+        const invalidParticipants = participants.some(p => !p.name.trim() || !/^[A-Za-z]$/.test(String(p.initial).trim()));
         if (invalidParticipants) {
-            setError('Vul voor alle tickets een naam en eerste letter achternaam in.');
+            setError('Vul voor alle tickets een naam en 1-letter eerste letter van de achternaam in.');
             return;
         }
 
@@ -194,7 +206,8 @@ export default function KroegentochtPage() {
             }
 
             const signup = await pubCrawlSignupsApi.create({
-                name: form.name,
+                // store registrant as "FirstName I" (initial)
+                name: `${form.first_name} ${form.last_initial}`,
                 email: form.email,
                 association: finalAssociation,
                 amount_tickets: finalAmount,
@@ -217,8 +230,8 @@ export default function KroegentochtPage() {
                 registrationId: signup.id,
                 registrationType: 'pub_crawl_signup', // Tell backend which collection to update
                 email: form.email,
-                firstName: form.name.split(' ')[0],
-                lastName: form.name.split(' ').slice(1).join(' '),
+                firstName: form.first_name,
+                lastName: form.last_initial,
                 isContribution: false
             };
 
@@ -313,7 +326,8 @@ export default function KroegentochtPage() {
                                         onClick={() => {
                                             setSubmitted(false);
                                             setForm({
-                                                name: '',
+                                                first_name: '',
+                                                last_initial: '',
                                                 email: '',
                                                 association: '',
                                                 customAssociation: '',
@@ -340,19 +354,34 @@ export default function KroegentochtPage() {
                                         </div>
                                     )}
 
-                                    {/* Name */}
-                                    <label className="font-semibold text-white">
-                                        Naam
-                                        <input
-                                            type="text"
-                                            name="name"
-                                            value={form.name}
-                                            onChange={handleChange}
-                                            required
-                                            placeholder="Voor- en achternaam"
-                                            className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
-                                        />
-                                    </label>
+                                    {/* Registrant first name + last initial */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        <label className="sm:col-span-2 font-semibold text-white">
+                                            Voornaam
+                                            <input
+                                                type="text"
+                                                name="first_name"
+                                                value={form.first_name}
+                                                onChange={handleChange}
+                                                required
+                                                placeholder="Voornaam"
+                                                className="mt-1 p-2 rounded w-full bg-white text-theme-purple dark:bg-gray-800 dark:text-theme"
+                                            />
+                                        </label>
+                                        <label className="font-semibold text-white">
+                                            Eerste letter achternaam
+                                            <input
+                                                type="text"
+                                                name="last_initial"
+                                                value={form.last_initial}
+                                                onChange={(e) => setForm({ ...form, last_initial: e.target.value.slice(0,1).toUpperCase() })}
+                                                required
+                                                placeholder="Bijv. S"
+                                                maxLength={1}
+                                                className="mt-1 p-2 rounded w-full bg-white text-theme-purple text-sm uppercase dark:bg-gray-800 dark:text-theme"
+                                            />
+                                        </label>
+                                    </div>
 
                                     {/* Email */}
                                     <label className="font-semibold text-white">
