@@ -39,6 +39,7 @@ interface TripSignup {
     phone_number: string;
     date_of_birth: string | null;
     id_document_type: string | null;
+    document_number: string | null;
     allergies: string | null;
     special_notes: string | null;
     willing_to_drive: boolean | null;
@@ -705,6 +706,7 @@ export default function ReisAanmeldingenPage() {
                                                                     <p className="text-sm text-admin">{signup.email}</p>
                                                                     <p className="text-sm text-admin">{signup.phone_number || '-'}</p>
                                                                     <p className="text-sm text-admin">ID Type: {(signup.id_document_type || (signup as any).id_document) === 'passport' ? 'Paspoort' : (signup.id_document_type || (signup as any).id_document) === 'id_card' ? 'ID Kaart' : ((signup.id_document_type || (signup as any).id_document) || '-')}</p>
+                                                                    <p className="text-sm text-admin">Document nummer: {signup.document_number || '-'}</p>
                                                                 </div>
                                                                 <div>
                                                                     <p className="text-sm font-semibold text-admin">Extra informatie</p>
