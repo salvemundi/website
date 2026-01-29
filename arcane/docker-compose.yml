@@ -1,6 +1,5 @@
-services:
   arcane:
-    image: arcaneui/arcane:latest
+    image: getarcaneapp/arcane:latest
     container_name: arcane
     restart: unless-stopped
     security_opt:
