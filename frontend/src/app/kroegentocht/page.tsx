@@ -508,10 +508,10 @@ export default function KroegentochtPage() {
                         <div className="w-full lg:w-1/2 flex flex-col gap-6">
                             {/* Event Info */}
                             <div className="bg-gradient-theme rounded-3xl p-6 shadow-lg">
-                                <h2 className="text-2xl font-bold text-title mb-4">
+                                <h2 className="text-2xl font-bold text-white mb-4">
                                     🍻 Over de Kroegentocht
                                 </h2>
-                                <div className="text-theme-text-muted dark:text-theme-text-muted space-y-3">
+                                <div className="text-white/90 space-y-3">
                                     {eventsLoading ? (
                                         <p>Evenementomschrijving wordt geladen...</p>
                                     ) : nextEvent?.description ? (
@@ -534,13 +534,13 @@ export default function KroegentochtPage() {
 
                             {/* Details */}
                             <div className="bg-gradient-theme rounded-3xl p-6 shadow-lg">
-                                <h2 className="text-2xl font-bold text-title mb-4">
+                                <h2 className="text-2xl font-bold text-white mb-4">
                                     📅 Evenement Details
                                 </h2>
                                 {eventsLoading ? (
                                     <div className="text-white">Evenementgegevens worden geladen...</div>
                                 ) : nextEvent ? (
-                                    <div className="text-theme-text-muted dark:text-theme-text-muted space-y-4">
+                                    <div className="text-white/90 space-y-4">
                                         {nextEvent.image && (
                                             <img
                                                 src={getImageUrl(nextEvent.image)}
@@ -557,25 +557,25 @@ export default function KroegentochtPage() {
 
                                         <div className="space-y-2">
                                             <div className="flex items-start gap-2">
-                                                <span className="font-semibold text-title">Evenement:</span>
+                                                <span className="font-semibold text-white">Evenement:</span>
                                                 <span>{nextEvent.name}</span>
                                             </div>
                                             <div className="flex items-start gap-2">
-                                                <span className="font-semibold text-title">Datum:</span>
+                                                <span className="font-semibold text-white">Datum:</span>
                                                 <span>{formattedNextEventDate ?? 'Nog te bepalen'}</span>
                                             </div>
                                             <div className="flex items-start gap-2">
-                                                <span className="font-semibold text-title">Organisatie:</span>
+                                                <span className="font-semibold text-white">Organisatie:</span>
                                                 <span>{nextEvent.association || 'Salve Mundi'}</span>
                                             </div>
                                             <div className="flex items-start gap-2">
-                                                <span className="font-semibold text-title">Contact:</span>
-                                                <a href={`mailto:${nextEvent.email}`} className="underline text-theme-purple dark:text-theme-white break-all">
+                                                <span className="font-semibold text-white">Contact:</span>
+                                                <a href={`mailto:${nextEvent.email}`} className="underline text-white break-all">
                                                     {nextEvent.email}
                                                 </a>
                                             </div>
                                             <div className="flex items-start gap-2">
-                                                <span className="font-semibold text-title">Locatie:</span>
+                                                <span className="font-semibold text-white">Locatie:</span>
                                                 <span>Verschillende locaties in Eindhoven</span>
                                             </div>
                                         </div>
@@ -589,29 +589,29 @@ export default function KroegentochtPage() {
 
                             {/* Important Info */}
                             <div className="bg-gradient-theme rounded-3xl p-6 shadow-lg">
-                                <h2 className="text-2xl font-bold text-title mb-4">
+                                <h2 className="text-2xl font-bold text-white mb-4">
                                     ℹ️ Belangrijke Informatie
                                 </h2>
-                                <div className="text-theme-text-muted dark:text-theme-text-muted space-y-2">
+                                <div className="text-white/90 space-y-2">
                                     <p className="flex items-start gap-2">
-                                        <span className="text-theme-text-muted dark:text-theme-text-muted">•</span>
+                                        <span className="text-white/80">•</span>
                                         <span>Je hoeft <strong>geen lid</strong> te zijn om deel te nemen</span>
                                     </p>
                                     <p className="flex items-start gap-2">
-                                        <span className="text-theme-text-muted dark:text-theme-text-muted">•</span>
+                                        <span className="text-white/80">•</span>
                                         <span>Je ontvangt een bevestigingsmail na inschrijving</span>
                                     </p>
                                     <p className="flex items-start gap-2">
-                                        <span className="text-theme-text-muted dark:text-theme-text-muted">•</span>
+                                        <span className="text-white/80">•</span>
                                         <span>Minimumleeftijd: 18 jaar</span>
                                     </p>
                                     <p className="flex items-start gap-2">
-                                        <span className="text-theme-text-muted dark:text-theme-text-muted">•</span>
+                                        <span className="text-white/80">•</span>
                                         <span>Tickets zijn overdraagbaar</span>
                                     </p>
                                     <p className="flex items-start gap-2">
-                                        <span className="text-theme-text-muted dark:text-theme-text-muted">•</span>
-                                        <span>Bij vragen? Neem contact op via <a href="/contact" className="text-theme-purple dark:text-white underline">onze contactpagina</a></span>
+                                        <span className="text-white/80">•</span>
+                                        <span>Bij vragen? Neem contact op via <a href="/contact" className="text-white underline">onze contactpagina</a></span>
                                     </p>
                                 </div>
                             </div>

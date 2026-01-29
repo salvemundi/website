@@ -556,15 +556,38 @@ export default function AccountPage() {
                   </h2>
 
                   <div className="mt-4 flex flex-wrap justify-center gap-2">
-                    {user.is_member ? (
-                      <span className="px-4 py-1.5 bg-theme-purple text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-lg">
-                        Fontys Student
-                      </span>
-                    ) : (
-                      <span className="px-4 py-1.5 bg-slate-100 dark:bg-white/5 border border-theme-purple/20 text-theme-purple dark:text-white text-[10px] font-black uppercase tracking-wider rounded-full">
-                        Gebruiker
-                      </span>
-                    )}
+                    {(() => {
+                      // Check if user is a committee leader
+                      const isCommitteeLeader = user.committees?.some(c => c.is_leader) ?? false;
+                      // Check if user is in any committee
+                      const isInCommittee = (user.committees?.length ?? 0) > 0;
+
+                      if (isCommitteeLeader) {
+                        return (
+                          <span className="px-4 py-1.5 bg-gradient-to-r from-theme-purple to-theme-purple-light text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-lg">
+                            Commissie Leider
+                          </span>
+                        );
+                      } else if (isInCommittee) {
+                        return (
+                          <span className="px-4 py-1.5 bg-theme-purple text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-lg">
+                            Actief Lid
+                          </span>
+                        );
+                      } else if (user.is_member) {
+                        return (
+                          <span className="px-4 py-1.5 bg-theme-purple/80 text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-lg">
+                            Lid
+                          </span>
+                        );
+                      } else {
+                        return (
+                          <span className="px-4 py-1.5 bg-slate-100 dark:bg-white/5 border border-theme-purple/20 text-theme-purple dark:text-white text-[10px] font-black uppercase tracking-wider rounded-full">
+                            Gebruiker
+                          </span>
+                        );
+                      }
+                    })()}
 
                     <span
                       className={`px-4 py-1.5 ${membershipStatus.color} ${membershipStatus.textColor} text-[10px] font-black uppercase tracking-wider rounded-full shadow-lg`}
