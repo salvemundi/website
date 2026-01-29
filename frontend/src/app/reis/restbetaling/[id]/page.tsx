@@ -107,8 +107,8 @@ export default function RestbetalingPage() {
                 email: signupData.email,
                 phone_number: signupData.phone_number,
                 date_of_birth: signupData.date_of_birth || '',
-                id_document_type: (signupData.id_document_type as 'passport' | 'id_card') || '',
-                allergies: signupData.allergies || '',
+                id_document_type: (signupData.id_document_type || (signupData as any).id_document as 'passport' | 'id_card') || '',
+                allergies: signupData.allergies || (signupData as any).alergies || '',
                 special_notes: signupData.special_notes || '',
             });
         } catch (err: any) {

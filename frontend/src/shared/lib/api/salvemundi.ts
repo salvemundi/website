@@ -1146,7 +1146,9 @@ export interface TripSignup {
     phone_number: string;
     date_of_birth?: string;
     id_document_type?: 'passport' | 'id_card';
+    id_document?: 'passport' | 'id_card'; // Legacy/Typo support
     allergies?: string;
+    alergies?: string; // Legacy/Typo support
     special_notes?: string;
     willing_to_drive?: boolean;
     role: 'participant' | 'crew';
