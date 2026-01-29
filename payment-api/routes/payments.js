@@ -166,32 +166,33 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
             // If the SERVER is not strictly 'production', we NEVER auto-approve.
             // This prevents a dev server from auto-provisioning accounts even if the request claims to be production.
             const serverEnv = process.env.NODE_ENV || 'development';
-            // 1. Fetch settings to see if manual approval is required
-
-            let manualApprovalSetting = false;
-            try {
-                const settings = await directusService.getPaymentSettings(DIRECTUS_URL, DIRECTUS_API_TOKEN);
-                manualApprovalSetting = settings && settings.manual_approval === true;
-            } catch (err) {
-                console.error(`[Payment][${traceId}] Failed to check manual approval settings, defaulting to false:`, err);
-            }
-
-            // 2. Determine approval status
             let approvalStatus = 'pending';
 
             if (serverEnv === 'production') {
-                approvalStatus = manualApprovalSetting ? 'pending' : 'auto_approved';
+                // In production, we trust the flow to auto-approve normal signups...
+                // UNLESS Manual Approval is triggered via site settings.
+
+                // Fetch settings
+                try {
+                    const settings = await directusService.getPaymentSettings(DIRECTUS_URL, DIRECTUS_API_TOKEN);
+                    if (settings && settings.manual_approval === true) {
+                        console.warn(`[Payment][${traceId}] Manual Approval Mode is ACTIVE. Forcing 'pending' status.`);
+                        approvalStatus = 'pending';
+                    } else {
+                        approvalStatus = 'auto_approved';
+                    }
+                } catch (err) {
+                    console.error(`[Payment][${traceId}] Failed to check manual approval settings, defaulting to auto_approved:`, err);
+                    approvalStatus = 'auto_approved';
+                }
             } else {
-                // In dev/test environment
+                // In dev/test, we FORCE pending.
                 if (requestEnvironment === 'production') {
                     console.warn(`[Payment][${traceId}] SECURITY ALERT: Request claimed 'production' but server is '${serverEnv}'. Forcing status to 'pending'.`);
-                    approvalStatus = 'pending';
-                } else {
-                    // If it's a dev request on a dev server, we can allow auto-approval if the user hasn't forced manual mode
-                    approvalStatus = manualApprovalSetting ? 'pending' : 'auto_approved';
-                    console.warn(`[Payment][${traceId}] Dev environment detected. Approval status: ${approvalStatus} (manual_approval=${manualApprovalSetting})`);
                 }
+                approvalStatus = 'pending';
             }
+
 
 
             let effectiveEnvironment = requestEnvironment;
