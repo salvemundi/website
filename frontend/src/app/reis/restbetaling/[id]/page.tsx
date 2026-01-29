@@ -299,7 +299,9 @@ export default function RestbetalingPage() {
                 )}
 
                 {/* Personal Information */}
-                <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border-t-4 border-purple-600 mb-8">
+                {/* Personal Information */}
+                <div className="bg-white dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border border-[var(--border-color)] dark:border-white/10 mb-8 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-purple-600"></div>
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center">
                             <FileText className="h-6 w-6 text-purple-600 mr-3" />
@@ -425,7 +427,7 @@ export default function RestbetalingPage() {
                             <div className="flex gap-4 justify-end">
                                 <button
                                     onClick={() => setEditMode(false)}
-                                    className="px-6 py-3 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-[var(--text-muted-dark)] rounded-lg hover:bg-gray-50 dark:hover:bg-[var(--bg-soft-dark)] transition"
+                                    className="px-6 py-3 border border-[var(--border-color)] dark:border-white/10 text-gray-700 dark:text-[var(--text-muted-dark)] rounded-lg hover:bg-[var(--bg-main)] dark:hover:bg-white/5 transition"
                                     disabled={submitting}
                                 >
                                     Annuleren
@@ -488,100 +490,105 @@ export default function RestbetalingPage() {
                             )}
                         </div>
                     )}
-                </div>
+                </div >
 
                 {/* Selected Activities */}
-                {selectedActivities.length > 0 && (
-                    <div className="bg-purple-50 rounded-xl shadow-lg p-8 border-t-4 border-blue-600 mb-8">
-                        <div className="flex items-center mb-6">
-                            <Utensils className="h-6 w-6 text-blue-600 mr-3" />
-                            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 break-words">Geselecteerde activiteiten</h2>
-                        </div>
+                {/* Selected Activities */}
+                {
+                    selectedActivities.length > 0 && (
+                        <div className="bg-white dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border border-[var(--border-color)] dark:border-white/10 mb-8 relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-blue-600"></div>
+                            <div className="flex items-center mb-6">
+                                <Utensils className="h-6 w-6 text-blue-600 mr-3" />
+                                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 break-words">Geselecteerde activiteiten</h2>
+                            </div>
 
-                        <div className="space-y-4">
-                            {selectedActivities.map(activity => (
-                                <div key={activity.id} className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
-                                    {activity.image && (
-                                        <Image
-                                            src={getImageUrl(activity.image)}
-                                            alt={activity.name}
-                                            width={80}
-                                            height={80}
-                                            className="rounded-lg object-cover"
-                                        />
-                                    )}
-                                    <div className="flex-1">
-                                        <h3 className="font-bold text-gray-900 break-words">{activity.name}</h3>
-                                        <p className="text-sm text-gray-600">{activity.description}</p>
-                                        {selectedActivityOptions[activity.id] && selectedActivityOptions[activity.id].length > 0 && (
-                                            <div className="mt-2 text-sm text-purple-700 bg-purple-50 p-2 rounded inline-block">
-                                                <span className="font-semibold">Opties:</span> {selectedActivityOptions[activity.id].join(', ')}
-                                            </div>
+                            <div className="space-y-4">
+                                {selectedActivities.map(activity => (
+                                    <div key={activity.id} className="flex items-start gap-4 p-4 bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-100 dark:border-white/5">
+                                        {activity.image && (
+                                            <Image
+                                                src={getImageUrl(activity.image)}
+                                                alt={activity.name}
+                                                width={80}
+                                                height={80}
+                                                className="rounded-lg object-cover"
+                                            />
                                         )}
+                                        <div className="flex-1">
+                                            <h3 className="font-bold text-gray-900 dark:text-white break-words">{activity.name}</h3>
+                                            <p className="text-sm text-gray-600 dark:text-[var(--text-muted-dark)]">{activity.description}</p>
+                                            {selectedActivityOptions[activity.id] && selectedActivityOptions[activity.id].length > 0 && (
+                                                <div className="mt-2 text-sm text-purple-700 bg-purple-50 p-2 rounded inline-block">
+                                                    <span className="font-semibold">Opties:</span> {selectedActivityOptions[activity.id].join(', ')}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-lg font-bold text-blue-600">€{Number(activity.price).toFixed(2)}</p>
+                                        </div>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="text-lg font-bold text-blue-600">€{Number(activity.price).toFixed(2)}</p>
-                                    </div>
+                                ))}
+                            </div>
+
+                            {!success && (
+                                <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                                    <p className="text-sm text-blue-700 mb-3">
+                                        <strong>Tip:</strong> Je kunt je activiteiten nog aanpassen tot je de restbetaling hebt voldaan.
+                                    </p>
+                                    <a
+                                        href={`/reis/activiteiten/${signupId}`}
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
+                                    >
+                                        <Edit className="h-4 w-4" />
+                                        Activiteiten aanpassen
+                                    </a>
                                 </div>
-                            ))}
+                            )}
+
+                            {success && (
+                                <div className="mt-4 p-4 bg-gray-100 rounded-lg text-sm text-gray-600">
+                                    <strong>Let op:</strong> Wijzigingen in activiteiten zijn niet meer mogelijk.
+                                    Neem contact op met de reiscommissie als je wijzigingen wilt doorvoeren.
+                                </div>
+                            )}
                         </div>
-
-                        {!success && (
-                            <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                                <p className="text-sm text-blue-700 mb-3">
-                                    <strong>Tip:</strong> Je kunt je activiteiten nog aanpassen tot je de restbetaling hebt voldaan.
-                                </p>
-                                <a
-                                    href={`/reis/activiteiten/${signupId}`}
-                                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
-                                >
-                                    <Edit className="h-4 w-4" />
-                                    Activiteiten aanpassen
-                                </a>
-                            </div>
-                        )}
-
-                        {success && (
-                            <div className="mt-4 p-4 bg-gray-100 rounded-lg text-sm text-gray-600">
-                                <strong>Let op:</strong> Wijzigingen in activiteiten zijn niet meer mogelijk.
-                                Neem contact op met de reiscommissie als je wijzigingen wilt doorvoeren.
-                            </div>
-                        )}
-                    </div>
-                )}
+                    )
+                }
 
                 {/* Payment Calculation */}
-                <div className="bg-purple-50 rounded-xl shadow-lg p-8 border-t-4 border-green-600">
+                <div className="bg-white dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border border-[var(--border-color)] dark:border-white/10 mb-8 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-green-600"></div>
                     <div className="flex items-center mb-6">
                         <Calculator className="h-6 w-6 text-green-600 mr-3" />
                         <h2 className="text-2xl font-bold text-gray-900">Kostenoverzicht</h2>
                     </div>
 
                     <div className="space-y-4 mb-6">
-                        <div className="flex justify-between items-center py-3 border-b">
-                            <span className="text-gray-700">Basisprijs reis</span>
-                            <span className="font-semibold text-gray-900">€{costs.basePrice.toFixed(2)}</span>
+                        <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-white/10">
+                            <span className="text-gray-700 dark:text-[var(--text-muted-dark)]">Basisprijs reis</span>
+                            <span className="font-semibold text-gray-900 dark:text-white">€{costs.basePrice.toFixed(2)}</span>
                         </div>
 
                         {costs.activities > 0 && (
-                            <div className="flex justify-between items-center py-3 border-b">
-                                <span className="text-gray-700">Activiteiten</span>
-                                <span className="font-semibold text-gray-900">€{costs.activities.toFixed(2)}</span>
+                            <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-white/10">
+                                <span className="text-gray-700 dark:text-[var(--text-muted-dark)]">Activiteiten</span>
+                                <span className="font-semibold text-gray-900 dark:text-white">€{costs.activities.toFixed(2)}</span>
                             </div>
                         )}
 
                         {costs.discount > 0 && (
-                            <div className="flex justify-between items-center py-3 border-b">
-                                <span className="text-gray-700">Crew korting</span>
-                                <span className="font-semibold text-green-600">-€{costs.discount.toFixed(2)}</span>
+                            <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-white/10">
+                                <span className="text-gray-700 dark:text-[var(--text-muted-dark)]">Crew korting</span>
+                                <span className="font-semibold text-green-600 dark:text-green-400">-€{costs.discount.toFixed(2)}</span>
                             </div>
                         )}
 
 
 
-                        <div className="flex justify-between items-center py-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg px-4 mt-4">
-                            <span className="text-xl font-bold text-gray-900">Te betalen</span>
-                            <span className="text-3xl font-bold text-purple-600">€{costs.remaining.toFixed(2)}</span>
+                        <div className="flex justify-between items-center py-4 bg-[var(--bg-soft)] dark:bg-white/5 rounded-lg px-4 mt-4 border border-purple-100 dark:border-white/10">
+                            <span className="text-xl font-bold text-gray-900 dark:text-white">Te betalen</span>
+                            <span className="text-3xl font-bold text-purple-600 dark:text-purple-400">€{costs.remaining.toFixed(2)}</span>
                         </div>
                     </div>
 
@@ -623,7 +630,7 @@ export default function RestbetalingPage() {
                         </div>
                     )}
                 </div>
-            </div>
+            </div >
         </>
     );
 }
