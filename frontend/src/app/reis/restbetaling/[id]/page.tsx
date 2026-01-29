@@ -190,8 +190,8 @@ export default function RestbetalingPage() {
         const discount = signup?.role === 'crew' ? (Number(trip.crew_discount) || 0) : 0;
         const total = basePrice + activitiesTotal - discount;
         const deposit = Number(trip.deposit_amount) || 0;
-        // For rest payment: show the camp price + activities (do NOT subtract the deposit here)
-        const remaining = Math.max(0, total);
+        // For rest payment: total - deposit
+        const remaining = Math.max(0, total - deposit);
 
         return {
             basePrice,
@@ -566,14 +566,43 @@ export default function RestbetalingPage() {
 
                     <div className="space-y-4 mb-6">
                         <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-white/10">
-                            <span className="text-gray-700 dark:text-[var(--text-muted-dark)]">Basisprijs reis</span>
+                            <span className="font-medium text-gray-900 dark:text-white">Basisprijs reis</span>
                             <span className="font-semibold text-gray-900 dark:text-white">€{costs.basePrice.toFixed(2)}</span>
                         </div>
 
-                        {costs.activities > 0 && (
-                            <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-white/10">
-                                <span className="text-gray-700 dark:text-[var(--text-muted-dark)]">Activiteiten</span>
-                                <span className="font-semibold text-gray-900 dark:text-white">€{costs.activities.toFixed(2)}</span>
+                        {selectedActivities.length > 0 && (
+                            <div className="py-3 border-b border-gray-100 dark:border-white/10">
+                                <span className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Activiteiten</span>
+                                <div className="space-y-2 pl-2">
+                                    {selectedActivities.map(activity => {
+                                        let actPrice = Number(activity.price) || 0;
+                                        const opts = selectedActivityOptions[activity.id] || [];
+                                        let optPrice = 0;
+                                        if (activity.options) {
+                                            opts.forEach(optName => {
+                                                const o = activity.options?.find(opt => opt.name === optName);
+                                                if (o) optPrice += Number(o.price);
+                                            });
+                                        }
+                                        const itemTotal = actPrice + optPrice;
+
+                                        return (
+                                            <div key={activity.id} className="flex justify-between items-start text-sm">
+                                                <div className="text-gray-600 dark:text-gray-300">
+                                                    <span>{activity.name}</span>
+                                                    {opts.length > 0 && (
+                                                        <span className="block text-xs text-gray-500">
+                                                            (+ {opts.join(', ')})
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <span className="font-medium text-gray-900 dark:text-white">
+                                                    €{itemTotal.toFixed(2)}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
                         )}
 
@@ -584,7 +613,10 @@ export default function RestbetalingPage() {
                             </div>
                         )}
 
-
+                        <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-white/10">
+                            <span className="text-gray-700 dark:text-[var(--text-muted-dark)]">Reeds betaalde aanbetaling</span>
+                            <span className="font-semibold text-green-600 dark:text-green-400">-€{costs.deposit.toFixed(2)}</span>
+                        </div>
 
                         <div className="flex justify-between items-center py-4 bg-[var(--bg-soft)] dark:bg-white/5 rounded-lg px-4 mt-4 border border-purple-100 dark:border-white/10">
                             <span className="text-xl font-bold text-gray-900 dark:text-white">Te betalen</span>
