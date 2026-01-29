@@ -35,8 +35,6 @@ interface Participant {
 
 export default function KroegentochtPage() {
     const [form, setForm] = useState({
-        first_name: '',
-        last_initial: '',
         email: '',
         association: '',
         customAssociation: '',
@@ -163,14 +161,14 @@ export default function KroegentochtPage() {
             return;
         }
 
-        // Validate registrant first name and last-initial
-        if (!form.first_name || !form.first_name.trim()) {
-            setError('Vul je voornaam in.');
+        // Validate that at least the first participant has a name and initial
+        if (participants.length === 0 || !participants[0].name.trim()) {
+            setError('Vul de naam van de eerste deelnemer in.');
             return;
         }
 
-        if (!/^[A-Za-z]$/.test(String(form.last_initial).trim())) {
-            setError('Vul de eerste letter van de achternaam in (exact 1 letter).');
+        if (!/^[A-Za-z]$/.test(String(participants[0].initial).trim())) {
+            setError('Vul de eerste letter van de achternaam in voor de eerste deelnemer.');
             return;
         }
 
@@ -205,9 +203,12 @@ export default function KroegentochtPage() {
                 throw new Error('Aantal deelnemers komt niet overeen met het opgegeven aantal tickets.');
             }
 
+            // Use first participant's info as primary registration name
+            const primaryName = `${participants[0].name} ${participants[0].initial}`;
+
             const signup = await pubCrawlSignupsApi.create({
-                // store registrant as "FirstName I" (initial)
-                name: `${form.first_name} ${form.last_initial}`,
+                // store registrant as "FirstName I." (initial)
+                name: primaryName,
                 email: form.email,
                 association: finalAssociation,
                 amount_tickets: finalAmount,
@@ -230,8 +231,8 @@ export default function KroegentochtPage() {
                 registrationId: signup.id,
                 registrationType: 'pub_crawl_signup', // Tell backend which collection to update
                 email: form.email,
-                firstName: form.first_name,
-                lastName: form.last_initial,
+                firstName: participants[0].name,
+                lastName: participants[0].initial,
                 isContribution: false
             };
 
@@ -325,8 +326,6 @@ export default function KroegentochtPage() {
                                             onClick={() => {
                                                 setSubmitted(false);
                                                 setForm({
-                                                    first_name: '',
-                                                    last_initial: '',
                                                     email: '',
                                                     association: '',
                                                     customAssociation: '',
@@ -352,35 +351,6 @@ export default function KroegentochtPage() {
                                                 Momenteel is er geen kroegentocht gepland. Houd deze pagina in de gaten voor nieuwe data!
                                             </div>
                                         )}
-
-                                        {/* Registrant first name + last initial */}
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                            <div className="sm:col-span-2">
-                                                <label className="form-label">Voornaam</label>
-                                                <input
-                                                    type="text"
-                                                    name="first_name"
-                                                    value={form.first_name}
-                                                    onChange={handleChange}
-                                                    required
-                                                    placeholder="Voornaam"
-                                                    className="form-input"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="form-label">Eerste letter achternaam</label>
-                                                <input
-                                                    type="text"
-                                                    name="last_initial"
-                                                    value={form.last_initial}
-                                                    onChange={(e) => setForm({ ...form, last_initial: e.target.value.slice(0, 1).toUpperCase() })}
-                                                    required
-                                                    placeholder="Bijv. S"
-                                                    maxLength={1}
-                                                    className="form-input uppercase"
-                                                />
-                                            </div>
-                                        </div>
 
                                         {/* Email */}
                                         <div>
