@@ -5,7 +5,7 @@ import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import QRDisplay from '@/entities/activity/ui/QRDisplay';
 import { motion } from 'framer-motion';
 import { CheckCircle, Home, XCircle, Loader2, AlertTriangle } from 'lucide-react';
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useRef } from 'react';
 import { pubCrawlSignupsApi, transactionsApi } from '@/shared/lib/api/salvemundi';
 
 function KroegentochtConfirmationContent() {
@@ -16,6 +16,7 @@ function KroegentochtConfirmationContent() {
     const [status, setStatus] = useState<'loading' | 'paid' | 'open' | 'failed' | 'error'>('loading');
     const [retryCount, setRetryCount] = useState(0);
     const [signupData, setSignupData] = useState<any>(null);
+    const hasSentEmail = useRef(false);
 
     useEffect(() => {
         if (!transactionId && !signupId) {
@@ -27,13 +28,19 @@ function KroegentochtConfirmationContent() {
             try {
                 let statusValue = 'open';
                 let signup = null;
-                
+                let currentSignupId = signupId;
+
                 console.log('[Kroegentocht Bevestiging] Checking status, retry:', retryCount);
-                
+
                 if (transactionId) {
                     console.log('[Kroegentocht Bevestiging] Checking transaction:', transactionId);
                     const transaction = await transactionsApi.getById(transactionId);
                     statusValue = transaction.payment_status;
+                    if (transaction.pub_crawl_signup) {
+                        currentSignupId = typeof transaction.pub_crawl_signup === 'object'
+                            ? transaction.pub_crawl_signup.id
+                            : transaction.pub_crawl_signup;
+                    }
                     console.log('[Kroegentocht Bevestiging] Transaction status:', statusValue);
                 } else if (signupId) {
                     console.log('[Kroegentocht Bevestiging] Checking signup:', signupId);
@@ -46,11 +53,26 @@ function KroegentochtConfirmationContent() {
                 if (statusValue === 'paid') {
                     console.log('[Kroegentocht Bevestiging] ✅ Payment is PAID!');
                     // Make sure we have signup data when paid
-                    if (!signup && signupId) {
-                        signup = await pubCrawlSignupsApi.getById(signupId);
+                    if (!signup && currentSignupId) {
+                        signup = await pubCrawlSignupsApi.getById(currentSignupId);
                         setSignupData(signup);
                     }
                     setStatus('paid');
+
+                    // Trigger email with tickets if not sent in this session yet
+                    if (!hasSentEmail.current && (currentSignupId || (signup && signup.id))) {
+                        hasSentEmail.current = true;
+                        console.log('[Kroegentocht Bevestiging] Triggering ticket email...');
+                        fetch('/api/send-kroegentocht-tickets', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ signupId: currentSignupId || signup.id })
+                        }).then(res => {
+                            if (res.ok) console.log('[Kroegentocht Bevestiging] Email trigger sent.');
+                            else console.warn('[Kroegentocht Bevestiging] Email trigger failed status:', res.status);
+                        }).catch(err => console.error('[Kroegentocht Bevestiging] Email trigger error:', err));
+                    }
+
                 } else if (statusValue === 'failed' || statusValue === 'canceled' || statusValue === 'expired') {
                     console.log('[Kroegentocht Bevestiging] ❌ Payment failed/canceled/expired');
                     setStatus('failed');
@@ -105,7 +127,7 @@ function KroegentochtConfirmationContent() {
                                     Bewaar deze QR-code of laat deze zien bij de ingang.
                                     {signupData.amount_tickets > 1 && ` Dit ticket is geldig voor ${signupData.amount_tickets} personen.`}
                                 </p>
-                                
+
                                 <div className="bg-white/10 p-4 rounded-xl">
                                     <div className="flex justify-center">
                                         <QRDisplay qrToken={signupData.qr_token} size={200} />

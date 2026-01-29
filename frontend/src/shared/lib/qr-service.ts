@@ -127,12 +127,58 @@ export async function updatePubCrawlSignupWithQRToken(signupId: number, token: s
 
 export async function checkInPubCrawlParticipant(qrToken: string) {
     try {
-        const signups = await directusFetch<any[]>(`/items/pub_crawl_signups?filter[qr_token][_eq]=${encodeURIComponent(qrToken)}&fields=id,pub_crawl_event_id.*,checked_in,checked_in_at,qr_token,name,email,association,amount_tickets,name_initials`);
+        // Handle composite token "TOKEN#INDEX" for individual check-ins
+        const [baseToken, indexStr] = qrToken.split('#');
+        const participantIndex = (indexStr !== undefined && indexStr !== '') ? parseInt(indexStr, 10) : -1;
+
+        const signups = await directusFetch<any[]>(`/items/pub_crawl_signups?filter[qr_token][_eq]=${encodeURIComponent(baseToken)}&fields=id,pub_crawl_event_id.*,checked_in,checked_in_at,qr_token,name,email,association,amount_tickets,name_initials`);
         if (!signups || signups.length === 0) {
             return { success: false, message: 'Ongeldige QR code. Deze QR code is niet gevonden.' };
         }
 
         const signup = signups[0];
+
+        // If specific participant index is provided
+        if (participantIndex >= 0) {
+            let participants: any[] = [];
+            try {
+                participants = signup.name_initials ? JSON.parse(signup.name_initials) : [];
+            } catch (e) {
+                participants = [];
+            }
+
+            // Fallback for corrupt data or index out of bounds
+            if (!Array.isArray(participants) || participantIndex >= participants.length) {
+                return { success: false, message: 'Ongeldig ticket nummer voor deze inschrijving.' };
+            }
+
+            const p = participants[participantIndex];
+            if (p.checked_in) {
+                const time = p.checked_in_at ? new Date(p.checked_in_at).toLocaleString('nl-NL') : 'eerder';
+                return { success: false, message: `Ticket ${participantIndex + 1} (${p.name}) is al ingecheckt (${time}).`, signup };
+            }
+
+            // Update participant status
+            participants[participantIndex].checked_in = true;
+            participants[participantIndex].checked_in_at = new Date().toISOString();
+
+            // Save back to Directus
+            // Also mark main signup as checked_in (at least partially)
+            await directusFetch(`/items/pub_crawl_signups/${signup.id}`, {
+                method: 'PATCH',
+                body: JSON.stringify({
+                    name_initials: JSON.stringify(participants),
+                    checked_in: true,
+                    checked_in_at: signup.checked_in_at || new Date().toISOString()
+                })
+            });
+
+            // Fetch updated for return
+            const updated = await directusFetch(`/items/pub_crawl_signups/${signup.id}?fields=id,pub_crawl_event_id.*,checked_in,checked_in_at,name,email,association,amount_tickets,name_initials`);
+            return { success: true, message: `Welkom ${p.name}! (Ticket ${participantIndex + 1}/${participants.length})`, signup: updated };
+        }
+
+        // Legacy / Group Check-in (No index provided)
         if (signup.checked_in) {
             return { success: false, message: `Deze groep is al ingecheckt op ${new Date(signup.checked_in_at).toLocaleString('nl-NL')}.`, signup };
         }
