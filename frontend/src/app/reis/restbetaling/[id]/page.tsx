@@ -40,6 +40,7 @@ export default function RestbetalingPage() {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [editMode, setEditMode] = useState(false);
+    const [selectedActivityOptions, setSelectedActivityOptions] = useState<Record<number, string[]>>({});
 
     const [form, setForm] = useState({
         first_name: '',
@@ -82,6 +83,15 @@ export default function RestbetalingPage() {
             // Load selected activities
             const signupActivities = await tripSignupActivitiesApi.getBySignupId(signupId);
             const activityIds = signupActivities.map((a: any) => a.trip_activity_id.id || a.trip_activity_id);
+
+            const optionsMap: Record<number, string[]> = {};
+            signupActivities.forEach((a: any) => {
+                const actId = a.trip_activity_id.id || a.trip_activity_id;
+                if (a.selected_options) {
+                    optionsMap[actId] = a.selected_options;
+                }
+            });
+            setSelectedActivityOptions(optionsMap);
 
             // Load full activity details
             const allActivities = await tripActivitiesApi.getByTripId(signupData.trip_id);
@@ -161,7 +171,17 @@ export default function RestbetalingPage() {
         if (!trip) return { basePrice: 0, activities: 0, discount: 0, total: 0, deposit: 0, remaining: 0 };
 
         const basePrice = Number(trip.base_price) || 0;
-        const activitiesTotal = selectedActivities.reduce((sum, a) => sum + (Number(a.price) || 0), 0);
+        const activitiesTotal = selectedActivities.reduce((sum, a) => {
+            let price = Number(a.price) || 0;
+            const options = selectedActivityOptions[a.id] || [];
+            if (a.options) {
+                options.forEach(optName => {
+                    const opt = a.options?.find(o => o.name === optName);
+                    if (opt) price += Number(opt.price);
+                });
+            }
+            return sum + price;
+        }, 0);
         const discount = signup?.role === 'crew' ? (Number(trip.crew_discount) || 0) : 0;
         const total = basePrice + activitiesTotal - discount;
         const deposit = Number(trip.deposit_amount) || 0;
@@ -488,6 +508,11 @@ export default function RestbetalingPage() {
                                     <div className="flex-1">
                                         <h3 className="font-bold text-gray-900 break-words">{activity.name}</h3>
                                         <p className="text-sm text-gray-600">{activity.description}</p>
+                                        {selectedActivityOptions[activity.id] && selectedActivityOptions[activity.id].length > 0 && (
+                                            <div className="mt-2 text-sm text-purple-700 bg-purple-50 p-2 rounded inline-block">
+                                                <span className="font-semibold">Opties:</span> {selectedActivityOptions[activity.id].join(', ')}
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="text-right">
                                         <p className="text-lg font-bold text-blue-600">€{Number(activity.price).toFixed(2)}</p>

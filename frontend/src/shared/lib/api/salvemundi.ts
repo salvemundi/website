@@ -1255,7 +1255,7 @@ export const tripSignupsApi = {
 };
 
 export const tripSignupActivitiesApi = {
-    create: async (data: { trip_signup_id: number; trip_activity_id: number }) => {
+    create: async (data: { trip_signup_id: number; trip_activity_id: number; selected_options?: any }) => {
         return directusFetch<any>(`/items/trip_signup_activities`, {
             method: 'POST',
             body: JSON.stringify(data)
@@ -1269,7 +1269,7 @@ export const tripSignupActivitiesApi = {
     getBySignupId: async (signupId: number) => {
         const query = buildQueryString({
             filter: { trip_signup_id: { _eq: signupId } },
-            fields: ['id', 'trip_activity_id.*']
+            fields: ['id', 'selected_options', 'trip_activity_id.*']
         });
         return directusFetch<any[]>(`/items/trip_signup_activities?${query}`);
     },
