@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/features/auth/providers/auth-provider';
+import NoAccessPage from '@/app/admin/no-access/page';
+import { isUserAuthorizedForIntro } from '@/shared/lib/committee-utils';
 import { useSearchParams } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
@@ -40,6 +43,8 @@ import * as XLSX from 'xlsx';
 type TabType = 'signups' | 'parents' | 'blogs' | 'planning';
 
 export default function IntroAdminPage() {
+    const { user, isLoading: authLoading } = useAuth();
+    const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
     const pathname = usePathname();
     const searchParams = typeof window !== 'undefined' ? useSearchParams?.() : null;
     const [activeTab, setActiveTab] = useState<TabType>('signups');
@@ -76,6 +81,12 @@ export default function IntroAdminPage() {
     useEffect(() => {
         loadData();
     }, [activeTab]);
+
+    // Authorization: only allow introcommittee, bestuur and ict committee
+    useEffect(() => {
+        if (authLoading) return;
+        setIsAuthorized(isUserAuthorizedForIntro(user));
+    }, [user, authLoading]);
 
     // Handle incoming query params to open specific tab/form (e.g. from admin quick actions)
     useEffect(() => {
@@ -428,10 +439,25 @@ export default function IntroAdminPage() {
         );
     };
 
+    if (authLoading || isAuthorized === null) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end">
+                <div className="bg-admin-card rounded-3xl shadow-xl p-8 max-w-md mx-4 text-center">
+                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-theme-purple/20 border-t-theme-purple mx-auto mb-4" />
+                    <p className="text-admin-muted">Toegang controleren...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!isAuthorized) {
+        return <NoAccessPage />;
+    }
+
     return (
         <>
             <PageHeader title="Intro Beheer" />
-            
+
             <div className="container mx-auto px-4 py-8 max-w-7xl">
                 {/* Tabs */}
                 <div className="flex flex-wrap gap-2 mb-6 border-b border-admin-border">
