@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
-import { stickersApi, eventsApi, siteSettingsApi } from '@/shared/lib/api/salvemundi';
+import { stickersApi, eventsApi } from '@/shared/lib/api/salvemundi';
 import { isUserAuthorizedForReis, isUserAuthorizedForIntro, isUserAuthorizedForKroegentocht } from '@/shared/lib/committee-utils';
 import {
     Users,
@@ -316,7 +316,7 @@ export default function AdminDashboardPage() {
                 // Total active coupons
                 directusFetch<any>('/items/coupons?aggregate[count]=*&filter[is_active][_eq]=true').catch(() => [{ count: 0 }]),
                 // Pub crawl stats
-                isUserAuthorizedForKroegentocht(effectiveUser) ? fetchPubCrawlStats() : Promise.resolve({ signups: 0, upcomingEvent: undefined }),
+                isUserAuthorizedForKroegentocht(effectiveUser) ? fetchPubCrawlStats() : Promise.resolve({ signups: 0, totalTickets: 0, groups: 0, upcomingEvent: undefined }),
                 // Reis signups
                 isUserAuthorizedForReis(effectiveUser) ? fetchReisStats() : Promise.resolve(0)
             ]);
@@ -705,7 +705,7 @@ export default function AdminDashboardPage() {
         }
     };
 
-    const fetchPubCrawlStats = async () => {
+    const fetchPubCrawlStats = async (): Promise<{ signups: number; totalTickets: number; groups: number; upcomingEvent: { id: number; name: string; date: string } | undefined }> => {
         try {
             // Get upcoming pub crawl event
             const allEvents = await directusFetch<any[]>('/items/pub_crawl_events?fields=id,name,date&sort=-date').catch(() => []);
@@ -719,7 +719,7 @@ export default function AdminDashboardPage() {
             });
 
             if (!upcomingEvent) {
-                return { signups: 0, upcomingEvent: undefined };
+                return { signups: 0, totalTickets: 0, groups: 0, upcomingEvent: undefined };
             }
 
             // Get all signups for upcoming event so we can compute total tickets and groups
@@ -741,7 +741,7 @@ export default function AdminDashboardPage() {
             };
         } catch (error) {
             console.error('Failed to fetch pub crawl stats:', error);
-            return { signups: 0, upcomingEvent: undefined };
+            return { signups: 0, totalTickets: 0, groups: 0, upcomingEvent: undefined };
         }
     };
 
