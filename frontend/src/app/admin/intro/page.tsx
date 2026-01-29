@@ -313,6 +313,29 @@ export default function IntroAdminPage() {
         }
     };
 
+    // Directus sometimes returns created_at as a string, an ISO date, or a numeric
+    // timestamp (seconds). Normalize into a Date or null.
+    const parseDirectusDate = (value?: string | number | null): Date | null => {
+        if (value === undefined || value === null || value === '') return null;
+        // If it's already a number
+        if (typeof value === 'number') {
+            // If likely seconds (10 digits) convert to ms
+            if (value > 0 && value < 1e11) return new Date(value * 1000);
+            return new Date(value);
+        }
+        const str = String(value).trim();
+        if (str === '') return null;
+        // Numeric string?
+        if (!isNaN(Number(str))) {
+            const n = Number(str);
+            if (n > 0 && n < 1e11) return new Date(n * 1000);
+            return new Date(n);
+        }
+        // Fallback to Date parsing for ISO strings
+        const parsed = new Date(str);
+        return isNaN(parsed.getTime()) ? null : parsed;
+    };
+
     const handleSavePlanning = async () => {
         if (!editingPlanning) return;
 
@@ -545,7 +568,10 @@ export default function IntroAdminPage() {
                                                         <td className="px-4 py-3 text-admin">{signup.email}</td>
                                                         <td className="px-4 py-3 text-admin">{signup.phone_number}</td>
                                                         <td className="px-4 py-3 text-admin-muted text-sm">
-                                                            {format(new Date(signup.created_at), 'dd MMM yyyy', { locale: nl })}
+                                                            {(() => {
+                                                                const d = parseDirectusDate(signup.created_at);
+                                                                return d ? format(d, 'dd MMM yyyy', { locale: nl }) : '-';
+                                                            })()}
                                                         </td>
                                                         <td className="px-4 py-3 text-right">
                                                             <button
@@ -631,7 +657,10 @@ export default function IntroAdminPage() {
                                                         <td className="px-4 py-3 text-admin">{parent.email}</td>
                                                         <td className="px-4 py-3 text-admin">{parent.phone_number}</td>
                                                         <td className="px-4 py-3 text-admin-muted text-sm">
-                                                            {parent.created_at ? format(new Date(parent.created_at), 'dd MMM yyyy', { locale: nl }) : '-'}
+                                                            {(() => {
+                                                                const d = parseDirectusDate(parent.created_at);
+                                                                return d ? format(d, 'dd MMM yyyy', { locale: nl }) : '-';
+                                                            })()}
                                                         </td>
                                                         <td className="px-4 py-3 text-right">
                                                             <button
