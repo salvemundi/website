@@ -472,6 +472,7 @@ export default function KroegentochtPage() {
                                                     association: '',
                                                     customAssociation: '',
                                                     amount_tickets: '1',
+                                                    website: '',
                                                 });
                                                 setParticipants([{ name: '', initial: '' }]);
                                             }}

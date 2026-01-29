@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import { RefreshCw, Shield } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 
 interface SyncStatus {
     active: boolean;
@@ -79,7 +79,7 @@ export default function SyncPage() {
     const { user, isLoading: authLoading } = useAuth();
     const [isSyncing, setIsSyncing] = useState(false);
     const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
-    const [showStatus, setShowStatus] = useState(false);
+
     const [selectedSyncFields, setSelectedSyncFields] = useState<string[]>([
         'membership_expiry',
         'first_name',
@@ -151,7 +151,6 @@ export default function SyncPage() {
                 setSyncStatus(data);
                 if (data.active) {
                     setIsSyncing(true);
-                    setShowStatus(true);
                 } else if (isSyncing && !data.active) {
                     setIsSyncing(false);
                 }
@@ -182,7 +181,6 @@ export default function SyncPage() {
             }
 
             alert('Synchronisatie gestart op de achtergrond.');
-            setShowStatus(true);
             fetchSyncStatus();
         } catch (error: any) {
             console.error('Failed to sync users:', error);
