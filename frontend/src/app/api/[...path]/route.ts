@@ -159,20 +159,63 @@ export async function POST(
             'intro_signups',
             'intro_parent_signups',
             'intro_newsletter_subscribers',
-            'Stickers', // for adding stickers in the field
+            'Stickers',
             'blog_likes',
             'trip_signups',
             'trip_signup_activities',
-            'events', // for committee members creating activities
+            'events',
             'intro_blogs',
             'intro_planning',
+            'committees',
+            'committee_members',
+            'coupons',
+            'sponsors',
+            'vacancies',
+            'partners',
+            'FAQ',
+            'news',
+            'hero_banners',
+            'trips',
+            'trip_activities',
+            'site_settings',
+            'boards',
+            'history',
+            'attendance_officers',
+            'whats_app_groups',
+            'transactions',
+            'feedback',
         ];
 
         const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
         // Special case: login/auth/refresh should be allowed
         const isAuthPath = path.startsWith('auth/') || path === 'users/me';
 
-        if (!isAllowed && !isAuthPath) {
+        let canBypass = false;
+        const authHeader = request.headers.get('Authorization');
+        if (authHeader) {
+            canBypass = await isApiBypass(authHeader);
+            // If they are not a system-level bypass, check if they are an admin
+            if (!canBypass) {
+                try {
+                    const meResp = await fetch(`${DIRECTUS_URL}/users/me`, { headers: { Authorization: authHeader } });
+                    if (meResp.ok) {
+                        const meJson = await meResp.json().catch(() => null);
+                        const userId = meJson?.data?.id;
+                        const membershipsResp = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name&limit=-1`, { headers: { Authorization: authHeader } });
+                        const membershipsJson = await membershipsResp.json().catch(() => null);
+                        const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
+                        canBypass = memberships.some((m: any) => {
+                            const name = (m?.committee_id?.name || '').toString().toLowerCase();
+                            return name === 'bestuur' || name === 'ict';
+                        });
+                    }
+                } catch {
+                    canBypass = false;
+                }
+            }
+        }
+
+        if (!isAllowed && !isAuthPath && !canBypass) {
             console.warn(`[Directus Proxy] BLOCKED POST attempt to unauthorized path: ${path} from IP: ${ip}`);
             return NextResponse.json({ error: 'Forbidden', message: 'Unauthorized path' }, { status: 403 });
         }
@@ -317,16 +360,57 @@ export async function PATCH(
             'events',
             'intro_blogs',
             'intro_planning',
-            'site_settings', // for admin toggles
+            'site_settings',
+            'committees',
+            'committee_members',
+            'coupons',
+            'sponsors',
+            'vacancies',
+            'partners',
+            'FAQ',
+            'news',
+            'hero_banners',
+            'trips',
+            'trip_activities',
+            'boards',
+            'history',
+            'attendance_officers',
+            'whats_app_groups',
+            'transactions',
         ];
 
         const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
         const isUserSelfUpdate = path === 'users/me';
 
-        if (!isAllowed && !isUserSelfUpdate) {
+        let canBypass = false;
+        const authHeader = request.headers.get('Authorization');
+        if (authHeader) {
+            canBypass = await isApiBypass(authHeader);
+            if (!canBypass) {
+                try {
+                    const meResp = await fetch(`${DIRECTUS_URL}/users/me`, { headers: { Authorization: authHeader } });
+                    if (meResp.ok) {
+                        const meJson = await meResp.json().catch(() => null);
+                        const userId = meJson?.data?.id;
+                        const membershipsResp = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name&limit=-1`, { headers: { Authorization: authHeader } });
+                        const membershipsJson = await membershipsResp.json().catch(() => null);
+                        const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
+                        canBypass = memberships.some((m: any) => {
+                            const name = (m?.committee_id?.name || '').toString().toLowerCase();
+                            return name === 'bestuur' || name === 'ict';
+                        });
+                    }
+                } catch {
+                    canBypass = false;
+                }
+            }
+        }
+
+        if (!isAllowed && !isUserSelfUpdate && !canBypass) {
             console.warn(`[Directus Proxy] BLOCKED PATCH attempt to unauthorized path: ${path} from IP: ${ip}`);
             return NextResponse.json({ error: 'Forbidden', message: 'Unauthorized path' }, { status: 403 });
         }
+
 
         const forwardHeaders: Record<string, string> = {};
         const auth = request.headers.get('Authorization');
@@ -485,11 +569,45 @@ export async function DELETE(
             'intro_parent_signups',
             'intro_blogs',
             'intro_planning',
+            'committees',
+            'committee_members',
+            'coupons',
+            'news',
+            'hero_banners',
+            'trips',
+            'trip_activities',
+            'boards',
+            'history',
+            'attendance_officers',
         ];
 
         const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
 
-        if (!isAllowed) {
+        let canBypass = false;
+        const authHeader = request.headers.get('Authorization');
+        if (authHeader) {
+            canBypass = await isApiBypass(authHeader);
+            if (!canBypass) {
+                try {
+                    const meResp = await fetch(`${DIRECTUS_URL}/users/me`, { headers: { Authorization: authHeader } });
+                    if (meResp.ok) {
+                        const meJson = await meResp.json().catch(() => null);
+                        const userId = meJson?.data?.id;
+                        const membershipsResp = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name&limit=-1`, { headers: { Authorization: authHeader } });
+                        const membershipsJson = await membershipsResp.json().catch(() => null);
+                        const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
+                        canBypass = memberships.some((m: any) => {
+                            const name = (m?.committee_id?.name || '').toString().toLowerCase();
+                            return name === 'bestuur' || name === 'ict';
+                        });
+                    }
+                } catch {
+                    canBypass = false;
+                }
+            }
+        }
+
+        if (!isAllowed && !canBypass) {
             console.warn(`[Directus Proxy] BLOCKED DELETE attempt to unauthorized path: ${path} from IP: ${ip}`);
             return NextResponse.json({ error: 'Forbidden', message: 'Unauthorized path' }, { status: 403 });
         }
