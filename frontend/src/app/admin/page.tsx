@@ -843,7 +843,7 @@ export default function AdminDashboardPage() {
                             title="beheer"
                             value="reis"
                             icon={<FileText className="h-6 w-6" />}
-                            subtitle={`aanmeldingen:  ${stats.reisSignups}`}
+                            subtitle="Beheer reis instellingen"
                             onClick={() => router.push('/admin/reis')}
                             colorClass="teal"
                         />

@@ -174,7 +174,7 @@ export default function ActiviteitenBeheerPage() {
         if (!file) return;
 
         const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-        const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_API_URL;
+
 
         const formData = new FormData();
         formData.append('file', file);
@@ -183,10 +183,10 @@ export default function ActiviteitenBeheerPage() {
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
         try {
-            const response = await fetch(`${directusUrl}/files`, {
+            const response = await fetch('/api/files', {
                 method: 'POST',
                 body: formData,
-                headers
+                headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
             });
 
             if (!response.ok) throw new Error('Upload failed');
