@@ -143,7 +143,7 @@ function KroegentochtConfirmationContent() {
                 // Footer text
                 ctx.fillStyle = '#666666';
                 ctx.font = '20px Arial';
-                ctx.fillText('Scan bij ingang / Scan at entrance', width / 2, 720);
+                ctx.fillText('Scan bij de kroegentocht leiders', width / 2, 720);
 
                 ctx.font = '16px Arial';
                 ctx.fillText('Salve Mundi', width / 2, 760);
@@ -210,7 +210,7 @@ function KroegentochtConfirmationContent() {
                                                 <QRDisplay qrToken={`${signupData.qr_token}#${index}`} size={180} />
                                             </div>
 
-                                            <p className="text-white/50 text-xs mt-3 mb-4">Scan bij ingang</p>
+                                            <p className="text-white/50 text-xs mt-3 mb-4">Scan bij de kroegentocht leiders</p>
 
                                             <button
                                                 onClick={() => downloadTicket(index, p.name, p.initial, `${signupData.qr_token}#${index}`)}
