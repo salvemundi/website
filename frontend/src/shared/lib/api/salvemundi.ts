@@ -1276,6 +1276,13 @@ export const tripSignupActivitiesApi = {
         });
         return directusFetch<any[]>(`/items/trip_signup_activities?${query}`);
     },
+    getByActivityId: async (activityId: number) => {
+        const query = buildQueryString({
+            filter: { trip_activity_id: { _eq: activityId } },
+            fields: ['id', 'selected_options', 'trip_signup_id.*']
+        });
+        return directusFetch<any[]>(`/items/trip_signup_activities?${query}`);
+    },
 };
 
 export async function updateSafeHavenAvailability(
