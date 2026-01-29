@@ -44,6 +44,7 @@ export default function KroegentochtPage() {
         customAssociation: '',
         // keep as string to allow temporary empty value while editing
         amount_tickets: '1',
+        website: '', // Honeypot
     });
     const [participants, setParticipants] = useState<Participant[]>([{ name: '', initial: '' }]);
     const [loading, setLoading] = useState(false);
@@ -242,6 +243,14 @@ export default function KroegentochtPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Honeypot check
+        if (form.website) {
+            console.log("Bot detected (honeypot)");
+            setSubmitted(true); // Fake success
+            return;
+        }
+
         if (!nextEvent) {
             setError('Er is momenteel geen kroegentocht beschikbaar om voor in te schrijven.');
             return;
@@ -484,6 +493,20 @@ export default function KroegentochtPage() {
                                                 Momenteel is er geen kroegentocht gepland. Houd deze pagina in de gaten voor nieuwe data!
                                             </div>
                                         )}
+
+                                        {/* Honeypot */}
+                                        <div className="opacity-0 absolute top-0 left-0 h-0 w-0 -z-10 pointer-events-none overflow-hidden" aria-hidden="true">
+                                            <label htmlFor="website">Website</label>
+                                            <input
+                                                type="text"
+                                                id="website"
+                                                name="website"
+                                                value={form.website}
+                                                onChange={handleChange}
+                                                tabIndex={-1}
+                                                autoComplete="off"
+                                            />
+                                        </div>
 
                                         {/* Email */}
                                         <div>
