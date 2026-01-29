@@ -13,7 +13,7 @@ async function mapDirectusUserToUser(rawUser: any): Promise<User> {
         throw new Error('Invalid user data received from Directus');
     }
 
-    // Determine membership exclusively from the user record in Directus.
+    // Debug logging removed: sensitive user data should not be printed to console
     // Priority:
     // 1. Use explicit `membership_status` if present ('active'|'expired'|'none')
     // 2. If not present, use `membership_expiry` to infer active/expired
@@ -65,17 +65,18 @@ async function mapDirectusUserToUser(rawUser: any): Promise<User> {
         }
     } catch (e) {
         // Silently fail - user is just not a safe haven
-        console.log('Could not check safe haven status:', e);
     }
 
     return {
         id: rawUser.id,
         email: rawUser.email || '',
         first_name: rawUser.first_name || '',
+        middle_name: rawUser.middle_name || rawUser.tussenvoegsel || undefined,
         last_name: rawUser.last_name || '',
         entra_id: rawUser.entra_id,
         fontys_email: rawUser.fontys_email,
         phone_number: rawUser.phone_number,
+        date_of_birth: rawUser.date_of_birth,
         // Normalize avatar to a file id string when Directus returns an object
         avatar: rawUser?.avatar && typeof rawUser.avatar === 'object' && 'id' in rawUser.avatar ? rawUser.avatar.id : rawUser.avatar,
         is_member: isMember,
@@ -287,7 +288,7 @@ export async function fetchUserDetails(token: string): Promise<User | null> {
             } as User;
         }
 
-        const response = await fetch(`${directusUrl}/users/me?fields=*,membership_expiry`, {
+        const response = await fetch(`${directusUrl}/users/me?fields=*,membership_expiry,membership_status,entra_id,date_of_birth`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',

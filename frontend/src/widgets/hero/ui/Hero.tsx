@@ -309,11 +309,11 @@ export default function Hero() {
                                     ) : showMembershipLink ? (
                                         <Link
                                             href="/lidmaatschap"
-                                            className="block w-full transition-transform hover:scale-[1.02]"
+                                            className="block w-full transition-transform hover:scale-[1.02] group/lid"
                                         >
-                                            <div className="w-full max-w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-3 sm:p-4 md:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-3 sm:gap-4 min-h-[90px] sm:min-h-[100px] overflow-hidden">
+                                            <div className="w-full max-w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-3 sm:p-4 md:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-3 sm:gap-4 min-h-[90px] sm:min-h-[100px] overflow-hidden">
                                                 <div className="flex-1 min-w-0 overflow-hidden">
-                                                    <p className="text-[0.6rem] sm:text-xs font-semibold uppercase tracking-wide text-theme-purple dark:text-theme-white">
+                                                    <p className="text-[0.6rem] sm:text-xs font-semibold uppercase tracking-wide text-theme-purple/60 dark:text-theme-white/60">
                                                         Word lid
                                                     </p>
                                                     <p className="mt-1 sm:mt-2 text-sm sm:text-base md:text-lg font-bold text-theme-purple dark:text-theme-white truncate">
@@ -323,7 +323,7 @@ export default function Hero() {
                                                         Ontdek alle voordelen van een lidmaatschap!
                                                     </p>
                                                 </div>
-                                                <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white text-theme-purple flex items-center justify-center shadow-md transition-transform group-hover:scale-110"
+                                                <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-theme-purple/10 dark:bg-white/10 text-theme-purple dark:text-theme-white flex items-center justify-center shadow-md transition-all group-hover/lid:bg-gradient-theme group-hover/lid:text-white"
                                                     onMouseEnter={() => setHoverWordLid(true)}
                                                     onMouseLeave={() => setHoverWordLid(false)}
                                                 >
@@ -334,11 +334,11 @@ export default function Hero() {
                                     ) : nextEvent ? (
                                         <Link
                                             href={`/activiteiten/${nextEvent.id}`}
-                                            className="block w-full transition-transform hover:scale-[1.02]"
+                                            className="block w-full transition-transform hover:scale-[1.02] group/event"
                                         >
-                                            <div className="w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4 min-h-[90px] sm:min-h-[100px]">
+                                            <div className="w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4 min-h-[90px] sm:min-h-[100px]">
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-purple dark:text-theme-white">
+                                                    <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-purple/60 dark:text-theme-white/60">
                                                         Volgende evenement
                                                     </p>
                                                     <p className="mt-2 text-base sm:text-lg font-bold text-theme-purple dark:text-theme-white truncate">
@@ -348,7 +348,7 @@ export default function Hero() {
                                                         {nextEvent.description || "Kom gezellig langs bij ons volgende evenement!"}
                                                     </p>
                                                 </div>
-                                                <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white text-theme-purple flex items-center justify-center shadow-md transition-transform group-hover:scale-110"
+                                                <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-theme-purple/10 dark:bg-white/10 text-theme-purple dark:text-theme-white flex items-center justify-center shadow-md transition-all group-hover/event:bg-gradient-theme group-hover/event:text-white"
                                                     onMouseEnter={() => setHoverNextEvent(true)}
                                                     onMouseLeave={() => setHoverNextEvent(false)}
                                                 >
@@ -357,14 +357,14 @@ export default function Hero() {
                                             </div>
                                         </Link>
                                     ) : (
-                                        <div className="w-full rounded-2xl sm:rounded-3xl bg-gradient-theme-vertical p-4 sm:p-6 shadow-lg backdrop-blur min-h-[90px] sm:min-h-[100px]">
-                                            <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-purple dark:text-theme-white">
+                                        <div className="w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-4 sm:p-6 shadow-lg backdrop-blur min-h-[90px] sm:min-h-[100px]">
+                                            <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-purple/60 dark:text-theme-white/60">
                                                 Volgende evenement
                                             </p>
                                             {eventsLoading ? (
                                                 <div className="mt-2 space-y-2">
-                                                    <div className="h-5 sm:h-6 w-3/4 animate-pulse rounded bg-theme-purple/20"></div>
-                                                    <div className="h-3 sm:h-4 w-full animate-pulse rounded bg-theme-purple/20"></div>
+                                                    <div className="h-5 sm:h-6 w-3/4 animate-pulse rounded bg-theme-purple/10"></div>
+                                                    <div className="h-3 sm:h-4 w-full animate-pulse rounded bg-theme-purple/10"></div>
                                                 </div>
                                             ) : (
                                                 <>

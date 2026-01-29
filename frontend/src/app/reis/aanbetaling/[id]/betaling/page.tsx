@@ -31,17 +31,17 @@ function BetalingContent() {
         if (!loading && signup && !checkingPayment) {
             // Check URL parameters or referrer to detect return from payment
             const urlParams = new URLSearchParams(window.location.search);
-            const hasPaymentReturn = urlParams.toString().length > 0 || 
-                                    document.referrer.includes('mollie.com') ||
-                                    document.referrer.includes('mollie.nl');
-            
+            const hasPaymentReturn = urlParams.toString().length > 0 ||
+                document.referrer.includes('mollie.com') ||
+                document.referrer.includes('mollie.nl');
+
             // If deposit is already paid, show success immediately
             if (signup.deposit_paid) {
                 console.log('[betaling] Deposit already paid, showing success');
                 setPaymentStatus('success');
                 return;
             }
-            
+
             if (hasPaymentReturn) {
                 console.log('[betaling] Detected return from payment, checking status...');
                 setPaymentStatus('checking');
@@ -54,11 +54,11 @@ function BetalingContent() {
     const checkPaymentStatus = async () => {
         let attempts = 0;
         const maxAttempts = 20; // Check for up to 60 seconds (increased from 40)
-        
+
         const interval = setInterval(async () => {
             attempts++;
             console.log(`[betaling] Checking payment status (attempt ${attempts}/${maxAttempts})...`);
-            
+
             try {
                 const signupData = await tripSignupsApi.getById(signupId);
                 console.log('[betaling] Signup data:', {
@@ -66,7 +66,7 @@ function BetalingContent() {
                     deposit_paid: signupData.deposit_paid,
                     has_deposit_paid: !!signupData.deposit_paid
                 });
-                
+
                 if (signupData.deposit_paid) {
                     console.log('[betaling] ✅ Payment confirmed! Deposit paid at:', signupData.deposit_paid);
                     clearInterval(interval);
@@ -88,7 +88,7 @@ function BetalingContent() {
                     }
                     return; // Exit early
                 }
-                
+
                 if (attempts >= maxAttempts) {
                     console.log('[betaling] ⏱️ Max attempts reached, showing manual refresh option');
                     clearInterval(interval);
@@ -106,11 +106,11 @@ function BetalingContent() {
         setShowManualRefresh(false);
         setCheckingPayment(true);
         setPaymentStatus('checking');
-        
+
         try {
             const signupData = await tripSignupsApi.getById(signupId);
             setSignup(signupData);
-            
+
             if (signupData.deposit_paid) {
                 setPaymentStatus('success');
             } else {
@@ -266,7 +266,7 @@ function BetalingContent() {
                     title="Betaling Geslaagd"
                     backgroundImage={trip.image ? getImageUrl(trip.image) : '/img/placeholder.svg'}
                 />
-                    <div className="container mx-auto px-4 py-8 sm:py-12 max-w-3xl">
+                <div className="container mx-auto px-4 py-8 sm:py-12 max-w-3xl">
                     <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-6 sm:p-8 text-center">
                         <div className="w-20 h-20 sm:w-24 sm:h-24 bg-green-100 dark:bg-[var(--bg-soft-dark)] rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
                             <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12 text-green-600" />
@@ -281,7 +281,7 @@ function BetalingContent() {
                             </p>
                         </div>
                         <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8 px-2">
-                            We zullen je informeren wanneer je de restbetaling kunt voldoen. 
+                            We zullen je informeren wanneer je de restbetaling kunt voldoen.
                             Let op: controleer ook je spam/ongewenste e-mail folder als je de bevestiging niet direct ontvangt.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-2">
@@ -348,7 +348,7 @@ function BetalingContent() {
                 title={`Aanbetaling - ${trip.name}`}
                 backgroundImage={trip.image ? getImageUrl(trip.image) : '/img/placeholder.svg'}
             />
-                <div className="container mx-auto px-4 py-8 sm:py-12 max-w-2xl">
+            <div className="container mx-auto px-4 py-8 sm:py-12 max-w-2xl">
                 <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-6 sm:p-8">
                     <div className="text-center mb-6 sm:mb-8">
                         <div className="w-20 h-20 sm:w-24 sm:h-24 bg-purple-100 dark:bg-[var(--bg-soft-dark)] rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
@@ -387,7 +387,7 @@ function BetalingContent() {
                         <div className="flex justify-between items-start mb-3 sm:mb-4">
                             <span className="text-sm sm:text-base text-gray-700 dark:text-[var(--text-muted-dark)]">Datum</span>
                             <span className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white text-right ml-4">
-                                {format(new Date(trip.event_date), 'd MMMM yyyy', { locale: nl })}
+                                {trip.event_date ? format(new Date(trip.event_date), 'd MMMM yyyy', { locale: nl }) : (trip.start_date ? format(new Date(trip.start_date), 'd MMMM yyyy', { locale: nl }) : 'N.t.b.')}
                             </span>
                         </div>
                         <div className="border-t border-gray-300 dark:border-gray-700 my-3 sm:my-4"></div>
@@ -401,7 +401,7 @@ function BetalingContent() {
 
                     <div className="bg-blue-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-blue-400 p-4 rounded mb-6 sm:mb-8">
                         <p className="text-xs sm:text-sm text-blue-700 dark:text-blue-200">
-                            <strong>Let op:</strong> Na het voltooien van de betaling ontvang je een bevestigingsmail. 
+                            <strong>Let op:</strong> Na het voltooien van de betaling ontvang je een bevestigingsmail.
                             De restbetaling volgt later en wordt apart gefactureerd.
                         </p>
                     </div>

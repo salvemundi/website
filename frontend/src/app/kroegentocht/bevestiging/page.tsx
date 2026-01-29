@@ -97,28 +97,25 @@ function KroegentochtConfirmationContent() {
                             We hebben een bevestigingsmail naar je gestuurd met de details.
                         </p>
 
-                        {/* Display QR codes if available */}
+                        {/* Display QR code if available */}
                         {signupData && signupData.qr_token && (
-                            <div className="mt-8 space-y-4">
-                                <h2 className="text-2xl font-bold text-white">Jouw Tickets ({signupData.amount_tickets}x)</h2>
+                            <div className="mt-8">
+                                <h2 className="text-2xl font-bold text-white">Jouw Ticket{signupData.amount_tickets > 1 ? 's' : ''}</h2>
                                 <p className="text-white/90 mb-4">
-                                    Bewaar deze QR-code{signupData.amount_tickets > 1 ? 's' : ''} of laat ze zien bij de ingang.
+                                    Bewaar deze QR-code of laat deze zien bij de ingang.
+                                    {signupData.amount_tickets > 1 && ` Dit ticket is geldig voor ${signupData.amount_tickets} personen.`}
                                 </p>
                                 
-                                {Array.from({ length: signupData.amount_tickets || 1 }).map((_, index) => {
-                                    const participants = signupData.name_initials ? JSON.parse(signupData.name_initials) : [];
-                                    const participant = participants[index];
-                                    return (
-                                        <div key={index} className="bg-white/10 p-4 rounded-xl">
-                                            <p className="text-center font-semibold mb-2 text-white">
-                                                Ticket {index + 1}{participant ? `: ${participant.name} ${participant.initial}.` : ''}
-                                            </p>
-                                            <div className="flex justify-center">
-                                                <QRDisplay qrToken={signupData.qr_token} size={200} />
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                                <div className="bg-white/10 p-4 rounded-xl">
+                                    <div className="flex justify-center">
+                                        <QRDisplay qrToken={signupData.qr_token} size={200} />
+                                    </div>
+                                    {signupData.amount_tickets > 1 && (
+                                        <p className="text-center text-white/80 mt-2 text-sm">
+                                            Geldig voor {signupData.amount_tickets} personen
+                                        </p>
+                                    )}
+                                </div>
 
                                 <p className="text-center text-sm text-white/70 mt-4">
                                     Deze QR-code is ook per e-mail naar je verzonden.

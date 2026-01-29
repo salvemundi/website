@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import { isUserAuthorizedForReis } from '@/shared/lib/committee-utils';
 import { directusFetch } from '@/shared/lib/directus';
 import { stickersApi, eventsApi, siteSettingsApi } from '@/shared/lib/api/salvemundi';
 import {
@@ -14,19 +13,12 @@ import {
     UserCheck,
     Plus,
     FileText,
-    Sticker,
-    Mail,
-    Heart,
     AlertCircle,
     Activity,
     Ticket,
 } from 'lucide-react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 
-// Helper function to clean committee names
-function cleanCommitteeName(name: string): string {
-    return name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim();
-}
 
 interface DashboardStats {
     totalSignups: number;
@@ -49,6 +41,7 @@ interface DashboardStats {
     upcomingPubCrawl?: { id: number; name: string; date: string };
     pubCrawlTickets?: number;
     pubCrawlGroups?: number;
+    reisSignups: number;
 }
 
 function StatCard({
@@ -125,9 +118,9 @@ function StatCard({
             <div className={`absolute top-0 right-0 w-28 h-28 sm:w-32 sm:h-32 -mr-12 sm:-mr-16 -mt-12 sm:-mt-16 bg-white/10 rounded-full`} />
             <div className="relative z-10">
                 <div className={`${nowrap ? 'flex flex-row items-center justify-between gap-2' : 'flex flex-col sm:flex-row items-center sm:items-start justify-between gap-3'} min-h-0`}>
-                    <div className={`flex-1 min-w-0 text-center sm:text-left sm:pr-2 ${nowrap ? 'whitespace-nowrap' : ''}`}>
+                    <div className={`flex-1 min-w-0 text-center sm:text-left sm:pr-2`}>
                         <p className={`${colors.subtitleText} text-sm font-medium mb-2`}>{title}</p>
-                        <p className={`${typeof value === 'string' && value.length > 10 ? 'text-2xl' : 'text-3xl sm:text-4xl'} font-bold ${colors.text} mb-1 ${nowrap ? 'whitespace-nowrap' : 'break-words'}`}>{value}</p>
+                        <p className={`${typeof value === 'string' && value.length > 10 ? 'text-lg sm:text-xl' : 'text-3xl sm:text-4xl'} font-bold ${colors.text} mb-1 ${nowrap ? 'whitespace-normal sm:whitespace-nowrap' : 'break-words'}`}>{value}</p>
                         {subtitle && <p className={`${colors.subtitleText} text-xs line-clamp-2`} title={subtitle}>{subtitle}</p>}
                     </div>
                     <div className={`hidden sm:block ${colors.iconBg} p-3 rounded-xl ${colors.text} backdrop-blur-sm flex-shrink-0 relative -mt-3 sm:-mt-4 z-20 self-start`}>
@@ -149,12 +142,12 @@ function ListCard({
     children: React.ReactNode;
 }) {
     return (
-        <div className="bg-admin-card rounded-2xl shadow-lg p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
             <div className="flex items-center gap-3 mb-4">
-                <div className="bg-admin-card-soft p-2 rounded-xl text-theme-purple">
+                <div className="bg-theme-purple/10 dark:bg-theme-purple/20 p-2 rounded-xl text-theme-purple">
                     {icon}
                 </div>
-                <h3 className="text-lg font-bold text-admin">{title}</h3>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h3>
             </div>
             {children}
         </div>
@@ -166,13 +159,15 @@ function ActionCard({
     subtitle,
     icon,
     onClick,
-    colorClass = 'purple'
+    colorClass = 'purple',
+    disabled = false
 }: {
     title: string;
     subtitle?: string;
     icon: React.ReactNode;
     onClick?: () => void;
     colorClass?: 'purple' | 'blue' | 'red' | 'green' | 'orange' | 'teal';
+    disabled?: boolean;
 }) {
     const colorMap: Record<string, string> = {
         purple: 'bg-gradient-to-br from-purple-500 to-purple-600',
@@ -185,12 +180,11 @@ function ActionCard({
 
     return (
         <button
-            onClick={onClick}
-            className={`w-full flex items-center gap-4 p-3 rounded-2xl shadow-sm ${colorMap[colorClass]} text-white hover:scale-[1.01] transition`}
+            onClick={!disabled ? onClick : undefined}
+            disabled={disabled}
+            className={`w-full flex items-center gap-4 p-3 rounded-2xl shadow-sm ${colorMap[colorClass]} text-white ${disabled ? 'opacity-60 cursor-not-allowed hover:scale-100' : 'hover:scale-[1.01] transition'}`}
         >
-            <div className="p-2 bg-white/20 rounded-lg flex items-center justify-center">
-                {icon}
-            </div>
+            <div className={`${disabled ? 'p-2 bg-white/10' : 'p-2 bg-white/20'} rounded-lg flex items-center justify-center`}>{icon}</div>
             <div className="text-left">
                 <p className="text-sm opacity-90">{title}</p>
                 {subtitle && <p className="font-bold text-lg">{subtitle}</p>}
@@ -208,7 +202,6 @@ export default function AdminDashboardPage() {
     const localBypass = isLocalhost && !user;
     const fakeLocalUser = localBypass ? ({ id: 'local-admin', first_name: 'Local', last_name: 'Admin', committees: [] } as any) : null;
     const effectiveUser = user ?? fakeLocalUser;
-    const canManageReis = isUserAuthorizedForReis(effectiveUser);
     const [stats, setStats] = useState<DashboardStats>({
         totalSignups: 0,
         upcomingBirthdays: [],
@@ -223,13 +216,14 @@ export default function AdminDashboardPage() {
         systemErrors: 0,
         mostLikedPost: undefined,
         upcomingEventsWithSignups: [],
-    latestEventsWithSignups: [],
+        latestEventsWithSignups: [],
         topCommittee: undefined,
         totalCoupons: 0,
         pubCrawlSignups: 0,
         upcomingPubCrawl: undefined,
         pubCrawlTickets: 0,
         pubCrawlGroups: 0,
+        reisSignups: 0,
     });
     const [isIctMember, setIsIctMember] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -265,7 +259,7 @@ export default function AdminDashboardPage() {
                 siteSettingsApi.get('kroegentocht'),
                 siteSettingsApi.get('reis')
             ]);
-            
+
             setVisibilitySettings({
                 intro: introSettings?.show ?? false,
                 kroegentocht: kroegentochtsSettings?.show ?? false,
@@ -293,7 +287,8 @@ export default function AdminDashboardPage() {
                 latestEventsDetail,
                 topCommittee,
                 couponsData,
-                pubCrawlStats
+                pubCrawlStats,
+                reisStats
             ] = await Promise.all([
                 // Total event signups
                 directusFetch<any>('/items/event_signups?aggregate[count]=*'),
@@ -321,7 +316,9 @@ export default function AdminDashboardPage() {
                 // (moved for ordering above)
                 directusFetch<any>('/items/coupons?aggregate[count]=*&filter[is_active][_eq]=true').catch(() => [{ count: 0 }]),
                 // Pub crawl stats
-                fetchPubCrawlStats()
+                fetchPubCrawlStats(),
+                // Reis signups
+                fetchReisStats()
             ]);
 
             setStats({
@@ -345,6 +342,7 @@ export default function AdminDashboardPage() {
                 upcomingPubCrawl: pubCrawlStats.upcomingEvent,
                 pubCrawlTickets: pubCrawlStats.totalTickets || 0,
                 pubCrawlGroups: pubCrawlStats.groups || 0,
+                reisSignups: reisStats,
             });
         } catch (error) {
             console.error('Failed to load dashboard data:', error);
@@ -356,13 +354,13 @@ export default function AdminDashboardPage() {
     const fetchUpcomingBirthdays = async () => {
         try {
             // Fetch all users with birthdays
-            const users = await directusFetch<any[]>('/users?fields=id,first_name,last_name,date_of_birth&filter[date_of_birth][_nnull]=true');
+            // Use limit=-1 to fetch ALL users, otherwise default is 100
+            const users = await directusFetch<any[]>('/users?fields=id,first_name,last_name,date_of_birth&filter[date_of_birth][_nnull]=true&limit=-1');
 
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            const nextSevenDays = new Date(today);
-            nextSevenDays.setDate(today.getDate() + 7);
-            nextSevenDays.setHours(23, 59, 59, 999);
+
+            // Calculate next birthdays for all users and pick the next 5 upcoming
 
             type BirthdayItem = {
                 id: string;
@@ -378,28 +376,30 @@ export default function AdminDashboardPage() {
                     const dob = user.date_of_birth;
                     if (!dob) return null;
 
-                    // Parse date_of_birth defensively (prefer YYYY-MM-DD or ISO-like strings)
                     let month = 0;
                     let day = 0;
 
                     const isoMatch = String(dob).match(/(\d{4})-(\d{2})-(\d{2})/);
                     if (isoMatch) {
-                        month = parseInt(isoMatch[2], 10) - 1;
+                        month = parseInt(isoMatch[2], 10) - 1; // Month is 0-indexed
                         day = parseInt(isoMatch[3], 10);
                     } else {
-                        // Fallback to Date parsing, then extract month/day
                         const parsed = new Date(dob);
                         if (isNaN(parsed.getTime())) return null;
                         month = parsed.getMonth();
                         day = parsed.getDate();
                     }
 
-                    // Next occurrence of birthday
-                    const nextBirthday = new Date(today.getFullYear(), month, day);
+                    // Calculate next birthday
+                    const currentYear = today.getFullYear();
+                    const nextBirthday = new Date(currentYear, month, day);
                     nextBirthday.setHours(0, 0, 0, 0);
+
                     if (nextBirthday.getTime() < today.getTime()) {
-                        nextBirthday.setFullYear(nextBirthday.getFullYear() + 1);
+                        nextBirthday.setFullYear(currentYear + 1);
                     }
+
+                    const isToday = nextBirthday.getTime() === today.getTime();
 
                     return {
                         id: user.id,
@@ -407,15 +407,15 @@ export default function AdminDashboardPage() {
                         last_name: user.last_name,
                         birthday: user.date_of_birth,
                         nextBirthday,
-                        isToday: nextBirthday.getTime() === today.getTime()
+                        isToday
                     } as BirthdayItem;
                 })
                 .filter((u): u is BirthdayItem => u !== null)
-                .filter(u => u.nextBirthday.getTime() >= today.getTime() && u.nextBirthday.getTime() <= nextSevenDays.getTime())
                 .sort((a, b) => a.nextBirthday.getTime() - b.nextBirthday.getTime())
                 .map(u => ({ id: u.id, first_name: u.first_name, last_name: u.last_name, birthday: u.birthday, isToday: u.isToday }));
 
-            return upcomingItems.slice(0, 10);
+            // Return only the next 5 upcoming birthdays
+            return upcomingItems.slice(0, 5);
         } catch (error) {
             console.error('Failed to fetch birthdays:', error);
             return [];
@@ -585,14 +585,11 @@ export default function AdminDashboardPage() {
             // Use eventsApi to respect permissions
             const allEvents = await eventsApi.getAll();
 
-            // Filter events from this year - also include events without start_date
+            // Filter events from this year using `event_date`
             const eventsThisYear = allEvents.filter((event: any) => {
-                if (!event.start_date) {
-                    return true; // Include events without date
-                }
-                const eventDate = new Date(event.start_date);
-                const eventYear = eventDate.getFullYear();
-                return eventYear === currentYear;
+                if (!event.event_date) return true; // include if date missing
+                const eventDate = new Date(event.event_date);
+                return eventDate.getFullYear() === currentYear;
             });
 
             // Count events per committee
@@ -677,19 +674,8 @@ export default function AdminDashboardPage() {
 
     const fetchLatestEventsWithSignups = async () => {
         try {
-            // Try to fetch using start_date if available, but fallback to event_date-only on permission errors
-            let allEvents: any[] = [];
-            try {
-                allEvents = await directusFetch<any[]>('/items/events?fields=id,name,event_date,start_date&sort=-start_date,-event_date&limit=4');
-            } catch (err: any) {
-                const message = err?.message || '';
-                // If start_date is forbidden or doesn't exist, retry without it
-                if (message.includes('start_date') || message.includes('403') || message.toLowerCase().includes('forbidden')) {
-                    allEvents = await directusFetch<any[]>('/items/events?fields=id,name,event_date&sort=-event_date&limit=4');
-                } else {
-                    throw err;
-                }
-            }
+            // Fetch latest events (use `event_date` only)
+            const allEvents = await directusFetch<any[]>('/items/events?fields=id,name,event_date&sort=-event_date&limit=4');
 
             const eventsWithSignups = await Promise.all(
                 (allEvents || []).map(async (event) => {
@@ -698,14 +684,14 @@ export default function AdminDashboardPage() {
                         return {
                             id: event.id,
                             name: event.name,
-                            event_date: event.event_date || event.start_date,
+                            event_date: event.event_date,
                             signups: signups?.[0]?.count || 0
                         };
                     } catch (error) {
                         return {
                             id: event.id,
                             name: event.name,
-                            event_date: event.event_date || event.start_date,
+                            event_date: event.event_date,
                             signups: 0
                         };
                     }
@@ -759,16 +745,48 @@ export default function AdminDashboardPage() {
         }
     };
 
+    const fetchReisStats = async () => {
+        try {
+            // Find active trip
+            const allTrips = await directusFetch<any[]>('/items/trips?filter[status][_eq]=published&sort=-start_date');
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Find the most relevant upcoming/active trip
+            const activeTrip = allTrips.find(trip => {
+                // If trip has end_date, check if it's not finished
+                if (trip.end_date) {
+                    const endDate = new Date(trip.end_date);
+                    endDate.setHours(23, 59, 59, 999);
+                    return endDate >= today;
+                }
+
+                // Otherwise use start/event date
+                const dateStr = trip.event_date || trip.start_date;
+                if (!dateStr) return false;
+                const eventDate = new Date(dateStr);
+                eventDate.setHours(23, 59, 59, 999);
+                return eventDate >= today;
+            });
+
+            if (!activeTrip) {
+                return 0;
+            }
+
+            // Get signups for active trip, exclude cancelled
+            const signupsData = await directusFetch<any>(`/items/trip_signups?aggregate[count]=*&filter[trip_id][_eq]=${activeTrip.id}&filter[status][_neq]=cancelled`);
+            return signupsData?.[0]?.count || 0;
+        } catch (error) {
+            console.error('Failed to fetch reis signups:', error);
+            return 0;
+        }
+    };
+
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
     };
-
-    const activeAdmin = visibilitySettings.kroegentocht
-        ? { title: 'Kroegentocht', link: '/admin/kroegentocht' }
-        : (visibilitySettings.reis && canManageReis)
-            ? { title: 'Reis', link: '/admin/reis' }
-            : { title: 'Stickers', link: '/stickers' };
 
     if (isLoading) {
         return (
@@ -796,7 +814,7 @@ export default function AdminDashboardPage() {
             <div className="container mx-auto px-4 py-8 max-w-7xl">
                 {/* Quick Actions Section */}
                 <div className="mb-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4">
                         <StatCard
                             title="Overzicht"
                             value="Activiteiten"
@@ -806,10 +824,10 @@ export default function AdminDashboardPage() {
                             colorClass="purple"
                         />
                         <StatCard
-                            title="Intro"
-                            value="Admin"
+                            title="Beheer"
+                            value="intro"
                             icon={<FileText className="h-6 w-6" />}
-                            subtitle="Beheer intro pagina"
+                            subtitle={`aanmeldingen:  ${stats.introSignups}`}
                             onClick={() => router.push('/admin/intro')}
                             colorClass="blue"
                         />
@@ -822,147 +840,80 @@ export default function AdminDashboardPage() {
                             colorClass="green"
                         />
                         <StatCard
-                            title={activeAdmin.title}
-                            value="Admin"
-                            icon={<Activity className="h-6 w-6" />}
-                            subtitle={`Beheer ${activeAdmin.title.toLowerCase()}`}
-                            onClick={() => router.push(activeAdmin.link)}
+                            title="beheer"
+                            value="reis"
+                            icon={<FileText className="h-6 w-6" />}
+                            subtitle={`aanmeldingen:  ${stats.reisSignups}`}
+                            onClick={() => router.push('/admin/reis')}
+                            colorClass="teal"
+                        />
+                        <StatCard
+                            title="beheer"
+                            value="kroegentocht"
+                            icon={<Ticket className="h-6 w-6" />}
+                            subtitle={`aanmeldingen:  ${stats.pubCrawlSignups}`}
+                            onClick={() => router.push('/admin/kroegentocht')}
                             colorClass="orange"
+                            nowrap
                         />
                     </div>
-
-                    {/* titles moved into the stats grid so they align with the top of the stats column */}
                 </div>
 
                 {/* Stats Section */}
                 <div className="mb-8">
-                    
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 auto-rows-min">
-                        {/* Snelle Acties - Fixed top left */}
-                        <div className="lg:col-span-5 lg:row-span-2">
-                            <div className="bg-admin-card rounded-2xl shadow-lg p-6">
-                                <h3 className="text-xl font-bold text-admin mb-4">Snelle Acties</h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <ActionCard
-                                        title="Nieuwe"
-                                        subtitle="Activiteit"
-                                        icon={<Plus className="h-6 w-6" />}
-                                        onClick={() => router.push('/admin/activiteiten/nieuw')}
-                                        colorClass="purple"
-                                    />
-                                    <ActionCard
-                                        title="Nieuwe"
-                                        subtitle="Intro Post"
-                                        icon={<FileText className="h-6 w-6" />}
-                                        onClick={() => router.push('/admin/intro?tab=blogs&create=1')}
-                                        colorClass="blue"
-                                    />
-                                    <ActionCard
-                                        title="Nieuwe"
-                                        subtitle="Sticker"
-                                        icon={<Sticker className="h-6 w-6" />}
-                                        onClick={() => router.push('/stickers?add=1')}
-                                        colorClass="red"
-                                    />
-                                </div>
-                            </div>
-                        </div>
 
-                        {/* All other stat cards wrap around Snelle Acties */}
-                        <div className="lg:col-span-7">
-                            <StatCard
-                                title="Meeste Activiteiten"
-                                value={stats.topCommittee ? cleanCommitteeName(stats.topCommittee.name) : 'Geen data'}
-                                icon={<Sticker className="h-6 w-6" />}
-                                subtitle={stats.topCommittee ? `${stats.topCommittee.count} ${stats.topCommittee.count === 1 ? 'activiteit' : 'activiteiten'} dit jaar` : 'Geen data'}
-                                onClick={() => router.push('/commissies')}
-                                colorClass="purple"
-                            />
-                        </div>
-
-                        <div className="lg:col-span-7">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-min">
-                                <div className="col-span-1">
-                                    <StatCard
-                                        title="Commissieleden"
-                                        value={stats.totalCommitteeMembers}
-                                        icon={<Users className="h-6 w-6" />}
-                                        subtitle="Actieve leden"
-                                        onClick={() => router.push('/commissies')}
-                                        colorClass="green"
-                                    />
-                                </div>
-                                
-                                {/* Latest Activities - larger card that spans 2 columns and 2 rows */}
-                                <div className="sm:col-span-2 sm:row-span-2">
-                                    <div className="bg-admin-card rounded-2xl shadow-lg p-6 h-full">
-                                        <div className="flex items-center justify-between mb-3">
-                                            <div>
-                                                <p className="text-admin-muted text-sm font-medium">Laatste Activiteiten</p>
-                                                <h3 className="text-admin font-bold">Recente aanmeldingen</h3>
-                                            </div>
-                                            <Activity className="h-6 w-6 text-theme-purple" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            {stats.latestEventsWithSignups && stats.latestEventsWithSignups.length > 0 ? (
-                                                stats.latestEventsWithSignups.map(ev => (
-                                                    <div key={ev.id} className="flex items-center justify-between p-3 rounded-lg bg-admin-card-soft">
-                                                        <div className="text-sm text-admin truncate pr-2">{ev.name}</div>
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-lg font-bold text-theme-purple">{ev.signups}</span>
-                                                            <UserCheck className="h-4 w-4 text-theme-purple" />
-                                                        </div>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <p className="text-admin-muted text-sm text-center py-2">Geen recente activiteiten</p>
-                                            )}
-                                        </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+                        {/* Snelle Acties - Left side */}
+                        <div>
+                            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Snelle Acties</h3>
+                                <div className="space-y-4">
+                                    {/* Standard actions */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <ActionCard
+                                            title="Nieuwe"
+                                            subtitle="Activiteit"
+                                            icon={<Plus className="h-6 w-6" />}
+                                            onClick={() => router.push('/admin/activiteiten/nieuw')}
+                                            colorClass="purple"
+                                        />
+                                        <ActionCard
+                                            title="Nieuwe"
+                                            subtitle="Intro Post"
+                                            icon={<FileText className="h-6 w-6" />}
+                                            onClick={() => router.push('/admin/intro?tab=blogs&create=1')}
+                                            colorClass="blue"
+                                            disabled={!visibilitySettings.intro}
+                                        />
                                     </div>
-                                </div>
 
-                                <div className="col-span-1">
-                                    <StatCard
-                                        title="Totaal Stickers"
-                                        value={stats.totalStickers}
-                                        icon={<Sticker className="h-6 w-6" />}
-                                        subtitle="Alle verzamelde stickers"
-                                        onClick={() => router.push('/stickers')}
-                                        colorClass="red"
-                                    />
+                                    {/* Removed small 'Beheer' buttons here per request */}
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Additional cards that continue wrapping below */}
-                        <div className="lg:col-span-12">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {/* Additional cards below Snelle Acties */}
+                            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
                                 <div className="col-span-1">
                                     <ListCard
-                                        title="Aankomende Jarigen (7 dagen)"
+                                        title="Aankomende Jarigen "
                                         icon={<Cake className="h-5 w-5" />}
                                     >
                                         {stats.upcomingBirthdays.length > 0 ? (
                                             <div className="space-y-3">
                                                 {stats.upcomingBirthdays.map(person => (
-                                                    <div 
-                                                        key={person.id} 
-                                                        className={`flex items-center justify-between p-3 rounded-xl ${
-                                                            person.isToday 
-                                                                ? 'bg-gradient-to-r from-yellow-100 to-yellow-50 dark:from-yellow-900/40 dark:to-yellow-900/20 border-2 border-yellow-400 dark:border-yellow-600' 
-                                                                : 'bg-admin-card-soft'
-                                                        }`}
+                                                    <div
+                                                        key={person.id}
+                                                        className={`flex items-center justify-between p-3 rounded-xl ${person.isToday
+                                                            ? 'bg-gradient-to-r from-yellow-100 to-yellow-50 dark:from-yellow-900/40 dark:to-yellow-900/20 border-2 border-yellow-400 dark:border-yellow-600'
+                                                            : 'bg-slate-100 dark:bg-slate-700'
+                                                            }`}
                                                     >
                                                         <div>
-                                                            <p className={`font-semibold ${person.isToday ? 'text-yellow-900 dark:text-yellow-100' : 'text-admin'}`}>
+                                                            <p className={`font-semibold ${person.isToday ? 'text-yellow-900 dark:text-yellow-100' : 'text-slate-700 dark:text-slate-200'}`}>
                                                                 {person.first_name} {person.last_name}
-                                                                {person.isToday && (
-                                                                    <span className="ml-2 text-xs font-bold bg-yellow-500 text-white px-2 py-0.5 rounded-full">
-                                                                        VANDAAG! 🎉
-                                                                    </span>
-                                                                )}
+                                                                {person.isToday}
                                                             </p>
-                                                            <p className={`text-sm ${person.isToday ? 'text-yellow-700 dark:text-yellow-300' : 'text-admin-muted'}`}>
+                                                            <p className={`text-sm ${person.isToday ? 'text-yellow-700 dark:text-yellow-300' : 'text-slate-500 dark:text-slate-400'}`}>
                                                                 {formatDate(person.birthday)}
                                                             </p>
                                                         </div>
@@ -971,130 +922,117 @@ export default function AdminDashboardPage() {
                                                 ))}
                                             </div>
                                         ) : (
-                                            <p className="text-admin-muted text-center py-4">Geen jarigen in de komende 7 dagen</p>
+                                            <p className="text-slate-500 dark:text-slate-400 text-center py-4">Geen jarigen gevonden</p>
                                         )}
                                     </ListCard>
                                 </div>
-                                {visibilitySettings.intro && (
-                                    <div className="col-span-1">
-                                        <StatCard
-                                            title="Intro Aanmeldingen"
-                                            value={stats.introSignups}
-                                            icon={<Mail className="h-6 w-6" />}
-                                            subtitle="Totaal aanmeldingen"
-                                            onClick={() => router.push('/intro')}
-                                            colorClass="blue"
-                                        />
-                                    </div>
-                                )}
+                                <div className="col-span-1">
+                                    <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
 
-                                {visibilitySettings.intro && (
-                                    <div className="col-span-1">
-                                        <StatCard
-                                            title="Blog Likes"
-                                            value={stats.introBlogLikes}
-                                            icon={<Heart className="h-6 w-6" />}
-                                            subtitle="Alle intro blogs"
-                                            onClick={() => router.push('/intro/blog')}
-                                            colorClass="blue"
-                                        />
-                                    </div>
-                                )}
 
-                                {visibilitySettings.kroegentocht && stats.upcomingPubCrawl && (
-                                    <div className="col-span-1">
-                                        <StatCard
-                                            title="Kroegentocht Tickets"
-                                            value={stats.pubCrawlTickets ?? 0}
-                                            icon={<Ticket className="h-6 w-6" />}
-                                            subtitle={`${stats.upcomingPubCrawl.name}`}
-                                            onClick={() => router.push('/admin/kroegentocht')}
-                                            colorClass="orange"
-                                        />
-                                    </div>
-                                )}
 
-                                {visibilitySettings.reis && canManageReis && (
-                                    <div className="col-span-1 sm:col-span-2 lg:col-span-4">
-                                        <StatCard
-                                            title="Reis"
-                                            value="Beheer"
-                                            icon={<Activity className="h-6 w-6" />}
-                                            subtitle="Beheer reisactiviteiten"
-                                            onClick={() => router.push('/admin/reis')}
-                                            colorClass="teal"
-                                        />
+
+                                        {/* Top 3 Sticker Collectors moved here */}
+                                        <div className="mt-2">
+                                            <ListCard
+                                                title="Top 3 Sticker Verzamelaars"
+                                                icon={<Award className="h-5 w-5" />}
+                                            >
+                                                {stats.topStickers.length > 0 ? (
+                                                    <div className="space-y-3">
+                                                        {stats.topStickers.map((person, index) => (
+                                                            <div key={person.id} className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-700 rounded-xl">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${index === 0 ? 'bg-yellow-500 dark:bg-yellow-600' : index === 1 ? 'bg-slate-400 dark:bg-slate-500' : 'bg-orange-600 dark:bg-orange-700'}`}>
+                                                                        {index + 1}
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="font-semibold text-slate-700 dark:text-slate-200">
+                                                                            {person.first_name} {person.last_name}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-2xl font-bold text-theme-purple">{person.count}</span>
+                                                                    <Award className="h-5 w-5 text-theme-purple" />
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-slate-500 dark:text-slate-400 text-center py-4">Geen stickers gevonden</p>
+                                                )}
+                                            </ListCard>
+                                        </div>
+                                        {/* Kroegentocht card moved to the right column under Activiteiten aanmeldingen */}
+
+                                        {/* Reis card moved under 'Activiteiten aanmeldingen' on the right side */}
                                     </div>
-                                )}
+                                </div>
                             </div>
+
+                        </div>
+
+                        {/* Right side stats */}
+                        <div className="space-y-4">
+                            {/* Activiteiten aanmeldingen - Now on the right side */}
+                            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div>
+                                        <h3 className="text-slate-900 dark:text-white font-bold">Activiteiten aanmeldingen</h3>
+                                    </div>
+                                    <Activity className="h-6 w-6 text-theme-purple" />
+                                </div>
+                                <div className="space-y-2">
+                                    {stats.latestEventsWithSignups && stats.latestEventsWithSignups.length > 0 ? (
+                                        stats.latestEventsWithSignups.map(ev => {
+                                            const eventDate = ev.event_date ? new Date(ev.event_date) : null;
+                                            const now = new Date();
+                                            const isPast = eventDate && eventDate < now;
+
+                                            return (
+                                                <button
+                                                    key={ev.id}
+                                                    type="button"
+                                                    onClick={isPast ? undefined : () => router.push(`/admin/activiteiten/${ev.id}/aanmeldingen`)}
+                                                    disabled={!!isPast}
+                                                    aria-disabled={!!isPast}
+                                                    className={`w-full text-left flex items-center justify-between p-3 rounded-lg transition hover:shadow-sm active:scale-[.997] ${isPast
+                                                        ? 'bg-slate-200 dark:bg-slate-700/50 opacity-75 cursor-default'
+                                                        : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200/50 dark:hover:bg-slate-600 cursor-pointer'
+                                                        }`}
+                                                >
+                                                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                        <div className="text-sm text-slate-700 dark:text-slate-200 truncate pr-2">{ev.name}</div>
+                                                        {isPast && (
+                                                            <span className="text-xs bg-slate-400 dark:bg-slate-600 text-white px-2 py-0.5 rounded-full whitespace-nowrap">
+                                                                Afgelopen
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`text-lg font-bold ${isPast ? 'text-slate-500 dark:text-slate-400' : 'text-theme-purple'}`}>
+                                                            {ev.signups}
+                                                        </span>
+                                                        <UserCheck className={`h-4 w-4 ${isPast ? 'text-slate-500 dark:text-slate-400' : 'text-theme-purple'}`} />
+                                                    </div>
+                                                </button>
+                                            );
+                                        })
+                                    ) : (
+                                        <p className="text-slate-500 dark:text-slate-400 text-sm text-center py-2">Geen recente activiteiten</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Kroegentocht and Reis counts moved into their respective quick-action cards above */}
                         </div>
                     </div>
+
+
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-                    {/* Upcoming Events with Signups */}
-                    <ListCard
-                        title="Aankomende Events"
-                        icon={<Calendar className="h-5 w-5" />}
-                    >
-                        {stats.upcomingEventsWithSignups.length > 0 ? (
-                            <div className="space-y-3">
-                                {stats.upcomingEventsWithSignups.map(event => (
-                                    <button
-                                        key={event.id}
-                                        onClick={() => router.push(`/activiteiten/${event.id}`)}
-                                        className="flex items-center justify-between p-3 bg-admin-card-soft rounded-xl w-full hover:bg-admin-hover transition"
-                                    >
-                                        <div className="text-left">
-                                            <p className="font-semibold text-admin line-clamp-1">
-                                                {event.name}
-                                            </p>
-                                            <p className="text-sm text-admin-muted">{formatDate(event.event_date)}</p>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-lg font-bold text-theme-purple">{event.signups}</span>
-                                            <UserCheck className="h-5 w-5 text-theme-purple" />
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-admin-muted text-center py-4">Geen aankomende events</p>
-                        )}
-                    </ListCard>
-
-                    {/* Upcoming Birthdays moved to lower stats grid */}
-
-                    {/* Top Sticker Collectors */}
-                    <ListCard
-                        title="Top 3 Sticker Verzamelaars"
-                        icon={<Award className="h-5 w-5" />}
-                    >
-                        {stats.topStickers.length > 0 ? (
-                            <div className="space-y-3">
-                                {stats.topStickers.map((person, index) => (
-                                    <div key={person.id} className="flex items-center justify-between p-3 bg-admin-card-soft rounded-xl">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${index === 0 ? 'bg-yellow-500 dark:bg-yellow-600' : index === 1 ? 'bg-slate-400 dark:bg-slate-500' : 'bg-orange-600 dark:bg-orange-700'}`}>
-                                                {index + 1}
-                                            </div>
-                                            <div>
-                                                <p className="font-semibold text-admin">
-                                                    {person.first_name} {person.last_name}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-2xl font-bold text-theme-purple">{person.count}</span>
-                                            <Award className="h-5 w-5 text-theme-purple" />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-admin-muted text-center py-4">Geen stickers gevonden</p>
-                        )}
-                    </ListCard>
                 </div>
 
                 {/* System Health - ICT Only */}
@@ -1115,20 +1053,20 @@ export default function AdminDashboardPage() {
                                     </div>
                                     <span className="text-green-600 dark:text-green-400 font-bold">✓</span>
                                 </div>
-                                    <div className="flex items-center justify-between p-3 bg-admin-card-soft rounded-xl">
-                                        <div className="flex items-center gap-3">
-                                            <AlertCircle className="h-5 w-5 text-admin-muted" />
-                                            <div>
-                                                <p className="font-semibold text-admin">Recente Fouten</p>
-                                                <p className="text-sm text-admin-muted">Laatste 24 uur</p>
-                                            </div>
+                                <div className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-700 rounded-xl">
+                                    <div className="flex items-center gap-3">
+                                        <AlertCircle className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+                                        <div>
+                                            <p className="font-semibold text-slate-700 dark:text-slate-200">Recente Fouten</p>
+                                            <p className="text-sm text-slate-500 dark:text-slate-400">Laatste 24 uur</p>
                                         </div>
-                                        <span className="text-2xl font-bold text-admin-muted">{stats.systemErrors}</span>
                                     </div>
+                                    <span className="text-2xl font-bold text-admin-muted">{stats.systemErrors}</span>
                                 </div>
-                            </ListCard>
-                        </div>
-                    )}
+                            </div>
+                        </ListCard>
+                    </div>
+                )}
 
                 {/* Additional Info removed */}
             </div>

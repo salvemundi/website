@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import '@/shared/lib/silence-dev-logs';
+import ConsoleArt from '@/shared/lib/console-art';
 import { RootProviders } from './providers';
 import Header from '@/widgets/header/ui/Header';
 import Footer from '@/widgets/footer/ui/Footer';
@@ -58,6 +60,7 @@ export const viewport: Viewport = {
     themeColor: '#ff6542',
     width: 'device-width',
     initialScale: 1,
+    viewportFit: 'cover',
 };
 
 export default function RootLayout({
@@ -78,10 +81,14 @@ export default function RootLayout({
 
                 {/* Preload self-hosted Material Symbols font */}
                 <link rel="preload" href="/fonts/material-symbols/MaterialSymbolsOutlined.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
+                {/* Inline script to suppress noisy dev-server logs (HMR / Fast Refresh) as early as possible */}
+                <script dangerouslySetInnerHTML={{ __html: `(function(){try{var patterns=[/^\\[HMR\\]/i,/\\[Fast Refresh\\]/i,/forward-logs-shared/i];function shouldFilter(args){try{var text=args.map(function(a){return typeof a==='string'?a:JSON.stringify(a)}).join(' ');return patterns.some(function(p){return p.test(text)});}catch(e){return false}}function wrap(orig){return function(){var args=Array.prototype.slice.call(arguments);if(shouldFilter(args))return;return orig.apply(console,args)}}if(console&&console.log){try{console.log=wrap(console.log.bind(console))}catch(e){} } if(console&&console.info){try{console.info=wrap(console.info.bind(console))}catch(e){}} if(console&&console.debug){try{console.debug=wrap(console.debug.bind(console))}catch(e){}}}catch(e){} })();` }} />
             </head>
             <body className="min-h-screen bg-background dark:bg-background-darker text-ink dark:text-white relative transition-colors duration-300">
                 <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-oranje/10/80 via-transparent to-oranje/20/60 dark:from-oranje/5/40 dark:to-paars/10/40" aria-hidden="true" />
                 <RootProviders>
+                    {/* Client-only: prints ASCII art + GitHub link to browser console on page load */}
+                    <ConsoleArt />
                     <ServiceWorkerRegistration />
                     <Header />
                     <div className="relative z-10">

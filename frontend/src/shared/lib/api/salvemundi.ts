@@ -46,9 +46,14 @@ export interface Transaction {
     id: number;
     user_id: string;
     amount: number;
-    description: string;
-    transaction_type: 'payment' | 'membership' | 'event' | 'other';
-    status: 'pending' | 'completed' | 'failed';
+    description?: string;
+    product_name?: string;
+    transaction_type?: 'payment' | 'membership' | 'event' | 'other';
+    registration?: any;
+    pub_crawl_signup?: any;
+    trip_signup?: any;
+    status?: 'pending' | 'completed' | 'failed' | 'paid';
+    payment_status?: 'pending' | 'completed' | 'failed' | 'paid' | 'open';
     created_at: string;
     updated_at?: string;
 }
@@ -1098,18 +1103,21 @@ export interface Trip {
     id: number;
     name: string;
     description: string;
-    image?: string;
+    image?: string | null;
     // For compatibility with single-day trips we keep `event_date`.
     // New multi-day support uses `start_date` and optional `end_date`.
-    event_date: string;
-    start_date?: string;
-    end_date?: string;
+    event_date?: string | null;
+    start_date?: string | null;
+    end_date?: string | null;
+    registration_start_date?: string | null;
     registration_open: boolean;
     max_participants: number;
+    max_crew: number;
     base_price: number;
     crew_discount: number;
     deposit_amount: number;
     is_bus_trip: boolean;
+    allow_final_payments?: boolean;
     created_at: string;
     updated_at: string;
 }
@@ -1124,6 +1132,8 @@ export interface TripActivity {
     max_participants?: number;
     is_active: boolean;
     display_order: number;
+    options?: { name: string; price: number }[];
+    max_selections?: number; // 1 = radio/single, null/undefined = unlimited/checkbox
 }
 
 export interface TripSignup {
@@ -1145,6 +1155,8 @@ export interface TripSignup {
     deposit_paid_at?: string;
     full_payment_paid: boolean;
     full_payment_paid_at?: string;
+    deposit_email_sent?: boolean;
+    final_email_sent?: boolean;
     terms_accepted: boolean;
     created_at: string;
     updated_at: string;
@@ -1153,7 +1165,7 @@ export interface TripSignup {
 export const tripsApi = {
     getAll: async () => {
         const query = buildQueryString({
-            fields: ['id', 'name', 'description', 'image', 'event_date', 'start_date', 'end_date', 'registration_open', 'max_participants', 'base_price', 'crew_discount', 'deposit_amount', 'is_bus_trip', 'created_at', 'updated_at'],
+            fields: ['id', 'name', 'description', 'image', 'event_date', 'start_date', 'end_date', 'registration_start_date', 'registration_open', 'max_participants', 'max_crew', 'base_price', 'crew_discount', 'deposit_amount', 'is_bus_trip', 'allow_final_payments', 'created_at', 'updated_at'],
             sort: ['-event_date']
         });
         return directusFetch<Trip[]>(`/items/trips?${query}`);
@@ -1184,7 +1196,8 @@ export const tripActivitiesApi = {
     getByTripId: async (tripId: number) => {
         const query = buildQueryString({
             filter: { trip_id: { _eq: tripId }, is_active: { _eq: true } },
-            sort: ['display_order', 'name']
+            sort: ['display_order', 'name'],
+            fields: ['*', 'options', 'max_selections']
         });
         return directusFetch<TripActivity[]>(`/items/trip_activities?${query}`);
     },
@@ -1192,7 +1205,8 @@ export const tripActivitiesApi = {
         // Get all activities including inactive ones for admin purposes
         const query = buildQueryString({
             filter: { trip_id: { _eq: tripId } },
-            sort: ['display_order', 'name']
+            sort: ['display_order', 'name'],
+            fields: ['*', 'options', 'max_selections']
         });
         return directusFetch<TripActivity[]>(`/items/trip_activities?${query}`);
     },

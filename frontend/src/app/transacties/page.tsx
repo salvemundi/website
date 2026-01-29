@@ -10,17 +10,35 @@ import { Transaction } from '@/shared/lib/api/salvemundi';
 
 function TransactionsContent() {
     const router = useRouter();
-    const { user, isLoading: authLoading } = useAuth();
+    const { user, isLoading: authLoading, isLoggingOut } = useAuth();
     const { data: transactions = [], isLoading: transactionsLoading, error, refetch } = useSalvemundiTransactions(user?.id);
 
     useEffect(() => {
-        if (!authLoading && !user) {
+        if (!authLoading && !user && !isLoggingOut) {
             const returnTo = window.location.pathname + window.location.search;
             router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
         }
-    }, [user, authLoading, router]);
+    }, [user, authLoading, router, isLoggingOut]);
 
-    const getTransactionTypeColor = (type: string) => {
+    const getInferredTransactionType = (t: Transaction) => {
+        if (t.transaction_type) return t.transaction_type;
+
+        const desc = (t.product_name || t.description || '').toLowerCase();
+
+        if (t.registration || t.pub_crawl_signup || desc.includes('event') || desc.includes('activiteit') || desc.includes('inschrijving')) {
+            return 'event';
+        }
+        if (t.trip_signup || desc.includes('reis')) {
+            return 'event';
+        }
+        if (desc.includes('lidmaatschap') || desc.includes('contributie') || desc.includes('membership')) {
+            return 'membership';
+        }
+
+        return 'payment';
+    };
+
+    const getTransactionTypeColor = (type: string | undefined) => {
         switch (type) {
             case 'membership':
                 return 'bg-theme-purple-lighter text-theme-purple-darker';
@@ -33,13 +51,18 @@ function TransactionsContent() {
         }
     };
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
+    const getStatusColor = (status: string | undefined) => {
+        const s = status?.toLowerCase();
+        switch (s) {
             case 'completed':
+            case 'paid':
                 return 'bg-green-500 text-theme-white';
             case 'pending':
+            case 'open':
                 return 'bg-yellow-500 text-theme-white';
             case 'failed':
+            case 'canceled':
+            case 'expired':
                 return 'bg-theme-purple text-theme-white';
             default:
                 return 'bg-gray-400 text-theme-white';
@@ -132,17 +155,17 @@ function TransactionsContent() {
                                                     {format(new Date(transaction.created_at), 'd MMM yyyy HH:mm')}
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-gray-900">
-                                                    {transaction.description}
+                                                    {transaction.product_name || transaction.description || 'Geen beschrijving'}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getTransactionTypeColor(transaction.transaction_type)}`}>
-                                                        {transaction.transaction_type}
+                                                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getTransactionTypeColor(getInferredTransactionType(transaction))}`}>
+                                                        {getInferredTransactionType(transaction)}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(transaction.status)}`}>
-                                                        {transaction.status === 'completed' ? 'Betaald' :
-                                                            transaction.status === 'pending' ? 'In afwachting' : 'Mislukt'}
+                                                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(transaction.payment_status || transaction.status)}`}>
+                                                        {(transaction.payment_status === 'completed' || transaction.payment_status === 'paid' || transaction.status === 'completed' || transaction.status === 'paid') ? 'Betaald' :
+                                                            (transaction.payment_status === 'pending' || transaction.status === 'pending') ? 'In afwachting' : 'Mislukt'}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
@@ -164,7 +187,7 @@ function TransactionsContent() {
                                         <div className="flex justify-between items-start mb-2">
                                             <div className="flex-1">
                                                 <h3 className="font-semibold text-paars mb-1">
-                                                    {transaction.description}
+                                                    {transaction.product_name || transaction.description || 'Geen beschrijving'}
                                                 </h3>
                                                 <p className="text-sm text-paars/70">
                                                     {format(new Date(transaction.created_at), 'd MMMM yyyy')}
@@ -177,12 +200,12 @@ function TransactionsContent() {
                                             </div>
                                         </div>
                                         <div className="flex gap-2 mt-3">
-                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getTransactionTypeColor(transaction.transaction_type)}`}>
-                                                {transaction.transaction_type}
+                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getTransactionTypeColor(getInferredTransactionType(transaction))}`}>
+                                                {getInferredTransactionType(transaction)}
                                             </span>
-                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(transaction.status)}`}>
-                                                {transaction.status === 'completed' ? 'Betaald' :
-                                                    transaction.status === 'pending' ? 'In afwachting' : 'Mislukt'}
+                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(transaction.payment_status || transaction.status)}`}>
+                                                {(transaction.payment_status === 'completed' || transaction.payment_status === 'paid' || transaction.status === 'completed' || transaction.status === 'paid') ? 'Betaald' :
+                                                    (transaction.payment_status === 'pending' || transaction.status === 'pending') ? 'In afwachting' : 'Mislukt'}
                                             </span>
                                         </div>
                                     </div>

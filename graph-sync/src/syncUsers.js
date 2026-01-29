@@ -5,6 +5,7 @@ import axios from 'axios';
 import express from 'express';
 import bodyParser from 'body-parser';
 import { Client } from '@microsoft/microsoft-graph-client';
+import { ClientSecretCredential } from '@azure/identity';
 import 'isomorphic-fetch';
 
 const app = express();
@@ -557,7 +558,7 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null, forceL
 
         const u = await client.api(`/users/${userId}`)
             .version('beta')
-            .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,customSecurityAttributes,jobTitle,birthday')
+            .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,customSecurityAttributes,jobTitle,birthday,otherMails')
             .get();
 
         const attributes = u.customSecurityAttributes?.SalveMundiLidmaatschap;
@@ -583,7 +584,11 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null, forceL
 
         // Try to get birthday from Entra
         if (u.birthday) {
-            dateOfBirth = new Date(u.birthday).toISOString().split('T')[0];
+            const rawDob = new Date(u.birthday).toISOString().split('T')[0];
+            // Ignore default/empty dates like year 1
+            if (!rawDob.startsWith('0001-')) {
+                dateOfBirth = rawDob;
+            }
         } else if (attributes?.Geboortedatum) {
             const v = attributes.Geboortedatum; // Assuming yyyyMMdd if it's a string
             if (v && v.length === 8) {
@@ -592,6 +597,9 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null, forceL
         }
 
         const email = (u.mail || u.userPrincipalName || '').toLowerCase();
+        const otherEmails = (u.otherMails || []).map(e => e.toLowerCase());
+        const allEmails = Array.from(new Set([email, ...otherEmails])).filter(Boolean);
+
         const firstName = u.givenName || (u.displayName ? u.displayName.split(' ')[0] : '').trim();
         const lastName = u.surname || (u.displayName ? u.displayName.split(' ').slice(1).join(' ') : '').trim();
 
@@ -637,9 +645,10 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null, forceL
         );
         const existingByEntra = entraIdRes.data?.data?.[0] || null;
 
-        // Priority 2: Search by email (for warnings/manual linking)
+        // Priority 2: Search by all known emails (for warnings/manual linking)
+        const emailList = allEmails.join(',');
         const emailRes = await axios.get(
-            `${process.env.DIRECTUS_URL}/users?filter[email][_eq]=${encodeURIComponent(email)}&fields=id,email,first_name,last_name,phone_number,status,role,membership_expiry,fontys_email,date_of_birth,title,entra_id`,
+            `${process.env.DIRECTUS_URL}/users?filter[email][_in]=${encodeURIComponent(emailList)}&fields=id,email,first_name,last_name,phone_number,status,role,membership_expiry,fontys_email,date_of_birth,title,entra_id`,
             { headers: DIRECTUS_HEADERS }
         );
         const existingByEmail = emailRes.data?.data || [];
@@ -677,14 +686,14 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null, forceL
 
         if (warning) {
             // If no linked account exists and we have a warning, we skip to prevent further duplication
-            // UNLESS forceLink is true and it's a LINK_REQUIRED case (single email match with no entra_id)
+            // UNLESS it's a LINK_REQUIRED case (single email match with no entra_id), in which case we link automatically
             if (!existingUser) {
-                if (forceLink && warning?.type === 'LINK_REQUIRED' && existingByEmail.length === 1) {
-                    console.log(`[SYNC] 🔗 Force linking ${email} (ID: ${existingByEmail[0].id}) to Entra ID ${userId}`);
+                if ((forceLink || warning?.type === 'LINK_REQUIRED') && existingByEmail.length === 1) {
+                    console.log(`[SYNC] 🔗 Auto-linking ${email} (ID: ${existingByEmail[0].id}) to Entra ID ${userId}`);
                     existingUser = existingByEmail[0];
                     // Don't add warning since we're successfully linking
                 } else {
-                    // Only add warning if we're NOT force linking
+                    // Only add warning if we're NOT force linking or it's not a simple link
                     syncStatus.warningCount++;
                     syncStatus.warnings.push(warning);
                     console.log(`[SYNC] ⚠️ Warning for ${email}: ${warning.message}`);
@@ -734,15 +743,19 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null, forceL
         const payload = {
             email,
             entra_id: userId,
-            first_name: firstName || null,
-            last_name: lastName || null,
-            fontys_email: email.includes('@student.fontys.nl') ? email : null,
-            phone_number: formatDutchMobile(u.mobilePhone),
+            first_name: firstName || (existingUser?.first_name || null),
+            last_name: lastName || (existingUser?.last_name || null),
+            fontys_email: email.includes('@student.fontys.nl') ? email : (existingUser?.fontys_email || null),
+            phone_number: formatDutchMobile(u.mobilePhone) || (existingUser?.phone_number || null),
             status: 'active',
             ...(role ? { role } : {}),
-            membership_expiry: membershipExpiry,
-            date_of_birth: dateOfBirth,
-            title: u.jobTitle || null,
+            membership_expiry: membershipExpiry || (existingUser?.membership_expiry || null),
+            date_of_birth: dateOfBirth || (
+                (existingUser?.date_of_birth && !existingUser.date_of_birth.startsWith('0001-') && !existingUser.date_of_birth.startsWith('1-01-'))
+                    ? existingUser.date_of_birth
+                    : null
+            ),
+            title: u.jobTitle || (existingUser?.title || null),
         };
 
         console.log(`[SYNC] 📦 Payload for ${email} includes role: ${role ? 'YES (' + role + ')' : 'NO (role field omitted)'}`);
@@ -958,7 +971,14 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null, forceL
 
             console.log(`[SYNC] ${email} membership: active=${isMember} (group=${isInActieveLeden}, expiry=${isExpiryActive}, expiryDate=${membershipExpiry})`);
 
-            await setDirectusMembershipStatus(directusUserId, isMember ? 'active' : 'none');
+            // PROTECTION: If membership determination is null/false but the user is ALREADY active in Directus,
+            // do not override to 'none' if we couldn't find any expiry attributes. 
+            // This prevents race conditions during new registrations.
+            if (!isMember && existingUser?.membership_status === 'active' && !membershipExpiry && !isInActieveLeden) {
+                console.log(`[SYNC] 🛡️ Protecting 'active' status for ${email} (no new data to justify removal)`);
+            } else {
+                await setDirectusMembershipStatus(directusUserId, isMember ? 'active' : 'none');
+            }
         } catch (e) {
             console.error('❌ [SYNC] Error setting membership_status after committee sync:', e.response?.data || e.message);
         }
@@ -1194,6 +1214,8 @@ app.post('/sync/directus-to-entra', bodyParser.json(), async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+
 
 app.listen(PORT, async () => {
     // startup logs removed

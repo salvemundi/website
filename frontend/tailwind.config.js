@@ -125,7 +125,9 @@ export default {
       },
 
       maxWidth: {
-        app: "7xl",
+        // Use an explicit max-width so Tailwind outputs a valid CSS value.
+        // 7xl in Tailwind equals 80rem (1280px). Use that so containers expand on wide screens.
+
       },
 
       backgroundImage: {
@@ -135,6 +137,7 @@ export default {
 
       boxShadow: {
         card: 'var(--shadow-card)',
+        'card-elevated': 'var(--shadow-card-elevated)',
         cardDark: 'var(--shadow-card-dark)',
         glow: 'var(--shadow-glow)',
       },

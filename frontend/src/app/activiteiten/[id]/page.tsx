@@ -225,6 +225,8 @@ export default function EventDetailPage() {
 
     const isPaidAndHasQR = signupStatus.isSignedUp && signupStatus.paymentStatus === 'paid' && !!signupStatus.qrToken;
 
+    
+
     // Form handlers
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -233,6 +235,8 @@ export default function EventDetailPage() {
             setErrors((prev) => ({ ...prev, [name]: "" }));
         }
     };
+
+    
 
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
@@ -466,7 +470,7 @@ export default function EventDetailPage() {
 
 
                     {/* Signup Form - Tall Tile (Right column) */}
-                    <div className="md:col-span-1 md:row-span-3 rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-lg flex flex-col h-full">
+                    <div className="md:col-span-1 md:row-span-3 rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-lg flex flex-col h-full">
                         <div className="flex-grow">
                             {isPaidAndHasQR ? (
                                 // Digital ticket display case
@@ -528,7 +532,7 @@ export default function EventDetailPage() {
                                 </div>
                             ) : (
                                 // Signup Form
-                                <div className="h-full flex flex-col">
+                                <div className="signup-form-container h-full flex flex-col">
                                     <h3 className="text-2xl font-bold text-theme-purple mb-6 flex items-center gap-2">
                                         <Users className="h-6 w-6 text-theme-purple" />
                                         Inschrijven
@@ -536,14 +540,14 @@ export default function EventDetailPage() {
                                     <form onSubmit={handleSubmit} className="space-y-4 flex flex-col">
                                         {/* Name */}
                                         <div>
-                                            <label htmlFor="name" className="block text-theme-purple font-semibold mb-2">Naam *</label>
+                                            <label htmlFor="name" className="block text-sm font-semibold text-theme-purple dark:text-white mb-1">Naam *</label>
                                             <input
                                                 type="text"
                                                 id="name"
                                                 name="name"
                                                 value={formData.name}
                                                 onChange={handleInputChange}
-                                                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-paars transition-all ${errors.name ? "ring-2 ring-red-500" : ""}`}
+                                                className={`w-full px-4 py-3 rounded-xl dark:!bg-white/10 dark:!border-white/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-paars focus:border-paars transition-all ${errors.name ? "ring-2 ring-red-500 !border-red-500" : ""}`}
                                                 placeholder="Jouw naam"
                                             />
                                             {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
@@ -551,14 +555,14 @@ export default function EventDetailPage() {
 
                                         {/* Email */}
                                         <div>
-                                            <label htmlFor="email" className="block text-theme-purple font-semibold mb-2">Email *</label>
+                                            <label htmlFor="email" className="block text-sm font-semibold text-theme-purple dark:text-white mb-1">Email *</label>
                                             <input
                                                 type="email"
                                                 id="email"
                                                 name="email"
                                                 value={formData.email}
                                                 onChange={handleInputChange}
-                                                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-paars transition-all ${errors.email ? "ring-2 ring-red-500" : ""}`}
+                                                className={`w-full px-4 py-3 rounded-xl dark:!bg-white/10 dark:!border-white/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-paars focus:border-paars transition-all ${errors.email ? "ring-2 ring-red-500 !border-red-500" : ""}`}
                                                 placeholder="naam.achternaam@salvemundi.nl"
                                             />
                                             {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
@@ -566,14 +570,14 @@ export default function EventDetailPage() {
 
                                         {/* Phone */}
                                         <div>
-                                            <label htmlFor="phoneNumber" className="block text-theme-purple font-semibold mb-2">Telefoonnummer *</label>
+                                            <label htmlFor="phone" className="block text-sm font-semibold text-theme-purple dark:text-white mb-1">Telefoonnummer *</label>
                                             <input
                                                 type="tel"
-                                                id="phoneNumber"
+                                                id="phone"
                                                 name="phoneNumber"
                                                 value={formData.phoneNumber}
                                                 onChange={handleInputChange}
-                                                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-paars transition-all ${errors.phoneNumber ? "ring-2 ring-red-500" : ""}`}
+                                                className={`w-full px-4 py-3 rounded-xl dark:!bg-white/10 dark:!border-white/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-paars focus:border-paars transition-all ${errors.phoneNumber ? "ring-2 ring-red-500 !border-red-500" : ""}`}
                                                 placeholder="0612345678"
                                             />
                                             {errors.phoneNumber && <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>}
@@ -584,7 +588,7 @@ export default function EventDetailPage() {
                                             <button
                                                 type="submit"
                                                 disabled={isSubmitting}
-                                                className="w-full bg-theme-purple text-theme-purple-darker font-bold py-4 px-6 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                                className="w-full bg-theme-purple text-theme-purple-darker font-bold py-4 px-6 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
                                             >
                                                 {isSubmitting ? (
                                                     <>
@@ -606,52 +610,52 @@ export default function EventDetailPage() {
                     {/* Right column: compact info tiles */}
                     <div className="md:col-span-1 md:row-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4 h-full">
                         {/* Date & Time - Compact */}
-                        <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
+                        <div className="rounded-2xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-md flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-lg bg-theme-purple/10 dark:bg-white/10 flex items-center justify-center text-theme-purple dark:text-theme-white">
                                 <CalendarClock className="h-6 w-6" />
                             </div>
                             <div className="min-w-0">
-                                <p className="text-sm uppercase tracking-wide text-white/90 font-bold">Datum & Tijd</p>
-                                <p className="text-base font-semibold text-white truncate">{formattedDate}</p>
+                                <p className="text-sm uppercase tracking-wide text-theme-purple/60 dark:text-theme-white/60 font-bold">Datum & Tijd</p>
+                                <p className="text-base font-semibold text-theme-purple dark:text-theme-white truncate">{formattedDate}</p>
                                 {(formattedTimeRange || formattedTime) && (
-                                    <p className="text-sm text-white/80">{formattedTimeRange || formattedTime}</p>
+                                    <p className="text-sm text-theme-purple/80 dark:text-theme-white/80">{formattedTimeRange || formattedTime}</p>
                                 )}
                             </div>
                         </div>
 
                         {/* Price - Compact */}
-                        <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
+                        <div className="rounded-2xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-md flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-lg bg-theme-purple/10 dark:bg-white/10 flex items-center justify-center text-theme-purple dark:text-theme-white">
                                 <Euro className="h-6 w-6" />
                             </div>
                             <div>
-                                <p className="text-sm uppercase tracking-wide text-white/90 font-bold">Prijs</p>
-                                <p className="text-base font-semibold text-white">{displayPrice}</p>
+                                <p className="text-sm uppercase tracking-wide text-theme-purple/60 dark:text-theme-white/60 font-bold">Prijs</p>
+                                <p className="text-base font-semibold text-theme-purple dark:text-theme-white">{displayPrice}</p>
                             </div>
                         </div>
 
                         {/* Location - Compact */}
                         {event.location && (
-                            <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
+                            <div className="rounded-2xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-md flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-lg bg-theme-purple/10 dark:bg-white/10 flex items-center justify-center text-theme-purple dark:text-theme-white">
                                     <MapPin className="h-6 w-6" />
                                 </div>
                                 <div>
-                                    <p className="text-sm uppercase tracking-wide text-white/90 font-bold">Locatie</p>
-                                    <p className="text-base font-semibold text-white break-words max-w-[18rem]">{event.location}</p>
+                                    <p className="text-sm uppercase tracking-wide text-theme-purple/60 dark:text-theme-white/60 font-bold">Locatie</p>
+                                    <p className="text-base font-semibold text-theme-purple dark:text-theme-white break-words max-w-[18rem]">{event.location}</p>
                                 </div>
                             </div>
                         )}
 
                         {/* Committee - Compact */}
                         {event.committee_name && (
-                            <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
+                            <div className="rounded-2xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-md flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-lg bg-theme-purple/10 dark:bg-white/10 flex items-center justify-center text-theme-purple dark:text-theme-white">
                                     <UsersIcon className="h-6 w-6" />
                                 </div>
                                 <div>
-                                    <p className="text-sm uppercase tracking-wide text-white/90 font-bold">Organisatie</p>
-                                    <p className="text-base font-semibold text-white truncate">
+                                    <p className="text-sm uppercase tracking-wide text-theme-purple/60 dark:text-theme-white/60 font-bold">Organisatie</p>
+                                    <p className="text-base font-semibold text-theme-purple dark:text-theme-white truncate">
                                         {event.committee_name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim()}
                                     </p>
                                 </div>
@@ -660,29 +664,29 @@ export default function EventDetailPage() {
 
                         {/* Contact - Compact */}
                         {(event.contact_name || committeeEmail || event.contact) && (
-                            <div className="rounded-2xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-6 shadow-md flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-lg bg-paars/20 dark:bg-white/10 flex items-center justify-center text-white">
+                            <div className="rounded-2xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-md flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-lg bg-theme-purple/10 dark:bg-white/10 flex items-center justify-center text-theme-purple dark:text-theme-white">
                                     <Mail className="h-6 w-6" />
                                 </div>
                                 <div>
-                                    <p className="text-sm uppercase tracking-wide text-white/90 font-bold">Contact</p>
+                                    <p className="text-sm uppercase tracking-wide text-theme-purple/60 dark:text-theme-white/60 font-bold">Contact</p>
                                     {event.contact_name && (
-                                        <p className="text-base font-semibold text-white">{event.contact_name}</p>
+                                        <p className="text-base font-semibold text-theme-purple dark:text-theme-white">{event.contact_name}</p>
                                     )}
                                     {committeeEmail && (
-                                        <a href={`mailto:${committeeEmail}`} className="text-sm text-white/80 hover:underline break-all">
+                                        <a href={`mailto:${committeeEmail}`} className="text-sm text-theme-purple/80 dark:text-theme-white/80 hover:underline break-all">
                                             {committeeEmail}
                                         </a>
                                     )}
                                     {/* Show explicit contact email if set on the event */}
                                     {event.contact && typeof event.contact === 'string' && event.contact.includes('@') && (
-                                        <a href={`mailto:${event.contact}`} className="text-sm text-white/80 hover:underline break-all block mt-1">
+                                        <a href={`mailto:${event.contact}`} className="text-sm text-theme-purple/80 dark:text-theme-white/80 hover:underline break-all block mt-1">
                                             {event.contact}
                                         </a>
                                     )}
                                     {/* Fallback: show contact (e.g., phone) when it's not an email */}
                                     {event.contact && typeof event.contact === 'string' && !event.contact.includes('@') && (
-                                        <p className="text-sm text-white/80 break-all mt-1">{event.contact}</p>
+                                        <p className="text-sm text-theme-purple/80 dark:text-theme-white/80 break-all mt-1">{event.contact}</p>
                                     )}
                                 </div>
                             </div>
@@ -691,13 +695,13 @@ export default function EventDetailPage() {
 
                     {/* Description - Large Tile (2x2 on desktop) */}
                     {event.description && (
-                        <div className="md:col-span-2 md:row-span-2 rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end p-8 shadow-lg flex flex-col">
-                            <h2 className="mb-4 text-2xl font-bold text-theme-purple dark:text-white flex items-center gap-2">
-                                <Info className="h-6 w-6 text-theme-purple-dark dark:text-white" />
+                        <div className="md:col-span-2 md:row-span-2 rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-8 shadow-lg flex flex-col">
+                            <h2 className="mb-4 text-2xl font-bold text-theme-purple dark:text-theme-white flex items-center gap-2">
+                                <Info className="h-6 w-6 text-theme-purple dark:text-theme-white" />
                                 Over dit evenement
                             </h2>
                             <div
-                                className="prose dark:prose-invert max-w-none text-theme-purple dark:text-white/90 flex-grow"
+                                className="prose dark:prose-invert max-w-none text-theme-purple dark:text-theme-white/90 flex-grow"
                                 dangerouslySetInnerHTML={{ __html: event.description }}
                             />
                         </div>

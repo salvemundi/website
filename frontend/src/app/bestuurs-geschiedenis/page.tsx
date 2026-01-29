@@ -10,10 +10,41 @@ import Timeline from "@/components/timeline/Timeline";
 export default function BoardHistoryPage() {
   const { data: boards = [], isLoading, error } = useSalvemundiBoard();
 
+  function getMemberFullName(member: any) {
+    // Try nested relation first (legacy naming)
+    if (member?.member_id) {
+      const m = member.member_id;
+      const first = m.first_name || m.firstname || m.name || m.display_name;
+      const last = m.last_name || m.lastname || m.surname || '';
+      const combined = `${first || ''} ${last || ''}`.trim();
+      if (combined) return combined;
+    }
+
+    // Direct user relation preferred (current payload uses `user_id`)
+    if (member?.user_id) {
+      const u = member.user_id;
+      const first = u.first_name || u.firstname || u.name || u.display_name || u.given_name;
+      const last = u.last_name || u.lastname || u.surname || u.family_name || '';
+      const combined = `${first || ''} ${last || ''}`.trim();
+      if (combined) return combined;
+    }
+
+    // Try direct fields on the member object
+    const firstDirect = member.first_name || member.firstname || member.given_name;
+    const lastDirect = member.last_name || member.lastname || member.family_name;
+    if (firstDirect || lastDirect) return `${firstDirect || ''} ${lastDirect || ''}`.trim();
+
+    // Try alternative names
+    if (member.name) return member.name;
+    if (member.full_name) return member.full_name;
+
+    return 'Onbekend';
+  }
+
   return (
     <>
       <div className="relative z-10">
-        <PageHeader title="BESTUURSGESCHIEDENIS">
+        <PageHeader title="BESTUURSGESCHIEDENIS" titleClassName="text-3xl sm:text-4xl md:text-6xl text-theme-purple dark:!text-white">
           <p className="text-lg sm:text-xl text-white/90 max-w-3xl mx-auto mt-4">
             Ontdek alle eerdere besturen van Salve Mundi
           </p>
@@ -33,7 +64,7 @@ export default function BoardHistoryPage() {
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div
                   key={i}
-                  className="h-96 animate-pulse rounded-3xl bg-white/60"
+                  className="h-96 animate-pulse rounded-3xl bg-[var(--bg-card)]/60"
                 />
               ))}
             </div>
@@ -54,11 +85,7 @@ export default function BoardHistoryPage() {
             <Timeline
               boards={boards}
               getImageUrl={getImageUrl}
-              getMemberFullName={(m: any) =>
-                `${m.member_id?.first_name ?? m.user_id?.first_name ?? ""} ${
-                  m.member_id?.last_name ?? m.user_id?.last_name ?? ""
-                }`.trim() || "Onbekend"
-              }
+              getMemberFullName={getMemberFullName}
             />
           )}
         </main>

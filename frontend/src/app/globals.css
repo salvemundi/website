@@ -133,22 +133,7 @@ body {
   }
 }
 
-/* 7. Vendor Overrides (Leaflet, DatePicker, etc.) */
-.react-datepicker {
-  font-family: inherit;
-  border-color: var(--border-color);
-  background-color: var(--bg-card);
-}
-
-.react-datepicker__header {
-  background-color: var(--theme-purple);
-  border-bottom: none;
-}
-
-.react-datepicker__day--selected {
-  background-color: var(--theme-purple);
-}
-
+/* 7. Vendor Overrides (Leaflet, etc.) */
 .pac-container {
   z-index: 9999 !important;
   border-radius: 0.75rem;
@@ -162,18 +147,21 @@ body {
    - Uses semitransparent light overlay for subtle elevation while preserving theme vars
 */
 @media (prefers-color-scheme: dark) {
+
   .activity-card,
   .card,
   .card-activity,
   .activity,
   .beheer-activiteit,
   .directus-card {
-    background-color: rgba(255,255,255,0.03) !important;
-    border: 1px solid rgba(255,255,255,0.06) !important;
-    color: var(--text-on-dark, #ffffff);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.5);
-    /* keep rounded corners consistent with other cards */
+    /* Use the design-system card background so cards contrast the page */
+    background-color: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-main) !important;
+    /* Prefer elevated shadow from theme with a safe fallback */
+    box-shadow: var(--shadow-card-elevated, 0 1px 2px rgba(0, 0, 0, 0.5)) !important;
     border-radius: 0.5rem;
+    backdrop-filter: blur(4px);
   }
 }
 
@@ -183,9 +171,129 @@ body {
 .dark .activity,
 .dark .beheer-activiteit,
 .dark .directus-card {
-  background-color: rgba(255,255,255,0.03) !important;
-  border: 1px solid rgba(255,255,255,0.06) !important;
-  color: var(--text-on-dark, #ffffff);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-main) !important;
+  box-shadow: var(--shadow-card-elevated, 0 1px 2px rgba(0, 0, 0, 0.5)) !important;
   border-radius: 0.5rem;
+  backdrop-filter: blur(4px);
+}
+/* 8. Timeline / Chrono Component Overrides */
+/* Remove scrollbars and height constraints from timeline cards */
+.timeline-card-content,
+.card-content-wrapper,
+[class*="timeline"] [class*="card-content"] {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Ensure timeline vertical wrapper allows natural flow */
+.timeline-vertical-wrapper,
+[class*="timeline-vertical"] {
+  overflow: visible !important;
+}
+
+/* Fix card container overflow */
+[class*="timeline"] [class*="card-description"],
+[class*="chrono"] [class*="card"],
+.chrono-card-content {
+  max-height: none !important;
+  overflow: visible !important;
+  height: auto !important;
+}
+
+/* Additional fixes for Chrono timeline scrolling */
+.timeline-main-wrapper,
+[class*="timeline-main"],
+[class*="chrono-wrapper"] {
+  overflow: visible !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+/* Ensure timeline items container is not fixed height */
+.timeline-items-container,
+[class*="timeline-items"] {
+  overflow: visible !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+/* Ensure signup form inputs are visible when a global rule hides them.
+   Targets the signup form container on the activiteit detail page and forces inputs
+   to display. This is a scoped, intentional override (keeps high specificity).
+   Remove or refine once the root cause is addressed. */
+.signup-form-container input,
+.signup-form-container textarea,
+.signup-form-container select,
+.signup-form-container .PhoneInputInput {
+  display: block !important;
+  visibility: visible !important;
+  width: 100% !important;
+  height: auto !important;
+  opacity: 1 !important;
+}
+
+/* Remove any scroll containers */
+[class*="scroll-container"] {
+  overflow: visible !important;
+}
+
+/* Hide timeline controls completely, scoped to chrono/chrono-wrapper elements only
+   to avoid accidentally matching similarly-named UI classes elsewhere in the app. */
+.chrono, .chrono-wrapper, [class*="chrono"] {
+  --_chrono-scope: 1;
+}
+
+.chrono [class*="timeline-controls"],
+.chrono .timeline-controls,
+.chrono [class*="chrono-controls"],
+.chrono .chrono-timeline-toolbar,
+.chrono [class*="toolbar"][class*="timeline"],
+.chrono [class*="outline-"],
+.chrono [class*="timeline-outline"],
+.chrono .timeline-outline-wrapper,
+.chrono [class*="jump"],
+.chrono [class*="layout-switch"],
+.chrono [class*="mode-switch"],
+.chrono button[class*="outline"],
+.chrono button[class*="jump"],
+.chrono button[class*="mode"],
+.chrono button[class*="layout"] {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Strong overrides to ensure Chrono card wrappers do not clip custom content */
+[class*="chrono"] .card,
+[class*="chrono"] .chrono-card,
+.card,
+.chrono-card,
+.timeline-card,
+.timeline-card-content,
+.card-content-wrapper,
+.card-description,
+.chrono-card-content,
+.card-contents,
+[class*="card-content"] {
+  position: static !important;
+  display: block !important;
+  overflow: visible !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+/* Ensure vertical wrappers and inner containers allow natural flow */
+.timeline-vertical-wrapper,
+[class*="timeline-vertical"],
+.timeline-main-wrapper,
+[class*="timeline-main"],
+[class*="chrono-wrapper"],
+.timeline-items-container,
+[class*="timeline-items"],
+[class*="card-content-wrapper"] {
+  position: static !important;
+  overflow: visible !important;
+  height: auto !important;
+  max-height: none !important;
 }

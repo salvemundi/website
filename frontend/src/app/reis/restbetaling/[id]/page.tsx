@@ -3,19 +3,20 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { 
-    tripSignupsApi, 
-    tripActivitiesApi, 
+import {
+    tripSignupsApi,
+    tripActivitiesApi,
     tripSignupActivitiesApi,
     tripsApi,
-    getImageUrl 
+    getImageUrl
 } from '@/shared/lib/api/salvemundi';
+import type { Trip, TripActivity, TripSignup } from '@/shared/lib/api/salvemundi';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { 
-    CheckCircle2, 
-    Loader2, 
-    AlertCircle, 
+import {
+    CheckCircle2,
+    Loader2,
+    AlertCircle,
     CreditCard,
     Edit,
     FileText,
@@ -24,44 +25,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 
-interface TripSignup {
-    id: number;
-    trip_id: number;
-    first_name: string;
-    middle_name?: string;
-    last_name: string;
-    email: string;
-    phone_number: string;
-    date_of_birth?: string;
-    id_document_type?: 'passport' | 'id_card';
-    allergies?: string;
-    special_notes?: string;
-    willing_to_drive?: boolean;
-    role: 'participant' | 'crew';
-    status: string;
-    deposit_paid: boolean;
-    full_payment_paid: boolean;
-    full_payment_paid_at?: string;
-}
 
-interface Trip {
-    id: number;
-    name: string;
-    description: string;
-    image?: string;
-    event_date: string;
-    base_price: number;
-    crew_discount: number;
-    deposit_amount: number;
-}
-
-interface TripActivity {
-    id: number;
-    name: string;
-    description: string;
-    price: number;
-    image?: string;
-}
 
 export default function RestbetalingPage() {
     const params = useParams();
@@ -118,7 +82,7 @@ export default function RestbetalingPage() {
             // Load selected activities
             const signupActivities = await tripSignupActivitiesApi.getBySignupId(signupId);
             const activityIds = signupActivities.map((a: any) => a.trip_activity_id.id || a.trip_activity_id);
-            
+
             // Load full activity details
             const allActivities = await tripActivitiesApi.getByTripId(signupData.trip_id);
             const selected = allActivities.filter(a => activityIds.includes(a.id));
@@ -281,7 +245,7 @@ export default function RestbetalingPage() {
 
                 {/* Success message */}
                 {success && (
-                        <div className="mb-8 bg-green-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-green-400 p-6 rounded-lg">
+                    <div className="mb-8 bg-green-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-green-400 p-6 rounded-lg">
                         <div className="flex items-start">
                             <CheckCircle2 className="h-6 w-6 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
                             <div>
@@ -331,7 +295,7 @@ export default function RestbetalingPage() {
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
-                                        <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Voornaam</label>
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Voornaam</label>
                                     <input
                                         type="text"
                                         name="first_name"
@@ -506,7 +470,7 @@ export default function RestbetalingPage() {
                     <div className="bg-purple-50 rounded-xl shadow-lg p-8 border-t-4 border-blue-600 mb-8">
                         <div className="flex items-center mb-6">
                             <Utensils className="h-6 w-6 text-blue-600 mr-3" />
-                            <h2 className="text-2xl font-bold text-gray-900">Geselecteerde activiteiten</h2>
+                            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 break-words">Geselecteerde activiteiten</h2>
                         </div>
 
                         <div className="space-y-4">
@@ -522,7 +486,7 @@ export default function RestbetalingPage() {
                                         />
                                     )}
                                     <div className="flex-1">
-                                        <h3 className="font-bold text-gray-900">{activity.name}</h3>
+                                        <h3 className="font-bold text-gray-900 break-words">{activity.name}</h3>
                                         <p className="text-sm text-gray-600">{activity.description}</p>
                                     </div>
                                     <div className="text-right">
@@ -532,10 +496,27 @@ export default function RestbetalingPage() {
                             ))}
                         </div>
 
-                        <div className="mt-4 p-4 bg-blue-50 rounded-lg text-sm text-blue-700">
-                            <strong>Let op:</strong> Wijzigingen in activiteiten zijn niet meer mogelijk via deze pagina. 
-                            Neem contact op met de reiscommissie als je wijzigingen wilt doorvoeren.
-                        </div>
+                        {!success && (
+                            <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                                <p className="text-sm text-blue-700 mb-3">
+                                    <strong>Tip:</strong> Je kunt je activiteiten nog aanpassen tot je de restbetaling hebt voldaan.
+                                </p>
+                                <a
+                                    href={`/reis/activiteiten/${signupId}`}
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
+                                >
+                                    <Edit className="h-4 w-4" />
+                                    Activiteiten aanpassen
+                                </a>
+                            </div>
+                        )}
+
+                        {success && (
+                            <div className="mt-4 p-4 bg-gray-100 rounded-lg text-sm text-gray-600">
+                                <strong>Let op:</strong> Wijzigingen in activiteiten zijn niet meer mogelijk.
+                                Neem contact op met de reiscommissie als je wijzigingen wilt doorvoeren.
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -566,7 +547,7 @@ export default function RestbetalingPage() {
                             </div>
                         )}
 
-                        
+
 
                         <div className="flex justify-between items-center py-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg px-4 mt-4">
                             <span className="text-xl font-bold text-gray-900">Te betalen</span>
@@ -578,7 +559,7 @@ export default function RestbetalingPage() {
                         <div className="space-y-4">
                             <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
                                 <p className="text-sm text-yellow-800">
-                                    Controleer je gegevens goed voordat je de betaling voltooit. 
+                                    Controleer je gegevens goed voordat je de betaling voltooit.
                                     Na betaling ontvang je een bevestigingsmail met alle details.
                                 </p>
                             </div>
