@@ -18,6 +18,7 @@ function BetalingContent() {
     const [signup, setSignup] = useState<any>(null);
     const [trip, setTrip] = useState<any>(null);
     const [selectedActivities, setSelectedActivities] = useState<any[]>([]);
+    const [selectedActivityOptions, setSelectedActivityOptions] = useState<Record<number, string[]>>({});
     const [error, setError] = useState<string | null>(null);
     const [paymentStatus, setPaymentStatus] = useState<'pending' | 'success' | 'failed' | 'checking'>('pending');
     const [checkingPayment, setCheckingPayment] = useState(false);
@@ -118,7 +119,18 @@ function BetalingContent() {
 
             // Load selected activities
             const signupActivities = await tripSignupActivitiesApi.getBySignupId(signupId);
-            // Support different shapes returned by API: some records reference `trip_activity_id` (object or id) or `activity_id`.
+
+            // Extract selected options
+            const optionsMap: Record<number, string[]> = {};
+            signupActivities.forEach((sa: any) => {
+                const id = (sa.trip_activity_id && sa.trip_activity_id.id) ? sa.trip_activity_id.id : (sa.trip_activity_id || sa.activity_id);
+                if (id && sa.selected_options) {
+                    optionsMap[id] = Array.isArray(sa.selected_options) ? sa.selected_options : [];
+                }
+            });
+            setSelectedActivityOptions(optionsMap);
+
+            // Support different shapes returned by API
             const activityIds = signupActivities
                 .map((a: any) => (a.trip_activity_id && a.trip_activity_id.id) ? a.trip_activity_id.id : (a.trip_activity_id || a.activity_id || null))
                 .filter(Boolean);
@@ -128,7 +140,17 @@ function BetalingContent() {
 
             // Calculate costs
             const basePrice = Number(tripData.base_price) || 0;
-            const activitiesTotal = selected.reduce((sum: number, a: any) => sum + (Number(a.price) || 0), 0);
+            const activitiesTotal = selected.reduce((sum: number, a: any) => {
+                let price = Number(a.price) || 0;
+                const opts = optionsMap[a.id];
+                if (opts && a.options) {
+                    opts.forEach(optName => {
+                        const opt = a.options.find((o: any) => o.name === optName);
+                        if (opt) price += Number(opt.price) || 0;
+                    });
+                }
+                return sum + price;
+            }, 0);
             const crewDiscount = signupData.role === 'crew' ? (Number(tripData.crew_discount) || 0) : 0;
             const deposit = Number(tripData.deposit_amount) || 0;
             const totalCost = basePrice + activitiesTotal - crewDiscount;
@@ -407,12 +429,31 @@ function BetalingContent() {
                                         <span className="text-gray-700 dark:text-[var(--text-muted-dark)]">Activiteiten:</span>
                                         <span className="text-gray-900 dark:text-white">€{costs.activities.toFixed(2)}</span>
                                     </div>
-                                    {selectedActivities.map((activity) => (
-                                        <div key={activity.id} className="flex justify-between items-center text-sm pl-4">
-                                            <span className="text-gray-600 dark:text-gray-400">• {activity.name}</span>
-                                            <span className="text-gray-600 dark:text-gray-400">€{Number(activity.price).toFixed(2)}</span>
-                                        </div>
-                                    ))}
+                                    {selectedActivities.map((activity) => {
+                                        let activityPrice = Number(activity.price) || 0;
+                                        const options = selectedActivityOptions[activity.id] || [];
+                                        let optionText = '';
+
+                                        if (activity.options && options.length > 0) {
+                                            options.forEach(optName => {
+                                                const opt = activity.options.find((o: any) => o.name === optName);
+                                                if (opt) {
+                                                    activityPrice += Number(opt.price) || 0;
+                                                    optionText += ` (+ ${optName})`;
+                                                }
+                                            });
+                                        }
+
+                                        return (
+                                            <div key={activity.id} className="flex justify-between items-center text-sm pl-4">
+                                                <span className="text-gray-600 dark:text-gray-400">
+                                                    • {activity.name}
+                                                    {optionText && <span className="text-xs block text-gray-500 dark:text-gray-500">{optionText}</span>}
+                                                </span>
+                                                <span className="text-gray-600 dark:text-gray-400">€{activityPrice.toFixed(2)}</span>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             )}
 

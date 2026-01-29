@@ -369,7 +369,25 @@ export default function ReisAanmeldingenPage() {
                 const items = await tripSignupActivitiesApi.getBySignupId(signup.id);
                 const activities = items.map((it: any) => {
                     const a = it.trip_activity_id && it.trip_activity_id.id ? it.trip_activity_id : it.trip_activity_id;
-                    return { id: a.id || a, name: a.name || '', price: a.price || 0 };
+                    let activityName = a.name || '';
+                    let activityPrice = Number(a.price) || 0;
+
+                    const selectedOptions = it.selected_options;
+                    if (selectedOptions && Array.isArray(selectedOptions) && a.options) {
+                        const addedOptions: string[] = [];
+                        selectedOptions.forEach((optName: string) => {
+                            const optDef = a.options.find((o: any) => o.name === optName);
+                            if (optDef) {
+                                activityPrice += Number(optDef.price) || 0;
+                                addedOptions.push(optName);
+                            }
+                        });
+                        if (addedOptions.length > 0) {
+                            activityName += ` (+ ${addedOptions.join(', ')})`;
+                        }
+                    }
+
+                    return { id: a.id || a, name: activityName, price: activityPrice };
                 });
                 setSignupActivitiesMap(prev => ({ ...prev, [signup.id]: activities }));
             } catch (err) {
