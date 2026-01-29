@@ -176,7 +176,7 @@ export default function AanbetalingPage() {
         try {
             // Update signup with additional data
             // Update signup with additional data using Server Action (admin permissions)
-            await updateTripSignup(signupId, {
+            const updateResult = await updateTripSignup(signupId, {
                 first_name: form.first_name,
                 middle_name: form.middle_name || undefined,
                 last_name: form.last_name,
@@ -186,6 +186,10 @@ export default function AanbetalingPage() {
                 special_notes: form.special_notes || undefined,
                 willing_to_drive: trip?.is_bus_trip ? form.willing_to_drive : undefined,
             });
+
+            if (!updateResult.success) {
+                throw new Error(updateResult.error);
+            }
 
             // Save activities logic
             const existingActivities = await tripSignupActivitiesApi.getBySignupId(signupId);
