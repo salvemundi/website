@@ -398,7 +398,7 @@ export default function KroegentochtAanmeldingenPage() {
                                         <thead className="bg-admin-card-soft">
                                             <tr>
                                                 <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">
-                                                    Naam
+                                                    E-mail
                                                 </th>
                                                 <th className="px-3 sm:px-6 py-3 text-center text-xs font-medium text-admin-muted uppercase tracking-wider">
                                                     Tickets
@@ -407,7 +407,7 @@ export default function KroegentochtAanmeldingenPage() {
                                                     Betaalstatus
                                                 </th>
                                                 <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider hidden md:table-cell">
-                                                    Email & Vereniging
+                                                    Vereniging
                                                 </th>
                                                 <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider hidden lg:table-cell">
                                                     Aangemeld op
@@ -432,7 +432,9 @@ export default function KroegentochtAanmeldingenPage() {
                                                         <tr key={signup.id} className="hover:bg-admin-hover">
                                                             <td className="px-3 sm:px-6 py-3 sm:py-4">
                                                                 <div className="font-bold text-admin text-xs sm:text-sm">
-                                                                    {signup.name}
+                                                                    <a href={`mailto:${signup.email}`} className="text-theme-purple hover:underline">
+                                                                        {signup.email}
+                                                                    </a>
                                                                 </div>
                                                                 {participants.length > 0 && (
                                                                     <div className="mt-2 text-xs space-y-0.5 border-l-2 border-purple-200 dark:border-purple-800 pl-2">
@@ -461,10 +463,7 @@ export default function KroegentochtAanmeldingenPage() {
                                                             </td>
                                                             <td className="px-3 sm:px-6 py-3 sm:py-4 hidden md:table-cell">
                                                                 <div className="text-sm">
-                                                                    <a href={`mailto:${signup.email}`} className="text-theme-purple hover:underline font-medium block">
-                                                                        {signup.email}
-                                                                    </a>
-                                                                    <div className="text-admin-muted mt-1">
+                                                                    <div className="text-admin font-medium">
                                                                         {signup.association || '-'}
                                                                     </div>
                                                                 </div>
