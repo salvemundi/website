@@ -1,6 +1,6 @@
 services:
   arcane:
-    image: ghcr.io/getarcaneapp/arcane:latest
+    image: ghcr.io/salvemundi/arcane:${TAG:-latest}
     container_name: arcane
     restart: unless-stopped
     security_opt:
