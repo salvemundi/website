@@ -9,7 +9,15 @@ services:
       - "3552"
     environment:
       - ENCRYPTION_KEY=${ARCANE_ENCRYPTION_KEY}
-      - JWT_SECRET=${ARCANE_JWT_SECRET}
+      - JWT_SECRET=${JWT_SECRET}
+      # OIDC Configuration
+      - OIDC_ENABLED=true
+      - OIDC_PROVIDER_NAME=Microsoft
+      - OIDC_ISSUER_URL=${OIDC_ISSUER_URL}
+      - OIDC_CLIENT_ID=${OIDC_CLIENT_ID}
+      - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET}
+      - OIDC_SCOPES=openid profile email
+      - APP_URL=https://docker.salvemundi.nl
       - PORT=3552
       - TZ=Europe/Amsterdam
     volumes:
