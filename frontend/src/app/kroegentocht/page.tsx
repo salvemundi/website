@@ -211,6 +211,13 @@ export default function KroegentochtPage() {
         setForm({ ...form, [name]: value });
     };
 
+    useEffect(() => {
+        // Auto-fill email if user is logged in (always allow this now)
+        if (isAuthenticated && user?.email && form.email === '') {
+            setForm(prev => ({ ...prev, email: user.email }));
+        }
+    }, [isAuthenticated, user?.email]);
+
     const handleAmountBlur = () => {
         // ensure we have a valid clamped number after leaving the input
         const parsed = parseInt(String(form.amount_tickets), 10);
@@ -343,7 +350,7 @@ export default function KroegentochtPage() {
             const isProd = process.env.NODE_ENV === 'production';
 
             if (err?.message?.includes('RECORD_NOT_UNIQUE')) {
-                friendlyMessage = 'Dit e-mailadres staat al geregistreerd voor deze kroegentocht. Gebruik een ander e-mailadres.';
+                friendlyMessage = 'Je hebt al tickets op dit e-mailadres. Gebruik voor extra tickets een ander adres (bijv. van een vriend) of een alias (bijv. jouwnaam+1@gmail.com).';
             } else if (err?.message) {
                 friendlyMessage = isProd ? friendlyMessage : `Fout: ${err.message}`;
             }
