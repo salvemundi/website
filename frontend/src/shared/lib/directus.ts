@@ -9,6 +9,81 @@ const apiKey = process.env.NEXT_PUBLIC_DIRECTUS_API_KEY || '';
 // Singleton promise for token refresh to handle multiple simultaneous 401s
 let refreshPromise: Promise<boolean> | null = null;
 
+// Helper to check if JWT token is about to expire (within 60 seconds)
+function isTokenExpiringSoon(token: string): boolean {
+    try {
+        const parts = token.split('.');
+        if (parts.length !== 3) return true;
+
+        const payload = JSON.parse(atob(parts[1]));
+        const exp = payload.exp;
+        if (!exp) return true;
+
+        // Check if token expires within 60 seconds
+        const nowSeconds = Math.floor(Date.now() / 1000);
+        return (exp - nowSeconds) < 60;
+    } catch (e) {
+        return true;
+    }
+}
+
+// Proactive token refresh - returns the new access token or null if failed
+async function ensureFreshToken(): Promise<string | null> {
+    if (typeof window === 'undefined') return null;
+
+    try {
+        const currentToken = localStorage.getItem('auth_token');
+        const refreshToken = localStorage.getItem('refresh_token');
+
+        if (!currentToken || !refreshToken) return currentToken;
+
+        // If token is still fresh, return it
+        if (!isTokenExpiringSoon(currentToken)) return currentToken;
+
+        console.log('[directusFetch] Token expiring soon, proactively refreshing...');
+
+        // Use singleton pattern to avoid multiple simultaneous refreshes
+        if (!refreshPromise) {
+            refreshPromise = (async () => {
+                try {
+                    const refreshResponse = await fetch(`${directusUrl}/auth/refresh`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ refresh_token: refreshToken }),
+                    });
+
+                    if (refreshResponse.ok) {
+                        const data = await refreshResponse.json();
+                        const payload = data.data || data;
+
+                        if (payload.access_token && payload.refresh_token) {
+                            localStorage.setItem('auth_token', payload.access_token);
+                            localStorage.setItem('refresh_token', payload.refresh_token);
+                            window.dispatchEvent(new CustomEvent('auth:refreshed', { detail: payload }));
+                            console.log('[directusFetch] Proactive token refresh successful');
+                            return true;
+                        }
+                    }
+                    return false;
+                } catch (error) {
+                    console.error('[directusFetch] Proactive token refresh failed', error);
+                    return false;
+                } finally {
+                    refreshPromise = null;
+                }
+            })();
+        }
+
+        const success = await refreshPromise;
+        if (success) {
+            return localStorage.getItem('auth_token');
+        }
+        return currentToken; // Return old token if refresh failed, let the request try anyway
+    } catch (e) {
+        return localStorage.getItem('auth_token');
+    }
+}
+
 // Create a simple fetch wrapper for Directus REST API
 // Added _isRetry parameter to prevent infinite loops during token refresh
 export async function directusFetch<T>(endpoint: string, options?: RequestInit, _isRetry = false): Promise<T> {
@@ -41,7 +116,9 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit, 
     if (!authHeader) {
         try {
             if (typeof window !== 'undefined') {
-                const sessionToken = localStorage.getItem('auth_token');
+                // Proactively refresh token if it's about to expire (before making the request)
+                const freshToken = await ensureFreshToken();
+                const sessionToken = freshToken || localStorage.getItem('auth_token');
                 if (sessionToken) {
                     authHeader = `Bearer ${sessionToken}`;
                     usingSessionToken = true;
