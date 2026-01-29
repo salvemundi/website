@@ -117,6 +117,15 @@ const nextConfig: NextConfig = {
             },
         ];
     },
+    async redirects() {
+        return [
+            {
+                source: '/declaratie',
+                destination: 'https://forms.office.com/pages/responsepage.aspx?id=Xq36stBFtUuuNY90UgS768eTbbHvQi5Br7P2y-SH0OBURUE0R1NLTllNN0FBUDg2N0lJQ1NDVERDMyQlQCN0PWcu&route=shorturl',
+                permanent: false,
+            },
+        ];
+    },
 };
 
 export default nextConfig;
