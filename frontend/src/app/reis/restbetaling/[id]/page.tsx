@@ -338,7 +338,7 @@ export default function RestbetalingPage() {
                                         name="middle_name"
                                         value={form.middle_name}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                                     />
                                 </div>
                                 <div>
@@ -348,7 +348,7 @@ export default function RestbetalingPage() {
                                         name="last_name"
                                         value={form.last_name}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                                     />
                                 </div>
                             </div>
@@ -361,7 +361,7 @@ export default function RestbetalingPage() {
                                         name="email"
                                         value={form.email}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                                     />
                                 </div>
                                 <div>
@@ -371,7 +371,7 @@ export default function RestbetalingPage() {
                                         name="phone_number"
                                         value={form.phone_number}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                                     />
                                 </div>
                             </div>
@@ -384,7 +384,7 @@ export default function RestbetalingPage() {
                                         name="date_of_birth"
                                         value={form.date_of_birth}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                                     />
                                 </div>
                                 <div>
@@ -393,7 +393,7 @@ export default function RestbetalingPage() {
                                         name="id_document_type"
                                         value={form.id_document_type}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                                     >
                                         <option value="">Selecteer...</option>
                                         <option value="passport">Paspoort</option>
@@ -409,7 +409,7 @@ export default function RestbetalingPage() {
                                     value={form.allergies}
                                     onChange={handleChange}
                                     rows={2}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                                 />
                             </div>
 
@@ -420,7 +420,7 @@ export default function RestbetalingPage() {
                                     value={form.special_notes}
                                     onChange={handleChange}
                                     rows={2}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                                 />
                             </div>
 
@@ -452,40 +452,40 @@ export default function RestbetalingPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
                             <div>
                                 <p className="text-gray-500 mb-1">Naam</p>
-                                <p className="font-semibold text-gray-900">
+                                <p className="font-semibold text-gray-900 dark:text-white">
                                     {form.first_name} {form.middle_name} {form.last_name}
                                 </p>
                             </div>
                             <div>
                                 <p className="text-gray-500 mb-1">Geboortedatum</p>
-                                <p className="font-semibold text-gray-900">
+                                <p className="font-semibold text-gray-900 dark:text-white">
                                     {form.date_of_birth ? format(new Date(form.date_of_birth), 'd MMMM yyyy', { locale: nl }) : '-'}
                                 </p>
                             </div>
                             <div>
                                 <p className="text-gray-500 mb-1">Email</p>
-                                <p className="font-semibold text-gray-900">{form.email}</p>
+                                <p className="font-semibold text-gray-900 dark:text-white">{form.email}</p>
                             </div>
                             <div>
                                 <p className="text-gray-500 mb-1">Telefoon</p>
-                                <p className="font-semibold text-gray-900">{form.phone_number}</p>
+                                <p className="font-semibold text-gray-900 dark:text-white">{form.phone_number}</p>
                             </div>
                             <div>
                                 <p className="text-gray-500 mb-1">ID Type</p>
-                                <p className="font-semibold text-gray-900">
+                                <p className="font-semibold text-gray-900 dark:text-white">
                                     {form.id_document_type === 'passport' ? 'Paspoort' : form.id_document_type === 'id_card' ? 'ID Kaart' : '-'}
                                 </p>
                             </div>
                             {form.allergies && (
                                 <div className="md:col-span-2">
                                     <p className="text-gray-500 mb-1">Allergieën</p>
-                                    <p className="font-semibold text-gray-900">{form.allergies}</p>
+                                    <p className="font-semibold text-gray-900 dark:text-white">{form.allergies}</p>
                                 </div>
                             )}
                             {form.special_notes && (
                                 <div className="md:col-span-2">
                                     <p className="text-gray-500 mb-1">Bijzonderheden</p>
-                                    <p className="font-semibold text-gray-900">{form.special_notes}</p>
+                                    <p className="font-semibold text-gray-900 dark:text-white">{form.special_notes}</p>
                                 </div>
                             )}
                         </div>
@@ -519,7 +519,7 @@ export default function RestbetalingPage() {
                                             <h3 className="font-bold text-gray-900 dark:text-white break-words">{activity.name}</h3>
                                             <p className="text-sm text-gray-600 dark:text-[var(--text-muted-dark)]">{activity.description}</p>
                                             {selectedActivityOptions[activity.id] && selectedActivityOptions[activity.id].length > 0 && (
-                                                <div className="mt-2 text-sm text-purple-700 bg-purple-50 p-2 rounded inline-block">
+                                                <div className="mt-2 text-sm text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-900/40 p-2 rounded inline-block">
                                                     <span className="font-semibold">Opties:</span> {selectedActivityOptions[activity.id].join(', ')}
                                                 </div>
                                             )}
@@ -532,8 +532,8 @@ export default function RestbetalingPage() {
                             </div>
 
                             {!success && (
-                                <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                                    <p className="text-sm text-blue-700 mb-3">
+                                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/10 rounded-lg border border-blue-100 dark:border-blue-900/20">
+                                    <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
                                         <strong>Tip:</strong> Je kunt je activiteiten nog aanpassen tot je de restbetaling hebt voldaan.
                                     </p>
                                     <a
@@ -547,7 +547,7 @@ export default function RestbetalingPage() {
                             )}
 
                             {success && (
-                                <div className="mt-4 p-4 bg-gray-100 rounded-lg text-sm text-gray-600">
+                                <div className="mt-4 p-4 bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg text-sm text-gray-600 dark:text-[var(--text-muted-dark)]">
                                     <strong>Let op:</strong> Wijzigingen in activiteiten zijn niet meer mogelijk.
                                     Neem contact op met de reiscommissie als je wijzigingen wilt doorvoeren.
                                 </div>
@@ -561,7 +561,7 @@ export default function RestbetalingPage() {
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-green-600"></div>
                     <div className="flex items-center mb-6">
                         <Calculator className="h-6 w-6 text-green-600 mr-3" />
-                        <h2 className="text-2xl font-bold text-gray-900">Kostenoverzicht</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Kostenoverzicht</h2>
                     </div>
 
                     <div className="space-y-4 mb-6">
@@ -591,7 +591,7 @@ export default function RestbetalingPage() {
                                                 <div className="text-gray-600 dark:text-gray-300">
                                                     <span>{activity.name}</span>
                                                     {opts.length > 0 && (
-                                                        <span className="block text-xs text-gray-500">
+                                                        <span className="block text-xs text-gray-500 dark:text-gray-400">
                                                             (+ {opts.join(', ')})
                                                         </span>
                                                     )}
@@ -626,8 +626,8 @@ export default function RestbetalingPage() {
 
                     {!success && costs.remaining > 0 && (
                         <div className="space-y-4">
-                            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-                                <p className="text-sm text-yellow-800">
+                            <div className="bg-yellow-50 dark:bg-yellow-900/10 border-l-4 border-yellow-400 dark:border-yellow-600 p-4 rounded">
+                                <p className="text-sm text-yellow-800 dark:text-yellow-200">
                                     Controleer je gegevens goed voordat je de betaling voltooit.
                                     Na betaling ontvang je een bevestigingsmail met alle details.
                                 </p>
