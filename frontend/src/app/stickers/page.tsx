@@ -528,7 +528,9 @@ function StickersContent() {
                                     })()}
                                     <div className="flex-1">
                                         <h3 className="font-semibold text-paars text-sm md:text-base">
-                                            {sticker.location_name || 'Unknown Location'}
+                                            {(!sticker.location_name || sticker.location_name === 'Imported')
+                                                ? (sticker.address || sticker.city || 'Unknown Location')
+                                                : sticker.location_name}
                                         </h3>
                                         <p className="text-xs md:text-sm text-gray-600">
                                             {sticker.city && sticker.country
@@ -623,7 +625,7 @@ function StickersContent() {
                                     height="100%"
                                 />
                                 {/* Floating action buttons on Mobile Map - stacked bottom to top: Add button (bottom), Filter button (above) */}
-                                
+
 
                                 {/* Filters overlay */}
                                 {mobileFiltersOpen && (
