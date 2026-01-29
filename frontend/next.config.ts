@@ -124,6 +124,11 @@ const nextConfig: NextConfig = {
                 destination: 'https://forms.office.com/pages/responsepage.aspx?id=Xq36stBFtUuuNY90UgS768eTbbHvQi5Br7P2y-SH0OBURUE0R1NLTllNN0FBUDg2N0lJQ1NDVERDMyQlQCN0PWcu&route=shorturl',
                 permanent: false,
             },
+            {
+                source: '/discord',
+                destination: 'https://discord.com/invite/TQ8K9ZSbdW',
+                permanent: false,
+            },
         ];
     },
 };
