@@ -109,8 +109,8 @@ export default function AanbetalingPage() {
                 middle_name: signupData.middle_name || '',
                 last_name: signupData.last_name,
                 date_of_birth: signupData.date_of_birth || '',
-                id_document_type: (signupData.id_document_type as 'passport' | 'id_card') || '',
-                allergies: signupData.allergies || '',
+                id_document_type: (signupData.id_document_type || (signupData as any).id_document as 'passport' | 'id_card') || '',
+                allergies: signupData.allergies || (signupData as any).alergies || '',
                 special_notes: signupData.special_notes || '',
                 willing_to_drive: signupData.willing_to_drive || false,
             });

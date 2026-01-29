@@ -20,7 +20,13 @@ export async function updateTripSignup(id: number, data: any) {
             last_name: data.last_name,
             date_of_birth: data.date_of_birth,
             id_document_type: data.id_document_type,
+            // Map to potential DB column name variants
+            id_document: data.id_document_type,
+
             allergies: data.allergies,
+            // Map to DB typo 'alergies'
+            alergies: data.allergies,
+
             special_notes: data.special_notes,
             willing_to_drive: data.willing_to_drive,
             email: data.email,
