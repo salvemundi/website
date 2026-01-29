@@ -686,11 +686,11 @@ export default function ReisAanmeldingenPage() {
                                                                     <p className="text-sm font-semibold text-admin">Contact</p>
                                                                     <p className="text-sm text-admin">{signup.email}</p>
                                                                     <p className="text-sm text-admin">{signup.phone_number || '-'}</p>
-                                                                    <p className="text-sm text-admin">ID Type: {signup.id_document_type ? (signup.id_document_type === 'passport' ? 'Paspoort' : signup.id_document_type === 'id_card' ? 'ID Kaart' : signup.id_document_type) : '-'}</p>
+                                                                    <p className="text-sm text-admin">ID Type: {(signup.id_document_type || (signup as any).id_document) === 'passport' ? 'Paspoort' : (signup.id_document_type || (signup as any).id_document) === 'id_card' ? 'ID Kaart' : ((signup.id_document_type || (signup as any).id_document) || '-')}</p>
                                                                 </div>
                                                                 <div>
                                                                     <p className="text-sm font-semibold text-admin">Extra informatie</p>
-                                                                    <p className="text-sm text-admin">Allergieën: {signup.allergies || '-'}</p>
+                                                                    <p className="text-sm text-admin">Allergieën: {signup.allergies || (signup as any).alergies || '-'}</p>
                                                                     <p className="text-sm text-admin">Bijzonderheden: {signup.special_notes || '-'}</p>
                                                                 </div>
                                                                 <div>
