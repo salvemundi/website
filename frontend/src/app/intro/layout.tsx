@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Users, Newspaper, Calendar } from 'lucide-react';
+import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 
 export default function IntroLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -25,6 +26,10 @@ export default function IntroLayout({ children }: { children: React.ReactNode })
         }
         return pathname?.startsWith(href);
     };
+
+    const { data: siteSettings, isLoading: isSettingsLoading } = useSalvemundiSiteSettings('intro');
+    const isIntroEnabled = siteSettings?.show ?? true;
+    const introDisabledMessage = siteSettings?.disabled_message || 'De inschrijvingen voor de introweek zijn momenteel gesloten.';
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -125,7 +130,20 @@ export default function IntroLayout({ children }: { children: React.ReactNode })
 
                 {/* Page Content */}
                 <div className="flex-1 w-full">
-                    {children}
+                    {!isIntroEnabled ? (
+                        <section className="px-4 sm:px-6 lg:px-10 py-12 lg:py-16">
+                            <div className="max-w-4xl mx-auto bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl lg:rounded-3xl p-6 lg:p-8 text-center shadow-2xl">
+                                <h2 className="text-2xl lg:text-3xl font-bold text-gradient mb-4">Intro momenteel niet beschikbaar</h2>
+                                <p className="text-base lg:text-lg text-theme-muted mb-6">{introDisabledMessage}</p>
+                                {isSettingsLoading && <p className="text-sm text-theme-muted mb-6">Bezig met controleren van status...</p>}
+                                <Link href="/" className="inline-flex items-center justify-center px-6 py-3 bg-gradient-theme text-theme-white font-semibold rounded-full">
+                                    Terug naar Home
+                                </Link>
+                            </div>
+                        </section>
+                    ) : (
+                        children
+                    )}
                 </div>
             </div>
         </div>
