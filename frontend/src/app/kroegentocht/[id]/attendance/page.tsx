@@ -225,10 +225,10 @@ export default function PubCrawlAttendancePage() {
 
     if (!user) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end">
-                <div className="bg-white rounded-3xl shadow-xl p-8 max-w-md mx-4">
+            <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, var(--gradient-start), var(--gradient-end))' }}>
+                <div className="rounded-3xl shadow-xl p-8 max-w-md mx-4" style={{ backgroundColor: 'var(--bg-card)' }}>
                     <h2 className="text-2xl font-bold text-theme-purple mb-4">Inloggen vereist</h2>
-                    <p className="text-gray-600">Je moet ingelogd zijn om deze pagina te zien.</p>
+                    <p style={{ color: 'var(--text-muted)' }}>Je moet ingelogd zijn om deze pagina te zien.</p>
                 </div>
             </div>
         );
@@ -236,17 +236,17 @@ export default function PubCrawlAttendancePage() {
 
     if (!authorized) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end">
-                <div className="bg-white rounded-3xl shadow-xl p-8 max-w-md mx-4">
+            <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, var(--gradient-start), var(--gradient-end))' }}>
+                <div className="rounded-3xl shadow-xl p-8 max-w-md mx-4" style={{ backgroundColor: 'var(--bg-card)' }}>
                     <h2 className="text-2xl font-bold text-theme-purple mb-4">Geen toegang</h2>
-                    <p className="text-gray-600">Je bent niet gemachtigd om aanwezigheden te beheren voor kroegentochten. Alleen commissieleden hebben toegang.</p>
+                    <p style={{ color: 'var(--text-muted)' }}>Je bent niet gemachtigd om aanwezigheden te beheren voor kroegentochten. Alleen commissieleden hebben toegang.</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-beige">
+        <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-main)' }}>
             <PageHeader
                 title={eventTitle ? `Aanwezigheid: ${eventTitle}` : 'Aanwezigheid beheren'}
                 backgroundImage={eventImageUrl || '/img/backgrounds/Kroto2025.jpg'}
@@ -267,15 +267,15 @@ export default function PubCrawlAttendancePage() {
                     {/* Mobile: 2x2 grid */}
                     <div className="grid grid-cols-2 gap-3 md:hidden">
                         <div className="bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end rounded-2xl p-3 shadow-lg">
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-8 w-8 rounded-xl bg-paars/10 flex items-center justify-center shrink-0">
-                                            <Clock className="h-4 w-4 text-theme-purple-dark" />
-                                        </div>
-                                        <div className="min-w-0">
-                                            <p className="text-xs text-theme-purple-dark dark:text-white font-semibold truncate">Groepen</p>
-                                            <p className="text-xl font-bold text-theme-purple dark:text-white">{stats.total}</p>
-                                        </div>
-                                    </div>
+                            <div className="flex items-center gap-2">
+                                <div className="h-8 w-8 rounded-xl bg-paars/10 flex items-center justify-center shrink-0">
+                                    <Clock className="h-4 w-4 text-theme-purple-dark" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-xs text-theme-purple-dark dark:text-white font-semibold truncate">Groepen</p>
+                                    <p className="text-xl font-bold text-theme-purple dark:text-white">{stats.total}</p>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-2xl p-3 shadow-lg">
@@ -318,15 +318,15 @@ export default function PubCrawlAttendancePage() {
                     {/* Desktop: 4 cards in a row */}
                     <div className="hidden md:grid md:grid-cols-4 gap-4">
                         <div className="bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end rounded-3xl p-6 shadow-lg">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-12 w-12 rounded-2xl bg-paars/10 flex items-center justify-center shrink-0">
-                                        <Clock className="h-6 w-6 text-theme-purple-dark" />
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="text-sm text-theme-purple-dark dark:text-white font-semibold truncate">Groepen</p>
-                                        <p className="text-3xl font-bold text-theme-purple dark:text-white">{stats.total}</p>
-                                    </div>
+                            <div className="flex items-center gap-3">
+                                <div className="h-12 w-12 rounded-2xl bg-paars/10 flex items-center justify-center shrink-0">
+                                    <Clock className="h-6 w-6 text-theme-purple-dark" />
                                 </div>
+                                <div className="min-w-0">
+                                    <p className="text-sm text-theme-purple-dark dark:text-white font-semibold truncate">Groepen</p>
+                                    <p className="text-3xl font-bold text-theme-purple dark:text-white">{stats.total}</p>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-3xl p-6 shadow-lg">
@@ -373,7 +373,8 @@ export default function PubCrawlAttendancePage() {
                         type="button"
                         onClick={load}
                         disabled={loading}
-                        className="inline-flex items-center gap-2 px-4 py-3 bg-white text-theme-purple font-semibold rounded-xl shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 disabled:opacity-50"
+                        className="inline-flex items-center gap-2 px-4 py-3 text-theme-purple font-semibold rounded-xl shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 disabled:opacity-50"
+                        style={{ backgroundColor: 'var(--bg-card)' }}
                     >
                         <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
                         Ververs
@@ -382,7 +383,8 @@ export default function PubCrawlAttendancePage() {
                     <button
                         type="button"
                         onClick={exportToExcel}
-                        className="inline-flex items-center gap-2 px-4 py-3 bg-white text-theme-purple font-semibold rounded-xl shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
+                        className="inline-flex items-center gap-2 px-4 py-3 text-theme-purple font-semibold rounded-xl shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
+                        style={{ backgroundColor: 'var(--bg-card)' }}
                     >
                         <Download className="h-5 w-5" />
                         Exporteer Excel
@@ -400,15 +402,16 @@ export default function PubCrawlAttendancePage() {
                 </div>
 
                 {/* Search Bar */}
-                <div className="mb-6 bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg">
+                <div className="mb-6 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg" style={{ backgroundColor: 'var(--bg-card)' }}>
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5" style={{ color: 'var(--text-muted)' }} />
                         <input
                             type="text"
                             placeholder="Zoek op naam, email of vereniging..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-theme-purple focus:border-transparent"
+                            className="w-full pl-10 pr-4 py-3 rounded-xl focus:ring-2 focus:ring-theme-purple focus:border-transparent"
+                            style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
                         />
                     </div>
                 </div>
@@ -423,9 +426,9 @@ export default function PubCrawlAttendancePage() {
 
                 {/* QR Scanner */}
                 {showScanner && (
-                    <div className="mb-6 bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg relative">
+                    <div className="mb-6 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg relative" style={{ backgroundColor: 'var(--bg-card)' }}>
                         <h3 className="text-lg md:text-xl font-bold text-theme-purple mb-3 md:mb-4">Scan QR Code</h3>
-                        <p className="text-sm text-slate-600 mb-4">Houd de QR code voor de camera. De scanner blijft actief voor meerdere scans.</p>
+                        <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>Houd de QR code voor de camera. De scanner blijft actief voor meerdere scans.</p>
 
                         <div className="relative">
                             <div id="qr-reader" ref={videoRef} className="rounded-xl overflow-hidden max-w-md mx-auto"></div>
@@ -434,8 +437,8 @@ export default function PubCrawlAttendancePage() {
                             {scanResult && (
                                 <div className="absolute top-0 left-0 right-0 mx-4 mt-4 z-10 animate-in slide-in-from-top duration-300">
                                     <div className={`p-4 rounded-xl shadow-2xl backdrop-blur-sm ${scanResult.status === 'success'
-                                            ? 'bg-green-500/95 text-white'
-                                            : 'bg-red-500/95 text-white'
+                                        ? 'bg-green-500/95 text-white'
+                                        : 'bg-red-500/95 text-white'
                                         }`}>
                                         <div className="flex items-start gap-3">
                                             {scanResult.status === 'success' ? (
@@ -453,17 +456,17 @@ export default function PubCrawlAttendancePage() {
                             )}
                         </div>
 
-                        <p className="text-xs text-slate-500 mt-4 text-center">
+                        <p className="text-xs mt-4 text-center" style={{ color: 'var(--text-muted)' }}>
                             💡 Tip: Houd je telefoon stabiel en zorg voor goede verlichting
                         </p>
                     </div>
                 )}
 
                 {/* Signups List - Desktop Table View */}
-                <div className="bg-white rounded-3xl shadow-lg overflow-hidden hidden md:block">
+                <div className="rounded-3xl shadow-lg overflow-hidden hidden md:block" style={{ backgroundColor: 'var(--bg-card)' }}>
                     <div className="overflow-x-auto">
                         <table className="w-full">
-                            <thead className="bg-gradient-to-r from-theme-purple to-paars text-white">
+                            <thead className="bg-gradient-to-r from-theme-purple to-theme-purple-light text-white">
                                 <tr>
                                     <th className="px-6 py-4 text-left text-sm font-bold uppercase">Groep</th>
                                     <th className="px-6 py-4 text-left text-sm font-bold uppercase">Naam</th>
@@ -474,35 +477,35 @@ export default function PubCrawlAttendancePage() {
                                     <th className="px-6 py-4 text-center text-sm font-bold uppercase">Acties</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-200">
+                            <tbody className="divide-y" style={{ borderColor: 'var(--border-color)' }}>
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
+                                        <td colSpan={7} className="px-6 py-12 text-center" style={{ color: 'var(--text-muted)' }}>
                                             Laden...
                                         </td>
                                     </tr>
                                 ) : filteredSignups.length === 0 ? (
                                     <tr>
-                                        <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
+                                        <td colSpan={7} className="px-6 py-12 text-center" style={{ color: 'var(--text-muted)' }}>
                                             {searchQuery ? 'Geen resultaten gevonden' : 'Nog geen inschrijvingen'}
                                         </td>
                                     </tr>
                                 ) : (
                                     filteredSignups.map((s, idx) => (
-                                        <tr key={s.id} className="hover:bg-slate-50">
-                                            <td className="px-6 py-4 text-slate-900 font-semibold">
+                                        <tr key={s.id} className="hover:bg-[var(--theme-admin-hover)]">
+                                            <td className="px-6 py-4 font-semibold" style={{ color: 'var(--text-main)' }}>
                                                 #{idx + 1}
                                             </td>
-                                            <td className="px-6 py-4 text-slate-900 font-medium">
+                                            <td className="px-6 py-4 font-medium" style={{ color: 'var(--text-main)' }}>
                                                 {s.name || '—'}
                                             </td>
-                                            <td className="px-6 py-4 text-slate-600">
+                                            <td className="px-6 py-4" style={{ color: 'var(--text-muted)' }}>
                                                 {s.email || '—'}
                                             </td>
-                                            <td className="px-6 py-4 text-slate-600">
+                                            <td className="px-6 py-4" style={{ color: 'var(--text-muted)' }}>
                                                 {s.association || '—'}
                                             </td>
-                                            <td className="px-6 py-4 text-center text-slate-900 font-semibold">
+                                            <td className="px-6 py-4 text-center font-semibold" style={{ color: 'var(--text-main)' }}>
                                                 {s.amount_tickets || 0}
                                             </td>
                                             <td className="px-6 py-4 text-center">
@@ -523,8 +526,8 @@ export default function PubCrawlAttendancePage() {
                                                     type="button"
                                                     onClick={() => toggleCheckIn(s)}
                                                     className={`px-4 py-2 rounded-lg font-semibold transition-all transform transition-transform duration-150 ${s.checked_in
-                                                            ? 'bg-red-500 text-white hover:bg-red-600'
-                                                            : 'bg-green-500 text-white hover:bg-green-600'
+                                                        ? 'bg-red-500 text-white hover:bg-red-600'
+                                                        : 'bg-green-500 text-white hover:bg-green-600'
                                                         } ${s._justToggled ? 'scale-105 shadow-2xl' : ''}`}
                                                 >
                                                     {s.checked_in ? 'Uitchecken' : 'Inchecken'}
@@ -541,50 +544,50 @@ export default function PubCrawlAttendancePage() {
                 {/* Mobile Card View */}
                 <div className="md:hidden space-y-3">
                     {loading ? (
-                        <div className="bg-white rounded-2xl p-6 text-center text-slate-500">
+                        <div className="rounded-2xl p-6 text-center" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-muted)' }}>
                             Laden...
                         </div>
                     ) : filteredSignups.length === 0 ? (
-                        <div className="bg-white rounded-2xl p-6 text-center text-slate-500">
+                        <div className="rounded-2xl p-6 text-center" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-muted)' }}>
                             {searchQuery ? 'Geen resultaten gevonden' : 'Nog geen inschrijvingen'}
                         </div>
                     ) : (
                         filteredSignups.map((s, idx) => {
                             return (
-                                <div key={s.id} className="bg-white rounded-2xl p-4 shadow-md">
+                                <div key={s.id} className="rounded-2xl p-4 shadow-md" style={{ backgroundColor: 'var(--bg-card)' }}>
                                     <div className="flex justify-between items-start mb-3">
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-1">
                                                 <span className="text-xs font-bold text-theme-purple bg-theme-purple/10 px-2 py-1 rounded">
                                                     Groep #{idx + 1}
                                                 </span>
-                                                <span className="text-xs font-semibold text-slate-600">
+                                                <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
                                                     {s.amount_tickets} {s.amount_tickets === 1 ? 'ticket' : 'tickets'}
                                                 </span>
                                             </div>
-                                            <h3 className="font-bold text-slate-900 text-lg truncate">{s.name || '—'}</h3>
-                                            <p className="text-sm text-slate-600 truncate">{s.email || '—'}</p>
-                                            <p className="text-sm text-slate-600 truncate">{s.association || '—'}</p>
+                                            <h3 className="font-bold text-lg truncate" style={{ color: 'var(--text-main)' }}>{s.name || '—'}</h3>
+                                            <p className="text-sm truncate" style={{ color: 'var(--text-muted)' }}>{s.email || '—'}</p>
+                                            <p className="text-sm truncate" style={{ color: 'var(--text-muted)' }}>{s.association || '—'}</p>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={() => toggleCheckIn(s)}
                                             className={`shrink-0 px-4 py-2 rounded-lg font-semibold text-sm transition-all active:scale-95 transform duration-150 ${s.checked_in
-                                                    ? 'bg-red-500 text-white'
-                                                    : 'bg-green-500 text-white'
+                                                ? 'bg-red-500 text-white'
+                                                : 'bg-green-500 text-white'
                                                 } ${s._justToggled ? 'scale-105 shadow-2xl' : ''}`}
                                         >
                                             {s.checked_in ? 'Uitchecken' : 'Inchecken'}
                                         </button>
                                     </div>
-                                    <div className="pt-3 border-t border-slate-200">
+                                    <div className="pt-3" style={{ borderTop: '1px solid var(--border-color)' }}>
                                         <div className="flex gap-2">
-                                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${s.checked_in ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
+                                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${s.checked_in ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'}`}>
                                                 <CheckCircle className="h-3 w-3" />
                                                 Ingecheckt
                                             </span>
 
-                                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${!s.checked_in ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-600'}`}>
+                                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${!s.checked_in ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'}`}>
                                                 <XCircle className="h-3 w-3" />
                                                 Niet ingecheckt
                                             </span>
