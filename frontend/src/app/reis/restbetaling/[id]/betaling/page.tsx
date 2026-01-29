@@ -187,7 +187,7 @@ function BetalingContent() {
 
         try {
             const amount = costs.remaining;
-            const description = `Restbetaling ${trip.name} - ${signup.first_name} ${signup.last_name}`;
+            const description = `Restbetaling ${trip.name} - ${signup.first_name}${signup.middle_name ? ' ' + signup.middle_name : ''} ${signup.last_name}`;
             const redirectUrl = `${window.location.origin}/reis/restbetaling/${signupId}/betaling`;
 
             const paymentResponse = await paymentApi.create({

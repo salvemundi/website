@@ -155,7 +155,7 @@ function BetalingContent() {
 
         try {
             const amount = trip.deposit_amount;
-            const description = `Aanbetaling ${trip.name} - ${signup.first_name} ${signup.last_name}`;
+            const description = `Aanbetaling ${trip.name} - ${signup.first_name}${signup.middle_name ? ' ' + signup.middle_name : ''} ${signup.last_name}`;
             const redirectUrl = `${window.location.origin}/reis/aanbetaling/${signupId}/betaling`;
 
             console.log('[betaling] Creating payment with data:', {
