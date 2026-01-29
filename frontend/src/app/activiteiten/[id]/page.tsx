@@ -580,6 +580,7 @@ export default function EventDetailPage() {
                                                 name="name"
                                                 value={formData.name}
                                                 onChange={handleInputChange}
+                                                required
                                                 className={`w-full px-4 py-3 rounded-xl dark:!bg-white/10 dark:!border-white/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-paars focus:border-paars transition-all ${errors.name ? "ring-2 ring-red-500 !border-red-500" : ""}`}
                                                 placeholder="Jouw naam"
                                             />
@@ -595,6 +596,7 @@ export default function EventDetailPage() {
                                                 name="email"
                                                 value={formData.email}
                                                 onChange={handleInputChange}
+                                                required
                                                 className={`w-full px-4 py-3 rounded-xl dark:!bg-white/10 dark:!border-white/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-paars focus:border-paars transition-all ${errors.email ? "ring-2 ring-red-500 !border-red-500" : ""}`}
                                                 placeholder="naam.achternaam@salvemundi.nl"
                                             />
@@ -610,6 +612,7 @@ export default function EventDetailPage() {
                                                 name="phoneNumber"
                                                 value={formData.phoneNumber}
                                                 onChange={handleInputChange}
+                                                required
                                                 className={`w-full px-4 py-3 rounded-xl dark:!bg-white/10 dark:!border-white/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-paars focus:border-paars transition-all ${errors.phoneNumber ? "ring-2 ring-red-500 !border-red-500" : ""}`}
                                                 placeholder="0612345678"
                                             />
