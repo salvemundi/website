@@ -11,6 +11,7 @@ import {
     getImageUrl
 } from '@/shared/lib/api/salvemundi';
 import type { Trip, TripActivity, TripSignup } from '@/shared/lib/api/salvemundi';
+import { updateTripSignup } from '../../actions';
 
 import {
     CheckCircle2,
@@ -174,7 +175,8 @@ export default function AanbetalingPage() {
         setSubmitting(true);
         try {
             // Update signup with additional data
-            await tripSignupsApi.update(signupId, {
+            // Update signup with additional data using Server Action (admin permissions)
+            const updateResult = await updateTripSignup(signupId, {
                 first_name: form.first_name,
                 middle_name: form.middle_name || undefined,
                 last_name: form.last_name,
@@ -184,6 +186,10 @@ export default function AanbetalingPage() {
                 special_notes: form.special_notes || undefined,
                 willing_to_drive: trip?.is_bus_trip ? form.willing_to_drive : undefined,
             });
+
+            if (!updateResult.success) {
+                throw new Error(updateResult.error);
+            }
 
             // Save activities logic
             const existingActivities = await tripSignupActivitiesApi.getBySignupId(signupId);
