@@ -8,8 +8,8 @@ services:
     expose:
       - "3552"
     environment:
-      - ARCANE_ENCRYPTION_KEY=${ARCANE_ENCRYPTION_KEY}
-      - ARCANE_JWT_SECRET=${ARCANE_JWT_SECRET}
+      - ENCRYPTION_KEY=${ARCANE_ENCRYPTION_KEY}
+      - JWT_SECRET=${ARCANE_JWT_SECRET}
       - PORT=3552
       - TZ=Europe/Amsterdam
     volumes:
