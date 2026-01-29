@@ -98,7 +98,7 @@ export default function PubCrawlSignupEditPage() {
         }
     };
 
-    if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-purple-600" /></div>;
+    if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-theme-purple" /></div>;
 
     if (!signup) return (
         <div className="min-h-screen flex items-center justify-center">
@@ -114,46 +114,46 @@ export default function PubCrawlSignupEditPage() {
             <PageHeader title="Kroegentocht inschrijving bewerken" />
 
             <div className="container mx-auto px-4 py-8 max-w-3xl">
-                <button onClick={() => router.push('/admin/kroegentocht')} className="flex items-center gap-2 text-purple-600 hover:text-purple-700 mb-6">
+                <button onClick={() => router.push('/admin/kroegentocht')} className="flex items-center gap-2 text-theme-purple hover:text-theme-purple-light mb-6">
                     <ArrowLeft className="h-5 w-5" /> Terug naar overzicht
                 </button>
 
-                {success && <div className="mb-6 bg-green-50 border-l-4 border-green-400 p-4 rounded"><p className="text-green-700 font-semibold">Wijzigingen succesvol opgeslagen!</p></div>}
-                {error && <div className="mb-6 bg-red-50 border-l-4 border-red-400 p-4 rounded"><p className="text-red-700">{error}</p></div>}
+                {success && <div className="mb-6 bg-green-50 dark:bg-green-900/30 border-l-4 border-green-400 p-4 rounded"><p className="text-green-700 dark:text-green-300 font-semibold">Wijzigingen succesvol opgeslagen!</p></div>}
+                {error && <div className="mb-6 bg-red-50 dark:bg-red-900/30 border-l-4 border-red-400 p-4 rounded"><p className="text-red-700 dark:text-red-300">{error}</p></div>}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="bg-white rounded-lg shadow p-6">
+                    <div className="bg-admin-card rounded-lg shadow p-6 border border-admin">
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Naam</label>
-                                <input type="text" name="name" value={form.name} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg" required />
+                                <label className="block text-sm font-semibold text-admin mb-2">Naam</label>
+                                <input type="text" name="name" value={form.name} onChange={handleChange} className="w-full px-4 py-2 border border-admin rounded-lg bg-admin-card text-admin" required />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-                                <input type="email" name="email" value={form.email} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg" required />
+                                <label className="block text-sm font-semibold text-admin mb-2">Email</label>
+                                <input type="email" name="email" value={form.email} onChange={handleChange} className="w-full px-4 py-2 border border-admin rounded-lg bg-admin-card text-admin" required />
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Vereniging</label>
-                                    <input type="text" name="association" value={form.association} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+                                    <label className="block text-sm font-semibold text-admin mb-2">Vereniging</label>
+                                    <input type="text" name="association" value={form.association} onChange={handleChange} className="w-full px-4 py-2 border border-admin rounded-lg bg-admin-card text-admin" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Tickets</label>
-                                    <input type="number" min={1} name="amount_tickets" value={form.amount_tickets} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+                                    <label className="block text-sm font-semibold text-admin mb-2">Tickets</label>
+                                    <input type="number" min={1} name="amount_tickets" value={form.amount_tickets} onChange={handleChange} className="w-full px-4 py-2 border border-admin rounded-lg bg-admin-card text-admin" />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Groepsleden (JSON)</label>
-                                <textarea name="name_initials" value={form.name_initials} onChange={handleChange} rows={4} className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
-                                <p className="text-xs text-slate-500 mt-1">Optioneel: JSON lijst met deelnemers, bv: <code>{'[{"name":"Jan","initial":"J"}]'}</code></p>
+                                <label className="block text-sm font-semibold text-admin mb-2">Groepsleden (JSON)</label>
+                                <textarea name="name_initials" value={form.name_initials} onChange={handleChange} rows={4} className="w-full px-4 py-2 border border-admin rounded-lg bg-admin-card text-admin" />
+                                <p className="text-xs text-admin-muted mt-1">Optioneel: JSON lijst met deelnemers, bv: <code>{'[{"name":"Jan","initial":"J"}]'}</code></p>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Betaalstatus</label>
-                                <select name="payment_status" value={form.payment_status} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                                <label className="block text-sm font-semibold text-admin mb-2">Betaalstatus</label>
+                                <select name="payment_status" value={form.payment_status} onChange={handleChange} className="w-full px-4 py-2 border border-admin rounded-lg bg-admin-card text-admin">
                                     <option value="paid">Betaald</option>
                                     <option value="open">Open</option>
                                     <option value="cancelled">Geannuleerd</option>
@@ -163,11 +163,11 @@ export default function PubCrawlSignupEditPage() {
                     </div>
 
                     <div className="flex justify-between">
-                        <button type="button" onClick={handleDelete} className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                        <button type="button" onClick={handleDelete} className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
                             <Trash2 className="h-5 w-5" /> Verwijderen
                         </button>
 
-                        <button type="submit" disabled={saving} className="flex items-center gap-2 px-8 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50">
+                        <button type="submit" disabled={saving} className="flex items-center gap-2 px-8 py-3 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-light disabled:opacity-50 transition">
                             {saving ? (<><Loader2 className="animate-spin h-5 w-5" /> Opslaan...</>) : (<><Save className="h-5 w-5" /> Wijzigingen opslaan</>)}
                         </button>
                     </div>
