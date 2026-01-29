@@ -41,6 +41,7 @@ interface TripSignup {
     id_document_type: string | null;
     document_number: string | null;
     allergies: string | null;
+    alergies: string | null;
     special_notes: string | null;
     willing_to_drive: boolean | null;
     role: string;
@@ -249,7 +250,7 @@ export default function ReisAanmeldingenPage() {
                 'Geboortedatum': signup.date_of_birth ? format(new Date(signup.date_of_birth), 'dd-MM-yyyy') : '',
                 'ID Type': idDocLabel,
                 'Document nummer': signup.document_number || '',
-                'Allergieën': signup.allergies || '',
+                'Allergieën': signup.allergies || (signup as any).alergies || '',
                 'Bijzonderheden': signup.special_notes || '',
                 'Activiteiten': activitiesStr,
                 'Wil rijden': signup.willing_to_drive ? 'Ja' : 'Nee',

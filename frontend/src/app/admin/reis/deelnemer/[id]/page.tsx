@@ -34,6 +34,7 @@ interface TripSignup {
     date_of_birth?: string;
     id_document_type?: 'passport' | 'id_card';
     allergies?: string;
+    alergies?: string;
     special_notes?: string;
     willing_to_drive?: boolean;
     role: 'participant' | 'crew';
@@ -109,7 +110,7 @@ export default function DeelnemerDetailPage() {
                 phone_number: signupData.phone_number,
                 date_of_birth: signupData.date_of_birth || '',
                 id_document_type: (signupData.id_document_type as 'passport' | 'id_card') || '',
-                allergies: signupData.allergies || '',
+                allergies: signupData.allergies || signupData.alergies || '',
                 special_notes: signupData.special_notes || '',
                 willing_to_drive: signupData.willing_to_drive || false,
                 role: signupData.role,
