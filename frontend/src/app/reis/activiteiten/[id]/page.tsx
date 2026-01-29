@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import {
@@ -34,6 +34,8 @@ export default function ActiviteitenAanpassenPage() {
     const [activities, setActivities] = useState<TripActivity[]>([]);
     const [selectedActivities, setSelectedActivities] = useState<number[]>([]);
     const [originalActivities, setOriginalActivities] = useState<number[]>([]);
+    const [selectedActivityOptions, setSelectedActivityOptions] = useState<Record<number, string[]>>({});
+    const [originalActivityOptions, setOriginalActivityOptions] = useState<Record<number, string[]>>({});
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
@@ -76,6 +78,16 @@ export default function ActiviteitenAanpassenPage() {
             setSelectedActivities(existingIds);
             setOriginalActivities(existingIds);
 
+            const optionsMap: Record<number, string[]> = {};
+            existingActivities.forEach((a: any) => {
+                const actId = a.trip_activity_id.id || a.trip_activity_id;
+                if (a.selected_options) {
+                    optionsMap[actId] = a.selected_options;
+                }
+            });
+            setSelectedActivityOptions(optionsMap);
+            setOriginalActivityOptions(optionsMap);
+
         } catch (err: any) {
             console.error('Error loading data:', err);
             setError('Er is een fout opgetreden bij het laden van de gegevens.');
@@ -93,6 +105,23 @@ export default function ActiviteitenAanpassenPage() {
         if (error) setError(null);
     };
 
+    const toggleOption = (activityId: number, optionName: string, maxSelections?: number) => {
+        setSelectedActivityOptions(prev => {
+            const current = prev[activityId] || [];
+            if (maxSelections === 1) {
+                // Radio: replace all with clicked
+                return { ...prev, [activityId]: [optionName] };
+            } else {
+                // Checkbox
+                if (current.includes(optionName)) {
+                    return { ...prev, [activityId]: current.filter(o => o !== optionName) };
+                } else {
+                    return { ...prev, [activityId]: [...current, optionName] };
+                }
+            }
+        });
+    };
+
     const handleSave = async () => {
         setError(null);
         setSubmitting(true);
@@ -100,28 +129,48 @@ export default function ActiviteitenAanpassenPage() {
         try {
             // Get current activities from DB
             const existingActivities = await tripSignupActivitiesApi.getBySignupId(signupId);
-            const existingActivityIds = existingActivities.map((a: any) => a.trip_activity_id.id || a.trip_activity_id);
 
-            // Remove activities that are no longer selected
-            for (const existing of existingActivities) {
-                const activityId = existing.trip_activity_id.id || existing.trip_activity_id;
-                if (!selectedActivities.includes(activityId)) {
-                    await tripSignupActivitiesApi.delete(existing.id);
-                }
-            }
 
-            // Add newly selected activities
-            for (const activityId of selectedActivities) {
-                if (!existingActivityIds.includes(activityId)) {
+            // Save Logic (Optimized for options)
+            const existingMap = new Map(existingActivities.map((a: any) => [a.trip_activity_id.id || a.trip_activity_id, a]));
+
+            // Process selected
+            for (const actId of selectedActivities) {
+                const existing = existingMap.get(actId);
+                const newOptions = selectedActivityOptions[actId] || [];
+
+                if (existing) {
+                    const oldOptions = existing.selected_options || [];
+                    const isSame = JSON.stringify(newOptions.slice().sort()) === JSON.stringify(oldOptions.slice().sort());
+
+                    if (!isSame) {
+                        // Options changed: Re-create
+                        await tripSignupActivitiesApi.delete(existing.id);
+                        await tripSignupActivitiesApi.create({
+                            trip_signup_id: signupId,
+                            trip_activity_id: actId,
+                            selected_options: newOptions
+                        });
+                    }
+                    existingMap.delete(actId);
+                } else {
+                    // New activity
                     await tripSignupActivitiesApi.create({
                         trip_signup_id: signupId,
-                        trip_activity_id: activityId,
+                        trip_activity_id: actId,
+                        selected_options: newOptions
                     });
                 }
             }
 
+            // Delete remaining (deselected)
+            for (const [_, existing] of existingMap) {
+                await tripSignupActivitiesApi.delete(existing.id);
+            }
+
             setSuccess(true);
             setOriginalActivities(selectedActivities);
+            setOriginalActivityOptions(selectedActivityOptions);
 
             // Redirect back after a short delay
             setTimeout(() => {
@@ -136,11 +185,37 @@ export default function ActiviteitenAanpassenPage() {
         }
     };
 
-    const hasChanges = JSON.stringify(selectedActivities.sort()) !== JSON.stringify(originalActivities.sort());
+    // Calculate hasChanges roughly. 
+    // For arrays, stringify includes order, so sort first. For optionsMap, sort option arrays.
+    const hasChanges = useMemo(() => {
+        // Use slice() to avoid mutating the original arrays
+        const selectedSorted = selectedActivities.slice().sort((a, b) => a - b);
+        const originalSorted = originalActivities.slice().sort((a, b) => a - b);
+
+        if (JSON.stringify(selectedSorted) !== JSON.stringify(originalSorted)) return true;
+
+        // Compare options for selected activities
+        for (const actId of selectedActivities) {
+            const opts1 = (selectedActivityOptions[actId] || []).slice().sort();
+            const opts2 = (originalActivityOptions[actId] || []).slice().sort();
+            if (JSON.stringify(opts1) !== JSON.stringify(opts2)) return true;
+        }
+        return false;
+    }, [selectedActivities, selectedActivityOptions, originalActivities, originalActivityOptions]);
 
     const totalActivitiesPrice = activities
         .filter(a => selectedActivities.includes(a.id))
-        .reduce((sum, a) => sum + (Number(a.price) || 0), 0);
+        .reduce((sum, a) => {
+            let price = Number(a.price) || 0;
+            const options = selectedActivityOptions[a.id] || [];
+            if (a.options) {
+                options.forEach(optName => {
+                    const opt = a.options?.find(o => o.name === optName);
+                    if (opt) price += Number(opt.price);
+                });
+            }
+            return sum + price;
+        }, 0);
 
     if (loading) {
         return (
@@ -271,6 +346,27 @@ export default function ActiviteitenAanpassenPage() {
                                     <div className="flex-1">
                                         <h3 className="font-bold text-gray-900 dark:text-white break-words">{activity.name}</h3>
                                         <p className="text-sm text-gray-600 dark:text-[var(--text-muted-dark)]">{activity.description}</p>
+                                        {activity.options && activity.options.length > 0 && selectedActivities.includes(activity.id) && (
+                                            <div className="mt-2 pt-2 border-t border-gray-100 dark:border-white/5" onClick={(e) => e.stopPropagation()}>
+                                                <p className="text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Opties:</p>
+                                                <div className="space-y-2">
+                                                    {activity.options.map((option: any) => (
+                                                        <label key={option.name} className="flex items-center gap-2 cursor-pointer">
+                                                            <input
+                                                                type={activity.max_selections === 1 ? "radio" : "checkbox"}
+                                                                name={`activity-options-${activity.id}`}
+                                                                checked={selectedActivityOptions[activity.id]?.includes(option.name) || false}
+                                                                onChange={() => toggleOption(activity.id, option.name, activity.max_selections)}
+                                                                className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                                                            />
+                                                            <span className="text-sm text-gray-700 dark:text-[var(--text-muted-dark)]">
+                                                                {option.name} {Number(option.price) > 0 && `(+€${Number(option.price).toFixed(2)})`}
+                                                            </span>
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="text-right flex-shrink-0">

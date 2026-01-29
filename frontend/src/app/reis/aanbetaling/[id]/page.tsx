@@ -41,6 +41,7 @@ export default function AanbetalingPage() {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [paymentSuccess, setPaymentSuccess] = useState(false);
+    const [selectedActivityOptions, setSelectedActivityOptions] = useState<Record<number, string[]>>({});
 
     const [form, setForm] = useState({
         first_name: '',
@@ -92,6 +93,15 @@ export default function AanbetalingPage() {
             const existingActivities = await tripSignupActivitiesApi.getBySignupId(signupId);
             setSelectedActivities(existingActivities.map((a: any) => a.trip_activity_id.id || a.trip_activity_id));
 
+            const optionsMap: Record<number, string[]> = {};
+            existingActivities.forEach((a: any) => {
+                const actId = a.trip_activity_id.id || a.trip_activity_id;
+                if (a.selected_options) {
+                    optionsMap[actId] = a.selected_options;
+                }
+            });
+            setSelectedActivityOptions(optionsMap);
+
             // Pre-fill form with existing data
             setForm({
                 first_name: signupData.first_name,
@@ -129,6 +139,23 @@ export default function AanbetalingPage() {
         );
     };
 
+    const toggleOption = (activityId: number, optionName: string, maxSelections?: number) => {
+        setSelectedActivityOptions(prev => {
+            const current = prev[activityId] || [];
+            if (maxSelections === 1) {
+                // Radio: replace all with clicked
+                return { ...prev, [activityId]: [optionName] };
+            } else {
+                // Checkbox
+                if (current.includes(optionName)) {
+                    return { ...prev, [activityId]: current.filter(o => o !== optionName) };
+                } else {
+                    return { ...prev, [activityId]: [...current, optionName] };
+                }
+            }
+        });
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
@@ -158,26 +185,42 @@ export default function AanbetalingPage() {
                 willing_to_drive: trip?.is_bus_trip ? form.willing_to_drive : undefined,
             });
 
-            // Get current activities
+            // Save activities logic
             const existingActivities = await tripSignupActivitiesApi.getBySignupId(signupId);
-            const existingActivityIds = existingActivities.map((a: any) => a.trip_activity_id.id || a.trip_activity_id);
+            const existingMap = new Map(existingActivities.map(a => [a.trip_activity_id.id || a.trip_activity_id, a]));
 
-            // Remove activities that are no longer selected
-            for (const existing of existingActivities) {
-                const activityId = existing.trip_activity_id.id || existing.trip_activity_id;
-                if (!selectedActivities.includes(activityId)) {
-                    await tripSignupActivitiesApi.delete(existing.id);
+            // Process selected
+            for (const actId of selectedActivities) {
+                const existing = existingMap.get(actId);
+                const newOptions = selectedActivityOptions[actId] || [];
+
+                if (existing) {
+                    const oldOptions = existing.selected_options || [];
+                    const isSame = JSON.stringify(newOptions.slice().sort()) === JSON.stringify(oldOptions.slice().sort());
+
+                    if (!isSame) {
+                        // Options changed: Re-create
+                        await tripSignupActivitiesApi.delete(existing.id);
+                        await tripSignupActivitiesApi.create({
+                            trip_signup_id: signupId,
+                            trip_activity_id: actId,
+                            selected_options: newOptions
+                        });
+                    }
+                    existingMap.delete(actId);
+                } else {
+                    // New activity
+                    await tripSignupActivitiesApi.create({
+                        trip_signup_id: signupId,
+                        trip_activity_id: actId,
+                        selected_options: newOptions
+                    });
                 }
             }
 
-            // Add newly selected activities
-            for (const activityId of selectedActivities) {
-                if (!existingActivityIds.includes(activityId)) {
-                    await tripSignupActivitiesApi.create({
-                        trip_signup_id: signupId,
-                        trip_activity_id: activityId,
-                    });
-                }
+            // Delete remaining (deselected)
+            for (const [_, existing] of existingMap) {
+                await tripSignupActivitiesApi.delete(existing.id);
             }
 
             setSuccess(true);
@@ -197,7 +240,17 @@ export default function AanbetalingPage() {
 
     const totalActivitiesPrice = activities
         .filter(a => selectedActivities.includes(a.id))
-        .reduce((sum, a) => sum + (Number(a.price) || 0), 0);
+        .reduce((sum, a) => {
+            let price = Number(a.price) || 0;
+            const options = selectedActivityOptions[a.id] || [];
+            if (a.options) {
+                options.forEach(optName => {
+                    const opt = a.options?.find(o => o.name === optName);
+                    if (opt) price += Number(opt.price);
+                });
+            }
+            return sum + price;
+        }, 0);
 
     if (loading) {
         return (
@@ -519,6 +572,27 @@ export default function AanbetalingPage() {
                                                         <p className="text-lg font-bold text-purple-600">
                                                             €{Number(activity.price).toFixed(2)}
                                                         </p>
+                                                        {activity.options && activity.options.length > 0 && selectedActivities.includes(activity.id) && (
+                                                            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700" onClick={(e) => e.stopPropagation()}>
+                                                                <p className="text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Opties:</p>
+                                                                <div className="space-y-2">
+                                                                    {activity.options.map((option: any) => (
+                                                                        <label key={option.name} className="flex items-center gap-2 cursor-pointer">
+                                                                            <input
+                                                                                type={activity.max_selections === 1 ? "radio" : "checkbox"}
+                                                                                name={`activity-options-${activity.id}`}
+                                                                                checked={selectedActivityOptions[activity.id]?.includes(option.name) || false}
+                                                                                onChange={() => toggleOption(activity.id, option.name, activity.max_selections)}
+                                                                                className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                                                                            />
+                                                                            <span className="text-sm text-gray-700 dark:text-[var(--text-muted-dark)]">
+                                                                                {option.name} {Number(option.price) > 0 && `(+€${Number(option.price).toFixed(2)})`}
+                                                                            </span>
+                                                                        </label>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
                                                         {activity.max_participants && (
                                                             <p className="text-xs text-gray-500 dark:text-[var(--text-muted-dark)] mt-1">
                                                                 Max. {activity.max_participants} deelnemers
