@@ -172,7 +172,7 @@ router.post('/approve-signup/:id', async (req, res) => {
                 url: error.config?.url,
                 method: error.config?.method,
                 status: error.response.status,
-                data: error.response.data
+                data: JSON.stringify(error.response.data, null, 2)
             });
         } else {
             console.error('[AdminAPI] Approval error:', error.stack || error.message);
