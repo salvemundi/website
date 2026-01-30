@@ -87,7 +87,8 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
           provenance: false
-          no-cache: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: |
             NEXT_PUBLIC_DIRECTUS_URL=${{ env.NEXT_PUBLIC_DIRECTUS_URL }}
             NEXT_PUBLIC_AUTH_REDIRECT_URI=${{ env.NEXT_PUBLIC_AUTH_REDIRECT_URI }}
