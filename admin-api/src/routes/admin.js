@@ -113,21 +113,52 @@ router.post('/approve-signup/:id', async (req, res) => {
             }
         }
 
-        if (userId) {
-            const userData = await directusService.getUser(DIRECTUS_URL, DIRECTUS_API_TOKEN, userId, 'entra_id');
-            if (!userData?.entra_id) throw new Error(`User ${userId} has no entra_id linked.`);
+        if (!userId && email) {
+            const existing = await directusService.getUserByEmail(DIRECTUS_URL, DIRECTUS_API_TOKEN, email);
+            if (existing) {
+                console.log(`[AdminAPI] Found existing user by email ${email}: ${existing.id}`);
+                userId = existing.id;
+            }
+        }
 
-            await membershipService.provisionMember(MEMBERSHIP_API_URL, userData.entra_id);
+        if (userId) {
+            const userData = await directusService.getUser(DIRECTUS_URL, DIRECTUS_API_TOKEN, userId, 'id,entra_id,email,first_name,last_name');
+            if (!userData) throw new Error(`User record ${userId} not found in Directus.`);
 
             const now = new Date();
             const expiryStr = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate()).toISOString().split('T')[0];
-            await directusService.updateDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'users', userId, {
-                membership_status: 'active',
-                membership_expiry: expiryStr
-            });
 
-            await triggerUserSync(userData.entra_id);
+            if (userData.entra_id) {
+                // Scenario 1: User exists and has Entra ID. Just ensure they are active/provisioned.
+                await membershipService.provisionMember(MEMBERSHIP_API_URL, userData.entra_id);
+
+                await directusService.updateDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'users', userId, {
+                    membership_status: 'active',
+                    membership_expiry: expiryStr
+                });
+
+                await triggerUserSync(userData.entra_id);
+            } else {
+                // Scenario 2: User exists in Directus but has no Entra ID linked yet.
+                // We must create an Entra account for them to be a member.
+                const credentials = await membershipService.createMember(MEMBERSHIP_API_URL, firstName || userData.first_name, lastName || userData.last_name, email || userData.email, phoneNumber, dateOfBirth);
+
+                await directusService.updateDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'users', userId, {
+                    status: 'active',
+                    membership_status: 'active',
+                    membership_expiry: expiryStr,
+                    entra_id: credentials.user_id,
+                    phone_number: phoneNumber || undefined,
+                    date_of_birth: dateOfBirth || undefined
+                });
+
+                await triggerUserSync(credentials.user_id);
+                if (EMAIL_SERVICE_URL) {
+                    await notificationService.sendWelcomeEmail(EMAIL_SERVICE_URL, email || userData.email, firstName || userData.first_name, credentials);
+                }
+            }
         } else if (firstName && lastName && email) {
+            // Scenario 3: Complete new user.
             const credentials = await membershipService.createMember(MEMBERSHIP_API_URL, firstName, lastName, email, phoneNumber, dateOfBirth);
             const now = new Date();
             const expiryStr = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate()).toISOString().split('T')[0];

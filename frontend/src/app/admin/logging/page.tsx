@@ -265,7 +265,13 @@ export default function LoggingPage() {
             }
         } catch (error: any) {
             console.error('Failed to approve signup:', error);
-            if (!silent) alert(`Fout: ${error.message}`);
+            if (!silent) {
+                if (isDevEnv) {
+                    alert(`Fout: ${error.message}`);
+                } else {
+                    alert('Er is iets fout gegaan bij het goedkeuren. Neem contact op met de ICT commissie.');
+                }
+            }
             throw error;
         } finally {
             setIsProcessing(null);
@@ -297,7 +303,13 @@ export default function LoggingPage() {
             }
         } catch (error: any) {
             console.error('Failed to reject signup:', error);
-            if (!silent) alert(`Fout: ${error.message}`);
+            if (!silent) {
+                if (isDevEnv) {
+                    alert(`Fout: ${error.message}`);
+                } else {
+                    alert('Er is iets fout gegaan bij het afwijzen. Neem contact op met de ICT commissie.');
+                }
+            }
             throw error;
         } finally {
             setIsProcessing(null);
@@ -337,7 +349,8 @@ export default function LoggingPage() {
             alert(`Batch voltooid.\nSucces: ${successCount}\nMislukt: ${failCount}`);
             loadSignups();
         } else {
-            alert(`Batch mislukt.\nSucces: 0\nMislukt: ${failCount}`);
+            const errorMsg = isDevEnv ? `Batch mislukt. Succes: 0, Mislukt: ${failCount}` : 'Er is iets fout gegaan bij de verwerking. Neem contact op met de ICT commissie.';
+            alert(errorMsg);
         }
     };
 
