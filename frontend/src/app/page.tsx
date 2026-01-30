@@ -13,7 +13,7 @@ export default function HomePage() {
             {/* Why Salve Mundi Section */}
             <section className="px-6 py-8 sm:py-10 md:py-12 bg-[var(--bg-main)]">
                 <div className="mx-auto max-w-app">
-                    <ScrollTriggerWrapper animation="slide-up" duration={0.8} triggerStart="top 90%" once={true}>
+                    <ScrollTriggerWrapper animation="slide-up" duration={0.6} triggerStart="top 98%" once={true}>
                         <div className="text-center mb-8 sm:mb-12">
                             <p className="text-sm sm:text-base font-bold uppercase tracking-[0.2em] text-theme-purple mb-3">
                                 Waarom Salve Mundi?
@@ -24,7 +24,7 @@ export default function HomePage() {
                         </div>
                     </ScrollTriggerWrapper>
 
-                    <ScrollTriggerWrapper animation="slide-up" stagger={0.15} duration={0.8} triggerStart="top 85%" once={true}>
+                    <ScrollTriggerWrapper animation="slide-up" stagger={0.1} duration={0.6} triggerStart="top 98%" once={true}>
                         <div className="grid gap-8 md:grid-cols-3">
                             {/* Pillar 1: Gezelligheid */}
                             <div className="group relative rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-8 shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl  ">

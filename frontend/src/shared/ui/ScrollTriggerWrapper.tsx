@@ -29,9 +29,10 @@ export const ScrollTriggerWrapper: React.FC<ScrollTriggerWrapperProps> = ({
     duration = 0.8,
     stagger = 0,
     className = '',
-    // Trigger slightly earlier so animations start before element is fully in view
-    triggerStart = 'top 60%',
-    once = false,
+    // Trigger exactly when element enters viewport (top bottom)
+    // Using 98% instead of 100% provides a tiny buffer for some browsers
+    triggerStart = 'top 98%',
+    once = true,
 }) => {
     const ref = useRef<HTMLDivElement>(null);
     const pathname = usePathname();
@@ -86,13 +87,16 @@ export const ScrollTriggerWrapper: React.FC<ScrollTriggerWrapperProps> = ({
             toggleActions: once ? 'play none none none' : 'play none none reverse',
         });
 
-        // Refresh ScrollTrigger after a short delay
-        const timeout = setTimeout(() => {
-            ScrollTrigger.refresh();
-        }, 100);
+        // Refresh ScrollTrigger after a short delay to account for layout shifts
+        // We use multiple refreshes to handle different loading speeds of content above
+        const timeouts = [
+            setTimeout(() => ScrollTrigger.refresh(), 100),
+            setTimeout(() => ScrollTrigger.refresh(), 500),
+            setTimeout(() => ScrollTrigger.refresh(), 1500),
+        ];
 
         return () => {
-            clearTimeout(timeout);
+            timeouts.forEach(clearTimeout);
             // Clear all GSAP properties and kill ScrollTriggers on this element
             if (ref.current) {
                 const targetsForCleanup = ref.current.children.length > 0 ? ref.current.children : ref.current;
