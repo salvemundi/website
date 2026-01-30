@@ -46,6 +46,7 @@ const art = `
 export default function ConsoleArt(): null {
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production') return;
+    if (typeof window !== 'undefined' && (window.location.hostname.includes('dev.') || window.location.hostname.includes('localhost'))) return;
 
     try {
       // Log raw string so browser console preserves spacing (monospace)
