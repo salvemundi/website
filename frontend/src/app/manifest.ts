@@ -17,13 +17,13 @@ export default function manifest(): MetadataRoute.Manifest {
                 purpose: 'maskable'
             },
             {
-                src: '/icon.png',
+                src: '/img/Logo.png',
                 sizes: '192x192',
                 type: 'image/png',
                 purpose: 'any'
             },
             {
-                src: '/icon.png',
+                src: '/img/Logo.png',
                 sizes: '512x512',
                 type: 'image/png',
                 purpose: 'any'
@@ -36,14 +36,14 @@ export default function manifest(): MetadataRoute.Manifest {
                 short_name: 'Activiteiten',
                 description: 'Bekijk onze activiteiten',
                 url: '/activiteiten',
-                icons: [{ src: '/icon.png', sizes: '192x192' }]
+                icons: [{ src: '/img/Logo.png', sizes: '192x192' }]
             },
             {
                 name: 'Account',
                 short_name: 'Account',
                 description: 'Mijn account instellingen',
                 url: '/account',
-                icons: [{ src: '/icon.png', sizes: '192x192' }]
+                icons: [{ src: '/img/Logo.png', sizes: '192x192' }]
             }
         ]
     };
