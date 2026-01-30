@@ -246,10 +246,6 @@ function getRoleIdByGroupMembership(groupIds) {
         if (groupIds.includes(GROUP_IDS.ICT)) return ROLE_IDS.ADMIN;
         if (groupIds.includes(GROUP_IDS.BESTUUR)) return ROLE_IDS.BESTUUR;
         if (groupIds.includes(GROUP_IDS.COMMISSIE_LEIDER)) return ROLE_IDS.COMMISSIE_LEIDER;
-        if (groupIds.includes(GROUP_IDS.Intro)) {
-            console.log(`[ROLE] ✅ User is in Intro group (${GROUP_IDS.Intro}) -> Assigning Intro role`);
-            return ROLE_IDS.Intro;
-        }
         // If the user is member of any configured committee group, treat them as a committee member
         for (const gid of groupIds) {
             if (COMMITTEE_GROUP_IDS.includes(gid)) return ROLE_IDS.CommitteeMember;
