@@ -9,6 +9,18 @@ let API_BYPASS_USER_ID = process.env.DIRECTUS_API_USER_ID ?? null;
 // Detect a Directus API token used by server-side services or the frontend build.
 const API_SERVICE_TOKEN = process.env.DIRECTUS_API_TOKEN ?? process.env.VITE_DIRECTUS_API_KEY ?? process.env.NEXT_PUBLIC_DIRECTUS_API_KEY ?? null;
 
+const allowedCollections = [
+    'event_signups', 'pub_crawl_signups', 'intro_signups', 'intro_parent_signups',
+    'intro_newsletter_subscribers', 'Stickers', 'blog_likes', 'trip_signups',
+    'trip_signup_activities', 'events', 'intro_blogs', 'intro_planning',
+    'committees', 'committee_members', 'coupons', 'sponsors', 'vacancies',
+    'partners', 'FAQ', 'news', 'hero_banners', 'trips', 'trip_activities',
+    'site_settings', 'boards', 'Board', 'history', 'attendance_officers',
+    'whats_app_groups', 'whatsapp_groups', 'transactions', 'feedback',
+    'members', 'clubs', 'pub_crawl_events', 'jobs', 'safe_havens',
+    'documents', 'files', 'assets',
+];
+
 async function isApiBypass(auth: string | null) {
     if (!auth) return false;
 
@@ -75,9 +87,56 @@ export async function GET(
     const targetUrl = `${DIRECTUS_URL}/${path}${url.search}`;
 
     try {
-        const forwardHeaders: Record<string, string> = {};
         const auth = request.headers.get('Authorization');
-        if (auth) forwardHeaders['Authorization'] = auth;
+        const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
+        const isAuthPath =
+            path.startsWith('auth/') ||
+            path.startsWith('users/me') ||
+            path.includes('/auth/') ||
+            path.startsWith('directus-extension-') ||
+            path.startsWith('extensions/');
+
+        let canBypass = false;
+        const needsSpecialGuardCheck = path.startsWith('items/events') || path.startsWith('items/event_signups') || path.includes('site_settings');
+
+        if (auth && (!isAllowed && !isAuthPath || needsSpecialGuardCheck)) {
+            canBypass = await isApiBypass(auth);
+
+            if (!canBypass) {
+                try {
+                    const meResp = await fetch(`${DIRECTUS_URL}/users/me`, {
+                        headers: { Authorization: auth },
+                        cache: 'no-store'
+                    });
+                    if (meResp.ok) {
+                        const userData = await meResp.json().catch(() => null);
+                        const userId = userData?.data?.id;
+
+                        const membershipsResp = await fetch(
+                            `${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name,is_leader&limit=-1`,
+                            { headers: { Authorization: auth }, cache: 'no-store' }
+                        );
+                        const membershipsJson = await membershipsResp.json().catch(() => ({}));
+                        const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
+
+                        canBypass = memberships.some((m: any) => {
+                            const name = (m?.committee_id?.name || '').toString().toLowerCase();
+                            const isLeader = m.is_leader === true;
+                            return name.includes('bestuur') || name.includes('ict') || name.includes('kandidaat') || name.includes('kandi') || isLeader;
+                        });
+                    }
+                } catch (e) {
+                    console.error('[Directus Proxy] GET auth check failed:', e);
+                }
+            }
+        }
+
+        const forwardHeaders: Record<string, string> = {};
+        if (canBypass && API_SERVICE_TOKEN) {
+            forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
+        } else if (auth) {
+            forwardHeaders['Authorization'] = auth;
+        }
 
         const contentType = request.headers.get('Content-Type');
         if (contentType) forwardHeaders['Content-Type'] = contentType;
@@ -89,7 +148,7 @@ export async function GET(
         const pathParts = path.split('/');
         const isItemsPath = pathParts[0] === 'items';
         const isPublicToken = !auth || (API_SERVICE_TOKEN && (auth.startsWith('Bearer ') ? auth.slice(7) : auth) === String(API_SERVICE_TOKEN));
-        const shouldCache = isItemsPath && isPublicToken;
+        const shouldCache = isItemsPath && (isPublicToken || canBypass);
 
         const tags: string[] = [];
         if (isItemsPath && pathParts[1]) {
@@ -149,17 +208,6 @@ async function handleMutation(
             return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
         }
 
-        const allowedCollections = [
-            'event_signups', 'pub_crawl_signups', 'intro_signups', 'intro_parent_signups',
-            'intro_newsletter_subscribers', 'Stickers', 'blog_likes', 'trip_signups',
-            'trip_signup_activities', 'events', 'intro_blogs', 'intro_planning',
-            'committees', 'committee_members', 'coupons', 'sponsors', 'vacancies',
-            'partners', 'FAQ', 'news', 'hero_banners', 'trips', 'trip_activities',
-            'site_settings', 'boards', 'Board', 'history', 'attendance_officers',
-            'whats_app_groups', 'whatsapp_groups', 'transactions', 'feedback',
-            'members', 'clubs', 'pub_crawl_events', 'jobs', 'safe_havens',
-            'documents', 'files', 'assets',
-        ];
 
         const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
         const isAuthPath =
