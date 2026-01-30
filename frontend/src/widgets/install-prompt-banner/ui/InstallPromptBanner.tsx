@@ -14,9 +14,9 @@ export default function InstallPromptBanner({ onInstall: handleInstall, onDismis
                 <div className="flex items-start gap-3">
                     <div className="flex-shrink-0">
                         <img
-                            src="/img/logo.png"
+                            src="/img/Logo.png"
                             alt="Salve Mundi"
-                            className="h-12 w-12 rounded-xl"
+                            className="h-12 w-12 rounded-xl object-contain bg-white p-1"
                         />
                     </div>
                     <div className="flex-grow min-w-0">
