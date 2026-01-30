@@ -76,7 +76,7 @@ function Tile({
 
 export default function SyncPage() {
     const router = useRouter();
-    const { user, isLoading: authLoading } = useAuth();
+    const { user, isLoading: authLoading, loginWithMicrosoft } = useAuth();
     const [isSyncing, setIsSyncing] = useState(false);
     const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
 
@@ -112,7 +112,8 @@ export default function SyncPage() {
     useEffect(() => {
         if (!authLoading && !user) {
             const returnTo = window.location.pathname + window.location.search;
-            router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+            localStorage.setItem('auth_return_to', returnTo);
+            loginWithMicrosoft();
         }
     }, [user, authLoading, router]);
 

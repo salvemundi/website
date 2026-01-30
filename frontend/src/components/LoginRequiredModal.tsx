@@ -1,13 +1,16 @@
 'use client';
 
-import Link from 'next/link';
+
 
 type Props = {
   open: boolean;
   onClose: () => void;
 };
 
+import { useAuth } from '@/features/auth/providers/auth-provider';
+
 export default function LoginRequiredModal({ open, onClose }: Props) {
+  const { loginWithMicrosoft } = useAuth();
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -17,7 +20,17 @@ export default function LoginRequiredModal({ open, onClose }: Props) {
         <p className="text-sm text-theme-muted mb-4">Je moet ingelogd zijn om dit bericht te liken.</p>
         <div className="flex justify-end gap-3">
           <button onClick={onClose} className="px-4 py-2 rounded-md bg-gray-200 dark:bg-zinc-800">Sluiten</button>
-          <Link href="/login" className="px-4 py-2 rounded-md bg-gradient-theme text-white">Inloggen</Link>
+          <button
+            onClick={() => {
+              // Get current URL to return to
+              const returnTo = window.location.pathname + window.location.search;
+              localStorage.setItem('auth_return_to', returnTo);
+              loginWithMicrosoft();
+            }}
+            className="px-4 py-2 rounded-md bg-gradient-theme text-white"
+          >
+            Inloggen
+          </button>
         </div>
       </div>
     </div>
