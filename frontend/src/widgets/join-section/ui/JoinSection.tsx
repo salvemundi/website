@@ -30,7 +30,7 @@ export default function JoinSection() {
 
     return (
         <section className="px-6 py-8 sm:py-10 md:py-12 bg-[var(--bg-main)]">
-            <ScrollTriggerWrapper animation="scale" duration={0.9} triggerStart="top 100%" once={true}>
+            <ScrollTriggerWrapper animation="scale" duration={0.6} triggerStart="top 98%" once={true}>
                 <div className="mx-auto max-w-4xl text-center">
                     <h2 className="text-3xl font-black text-gradient sm:text-4xl md:text-5xl mb-6">
                         {title}
