@@ -34,12 +34,14 @@ export default function manifest(): MetadataRoute.Manifest {
             {
                 name: 'Activiteiten',
                 short_name: 'Activiteiten',
+                description: 'Bekijk onze activiteiten',
                 url: '/activiteiten',
                 icons: [{ src: '/icon.png', sizes: '192x192' }]
             },
             {
-                name: 'Mijn Account',
+                name: 'Account',
                 short_name: 'Account',
+                description: 'Mijn account instellingen',
                 url: '/account',
                 icons: [{ src: '/icon.png', sizes: '192x192' }]
             }
