@@ -59,7 +59,7 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
     : "bg-beige transition-all duration-300";
 
   return (
-    <nav id="navbar" className={`w-full z-20 px-8 sticky top-0 ${navbarBg}`}>
+    <nav id="navbar" className={`w-full z-20 px-8 sticky top-0 ${navbarBg}`} style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       <div className="max-w-screen mx-auto flex items-center justify-between h-24">
         {/* Logo */}
         <a href="https://salvemundi.nl" className="flex items-center space-x-3">
@@ -134,7 +134,7 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
       {/* Mobile menu (GSAP animated, full-page overlay) */}
       <div
         ref={menuRef}
-        style={{ display: 'none', opacity: 0, overflow: "hidden" }}
+        style={{ display: 'none', opacity: 0, overflow: "hidden", paddingTop: 'env(safe-area-inset-top)' }}
         className="fixed top-0 left-0 w-screen h-screen z-40 md:hidden bg-oranje flex flex-col items-center justify-center p-5"
       >
         {/* Close button */}
@@ -142,6 +142,7 @@ const Navbar: React.FC<{ activePage?: string }> = ({ activePage = "" }) => {
           aria-label="Close menu"
           onClick={() => setMenuOpen(false)}
           className="absolute top-6 right-6 text-beige bg-paars rounded-full p-3 shadow-lg hover:bg-geel transition"
+          style={{ marginTop: 'env(safe-area-inset-top)' }}
         >
           <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

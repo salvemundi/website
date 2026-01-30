@@ -9,7 +9,7 @@ import { isUserAuthorizedForReis } from '@/shared/lib/committee-utils';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { siteSettingsMutations } from '@/shared/lib/api/salvemundi';
 import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
-import { Search, Download, Users, Plane, Mail, Edit, Trash2, Loader2, AlertCircle, UserCheck, UserX, Send } from 'lucide-react';
+import { Search, Download, Users, Plane, Edit, Trash2, Loader2, AlertCircle, UserCheck, UserX, Send } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
@@ -27,6 +27,7 @@ interface Trip {
     crew_discount: number;
     deposit_amount: number;
     is_bus_trip: boolean;
+    allow_final_payments?: boolean;
 }
 
 interface TripSignup {
@@ -38,7 +39,9 @@ interface TripSignup {
     phone_number: string;
     date_of_birth: string | null;
     id_document_type: string | null;
+    document_number: string | null;
     allergies: string | null;
+    alergies: string | null;
     special_notes: string | null;
     willing_to_drive: boolean | null;
     role: string;
@@ -47,6 +50,8 @@ interface TripSignup {
     deposit_paid_at: string | null;
     full_payment_paid: boolean;
     full_payment_paid_at: string | null;
+    deposit_email_sent?: boolean;
+    final_email_sent?: boolean;
     created_at: string;
 }
 
@@ -92,7 +97,7 @@ export default function ReisAanmeldingenPage() {
         setIsLoading(true);
         try {
             const tripsData = await directusFetch<Trip[]>(
-                '/items/trips?fields=id,name,event_date,start_date,end_date,registration_open,max_participants,base_price,crew_discount,deposit_amount,is_bus_trip&sort=-event_date'
+                '/items/trips?fields=id,name,event_date,start_date,end_date,registration_open,max_participants,base_price,crew_discount,deposit_amount,is_bus_trip,allow_final_payments&sort=-event_date'
             );
             setTrips(tripsData);
 
@@ -176,28 +181,87 @@ export default function ReisAanmeldingenPage() {
         return statusMap[status] || { label: status, color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' };
     };
 
-    const downloadExcel = () => {
+    const downloadExcel = async () => {
         if (filteredSignups.length === 0) return;
 
-        const excelData = filteredSignups.map(signup => ({
-            'Voornaam': signup.first_name,
-            'Tussenvoegsel': signup.middle_name || '',
-            'Achternaam': signup.last_name,
-            'Volledige naam': `${signup.first_name} ${signup.middle_name || ''} ${signup.last_name}`.trim(),
-            'Email': signup.email,
-            'Telefoonnummer': signup.phone_number,
-            'Geboortedatum': signup.date_of_birth ? format(new Date(signup.date_of_birth), 'dd-MM-yyyy') : '',
-            'ID Type': signup.id_document_type || '',
-            'Allergieën': signup.allergies || '',
-            'Bijzonderheden': signup.special_notes || '',
-            'Wil rijden': signup.willing_to_drive ? 'Ja' : 'Nee',
-            'Rol': signup.role === 'crew' ? 'Crew' : 'Deelnemer',
-            'Status': getStatusBadge(signup.status).label,
-            'Betalingstatus': getPaymentStatus(signup).label,
-            'Aanbetaling betaald op': signup.deposit_paid_at ? format(new Date(signup.deposit_paid_at), 'dd-MM-yyyy HH:mm') : '',
-            'Volledige betaling op': signup.full_payment_paid_at ? format(new Date(signup.full_payment_paid_at), 'dd-MM-yyyy HH:mm') : '',
-            'Aangemeld op': format(new Date(signup.created_at), 'dd-MM-yyyy HH:mm'),
-        }));
+        // Clone current map to avoid mutating state directly during calculation
+        let currentMap = { ...signupActivitiesMap };
+
+        // Ensure all activities for filtered signups are loaded
+        const missingIds = filteredSignups
+            .filter(s => !currentMap[s.id])
+            .map(s => s.id);
+
+        if (missingIds.length > 0) {
+            try {
+                // Fetch all activities for missing signups in one go
+                const allActivities = await directusFetch<any[]>(
+                    `/items/trip_signup_activities?filter[trip_signup_id][_in]=${missingIds.join(',')}&fields=trip_signup_id,trip_activity_id.*,selected_options`
+                );
+
+                allActivities.forEach(it => {
+                    const signupId = it.trip_signup_id;
+                    if (!currentMap[signupId]) currentMap[signupId] = [];
+
+                    const a = it.trip_activity_id;
+                    if (!a) return;
+
+                    let activityName = a.name || a.title || '';
+                    let activityPrice = Number(a.price) || 0;
+
+                    const selectedOptions = it.selected_options;
+                    if (selectedOptions && Array.isArray(selectedOptions) && a.options) {
+                        const addedOptions: string[] = [];
+                        selectedOptions.forEach((optName: string) => {
+                            const optDef = a.options.find((o: any) => o.name === optName);
+                            if (optDef) {
+                                activityPrice += Number(optDef.price) || 0;
+                                addedOptions.push(optName);
+                            }
+                        });
+                        if (addedOptions.length > 0) {
+                            activityName += ` (+ ${addedOptions.join(', ')})`;
+                        }
+                    }
+                    currentMap[signupId].push({ id: a.id, name: activityName, price: activityPrice });
+                });
+
+                // Update state for future use
+                setSignupActivitiesMap(currentMap);
+            } catch (err) {
+                console.error('Failed to pre-fetch activities for export:', err);
+            }
+        }
+
+        const excelData = filteredSignups.map(signup => {
+            const idDoc = signup.id_document_type || (signup as any).id_document || '';
+            const idDocLabel = idDoc === 'passport' ? 'Paspoort' : idDoc === 'id_card' ? 'ID Kaart' : idDoc;
+
+            const activities = currentMap[signup.id] || [];
+            const activitiesStr = activities.map(a => a.name).join(', ');
+
+            return {
+                'Voornaam': signup.first_name,
+                'Tussenvoegsel': signup.middle_name || '',
+                'Achternaam': signup.last_name,
+                'Volledige naam': `${signup.first_name} ${signup.middle_name || ''} ${signup.last_name}`.trim(),
+                'Email': signup.email,
+                'Telefoonnummer': signup.phone_number,
+                'Geboortedatum': signup.date_of_birth ? format(new Date(signup.date_of_birth), 'dd-MM-yyyy') : '',
+                'ID Type': idDocLabel,
+                'Document nummer': signup.document_number || '',
+                'Allergieën': signup.allergies || (signup as any).alergies || '',
+                'Bijzonderheden': signup.special_notes || '',
+                'Activiteiten': activitiesStr,
+                'Wil rijden': signup.willing_to_drive ? 'Ja' : 'Nee',
+                'Rol': signup.role === 'crew' ? 'Crew' : 'Deelnemer',
+                'Status': getStatusBadge(signup.status).label,
+                'Betalingstatus': getPaymentStatus(signup).label,
+                'Aanbetaling betaald op': signup.deposit_paid_at ? format(new Date(signup.deposit_paid_at), 'dd-MM-yyyy HH:mm') : '',
+                'Volledige betaling op': signup.full_payment_paid_at ? format(new Date(signup.full_payment_paid_at), 'dd-MM-yyyy HH:mm') : '',
+                'Aangemeld op': format(new Date(signup.created_at), 'dd-MM-yyyy HH:mm'),
+            };
+        });
 
         const worksheet = XLSX.utils.json_to_sheet(excelData);
         const workbook = XLSX.utils.book_new();
@@ -268,6 +332,12 @@ export default function ReisAanmeldingenPage() {
             }
 
             alert(`${paymentType === 'deposit' ? 'Aanbetaling' : 'Restbetaling'}sverzoek is succesvol verzonden naar ${signup.email}`);
+
+            // Update local state to reflect email sent
+            setSignups(prev => prev.map(s => s.id === signupId ? {
+                ...s,
+                [paymentType === 'deposit' ? 'deposit_email_sent' : 'final_email_sent']: true
+            } : s));
         } catch (error: any) {
             console.error('Failed to send payment email:', error);
             alert(`Er is een fout opgetreden bij het verzenden van de email: ${error.message}`);
@@ -277,8 +347,16 @@ export default function ReisAanmeldingenPage() {
     };
 
     const handleStatusChange = async (id: number, newStatus: string) => {
+        const signup = signups.find(s => s.id === id);
+
+        // Confirmation for sending email when switching to confirmed without payment
+        if (signup && newStatus === 'confirmed' && !signup.deposit_paid) {
+            if (!confirm(`Let op: Door de status naar 'Bevestigd' te wijzigen, wordt er automatisch een e-mail met het aanbetalingsverzoek naar ${signup.first_name} gestuurd.\n\nWeet je zeker dat je door wilt gaan?`)) {
+                return;
+            }
+        }
+
         try {
-            const signup = signups.find(s => s.id === id);
             const oldStatus = signup?.status;
 
             await directusFetch(`/items/trip_signups/${id}`, {
@@ -291,7 +369,8 @@ export default function ReisAanmeldingenPage() {
             // Send email notification to participant
             if (signup && selectedTrip && oldStatus !== newStatus) {
                 try {
-                    await fetch('https://api.salvemundi.nl/trip-email/status-update', {
+                    // Always send status update email
+                    await fetch('/api/trip-email/status-update', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -301,8 +380,24 @@ export default function ReisAanmeldingenPage() {
                             oldStatus
                         })
                     });
+
+                    // If changed to confirmed, ALSO send the deposit payment request
+                    if (newStatus === 'confirmed' && !signup.deposit_paid) {
+                        console.log('[handleStatusChange] Auto-triggering deposit payment request email');
+                        await fetch('/api/trip-email/payment-request', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                signupId: id,
+                                tripId: selectedTrip.id,
+                                paymentType: 'deposit'
+                            })
+                        });
+                        // Update local state to reflect email sent
+                        setSignups(prev => prev.map(s => s.id === id ? { ...s, deposit_email_sent: true } : s));
+                    }
                 } catch (emailErr) {
-                    console.warn('Failed to send status update email:', emailErr);
+                    console.warn('Failed to send status update or payment request email:', emailErr);
                 }
             }
         } catch (error) {
@@ -335,7 +430,25 @@ export default function ReisAanmeldingenPage() {
                 const items = await tripSignupActivitiesApi.getBySignupId(signup.id);
                 const activities = items.map((it: any) => {
                     const a = it.trip_activity_id && it.trip_activity_id.id ? it.trip_activity_id : it.trip_activity_id;
-                    return { id: a.id || a, name: a.name || '', price: a.price || 0 };
+                    let activityName = a.name || '';
+                    let activityPrice = Number(a.price) || 0;
+
+                    const selectedOptions = it.selected_options;
+                    if (selectedOptions && Array.isArray(selectedOptions) && a.options) {
+                        const addedOptions: string[] = [];
+                        selectedOptions.forEach((optName: string) => {
+                            const optDef = a.options.find((o: any) => o.name === optName);
+                            if (optDef) {
+                                activityPrice += Number(optDef.price) || 0;
+                                addedOptions.push(optName);
+                            }
+                        });
+                        if (addedOptions.length > 0) {
+                            activityName += ` (+ ${addedOptions.join(', ')})`;
+                        }
+                    }
+
+                    return { id: a.id || a, name: activityName, price: activityPrice };
                 });
                 setSignupActivitiesMap(prev => ({ ...prev, [signup.id]: activities }));
             } catch (err) {
@@ -367,7 +480,7 @@ export default function ReisAanmeldingenPage() {
             <div className="container mx-auto px-4 py-8 max-w-6xl">
                 {/* Trip Selection */}
                 <div className="mb-6">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-admin-muted mb-2">
                         Selecteer Reis
                     </label>
                     <select
@@ -376,7 +489,7 @@ export default function ReisAanmeldingenPage() {
                             const trip = trips.find(t => t.id === parseInt(e.target.value));
                             setSelectedTrip(trip || null);
                         }}
-                        className="w-full md:w-auto px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                        className="w-full md:w-auto px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                     >
                         {trips.map(trip => {
                             const displayStartDate = trip.start_date || trip.event_date;
@@ -459,7 +572,7 @@ export default function ReisAanmeldingenPage() {
                                     placeholder="Zoek op naam of email..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                    className="w-full pl-10 pr-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
                             </div>
                         </div>
@@ -469,7 +582,7 @@ export default function ReisAanmeldingenPage() {
                             <select
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value)}
-                                className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                             >
                                 <option value="all">Alle statussen</option>
                                 <option value="registered">Geregistreerd</option>
@@ -484,7 +597,7 @@ export default function ReisAanmeldingenPage() {
                             <select
                                 value={roleFilter}
                                 onChange={(e) => setRoleFilter(e.target.value)}
-                                className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                             >
                                 <option value="all">Alle rollen</option>
                                 <option value="participant">Deelnemer</option>
@@ -537,13 +650,6 @@ export default function ReisAanmeldingenPage() {
                             className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto">
                             <Download className="h-5 w-5" />
                             Export naar Excel
-                        </button>
-
-                        <button
-                            onClick={() => router.push(`/admin/reis/mail${selectedTrip ? `?trip=${selectedTrip.id}` : ''}`)}
-                            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition w-full sm:w-auto">
-                            <Mail className="h-5 w-5" />
-                            Mail alle deelnemers
                         </button>
                     </div>
                 </div>
@@ -659,11 +765,12 @@ export default function ReisAanmeldingenPage() {
                                                                     <p className="text-sm font-semibold text-admin">Contact</p>
                                                                     <p className="text-sm text-admin">{signup.email}</p>
                                                                     <p className="text-sm text-admin">{signup.phone_number || '-'}</p>
-                                                                    <p className="text-sm text-admin">ID Type: {signup.id_document_type ? (signup.id_document_type === 'passport' ? 'Paspoort' : signup.id_document_type === 'id_card' ? 'ID Kaart' : signup.id_document_type) : '-'}</p>
+                                                                    <p className="text-sm text-admin">ID Type: {(signup.id_document_type || (signup as any).id_document) === 'passport' ? 'Paspoort' : (signup.id_document_type || (signup as any).id_document) === 'id_card' ? 'ID Kaart' : ((signup.id_document_type || (signup as any).id_document) || '-')}</p>
+                                                                    <p className="text-sm text-admin">Document nummer: {signup.document_number || '-'}</p>
                                                                 </div>
                                                                 <div>
                                                                     <p className="text-sm font-semibold text-admin">Extra informatie</p>
-                                                                    <p className="text-sm text-admin">Allergieën: {signup.allergies || '-'}</p>
+                                                                    <p className="text-sm text-admin">Allergieën: {signup.allergies || (signup as any).alergies || '-'}</p>
                                                                     <p className="text-sm text-admin">Bijzonderheden: {signup.special_notes || '-'}</p>
                                                                 </div>
                                                                 <div>
@@ -686,39 +793,45 @@ export default function ReisAanmeldingenPage() {
                                                             </div>
 
                                                             {/* Email buttons */}
-                                                            <div className="border-t pt-4 mt-4">
+                                                            <div className="border-t border-admin pt-4 mt-4">
                                                                 <p className="text-sm font-semibold text-admin mb-2">Betaalverzoek versturen</p>
                                                                 <div className="flex gap-2">
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            handleResendPaymentEmail(signup.id, 'deposit');
-                                                                        }}
-                                                                        disabled={sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'deposit'}
-                                                                        className="flex items-center gap-2 px-4 py-2 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                                                    >
-                                                                        {sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'deposit' ? (
-                                                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                                                        ) : (
-                                                                            <Send className="h-4 w-4" />
-                                                                        )}
-                                                                        Aanbetaling
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            handleResendPaymentEmail(signup.id, 'final');
-                                                                        }}
-                                                                        disabled={sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'final'}
-                                                                        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                                                    >
-                                                                        {sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'final' ? (
-                                                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                                                        ) : (
-                                                                            <Send className="h-4 w-4" />
-                                                                        )}
-                                                                        Restbetaling
-                                                                    </button>
+                                                                    <div className="flex flex-col gap-1 items-start">
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                handleResendPaymentEmail(signup.id, 'deposit');
+                                                                            }}
+                                                                            disabled={sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'deposit'}
+                                                                            className={`flex items-center gap-2 px-4 py-2 ${signup.deposit_email_sent ? 'bg-admin-hover text-admin' : 'bg-yellow-600 text-white'} text-sm rounded-lg hover:opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                                        >
+                                                                            {sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'deposit' ? (
+                                                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                                            ) : (
+                                                                                <Send className="h-4 w-4" />
+                                                                            )}
+                                                                            Aanbetaling {signup.deposit_email_sent && <span className="ml-1 text-[10px] font-bold uppercase opacity-60">(Verzonden)</span>}
+                                                                        </button>
+                                                                    </div>
+                                                                    <div className="flex flex-col gap-1 items-start">
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                handleResendPaymentEmail(signup.id, 'final');
+                                                                            }}
+                                                                            disabled={(sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'final') || !selectedTrip?.allow_final_payments}
+                                                                            className={`flex items-center gap-2 px-4 py-2 ${signup.final_email_sent ? 'bg-admin-hover text-admin' : 'bg-green-600 text-white'} text-sm rounded-lg hover:opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                                            title={!selectedTrip?.allow_final_payments ? 'Restbetalingen zijn nog niet opengesteld voor deze reis' : ''}
+                                                                        >
+                                                                            {sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'final' ? (
+                                                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                                            ) : (
+                                                                                <Send className="h-4 w-4" />
+                                                                            )}
+                                                                            Restbetaling {signup.final_email_sent && <span className="ml-1 text-[10px] font-bold uppercase opacity-60">(Verzonden)</span>}
+                                                                        </button>
+                                                                        {!selectedTrip?.allow_final_payments && <span className="text-[10px] text-red-500 italic mt-1 leading-tight">Restbetalingen nog niet geopend</span>}
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </td>

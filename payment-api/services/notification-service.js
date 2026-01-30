@@ -2,6 +2,28 @@ const axios = require('axios');
 const QRCode = require('qrcode');
 const directusService = require('./directus-service');
 
+function formatTripDate(trip) {
+    if (!trip) return 'Datum n.t.b.';
+    const start = trip.start_date || trip.event_date;
+    const end = trip.end_date;
+
+    if (!start) return 'Datum n.t.b.';
+
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const startDate = new Date(start);
+
+    if (isNaN(startDate.getTime())) return 'Datum n.t.b.';
+
+    if (end && end !== start) {
+        const endDate = new Date(end);
+        if (!isNaN(endDate.getTime())) {
+            return `${startDate.toLocaleDateString('nl-NL', options)} t/m ${endDate.toLocaleDateString('nl-NL', options)}`;
+        }
+    }
+
+    return startDate.toLocaleDateString('nl-NL', options);
+}
+
 async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl, metadata, description) {
     if (!metadata || !metadata.email || metadata.email === 'null') {
         console.log('[NotificationService] Skipping email: no valid email address');
@@ -30,10 +52,10 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
             const collection = metadata.registrationType === 'pub_crawl_signup' ? 'pub_crawl_signups' : 'event_signups';
 
             // Fetch registration info including possible event IDs and amount_tickets for pub crawl
-            const fields = collection === 'pub_crawl_signups' 
+            const fields = collection === 'pub_crawl_signups'
                 ? 'qr_token,participant_name,name,event_id,pub_crawl_event_id,amount_tickets,name_initials'
                 : 'qr_token,participant_name,name,event_id,pub_crawl_event_id';
-            
+
             const registration = await directusService.getDirectusItem(
                 directusUrl,
                 directusToken,
@@ -82,10 +104,10 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
                 // Use qrTokenToUse instead of registration.qr_token
                 if (qrTokenToUse) {
                     console.log('[NotificationService] ✅ QR token found:', qrTokenToUse);
-                    
+
                     // Generate single QR code for all registrations
                     console.log('[NotificationService] Generating QR code with token:', qrTokenToUse);
-                    
+
                     const qrDataUrl = await QRCode.toDataURL(qrTokenToUse, {
                         color: { dark: '#7B2CBF', light: '#FFFFFF' },
                         width: 300
@@ -104,7 +126,7 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
 
                     const isPubCrawl = collection === 'pub_crawl_signups';
                     const ticketCount = isPubCrawl ? (registration.amount_tickets || 1) : 1;
-                    
+
                     qrHtml = `
                         <div style="margin: 20px 0; text-align: center;">
                             <h3 style="color: #7B2CBF; text-align: center; margin-bottom: 20px;">Jouw Toegangsticket${ticketCount > 1 ? 's' : ''}</h3>
@@ -323,7 +345,7 @@ async function sendTripSignupConfirmation(emailServiceUrl, tripSignup, trip) {
                     <div style="background-color: #E8F5E9; padding: 15px; border-radius: 8px; margin: 20px 0;">
                         <h3 style="margin-top: 0; color: #2E7D32;">Reisdetails:</h3>
                         <p style="margin: 5px 0;"><strong>Reis:</strong> ${trip.name}</p>
-                        <p style="margin: 5px 0;"><strong>Datum:</strong> ${new Date(trip.event_date).toLocaleDateString('nl-NL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                        <p style="margin: 5px 0;"><strong>Datum:</strong> ${formatTripDate(trip)}</p>
                         <p style="margin: 5px 0;"><strong>Totaalprijs:</strong> €${trip.base_price.toFixed(2)}${tripSignup.role === 'crew' ? ` (excl. crew korting van €${trip.crew_discount.toFixed(2)})` : ''}</p>
                         <p style="margin: 5px 0;"><strong>Aanbetaling:</strong> €${trip.deposit_amount.toFixed(2)}</p>
                     </div>
@@ -405,7 +427,7 @@ async function sendTripPaymentConfirmation(emailServiceUrl, tripSignup, trip, pa
     console.log('[NotificationService] Trip signup:', { id: tripSignup.id, email: tripSignup.email });
     console.log('[NotificationService] Trip:', { id: trip.id, name: trip.name });
     console.log('[NotificationService] Payment type:', paymentType);
-    
+
     try {
         const fullName = `${tripSignup.first_name} ${tripSignup.middle_name ? tripSignup.middle_name + ' ' : ''}${tripSignup.last_name}`;
 
@@ -422,7 +444,21 @@ async function sendTripPaymentConfirmation(emailServiceUrl, tripSignup, trip, pa
                     // Map activity objects to readable list. trip_activity_id may be expanded object
                     const names = selected.map(s => {
                         const a = s.trip_activity_id;
-                        return a ? (a.name || a.title || `Activiteit ${a.id || ''}`) : 'Onbekende activiteit';
+                        if (!a) return 'Onbekende activiteit';
+                        let name = a.name || a.title || `Activiteit ${a.id || ''}`;
+
+                        // Add options if present
+                        if (s.selected_options && Array.isArray(s.selected_options) && a.options) {
+                            const optNames = [];
+                            s.selected_options.forEach(optName => {
+                                const optDef = a.options.find(o => o.name === optName);
+                                if (optDef) optNames.push(optName);
+                            });
+                            if (optNames.length > 0) {
+                                name += ` (+ ${optNames.join(', ')})`;
+                            }
+                        }
+                        return name;
                     }).map(n => (n || '').trim()).filter(Boolean);
 
                     // Remove duplicates while preserving order
@@ -465,7 +501,7 @@ async function sendTripPaymentConfirmation(emailServiceUrl, tripSignup, trip, pa
                     <div style="background-color: #f3f3f3; padding: 20px; border-radius: 8px; margin: 20px 0;">
                         <h3 style="margin-top: 0;">Reisdetails:</h3>
                         <p style="margin: 5px 0;"><strong>Reis:</strong> ${trip.name}</p>
-                        <p style="margin: 5px 0;"><strong>Datum:</strong> ${new Date(trip.event_date).toLocaleDateString('nl-NL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                        <p style="margin: 5px 0;"><strong>Datum:</strong> ${formatTripDate(trip)}</p>
                         <p style="margin: 5px 0;"><strong>Deelnemer:</strong> ${fullName}</p>
                     </div>
 
@@ -508,7 +544,7 @@ async function sendTripStatusUpdate(emailServiceUrl, tripSignup, trip, newStatus
                     
                     <div style="background-color: #f3f3f3; padding: 20px; border-radius: 8px; margin: 20px 0;">
                         <p style="margin: 5px 0;"><strong>Reis:</strong> ${trip.name}</p>
-                        <p style="margin: 5px 0;"><strong>Datum:</strong> ${new Date(trip.event_date).toLocaleDateString('nl-NL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                        <p style="margin: 5px 0;"><strong>Datum:</strong> ${formatTripDate(trip)}</p>
                         <p style="margin: 5px 0;"><strong>Status:</strong> ${newStatus}</p>
                     </div>
 

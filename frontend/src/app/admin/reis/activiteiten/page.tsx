@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { tripActivitiesApi, tripsApi, getImageUrl, TripActivity } from '@/shared/lib/api/salvemundi';
-import { Loader2, Plus, Edit2, Trash2, Save, X, Image as ImageIcon, Upload } from 'lucide-react';
+import { tripActivitiesApi, tripsApi, getImageUrl, TripActivity, tripSignupActivitiesApi } from '@/shared/lib/api/salvemundi';
+import { Loader2, Plus, Edit2, Trash2, Save, X, Image as ImageIcon, Upload, Users } from 'lucide-react';
 
 export default function ActiviteitenBeheerPage() {
     const [loading, setLoading] = useState(true);
@@ -25,6 +25,9 @@ export default function ActiviteitenBeheerPage() {
         options: [] as { name: string; price: number | string }[],
         max_selections: null as number | null,
     });
+    const [viewingSignupsId, setViewingSignupsId] = useState<number | null>(null);
+    const [activitySignups, setActivitySignups] = useState<any[]>([]);
+    const [loadingSignups, setLoadingSignups] = useState(false);
 
     useEffect(() => {
         loadTrips();
@@ -174,7 +177,7 @@ export default function ActiviteitenBeheerPage() {
         if (!file) return;
 
         const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-        const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_API_URL;
+
 
         const formData = new FormData();
         formData.append('file', file);
@@ -183,10 +186,10 @@ export default function ActiviteitenBeheerPage() {
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
         try {
-            const response = await fetch(`${directusUrl}/files`, {
+            const response = await fetch('/api/files', {
                 method: 'POST',
                 body: formData,
-                headers
+                headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
             });
 
             if (!response.ok) throw new Error('Upload failed');
@@ -197,6 +200,20 @@ export default function ActiviteitenBeheerPage() {
         } catch (err) {
             console.error('Error uploading image:', err);
             setError('Fout bij het uploaden van afbeelding');
+        }
+    };
+
+    const handleViewSignups = async (activityId: number) => {
+        setViewingSignupsId(activityId);
+        setLoadingSignups(true);
+        try {
+            const data = await tripSignupActivitiesApi.getByActivityId(activityId);
+            setActivitySignups(data);
+        } catch (err) {
+            console.error('Error loading activity signups:', err);
+            setError('Fout bij het laden van inschrijvingen');
+        } finally {
+            setLoadingSignups(false);
         }
     };
 
@@ -274,12 +291,11 @@ export default function ActiviteitenBeheerPage() {
                                     Prijs (€) *
                                 </label>
                                 <input
-                                    type="number"
-                                    step="0.01"
+                                    type="text"
                                     value={form.price}
                                     onChange={(e) => setForm({ ...form, price: e.target.value })}
                                     onBlur={(e) => {
-                                        const val = parseFloat(e.target.value);
+                                        const val = parseFloat(e.target.value.replace(',', '.'));
                                         setForm({ ...form, price: isNaN(val) ? 0 : val });
                                     }}
                                     className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
@@ -417,7 +433,7 @@ export default function ActiviteitenBeheerPage() {
                                             <div className="relative w-32">
                                                 <span className="absolute left-3 top-2 text-admin-muted">€</span>
                                                 <input
-                                                    type="number"
+                                                    type="text"
                                                     value={opt.price}
                                                     onChange={(e) => {
                                                         const newOpts = [...form.options];
@@ -426,7 +442,7 @@ export default function ActiviteitenBeheerPage() {
                                                     }}
                                                     onBlur={(e) => {
                                                         const newOpts = [...form.options];
-                                                        const val = parseFloat(e.target.value);
+                                                        const val = parseFloat(e.target.value.replace(',', '.'));
                                                         newOpts[idx] = { ...newOpts[idx], price: isNaN(val) ? 0 : val };
                                                         setForm({ ...form, options: newOpts });
                                                     }}
@@ -543,10 +559,18 @@ export default function ActiviteitenBeheerPage() {
                                             <button
                                                 onClick={() => handleDelete(activity.id)}
                                                 className="px-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-50 transition"
+                                                title="Verwijderen"
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </button>
                                         </div>
+                                        <button
+                                            onClick={() => handleViewSignups(activity.id)}
+                                            className="w-full mt-3 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition flex items-center justify-center font-medium"
+                                        >
+                                            <Users className="h-4 w-4 mr-2" />
+                                            Inschrijvingen Bekijken
+                                        </button>
                                     </div>
                                 </div>
                             ))
@@ -554,6 +578,85 @@ export default function ActiviteitenBeheerPage() {
                     </div>
                 )}
             </div>
+
+            {/* Signups Modal */}
+            {viewingSignupsId !== null && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-admin-card w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                        <div className="p-4 border-b border-admin flex items-center justify-between bg-admin-card-soft">
+                            <h2 className="text-xl font-bold text-admin flex items-center">
+                                <Users className="h-5 w-5 mr-2 text-theme-purple" />
+                                Inschrijvingen: {activities.find(a => a.id === viewingSignupsId)?.name}
+                            </h2>
+                            <button
+                                onClick={() => setViewingSignupsId(null)}
+                                className="p-2 hover:bg-admin-hover rounded-full transition"
+                            >
+                                <X className="h-6 w-6 text-admin-muted" />
+                            </button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-4">
+                            {loadingSignups ? (
+                                <div className="flex flex-col items-center justify-center py-12">
+                                    <Loader2 className="animate-spin h-10 w-10 text-theme-purple mb-4" />
+                                    <p className="text-admin-muted">Inschrijvingen laden...</p>
+                                </div>
+                            ) : activitySignups.length === 0 ? (
+                                <div className="text-center py-12 text-admin-muted">
+                                    Er zijn nog geen inschrijvingen voor deze activiteit.
+                                </div>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left">
+                                        <thead>
+                                            <tr className="text-sm font-semibold text-admin-muted border-b border-admin">
+                                                <th className="px-4 py-2">Naam</th>
+                                                <th className="px-4 py-2">Email</th>
+                                                <th className="px-4 py-2">Opties</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-admin">
+                                            {activitySignups.map((signupAct) => {
+                                                const person = signupAct.trip_signup_id;
+                                                const opts = Array.isArray(signupAct.selected_options)
+                                                    ? signupAct.selected_options.join(', ')
+                                                    : (signupAct.selected_options || '-');
+
+                                                return (
+                                                    <tr key={signupAct.id} className="text-sm text-admin hover:bg-admin-card-soft transition">
+                                                        <td className="px-4 py-3 font-medium">
+                                                            {person ? `${person.first_name} ${person.middle_name || ''} ${person.last_name}` : 'Onbekend'}
+                                                        </td>
+                                                        <td className="px-4 py-3">{person?.email || '-'}</td>
+                                                        <td className="px-4 py-3 text-admin-muted italic">{opts}</td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                        <tfoot className="border-t border-admin bg-admin-card-soft">
+                                            <tr>
+                                                <td colSpan={3} className="px-4 py-2 text-xs text-admin-muted font-medium">
+                                                    Totaal aantal: {activitySignups.length}
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="p-4 border-t border-admin bg-admin-card-soft flex justify-end">
+                            <button
+                                onClick={() => setViewingSignupsId(null)}
+                                className="px-6 py-2 bg-admin-hover text-admin rounded-lg hover:bg-admin transition font-medium"
+                            >
+                                Sluiten
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }

@@ -1,7 +1,7 @@
 services:
   frontend:
     image: ghcr.io/salvemundi/frontend:${TAG}
-    container_name: frontend-${TAG}
+    container_name: frontend-${TAG:-dev}
     restart: unless-stopped
     environment:
       # Server-side environment variable for email API endpoint

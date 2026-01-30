@@ -10,7 +10,7 @@ import Timeline from '@/components/timeline/Timeline';
 export default function BoardHistoryPage() {
     const { data: boards = [], isLoading, error } = useSalvemundiBoard();
 
-    
+
 
     function getMemberFullName(member: any) {
         // Try nested relation first (legacy naming)
@@ -45,7 +45,7 @@ export default function BoardHistoryPage() {
 
     return (
         <>
-            <div className="relative z-10">
+            <div>
                 <PageHeader
                     title="BESTUURSGESCHIEDENIS"
                 >

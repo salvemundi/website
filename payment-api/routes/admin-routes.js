@@ -218,7 +218,22 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
 
                     await membershipService.provisionMember(MEMBERSHIP_API_URL, targetEntraId);
 
+                    // Update Directus status and expiry immediately so the user can log in without waiting for sync
+                    const now = new Date();
+                    const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+                    const expiryStr = expiryDate.toISOString().split('T')[0];
+                    try {
+                        await directusService.updateDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'users', userId, {
+                            membership_status: 'active',
+                            membership_expiry: expiryStr
+                        });
+                        console.log(`[AdminRoutes] Directus user ${userId} updated to active immediately.`);
+                    } catch (err) {
+                        console.error(`[AdminRoutes] Failed to update Directus user status directly:`, err.message);
+                    }
+
                     await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, targetEntraId);
+
                 } catch (provError) {
                     console.error(`[AdminRoutes] Provisioning FAILED for ${userId}:`, provError.message);
                     throw new Error(`Provisioning failed: ${provError.message}`);

@@ -5,8 +5,9 @@ import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import QRDisplay from '@/entities/activity/ui/QRDisplay';
 import { motion } from 'framer-motion';
 import { CheckCircle, Home, XCircle, Loader2, AlertTriangle } from 'lucide-react';
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useRef } from 'react';
 import { pubCrawlSignupsApi, transactionsApi } from '@/shared/lib/api/salvemundi';
+import qrService from '@/shared/lib/qr-service';
 
 function KroegentochtConfirmationContent() {
     const router = useRouter();
@@ -16,6 +17,7 @@ function KroegentochtConfirmationContent() {
     const [status, setStatus] = useState<'loading' | 'paid' | 'open' | 'failed' | 'error'>('loading');
     const [retryCount, setRetryCount] = useState(0);
     const [signupData, setSignupData] = useState<any>(null);
+    const hasSentEmail = useRef(false);
 
     useEffect(() => {
         if (!transactionId && !signupId) {
@@ -27,13 +29,19 @@ function KroegentochtConfirmationContent() {
             try {
                 let statusValue = 'open';
                 let signup = null;
-                
+                let currentSignupId = signupId;
+
                 console.log('[Kroegentocht Bevestiging] Checking status, retry:', retryCount);
-                
+
                 if (transactionId) {
                     console.log('[Kroegentocht Bevestiging] Checking transaction:', transactionId);
                     const transaction = await transactionsApi.getById(transactionId);
                     statusValue = transaction.payment_status;
+                    if (transaction.pub_crawl_signup) {
+                        currentSignupId = typeof transaction.pub_crawl_signup === 'object'
+                            ? transaction.pub_crawl_signup.id
+                            : transaction.pub_crawl_signup;
+                    }
                     console.log('[Kroegentocht Bevestiging] Transaction status:', statusValue);
                 } else if (signupId) {
                     console.log('[Kroegentocht Bevestiging] Checking signup:', signupId);
@@ -46,11 +54,26 @@ function KroegentochtConfirmationContent() {
                 if (statusValue === 'paid') {
                     console.log('[Kroegentocht Bevestiging] ✅ Payment is PAID!');
                     // Make sure we have signup data when paid
-                    if (!signup && signupId) {
-                        signup = await pubCrawlSignupsApi.getById(signupId);
+                    if (!signup && currentSignupId) {
+                        signup = await pubCrawlSignupsApi.getById(currentSignupId);
                         setSignupData(signup);
                     }
                     setStatus('paid');
+
+                    // Trigger email with tickets if not sent in this session yet
+                    if (!hasSentEmail.current && (currentSignupId || (signup && signup.id))) {
+                        hasSentEmail.current = true;
+                        console.log('[Kroegentocht Bevestiging] Triggering ticket email...');
+                        fetch('/api/send-kroegentocht-tickets', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ signupId: currentSignupId || signup.id })
+                        }).then(res => {
+                            if (res.ok) console.log('[Kroegentocht Bevestiging] Email trigger sent.');
+                            else console.warn('[Kroegentocht Bevestiging] Email trigger failed status:', res.status);
+                        }).catch(err => console.error('[Kroegentocht Bevestiging] Email trigger error:', err));
+                    }
+
                 } else if (statusValue === 'failed' || statusValue === 'canceled' || statusValue === 'expired') {
                     console.log('[Kroegentocht Bevestiging] ❌ Payment failed/canceled/expired');
                     setStatus('failed');
@@ -70,6 +93,73 @@ function KroegentochtConfirmationContent() {
 
         checkStatus();
     }, [signupId, transactionId, retryCount]);
+
+    const downloadTicket = async (index: number, name: string, initial: string, qrToken: string) => {
+        try {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+
+            // Set dimensions
+            const width = 600;
+            const height = 800;
+            canvas.width = width;
+            canvas.height = height;
+
+            // Background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, width, height);
+
+            // Purple header band
+            ctx.fillStyle = '#7B2CBF';
+            ctx.fillRect(0, 0, width, 100);
+
+            // Title "TICKET X"
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 30px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(`TICKET ${index + 1}`, width / 2, 60);
+
+            // Event Name
+            ctx.fillStyle = '#333333';
+            ctx.font = '24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(signupData?.pub_crawl_event_id?.name || 'Kroegentocht', width / 2, 160);
+
+            // Participant Name
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 40px Arial';
+            ctx.fillText(`${name} ${initial}`, width / 2, 220);
+
+            // Generate QR Image
+            const qrDataUrl = await qrService.generateQRCode(qrToken);
+            const qrImg = new Image();
+            qrImg.crossOrigin = "anonymous";
+            qrImg.onload = () => {
+                // Draw QR
+                const qrSize = 400;
+                ctx.drawImage(qrImg, (width - qrSize) / 2, 280, qrSize, qrSize);
+
+                // Footer text
+                ctx.fillStyle = '#666666';
+                ctx.font = '20px Arial';
+                ctx.fillText('Scan bij de kroegentocht leiders', width / 2, 720);
+
+                ctx.font = '16px Arial';
+                ctx.fillText('Salve Mundi', width / 2, 760);
+
+                // Trigger download
+                const link = document.createElement('a');
+                link.download = `Ticket-${index + 1}-${name.replace(/\s+/g, '-')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            };
+            qrImg.src = qrDataUrl;
+
+        } catch (e) {
+            console.error('Download ticket failed', e);
+        }
+    };
 
     const renderContent = () => {
         switch (status) {
@@ -97,28 +187,46 @@ function KroegentochtConfirmationContent() {
                             We hebben een bevestigingsmail naar je gestuurd met de details.
                         </p>
 
-                        {/* Display QR code if available */}
+                        {/* Display QR codes if available */}
                         {signupData && signupData.qr_token && (
                             <div className="mt-8">
-                                <h2 className="text-2xl font-bold text-white">Jouw Ticket{signupData.amount_tickets > 1 ? 's' : ''}</h2>
-                                <p className="text-white/90 mb-4">
-                                    Bewaar deze QR-code of laat deze zien bij de ingang.
-                                    {signupData.amount_tickets > 1 && ` Dit ticket is geldig voor ${signupData.amount_tickets} personen.`}
+                                <h2 className="text-2xl font-bold text-white mb-2">Jouw Tickets</h2>
+                                <p className="text-white/90 mb-6 font-medium">
+                                    Hieronder vind je de {signupData.amount_tickets} tickets voor jouw groep.
+                                    <br />
+                                    <strong>Let op:</strong> Iedere deelnemer heeft een eigen QR-code nodig. Maak screenshots en stuur ze door naar je vrienden, of gebruik de e-mail die we net hebben gestuurd.
                                 </p>
-                                
-                                <div className="bg-white/10 p-4 rounded-xl">
-                                    <div className="flex justify-center">
-                                        <QRDisplay qrToken={signupData.qr_token} size={200} />
-                                    </div>
-                                    {signupData.amount_tickets > 1 && (
-                                        <p className="text-center text-white/80 mt-2 text-sm">
-                                            Geldig voor {signupData.amount_tickets} personen
-                                        </p>
-                                    )}
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {(signupData.name_initials ? JSON.parse(signupData.name_initials) : Array.from({ length: signupData.amount_tickets }).map((_, i) => ({ name: `Deelnemer ${i + 1}`, initial: '' }))).map((p: any, index: number) => (
+                                        <div key={index} className="bg-white/10 p-6 rounded-xl border border-white/10 flex flex-col items-center text-center">
+                                            <div className="bg-theme-purple text-white text-xs font-bold px-3 py-1 rounded-full mb-3">
+                                                TICKET {index + 1}
+                                            </div>
+                                            <h3 className="font-bold text-white text-lg mb-1">{p.name} {p.initial}</h3>
+                                            <p className="text-white/60 text-sm mb-4">{signupData.pub_crawl_event_id?.name || 'Kroegentocht'}</p>
+
+                                            <div className="bg-white p-2 rounded-lg shadow-lg">
+                                                <QRDisplay qrToken={`${signupData.qr_token}#${index}`} size={180} />
+                                            </div>
+
+                                            <p className="text-white/50 text-xs mt-3 mb-4">Scan bij de kroegentocht leiders</p>
+
+                                            <button
+                                                onClick={() => downloadTicket(index, p.name, p.initial, `${signupData.qr_token}#${index}`)}
+                                                className="bg-theme-purple hover:bg-theme-purple-dark text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                </svg>
+                                                Download
+                                            </button>
+                                        </div>
+                                    ))}
                                 </div>
 
-                                <p className="text-center text-sm text-white/70 mt-4">
-                                    Deze QR-code is ook per e-mail naar je verzonden.
+                                <p className="text-center text-sm text-white/70 mt-8">
+                                    Deze tickets zijn ook per e-mail naar je verzonden.
                                 </p>
                             </div>
                         )}

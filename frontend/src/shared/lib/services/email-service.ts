@@ -135,6 +135,7 @@ async function sendEmail(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-internal-api-secret': process.env.NEXT_PUBLIC_INTERNAL_API_SECRET || '',
       },
       body: JSON.stringify({
         to,
@@ -170,48 +171,48 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
     return;
   }
 
-    try {
-        // Ensure eventPrice is a number
-        const eventPrice = typeof data.eventPrice === 'number' ? data.eventPrice : Number(data.eventPrice) || 0;
-        
-        // Format the event date nicely
-        const formattedDate = new Date(data.eventDate).toLocaleDateString('nl-NL', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+  try {
+    // Ensure eventPrice is a number
+    const eventPrice = typeof data.eventPrice === 'number' ? data.eventPrice : Number(data.eventPrice) || 0;
 
-        // Prepare QR code attachment for email
-        let qrCodeAttachment: EmailAttachment | undefined;
-        let qrCodeCid = '';
-        if (data.qrCodeDataUrl) {
-            console.log('📧 email-service: QR code data URL received, length:', data.qrCodeDataUrl.length);
-            const base64Data = data.qrCodeDataUrl.includes(',')
-                ? data.qrCodeDataUrl.split(',')[1]
-                : data.qrCodeDataUrl;
-            console.log('📧 email-service: Base64 data extracted, length:', base64Data.length);
-            // Use a unique content ID in an email-style format (include domain) for better
-            // compatibility with mail clients and Microsoft Graph inline attachments.
-            qrCodeCid = `qrcode-${Date.now()}@salvemundi`;
-            qrCodeAttachment = {
-                name: 'qr-code.png',
-                contentType: 'image/png',
-                contentBytes: base64Data,
-                isInline: true,
-                contentId: qrCodeCid,
-            };
-            console.log('📧 email-service: QR attachment created with contentId:', qrCodeCid);
-        } else {
-            console.warn('⚠️ email-service: No QR code data URL provided');
-        }
-        // Prefer committee name from data, but sanitize as a fallback in case it still contains markers
-        const displayCommitteeName = sanitizeCommitteeDisplay(data.committeeName) || data.committeeName;
-        const committeeEmail = data.committeeEmail || buildCommitteeEmailFromName(displayCommitteeName);
-        const contactInfoSection = (data.contactName || data.contactPhone || committeeEmail || displayCommitteeName)
-            ? `
+    // Format the event date nicely
+    const formattedDate = new Date(data.eventDate).toLocaleDateString('nl-NL', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    // Prepare QR code attachment for email
+    let qrCodeAttachment: EmailAttachment | undefined;
+    let qrCodeCid = '';
+    if (data.qrCodeDataUrl) {
+      console.log('📧 email-service: QR code data URL received, length:', data.qrCodeDataUrl.length);
+      const base64Data = data.qrCodeDataUrl.includes(',')
+        ? data.qrCodeDataUrl.split(',')[1]
+        : data.qrCodeDataUrl;
+      console.log('📧 email-service: Base64 data extracted, length:', base64Data.length);
+      // Use a unique content ID in an email-style format (include domain) for better
+      // compatibility with mail clients and Microsoft Graph inline attachments.
+      qrCodeCid = `qrcode-${Date.now()}@salvemundi`;
+      qrCodeAttachment = {
+        name: 'qr-code.png',
+        contentType: 'image/png',
+        contentBytes: base64Data,
+        isInline: true,
+        contentId: qrCodeCid,
+      };
+      console.log('📧 email-service: QR attachment created with contentId:', qrCodeCid);
+    } else {
+      console.warn('⚠️ email-service: No QR code data URL provided');
+    }
+    // Prefer committee name from data, but sanitize as a fallback in case it still contains markers
+    const displayCommitteeName = sanitizeCommitteeDisplay(data.committeeName) || data.committeeName;
+    const committeeEmail = data.committeeEmail || buildCommitteeEmailFromName(displayCommitteeName);
+    const contactInfoSection = (data.contactName || data.contactPhone || committeeEmail || displayCommitteeName)
+      ? `
         <div style="background-color: #F5F5DC; padding: 15px; border-radius: 8px; margin: 20px 0;">
           <h3 style="color: #FF6B35; margin-top: 0;">Contactinformatie</h3>
           ${displayCommitteeName ? `<p><strong>Commissie:</strong> ${displayCommitteeName}</p>` : ''}
@@ -220,9 +221,9 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
           ${committeeEmail ? `<p><strong>E-mail:</strong> <a href="mailto:${committeeEmail}" style="color: #7B2CBF; font-weight: bold;">${committeeEmail}</a></p>` : ''}
         </div>
       ` : '';
-        // Organization contact block (slightly different heading, reused fields)
-        const orgContactInfoSection = (data.contactName || data.contactPhone || committeeEmail || displayCommitteeName)
-          ? `
+    // Organization contact block (slightly different heading, reused fields)
+    const orgContactInfoSection = (data.contactName || data.contactPhone || committeeEmail || displayCommitteeName)
+      ? `
             <div style="background-color: #F0F8FF; padding: 12px; border-radius: 8px; margin: 16px 0;">
               <h3 style="color: #7B2CBF; margin-top: 0;">Activiteit &amp; Contact</h3>
               ${displayCommitteeName ? `<p><strong>Commissie:</strong> ${displayCommitteeName}</p>` : ''}
@@ -325,8 +326,8 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
 
     // Send emails sequentially to avoid race conditions
     try {
-            console.log('sendEventSignupEmail: qrCodeAttachment summary:', qrCodeAttachment ? { name: qrCodeAttachment.name, contentType: qrCodeAttachment.contentType, isInline: qrCodeAttachment.isInline, contentId: qrCodeAttachment.contentId, bytesLength: qrCodeAttachment.contentBytes ? qrCodeAttachment.contentBytes.length : 0 } : null);
-            await sendEmail(
+      console.log('sendEventSignupEmail: qrCodeAttachment summary:', qrCodeAttachment ? { name: qrCodeAttachment.name, contentType: qrCodeAttachment.contentType, isInline: qrCodeAttachment.isInline, contentId: qrCodeAttachment.contentId, bytesLength: qrCodeAttachment.contentBytes ? qrCodeAttachment.contentBytes.length : 0 } : null);
+      await sendEmail(
         config,
         data.recipientEmail,
         `Bevestiging aanmelding: ${data.eventName}`,
@@ -664,5 +665,131 @@ export async function sendIntroBlogUpdateNotification(data: {
   } catch (error) {
     console.error('❌ Failed to send intro update notifications:', error);
     throw error;
+  }
+}
+
+export interface PubCrawlEmailData {
+  recipientEmail: string;
+  recipientName: string;
+  eventName: string;
+  eventDate: string;
+  participants: { name: string; initial: string; qrCodeDataUrl: string }[];
+}
+
+/**
+ * Send pub crawl confirmation email with individual distributable tickets
+ */
+export async function sendPubCrawlSignupEmail(data: PubCrawlEmailData): Promise<void> {
+  const config = getEmailConfig();
+
+  if (!config.apiEndpoint) {
+    return;
+  }
+
+  // Build attachments list
+  const attachments: EmailAttachment[] = [];
+
+  data.participants.forEach((p, index) => {
+    if (p.qrCodeDataUrl) {
+      const base64Data = p.qrCodeDataUrl.includes(',') ? p.qrCodeDataUrl.split(',')[1] : p.qrCodeDataUrl;
+      attachments.push({
+        name: `ticket-${index + 1}.png`,
+        contentType: 'image/png',
+        contentBytes: base64Data,
+        isInline: true,
+        contentId: `qrcode-ticket-${index}@salvemundi`
+      });
+    }
+  });
+
+  try {
+    const formattedDate = new Date(data.eventDate).toLocaleDateString('nl-NL', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    const userEmailBody = `
+      <html>
+        <body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; margin: 0; padding: 0;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 0;">
+            
+            <!-- Header -->
+            <div style="background-color: #7B2CBF; padding: 30px 20px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 24px;">Je Tickets voor ${data.eventName}</h1>
+            </div>
+
+            <div style="padding: 30px 20px;">
+              <p>Beste ${data.recipientName},</p>
+              <p>Bedankt voor je bestelling! Hieronder vind je de toegangstickets voor jouw groep.</p>
+              
+              <div style="background-color: #eef2ff; border-left: 4px solid #7B2CBF; padding: 15px; margin: 20px 0;">
+                <p style="margin: 0; font-weight: bold;">📅 ${formattedDate}</p>
+                <p style="margin: 5px 0 0 0;">🎟️ ${data.participants.length} Ticket${data.participants.length > 1 ? 's' : ''}</p>
+              </div>
+
+              <!-- Instructions NL -->
+              <div style="margin-bottom: 25px;">
+                <h3 style="color: #7B2CBF; margin-bottom: 10px;">🇳🇱 Instructies</h3>
+                <ol style="padding-left: 20px; margin-top: 5px;">
+                  <li>Download of maak een screenshot van de tickets hieronder.</li>
+                  <li><strong>Verdeel de tickets!</strong> Stuur ieder ticket naar de juiste persoon.</li>
+                  <li>Laat de QR-code scannen bij de ingang. Iedereen heeft een eigen ticket nodig.</li>
+                </ol>
+              </div>
+
+              <!-- Instructions EN -->
+              <div style="margin-bottom: 30px; padding-top: 15px; border-top: 1px solid #eee;">
+                <h3 style="color: #FF6B35; margin-bottom: 10px;">🇬🇧 Instructions</h3>
+                <ol style="padding-left: 20px; margin-top: 5px;">
+                  <li>Download or take a screenshot of the tickets below.</li>
+                  <li><strong>Distribute the tickets!</strong> Send each ticket to the correct person.</li>
+                  <li>Show the QR code at the entrance. Everyone needs their own personal ticket.</li>
+                </ol>
+              </div>
+
+              <h2 style="text-align: center; color: #333; margin-top: 40px; margin-bottom: 20px;">⬇️ JOUW TICKETS / YOUR TICKETS ⬇️</h2>
+
+              <!-- Tickets Loop -->
+              ${data.participants.map((p, index) => {
+      const contentId = `qrcode-ticket-${index}@salvemundi`;
+      return `
+                  <div style="border: 2px dashed #ccc; border-radius: 12px; padding: 20px; margin-bottom: 30px; text-align: center; page-break-inside: avoid; background-color: #fff;">
+                    <div style="background-color: #7B2CBF; color: white; display: inline-block; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; margin-bottom: 15px;">
+                      TICKET ${index + 1}
+                    </div>
+                    
+                    <h3 style="margin: 0 0 5px 0; color: #333;">${p.name} ${p.initial}.</h3>
+                    <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">${data.eventName}</p>
+                    
+                    <img src="cid:${contentId}" alt="QR Code Ticket ${index + 1}" style="width: 200px; height: 200px; margin: 0 auto; display: block;" />
+                    
+                    <p style="font-size: 12px; color: #999; margin-top: 15px;">Scan dit ticket bij de ingang / Scan this ticket at the entrance</p>
+                  </div>
+                  `;
+    }).join('')}
+
+              <p style="margin-top: 40px; text-align: center; color: #666; font-size: 14px;">
+                Veel plezier!<br>
+                <strong>Salve Mundi</strong>
+              </p>
+            </div>
+            
+            <div style="background-color: #f4f4f4; padding: 20px; text-align: center; color: #999; font-size: 12px;">
+              <p>&copy; ${new Date().getFullYear()} Studievereniging Salve Mundi</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    await sendEmail(
+      config,
+      data.recipientEmail,
+      `Je tickets voor ${data.eventName}`,
+      userEmailBody,
+      attachments
+    );
+
+  } catch (error) {
+    console.error('❌ Failed to send pub crawl tickets email:', error);
   }
 }

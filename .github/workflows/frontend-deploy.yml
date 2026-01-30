@@ -96,6 +96,7 @@ jobs:
             NEXT_PUBLIC_EMAIL_API_ENDPOINT=${{ env.NEXT_PUBLIC_EMAIL_API_ENDPOINT }}
             NEXT_PUBLIC_DIRECTUS_API_KEY=${{ env.NEXT_PUBLIC_DIRECTUS_API_KEY }}
             NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
+            NEXT_PUBLIC_SITE_TAG=${{ env.TAG }}
 
       - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.7

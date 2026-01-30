@@ -29,17 +29,20 @@ export function PWAProvider({ children }: { children: ReactNode }) {
 
         // Listen for beforeinstallprompt event
         const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
+            console.log('PWA: beforeinstallprompt event fired');
             e.preventDefault();
             setDeferredPrompt(e);
 
             // Check if user has dismissed the prompt before
             const dismissed = localStorage.getItem('pwa-install-dismissed');
+            console.log('PWA: dismissed from storage:', dismissed, 'isMobile:', isMobile);
             if (!dismissed && isMobile) {
                 setShowInstallPrompt(true);
             }
         };
 
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
+        console.log('PWA: Event listener added');
 
         return () => {
             window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);

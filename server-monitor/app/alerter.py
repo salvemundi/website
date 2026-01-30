@@ -43,7 +43,7 @@ class Alerter:
                 "title": f"[{level.upper()}] {title}",
                 "description": message,
                 "color": color,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().astimezone().isoformat()
             }]
         }
 

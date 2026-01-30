@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isRateLimited, getClientIp } from '@/shared/lib/rate-limit';
+
 
 const DIRECTUS_URL = 'https://admin.salvemundi.nl';
 
@@ -78,9 +80,9 @@ export async function GET(
     console.warn(`[Directus Proxy] GET ${path} -> ${targetUrl}`);
 
     try {
-    const forwardHeaders: Record<string, string> = {};
-    const auth = request.headers.get('Authorization');
-    if (auth) forwardHeaders['Authorization'] = auth;
+        const forwardHeaders: Record<string, string> = {};
+        const auth = request.headers.get('Authorization');
+        if (auth) forwardHeaders['Authorization'] = auth;
 
         const contentType = request.headers.get('Content-Type');
         if (contentType) forwardHeaders['Content-Type'] = contentType;
@@ -142,6 +144,98 @@ export async function POST(
     console.warn(`[Directus Proxy] POST ${path} -> ${targetUrl}`);
 
     try {
+        // 1. Rate Limiting for writes
+        const ip = getClientIp(request);
+        if (isRateLimited(`proxy_write_${ip}`, { windowMs: 60 * 1000, max: 10 })) {
+            return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+        }
+
+        // 2. Path Whitelisting (Security Guard)
+        // Only allow POST to specific public-facing collections via the proxy.
+        // Internal collections (directus_*) should never be accessible here.
+        const allowedCollections = [
+            'event_signups',
+            'pub_crawl_signups',
+            'intro_signups',
+            'intro_parent_signups',
+            'intro_newsletter_subscribers',
+            'Stickers',
+            'blog_likes',
+            'trip_signups',
+            'trip_signup_activities',
+            'events',
+            'intro_blogs',
+            'intro_planning',
+            'committees',
+            'committee_members',
+            'coupons',
+            'sponsors',
+            'vacancies',
+            'partners',
+            'FAQ',
+            'news',
+            'hero_banners',
+            'trips',
+            'trip_activities',
+            'site_settings',
+            'boards',
+            'Board',
+            'history',
+            'attendance_officers',
+            'whats_app_groups',
+            'whatsapp_groups',
+            'transactions',
+            'feedback',
+            'members',
+            'clubs',
+            'pub_crawl_events',
+            'jobs',
+            'safe_havens',
+            'documents',
+            'files',
+            'assets',
+        ];
+
+        const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
+        // Special case: login/auth/refresh should be allowed
+        const isAuthPath =
+            path.startsWith('auth/') ||
+            path.startsWith('users/me') ||
+            path.includes('/auth/') ||
+            path.startsWith('directus-extension-') ||
+            path.startsWith('extensions/');
+
+        let canBypass = false;
+        const authHeader = request.headers.get('Authorization');
+        if (authHeader) {
+            canBypass = await isApiBypass(authHeader);
+            // If they are not a system-level bypass, check if they are an admin
+            if (!canBypass) {
+                try {
+                    const meResp = await fetch(`${DIRECTUS_URL}/users/me`, { headers: { Authorization: authHeader } });
+                    if (meResp.ok) {
+                        const meJson = await meResp.json().catch(() => null);
+                        const userId = meJson?.data?.id;
+                        const membershipsResp = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name,is_leader&limit=-1`, { headers: { Authorization: authHeader } });
+                        const membershipsJson = await membershipsResp.json().catch(() => null);
+                        const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
+                        canBypass = memberships.some((m: any) => {
+                            const name = (m?.committee_id?.name || '').toString().toLowerCase();
+                            const isLeader = m.is_leader === true;
+                            return name === 'bestuur' || name === 'ict' || name.includes('kandidaat') || isLeader;
+                        });
+                    }
+                } catch {
+                    canBypass = false;
+                }
+            }
+        }
+
+        if (!isAllowed && !isAuthPath && !canBypass) {
+            console.warn(`[Directus Proxy] BLOCKED POST attempt to unauthorized path: ${path} from IP: ${ip}`);
+            return NextResponse.json({ error: 'Forbidden', message: 'Unauthorized path' }, { status: 403 });
+        }
+
         const forwardHeaders: Record<string, string> = {};
         const auth = request.headers.get('Authorization');
         if (auth) forwardHeaders['Authorization'] = auth;
@@ -166,7 +260,8 @@ export async function POST(
 
                 const isPrivileged = memberships.some((m: any) => {
                     const name = (m?.committee_id?.name || '').toString().toLowerCase();
-                    return name === 'bestuur' || name === 'ict';
+                    const isLeader = m.is_leader === true;
+                    return name === 'bestuur' || name === 'ict' || name.includes('kandidaat') || isLeader;
                 });
 
                 if (!isPrivileged) {
@@ -186,6 +281,36 @@ export async function POST(
                 }
             }
         }
+
+        // Server-side Spam & Mandatory Field Guard for Signups
+        // This prevents bots from hitting the API directly and skipping frontend validation
+        if (path === 'items/event_signups' || path === 'items/pub_crawl_signups' || path === 'items/intro_signups') {
+            const signup = body || {};
+
+            // 1. Check for missing mandatory fields (common in API-only bots)
+            const name = signup.participant_name || signup.name || signup.first_name || '';
+            const email = signup.participant_email || signup.email || '';
+            const phone = signup.participant_phone || signup.phone_number || signup.phone || '';
+
+            if (!name || !email) {
+                console.error(`[Spam Guard] Rejected signup for ${path}: Missing name or email`);
+                return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+            }
+
+            // phone is mandatory for events and intro
+            if ((path === 'items/event_signups' || path === 'items/intro_signups') && !phone) {
+                console.error(`[Spam Guard] Rejected signup for ${path}: Missing phone number`);
+                return NextResponse.json({ error: 'Missing phone number' }, { status: 400 });
+            }
+
+            // 2. Content-based spam detection (URLs in name field)
+            const nameStr = String(name).toLowerCase();
+            if (nameStr.includes('http://') || nameStr.includes('https://') || nameStr.includes('www.')) {
+                console.error(`[Spam Guard] Rejected signup for ${path}: URL detected in name "${name}"`);
+                return NextResponse.json({ error: 'Invalid input (Spam detected)' }, { status: 400 });
+            }
+        }
+
 
         // Default to JSON content-type for POST when body is present
         forwardHeaders['Content-Type'] = 'application/json';
@@ -235,6 +360,92 @@ export async function PATCH(
     console.warn(`[Directus Proxy] PATCH ${path} -> ${targetUrl}`);
 
     try {
+        // 1. Rate Limiting for writes
+        const ip = getClientIp(request);
+        if (isRateLimited(`proxy_write_${ip}`, { windowMs: 60 * 1000, max: 10 })) {
+            return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+        }
+
+        // 2. Path Whitelisting
+        const allowedCollections = [
+            'event_signups',
+            'pub_crawl_signups',
+            'intro_signups',
+            'intro_parent_signups',
+            'Stickers',
+            'trip_signups',
+            'events',
+            'intro_blogs',
+            'intro_planning',
+            'site_settings',
+            'committees',
+            'committee_members',
+            'coupons',
+            'sponsors',
+            'vacancies',
+            'partners',
+            'FAQ',
+            'news',
+            'hero_banners',
+            'trips',
+            'trip_activities',
+            'boards',
+            'Board',
+            'history',
+            'attendance_officers',
+            'whats_app_groups',
+            'whatsapp_groups',
+            'transactions',
+            'feedback',
+            'members',
+            'clubs',
+            'pub_crawl_events',
+            'jobs',
+            'safe_havens',
+            'documents',
+            'files',
+            'assets',
+        ];
+
+        const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
+        const isAuthPath =
+            path.startsWith('auth/') ||
+            path.startsWith('users/me') ||
+            path.includes('/auth/') ||
+            path.startsWith('directus-extension-') ||
+            path.startsWith('extensions/');
+
+        let canBypass = false;
+        const authHeader = request.headers.get('Authorization');
+        if (authHeader) {
+            canBypass = await isApiBypass(authHeader);
+            if (!canBypass) {
+                try {
+                    const meResp = await fetch(`${DIRECTUS_URL}/users/me`, { headers: { Authorization: authHeader } });
+                    if (meResp.ok) {
+                        const meJson = await meResp.json().catch(() => null);
+                        const userId = meJson?.data?.id;
+                        const membershipsResp = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name,is_leader&limit=-1`, { headers: { Authorization: authHeader } });
+                        const membershipsJson = await membershipsResp.json().catch(() => null);
+                        const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
+                        canBypass = memberships.some((m: any) => {
+                            const name = (m?.committee_id?.name || '').toString().toLowerCase();
+                            const isLeader = m.is_leader === true;
+                            return name === 'bestuur' || name === 'ict' || name.includes('kandidaat') || isLeader;
+                        });
+                    }
+                } catch {
+                    canBypass = false;
+                }
+            }
+        }
+
+        if (!isAllowed && !isAuthPath && !canBypass) {
+            console.warn(`[Directus Proxy] BLOCKED PATCH attempt to unauthorized path: ${path} from IP: ${ip}`);
+            return NextResponse.json({ error: 'Forbidden', message: 'Unauthorized path' }, { status: 403 });
+        }
+
+
         const forwardHeaders: Record<string, string> = {};
         const auth = request.headers.get('Authorization');
         if (auth) forwardHeaders['Authorization'] = auth;
@@ -253,13 +464,14 @@ export async function PATCH(
                 const userId = meJson?.data?.id;
 
                 // Get user's committees once
-                const membershipsResp = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.id,committee_id.name&limit=-1`, { headers: { Authorization: auth } });
+                const membershipsResp = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.id,committee_id.name,is_leader&limit=-1`, { headers: { Authorization: auth } });
                 const membershipsJson = await membershipsResp.json().catch(() => null);
                 const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
 
                 const isPrivileged = memberships.some((m: any) => {
                     const name = (m?.committee_id?.name || '').toString().toLowerCase();
-                    return name === 'bestuur' || name === 'ict';
+                    const isLeader = m.is_leader === true;
+                    return name === 'bestuur' || name === 'ict' || name.includes('kandidaat') || isLeader;
                 });
 
                 if (!isPrivileged) {
@@ -334,7 +546,8 @@ export async function PATCH(
                     const memberships2 = Array.isArray(privJson2?.data) ? privJson2.data : [];
                     const privileged2 = memberships2.some((m: any) => {
                         const name = (m?.committee_id?.name || '').toString().toLowerCase();
-                        return name === 'bestuur' || name === 'ict';
+                        const isLeader = m.is_leader === true;
+                        return name === 'bestuur' || name === 'ict' || name.includes('kandidaat') || isLeader;
                     });
                     if (!(isOfficer || isMember || privileged2)) {
                         return NextResponse.json({ error: 'Forbidden', message: 'Not authorized to edit signups for this event' }, { status: 403 });
@@ -374,6 +587,87 @@ export async function DELETE(
     console.warn(`[Directus Proxy] DELETE ${path} -> ${targetUrl}`);
 
     try {
+        // 1. Rate Limiting
+        const ip = getClientIp(request);
+        if (isRateLimited(`proxy_write_${ip}`, { windowMs: 60 * 1000, max: 10 })) {
+            return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+        }
+
+        // 2. Path Whitelisting
+        const allowedCollections = [
+            'event_signups',
+            'pub_crawl_signups',
+            'Stickers',
+            'trip_signups',
+            'trip_signup_activities',
+            'events',
+            'intro_signups',
+            'intro_parent_signups',
+            'intro_blogs',
+            'intro_planning',
+            'committees',
+            'committee_members',
+            'coupons',
+            'news',
+            'hero_banners',
+            'trips',
+            'trip_activities',
+            'boards',
+            'Board',
+            'history',
+            'attendance_officers',
+            'whats_app_groups',
+            'whatsapp_groups',
+            'transactions',
+            'feedback',
+            'members',
+            'clubs',
+            'pub_crawl_events',
+            'jobs',
+            'safe_havens',
+            'documents',
+            'files',
+            'assets',
+        ];
+
+        const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
+        const isAuthPath =
+            path.startsWith('auth/') ||
+            path.startsWith('users/me') ||
+            path.includes('/auth/') ||
+            path.startsWith('directus-extension-') ||
+            path.startsWith('extensions/');
+
+        let canBypass = false;
+        const authHeader = request.headers.get('Authorization');
+        if (authHeader) {
+            canBypass = await isApiBypass(authHeader);
+            if (!canBypass) {
+                try {
+                    const meResp = await fetch(`${DIRECTUS_URL}/users/me`, { headers: { Authorization: authHeader } });
+                    if (meResp.ok) {
+                        const meJson = await meResp.json().catch(() => null);
+                        const userId = meJson?.data?.id;
+                        const membershipsResp = await fetch(`${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name,is_leader&limit=-1`, { headers: { Authorization: authHeader } });
+                        const membershipsJson = await membershipsResp.json().catch(() => null);
+                        const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
+                        canBypass = memberships.some((m: any) => {
+                            const name = (m?.committee_id?.name || '').toString().toLowerCase();
+                            const isLeader = m.is_leader === true;
+                            return name === 'bestuur' || name === 'ict' || name.includes('kandidaat') || isLeader;
+                        });
+                    }
+                } catch {
+                    canBypass = false;
+                }
+            }
+        }
+
+        if (!isAllowed && !isAuthPath && !canBypass) {
+            console.warn(`[Directus Proxy] BLOCKED DELETE attempt to unauthorized path: ${path} from IP: ${ip}`);
+            return NextResponse.json({ error: 'Forbidden', message: 'Unauthorized path' }, { status: 403 });
+        }
+
         const response = await fetch(targetUrl, {
             method: 'DELETE',
             headers: {

@@ -1,0 +1,356 @@
+node_modules/next/dist/build/templates/app-page.d.ts(3,25): error TS2307: Cannot find module 'VAR_MODULE_GLOBAL_ERROR' or its corresponding type declarations.
+node_modules/next/dist/build/webpack-config.d.ts(10,104): error TS2694: Namespace '"C:/Users/Roan/Documents/website/frontend/node_modules/next/dist/compiled/webpack/webpack".webpack' has no exported member 'RuleSetUseItem'.
+node_modules/next/dist/build/webpack/loaders/next-app-loader/index.d.ts(1,13): error TS2613: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/next/dist/compiled/webpack/webpack"' has no default export. Did you mean to use 'import { webpack } from "C:/Users/Roan/Documents/website/frontend/node_modules/next/dist/compiled/webpack/webpack"' instead?
+node_modules/next/dist/client/components/error-boundary.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/client/components/http-access-fallback/error-boundary.d.ts(11,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/client/components/layout-router.d.ts(2,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/client/link.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/client/with-router.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/lib/metadata/metadata.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/next-devtools/dev-overlay/shared.d.ts(186,247): error TS2694: Namespace 'React' has no exported member 'ActionDispatch'.
+node_modules/next/dist/next-devtools/userspace/pages/pages-dev-overlay-setup.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/server/app-render/entry-base.d.ts(1,114): error TS2307: Cannot find module 'react-server-dom-webpack/server' or its corresponding type declarations.
+node_modules/next/dist/server/app-render/entry-base.d.ts(2,27): error TS2307: Cannot find module 'react-server-dom-webpack/static' or its corresponding type declarations.
+node_modules/next/dist/server/route-modules/app-page/vendored/rsc/entrypoints.d.ts(5,39): error TS2307: Cannot find module 'react/compiler-runtime' or its corresponding type declarations.
+node_modules/next/dist/server/route-modules/app-page/vendored/ssr/entrypoints.d.ts(5,39): error TS2307: Cannot find module 'react/compiler-runtime' or its corresponding type declarations.
+node_modules/next/dist/server/web/spec-extension/adapters/headers.d.ts(39,16): error TS2304: Cannot find name 'HeadersIterator'.
+node_modules/next/dist/server/web/spec-extension/adapters/headers.d.ts(40,13): error TS2304: Cannot find name 'HeadersIterator'.
+node_modules/next/dist/server/web/spec-extension/adapters/headers.d.ts(41,15): error TS2304: Cannot find name 'HeadersIterator'.
+node_modules/next/dist/server/web/spec-extension/adapters/headers.d.ts(42,26): error TS2304: Cannot find name 'HeadersIterator'.
+node_modules/next/dist/shared/lib/app-router-context.shared-runtime.d.ts(4,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/shared/lib/app-router-types.d.ts(7,13): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/shared/lib/head-manager-context.shared-runtime.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/shared/lib/image-config-context.shared-runtime.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/shared/lib/loadable-context.shared-runtime.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/shared/lib/loadable.shared-runtime.d.ts(21,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/shared/lib/router-context.shared-runtime.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/shared/lib/server-inserted-html.shared-runtime.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/next/dist/shared/lib/utils.d.ts(10,13): error TS1192: Module '"fs"' has no default export.
+node_modules/react-datepicker/dist/calendar.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/react-datepicker/dist/calendar.d.ts(84,34): error TS2339: Property 'onYearMouseEnter' does not exist on type 'YearProps'.
+node_modules/react-datepicker/dist/calendar.d.ts(85,34): error TS2339: Property 'onYearMouseLeave' does not exist on type 'YearProps'.
+node_modules/react-datepicker/dist/calendar.d.ts(86,39): error TS2339: Property 'ariaLabelPrefix' does not exist on type 'MonthProps'.
+node_modules/react-datepicker/dist/calendar.d.ts(87,37): error TS2339: Property 'handleOnKeyDown' does not exist on type 'MonthProps'.
+node_modules/react-datepicker/dist/calendar.d.ts(89,30): error TS2339: Property 'onChange' does not exist on type 'TimeProps'.
+node_modules/react-datepicker/dist/calendar.d.ts(89,59): error TS2339: Property 'onChange' does not exist on type 'InputTimeProps'.
+node_modules/react-datepicker/dist/calendar.d.ts(90,28): error TS2339: Property 'format' does not exist on type 'TimeProps'.
+node_modules/react-datepicker/dist/calendar.d.ts(91,31): error TS2339: Property 'intervals' does not exist on type 'TimeProps'.
+node_modules/react-datepicker/dist/calendar.d.ts(94,34): error TS2344: Type '"minDate" | "maxDate"' does not satisfy the constraint 'never'.
+  Type '"minDate"' is not assignable to type 'never'.
+node_modules/react-datepicker/dist/calendar.d.ts(96,29): error TS2344: Type '"minDate" | "maxDate"' does not satisfy the constraint 'never'.
+  Type '"minDate"' is not assignable to type 'never'.
+node_modules/react-datepicker/dist/calendar.d.ts(96,70): error TS2344: Type '"minDate" | "maxDate"' does not satisfy the constraint 'never'.
+  Type '"minDate"' is not assignable to type 'never'.
+node_modules/react-datepicker/dist/calendar.d.ts(96,112): error TS2344: Type '"minDate" | "maxDate"' does not satisfy the constraint 'never'.
+  Type '"minDate"' is not assignable to type 'never'.
+node_modules/react-datepicker/dist/calendar.d.ts(97,49): error TS2344: Type '"selectingDate"' does not satisfy the constraint 'never'.
+node_modules/react-datepicker/dist/calendar.d.ts(97,84): error TS2344: Type '"selectingDate"' does not satisfy the constraint 'never'.
+node_modules/react-datepicker/dist/calendar.d.ts(98,31): error TS2339: Property 'date' does not exist on type 'Required<YearProps>'.
+node_modules/react-datepicker/dist/calendar.d.ts(99,31): error TS2339: Property 'monthRef' does not exist on type 'TimeProps'.
+node_modules/react-datepicker/dist/calendar_container.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/react-datepicker/dist/calendar_icon.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/react-datepicker/dist/click_outside_wrapper.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/react-datepicker/dist/day.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/react-datepicker/dist/index.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/react-datepicker/dist/index.d.ts(23,443): error TS2344: Type '"icon"' does not satisfy the constraint 'never'.
+node_modules/react-datepicker/dist/index.d.ts(29,44): error TS2339: Property 'className' does not exist on type 'PopperComponentProps'.
+node_modules/react-datepicker/dist/index.d.ts(30,44): error TS2339: Property 'showArrow' does not exist on type 'PopperComponentProps'.
+node_modules/react-datepicker/dist/input_time.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/react-datepicker/dist/month.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/react-datepicker/dist/month.d.ts(24,33): error TS2339: Property 'showWeekNumber' does not exist on type 'WeekProps'.
+node_modules/react-datepicker/dist/month.d.ts(30,37): error TS2339: Property 'ariaLabelPrefix' does not exist on type 'WeekProps'.
+node_modules/react-datepicker/dist/month.d.ts(31,42): error TS2339: Property 'chooseDayAriaLabelPrefix' does not exist on type 'WeekProps'.
+node_modules/react-datepicker/dist/month.d.ts(32,44): error TS2339: Property 'disabledDayAriaLabelPrefix' does not exist on type 'WeekProps'.
+node_modules/react-datepicker/dist/month_dropdown.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/react-datepicker/dist/month_dropdown_options.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/react-datepicker/dist/month_year_dropdown.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/react-datepicker/dist/month_year_dropdown_options.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/react-datepicker/dist/popper_component.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/react-datepicker/dist/portal.d.ts(2,13): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/react-datepicker/dist/tab_loop.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/react-datepicker/dist/time.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/react-datepicker/dist/week.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/react-datepicker/dist/week.d.ts(10,41): error TS2339: Property 'ariaLabelPrefixWhenEnabled' does not exist on type 'DayProps'.
+node_modules/react-datepicker/dist/week.d.ts(11,43): error TS2339: Property 'ariaLabelPrefixWhenDisabled' does not exist on type 'DayProps'.
+node_modules/react-datepicker/dist/week_number.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/react-datepicker/dist/with_floating.d.ts(2,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/react-datepicker/dist/year.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/react-datepicker/dist/year_dropdown.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+node_modules/react-datepicker/dist/year_dropdown_options.d.ts(1,8): error TS1259: Module '"C:/Users/Roan/Documents/website/frontend/node_modules/@types/react/index"' can only be default-imported using the 'esModuleInterop' flag
+src/app/admin/reis/page.tsx(5,31): error TS2307: Cannot find module '@/shared/lib/directus' or its corresponding type declarations.
+src/app/admin/reis/page.tsx(6,25): error TS2307: Cannot find module '@/features/auth/providers/auth-provider' or its corresponding type declarations.
+src/app/admin/reis/page.tsx(7,26): error TS2307: Cannot find module '@/app/admin/no-access/page' or its corresponding type declarations.
+src/app/admin/reis/page.tsx(8,41): error TS2307: Cannot find module '@/shared/lib/committee-utils' or its corresponding type declarations.
+src/app/admin/reis/page.tsx(9,24): error TS2307: Cannot find module '@/widgets/page-header/ui/PageHeader' or its corresponding type declarations.
+src/app/admin/reis/page.tsx(10,39): error TS2307: Cannot find module '@/shared/lib/api/salvemundi' or its corresponding type declarations.
+src/app/admin/reis/page.tsx(11,43): error TS2307: Cannot find module '@/shared/lib/hooks/useSalvemundiApi' or its corresponding type declarations.
+src/app/admin/reis/page.tsx(16,41): error TS2307: Cannot find module '@/shared/lib/api/salvemundi' or its corresponding type declarations.
+src/app/admin/reis/page.tsx(275,55): error TS2304: Cannot find name 'id'.
+src/app/admin/reis/page.tsx(375,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(376,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(382,16): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(386,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(387,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(392,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(394,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(395,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(398,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(412,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(422,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(423,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(424,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(425,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(426,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(427,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(429,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(433,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(434,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(435,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(436,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(437,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(439,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(443,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(444,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(445,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(446,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(447,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(449,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(453,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(454,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(455,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(456,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(457,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(459,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(463,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(464,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(465,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(466,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(467,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(469,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(476,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(477,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(479,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(480,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(481,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(482,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(493,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(494,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(499,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(500,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(501,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(502,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(503,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(508,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(509,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(514,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(515,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(516,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(522,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(523,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(527,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(532,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(533,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(534,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(548,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(552,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(555,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(559,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(563,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(567,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(570,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(577,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(579,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(580,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(583,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(584,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(585,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(588,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(589,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(590,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(591,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(592,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(595,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(598,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(601,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(604,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(607,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(612,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(618,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(619,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(620,53): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(621,57): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(624,57): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(626,53): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(631,53): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(632,57): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(636,53): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(637,57): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(642,61): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(643,61): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(644,61): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(645,61): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(648,53): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(649,57): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(653,53): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(654,57): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(655,61): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(660,65): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(662,61): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(667,65): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(669,61): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(674,65): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(680,53): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(681,57): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(682,61): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(683,65): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(684,69): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(685,69): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(686,69): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(687,69): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(689,65): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(690,69): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(691,69): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(692,69): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(694,65): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(695,69): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(699,81): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(700,85): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(701,85): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(705,77): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(708,73): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(714,61): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(715,65): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(716,65): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(717,69): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(718,73): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(727,81): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(729,81): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(731,119): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(734,69): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(735,73): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(744,81): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(746,81): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/admin/reis/page.tsx(748,118): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(5,24): error TS2307: Cannot find module '@/widgets/page-header/ui/PageHeader' or its corresponding type declarations.
+src/app/reis/page.tsx(6,45): error TS2307: Cannot find module '@/shared/lib/api/salvemundi' or its corresponding type declarations.
+src/app/reis/page.tsx(7,89): error TS2307: Cannot find module '@/shared/lib/hooks/useSalvemundiApi' or its corresponding type declarations.
+src/app/reis/page.tsx(8,34): error TS2307: Cannot find module '@/shared/lib/auth' or its corresponding type declarations.
+src/app/reis/page.tsx(11,36): error TS2307: Cannot find module '@/shared/lib/utils/dutch-name' or its corresponding type declarations.
+src/app/reis/page.tsx(14,41): error TS2307: Cannot find module '@/shared/lib/committee-utils' or its corresponding type declarations.
+src/app/reis/page.tsx(15,28): error TS2307: Cannot find module '@/shared/lib/api/salvemundi' or its corresponding type declarations.
+src/app/reis/page.tsx(16,22): error TS2307: Cannot find module '@/shared/model/types/auth' or its corresponding type declarations.
+src/app/reis/page.tsx(302,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(303,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(309,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(310,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(311,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(317,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(324,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(326,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(327,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(328,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(329,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(330,51): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(331,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(337,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(338,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(340,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(341,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(346,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(347,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(348,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(349,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(351,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(352,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(353,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(357,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(358,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(359,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(360,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(361,53): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(365,57): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(370,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(377,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(381,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(382,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(386,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(387,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(392,60): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(393,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(397,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(398,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(401,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(412,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(418,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(419,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(420,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(421,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(424,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(426,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(427,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(433,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(437,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(438,171): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(442,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(444,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(455,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(475,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(477,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(483,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(489,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(494,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(498,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(499,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(500,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(502,53): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(511,53): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(516,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(518,53): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(529,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(531,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(542,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(544,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(555,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(557,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(558,53): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(558,54): error TS2322: Type '{ selected: Date; onChange: (date: [Date, Date]) => void; dateFormat: string; locale: Locale; className: string; placeholderText: string; showYearDropdown: true; scrollableYearDropdown: true; yearDropdownItemNumber: number; required: true; }' is not assignable to type 'IntrinsicAttributes & (IntrinsicClassAttributes<DatePicker> & Readonly<DatePickerProps>)'.
+  Property 'selectsMultiple' is missing in type '{ selected: Date; onChange: (date: [Date, Date]) => void; dateFormat: string; locale: Locale; className: string; placeholderText: string; showYearDropdown: true; scrollableYearDropdown: true; yearDropdownItemNumber: number; required: true; }' but required in type 'Readonly<Omit<React.ComponentPropsWithoutRef<typeof Calendar>, "container" | "className" | "onSelect" | "dateFormat" | "highlightDates" | "holidays" | "shouldFocusDayInline" | "handleOnKeyDown" | "preSelection" | ... 10 more ... | "dropdownMode"> & ... 4 more ... & { ...; }>'.
+src/app/reis/page.tsx(560,96): error TS2322: Type '[Date, Date]' is not assignable to type 'Date'.
+src/app/reis/page.tsx(573,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(575,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(588,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(589,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(597,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(599,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(605,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(610,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(617,85): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(624,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(627,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(629,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(634,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(643,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(644,53): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(649,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(650,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(651,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(652,53): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(654,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(655,53): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(656,53): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(671,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(672,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(673,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(675,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(683,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(684,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(685,41): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(687,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(695,45): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(696,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(697,49): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(709,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(715,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/app/reis/page.tsx(723,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+src/shared/lib/api/salvemundi.ts(308,57): error TS2307: Cannot find module '@/shared/lib/qr-service' or its corresponding type declarations.
+src/shared/lib/api/salvemundi.ts(309,59): error TS2307: Cannot find module '@/shared/lib/services/email-service' or its corresponding type declarations.

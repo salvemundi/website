@@ -45,6 +45,7 @@ export default function EventList({ events, onEventClick, variant = 'list' }: Ev
                         committeeName={event.committee_name}
                         contact={event.contact}
                         inschrijfDeadline={event.inschrijf_deadline}
+                        onlyMembers={event.only_members}
                         onShowDetails={() => onEventClick(event)}
                         onSignup={() => onEventClick(event)}
                     />
@@ -73,6 +74,7 @@ export default function EventList({ events, onEventClick, variant = 'list' }: Ev
                     committeeName={event.committee_name}
                     contact={event.contact}
                     inschrijfDeadline={event.inschrijf_deadline}
+                    onlyMembers={event.only_members}
                     onShowDetails={() => onEventClick(event)}
                     onSignup={() => onEventClick(event)}
                 />
