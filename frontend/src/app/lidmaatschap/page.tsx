@@ -20,18 +20,29 @@ const DeletionTimer = ({ expiryDateStr }: { expiryDateStr: string }) => {
         const deletionDate = new Date(expiryDate);
         deletionDate.setFullYear(deletionDate.getFullYear() + 2);
 
-        const timer = setInterval(() => {
+        const calculateTimeLeft = () => {
             const now = new Date();
             const difference = deletionDate.getTime() - now.getTime();
 
             if (difference <= 0) {
-                setTimeLeft({ days: 0, hours: 0, minutes: 0 });
+                return { days: 0, hours: 0, minutes: 0 };
+            }
+
+            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((difference / 1000 / 60) % 60);
+            return { days, hours, minutes };
+        };
+
+        // Calculate immediately so we don't wait for the first interval tick
+        setTimeLeft(calculateTimeLeft());
+
+        const timer = setInterval(() => {
+            const timeLeft = calculateTimeLeft();
+            setTimeLeft(timeLeft);
+
+            if (timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0) {
                 clearInterval(timer);
-            } else {
-                const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
-                const minutes = Math.floor((difference / 1000 / 60) % 60);
-                setTimeLeft({ days, hours, minutes });
             }
         }, 60000);
 
