@@ -151,9 +151,7 @@ export async function GET(
                         const userData = await meResp.json().catch(() => null);
                         const userId = userData?.data?.id;
 
-                        if (path.includes('site_settings')) {
-                            console.log(`[Directus Proxy] Debugging site_settings access for User ${userId}`);
-                        }
+
 
                         const membershipsResp = await fetch(
                             `${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name,is_leader&limit=-1`,
@@ -162,19 +160,26 @@ export async function GET(
                         const membershipsJson = await membershipsResp.json().catch(() => ({}));
                         const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
 
-                        if (path.includes('site_settings')) {
-                            console.log(`[Directus Proxy] User ${userId} memberships:`, memberships.map((m: any) => m.committee_id?.name));
-                        }
 
-                        canBypass = memberships.some((m: any) => {
+
+                        const isGeneralPrivileged = memberships.some((m: any) => {
                             const name = (m?.committee_id?.name || '').toString().toLowerCase();
                             const isLeader = m.is_leader === true;
                             return name.includes('bestuur') || name.includes('ict') || name.includes('kandidaat') || name.includes('kandi') || isLeader;
                         });
 
                         if (path.includes('site_settings')) {
-                            console.log(`[Directus Proxy] Bypass decision for ${userId}: ${canBypass}`);
+                            const isIct = memberships.some((m: any) => (m?.committee_id?.name || '').toString().toLowerCase().includes('ict'));
+                            if (!isIct) {
+                                return NextResponse.json({ error: 'Forbidden', message: 'Only ICT allowed' }, { status: 403 });
+                            }
+                            // Authorized, but force User Token to avoid Service Token issues
+                            canBypass = false;
+                        } else {
+                            canBypass = isGeneralPrivileged;
                         }
+
+
                     } else {
                         console.warn(`[Directus Proxy] /users/me failed: ${meResp.status}`);
                     }
@@ -184,17 +189,7 @@ export async function GET(
             }
         }
 
-        if (path.includes('site_settings')) {
-            console.log(`[Directus Proxy] Final Decision for ${path}: canBypass=${canBypass}`);
 
-            if (canBypass && !API_SERVICE_TOKEN) {
-                console.error('[Directus Proxy] CRITICAL: User is authorized to bypass, but API_SERVICE_TOKEN is missing in server environment.');
-                return NextResponse.json({
-                    error: 'Server Configuration Error',
-                    message: 'Admin access authorized but Service Token is missing. Please set DIRECTUS_API_TOKEN env var.'
-                }, { status: 500 });
-            }
-        }
 
         const forwardHeaders = getProxyHeaders(request);
 
@@ -209,10 +204,10 @@ export async function GET(
                 const newSearch = newParams.toString();
                 targetSearch = newSearch ? `?${newSearch}` : '';
             }
-            if (path.includes('site_settings')) console.log('[Directus Proxy] Using SERVICE TOKEN for upstream request');
+
         } else if (auth) {
             forwardHeaders['Authorization'] = auth;
-            if (path.includes('site_settings')) console.log('[Directus Proxy] Using USER TOKEN for upstream request');
+
         }
 
         const targetUrl = `${DIRECTUS_URL}/${path}${targetSearch}`;

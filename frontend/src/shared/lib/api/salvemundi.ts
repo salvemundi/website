@@ -752,7 +752,12 @@ export const siteSettingsApi = {
             const query = buildQueryString(params);
 
             try {
-                const data = await directusFetch<SiteSettings | SiteSettings[] | null>(`/items/site_settings?${query}`);
+                // Try fetching full settings first (including authorized_tokens)
+                // Suppress log because 403 is expected for guests/non-admins
+                const data = await directusFetch<SiteSettings | SiteSettings[] | null>(
+                    `/items/site_settings?${query}`,
+                    { headers: { 'X-Suppress-Log': 'true' } }
+                );
                 if (Array.isArray(data)) {
                     return data[0] || null;
                 }
