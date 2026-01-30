@@ -17,7 +17,8 @@ async function updateDirectusTransaction(url, token, id, data) {
 }
 
 async function updateDirectusItem(url, token, collection, id, data) {
-    const response = await axios.patch(`${url}/items/${collection}/${id}`, data, getAuthConfig(token));
+    const path = collection === 'users' ? `/users/${id}` : `/items/${collection}/${id}`;
+    const response = await axios.patch(`${url}${path}`, data, getAuthConfig(token));
     return response.data;
 }
 
