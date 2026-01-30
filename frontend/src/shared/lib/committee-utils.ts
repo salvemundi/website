@@ -14,7 +14,7 @@ export function normalizeCommitteeName(name: string | null | undefined) {
 export function isUserAuthorizedForReis(user: any): boolean {
     if (!user) return false;
 
-    const allowedTokens = ['reiscommissie', 'reis', 'ictcommissie', 'ict', 'bestuur', 'kandi', 'kandidaat'];
+    const allowedTokens = ['reiscommissie', 'ictcommissie', 'bestuur', 'kandidaatbestuur'];
 
     const committees: any[] = (user as any).committees || [];
     // If committees may be stored as simple strings, map accordingly
@@ -42,7 +42,7 @@ export function isUserAuthorizedForReis(user: any): boolean {
 export function isUserAuthorizedForIntro(user: any): boolean {
     if (!user) return false;
 
-    const allowedTokens = ['introcommissie', 'intro', 'ictcommissie', 'ict', 'bestuur', 'kandi', 'kandidaat'];
+    const allowedTokens = ['introcommissie', 'ictcommissie', 'bestuur', 'kandidaatbestuur'];
 
     const committees: any[] = (user as any).committees || [];
     // If committees may be stored as simple strings, map accordingly
@@ -106,7 +106,7 @@ export function isUserInReisCommittee(user: any): boolean {
 export function isUserAuthorizedForLogging(user: any): boolean {
     if (!user) return false;
 
-    const allowedTokens = ['ictcommissie', 'ict', 'bestuur', 'kascommissie', 'kas', 'kandi', 'kandidaat'];
+    const allowedTokens = ['ictcommissie', 'bestuur', 'kascommissie', 'kandidaatbestuur'];
 
     const committees: any[] = (user as any).committees || [];
     const names = committees.map((c: any) => {
@@ -131,7 +131,7 @@ export function isUserAuthorizedForLogging(user: any): boolean {
 export function isUserInIct(user: any): boolean {
     if (!user) return false;
 
-    const ictTokens = ['ictcommissie', 'ict'];
+    const ictTokens = ['ictcommissie'];
 
     const committees: any[] = (user as any).committees || [];
     const names = committees.map((c: any) => {

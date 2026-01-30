@@ -141,36 +141,21 @@ export default function PermissionsPage() {
         return <NoAccessPage />;
     }
 
-    // Common tokens to always show (convenience)
-    const commonTokens = ['bestuur', 'ict', 'kandi', 'kas'];
-
     // Process committees to get unique tokens
     const uniqueCommittees = Array.from(
         (committees || []).reduce((acc, c) => {
-            const token = c.name.toLowerCase().replace(/\|\|\s*salve mundi/gi, '').replace(/[^a-z0-9]/g, '').trim();
+            const token = c.name.toLowerCase().replace(/\|\|\s*salve mundi/gi, '').replace(/\|\s*salve mundi/gi, '').replace(/[^a-z0-9]/g, '').trim();
+            const cleanName = c.name.replace(/\|\|\s*Salve Mundi/gi, '').replace(/\|\s*Salve Mundi/gi, '').trim();
 
-            // Skip common tokens that are already explicitly listed
-            if (commonTokens.includes(token)) return acc;
-
-            // Deduplicate: If the token is effectively covered by a common token, skip it.
-            // e.g. 'ictcommissie' is covered by 'ict' because the auth check uses .includes()
-            if (token.includes('ict') && commonTokens.includes('ict')) return acc;
-            if (token.includes('kas') && commonTokens.includes('kas')) return acc;
-            if (token.includes('kandi') && commonTokens.includes('kandi')) return acc;
-            if (token.includes('bestuur') && commonTokens.includes('bestuur')) return acc;
-
-            // Specific fix for "Commissie Leider" vs "Commissieleiders"
-            // If we encounter 'commissieleiders', and we already have or will have 'commissieleider', skip the longer one.
-            // 'commissieleiders' includes 'commissieleider'.
-            if (token === 'commissieleiders') return acc;
+            const entry = { ...c, name: cleanName, token };
 
             // If we already have this token, keep the one that is visible
             if (acc.has(token)) {
                 if (c.is_visible !== false) {
-                    acc.set(token, { ...c, token });
+                    acc.set(token, entry);
                 }
             } else {
-                acc.set(token, { ...c, token });
+                acc.set(token, entry);
             }
             return acc;
         }, new Map<string, any>()).values()
@@ -283,24 +268,6 @@ export default function PermissionsPage() {
                                         </div>
 
                                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                                            {/* Common tokens first */}
-                                            {commonTokens.map(token => {
-                                                const isSelected = (settings[page.pageKey] || []).includes(token);
-                                                return (
-                                                    <button
-                                                        key={token}
-                                                        onClick={() => handleToggleToken(page.pageKey, token)}
-                                                        className={`flex items-center justify-between px-3 py-2 rounded-lg border text-sm transition ${isSelected
-                                                            ? 'bg-purple-50 border-theme-purple text-theme-purple dark:bg-purple-900/20'
-                                                            : 'bg-admin-card border-admin text-admin hover:border-theme-purple/50'
-                                                            }`}
-                                                    >
-                                                        <span className="capitalize">{token}</span>
-                                                        {isSelected && <Check className="h-3 w-3" />}
-                                                    </button>
-                                                );
-                                            })}
-
                                             {/* Processed unique committee groups */}
                                             {(showAllGroups ? uniqueCommittees : visibleGroups).map(c => {
                                                 const isSelected = (settings[page.pageKey] || []).includes(c.token);
