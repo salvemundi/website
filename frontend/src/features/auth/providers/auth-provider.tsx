@@ -76,6 +76,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             console.log('[AuthProvider] Token refreshed successfully');
         } catch (e) {
             console.error('[AuthProvider] Proactive refresh failed:', e);
+            // If refresh fails, try silent recovery via MSAL to keep session alive
+            await trySilentMsalLogin();
         }
     };
 
@@ -172,7 +174,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                                 // Refresh failed, clear storage
                                 localStorage.removeItem('auth_token');
                                 localStorage.removeItem('refresh_token');
-                                setUser(null);
+                                // Try silent recovery before giving up
+                                const recovered = await trySilentMsalLogin();
+                                if (!recovered) {
+                                    setUser(null);
+                                }
                             }
                         } else {
                             setUser(null);
@@ -191,11 +197,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         } catch (refreshError) {
                             localStorage.removeItem('auth_token');
                             localStorage.removeItem('refresh_token');
-                            setUser(null);
+                            const recovered = await trySilentMsalLogin();
+                            if (!recovered) {
+                                setUser(null);
+                            }
                         }
                     } else {
                         localStorage.removeItem('auth_token');
-                        setUser(null);
+                        const recovered = await trySilentMsalLogin();
+                        if (!recovered) {
+                            setUser(null);
+                        }
                     }
                 }
             }
@@ -203,6 +215,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             console.error('Auth check failed:', error);
             localStorage.removeItem('auth_token');
             localStorage.removeItem('refresh_token');
+            // Try silent recovery as last resort
+            await trySilentMsalLogin();
         } finally {
             setIsLoading(false);
         }
@@ -236,14 +250,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 } else {
                     // Proactively restore active account from cache if nothing was returned by redirect
                     const accounts = msalInstance.getAllAccounts();
+
                     if (accounts.length > 0) {
                         const account = accounts[0];
                         msalInstance.setActiveAccount(account);
+                    }
 
-                        // If we are not currently authenticated with Directus, 
-                        // attempt a silent token acquisition to log back in
-                        const currentToken = localStorage.getItem('auth_token');
-                        if (!user && !currentToken) {
+                    // If we are not currently authenticated with Directus, attempt silent login
+                    if (!user && !localStorage.getItem('auth_token')) {
+                        if (accounts.length > 0) {
+                            const account = accounts[0];
                             console.log('[AuthProvider] Active MSAL account found, attempting silent login...');
                             try {
                                 const silentResult = await msalInstance.acquireTokenSilent({
@@ -254,8 +270,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                                     await handleLoginSuccess(silentResult);
                                 }
                             } catch (silentError) {
-                                // Silent acquisition failed, user might need to click login
                                 console.warn('[AuthProvider] Silent MSAL token acquisition failed:', silentError);
+                            }
+                        } else {
+                            // No cached account, try ssoSilent to check for existing Microsoft session cookie
+                            try {
+                                console.log('[AuthProvider] No cached account, attempting ssoSilent...');
+                                const ssoResult = await msalInstance.ssoSilent(loginRequest);
+                                if (ssoResult) {
+                                    console.log('[AuthProvider] ssoSilent success');
+                                    await handleLoginSuccess(ssoResult);
+                                }
+                            } catch (ssoError) {
+                                console.log('[AuthProvider] ssoSilent failed (expected if not logged in):', ssoError);
                             }
                         }
                     }
@@ -269,6 +296,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         handleRedirect();
     }, []);
+
+    const trySilentMsalLogin = async (): Promise<boolean> => {
+        if (!msalInstance) return false;
+        try {
+            const accounts = msalInstance.getAllAccounts();
+            if (accounts.length > 0) {
+                const account = accounts[0];
+                msalInstance.setActiveAccount(account);
+                const result = await msalInstance.acquireTokenSilent({
+                    ...loginRequest,
+                    account
+                });
+                if (result) {
+                    await handleLoginSuccess(result);
+                    return true;
+                }
+            }
+        } catch (e) {
+            console.warn('[AuthProvider] Recovery silent login failed:', e);
+        }
+        return false;
+    };
 
     const handleLoginSuccess = async (loginResponse: unknown) => {
         setIsLoading(true);
