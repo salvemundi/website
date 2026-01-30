@@ -40,10 +40,11 @@ jobs:
         run: |
           if [[ "${{ github.ref_name }}" == "main" ]]; then
             echo "TAG=latest" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=/opt/admin-api-prod" >> $GITHUB_ENV
           else
             echo "TAG=dev" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=/opt/admin-api-dev" >> $GITHUB_ENV
           fi
-          echo "DEPLOY_PATH=/opt/admin-api" >> $GITHUB_ENV
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
