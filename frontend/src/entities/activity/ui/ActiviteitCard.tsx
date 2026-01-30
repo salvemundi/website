@@ -25,6 +25,7 @@ interface ActiviteitCardProps {
     committeeName?: string;
     inschrijfDeadline?: string;
     contact?: string;
+    onlyMembers?: boolean;
 }
 
 const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
@@ -47,8 +48,9 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     committeeName,
     contact,
     inschrijfDeadline,
+    onlyMembers = false,
 }) => {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
     const router = useRouter();
     const alreadySignedUp = Boolean(isSignedUp);
     const isListVariant = variant === 'list';
@@ -60,7 +62,14 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     const handleSignupClick = (e: React.MouseEvent) => {
         e.stopPropagation();
 
-        if (cannotSignUp) {
+        if (onlyMembers && !user?.is_member) {
+            if (!isAuthenticated) {
+                const returnTo = window.location.pathname + window.location.search;
+                router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+            } else {
+                // User is logged in but not a member
+                alert('Deze activiteit is alleen voor leden.');
+            }
             return;
         }
 
@@ -201,6 +210,11 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                         <span className="bg-theme-purple text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider">
                             {committeeLabel}
                         </span>
+                        {onlyMembers && (
+                            <span className="ml-2 bg-amber-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider">
+                                Leden Alleen
+                            </span>
+                        )}
                     </div>
                 )}
             </div>
