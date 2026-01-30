@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
 import { stickersApi, eventsApi } from '@/shared/lib/api/salvemundi';
-import { isUserAuthorizedForIntro, isUserAuthorizedForReis, isUserAuthorizedForKroegentocht } from '@/shared/lib/committee-utils';
+import { isUserAuthorizedForIntro, isUserAuthorizedForReis, isUserAuthorizedForKroegentocht, isUserAuthorizedForLogging } from '@/shared/lib/committee-utils';
 import {
     Users,
     Calendar,
@@ -233,6 +233,8 @@ export default function AdminDashboardPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [canAccessIntro, setCanAccessIntro] = useState(false);
     const [canAccessReis, setCanAccessReis] = useState(false);
+    const [canAccessLogging, setCanAccessLogging] = useState(false);
+    const [canAccessSync, setCanAccessSync] = useState(false);
 
     useEffect(() => {
         loadDashboardData();
@@ -244,6 +246,18 @@ export default function AdminDashboardPage() {
     const checkAccessPermissions = () => {
         setCanAccessIntro(isUserAuthorizedForIntro(effectiveUser));
         setCanAccessReis(isUserAuthorizedForReis(effectiveUser));
+        setCanAccessLogging(isUserAuthorizedForLogging(effectiveUser));
+        // Sync is restricted to ICT and Bestuur (same as system health/logging tokens minus kas)
+        const committees: any[] = (effectiveUser as any).committees || [];
+        const names = committees.map((c: any) => {
+            if (!c) return '';
+            if (typeof c === 'string') return c.toLowerCase();
+            if (c.name) return c.name.toLowerCase();
+            if (c.committee_id && c.committee_id.name) return c.committee_id.name.toLowerCase();
+            return '';
+        });
+        const isAuthorized = names.some(n => n.includes('ict') || n.includes('bestuur'));
+        setCanAccessSync(isAuthorized);
     };
 
     const checkIctMembership = async (userId?: string | number) => {
@@ -880,20 +894,24 @@ export default function AdminDashboardPage() {
 
                                     {/* Additional actions for ICT/Bestuur */}
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <ActionCard
-                                            title="Leden"
-                                            subtitle="Sync"
-                                            icon={<Users className="h-6 w-6" />}
-                                            onClick={() => router.push('/admin/sync')}
-                                            colorClass="green"
-                                        />
-                                        <ActionCard
-                                            title="Systeem"
-                                            subtitle="Logging"
-                                            icon={<FileText className="h-6 w-6" />}
-                                            onClick={() => router.push('/admin/logging')}
-                                            colorClass="red"
-                                        />
+                                        {canAccessSync && (
+                                            <ActionCard
+                                                title="Leden"
+                                                subtitle="Sync"
+                                                icon={<Users className="h-6 w-6" />}
+                                                onClick={() => router.push('/admin/sync')}
+                                                colorClass="green"
+                                            />
+                                        )}
+                                        {canAccessLogging && (
+                                            <ActionCard
+                                                title="Systeem"
+                                                subtitle="Logging"
+                                                icon={<FileText className="h-6 w-6" />}
+                                                onClick={() => router.push('/admin/logging')}
+                                                colorClass="red"
+                                            />
+                                        )}
                                     </div>
                                 </div>
                             </div>

@@ -105,4 +105,27 @@ export function isUserInReisCommittee(user: any): boolean {
 
     return false;
 }
+// Returns true if the given user object belongs to Bestuur, ICT or Kascommissie
+export function isUserAuthorizedForLogging(user: any): boolean {
+    if (!user) return false;
 
+    const allowedTokens = ['ictcommissie', 'ict', 'bestuur', 'kascommissie', 'kas'];
+
+    const committees: any[] = (user as any).committees || [];
+    const names = committees.map((c: any) => {
+        if (!c) return '';
+        if (typeof c === 'string') return normalizeCommitteeName(c);
+        if (c.name) return normalizeCommitteeName(c.name);
+        if (c.committee_id && c.committee_id.name) return normalizeCommitteeName(c.committee_id.name);
+        return '';
+    });
+
+    for (const n of names) {
+        if (!n) continue;
+        for (const token of allowedTokens) {
+            if (n.includes(token)) return true;
+        }
+    }
+
+    return false;
+}

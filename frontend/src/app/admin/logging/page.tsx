@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
+import { isUserAuthorizedForLogging } from '@/shared/lib/committee-utils';
 import { format } from 'date-fns';
 import { Shield, CheckCircle, XCircle, RefreshCw, Clock, CheckSquare, Square, Tag } from 'lucide-react';
 
@@ -118,6 +119,10 @@ export default function LoggingPage() {
 
         if (isLocal || isNodeDev) {
             setIsDevEnv(true);
+        }
+
+        if (user && !isUserAuthorizedForLogging(user)) {
+            router.push('/admin');
         }
     }, [user, authLoading, router]);
 
@@ -350,11 +355,11 @@ export default function LoggingPage() {
         );
     }
 
-    if (!user.entra_id) {
+    if (!user.entra_id || !isUserAuthorizedForLogging(user)) {
         return (
             <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
                 <div className="text-theme-purple-lighter text-xl font-semibold">
-                    Geen toegang - alleen admins
+                    Geen toegang - onvoldoende rechten
                 </div>
             </div>
         );
