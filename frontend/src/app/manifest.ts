@@ -11,30 +11,20 @@ export default function manifest(): MetadataRoute.Manifest {
         theme_color: '#ff6542',
         icons: [
             {
-                src: '/favicon.ico',
-                sizes: 'any',
-                type: 'image/x-icon',
-            },
-            {
                 src: '/logo_purple.svg',
                 sizes: 'any',
                 type: 'image/svg+xml',
-                purpose: 'maskable'
             },
             {
-                src: '/icon.png',
+                src: '/img/Logo.png',
                 sizes: '192x192',
                 type: 'image/png',
             },
             {
-                src: '/icon.png',
+                src: '/img/newlogo.png',
                 sizes: '512x512',
                 type: 'image/png',
-            },
-            {
-                src: '/apple-icon.png',
-                sizes: '180x180',
-                type: 'image/png',
+                purpose: 'maskable'
             },
         ],
         orientation: 'portrait',
@@ -42,12 +32,12 @@ export default function manifest(): MetadataRoute.Manifest {
             {
                 name: 'Activiteiten',
                 url: '/activiteiten',
-                icons: [{ src: '/icon.png', sizes: '192x192' }]
+                icons: [{ src: '/img/Logo.png', sizes: '192x192' }]
             },
             {
                 name: 'Mijn Account',
                 url: '/account',
-                icons: [{ src: '/icon.png', sizes: '192x192' }]
+                icons: [{ src: '/img/Logo.png', sizes: '192x192' }]
             }
         ]
     };
