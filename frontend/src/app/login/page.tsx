@@ -84,38 +84,46 @@ function LoginContent() {
         <div className="min-h-screen bg-[var(--bg-main)]">
             <div className="container mx-auto px-4 py-16">
                 <div className="max-w-md mx-auto">
-                    <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl shadow-2xl p-8">
-                        <h1 className="text-3xl font-bold text-gradient mb-2 text-center">
-                            {isAutoRedirecting ? 'Redirecting...' : 'Welcome Back'}
-                        </h1>
-                        <p className="text-theme-muted text-center mb-8">
-                            {isAutoRedirecting
-                                ? 'Logging you in automatically via SSO'
-                                : 'Login to your account'}
-                        </p>
+                    <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl shadow-2xl p-8 flex flex-col items-center justify-center min-h-[300px]">
 
-                        {error && (
-                            <div className="mb-6 p-4 bg-theme-purple/5 rounded-lg">
-                                <p className="text-theme-purple text-sm">{error}</p>
+                        {(isLoading || isAutoRedirecting) && !error ? (
+                            <div className="flex flex-col items-center justify-center space-y-6">
+                                <div className="h-16 w-16 animate-spin rounded-full border-4 border-theme-purple/20 border-t-theme-purple" />
+                                <p className="text-theme-muted text-center animate-pulse">Logging in...</p>
                             </div>
-                        )}
+                        ) : (
+                            <>
+                                <h1 className="text-3xl font-bold text-gradient mb-2 text-center">
+                                    Welcome Back
+                                </h1>
+                                <p className="text-theme-muted text-center mb-8">
+                                    Login to your account
+                                </p>
 
-                        {/* Microsoft Login Button */}
-                        <button
-                            onClick={handleMicrosoftLogin}
-                            disabled={isLoading || isAutoRedirecting}
-                            className="w-full mb-6 flex items-center justify-center gap-3 px-6 py-3 bg-gradient-theme text-theme-white rounded-full shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
-                        >
-                            <svg className="w-5 h-5" viewBox="0 0 23 23" fill="none">
-                                <path fill="#f25022" d="M0 0h11v11H0z" />
-                                <path fill="#00a4ef" d="M12 0h11v11H12z" />
-                                <path fill="#7fba00" d="M0 12h11v11H0z" />
-                                <path fill="#ffb900" d="M12 12h11v11H12z" />
-                            </svg>
-                            <span>
-                                {isLoading || isAutoRedirecting ? 'Logging in...' : 'Login with Microsoft'}
-                            </span>
-                        </button>
+                                {error && (
+                                    <div className="mb-6 p-4 bg-theme-purple/5 rounded-lg w-full">
+                                        <p className="text-theme-purple text-sm text-center">{error}</p>
+                                    </div>
+                                )}
+
+                                {/* Microsoft Login Button */}
+                                <button
+                                    onClick={handleMicrosoftLogin}
+                                    disabled={isLoading || isAutoRedirecting}
+                                    className="w-full mb-6 flex items-center justify-center gap-3 px-6 py-3 bg-gradient-theme text-theme-white rounded-full shadow-lg shadow-theme-purple/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                                >
+                                    <svg className="w-5 h-5" viewBox="0 0 23 23" fill="none">
+                                        <path fill="#f25022" d="M0 0h11v11H0z" />
+                                        <path fill="#00a4ef" d="M12 0h11v11H12z" />
+                                        <path fill="#7fba00" d="M0 12h11v11H0z" />
+                                        <path fill="#ffb900" d="M12 12h11v11H12z" />
+                                    </svg>
+                                    <span>
+                                        Login with Microsoft
+                                    </span>
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

@@ -152,7 +152,7 @@ function QuickLink({
 
 export default function AccountPage() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading: authLoading, logout, refreshUser, isLoggingOut } =
+  const { user, isAuthenticated, isLoading: authLoading, logout, refreshUser, isLoggingOut, loginWithMicrosoft } =
     useAuth();
   const fileInputRef = useMemo(() => ({ current: null as HTMLInputElement | null }), []);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -189,10 +189,12 @@ export default function AccountPage() {
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated && !isLoggingOut) {
+      // Store return URL and redirect directly to Microsoft Login
       const returnTo = window.location.pathname + window.location.search;
-      router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+      localStorage.setItem('auth_return_to', returnTo);
+      loginWithMicrosoft();
     }
-  }, [isAuthenticated, authLoading, router, isLoggingOut]);
+  }, [isAuthenticated, authLoading, isLoggingOut, loginWithMicrosoft]);
 
   useEffect(() => {
     if (user?.id) loadEventSignups();
