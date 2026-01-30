@@ -36,6 +36,34 @@ export function isUserAuthorizedForReis(user: any): boolean {
     return false;
 }
 
+// Returns true if the given user object (from useAuth) belongs to any of the
+// allowed committee identifiers for intro. The check is permissive: it normalizes
+// committee names and matches on known tokens like 'intro', 'ict' or 'bestuur'.
+export function isUserAuthorizedForIntro(user: any): boolean {
+    if (!user) return false;
+
+    const allowedTokens = ['introcommissie', 'intro', 'ictcommissie', 'ict', 'bestuur'];
+
+    const committees: any[] = (user as any).committees || [];
+    // If committees may be stored as simple strings, map accordingly
+    const names = committees.map((c: any) => {
+        if (!c) return '';
+        if (typeof c === 'string') return normalizeCommitteeName(c);
+        if (c.name) return normalizeCommitteeName(c.name);
+        if (c.committee_id && c.committee_id.name) return normalizeCommitteeName(c.committee_id.name);
+        return '';
+    });
+
+    for (const n of names) {
+        if (!n) continue;
+        for (const token of allowedTokens) {
+            if (n.includes(token)) return true;
+        }
+    }
+
+    return false;
+}
+
 // Returns true if the given user object (from useAuth) belongs to any committee.
 export function isUserAuthorizedForKroegentocht(user: any): boolean {
     if (!user) return false;
