@@ -36,6 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
     const [isMsalInitializing, setIsMsalInitializing] = useState(true);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const router = useRouter();
 
     // Helper to check if the access token is about to expire (within 2 minutes)
     const isTokenExpiringSoon = (): boolean => {
@@ -298,36 +299,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         handleRedirect();
     }, []);
 
-    const trySilentMsalLogin = async (): Promise<boolean> => {
-        if (!msalInstance) return false;
-        try {
-            const accounts = msalInstance.getAllAccounts();
-            if (accounts.length > 0) {
-                const account = accounts[0];
-                msalInstance.setActiveAccount(account);
-                const result = await msalInstance.acquireTokenSilent({
-                    ...loginRequest,
-                    account
-                });
-                if (result) {
-                    await handleLoginSuccess(result);
-                    return true;
-                }
-            }
-        } catch (e) {
-            console.warn('[AuthProvider] Recovery silent login failed:', e);
-        }
-        return false;
-    };
 
-    import { useRouter } from 'next/navigation';
-    // ... (existing imports)
 
-    // ...
 
-    const router = useRouter();
-
-    // ... (existing helper functions)
 
     const handleLoginSuccess = async (loginResponse: unknown, shouldRedirect: boolean = false) => {
         setIsLoading(true);
