@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
 import { stickersApi, eventsApi, siteSettingsApi } from '@/shared/lib/api/salvemundi';
+import { isUserAuthorizedForIntro, isUserAuthorizedForReis } from '@/shared/lib/committee-utils';
 import {
     Users,
     Calendar,
@@ -51,7 +52,8 @@ function StatCard({
     subtitle,
     onClick,
     colorClass = 'purple',
-    nowrap = false
+    nowrap = false,
+    disabled = false
 }: {
     title: string;
     value: string | number;
@@ -60,8 +62,9 @@ function StatCard({
     onClick?: () => void;
     colorClass?: 'purple' | 'orange' | 'blue' | 'green' | 'red' | 'amber' | 'teal';
     nowrap?: boolean;
+    disabled?: boolean;
 }) {
-    const Component = onClick ? 'button' : 'div';
+    const Component = onClick && !disabled ? 'button' : 'div';
 
     const colorStyles = {
         purple: {
@@ -112,8 +115,9 @@ function StatCard({
 
     return (
         <Component
-            onClick={onClick}
-            className={`w-full bg-gradient-to-br ${colors.gradient} rounded-2xl shadow-lg p-4 sm:p-6 relative overflow-hidden ${onClick ? 'hover:shadow-2xl transition-all cursor-pointer hover:-translate-y-1 hover:scale-[1.02]' : ''}`}
+            onClick={disabled ? undefined : onClick}
+            disabled={disabled}
+            className={`w-full bg-gradient-to-br ${colors.gradient} rounded-2xl shadow-lg p-4 sm:p-6 relative overflow-hidden ${!disabled && onClick ? 'hover:shadow-2xl transition-all cursor-pointer hover:-translate-y-1 hover:scale-[1.02]' : ''} ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
         >
             <div className={`absolute top-0 right-0 w-28 h-28 sm:w-32 sm:h-32 -mr-12 sm:-mr-16 -mt-12 sm:-mt-16 bg-white/10 rounded-full`} />
             <div className="relative z-10">
@@ -227,6 +231,8 @@ export default function AdminDashboardPage() {
     });
     const [isIctMember, setIsIctMember] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [canAccessIntro, setCanAccessIntro] = useState(false);
+    const [canAccessReis, setCanAccessReis] = useState(false);
     const [visibilitySettings, setVisibilitySettings] = useState<{
         intro: boolean;
         kroegentocht: boolean;
@@ -236,9 +242,15 @@ export default function AdminDashboardPage() {
     useEffect(() => {
         loadDashboardData();
         checkIctMembership(effectiveUser?.id);
+        checkAccessPermissions();
         loadVisibilitySettings();
         // Re-run membership check if effectiveUser changes (e.g. after login)
     }, [effectiveUser?.id]);
+
+    const checkAccessPermissions = () => {
+        setCanAccessIntro(isUserAuthorizedForIntro(effectiveUser));
+        setCanAccessReis(isUserAuthorizedForReis(effectiveUser));
+    };
 
     const checkIctMembership = async (userId?: string | number) => {
         if (!userId) return;
@@ -803,6 +815,7 @@ export default function AdminDashboardPage() {
                             subtitle={`aanmeldingen:  ${stats.introSignups}`}
                             onClick={() => router.push('/admin/intro')}
                             colorClass="blue"
+                            disabled={!canAccessIntro}
                         />
                         <StatCard
                             title="Overzicht"
@@ -819,6 +832,7 @@ export default function AdminDashboardPage() {
                             subtitle={`aanmeldingen:  ${stats.reisSignups}`}
                             onClick={() => router.push('/admin/reis')}
                             colorClass="teal"
+                            disabled={!canAccessReis}
                         />
                         <StatCard
                             title="beheer"
@@ -856,7 +870,7 @@ export default function AdminDashboardPage() {
                                             icon={<FileText className="h-6 w-6" />}
                                             onClick={() => router.push('/admin/intro?tab=blogs&create=1')}
                                             colorClass="blue"
-                                            disabled={!visibilitySettings.intro}
+                                            disabled={!canAccessIntro}
                                         />
                                     </div>
 
