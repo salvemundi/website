@@ -43,10 +43,16 @@ async function getUser(url, token, userId, fields = '*') {
     return response.data.data;
 }
 
+async function getUserByEmail(url, token, email) {
+    const response = await axios.get(`${url}/users?filter[email][_eq]=${encodeURIComponent(email)}&fields=id,entra_id,first_name,last_name`, getAuthConfig(token));
+    return response.data.data?.[0];
+}
+
 module.exports = {
     getTransaction,
     updateDirectusTransaction,
     updateDirectusItem,
     createDirectusUser,
-    getUser
+    getUser,
+    getUserByEmail
 };
