@@ -45,6 +45,15 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
 
+      - name: Delete Untagged Images
+        uses: actions/delete-package-versions@v5
+        continue-on-error: true
+        with:
+          package-name: 'arcane'
+          package-type: 'container'
+          min-versions-to-keep: 2
+          delete-only-untagged-versions: 'true'
+
       - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.7
         with:
