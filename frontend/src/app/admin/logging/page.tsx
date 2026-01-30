@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import { isUserAuthorizedForLogging } from '@/shared/lib/committee-utils';
+import { usePagePermission } from '@/shared/lib/hooks/usePermissions';
 import { format } from 'date-fns';
 import { Shield, CheckCircle, XCircle, RefreshCw, Clock, CheckSquare, Square, Tag } from 'lucide-react';
 
@@ -75,7 +75,7 @@ function Tile({
 
 export default function LoggingPage() {
     const router = useRouter();
-    const { user, isLoading: authLoading, loginWithMicrosoft } = useAuth();
+    const { user, loginWithMicrosoft } = useAuth();
     const [signups, setSignups] = useState<Signup[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState<string | null>(null);
@@ -107,8 +107,10 @@ export default function LoggingPage() {
         { id: 'trip', label: 'Reis' },
     ] as const;
 
+    const { isAuthorized, isLoading: permissionLoading } = usePagePermission('admin_logging', ['ictcommissie', 'ict', 'bestuur', 'kascommissie', 'kas', 'kandi', 'kandidaat']);
+
     useEffect(() => {
-        if (!authLoading && !user) {
+        if (!permissionLoading && !user && isAuthorized === null) {
             const returnTo = window.location.pathname + window.location.search;
             localStorage.setItem('auth_return_to', returnTo);
             loginWithMicrosoft();
@@ -121,10 +123,10 @@ export default function LoggingPage() {
             setIsDevEnv(true);
         }
 
-        if (user && !isUserAuthorizedForLogging(user)) {
+        if (!permissionLoading && isAuthorized === false) {
             router.push('/admin');
         }
-    }, [user, authLoading, router]);
+    }, [user, isAuthorized, permissionLoading, router, loginWithMicrosoft]);
 
     useEffect(() => {
         if (user && !user.entra_id) {
@@ -345,17 +347,20 @@ export default function LoggingPage() {
         return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(numAmount);
     };
 
-    if (authLoading || !user) {
+    if (permissionLoading || isAuthorized === null) {
         return (
             <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
-                <div className="text-theme-purple-lighter text-xl font-semibold">
-                    Laden...
+                <div className="flex flex-col items-center">
+                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-theme-purple/20 border-t-theme-purple mb-4" />
+                    <div className="text-theme-purple-lighter text-xl font-semibold">
+                        Toegang controleren...
+                    </div>
                 </div>
             </div>
         );
     }
 
-    if (!user.entra_id || !isUserAuthorizedForLogging(user)) {
+    if (!isAuthorized) {
         return (
             <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
                 <div className="text-theme-purple-lighter text-xl font-semibold">

@@ -6,6 +6,7 @@ export interface SiteSettings {
     page?: string; // identifier of the page in Directus
     show?: boolean; // whether to show the page
     disabled_message?: string; // message to display when disabled
+    authorized_tokens?: string; // comma-separated list of authorized committee tokens
 }
 
 export interface CreateStickerData {
@@ -740,7 +741,7 @@ export const siteSettingsApi = {
     get: async (page?: string): Promise<SiteSettings | null> => {
         try {
             const params: any = {
-                fields: ['id', 'page', 'show', 'disabled_message'],
+                fields: ['id', 'page', 'show', 'disabled_message', 'authorized_tokens'],
                 limit: 1
             };
 
@@ -767,7 +768,7 @@ export const siteSettingsApi = {
 // Add create/update helper for site settings (client code will use this for toggles)
 export const siteSettingsMutations = {
     // Create a new site_settings record for a page
-    create: async (data: { page: string; show?: boolean; disabled_message?: string }) => {
+    create: async (data: { page: string; show?: boolean; disabled_message?: string; authorized_tokens?: string }) => {
         return directusFetch<any>(`/items/site_settings`, {
             method: 'POST',
             body: JSON.stringify(data),
@@ -775,7 +776,7 @@ export const siteSettingsMutations = {
     },
 
     // Update an existing site_settings record by id
-    update: async (id: number, data: { show?: boolean; disabled_message?: string }) => {
+    update: async (id: number, data: { show?: boolean; disabled_message?: string; authorized_tokens?: string }) => {
         return directusFetch<any>(`/items/site_settings/${id}`, {
             method: 'PATCH',
             body: JSON.stringify(data),
@@ -783,7 +784,7 @@ export const siteSettingsMutations = {
     },
 
     // Upsert: if a settings row exists update it, otherwise create
-    upsertByPage: async (page: string, data: { show?: boolean; disabled_message?: string }) => {
+    upsertByPage: async (page: string, data: { show?: boolean; disabled_message?: string; authorized_tokens?: string }) => {
         // Try to fetch existing
         const existing = await siteSettingsApi.get(page);
         if (existing && existing.id) {

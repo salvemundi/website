@@ -1,16 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/features/auth/providers/auth-provider';
 import NoAccessPage from '@/app/admin/no-access/page';
-import { isUserAuthorizedForIntro } from '@/shared/lib/committee-utils';
 import { useSearchParams } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { 
-    introSignupsApi, 
-    introParentSignupsApi, 
-    introBlogsApi, 
+import {
+    introSignupsApi,
+    introParentSignupsApi,
+    introBlogsApi,
     introPlanningApi,
     IntroSignup,
     IntroParentSignup,
@@ -18,13 +16,13 @@ import {
     IntroPlanningItem
     , getImageUrl
 } from '@/shared/lib/api/salvemundi';
-import { 
-    Users, 
-    Heart, 
-    FileText, 
-    Calendar, 
-    Edit, 
-    Trash2, 
+import {
+    Users,
+    Heart,
+    FileText,
+    Calendar,
+    Edit,
+    Trash2,
     Plus,
     Save,
     Search,
@@ -39,35 +37,41 @@ import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
+import { usePagePermission } from '@/shared/lib/hooks/usePermissions';
 
 type TabType = 'signups' | 'parents' | 'blogs' | 'planning';
 
 export default function IntroAdminPage() {
-    const { user, isLoading: authLoading } = useAuth();
+    const { isAuthorized: dynamicAuthorized, isLoading: permissionLoading } = usePagePermission('admin_intro', ['introcommissie', 'intro', 'ictcommissie', 'ict', 'bestuur', 'kandi', 'kandidaat']);
     const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
     const pathname = usePathname();
     const searchParams = typeof window !== 'undefined' ? useSearchParams?.() : null;
+
+    useEffect(() => {
+        setIsAuthorized(dynamicAuthorized);
+    }, [dynamicAuthorized]);
+
     const [activeTab, setActiveTab] = useState<TabType>('signups');
     const [isLoading, setIsLoading] = useState(true);
     const { data: introSettings, refetch: refetchIntroSettings } = useSalvemundiSiteSettings('intro');
-    
+
     // Signups
     const [signups, setSignups] = useState<IntroSignup[]>([]);
     const [filteredSignups, setFilteredSignups] = useState<IntroSignup[]>([]);
     const [signupSearchQuery, setSignupSearchQuery] = useState('');
-    
+
     // Parent Signups
     const [parentSignups, setParentSignups] = useState<IntroParentSignup[]>([]);
     const [filteredParentSignups, setFilteredParentSignups] = useState<IntroParentSignup[]>([]);
     const [parentSearchQuery, setParentSearchQuery] = useState('');
-    
+
     // Blogs
     const [blogs, setBlogs] = useState<IntroBlog[]>([]);
     const [editingBlog, setEditingBlog] = useState<Partial<IntroBlog> | null>(null);
     const [isCreatingBlog, setIsCreatingBlog] = useState(false);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
-    
+
     // Planning
     const [planning, setPlanning] = useState<IntroPlanningItem[]>([]);
     const [editingPlanning, setEditingPlanning] = useState<Partial<IntroPlanningItem> | null>(null);
@@ -82,11 +86,7 @@ export default function IntroAdminPage() {
         loadData();
     }, [activeTab]);
 
-    // Authorization: only allow introcommittee, bestuur and ict committee
-    useEffect(() => {
-        if (authLoading) return;
-        setIsAuthorized(isUserAuthorizedForIntro(user));
-    }, [user, authLoading]);
+    // Authorization handled by usePagePermission hook above
 
     // Handle incoming query params to open specific tab/form (e.g. from admin quick actions)
     useEffect(() => {
@@ -190,7 +190,7 @@ export default function IntroAdminPage() {
             return;
         }
         const query = signupSearchQuery.toLowerCase();
-        setFilteredSignups(signups.filter(s => 
+        setFilteredSignups(signups.filter(s =>
             `${s.first_name} ${s.middle_name || ''} ${s.last_name}`.toLowerCase().includes(query) ||
             s.email.toLowerCase().includes(query) ||
             s.phone_number.includes(query)
@@ -203,7 +203,7 @@ export default function IntroAdminPage() {
             return;
         }
         const query = parentSearchQuery.toLowerCase();
-        setFilteredParentSignups(parentSignups.filter(s => 
+        setFilteredParentSignups(parentSignups.filter(s =>
             `${s.first_name} ${s.last_name}`.toLowerCase().includes(query) ||
             s.email.toLowerCase().includes(query) ||
             s.phone_number.includes(query)
@@ -428,18 +428,18 @@ export default function IntroAdminPage() {
     };
 
     const toggleExpandSignup = (id: number) => {
-        setExpandedSignups(prev => 
+        setExpandedSignups(prev =>
             prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
         );
     };
 
     const toggleExpandParent = (id: number) => {
-        setExpandedParents(prev => 
+        setExpandedParents(prev =>
             prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
         );
     };
 
-    if (authLoading || isAuthorized === null) {
+    if (permissionLoading || isAuthorized === null) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end">
                 <div className="bg-admin-card rounded-3xl shadow-xl p-8 max-w-md mx-4 text-center">
@@ -463,44 +463,40 @@ export default function IntroAdminPage() {
                 <div className="flex flex-wrap gap-2 mb-6 border-b border-admin-border">
                     <button
                         onClick={() => setActiveTab('signups')}
-                        className={`px-6 py-3 font-semibold transition-colors ${
-                            activeTab === 'signups'
-                                ? 'text-theme-purple border-b-2 border-theme-purple'
-                                : 'text-admin-muted hover:text-admin'
-                        }`}
+                        className={`px-6 py-3 font-semibold transition-colors ${activeTab === 'signups'
+                            ? 'text-theme-purple border-b-2 border-theme-purple'
+                            : 'text-admin-muted hover:text-admin'
+                            }`}
                     >
                         <Users className="inline h-5 w-5 mr-2" />
                         Aanmeldingen ({signups.length})
                     </button>
                     <button
                         onClick={() => setActiveTab('parents')}
-                        className={`px-6 py-3 font-semibold transition-colors ${
-                            activeTab === 'parents'
-                                ? 'text-theme-purple border-b-2 border-theme-purple'
-                                : 'text-admin-muted hover:text-admin'
-                        }`}
+                        className={`px-6 py-3 font-semibold transition-colors ${activeTab === 'parents'
+                            ? 'text-theme-purple border-b-2 border-theme-purple'
+                            : 'text-admin-muted hover:text-admin'
+                            }`}
                     >
                         <Heart className="inline h-5 w-5 mr-2" />
                         Intro Ouders ({parentSignups.length})
                     </button>
                     <button
                         onClick={() => setActiveTab('blogs')}
-                        className={`px-6 py-3 font-semibold transition-colors ${
-                            activeTab === 'blogs'
-                                ? 'text-theme-purple border-b-2 border-theme-purple'
-                                : 'text-admin-muted hover:text-admin'
-                        }`}
+                        className={`px-6 py-3 font-semibold transition-colors ${activeTab === 'blogs'
+                            ? 'text-theme-purple border-b-2 border-theme-purple'
+                            : 'text-admin-muted hover:text-admin'
+                            }`}
                     >
                         <FileText className="inline h-5 w-5 mr-2" />
                         Blogs ({blogs.length})
                     </button>
                     <button
                         onClick={() => setActiveTab('planning')}
-                        className={`px-6 py-3 font-semibold transition-colors ${
-                            activeTab === 'planning'
-                                ? 'text-theme-purple border-b-2 border-theme-purple'
-                                : 'text-admin-muted hover:text-admin'
-                        }`}
+                        className={`px-6 py-3 font-semibold transition-colors ${activeTab === 'planning'
+                            ? 'text-theme-purple border-b-2 border-theme-purple'
+                            : 'text-admin-muted hover:text-admin'
+                            }`}
                     >
                         <Calendar className="inline h-5 w-5 mr-2" />
                         Planning ({planning.length})
@@ -807,7 +803,7 @@ export default function IntroAdminPage() {
                                                             <img src={getImageUrl((editingBlog as any).image)} alt="Afbeelding" className="w-full h-full object-cover" />
                                                         </div>
                                                     ) : null}
-                                                    { (imagePreview || editingBlog?.image) && (
+                                                    {(imagePreview || editingBlog?.image) && (
                                                         <button type="button" onClick={removeImage} className="text-sm text-red-600 ml-2">Verwijder</button>
                                                     )}
                                                 </div>
@@ -846,60 +842,60 @@ export default function IntroAdminPage() {
 
                                 <div className="grid gap-4">
                                     {blogs.map((blog) => (
-                                            <div
-                                                key={blog.id}
-                                                role="button"
-                                                tabIndex={0}
-                                                onClick={() => setEditingBlog(blog)}
-                                                onKeyDown={(e) => { if (e.key === 'Enter') setEditingBlog(blog); }}
-                                                className="bg-admin-card rounded-lg shadow p-6 cursor-pointer hover:bg-admin-hover transition"
-                                            >
-                                                <div className="flex justify-between items-start mb-3">
-                                                    <div className="flex-1">
-                                                        <h4 className="text-lg font-bold text-admin">{blog.title}</h4>
-                                                        <p className="text-sm text-admin-muted mt-1">
-                                                            {blog.blog_type} • {blog.is_published ? 'Gepubliceerd' : 'Concept'}
-                                                        </p>
-                                                    </div>
-                                                    <div className="flex gap-2">
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); setEditingBlog(blog); }}
-                                                            className="p-2 text-theme-purple hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded"
-                                                            title="Bewerken"
-                                                        >
-                                                            <Edit className="h-4 w-4" />
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); handleDeleteBlog(blog.id); }}
-                                                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
-                                                            title="Verwijderen"
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </button>
-                                                    </div>
+                                        <div
+                                            key={blog.id}
+                                            role="button"
+                                            tabIndex={0}
+                                            onClick={() => setEditingBlog(blog)}
+                                            onKeyDown={(e) => { if (e.key === 'Enter') setEditingBlog(blog); }}
+                                            className="bg-admin-card rounded-lg shadow p-6 cursor-pointer hover:bg-admin-hover transition"
+                                        >
+                                            <div className="flex justify-between items-start mb-3">
+                                                <div className="flex-1">
+                                                    <h4 className="text-lg font-bold text-admin">{blog.title}</h4>
+                                                    <p className="text-sm text-admin-muted mt-1">
+                                                        {blog.blog_type} • {blog.is_published ? 'Gepubliceerd' : 'Concept'}
+                                                    </p>
                                                 </div>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); setEditingBlog(blog); }}
+                                                        className="p-2 text-theme-purple hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded"
+                                                        title="Bewerken"
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleDeleteBlog(blog.id); }}
+                                                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                                                        title="Verwijderen"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
 
-                                                <div className="flex items-start gap-4">
-                                                    {blog.image && (
-                                                        <div className="w-24 h-16 flex-shrink-0 overflow-hidden rounded-md bg-admin-card-soft">
-                                                            <img
-                                                                src={(blog as any).image?.id ? `/api/assets/${(blog as any).image.id}` : typeof (blog as any).image === 'string' ? `/api/assets/${(blog as any).image}` : '/img/placeholder.svg'}
-                                                                alt={blog.title}
-                                                                className="w-full h-full object-cover"
-                                                            />
-                                                        </div>
+                                            <div className="flex items-start gap-4">
+                                                {blog.image && (
+                                                    <div className="w-24 h-16 flex-shrink-0 overflow-hidden rounded-md bg-admin-card-soft">
+                                                        <img
+                                                            src={(blog as any).image?.id ? `/api/assets/${(blog as any).image.id}` : typeof (blog as any).image === 'string' ? `/api/assets/${(blog as any).image}` : '/img/placeholder.svg'}
+                                                            alt={blog.title}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </div>
+                                                )}
+                                                <div className="flex-1">
+                                                    {blog.excerpt && (
+                                                        <p className="text-admin-muted text-sm mb-2">{blog.excerpt}</p>
                                                     )}
-                                                    <div className="flex-1">
-                                                        {blog.excerpt && (
-                                                            <p className="text-admin-muted text-sm mb-2">{blog.excerpt}</p>
-                                                        )}
-                                                        <div className="text-sm">
-                                                            <span className={`inline-block px-2 py-1 text-xs rounded ${blog.is_published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'}`}>{blog.is_published ? 'Gepubliceerd' : 'Concept'}</span>
-                                                        </div>
+                                                    <div className="text-sm">
+                                                        <span className={`inline-block px-2 py-1 text-xs rounded ${blog.is_published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'}`}>{blog.is_published ? 'Gepubliceerd' : 'Concept'}</span>
                                                     </div>
                                                 </div>
                                             </div>
-                                        ))}
+                                        </div>
+                                    ))}
                                     {blogs.length === 0 && (
                                         <div className="text-center py-8 text-admin-muted">
                                             Geen blogs gevonden
@@ -934,22 +930,20 @@ export default function IntroAdminPage() {
                                     <div className="flex gap-2 bg-admin-card-soft rounded-lg p-1">
                                         <button
                                             onClick={() => setPlanningViewMode('calendar')}
-                                            className={`px-4 py-2 rounded-md flex items-center gap-2 transition-colors ${
-                                                planningViewMode === 'calendar'
-                                                    ? 'bg-theme-purple text-white'
-                                                    : 'text-admin hover:bg-admin-card'
-                                            }`}
+                                            className={`px-4 py-2 rounded-md flex items-center gap-2 transition-colors ${planningViewMode === 'calendar'
+                                                ? 'bg-theme-purple text-white'
+                                                : 'text-admin hover:bg-admin-card'
+                                                }`}
                                         >
                                             <LayoutGrid className="h-4 w-4" />
                                             Kalender
                                         </button>
                                         <button
                                             onClick={() => setPlanningViewMode('list')}
-                                            className={`px-4 py-2 rounded-md flex items-center gap-2 transition-colors ${
-                                                planningViewMode === 'list'
-                                                    ? 'bg-theme-purple text-white'
-                                                    : 'text-admin hover:bg-admin-card'
-                                            }`}
+                                            className={`px-4 py-2 rounded-md flex items-center gap-2 transition-colors ${planningViewMode === 'list'
+                                                ? 'bg-theme-purple text-white'
+                                                : 'text-admin hover:bg-admin-card'
+                                                }`}
                                         >
                                             <List className="h-4 w-4" />
                                             Lijst

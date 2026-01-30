@@ -90,14 +90,10 @@ export function isUserInReisCommittee(user: any): boolean {
         return '';
     });
 
-    console.log('[isUserInReisCommittee] Checking committees:', committees);
-    console.log('[isUserInReisCommittee] Normalized names:', names);
-
     for (const n of names) {
         if (!n) continue;
         for (const token of crewTokens) {
             if (n.includes(token)) {
-                console.log('[isUserInReisCommittee] Match found:', n, 'includes', token);
                 return true;
             }
         }
@@ -105,6 +101,7 @@ export function isUserInReisCommittee(user: any): boolean {
 
     return false;
 }
+
 // Returns true if the given user object belongs to Bestuur, ICT or Kascommissie
 export function isUserAuthorizedForLogging(user: any): boolean {
     if (!user) return false;
@@ -128,4 +125,60 @@ export function isUserAuthorizedForLogging(user: any): boolean {
     }
 
     return false;
+}
+
+// Returns true if the user is in the ICT committee.
+export function isUserInIct(user: any): boolean {
+    if (!user) return false;
+
+    const ictTokens = ['ictcommissie', 'ict'];
+
+    const committees: any[] = (user as any).committees || [];
+    const names = committees.map((c: any) => {
+        if (!c) return '';
+        if (typeof c === 'string') return normalizeCommitteeName(c);
+        if (c.name) return normalizeCommitteeName(c.name);
+        if (c.committee_id && c.committee_id.name) return normalizeCommitteeName(c.committee_id.name);
+        return '';
+    });
+
+    for (const n of names) {
+        if (!n) continue;
+        for (const token of ictTokens) {
+            if (n.includes(token)) return true;
+        }
+    }
+
+    return false;
+}
+
+// Checks if a user is authorized for a specific page using a list of allowed tokens.
+export function isUserAuthorized(user: any, allowedTokens: string[]): boolean {
+    if (!user) return false;
+    if (allowedTokens.length === 0) return false;
+
+    const committees: any[] = (user as any).committees || [];
+    const names = committees.map((c: any) => {
+        if (!c) return '';
+        if (typeof c === 'string') return normalizeCommitteeName(c);
+        if (c.name) return normalizeCommitteeName(c.name);
+        if (c.committee_id && c.committee_id.name) return normalizeCommitteeName(c.committee_id.name);
+        return '';
+    });
+
+    for (const n of names) {
+        if (!n) continue;
+        for (const token of allowedTokens) {
+            if (n.includes(token)) return true;
+        }
+    }
+
+    return false;
+}
+
+// Utility to merge dynamic tokens from database with hardcoded fallback tokens
+export function getMergedTokens(dynamicTokensStr: string | undefined | null, fallbackTokens: string[]): string[] {
+    if (!dynamicTokensStr) return fallbackTokens;
+    const dynamic = dynamicTokensStr.split(',').map(t => t.trim()).filter(Boolean);
+    return dynamic.length > 0 ? dynamic : fallbackTokens;
 }
