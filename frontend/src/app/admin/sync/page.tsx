@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
+import { isUserAuthorizedForLogging } from '@/shared/lib/committee-utils';
 import { RefreshCw } from 'lucide-react';
 
 interface SyncStatus {
@@ -115,6 +116,11 @@ export default function SyncPage() {
             localStorage.setItem('auth_return_to', returnTo);
             loginWithMicrosoft();
         }
+
+        if (user && !isUserAuthorizedForLogging(user)) {
+            // Access restricted to ICT/Bestuur
+            router.push('/admin');
+        }
     }, [user, authLoading, router]);
 
     useEffect(() => {
@@ -201,11 +207,11 @@ export default function SyncPage() {
         );
     }
 
-    if (!user.entra_id) {
+    if (!user.entra_id || !isUserAuthorizedForLogging(user)) {
         return (
             <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
                 <div className="text-theme-purple-lighter text-xl font-semibold">
-                    Geen toegang - alleen admins
+                    Geen toegang - onvoldoende rechten
                 </div>
             </div>
         );
