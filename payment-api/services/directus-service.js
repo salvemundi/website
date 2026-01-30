@@ -68,7 +68,8 @@ async function updateDirectusRegistration(directusUrl, directusToken, id, data) 
 async function updateDirectusItem(directusUrl, directusToken, collection, id, data) {
     try {
         console.log(`[DirectusService] Updating ${collection}/${id} with data:`, JSON.stringify(data));
-        const response = await axios.patch(`${directusUrl}/items/${collection}/${id}`, data, getAuthConfig(directusToken));
+        const endpoint = collection === 'users' ? `${directusUrl}/users/${id}` : `${directusUrl}/items/${collection}/${id}`;
+        const response = await axios.patch(endpoint, data, getAuthConfig(directusToken));
         console.log(`[DirectusService] ✅ Successfully updated ${collection}/${id}`);
         return response.data;
     } catch (error) {

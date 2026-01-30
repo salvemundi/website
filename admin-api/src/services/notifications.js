@@ -25,7 +25,7 @@ async function sendWelcomeEmail(emailServiceUrl, email, firstName, credentials) 
     `;
 
     try {
-        await axios.post(`${emailServiceUrl}`, {
+        await axios.post(`${emailServiceUrl}/send-email`, {
             to: email,
             subject: subject,
             html: html
