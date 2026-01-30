@@ -230,6 +230,26 @@ async function handleMutation(
             }
         }
 
+        // Strict Guard: only ICT can touch authorized_tokens
+        if (path.includes('site_settings') && body && 'authorized_tokens' in body) {
+            const memberships = userData?.memberships || [];
+            const isIct = memberships.some((m: any) => {
+                const name = (m?.committee_id?.name || '').toString().toLowerCase();
+                return name.includes('ict');
+            });
+
+            if (!isIct && !canBypass) {
+                // Not ICT and not even a basic leader/bestuur? Definitely blocked.
+                return NextResponse.json({ error: 'Forbidden', message: 'Only ICT allowed to modify permissions' }, { status: 403 });
+            }
+
+            // If they HAVE canBypass (e.g. Bestuur) but are NOT ICT, we still block this specific field
+            if (!isIct) {
+                console.warn(`[Directus Proxy] BLOCKED Bestuur/Leader attempt to modify authorized_tokens field on path: ${path} from IP: ${ip}`);
+                return NextResponse.json({ error: 'Forbidden', message: 'Only ICT members can modify authorization tokens' }, { status: 403 });
+            }
+        }
+
         // Spam Guard for Signups
         if (method === 'POST' && (path === 'items/event_signups' || path === 'items/pub_crawl_signups' || path === 'items/intro_signups')) {
             const signup = body || {};
