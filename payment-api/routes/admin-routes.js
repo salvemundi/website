@@ -401,10 +401,60 @@ module.exports = function (DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, 
         }
     });
 
-    /**
-     * GET /api/admin/sync-status
-     * Get the current status of the manual user sync
-     */
+    // --- Committee Management ---
+
+    router.get('/committees/list', requireAdmin, async (req, res) => {
+        try {
+            const response = await axios.get(`${GRAPH_SYNC_URL}/committees/list`);
+            res.json(response.data);
+        } catch (error) {
+            console.error('[AdminRoutes] Failed to list committees:', error.message);
+            res.status(500).json({ error: 'Failed to list committees' });
+        }
+    });
+
+    router.get('/groups/:groupId/members', requireAdmin, async (req, res) => {
+        try {
+            const response = await axios.get(`${GRAPH_SYNC_URL}/groups/${req.params.groupId}/members`);
+            res.json(response.data);
+        } catch (error) {
+            console.error('[AdminRoutes] Failed to list group members:', error.message);
+            res.status(500).json({ error: 'Failed to list group members' });
+        }
+    });
+
+    router.post('/groups/:groupId/members', requireAdmin, async (req, res) => {
+        try {
+            const response = await axios.post(`${GRAPH_SYNC_URL}/groups/${req.params.groupId}/members`, req.body);
+            res.json(response.data);
+        } catch (error) {
+            console.error('[AdminRoutes] Failed to add group member:', error.message);
+            res.status(500).json({ error: 'Failed to add group member' });
+        }
+    });
+
+    router.delete('/groups/:groupId/members/:userId', requireAdmin, async (req, res) => {
+        try {
+            const response = await axios.delete(`${GRAPH_SYNC_URL}/groups/${req.params.groupId}/members/${req.params.userId}`);
+            res.json(response.data);
+        } catch (error) {
+            console.error('[AdminRoutes] Failed to remove group member:', error.message);
+            res.status(500).json({ error: 'Failed to remove group member' });
+        }
+    });
+
+    router.patch('/committees/members/:membershipId', requireAdmin, async (req, res) => {
+        try {
+            const response = await axios.patch(`${GRAPH_SYNC_URL}/committees/members/${req.params.membershipId}`, req.body);
+            res.json(response.data);
+        } catch (error) {
+            console.error('[AdminRoutes] Failed to update committee membership:', error.message);
+            res.status(500).json({ error: 'Failed to update committee membership' });
+        }
+    });
+
+    // --- Sync Status ---
+
     router.get('/sync-status', requireAdmin, async (req, res) => {
         try {
             const response = await axios.get(`${GRAPH_SYNC_URL}/sync/status`);

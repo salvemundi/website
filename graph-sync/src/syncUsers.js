@@ -1194,20 +1194,108 @@ async function runBulkSync(selectedFields = null, forceLink = false, activeOnly 
     }
 }
 
-app.post('/sync/directus-to-entra', bodyParser.json(), async (req, res) => {
+app.get('/committees/list', async (req, res) => {
     try {
-        await buildGlobalGroupNameMap();
-        const url = `${process.env.DIRECTUS_URL}/users?limit=-1&fields=id,email`;
-        const list = await axios.get(url, { headers: DIRECTUS_HEADERS });
-        const users = list.data?.data || [];
-        for (let i = 0; i < users.length; i += 20) {
-            const batch = users.slice(i, i + 20);
-            await Promise.all(batch.map(u => u.email ? updateGraphUserFromDirectusByEmail(u.email) : Promise.resolve()));
-        }
-        res.json({ success: true, processed: users.length });
+        const url = `${process.env.DIRECTUS_URL}/items/committees?filter[is_visible][_eq]=true&fields=id,name,email`;
+        const response = await axios.get(url, { headers: DIRECTUS_HEADERS });
+        const committees = response.data?.data || [];
+
+        const enriched = committees.map(c => {
+            const azureGroupId = groupIdByNameGlobal[c.name] || getGroupIdForCommitteeName(c.name);
+            return {
+                ...c,
+                azureGroupId
+            };
+        });
+
+        res.json(enriched);
     } catch (error) {
-        console.error('❌ [SYNC] Directus→Entra bulk sync error:', error.response?.data || error.message);
-        res.status(500).json({ error: error.message });
+        console.error('❌ [COMMITTEE] Failed to list committees:', error.message);
+        res.status(500).json({ error: 'Failed to list committees' });
+    }
+});
+
+app.get('/groups/:groupId/members', async (req, res) => {
+    try {
+        const { groupId } = req.params;
+        const client = await getGraphClient();
+        const response = await client.api(`/groups/${groupId}/members`).select('id,displayName,userPrincipalName,mail,givenName,surname').get();
+        res.json(response.value || []);
+    } catch (error) {
+        console.error(`❌ [GRAPH] Failed to list members for group ${req.params.groupId}:`, error.message);
+        res.status(500).json({ error: 'Failed to list members' });
+    }
+});
+
+app.post('/groups/:groupId/members', bodyParser.json(), async (req, res) => {
+    try {
+        const { groupId } = req.params;
+        const { userId, email } = req.body;
+        const client = await getGraphClient();
+
+        let targetUserId = userId;
+        if (!targetUserId && email) {
+            const user = await findGraphUserByEmail(email);
+            if (user) targetUserId = user.id;
+        }
+
+        if (!targetUserId) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        await client.api(`/groups/${groupId}/members/$ref`).post({
+            '@odata.id': `https://graph.microsoft.com/v1.0/directoryObjects/${targetUserId}`
+        });
+
+        // Trigger individual sync for this user to update Directus immediately
+        try {
+            await updateDirectusUserFromGraph(targetUserId);
+        } catch (syncErr) {
+            console.error('⚠️ [COMMITTEE] Added to Azure but Directus sync failed:', syncErr.message);
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error(`❌ [GRAPH] Failed to add member to group ${req.params.groupId}:`, error.message);
+        res.status(500).json({ error: 'Failed to add member', details: error.response?.data || error.message });
+    }
+});
+
+app.delete('/groups/:groupId/members/:userId', async (req, res) => {
+    try {
+        const { groupId, userId } = req.params;
+        const client = await getGraphClient();
+        await client.api(`/groups/${groupId}/members/${userId}/$ref`).delete();
+
+        // Trigger individual sync for this user to update Directus immediately
+        try {
+            await updateDirectusUserFromGraph(userId);
+        } catch (syncErr) {
+            console.error('⚠️ [COMMITTEE] Removed from Azure but Directus sync failed:', syncErr.message);
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error(`❌ [GRAPH] Failed to remove member from group ${req.params.groupId}:`, error.message);
+        res.status(500).json({ error: 'Failed to remove member', details: error.response?.data || error.message });
+    }
+});
+
+app.patch('/committees/members/:membershipId', bodyParser.json(), async (req, res) => {
+    try {
+        const { membershipId } = req.params;
+        const { is_leader } = req.body;
+
+        await axios.patch(
+            `${process.env.DIRECTUS_URL}/items/committee_members/${membershipId}`,
+            { is_leader },
+            { headers: DIRECTUS_HEADERS }
+        );
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error(`❌ [DIRECTUS] Failed to update membership ${req.params.membershipId}:`, error.message);
+        res.status(500).json({ error: 'Failed to update membership' });
     }
 });
 
