@@ -246,6 +246,12 @@ export async function GET(
             (fetchOptions as any).cache = 'no-store';
         }
 
+        // Trace token usage for debugging
+        const usedToken = forwardHeaders['Authorization'] || 'none';
+        const tokenType = (canBypass && API_SERVICE_TOKEN) ? 'SERVICE TOKEN' : 'USER TOKEN';
+        const maskedToken = usedToken.length > 10 ? `...${usedToken.slice(-4)}` : usedToken;
+        console.log(`[Directus Proxy] GET ${path} | Bypass: ${canBypass} | Forwarding: ${tokenType} (${maskedToken})`);
+
         const response = await fetch(targetUrl, fetchOptions);
 
         if (response.status === 204) {
@@ -440,6 +446,12 @@ async function handleMutation(
             headers: forwardHeaders,
             body: body ? JSON.stringify(body) : undefined,
         });
+
+        // Trace token usage for debugging
+        const usedToken = forwardHeaders['Authorization'] || 'none';
+        const tokenType = (canBypass && API_SERVICE_TOKEN) ? 'SERVICE TOKEN' : 'USER TOKEN';
+        const maskedToken = usedToken.length > 10 ? `...${usedToken.slice(-4)}` : usedToken;
+        console.log(`[Directus Proxy] ${method} ${path} | Bypass: ${canBypass} | Forwarding: ${tokenType} (${maskedToken})`);
 
         if (response.status === 204) return new Response(null, { status: 204 });
         const data = await response.json().catch(() => null);
