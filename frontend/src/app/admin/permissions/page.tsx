@@ -77,10 +77,20 @@ export default function PermissionsPage() {
             await Promise.all(PERMISSION_PAGES.map(async (page) => {
                 const setting = await siteSettingsApi.get(page.pageKey);
                 // Deduplicate and normalize tokens from DB
-                const rawTokens = setting?.authorized_tokens
-                    ? setting.authorized_tokens.split(',').map(t => t.trim().toLowerCase()).filter(Boolean)
-                    : [];
-                newSettings[page.pageKey] = Array.from(new Set(rawTokens));
+                const rawTokensField = setting?.authorized_tokens;
+                let rawTokens: string[] = [];
+
+                if (Array.isArray(rawTokensField)) {
+                    rawTokens = rawTokensField.map(t => String(t));
+                } else if (typeof rawTokensField === 'string') {
+                    rawTokens = rawTokensField.split(',');
+                }
+
+                const cleanTokens = rawTokens
+                    .map(t => t.trim().toLowerCase())
+                    .filter(Boolean);
+
+                newSettings[page.pageKey] = Array.from(new Set(cleanTokens));
             }));
             setSettings(newSettings);
         } catch (error) {
