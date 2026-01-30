@@ -74,7 +74,7 @@ function Tile({
 
 export default function LoggingPage() {
     const router = useRouter();
-    const { user, isLoading: authLoading } = useAuth();
+    const { user, isLoading: authLoading, loginWithMicrosoft } = useAuth();
     const [signups, setSignups] = useState<Signup[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState<string | null>(null);
@@ -109,7 +109,8 @@ export default function LoggingPage() {
     useEffect(() => {
         if (!authLoading && !user) {
             const returnTo = window.location.pathname + window.location.search;
-            router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+            localStorage.setItem('auth_return_to', returnTo);
+            loginWithMicrosoft();
         }
 
         const isLocal = typeof window !== 'undefined' && (window.location.hostname.includes('localhost') || window.location.hostname.includes('dev.'));

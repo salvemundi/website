@@ -51,7 +51,7 @@ function isRealUser(member: Member) {
 
 export default function LedenOverzichtPage() {
     const router = useRouter();
-    const { user, isLoading: authLoading, isLoggingOut } = useAuth();
+    const { user, isLoading: authLoading, isLoggingOut, loginWithMicrosoft } = useAuth();
     const [members, setMembers] = useState<Member[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -60,7 +60,8 @@ export default function LedenOverzichtPage() {
     useEffect(() => {
         if (!authLoading && !user && !isLoggingOut) {
             const returnTo = window.location.pathname + window.location.search;
-            router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+            localStorage.setItem('auth_return_to', returnTo);
+            loginWithMicrosoft();
         }
         if (user && !user.entra_id && !isLoggingOut) {
             router.push('/admin/no-access');

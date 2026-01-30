@@ -42,7 +42,7 @@ export default function MemberDetailPage() {
     const router = useRouter();
     const params = useParams();
     const id = params.id as string;
-    const { user: authUser, isLoading: authLoading } = useAuth();
+    const { user: authUser, isLoading: authLoading, loginWithMicrosoft } = useAuth();
 
     const [member, setMember] = useState<Member | null>(null);
     const [committees, setCommittees] = useState<CommitteeMembership[]>([]);
@@ -51,7 +51,8 @@ export default function MemberDetailPage() {
     useEffect(() => {
         if (!authLoading && !authUser) {
             const returnTo = window.location.pathname + window.location.search;
-            router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+            localStorage.setItem('auth_return_to', returnTo);
+            loginWithMicrosoft();
         }
         if (authUser && !authUser.entra_id) {
             router.push('/admin/no-access');

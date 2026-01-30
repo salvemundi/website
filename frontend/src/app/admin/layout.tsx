@@ -8,7 +8,7 @@ import NoAccessPage from './no-access/page';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
-    const { user, isLoading: authLoading, isLoggingOut } = useAuth();
+    const { user, isLoading: authLoading, isLoggingOut, loginWithMicrosoft } = useAuth();
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [isChecking, setIsChecking] = useState(true);
 
@@ -21,7 +21,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             if (!user) {
                 const returnTo = window.location.pathname + window.location.search;
-                router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+                localStorage.setItem('auth_return_to', returnTo);
+                loginWithMicrosoft();
                 return;
             }
 

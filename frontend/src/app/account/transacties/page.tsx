@@ -10,7 +10,7 @@ import { Transaction } from '@/shared/lib/api/salvemundi';
 
 function TransactionsContent() {
     const router = useRouter();
-    const { user, isLoading: authLoading } = useAuth();
+    const { user, isLoading: authLoading, loginWithMicrosoft } = useAuth();
     const { data: transactions = [], isLoading: transactionsLoading, error, refetch } = useSalvemundiTransactions(user?.id);
 
     const successfulTransactions = transactions.filter((t: Transaction) =>
@@ -23,9 +23,10 @@ function TransactionsContent() {
     useEffect(() => {
         if (!authLoading && !user) {
             const returnTo = window.location.pathname + window.location.search;
-            router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+            localStorage.setItem('auth_return_to', returnTo);
+            loginWithMicrosoft();
         }
-    }, [user, authLoading, router]);
+    }, [user, authLoading, router, loginWithMicrosoft]);
 
     const getInferredTransactionType = (t: Transaction) => {
         if (t.transaction_type) return t.transaction_type;

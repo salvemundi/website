@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+
 import Image from 'next/image';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { Calendar } from 'lucide-react';
@@ -50,8 +50,8 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     inschrijfDeadline,
     onlyMembers = false,
 }) => {
-    const { isAuthenticated, user } = useAuth();
-    const router = useRouter();
+    const { isAuthenticated, user, loginWithMicrosoft } = useAuth();
+
     const alreadySignedUp = Boolean(isSignedUp);
     const isListVariant = variant === 'list';
 
@@ -65,7 +65,8 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
         if (onlyMembers && !user?.is_member) {
             if (!isAuthenticated) {
                 const returnTo = window.location.pathname + window.location.search;
-                router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+                localStorage.setItem('auth_return_to', returnTo);
+                loginWithMicrosoft();
             } else {
                 // User is logged in but not a member
                 alert('Deze activiteit is alleen voor leden.');
@@ -75,7 +76,8 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
 
         if (requiresLogin && !isAuthenticated) {
             const returnTo = window.location.pathname + window.location.search;
-            router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+            localStorage.setItem('auth_return_to', returnTo);
+            loginWithMicrosoft();
             return;
         }
 

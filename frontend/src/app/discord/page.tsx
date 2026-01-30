@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 
 export default function DiscordPage() {
-    const { user, isAuthenticated, isLoading } = useAuth();
+    const { user, isAuthenticated, isLoading, loginWithMicrosoft } = useAuth();
     const router = useRouter();
 
     useEffect(() => {
@@ -13,7 +13,9 @@ export default function DiscordPage() {
 
         if (!isAuthenticated) {
             // Niet ingelogd -> naar login
-            router.replace('/login?returnTo=/discord');
+            // Niet ingelogd -> naar login (via Microsoft)
+            localStorage.setItem('auth_return_to', '/discord');
+            loginWithMicrosoft();
             return;
         }
 
