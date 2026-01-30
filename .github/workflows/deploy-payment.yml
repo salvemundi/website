@@ -103,9 +103,6 @@ jobs:
           script: |
             echo $GH_PASSWORD | docker login $GH_REGISTRY -u $GH_USERNAME --password-stdin
 
-            docker stop payment-api-$TAG || true
-            docker rm payment-api-$TAG || true
-
             mkdir -p $DEPLOY_PATH
             cd $DEPLOY_PATH
 
