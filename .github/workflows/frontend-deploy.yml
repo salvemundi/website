@@ -155,4 +155,7 @@ jobs:
 
             docker compose pull frontend
             docker compose up -d frontend --force-recreate --remove-orphans
+            
+            # Clean up old/dangling images (untagged) to free space
+            docker image prune -f
 
