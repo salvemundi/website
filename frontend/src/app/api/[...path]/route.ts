@@ -400,6 +400,12 @@ async function handleMutation(
             }
         }
 
+        // Force disable bypass for site_settings so we always use the user's own token.
+        // The Service Token usually does not have permissions to modify site settings.
+        if (path.includes('site_settings')) {
+            canBypass = false;
+        }
+
         // Prepare outgoing request
         const forwardHeaders = getProxyHeaders(request);
 
