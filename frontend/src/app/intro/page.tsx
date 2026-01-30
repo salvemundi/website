@@ -117,9 +117,19 @@ export default function IntroPage() {
 
     // determine phone to validate (for authenticated parent we allow user phone fallback)
     const phoneToValidate = isAuthenticated && user ? (form.telefoonnummer || user.phone_number || '') : form.telefoonnummer;
-    if (!isValidPhoneNumber(phoneToValidate)) {
-      setPhoneError('Ongeldig telefoonnummer');
-      return;
+
+    if (isAuthenticated && user) {
+      // Lenient validation for Intro Ouder (matching Reis page)
+      if (!phoneToValidate || phoneToValidate.length < 10) {
+        setPhoneError('Ongeldig telefoonnummer');
+        return;
+      }
+    } else {
+      // Strict validation for general signups
+      if (!isValidPhoneNumber(phoneToValidate)) {
+        setPhoneError('Ongeldig telefoonnummer');
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -303,12 +313,15 @@ export default function IntroPage() {
                             </p>
                           </div>
                           <div>
-                            <label className="form-label">Telefoonnummer</label>
-                            <PhoneNumberInput
+                            <label className="form-label">Telefoonnummer *</label>
+                            <input
+                              type="tel"
+                              name="telefoonnummer"
                               value={form.telefoonnummer}
-                              onChange={(val) => handleChange({ target: { name: 'telefoonnummer', value: val || '' } } as any)}
+                              onChange={handleChange}
                               required
-                              error={phoneError || undefined}
+                              placeholder="06 12345678"
+                              className="form-input"
                             />
                             {phoneError && <p className="text-red-200 text-xs lg:text-sm mt-1">{phoneError}</p>}
                           </div>
