@@ -32,7 +32,7 @@ function getAuthToken(request: NextRequest, url: URL): string | null {
 async function isApiBypass(auth: string | null, options?: { cookie?: string | null }) {
     if (!auth && !options?.cookie) return false;
 
-    const token = auth.startsWith('Bearer ') ? auth.slice(7) : auth;
+    const token = auth?.startsWith('Bearer ') ? auth.slice(7) : auth;
 
     // 1. Immediate match with service token (fastest)
     if (API_SERVICE_TOKEN && token === String(API_SERVICE_TOKEN)) {
@@ -174,7 +174,6 @@ export async function GET(
         if (contentType) forwardHeaders['Content-Type'] = contentType;
 
         // Forward cookies if present to support cookie-based sessions
-        const cookie = request.headers.get('Cookie');
         if (cookie) forwardHeaders['Cookie'] = cookie;
 
         const pathParts = path.split('/');
@@ -366,7 +365,6 @@ async function handleMutation(
 
         const originalContentType = request.headers.get('Content-Type');
         if (originalContentType) forwardHeaders['Content-Type'] = originalContentType;
-        const cookie = request.headers.get('Cookie');
         if (cookie) forwardHeaders['Cookie'] = cookie;
 
         // Auto-auth for specific public forms (Intro)
