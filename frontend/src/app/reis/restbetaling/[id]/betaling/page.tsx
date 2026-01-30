@@ -18,6 +18,7 @@ function BetalingContent() {
     const [signup, setSignup] = useState<any>(null);
     const [trip, setTrip] = useState<any>(null);
     const [selectedActivities, setSelectedActivities] = useState<any[]>([]);
+    const [selectedActivityOptions, setSelectedActivityOptions] = useState<Record<number, string[]>>({});
     const [error, setError] = useState<string | null>(null);
     const [paymentStatus, setPaymentStatus] = useState<'pending' | 'success' | 'failed' | 'checking'>('pending');
     const [checkingPayment, setCheckingPayment] = useState(false);
@@ -40,9 +41,9 @@ function BetalingContent() {
         if (!loading && signup && !signup.full_payment_paid && !checkingPayment) {
             // Check URL parameters or referrer to detect return from payment
             const urlParams = new URLSearchParams(window.location.search);
-            const hasPaymentReturn = urlParams.toString().length > 0 || 
-                                    document.referrer.includes('mollie.com');
-            
+            const hasPaymentReturn = urlParams.toString().length > 0 ||
+                document.referrer.includes('mollie.com');
+
             if (hasPaymentReturn) {
                 console.log('[restbetaling] Detected return from payment, checking status...');
                 setPaymentStatus('checking');
@@ -55,14 +56,14 @@ function BetalingContent() {
     const checkPaymentStatus = async () => {
         let attempts = 0;
         const maxAttempts = 20; // Check for up to 40 seconds
-        
+
         const interval = setInterval(async () => {
             attempts++;
             console.log(`[restbetaling] Checking payment status (attempt ${attempts}/${maxAttempts})...`);
-            
+
             try {
                 const signupData = await tripSignupsApi.getById(signupId);
-                
+
                 if (signupData.full_payment_paid) {
                     console.log('[restbetaling] Payment confirmed! Showing success page');
                     clearInterval(interval);
@@ -71,7 +72,7 @@ function BetalingContent() {
                     setCheckingPayment(false);
                     setShowManualRefresh(false);
                 }
-                
+
                 if (attempts >= maxAttempts) {
                     console.log('[restbetaling] Max attempts reached, showing manual refresh option');
                     clearInterval(interval);
@@ -88,11 +89,11 @@ function BetalingContent() {
         setShowManualRefresh(false);
         setCheckingPayment(true);
         setPaymentStatus('checking');
-        
+
         try {
             const signupData = await tripSignupsApi.getById(signupId);
             setSignup(signupData);
-            
+
             if (signupData.full_payment_paid) {
                 setPaymentStatus('success');
             } else {
@@ -118,7 +119,18 @@ function BetalingContent() {
 
             // Load selected activities
             const signupActivities = await tripSignupActivitiesApi.getBySignupId(signupId);
-            // Support different shapes returned by API: some records reference `trip_activity_id` (object or id) or `activity_id`.
+
+            // Extract selected options
+            const optionsMap: Record<number, string[]> = {};
+            signupActivities.forEach((sa: any) => {
+                const id = (sa.trip_activity_id && sa.trip_activity_id.id) ? sa.trip_activity_id.id : (sa.trip_activity_id || sa.activity_id);
+                if (id && sa.selected_options) {
+                    optionsMap[id] = Array.isArray(sa.selected_options) ? sa.selected_options : [];
+                }
+            });
+            setSelectedActivityOptions(optionsMap);
+
+            // Support different shapes returned by API
             const activityIds = signupActivities
                 .map((a: any) => (a.trip_activity_id && a.trip_activity_id.id) ? a.trip_activity_id.id : (a.trip_activity_id || a.activity_id || null))
                 .filter(Boolean);
@@ -128,13 +140,22 @@ function BetalingContent() {
 
             // Calculate costs
             const basePrice = Number(tripData.base_price) || 0;
-            const activitiesTotal = selected.reduce((sum: number, a: any) => sum + (Number(a.price) || 0), 0);
+            const activitiesTotal = selected.reduce((sum: number, a: any) => {
+                let price = Number(a.price) || 0;
+                const opts = optionsMap[a.id];
+                if (opts && a.options) {
+                    opts.forEach(optName => {
+                        const opt = a.options.find((o: any) => o.name === optName);
+                        if (opt) price += Number(opt.price) || 0;
+                    });
+                }
+                return sum + price;
+            }, 0);
             const crewDiscount = signupData.role === 'crew' ? (Number(tripData.crew_discount) || 0) : 0;
             const deposit = Number(tripData.deposit_amount) || 0;
             const totalCost = basePrice + activitiesTotal - crewDiscount;
-            // For restbetaling: the remaining amount is the full total (base + activities - crew discount)
-            // We do NOT subtract the deposit from the amount to be paid
-            const remaining = totalCost;
+            // For restbetaling: the remaining amount is the full total (base + activities - crew discount) minus the deposit
+            const remaining = Math.max(0, totalCost - deposit);
 
             setCosts({
                 base: basePrice,
@@ -166,7 +187,7 @@ function BetalingContent() {
 
         try {
             const amount = costs.remaining;
-            const description = `Restbetaling ${trip.name} - ${signup.first_name} ${signup.last_name}`;
+            const description = `Restbetaling ${trip.name} - ${signup.first_name}${signup.middle_name ? ' ' + signup.middle_name : ''} ${signup.last_name}`;
             const redirectUrl = `${window.location.origin}/reis/restbetaling/${signupId}/betaling`;
 
             const paymentResponse = await paymentApi.create({
@@ -190,10 +211,10 @@ function BetalingContent() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-50 to-white">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-50 to-white dark:from-[var(--bg-soft-dark)] dark:to-[var(--bg-main-dark)]">
                 <div className="text-center">
                     <Loader2 className="h-16 w-16 animate-spin text-purple-600 mx-auto mb-4" />
-                    <p className="text-gray-600">Gegevens laden...</p>
+                    <p className="text-gray-600 dark:text-[var(--text-muted-dark)]">Gegevens laden...</p>
                 </div>
             </div>
         );
@@ -201,19 +222,19 @@ function BetalingContent() {
 
     if (checkingPayment || showManualRefresh) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-50 to-white px-4">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-50 to-white dark:from-[var(--bg-soft-dark)] dark:to-[var(--bg-main-dark)] px-4">
                 <div className="text-center max-w-md">
                     {!showManualRefresh ? (
                         <>
                             <Loader2 className="h-16 w-16 animate-spin text-purple-600 mx-auto mb-4" />
-                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Betaling controleren...</h2>
-                            <p className="text-gray-600">We controleren of je betaling is verwerkt. Dit duurt enkele seconden.</p>
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Betaling controleren...</h2>
+                            <p className="text-gray-600 dark:text-[var(--text-muted-dark)]">We controleren of je betaling is verwerkt. Dit duurt enkele seconden.</p>
                         </>
                     ) : (
                         <>
                             <AlertCircle className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
-                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Betaling wordt nog verwerkt</h2>
-                            <p className="text-gray-600 mb-6">
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Betaling wordt nog verwerkt</h2>
+                            <p className="text-gray-600 dark:text-[var(--text-muted-dark)] mb-6">
                                 De betaling wordt nog verwerkt door onze systemen. Dit kan soms wat langer duren.
                             </p>
                             <div className="space-y-3">
@@ -239,11 +260,11 @@ function BetalingContent() {
 
     if (!signup || !trip) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-50 to-white">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-50 to-white dark:from-[var(--bg-soft-dark)] dark:to-[var(--bg-main-dark)]">
                 <div className="text-center">
                     <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-                    <h1 className="text-2xl font-bold text-gray-900 mb-2">Aanmelding niet gevonden</h1>
-                    <p className="text-gray-600 mb-6">De opgegeven aanmelding bestaat niet.</p>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Aanmelding niet gevonden</h1>
+                    <p className="text-gray-600 dark:text-[var(--text-muted-dark)] mb-6">De opgegeven aanmelding bestaat niet.</p>
                     <button
                         onClick={() => router.push('/reis')}
                         className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
@@ -264,23 +285,23 @@ function BetalingContent() {
                     backgroundImage={trip.image ? getImageUrl(trip.image) : '/img/placeholder.svg'}
                 />
                 <div className="container mx-auto px-4 py-12 max-w-2xl">
-                    <div className="bg-purple-50 rounded-xl shadow-lg p-8 text-center">
+                    <div className="bg-white dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 text-center border border-[var(--border-color)] dark:border-white/10">
                         <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                             <CheckCircle2 className="h-12 w-12 text-green-600" />
                         </div>
-                        <h1 className="text-3xl font-bold text-gray-900 mb-4">Betaling Voltooid!</h1>
-                        <p className="text-lg text-gray-700 mb-6">
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Betaling Voltooid!</h1>
+                        <p className="text-lg text-gray-700 dark:text-[var(--text-muted-dark)] mb-6">
                             Bedankt voor je betaling van <strong>€{costs.remaining.toFixed(2)}</strong> voor {trip.name}!
                         </p>
-                        <p className="text-gray-600 mb-8">
-                            Je bent nu volledig ingeschreven voor de reis. Je ontvangt binnenkort een bevestigingsmail 
+                        <p className="text-gray-600 dark:text-[var(--text-muted-dark)] mb-8">
+                            Je bent nu volledig ingeschreven voor de reis. Je ontvangt binnenkort een bevestigingsmail
                             met alle details en verdere instructies.
                         </p>
-                        <div className="bg-purple-50 border-l-4 border-purple-400 p-4 rounded mb-8 text-left">
-                            <p className="text-sm text-purple-700 mb-2">
+                        <div className="bg-purple-50 dark:bg-purple-900/10 border-l-4 border-purple-400 dark:border-purple-500 p-4 rounded mb-8 text-left">
+                            <p className="text-sm text-purple-700 dark:text-purple-300 mb-2">
                                 <strong>Wat gebeurt er nu?</strong>
                             </p>
-                            <ul className="text-sm text-purple-700 space-y-1 list-disc list-inside">
+                            <ul className="text-sm text-purple-700 dark:text-purple-300 space-y-1 list-disc list-inside">
                                 <li>Je ontvangt een bevestigingsmail met alle details</li>
                                 <li>We sturen je verdere informatie over de reis enkele weken van tevoren</li>
                                 <li>Bij vragen kun je altijd contact met ons opnemen</li>
@@ -315,12 +336,12 @@ function BetalingContent() {
                     backgroundImage={trip.image ? getImageUrl(trip.image) : '/img/placeholder.svg'}
                 />
                 <div className="container mx-auto px-4 py-12 max-w-2xl">
-                    <div className="bg-purple-50 rounded-xl shadow-lg p-8 text-center">
+                    <div className="bg-white dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 text-center border border-[var(--border-color)] dark:border-white/10">
                         <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
                             <XCircle className="h-12 w-12 text-red-600" />
                         </div>
-                        <h1 className="text-3xl font-bold text-gray-900 mb-4">Betaling Mislukt</h1>
-                        <p className="text-lg text-gray-700 mb-6">
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Betaling Mislukt</h1>
+                        <p className="text-lg text-gray-700 dark:text-[var(--text-muted-dark)] mb-6">
                             Helaas is je betaling niet gelukt. Dit kan verschillende oorzaken hebben.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -351,83 +372,109 @@ function BetalingContent() {
                 backgroundImage={trip.image ? getImageUrl(trip.image) : '/img/placeholder.svg'}
             />
             <div className="container mx-auto px-4 py-12 max-w-2xl">
-                <div className="bg-purple-50 rounded-xl shadow-lg p-8">
+                <div className="bg-white dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border border-[var(--border-color)] dark:border-white/10 mb-8 relative overflow-hidden">
                     <div className="text-center mb-8">
-                        <div className="w-24 h-24 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <CreditCard className="h-12 w-12 text-purple-600" />
+                        <div className="w-24 h-24 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <CreditCard className="h-12 w-12 text-purple-600 dark:text-purple-400" />
                         </div>
-                        <h1 className="text-3xl font-bold text-gray-900 mb-4">Restbetaling</h1>
-                        <p className="text-lg text-gray-700">
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Restbetaling</h1>
+                        <p className="text-lg text-gray-700 dark:text-[var(--text-muted-dark)]">
                             Je staat op het punt om de restbetaling te doen voor <strong>{trip.name}</strong>
                         </p>
                     </div>
 
                     {error && (
-                        <div className="mb-6 bg-red-50 border-l-4 border-red-400 p-4 rounded">
+                        <div className="mb-6 bg-red-50 dark:bg-red-900/10 border-l-4 border-red-400 dark:border-red-600 p-4 rounded">
                             <div className="flex items-start">
                                 <AlertCircle className="h-6 w-6 text-red-600 mr-3 flex-shrink-0 mt-0.5" />
-                                <p className="text-red-700">{error}</p>
+                                <p className="text-red-700 dark:text-red-300">{error}</p>
                             </div>
                         </div>
                     )}
 
-                    <div className="bg-gray-50 rounded-lg p-6 mb-8">
+                    <div className="bg-gray-50 dark:bg-white/5 rounded-lg p-6 mb-8 border border-gray-100 dark:border-white/5">
                         <div className="flex justify-between items-center mb-4">
-                            <span className="text-gray-700">Naam</span>
-                            <span className="font-semibold text-gray-900">
+                            <span className="text-gray-700 dark:text-[var(--text-muted-dark)]">Naam</span>
+                            <span className="font-semibold text-gray-900 dark:text-white">
                                 {signup.first_name} {signup.middle_name} {signup.last_name}
                             </span>
                         </div>
                         <div className="flex justify-between items-center mb-4">
-                            <span className="text-gray-700">Email</span>
-                            <span className="font-semibold text-gray-900">{signup.email}</span>
+                            <span className="text-gray-700 dark:text-[var(--text-muted-dark)]">Email</span>
+                            <span className="font-semibold text-gray-900 dark:text-white">{signup.email}</span>
                         </div>
                         <div className="flex justify-between items-center mb-4">
-                            <span className="text-gray-700">Reis</span>
-                            <span className="font-semibold text-gray-900">{trip.name}</span>
+                            <span className="text-gray-700 dark:text-[var(--text-muted-dark)]">Reis</span>
+                            <span className="font-semibold text-gray-900 dark:text-white">{trip.name}</span>
                         </div>
                         <div className="flex justify-between items-center mb-4">
-                            <span className="text-gray-700">Datum</span>
-                            <span className="font-semibold text-gray-900">
-                                {format(new Date(trip.event_date), 'd MMMM yyyy', { locale: nl })}
+                            <span className="text-gray-700 dark:text-[var(--text-muted-dark)]">Datum</span>
+                            <span className="font-semibold text-gray-900 dark:text-white">
+                                {trip.event_date ? format(new Date(trip.event_date), 'd MMMM yyyy', { locale: nl }) : (trip.start_date ? format(new Date(trip.start_date), 'd MMMM yyyy', { locale: nl }) : 'N.t.b.')}
                             </span>
                         </div>
-                        
-                        <div className="border-t border-gray-300 my-4"></div>
-                        
+
+                        <div className="border-t border-gray-300 dark:border-white/10 my-4"></div>
+
                         {/* Cost Breakdown */}
                         <div className="space-y-3">
                             <div className="flex justify-between items-center">
-                                <span className="text-gray-700">Basisprijs</span>
-                                <span className="text-gray-900">€{costs.base.toFixed(2)}</span>
+                                <span className="text-gray-700 dark:text-[var(--text-muted-dark)]">Basisprijs</span>
+                                <span className="text-gray-900 dark:text-white">€{costs.base.toFixed(2)}</span>
                             </div>
-                            
+
                             {selectedActivities.length > 0 && (
                                 <div>
                                     <div className="flex justify-between items-center mb-2">
-                                        <span className="text-gray-700">Activiteiten:</span>
-                                        <span className="text-gray-900">€{costs.activities.toFixed(2)}</span>
+                                        <span className="text-gray-700 dark:text-[var(--text-muted-dark)]">Activiteiten:</span>
+                                        <span className="text-gray-900 dark:text-white">€{costs.activities.toFixed(2)}</span>
                                     </div>
-                                    {selectedActivities.map((activity) => (
-                                        <div key={activity.id} className="flex justify-between items-center text-sm pl-4">
-                                            <span className="text-gray-600">• {activity.name}</span>
-                                            <span className="text-gray-600">€{Number(activity.price).toFixed(2)}</span>
-                                        </div>
-                                    ))}
+                                    {selectedActivities.map((activity) => {
+                                        let activityPrice = Number(activity.price) || 0;
+                                        const options = selectedActivityOptions[activity.id] || [];
+                                        let optionText = '';
+
+                                        if (activity.options && options.length > 0) {
+                                            options.forEach(optName => {
+                                                const opt = activity.options.find((o: any) => o.name === optName);
+                                                if (opt) {
+                                                    activityPrice += Number(opt.price) || 0;
+                                                    optionText += ` (+ ${optName})`;
+                                                }
+                                            });
+                                        }
+
+                                        return (
+                                            <div key={activity.id} className="flex justify-between items-center text-sm pl-4">
+                                                <span className="text-gray-600 dark:text-gray-400">
+                                                    • {activity.name}
+                                                    {optionText && <span className="text-xs block text-gray-500 dark:text-gray-500">{optionText}</span>}
+                                                </span>
+                                                <span className="text-gray-600 dark:text-gray-400">€{activityPrice.toFixed(2)}</span>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             )}
-                            
+
                             {costs.crewDiscount > 0 && (
-                                <div className="flex justify-between items-center text-green-600">
+                                <div className="flex justify-between items-center text-green-600 dark:text-green-400">
                                     <span>Crew korting</span>
                                     <span>-€{costs.crewDiscount.toFixed(2)}</span>
                                 </div>
                             )}
-                            
-                            <div className="border-t border-gray-300 pt-3 mt-3">
+
+                            {costs.deposit > 0 && (
+                                <div className="flex justify-between items-center text-green-600 dark:text-green-400">
+                                    <span>Reeds betaalde aanbetaling</span>
+                                    <span>-€{costs.deposit.toFixed(2)}</span>
+                                </div>
+                            )}
+
+                            <div className="border-t border-gray-300 dark:border-white/10 pt-3 mt-3">
                                 <div className="flex justify-between items-center">
-                                    <span className="text-xl font-bold text-gray-900">Te betalen</span>
-                                    <span className="text-3xl font-bold text-purple-600">
+                                    <span className="text-xl font-bold text-gray-900 dark:text-white">Te betalen</span>
+                                    <span className="text-3xl font-bold text-purple-600 dark:text-purple-400">
                                         €{costs.remaining.toFixed(2)}
                                     </span>
                                 </div>
@@ -435,9 +482,9 @@ function BetalingContent() {
                         </div>
                     </div>
 
-                    <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded mb-8">
-                        <p className="text-sm text-blue-700">
-                            <strong>Let op:</strong> Dit is de restbetaling voor je reis. Na het voltooien van deze betaling 
+                    <div className="bg-blue-50 dark:bg-blue-900/10 border-l-4 border-blue-400 dark:border-blue-500 p-4 rounded mb-8">
+                        <p className="text-sm text-blue-700 dark:text-blue-300">
+                            <strong>Let op:</strong> Dit is de restbetaling voor je reis. Na het voltooien van deze betaling
                             ben je volledig ingeschreven en ontvang je een bevestigingsmail.
                         </p>
                     </div>
@@ -461,12 +508,12 @@ function BetalingContent() {
                             )}
                         </button>
                     ) : (
-                        <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
+                        <div className="bg-green-50 dark:bg-green-900/10 border-l-4 border-green-400 dark:border-green-600 p-4 rounded">
                             <div className="flex items-start">
                                 <CheckCircle2 className="h-6 w-6 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
                                 <div>
-                                    <p className="font-semibold text-green-700 mb-1">Betaling voltooid</p>
-                                    <p className="text-sm text-green-600">
+                                    <p className="font-semibold text-green-700 dark:text-green-300 mb-1">Betaling voltooid</p>
+                                    <p className="text-sm text-green-600 dark:text-green-300/80">
                                         Je hebt alle kosten voor deze reis al betaald. Er is geen restbetaling meer nodig.
                                     </p>
                                 </div>
@@ -475,7 +522,7 @@ function BetalingContent() {
                     )}
 
                     {paying && (
-                        <p className="text-center text-sm text-gray-500 mt-4">
+                        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
                             Je wordt doorgestuurd naar een beveiligde betaalomgeving
                         </p>
                     )}

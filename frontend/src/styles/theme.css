@@ -90,7 +90,7 @@
   --theme-admin-text: var(--text-main);
   --theme-admin-text-muted: var(--text-muted);
   --theme-admin-border: var(--border-color);
-  --theme-admin-hover: rgba(0,0,0,0.02);
+  --theme-admin-hover: rgba(0, 0, 0, 0.02);
 }
 
 /* --- 3. DARK MODE OVERRIDES --- */
@@ -140,11 +140,11 @@
 
   /* Admin tokens for dark mode - ensure cards are visibly distinct from the page background */
   --theme-admin-card: var(--bg-card);
-  --theme-admin-card-soft: rgba(255,255,255,0.02);
+  --theme-admin-card-soft: rgba(255, 255, 255, 0.02);
   --theme-admin-text: var(--text-main);
   --theme-admin-text-muted: var(--text-muted);
-  --theme-admin-border: rgba(255,255,255,0.06);
-  --theme-admin-hover: rgba(255,255,255,0.03);
+  --theme-admin-border: rgba(255, 255, 255, 0.06);
+  --theme-admin-hover: rgba(255, 255, 255, 0.03);
 }
 
 /* --- 4. LEGACY & COMPATIBILITY ALIASES --- */
@@ -167,6 +167,9 @@ body {
   background-color: var(--bg-main);
   color: var(--text-main);
   transition: background-color 0.3s ease, color 0.3s ease;
+  /* Ensure body extends into safe areas on mobile devices */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 a {
@@ -404,6 +407,18 @@ textarea.form-input {
 /* --- 8. VENDOR OVERRIDES (React DatePicker, etc.) --- */
 /* Custom styling for the date picker popup to match our premium look */
 
+/* Fix for browser-native select/input elements in dark mode */
+.dark select,
+.dark input {
+  color-scheme: dark;
+}
+
+select option {
+  background-color: var(--bg-card) !important;
+  color: var(--text-main) !important;
+  font-weight: normal !important;
+}
+
 .react-datepicker {
   font-family: inherit !important;
   border: 1px solid var(--border-color) !important;
@@ -543,6 +558,63 @@ textarea.form-input {
   .react-datepicker__day-names {
     margin-bottom: -0.5rem !important;
   }
+}
+
+/* Time Picker Styling */
+.react-datepicker__time-container {
+  border-left: 1px solid var(--border-color) !important;
+  width: 100px !important;
+}
+
+.react-datepicker__time-container .react-datepicker__time {
+  background-color: var(--bg-card) !important;
+  border-bottom-right-radius: var(--radius-2xl) !important;
+}
+
+.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box {
+  width: 100% !important;
+  border-bottom-right-radius: var(--radius-2xl) !important;
+}
+
+.react-datepicker__time-list-item {
+  background-color: transparent !important;
+  color: var(--text-main) !important;
+  transition: all 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 10px 5px !important;
+  height: auto !important;
+}
+
+.react-datepicker__time-list-item:hover {
+  background-color: var(--color-purple-50) !important;
+  color: var(--color-purple-600) !important;
+}
+
+.react-datepicker__time-list-item--selected {
+  background-color: var(--theme-purple) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+/* Dark Mode Overrides for Time Picker */
+.dark .react-datepicker__time-container {
+  border-left-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .react-datepicker__time-list-item {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.dark .react-datepicker__time-list-item:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+.dark .react-datepicker__time-list-item--selected {
+  background-color: var(--theme-purple) !important;
+  color: #ffffff !important;
 }
 
 /* Ensure the wrapper respects container width */

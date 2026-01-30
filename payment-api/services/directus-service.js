@@ -135,7 +135,7 @@ async function getTripSignupActivities(directusUrl, directusToken, signupId) {
     try {
         const params = new URLSearchParams();
         params.append('filter[trip_signup_id][_eq]', String(signupId));
-        params.append('fields', 'id,trip_activity_id.*');
+        params.append('fields', 'id,selected_options,trip_activity_id.*');
 
         const url = `${directusUrl}/items/trip_signup_activities?${params.toString()}`;
         const response = await axios.get(url, getAuthConfig(directusToken));

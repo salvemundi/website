@@ -1,0 +1,31 @@
+services:
+  arcane:
+    image: ghcr.io/salvemundi/arcane:${TAG:-latest}
+    container_name: arcane
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    expose:
+      - "3552"
+    environment:
+      - ENCRYPTION_KEY=${ARCANE_ENCRYPTION_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      # OIDC Configuration
+      - OIDC_ENABLED=true
+      - OIDC_PROVIDER_NAME=Microsoft
+      - OIDC_ISSUER_URL=${OIDC_ISSUER_URL}
+      - OIDC_CLIENT_ID=${OIDC_CLIENT_ID}
+      - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET}
+      - OIDC_SCOPES=openid profile email
+      - APP_URL=https://docker.salvemundi.nl
+      - PORT=3552
+      - TZ=Europe/Amsterdam
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./data:/app/data
+    networks:
+      - proxy-network
+
+networks:
+  proxy-network:
+    external: true

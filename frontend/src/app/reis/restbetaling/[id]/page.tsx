@@ -3,19 +3,21 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { 
-    tripSignupsApi, 
-    tripActivitiesApi, 
+import {
+    tripSignupsApi,
+    tripActivitiesApi,
     tripSignupActivitiesApi,
     tripsApi,
-    getImageUrl 
+    getImageUrl
 } from '@/shared/lib/api/salvemundi';
+import type { Trip, TripActivity, TripSignup } from '@/shared/lib/api/salvemundi';
+import { updateTripSignup } from '../../actions';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { 
-    CheckCircle2, 
-    Loader2, 
-    AlertCircle, 
+import {
+    CheckCircle2,
+    Loader2,
+    AlertCircle,
     CreditCard,
     Edit,
     FileText,
@@ -24,44 +26,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 
-interface TripSignup {
-    id: number;
-    trip_id: number;
-    first_name: string;
-    middle_name?: string;
-    last_name: string;
-    email: string;
-    phone_number: string;
-    date_of_birth?: string;
-    id_document_type?: 'passport' | 'id_card';
-    allergies?: string;
-    special_notes?: string;
-    willing_to_drive?: boolean;
-    role: 'participant' | 'crew';
-    status: string;
-    deposit_paid: boolean;
-    full_payment_paid: boolean;
-    full_payment_paid_at?: string;
-}
 
-interface Trip {
-    id: number;
-    name: string;
-    description: string;
-    image?: string;
-    event_date: string;
-    base_price: number;
-    crew_discount: number;
-    deposit_amount: number;
-}
-
-interface TripActivity {
-    id: number;
-    name: string;
-    description: string;
-    price: number;
-    image?: string;
-}
 
 export default function RestbetalingPage() {
     const params = useParams();
@@ -76,6 +41,7 @@ export default function RestbetalingPage() {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [editMode, setEditMode] = useState(false);
+    const [selectedActivityOptions, setSelectedActivityOptions] = useState<Record<number, string[]>>({});
 
     const [form, setForm] = useState({
         first_name: '',
@@ -85,6 +51,7 @@ export default function RestbetalingPage() {
         phone_number: '',
         date_of_birth: '',
         id_document_type: '' as '' | 'passport' | 'id_card',
+        document_number: '',
         allergies: '',
         special_notes: '',
     });
@@ -118,7 +85,16 @@ export default function RestbetalingPage() {
             // Load selected activities
             const signupActivities = await tripSignupActivitiesApi.getBySignupId(signupId);
             const activityIds = signupActivities.map((a: any) => a.trip_activity_id.id || a.trip_activity_id);
-            
+
+            const optionsMap: Record<number, string[]> = {};
+            signupActivities.forEach((a: any) => {
+                const actId = a.trip_activity_id.id || a.trip_activity_id;
+                if (a.selected_options) {
+                    optionsMap[actId] = a.selected_options;
+                }
+            });
+            setSelectedActivityOptions(optionsMap);
+
             // Load full activity details
             const allActivities = await tripActivitiesApi.getByTripId(signupData.trip_id);
             const selected = allActivities.filter(a => activityIds.includes(a.id));
@@ -132,8 +108,9 @@ export default function RestbetalingPage() {
                 email: signupData.email,
                 phone_number: signupData.phone_number,
                 date_of_birth: signupData.date_of_birth || '',
-                id_document_type: (signupData.id_document_type as 'passport' | 'id_card') || '',
-                allergies: signupData.allergies || '',
+                id_document_type: (signupData.id_document_type || (signupData as any).id_document as 'passport' | 'id_card') || '',
+                document_number: signupData.document_number || '',
+                allergies: signupData.allergies || (signupData as any).alergies || '',
                 special_notes: signupData.special_notes || '',
             });
         } catch (err: any) {
@@ -155,7 +132,7 @@ export default function RestbetalingPage() {
         setSubmitting(true);
 
         try {
-            await tripSignupsApi.update(signupId, {
+            const updateResult = await updateTripSignup(signupId, {
                 first_name: form.first_name,
                 middle_name: form.middle_name || undefined,
                 last_name: form.last_name,
@@ -163,9 +140,14 @@ export default function RestbetalingPage() {
                 phone_number: form.phone_number,
                 date_of_birth: form.date_of_birth,
                 id_document_type: form.id_document_type || undefined,
+                document_number: form.document_number || undefined,
                 allergies: form.allergies || undefined,
                 special_notes: form.special_notes || undefined,
             });
+
+            if (!updateResult.success) {
+                throw new Error(updateResult.error);
+            }
 
             setEditMode(false);
             await loadData(); // Reload to get updated data
@@ -197,12 +179,22 @@ export default function RestbetalingPage() {
         if (!trip) return { basePrice: 0, activities: 0, discount: 0, total: 0, deposit: 0, remaining: 0 };
 
         const basePrice = Number(trip.base_price) || 0;
-        const activitiesTotal = selectedActivities.reduce((sum, a) => sum + (Number(a.price) || 0), 0);
+        const activitiesTotal = selectedActivities.reduce((sum, a) => {
+            let price = Number(a.price) || 0;
+            const options = selectedActivityOptions[a.id] || [];
+            if (a.options) {
+                options.forEach(optName => {
+                    const opt = a.options?.find(o => o.name === optName);
+                    if (opt) price += Number(opt.price);
+                });
+            }
+            return sum + price;
+        }, 0);
         const discount = signup?.role === 'crew' ? (Number(trip.crew_discount) || 0) : 0;
         const total = basePrice + activitiesTotal - discount;
         const deposit = Number(trip.deposit_amount) || 0;
-        // For rest payment: show the camp price + activities (do NOT subtract the deposit here)
-        const remaining = Math.max(0, total);
+        // For rest payment: total - deposit
+        const remaining = Math.max(0, total - deposit);
 
         return {
             basePrice,
@@ -281,7 +273,7 @@ export default function RestbetalingPage() {
 
                 {/* Success message */}
                 {success && (
-                        <div className="mb-8 bg-green-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-green-400 p-6 rounded-lg">
+                    <div className="mb-8 bg-green-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-green-400 p-6 rounded-lg">
                         <div className="flex items-start">
                             <CheckCircle2 className="h-6 w-6 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
                             <div>
@@ -310,7 +302,9 @@ export default function RestbetalingPage() {
                 )}
 
                 {/* Personal Information */}
-                <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border-t-4 border-purple-600 mb-8">
+                {/* Personal Information */}
+                <div className="bg-white dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border border-[var(--border-color)] dark:border-white/10 mb-8 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-purple-600"></div>
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center">
                             <FileText className="h-6 w-6 text-purple-600 mr-3" />
@@ -331,7 +325,7 @@ export default function RestbetalingPage() {
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
-                                        <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Voornaam</label>
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Voornaam</label>
                                     <input
                                         type="text"
                                         name="first_name"
@@ -347,7 +341,7 @@ export default function RestbetalingPage() {
                                         name="middle_name"
                                         value={form.middle_name}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                                     />
                                 </div>
                                 <div>
@@ -357,7 +351,7 @@ export default function RestbetalingPage() {
                                         name="last_name"
                                         value={form.last_name}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                                     />
                                 </div>
                             </div>
@@ -370,7 +364,7 @@ export default function RestbetalingPage() {
                                         name="email"
                                         value={form.email}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                                     />
                                 </div>
                                 <div>
@@ -380,7 +374,7 @@ export default function RestbetalingPage() {
                                         name="phone_number"
                                         value={form.phone_number}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                                     />
                                 </div>
                             </div>
@@ -393,7 +387,7 @@ export default function RestbetalingPage() {
                                         name="date_of_birth"
                                         value={form.date_of_birth}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                                     />
                                 </div>
                                 <div>
@@ -402,12 +396,22 @@ export default function RestbetalingPage() {
                                         name="id_document_type"
                                         value={form.id_document_type}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                                     >
                                         <option value="">Selecteer...</option>
                                         <option value="passport">Paspoort</option>
                                         <option value="id_card">ID Kaart</option>
                                     </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Document nummer</label>
+                                    <input
+                                        type="text"
+                                        name="document_number"
+                                        value={form.document_number || ''}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                    />
                                 </div>
                             </div>
 
@@ -418,7 +422,7 @@ export default function RestbetalingPage() {
                                     value={form.allergies}
                                     onChange={handleChange}
                                     rows={2}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                                 />
                             </div>
 
@@ -429,14 +433,14 @@ export default function RestbetalingPage() {
                                     value={form.special_notes}
                                     onChange={handleChange}
                                     rows={2}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                                 />
                             </div>
 
                             <div className="flex gap-4 justify-end">
                                 <button
                                     onClick={() => setEditMode(false)}
-                                    className="px-6 py-3 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-[var(--text-muted-dark)] rounded-lg hover:bg-gray-50 dark:hover:bg-[var(--bg-soft-dark)] transition"
+                                    className="px-6 py-3 border border-[var(--border-color)] dark:border-white/10 text-gray-700 dark:text-[var(--text-muted-dark)] rounded-lg hover:bg-[var(--bg-main)] dark:hover:bg-white/5 transition"
                                     disabled={submitting}
                                 >
                                     Annuleren
@@ -461,124 +465,189 @@ export default function RestbetalingPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
                             <div>
                                 <p className="text-gray-500 mb-1">Naam</p>
-                                <p className="font-semibold text-gray-900">
+                                <p className="font-semibold text-gray-900 dark:text-white">
                                     {form.first_name} {form.middle_name} {form.last_name}
                                 </p>
                             </div>
                             <div>
                                 <p className="text-gray-500 mb-1">Geboortedatum</p>
-                                <p className="font-semibold text-gray-900">
+                                <p className="font-semibold text-gray-900 dark:text-white">
                                     {form.date_of_birth ? format(new Date(form.date_of_birth), 'd MMMM yyyy', { locale: nl }) : '-'}
                                 </p>
                             </div>
                             <div>
                                 <p className="text-gray-500 mb-1">Email</p>
-                                <p className="font-semibold text-gray-900">{form.email}</p>
+                                <p className="font-semibold text-gray-900 dark:text-white">{form.email}</p>
                             </div>
                             <div>
                                 <p className="text-gray-500 mb-1">Telefoon</p>
-                                <p className="font-semibold text-gray-900">{form.phone_number}</p>
+                                <p className="font-semibold text-gray-900 dark:text-white">{form.phone_number}</p>
                             </div>
                             <div>
                                 <p className="text-gray-500 mb-1">ID Type</p>
-                                <p className="font-semibold text-gray-900">
+                                <p className="font-semibold text-gray-900 dark:text-white">
                                     {form.id_document_type === 'passport' ? 'Paspoort' : form.id_document_type === 'id_card' ? 'ID Kaart' : '-'}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-gray-500 mb-1">Document nummer</p>
+                                <p className="font-semibold text-gray-900 dark:text-white">
+                                    {form.document_number || '-'}
                                 </p>
                             </div>
                             {form.allergies && (
                                 <div className="md:col-span-2">
                                     <p className="text-gray-500 mb-1">Allergieën</p>
-                                    <p className="font-semibold text-gray-900">{form.allergies}</p>
+                                    <p className="font-semibold text-gray-900 dark:text-white">{form.allergies}</p>
                                 </div>
                             )}
                             {form.special_notes && (
                                 <div className="md:col-span-2">
                                     <p className="text-gray-500 mb-1">Bijzonderheden</p>
-                                    <p className="font-semibold text-gray-900">{form.special_notes}</p>
+                                    <p className="font-semibold text-gray-900 dark:text-white">{form.special_notes}</p>
                                 </div>
                             )}
                         </div>
                     )}
-                </div>
+                </div >
 
                 {/* Selected Activities */}
-                {selectedActivities.length > 0 && (
-                    <div className="bg-purple-50 rounded-xl shadow-lg p-8 border-t-4 border-blue-600 mb-8">
-                        <div className="flex items-center mb-6">
-                            <Utensils className="h-6 w-6 text-blue-600 mr-3" />
-                            <h2 className="text-2xl font-bold text-gray-900">Geselecteerde activiteiten</h2>
-                        </div>
+                {/* Selected Activities */}
+                {
+                    selectedActivities.length > 0 && (
+                        <div className="bg-white dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border border-[var(--border-color)] dark:border-white/10 mb-8 relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-blue-600"></div>
+                            <div className="flex items-center mb-6">
+                                <Utensils className="h-6 w-6 text-blue-600 mr-3" />
+                                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 break-words">Geselecteerde activiteiten</h2>
+                            </div>
 
-                        <div className="space-y-4">
-                            {selectedActivities.map(activity => (
-                                <div key={activity.id} className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
-                                    {activity.image && (
-                                        <Image
-                                            src={getImageUrl(activity.image)}
-                                            alt={activity.name}
-                                            width={80}
-                                            height={80}
-                                            className="rounded-lg object-cover"
-                                        />
-                                    )}
-                                    <div className="flex-1">
-                                        <h3 className="font-bold text-gray-900">{activity.name}</h3>
-                                        <p className="text-sm text-gray-600">{activity.description}</p>
+                            <div className="space-y-4">
+                                {selectedActivities.map(activity => (
+                                    <div key={activity.id} className="flex items-start gap-4 p-4 bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-100 dark:border-white/5">
+                                        {activity.image && (
+                                            <Image
+                                                src={getImageUrl(activity.image)}
+                                                alt={activity.name}
+                                                width={80}
+                                                height={80}
+                                                className="rounded-lg object-cover"
+                                            />
+                                        )}
+                                        <div className="flex-1">
+                                            <h3 className="font-bold text-gray-900 dark:text-white break-words">{activity.name}</h3>
+                                            <p className="text-sm text-gray-600 dark:text-[var(--text-muted-dark)]">{activity.description}</p>
+                                            {selectedActivityOptions[activity.id] && selectedActivityOptions[activity.id].length > 0 && (
+                                                <div className="mt-2 text-sm text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-900/40 p-2 rounded inline-block">
+                                                    <span className="font-semibold">Opties:</span> {selectedActivityOptions[activity.id].join(', ')}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-lg font-bold text-blue-600">€{Number(activity.price).toFixed(2)}</p>
+                                        </div>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="text-lg font-bold text-blue-600">€{Number(activity.price).toFixed(2)}</p>
-                                    </div>
+                                ))}
+                            </div>
+
+                            {!success && (
+                                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/10 rounded-lg border border-blue-100 dark:border-blue-900/20">
+                                    <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
+                                        <strong>Tip:</strong> Je kunt je activiteiten nog aanpassen tot je de restbetaling hebt voldaan.
+                                    </p>
+                                    <a
+                                        href={`/reis/activiteiten/${signupId}`}
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
+                                    >
+                                        <Edit className="h-4 w-4" />
+                                        Activiteiten aanpassen
+                                    </a>
                                 </div>
-                            ))}
-                        </div>
+                            )}
 
-                        <div className="mt-4 p-4 bg-blue-50 rounded-lg text-sm text-blue-700">
-                            <strong>Let op:</strong> Wijzigingen in activiteiten zijn niet meer mogelijk via deze pagina. 
-                            Neem contact op met de reiscommissie als je wijzigingen wilt doorvoeren.
+                            {success && (
+                                <div className="mt-4 p-4 bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg text-sm text-gray-600 dark:text-[var(--text-muted-dark)]">
+                                    <strong>Let op:</strong> Wijzigingen in activiteiten zijn niet meer mogelijk.
+                                    Neem contact op met de reiscommissie als je wijzigingen wilt doorvoeren.
+                                </div>
+                            )}
                         </div>
-                    </div>
-                )}
+                    )
+                }
 
                 {/* Payment Calculation */}
-                <div className="bg-purple-50 rounded-xl shadow-lg p-8 border-t-4 border-green-600">
+                <div className="bg-white dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border border-[var(--border-color)] dark:border-white/10 mb-8 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-green-600"></div>
                     <div className="flex items-center mb-6">
                         <Calculator className="h-6 w-6 text-green-600 mr-3" />
-                        <h2 className="text-2xl font-bold text-gray-900">Kostenoverzicht</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Kostenoverzicht</h2>
                     </div>
 
                     <div className="space-y-4 mb-6">
-                        <div className="flex justify-between items-center py-3 border-b">
-                            <span className="text-gray-700">Basisprijs reis</span>
-                            <span className="font-semibold text-gray-900">€{costs.basePrice.toFixed(2)}</span>
+                        <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-white/10">
+                            <span className="font-medium text-gray-900 dark:text-white">Basisprijs reis</span>
+                            <span className="font-semibold text-gray-900 dark:text-white">€{costs.basePrice.toFixed(2)}</span>
                         </div>
 
-                        {costs.activities > 0 && (
-                            <div className="flex justify-between items-center py-3 border-b">
-                                <span className="text-gray-700">Activiteiten</span>
-                                <span className="font-semibold text-gray-900">€{costs.activities.toFixed(2)}</span>
+                        {selectedActivities.length > 0 && (
+                            <div className="py-3 border-b border-gray-100 dark:border-white/10">
+                                <span className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Activiteiten</span>
+                                <div className="space-y-2 pl-2">
+                                    {selectedActivities.map(activity => {
+                                        let actPrice = Number(activity.price) || 0;
+                                        const opts = selectedActivityOptions[activity.id] || [];
+                                        let optPrice = 0;
+                                        if (activity.options) {
+                                            opts.forEach(optName => {
+                                                const o = activity.options?.find(opt => opt.name === optName);
+                                                if (o) optPrice += Number(o.price);
+                                            });
+                                        }
+                                        const itemTotal = actPrice + optPrice;
+
+                                        return (
+                                            <div key={activity.id} className="flex justify-between items-start text-sm">
+                                                <div className="text-gray-600 dark:text-gray-300">
+                                                    <span>{activity.name}</span>
+                                                    {opts.length > 0 && (
+                                                        <span className="block text-xs text-gray-500 dark:text-gray-400">
+                                                            (+ {opts.join(', ')})
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <span className="font-medium text-gray-900 dark:text-white">
+                                                    €{itemTotal.toFixed(2)}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
                         )}
 
                         {costs.discount > 0 && (
-                            <div className="flex justify-between items-center py-3 border-b">
-                                <span className="text-gray-700">Crew korting</span>
-                                <span className="font-semibold text-green-600">-€{costs.discount.toFixed(2)}</span>
+                            <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-white/10">
+                                <span className="text-gray-700 dark:text-[var(--text-muted-dark)]">Crew korting</span>
+                                <span className="font-semibold text-green-600 dark:text-green-400">-€{costs.discount.toFixed(2)}</span>
                             </div>
                         )}
 
-                        
+                        <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-white/10">
+                            <span className="text-gray-700 dark:text-[var(--text-muted-dark)]">Reeds betaalde aanbetaling</span>
+                            <span className="font-semibold text-green-600 dark:text-green-400">-€{costs.deposit.toFixed(2)}</span>
+                        </div>
 
-                        <div className="flex justify-between items-center py-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg px-4 mt-4">
-                            <span className="text-xl font-bold text-gray-900">Te betalen</span>
-                            <span className="text-3xl font-bold text-purple-600">€{costs.remaining.toFixed(2)}</span>
+                        <div className="flex justify-between items-center py-4 bg-[var(--bg-soft)] dark:bg-white/5 rounded-lg px-4 mt-4 border border-purple-100 dark:border-white/10">
+                            <span className="text-xl font-bold text-gray-900 dark:text-white">Te betalen</span>
+                            <span className="text-3xl font-bold text-purple-600 dark:text-purple-400">€{costs.remaining.toFixed(2)}</span>
                         </div>
                     </div>
 
                     {!success && costs.remaining > 0 && (
                         <div className="space-y-4">
-                            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-                                <p className="text-sm text-yellow-800">
-                                    Controleer je gegevens goed voordat je de betaling voltooit. 
+                            <div className="bg-yellow-50 dark:bg-yellow-900/10 border-l-4 border-yellow-400 dark:border-yellow-600 p-4 rounded">
+                                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                                    Controleer je gegevens goed voordat je de betaling voltooit.
                                     Na betaling ontvang je een bevestigingsmail met alle details.
                                 </p>
                             </div>
@@ -612,7 +681,7 @@ export default function RestbetalingPage() {
                         </div>
                     )}
                 </div>
-            </div>
+            </div >
         </>
     );
 }

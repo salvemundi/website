@@ -62,6 +62,7 @@ export default function EventDetailPage() {
         name: "",
         email: "",
         phoneNumber: "",
+        website: "", // Honeypot field
     });
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -133,6 +134,7 @@ export default function EventDetailPage() {
                 name: fullName || "",
                 email: user.email || "",
                 phoneNumber: user.phone_number || "",
+                website: "",
             });
         }
     }, [user]);
@@ -225,7 +227,7 @@ export default function EventDetailPage() {
 
     const isPaidAndHasQR = signupStatus.isSignedUp && signupStatus.paymentStatus === 'paid' && !!signupStatus.qrToken;
 
-    
+
 
     // Form handlers
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -236,7 +238,7 @@ export default function EventDetailPage() {
         }
     };
 
-    
+
 
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
@@ -250,6 +252,24 @@ export default function EventDetailPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // A Honeypot check: If the hidden website field is filled, it's a bot.
+        if (formData.website) {
+            console.log("Bot detected via honeypot");
+            // Pretend success to fool the bot
+            setSignupStatus({
+                isSignedUp: true,
+                paymentStatus: 'paid'
+            });
+            return;
+        }
+
+        // B Name content check: simple spam filter for URLs in name
+        if (formData.name.match(/https?:\/\//) || formData.name.includes('www.') || formData.name.includes('http')) {
+            console.log("Bot detected via name content");
+            setSubmitError('Ongeldige invoer (spam gedetecteerd).');
+            return;
+        }
 
         // Safety check: prevent submission if deadline has passed
         if (isDeadlinePassed) {
@@ -451,9 +471,16 @@ export default function EventDetailPage() {
                     )}
 
                     {event.committee_name && (
-                        <p className="text-lg sm:text-xl text-beige/90 max-w-3xl mx-auto mt-0">
-                            Georganiseerd door {event.committee_name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim()}
-                        </p>
+                        <div className="flex flex-col items-center gap-2 mt-2">
+                            <p className="text-lg sm:text-xl text-beige/90 max-w-3xl mx-auto mt-0">
+                                Georganiseerd door {event.committee_name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim()}
+                            </p>
+                            {event.only_members && (
+                                <span className="bg-amber-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg uppercase tracking-wider">
+                                    Leden Alleen
+                                </span>
+                            )}
+                        </div>
                     )}
                     {user && (
                         <div>
@@ -530,6 +557,40 @@ export default function EventDetailPage() {
                                     <h3 className="text-2xl font-bold text-slate-400 mb-2">Inschrijving Gesloten</h3>
                                     <p className="text-slate-500 dark:text-slate-400">Deze activiteit is al geweest.</p>
                                 </div>
+                            ) : (event.only_members && !user?.is_member) ? (
+                                // Members only restriction
+                                <div className="bg-amber-500/10 p-8 rounded-xl text-center border border-amber-500/30 h-full flex flex-col justify-center items-center">
+                                    <div className="bg-amber-500/20 p-4 rounded-full mb-4">
+                                        <UsersIcon className="h-10 w-10 text-amber-500 transition-transform group-hover:scale-110" />
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Leden Alleen</h3>
+                                    <p className="text-slate-600 dark:text-white/80 mb-6">
+                                        Deze activiteit is exclusief toegankelijk voor leden van Salve Mundi.
+                                    </p>
+                                    {!user ? (
+                                        <button
+                                            onClick={() => {
+                                                const returnTo = window.location.pathname + window.location.search;
+                                                router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+                                            }}
+                                            className="w-full bg-paars text-white font-bold py-3 px-6 rounded-xl hover:scale-[1.02] transition-all shadow-md"
+                                        >
+                                            INLOGGEN OM IN TE SCHRIJVEN
+                                        </button>
+                                    ) : (
+                                        <div className="space-y-4 w-full">
+                                            <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
+                                                Je bent ingelogd als gast, maar je hebt nog geen actief lidmaatschap.
+                                            </p>
+                                            <button
+                                                onClick={() => router.push('/word-lid')}
+                                                className="w-full bg-theme-purple text-white font-bold py-3 px-6 rounded-xl hover:scale-[1.02] transition-all shadow-md"
+                                            >
+                                                WORD NU LID
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             ) : (
                                 // Signup Form
                                 <div className="signup-form-container h-full flex flex-col">
@@ -538,6 +599,20 @@ export default function EventDetailPage() {
                                         Inschrijven
                                     </h3>
                                     <form onSubmit={handleSubmit} className="space-y-4 flex flex-col">
+                                        {/* Honeypot field - hidden from users */}
+                                        <div className="opacity-0 absolute top-0 left-0 h-0 w-0 -z-10 pointer-events-none overflow-hidden" aria-hidden="true">
+                                            <label htmlFor="website">Website</label>
+                                            <input
+                                                type="text"
+                                                id="website"
+                                                name="website"
+                                                value={formData.website}
+                                                onChange={handleInputChange}
+                                                tabIndex={-1}
+                                                autoComplete="off"
+                                            />
+                                        </div>
+
                                         {/* Name */}
                                         <div>
                                             <label htmlFor="name" className="block text-sm font-semibold text-theme-purple dark:text-white mb-1">Naam *</label>
@@ -547,6 +622,7 @@ export default function EventDetailPage() {
                                                 name="name"
                                                 value={formData.name}
                                                 onChange={handleInputChange}
+                                                required
                                                 className={`w-full px-4 py-3 rounded-xl dark:!bg-white/10 dark:!border-white/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-paars focus:border-paars transition-all ${errors.name ? "ring-2 ring-red-500 !border-red-500" : ""}`}
                                                 placeholder="Jouw naam"
                                             />
@@ -562,6 +638,7 @@ export default function EventDetailPage() {
                                                 name="email"
                                                 value={formData.email}
                                                 onChange={handleInputChange}
+                                                required
                                                 className={`w-full px-4 py-3 rounded-xl dark:!bg-white/10 dark:!border-white/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-paars focus:border-paars transition-all ${errors.email ? "ring-2 ring-red-500 !border-red-500" : ""}`}
                                                 placeholder="naam.achternaam@salvemundi.nl"
                                             />
@@ -577,6 +654,7 @@ export default function EventDetailPage() {
                                                 name="phoneNumber"
                                                 value={formData.phoneNumber}
                                                 onChange={handleInputChange}
+                                                required
                                                 className={`w-full px-4 py-3 rounded-xl dark:!bg-white/10 dark:!border-white/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-paars focus:border-paars transition-all ${errors.phoneNumber ? "ring-2 ring-red-500 !border-red-500" : ""}`}
                                                 placeholder="0612345678"
                                             />

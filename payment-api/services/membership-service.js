@@ -9,7 +9,9 @@ async function provisionMember(membershipApiUrl, userId) {
         }, { timeout: 30000 });
     } catch (error) {
         console.error(`[MembershipService] Provisioning failed: ${error.message}`);
+        throw error;
     }
+
 }
 
 async function createMember(membershipApiUrl, firstName, lastName, email, phoneNumber = null, dateOfBirth = null) {

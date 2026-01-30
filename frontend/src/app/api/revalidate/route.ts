@@ -1,10 +1,29 @@
 import { revalidateTag, revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
+import { isRateLimited, getClientIp } from '@/shared/lib/rate-limit';
+
 
 // Webhook endpoint voor Directus om on-demand cache invalidation te triggeren
 export async function POST(request: NextRequest) {
     try {
+        // 1. Rate Limiting
+        const ip = getClientIp(request);
+        if (isRateLimited(`revalidate_${ip}`, { windowMs: 60 * 1000, max: 10 })) {
+            return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+        }
+
+        // 2. Secret Verification
+        // Use either headers or a URL search param
+        const secret = process.env.INTERNAL_API_SECRET || process.env.NEXT_PUBLIC_INTERNAL_API_SECRET;
+        const incomingSecret = request.headers.get('x-internal-api-secret') || request.nextUrl.searchParams.get('token');
+
+        if (secret && incomingSecret !== secret) {
+            console.warn('[revalidate] Unauthorized attempt from IP:', ip);
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const body = await request.json().catch(() => ({}));
+
         const { tag, tags, path, paths } = body;
 
         const revalidatedTags: string[] = [];

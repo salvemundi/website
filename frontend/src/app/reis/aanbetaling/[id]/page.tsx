@@ -3,20 +3,20 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { 
-    tripSignupsApi, 
-    tripActivitiesApi, 
+import {
+    tripSignupsApi,
+    tripActivitiesApi,
     tripSignupActivitiesApi,
     tripsApi,
-    getImageUrl 
+    getImageUrl
 } from '@/shared/lib/api/salvemundi';
 import type { Trip, TripActivity, TripSignup } from '@/shared/lib/api/salvemundi';
-import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
-import { 
-    CheckCircle2, 
-    Loader2, 
-    AlertCircle, 
+import { updateTripSignup } from '../../actions';
+
+import {
+    CheckCircle2,
+    Loader2,
+    AlertCircle,
     CreditCard,
     User,
     FileText,
@@ -42,8 +42,12 @@ export default function AanbetalingPage() {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [paymentSuccess, setPaymentSuccess] = useState(false);
+    const [selectedActivityOptions, setSelectedActivityOptions] = useState<Record<number, string[]>>({});
 
     const [form, setForm] = useState({
+        first_name: '',
+        middle_name: '',
+        last_name: '',
         date_of_birth: '',
         id_document_type: '' as '' | 'passport' | 'id_card',
         allergies: '',
@@ -90,11 +94,23 @@ export default function AanbetalingPage() {
             const existingActivities = await tripSignupActivitiesApi.getBySignupId(signupId);
             setSelectedActivities(existingActivities.map((a: any) => a.trip_activity_id.id || a.trip_activity_id));
 
+            const optionsMap: Record<number, string[]> = {};
+            existingActivities.forEach((a: any) => {
+                const actId = a.trip_activity_id.id || a.trip_activity_id;
+                if (a.selected_options) {
+                    optionsMap[actId] = a.selected_options;
+                }
+            });
+            setSelectedActivityOptions(optionsMap);
+
             // Pre-fill form with existing data
             setForm({
+                first_name: signupData.first_name,
+                middle_name: signupData.middle_name || '',
+                last_name: signupData.last_name,
                 date_of_birth: signupData.date_of_birth || '',
-                id_document_type: (signupData.id_document_type as 'passport' | 'id_card') || '',
-                allergies: signupData.allergies || '',
+                id_document_type: (signupData.id_document_type || (signupData as any).id_document as 'passport' | 'id_card') || '',
+                allergies: signupData.allergies || (signupData as any).alergies || '',
                 special_notes: signupData.special_notes || '',
                 willing_to_drive: signupData.willing_to_drive || false,
             });
@@ -117,11 +133,28 @@ export default function AanbetalingPage() {
     };
 
     const toggleActivity = (activityId: number) => {
-        setSelectedActivities(prev => 
-            prev.includes(activityId) 
+        setSelectedActivities(prev =>
+            prev.includes(activityId)
                 ? prev.filter(id => id !== activityId)
                 : [...prev, activityId]
         );
+    };
+
+    const toggleOption = (activityId: number, optionName: string, maxSelections?: number) => {
+        setSelectedActivityOptions(prev => {
+            const current = prev[activityId] || [];
+            if (maxSelections === 1) {
+                // Radio: replace all with clicked
+                return { ...prev, [activityId]: [optionName] };
+            } else {
+                // Checkbox
+                if (current.includes(optionName)) {
+                    return { ...prev, [activityId]: current.filter(o => o !== optionName) };
+                } else {
+                    return { ...prev, [activityId]: [...current, optionName] };
+                }
+            }
+        });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -142,7 +175,11 @@ export default function AanbetalingPage() {
         setSubmitting(true);
         try {
             // Update signup with additional data
-            await tripSignupsApi.update(signupId, {
+            // Update signup with additional data using Server Action (admin permissions)
+            const updateResult = await updateTripSignup(signupId, {
+                first_name: form.first_name,
+                middle_name: form.middle_name || undefined,
+                last_name: form.last_name,
                 date_of_birth: form.date_of_birth,
                 id_document_type: form.id_document_type,
                 allergies: form.allergies || undefined,
@@ -150,30 +187,50 @@ export default function AanbetalingPage() {
                 willing_to_drive: trip?.is_bus_trip ? form.willing_to_drive : undefined,
             });
 
-            // Get current activities
-            const existingActivities = await tripSignupActivitiesApi.getBySignupId(signupId);
-            const existingActivityIds = existingActivities.map((a: any) => a.trip_activity_id.id || a.trip_activity_id);
-
-            // Remove activities that are no longer selected
-            for (const existing of existingActivities) {
-                const activityId = existing.trip_activity_id.id || existing.trip_activity_id;
-                if (!selectedActivities.includes(activityId)) {
-                    await tripSignupActivitiesApi.delete(existing.id);
-                }
+            if (!updateResult.success) {
+                throw new Error(updateResult.error);
             }
 
-            // Add newly selected activities
-            for (const activityId of selectedActivities) {
-                if (!existingActivityIds.includes(activityId)) {
+            // Save activities logic
+            const existingActivities = await tripSignupActivitiesApi.getBySignupId(signupId);
+            const existingMap = new Map(existingActivities.map(a => [a.trip_activity_id.id || a.trip_activity_id, a]));
+
+            // Process selected
+            for (const actId of selectedActivities) {
+                const existing = existingMap.get(actId);
+                const newOptions = selectedActivityOptions[actId] || [];
+
+                if (existing) {
+                    const oldOptions = existing.selected_options || [];
+                    const isSame = JSON.stringify(newOptions.slice().sort()) === JSON.stringify(oldOptions.slice().sort());
+
+                    if (!isSame) {
+                        // Options changed: Re-create
+                        await tripSignupActivitiesApi.delete(existing.id);
+                        await tripSignupActivitiesApi.create({
+                            trip_signup_id: signupId,
+                            trip_activity_id: actId,
+                            selected_options: newOptions
+                        });
+                    }
+                    existingMap.delete(actId);
+                } else {
+                    // New activity
                     await tripSignupActivitiesApi.create({
                         trip_signup_id: signupId,
-                        trip_activity_id: activityId,
+                        trip_activity_id: actId,
+                        selected_options: newOptions
                     });
                 }
             }
 
+            // Delete remaining (deselected)
+            for (const [_, existing] of existingMap) {
+                await tripSignupActivitiesApi.delete(existing.id);
+            }
+
             setSuccess(true);
-            
+
             // Redirect to payment page
             setTimeout(() => {
                 router.push(`/reis/aanbetaling/${signupId}/betaling`);
@@ -189,7 +246,17 @@ export default function AanbetalingPage() {
 
     const totalActivitiesPrice = activities
         .filter(a => selectedActivities.includes(a.id))
-        .reduce((sum, a) => sum + (Number(a.price) || 0), 0);
+        .reduce((sum, a) => {
+            let price = Number(a.price) || 0;
+            const options = selectedActivityOptions[a.id] || [];
+            if (a.options) {
+                options.forEach(optName => {
+                    const opt = a.options?.find(o => o.name === optName);
+                    if (opt) price += Number(opt.price);
+                });
+            }
+            return sum + price;
+        }, 0);
 
     if (loading) {
         return (
@@ -265,7 +332,7 @@ export default function AanbetalingPage() {
                                     Bedankt voor je aanbetaling van <strong>€{trip && Number(trip.deposit_amount).toFixed(2)}</strong> voor {trip?.name}!
                                 </p>
                                 <p className="text-green-700 text-sm">
-                                    Je ontvangt binnenkort een bevestigingsmail met alle details. 
+                                    Je ontvangt binnenkort een bevestigingsmail met alle details.
                                     We zullen je informeren wanneer je de restbetaling kunt voldoen.
                                 </p>
                                 <div className="mt-4 flex flex-wrap gap-3">
@@ -315,235 +382,292 @@ export default function AanbetalingPage() {
                 {/* Show form only if payment is not successful yet */}
                 {!paymentSuccess && (
                     <>
-                {/* Info card */}
-                    <div className="bg-blue-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-blue-400 p-6 rounded-lg mb-8">
+                        {/* Info card */}
+                        <div className="bg-blue-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-blue-400 p-6 rounded-lg mb-8">
                             <div className="flex items-start">
                                 <User className="h-6 w-6 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />
                                 <div>
-                            <h3 className="text-blue-800 dark:text-blue-200 font-bold mb-2">Welkom, {signup.first_name}!</h3>
-                            <p className="text-blue-700 dark:text-blue-200 text-sm">
-                                Je hebt je succesvol aangemeld voor <strong>{trip.name}</strong> op{' '}
-                                {format(new Date(trip.event_date), 'd MMMM yyyy', { locale: nl })}.
-                            </p>
-                            <p className="text-blue-700 text-sm mt-2">
-                                Om je aanmelding definitief te maken, hebben we nog wat extra informatie nodig en 
-                                vragen we je om een aanbetaling van <strong>€{Number(trip.deposit_amount).toFixed(2)}</strong> te doen.
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                                    <h3 className="text-blue-800 dark:text-blue-200 font-bold mb-2">Welkom, {signup.first_name}!</h3>
 
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="space-y-8">
-                    {/* Personal Information */}
-                    <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border-t-4 border-purple-600">
-                        <div className="flex items-center mb-6">
-                            <FileText className="h-6 w-6 text-purple-600 mr-3" />
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Aanvullende gegevens</h2>
-                        </div>
-
-                        <div className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">
-                                        Geboortedatum <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="date"
-                                        name="date_of_birth"
-                                        value={form.date_of_birth}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent transition"
-                                        required
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        ID Document Type <span className="text-red-500">*</span>
-                                    </label>
-                                    <select
-                                        name="id_document_type"
-                                        value={form.id_document_type}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent transition"
-                                        required
-                                    >
-                                        <option value="">Selecteer...</option>
-                                        <option value="passport">Paspoort</option>
-                                        <option value="id_card">ID Kaart</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Allergieën
-                                </label>
-                                <textarea
-                                    name="allergies"
-                                    value={form.allergies}
-                                    onChange={handleChange}
-                                    rows={3}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent transition"
-                                    placeholder="Vermeld hier eventuele allergieën..."
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Bijzonderheden
-                                </label>
-                                <textarea
-                                    name="special_notes"
-                                    value={form.special_notes}
-                                    onChange={handleChange}
-                                    rows={3}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent transition"
-                                    placeholder="Overige bijzonderheden die we moeten weten..."
-                                />
-                            </div>
-
-                            {trip.is_bus_trip && (
-                                <div className="flex items-start pt-4 bg-blue-50 dark:bg-[var(--bg-card-dark)] p-4 rounded-lg">
-                                    <input
-                                        type="checkbox"
-                                        name="willing_to_drive"
-                                        checked={form.willing_to_drive}
-                                        onChange={handleChange}
-                                        className="mt-1 h-5 w-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-                                    />
-                                    <label className="ml-3">
-                                        <div className="flex items-center text-sm font-semibold text-gray-700 mb-1">
-                                            <Bus className="h-5 w-5 mr-2 text-blue-600" />
-                                            Ik wil vrijwillig rijden tijdens de busjesreis
-                                        </div>
-                                        <p className="text-xs text-gray-600">
-                                            We organiseren deze reis met busjes en zoeken vrijwilligers die willen rijden.
-                                        </p>
-                                    </label>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Activities Selection */}
-                    {activities.length > 0 && (
-                        <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border-t-4 border-blue-600">
-                            <div className="flex items-center mb-6">
-                                <Utensils className="h-6 w-6 text-blue-600 mr-3" />
-                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Activiteiten tijdens de reis</h2>
-                            </div>
-                            
-                            <p className="text-gray-600 dark:text-[var(--text-muted-dark)] mb-6">
-                                Selecteer de activiteiten waar je aan wilt deelnemen. 
-                                De kosten worden meegenomen in de restbetaling.
-                            </p>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {activities.map(activity => (
-                                    <div
-                                        key={activity.id}
-                                        onClick={() => toggleActivity(activity.id)}
-                                            className={`cursor-pointer border-2 rounded-lg p-4 transition-all ${
-                                                selectedActivities.includes(activity.id)
-                                                ? 'border-purple-600 bg-purple-50 dark:bg-[var(--bg-card-dark)]'
-                                                : 'border-gray-200 hover:border-purple-300 dark:border-gray-700 dark:hover:border-purple-300 dark:bg-[var(--bg-card-dark)]'
-                                            }`}
-                                    >
-                                        <div className="flex items-start">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedActivities.includes(activity.id)}
-                                                onChange={() => {}}
-                                                className="mt-1 h-5 w-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-                                            />
-                                            <div className="ml-3 flex-1">
-                                                {activity.image && (
-                                                    <div className="mb-3 rounded-lg overflow-hidden">
-                                                        <Image
-                                                            src={getImageUrl(activity.image)}
-                                                            alt={activity.name}
-                                                            width={300}
-                                                            height={200}
-                                                            className="w-full h-32 object-cover"
-                                                        />
-                                                    </div>
-                                                )}
-                                                <h3 className="font-bold text-gray-900 dark:text-white mb-1">{activity.name}</h3>
-                                                <p className="text-sm text-gray-600 dark:text-[var(--text-muted-dark)] mb-2">{activity.description}</p>
-                                                <p className="text-lg font-bold text-purple-600">
-                                                    €{Number(activity.price).toFixed(2)}
-                                                </p>
-                                                {activity.max_participants && (
-                                                    <p className="text-xs text-gray-500 dark:text-[var(--text-muted-dark)] mt-1">
-                                                        Max. {activity.max_participants} deelnemers
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {selectedActivities.length > 0 && (
-                                <div className="mt-6 p-4 bg-gray-50 dark:bg-[var(--bg-card-dark)] rounded-lg">
-                                    <p className="text-sm text-gray-700 dark:text-[var(--text-muted-dark)]">
-                                        <strong>Let op:</strong> De kosten voor de geselecteerde activiteiten 
-                                        (totaal €{totalActivitiesPrice.toFixed(2)}) worden meegenomen in je restbetaling.
+                                    <p className="text-blue-700 text-sm mt-2">
+                                        Om je aanmelding definitief te maken, hebben we nog wat extra informatie nodig en
+                                        vragen we je om een aanbetaling van <strong>€{Number(trip.deposit_amount).toFixed(2)}</strong> te doen.
                                     </p>
                                 </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Payment Summary */}
-                    <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border-t-4 border-green-600">
-                        <div className="flex items-center mb-6">
-                            <CreditCard className="h-6 w-6 text-green-600 mr-3" />
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Aanbetaling</h2>
-                        </div>
-
-                        <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-[var(--bg-card-dark)] dark:to-[var(--bg-card-dark)] rounded-lg p-6 mb-6">
-                            <div className="flex justify-between items-center">
-                                <span className="text-lg font-semibold text-gray-700 dark:text-[var(--text-muted-dark)]">Aanbetalingsbedrag:</span>
-                                <span className="text-3xl font-bold text-purple-600">
-                                    €{Number(trip.deposit_amount).toFixed(2)}
-                                </span>
                             </div>
                         </div>
 
-                        <div className="text-sm text-gray-600 space-y-2">
-                            <p>
-                                <strong>Let op:</strong> Na het opslaan van je gegevens wordt je doorgestuurd naar de betaalpagina.
-                            </p>
-                            <p>
-                                De geselecteerde activiteiten (€{totalActivitiesPrice.toFixed(2)}) worden later bij de restbetaling gefactureerd.
-                            </p>
-                        </div>
-                    </div>
+                        {/* Form */}
+                        <form onSubmit={handleSubmit} className="space-y-8">
+                            {/* Personal Information */}
+                            <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border-t-4 border-purple-600">
+                                <div className="flex items-center mb-6">
+                                    <FileText className="h-6 w-6 text-purple-600 mr-3" />
+                                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Aanvullende gegevens</h2>
+                                </div>
 
-                    {/* Submit Button */}
-                    <div className="flex justify-end">
-                        <button
-                            type="submit"
-                            disabled={submitting || success}
-                            className="px-8 py-4 bg-gradient-to-r from-purple-600 to-purple-700 text-white font-bold rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-                        >
-                            {submitting ? (
-                                <>
-                                    <Loader2 className="animate-spin h-5 w-5 mr-3" />
-                                    Bezig met opslaan...
-                                </>
-                            ) : (
-                                <>
-                                    Opslaan en doorgaan naar betaling
-                                    <CreditCard className="ml-3 h-5 w-5" />
-                                </>
+                                <div className="space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">
+                                                Voornaam <span className="text-red-500">*</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="first_name"
+                                                value={form.first_name}
+                                                onChange={handleChange}
+                                                required
+                                                className="w-full px-4 py-3 border border-gray-300 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent bg-white dark:bg-[var(--bg-soft-dark)] dark:text-white"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">
+                                                Tussenvoegsel
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="middle_name"
+                                                value={form.middle_name}
+                                                onChange={handleChange}
+                                                className="w-full px-4 py-3 border border-gray-300 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent bg-white dark:bg-[var(--bg-soft-dark)] dark:text-white"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">
+                                                Achternaam <span className="text-red-500">*</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="last_name"
+                                                value={form.last_name}
+                                                onChange={handleChange}
+                                                required
+                                                className="w-full px-4 py-3 border border-gray-300 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent bg-white dark:bg-[var(--bg-soft-dark)] dark:text-white"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">
+                                                Geboortedatum <span className="text-red-500">*</span>
+                                            </label>
+                                            <input
+                                                type="date"
+                                                name="date_of_birth"
+                                                value={form.date_of_birth}
+                                                onChange={handleChange}
+                                                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent transition"
+                                                required
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                ID Document Type <span className="text-red-500">*</span>
+                                            </label>
+                                            <select
+                                                name="id_document_type"
+                                                value={form.id_document_type}
+                                                onChange={handleChange}
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent transition"
+                                                required
+                                            >
+                                                <option value="">Selecteer...</option>
+                                                <option value="passport">Paspoort</option>
+                                                <option value="id_card">ID Kaart</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Allergieën
+                                        </label>
+                                        <textarea
+                                            name="allergies"
+                                            value={form.allergies}
+                                            onChange={handleChange}
+                                            rows={3}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent transition"
+                                            placeholder="Vermeld hier eventuele allergieën..."
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Bijzonderheden
+                                        </label>
+                                        <textarea
+                                            name="special_notes"
+                                            value={form.special_notes}
+                                            onChange={handleChange}
+                                            rows={3}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent transition"
+                                            placeholder="Overige bijzonderheden die we moeten weten..."
+                                        />
+                                    </div>
+
+                                    {trip.is_bus_trip && (
+                                        <div className="flex items-start pt-4 bg-blue-50 dark:bg-[var(--bg-card-dark)] p-4 rounded-lg">
+                                            <input
+                                                type="checkbox"
+                                                name="willing_to_drive"
+                                                checked={form.willing_to_drive}
+                                                onChange={handleChange}
+                                                className="mt-1 h-5 w-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                                            />
+                                            <label className="ml-3">
+                                                <div className="flex items-center text-sm font-semibold text-gray-700 mb-1">
+                                                    <Bus className="h-5 w-5 mr-2 text-blue-600" />
+                                                    Ik wil vrijwillig rijden tijdens de busjesreis
+                                                </div>
+                                                <p className="text-xs text-gray-600">
+                                                    We organiseren deze reis met busjes en zoeken vrijwilligers die willen rijden.
+                                                </p>
+                                            </label>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Activities Selection */}
+                            {activities.length > 0 && (
+                                <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border-t-4 border-blue-600">
+                                    <div className="flex items-center mb-6">
+                                        <Utensils className="h-6 w-6 text-blue-600 mr-3" />
+                                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Activiteiten tijdens de reis</h2>
+                                    </div>
+
+                                    <p className="text-gray-600 dark:text-[var(--text-muted-dark)] mb-6">
+                                        Selecteer de activiteiten waar je aan wilt deelnemen.
+                                        De kosten worden meegenomen in de restbetaling.
+                                    </p>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {activities.map(activity => (
+                                            <div
+                                                key={activity.id}
+                                                onClick={() => toggleActivity(activity.id)}
+                                                className={`cursor-pointer border-2 rounded-lg p-4 transition-all ${selectedActivities.includes(activity.id)
+                                                    ? 'border-purple-600 bg-purple-50 dark:bg-[var(--bg-card-dark)]'
+                                                    : 'border-gray-200 hover:border-purple-300 dark:border-gray-700 dark:hover:border-purple-300 dark:bg-[var(--bg-card-dark)]'
+                                                    }`}
+                                            >
+                                                <div className="flex items-start">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedActivities.includes(activity.id)}
+                                                        onChange={() => { }}
+                                                        className="mt-1 h-5 w-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                                                    />
+                                                    <div className="ml-3 flex-1">
+                                                        {activity.image && (
+                                                            <div className="mb-3 rounded-lg overflow-hidden">
+                                                                <Image
+                                                                    src={getImageUrl(activity.image)}
+                                                                    alt={activity.name}
+                                                                    width={300}
+                                                                    height={200}
+                                                                    className="w-full h-32 object-cover"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        <h3 className="font-bold text-gray-900 dark:text-white mb-1">{activity.name}</h3>
+                                                        <p className="text-sm text-gray-600 dark:text-[var(--text-muted-dark)] mb-2">{activity.description}</p>
+                                                        <p className="text-lg font-bold text-purple-600">
+                                                            €{Number(activity.price).toFixed(2)}
+                                                        </p>
+                                                        {activity.options && activity.options.length > 0 && selectedActivities.includes(activity.id) && (
+                                                            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700" onClick={(e) => e.stopPropagation()}>
+                                                                <p className="text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Opties:</p>
+                                                                <div className="space-y-2">
+                                                                    {activity.options.map((option: any) => (
+                                                                        <label key={option.name} className="flex items-center gap-2 cursor-pointer">
+                                                                            <input
+                                                                                type={activity.max_selections === 1 ? "radio" : "checkbox"}
+                                                                                name={`activity-options-${activity.id}`}
+                                                                                checked={selectedActivityOptions[activity.id]?.includes(option.name) || false}
+                                                                                onChange={() => toggleOption(activity.id, option.name, activity.max_selections)}
+                                                                                className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                                                                            />
+                                                                            <span className="text-sm text-gray-700 dark:text-[var(--text-muted-dark)]">
+                                                                                {option.name} {Number(option.price) > 0 && `(+€${Number(option.price).toFixed(2)})`}
+                                                                            </span>
+                                                                        </label>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        {activity.max_participants && (
+                                                            <p className="text-xs text-gray-500 dark:text-[var(--text-muted-dark)] mt-1">
+                                                                Max. {activity.max_participants} deelnemers
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {selectedActivities.length > 0 && (
+                                        <div className="mt-6 p-4 bg-gray-50 dark:bg-[var(--bg-card-dark)] rounded-lg">
+                                            <p className="text-sm text-gray-700 dark:text-[var(--text-muted-dark)]">
+                                                <strong>Let op:</strong> De kosten voor de geselecteerde activiteiten
+                                                (totaal €{totalActivitiesPrice.toFixed(2)}) worden meegenomen in je restbetaling.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
                             )}
-                        </button>
-                    </div>
-                </form>
+
+                            {/* Payment Summary */}
+                            <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border-t-4 border-green-600">
+                                <div className="flex items-center mb-6">
+                                    <CreditCard className="h-6 w-6 text-green-600 mr-3" />
+                                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Aanbetaling</h2>
+                                </div>
+
+                                <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-[var(--bg-card-dark)] dark:to-[var(--bg-card-dark)] rounded-lg p-6 mb-6">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-lg font-semibold text-gray-700 dark:text-[var(--text-muted-dark)]">Aanbetalingsbedrag:</span>
+                                        <span className="text-3xl font-bold text-purple-600">
+                                            €{Number(trip.deposit_amount).toFixed(2)}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="text-sm text-gray-600 space-y-2">
+                                    <p>
+                                        <strong>Let op:</strong> Na het opslaan van je gegevens wordt je doorgestuurd naar de betaalpagina.
+                                    </p>
+                                    <p>
+                                        De geselecteerde activiteiten (€{totalActivitiesPrice.toFixed(2)}) worden later bij de restbetaling gefactureerd.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Submit Button */}
+                            <div className="flex justify-end">
+                                <button
+                                    type="submit"
+                                    disabled={submitting || success}
+                                    className="px-8 py-4 bg-gradient-to-r from-purple-600 to-purple-700 text-white font-bold rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                                >
+                                    {submitting ? (
+                                        <>
+                                            <Loader2 className="animate-spin h-5 w-5 mr-3" />
+                                            Bezig met opslaan...
+                                        </>
+                                    ) : (
+                                        <>
+                                            Opslaan en doorgaan naar betaling
+                                            <CreditCard className="ml-3 h-5 w-5" />
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </form>
                     </>
                 )}
             </div>

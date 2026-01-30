@@ -3,11 +3,16 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { tripsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
+import { tripsApi, getImageUrl, committeesApi } from '@/shared/lib/api/salvemundi';
 import { directusUrl } from '@/shared/lib/directus';
 import { Loader2, Plus, Edit2, Trash2, Save, X, Upload, Calendar, Users, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
+
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
+
+
 
 export default function ReisInstellingenPage() {
     const router = useRouter();
@@ -24,12 +29,15 @@ export default function ReisInstellingenPage() {
         event_date: '',
         start_date: '',
         end_date: '',
+        registration_start_date: null as Date | null,
         registration_open: true,
         max_participants: 0,
+        max_crew: 0,
         base_price: 0,
         crew_discount: 0,
         deposit_amount: 0,
         is_bus_trip: false,
+        allow_final_payments: false,
     });
 
     useEffect(() => {
@@ -50,9 +58,25 @@ export default function ReisInstellingenPage() {
         }
     };
 
-    const handleAdd = () => {
+    const handleAdd = async () => {
         setAddingNew(true);
         setEditingId(null);
+
+        let crewCount = 0;
+        try {
+            const committees = await committeesApi.getAllWithMembers();
+            // Try to find the trip committee ('Reis' or 'Reiscommissie')
+            const reisCie = committees.find((c: any) =>
+                c.name.toLowerCase().includes('reis') &&
+                c.name.toLowerCase().includes('commissie')
+            );
+            if (reisCie && reisCie.committee_members) {
+                crewCount = reisCie.committee_members.length;
+            }
+        } catch (e) {
+            console.warn('Could not fetch committee members for default crew size', e);
+        }
+
         setForm({
             name: '',
             description: '',
@@ -60,12 +84,15 @@ export default function ReisInstellingenPage() {
             event_date: '',
             start_date: '',
             end_date: '',
+            registration_start_date: null,
             registration_open: true,
-            max_participants: 30,
+            max_participants: 30, // Default value
+            max_crew: crewCount,
             base_price: 0,
             crew_discount: 0,
             deposit_amount: 0,
             is_bus_trip: false,
+            allow_final_payments: false,
         });
     };
 
@@ -79,12 +106,15 @@ export default function ReisInstellingenPage() {
             event_date: trip.event_date ? trip.event_date.split('T')[0] : '',
             start_date: trip.start_date ? String(trip.start_date).split('T')[0] : (trip.event_date ? String(trip.event_date).split('T')[0] : ''),
             end_date: trip.end_date ? String(trip.end_date).split('T')[0] : '',
+            registration_start_date: trip.registration_start_date ? new Date(trip.registration_start_date) : null,
             registration_open: trip.registration_open,
             max_participants: trip.max_participants,
+            max_crew: trip.max_crew || 0,
             base_price: trip.base_price,
             crew_discount: trip.crew_discount,
             deposit_amount: trip.deposit_amount,
             is_bus_trip: trip.is_bus_trip,
+            allow_final_payments: trip.allow_final_payments || false,
         });
     };
 
@@ -98,12 +128,15 @@ export default function ReisInstellingenPage() {
             event_date: '',
             start_date: '',
             end_date: '',
+            registration_start_date: null,
             registration_open: true,
             max_participants: 0,
+            max_crew: 0,
             base_price: 0,
             crew_discount: 0,
             deposit_amount: 0,
             is_bus_trip: false,
+            allow_final_payments: false,
         });
     };
 
@@ -135,12 +168,15 @@ export default function ReisInstellingenPage() {
                 end_date: form.end_date || undefined,
                 // Keep event_date for backward compatibility when present
                 event_date: form.event_date || undefined,
+                registration_start_date: form.registration_start_date ? form.registration_start_date.toISOString() : null,
                 registration_open: form.registration_open,
                 max_participants: form.max_participants,
+                max_crew: form.max_crew,
                 base_price: form.base_price,
                 crew_discount: form.crew_discount,
                 deposit_amount: form.deposit_amount,
                 is_bus_trip: form.is_bus_trip,
+                allow_final_payments: form.allow_final_payments,
             };
 
             if (addingNew) {
@@ -293,25 +329,40 @@ export default function ReisInstellingenPage() {
 
                             <div>
                                 <label className="block text-sm font-medium text-admin-muted mb-2">
-                                    Max. Deelnemers *
+                                    Max. Deelnemers zonder commissie *
                                 </label>
                                 <input
                                     type="number"
                                     value={form.max_participants}
                                     onChange={(e) => setForm({ ...form, max_participants: parseInt(e.target.value) || 0 })}
+                                    onFocus={(e) => e.target.select()}
                                     className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-admin-muted mb-2">
-                                    Basisprijs (€) *
+                                    Aantal Crew *
+                                </label>
+                                <input
+                                    type="number"
+                                    value={form.max_crew}
+                                    onChange={(e) => setForm({ ...form, max_crew: parseInt(e.target.value) || 0 })}
+                                    onFocus={(e) => e.target.select()}
+                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-admin-muted mb-2">
+                                    Prijs per deelnemer excl. Activiteiten *
                                 </label>
                                 <input
                                     type="number"
                                     step="0.01"
                                     value={form.base_price}
                                     onChange={(e) => setForm({ ...form, base_price: parseFloat(e.target.value) || 0 })}
+                                    onFocus={(e) => e.target.select()}
                                     className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
                             </div>
@@ -325,6 +376,7 @@ export default function ReisInstellingenPage() {
                                     step="0.01"
                                     value={form.crew_discount}
                                     onChange={(e) => setForm({ ...form, crew_discount: parseFloat(e.target.value) || 0 })}
+                                    onFocus={(e) => e.target.select()}
                                     className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
                             </div>
@@ -338,6 +390,7 @@ export default function ReisInstellingenPage() {
                                     step="0.01"
                                     value={form.deposit_amount}
                                     onChange={(e) => setForm({ ...form, deposit_amount: parseFloat(e.target.value) || 0 })}
+                                    onFocus={(e) => e.target.select()}
                                     className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
                             </div>
@@ -375,8 +428,31 @@ export default function ReisInstellingenPage() {
                                         onChange={(e) => setForm({ ...form, registration_open: e.target.checked })}
                                         className="h-4 w-4 text-theme-purple focus:ring-theme-purple border-admin rounded bg-admin-card"
                                     />
-                                    <span className="ml-2 text-sm text-admin-muted">Inschrijving open</span>
+                                    <span className="ml-2 text-sm text-admin-muted">Inschrijving nu direct openen (Forceer Open)</span>
                                 </label>
+
+                                <div className="mt-4">
+                                    <label className="block text-sm font-semibold text-admin-muted mb-2">
+                                        Automatisch openen vanaf (Optioneel)
+                                    </label>
+                                    <p className="text-xs text-admin-muted mb-2">
+                                        Als je dit invult, gaat de inschrijving automatisch open op dit tijdstip,
+                                        ook al staat 'Forceer Open' hierboven uit.
+                                    </p>
+                                    <DatePicker
+                                        selected={form.registration_start_date}
+                                        onChange={(date) => setForm({ ...form, registration_start_date: date })}
+                                        showTimeSelect
+                                        timeFormat="HH:mm"
+                                        timeIntervals={15}
+                                        dateFormat="d MMMM yyyy HH:mm"
+                                        locale={nl}
+                                        className="w-full px-4 py-2 border border-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent bg-admin-card text-admin"
+                                        placeholderText="Selecteer startdatum en tijd..."
+                                        isClearable
+                                        showYearDropdown
+                                    />
+                                </div>
 
                                 <label className="flex items-center">
                                     <input
@@ -387,6 +463,17 @@ export default function ReisInstellingenPage() {
                                     />
                                     <span className="ml-2 text-sm text-admin-muted">Busreis (vraag rijbewijs en bereidheid om te rijden)</span>
                                 </label>
+
+                                <label className="flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        checked={form.allow_final_payments}
+                                        onChange={(e) => setForm({ ...form, allow_final_payments: e.target.checked })}
+                                        className="h-4 w-4 text-theme-purple focus:ring-theme-purple border-admin rounded bg-admin-card"
+                                    />
+                                    <span className="ml-2 text-sm font-bold text-admin">Restbetalingen openstellen</span>
+                                </label>
+                                <p className="text-xs text-admin-muted ml-6 italic">Als dit uit staat, kunnen reizigers de restbetaling nog niet voldoen en kunnen er geen restbetalingsmails verstuurd worden.</p>
                             </div>
                         </div>
 
@@ -508,6 +595,12 @@ export default function ReisInstellingenPage() {
                                                     <div>
                                                         <span className="text-admin-muted">Crew Korting:</span>
                                                         <p className="font-semibold text-green-600">-€{fmt(trip.crew_discount)}</p>
+                                                    </div>
+                                                )}
+                                                {trip.max_crew > 0 && (
+                                                    <div>
+                                                        <span className="text-admin-muted">Crew Grootte:</span>
+                                                        <p className="font-semibold text-admin">{trip.max_crew}</p>
                                                     </div>
                                                 )}
                                             </div>

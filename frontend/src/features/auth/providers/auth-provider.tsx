@@ -36,6 +36,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [isMsalInitializing, setIsMsalInitializing] = useState(true);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
+    // Helper to check if the access token is about to expire (within 2 minutes)
+    const isTokenExpiringSoon = (): boolean => {
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (!token) return true;
+
+            // Decode the JWT payload (base64)
+            const parts = token.split('.');
+            if (parts.length !== 3) return true;
+
+            const payload = JSON.parse(atob(parts[1]));
+            const exp = payload.exp;
+            if (!exp) return true;
+
+            // Check if token expires within 2 minutes (120 seconds)
+            const nowSeconds = Math.floor(Date.now() / 1000);
+            return (exp - nowSeconds) < 120;
+        } catch (e) {
+            // If we can't decode the token, assume it's expiring
+            return true;
+        }
+    };
+
+    // Proactive token refresh function
+    const proactiveRefresh = async () => {
+        const refreshToken = localStorage.getItem('refresh_token');
+        if (!refreshToken) return;
+
+        // Only refresh if token is expiring soon or already expired
+        if (!isTokenExpiringSoon()) return;
+
+        console.log('[AuthProvider] Proactively refreshing token (expiring soon)...');
+        try {
+            const response = await authApi.refreshAccessToken(refreshToken);
+            localStorage.setItem('auth_token', response.access_token);
+            localStorage.setItem('refresh_token', response.refresh_token);
+            setUser(response.user);
+            console.log('[AuthProvider] Token refreshed successfully');
+        } catch (e) {
+            console.error('[AuthProvider] Proactive refresh failed:', e);
+        }
+    };
+
     // Check for existing session on mount
     useEffect(() => {
         checkAuthStatus();
@@ -53,9 +96,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setIsLoading(false);
         };
 
+        // Listen for external auth refresh events (from directusFetch)
+        const onAuthRefreshed = (e: CustomEvent) => {
+            const payload = e.detail;
+            if (payload && payload.user) {
+                // If payload includes user data, use it
+                setUser(payload.user);
+            } else {
+                // Otherwise refresh our local state from the new token
+                refreshUser();
+            }
+        };
+
+        // Visibility change handler - refresh token when user comes back to tab
+        const onVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                const refreshToken = localStorage.getItem('refresh_token');
+                if (refreshToken && !isLoading && !isMsalInitializing && !isLoggingOut) {
+                    console.log('[AuthProvider] Tab became visible, checking token...');
+                    proactiveRefresh();
+                }
+            }
+        };
+
         window.addEventListener('auth:expired', onAuthExpired as EventListener);
+        window.addEventListener('auth:refreshed', onAuthRefreshed as EventListener);
+        document.addEventListener('visibilitychange', onVisibilityChange);
+
+        // Proactive background refresh every 5 minutes (reduced from 10)
+        const refreshInterval = setInterval(() => {
+            const refreshToken = localStorage.getItem('refresh_token');
+            if (refreshToken && !isLoading && !isMsalInitializing && !isLoggingOut) {
+                proactiveRefresh();
+            }
+        }, 5 * 60 * 1000);
+
         return () => {
             window.removeEventListener('auth:expired', onAuthExpired as EventListener);
+            window.removeEventListener('auth:refreshed', onAuthRefreshed as EventListener);
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+            clearInterval(refreshInterval);
         };
     }, []);
 
@@ -153,9 +233,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 if (response && response.account) {
                     msalInstance.setActiveAccount(response.account);
                     await handleLoginSuccess(response);
+                } else {
+                    // Proactively restore active account from cache if nothing was returned by redirect
+                    const accounts = msalInstance.getAllAccounts();
+                    if (accounts.length > 0) {
+                        const account = accounts[0];
+                        msalInstance.setActiveAccount(account);
+
+                        // If we are not currently authenticated with Directus, 
+                        // attempt a silent token acquisition to log back in
+                        const currentToken = localStorage.getItem('auth_token');
+                        if (!user && !currentToken) {
+                            console.log('[AuthProvider] Active MSAL account found, attempting silent login...');
+                            try {
+                                const silentResult = await msalInstance.acquireTokenSilent({
+                                    ...loginRequest,
+                                    account: account
+                                });
+                                if (silentResult) {
+                                    await handleLoginSuccess(silentResult);
+                                }
+                            } catch (silentError) {
+                                // Silent acquisition failed, user might need to click login
+                                console.warn('[AuthProvider] Silent MSAL token acquisition failed:', silentError);
+                            }
+                        }
+                    }
                 }
             } catch (error) {
-                console.error('Error handling redirect promise:', error);
+                console.error('Error handling MSAL initialization:', error);
             } finally {
                 setIsMsalInitializing(false);
             }

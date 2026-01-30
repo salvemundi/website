@@ -1103,18 +1103,21 @@ export interface Trip {
     id: number;
     name: string;
     description: string;
-    image?: string;
+    image?: string | null;
     // For compatibility with single-day trips we keep `event_date`.
     // New multi-day support uses `start_date` and optional `end_date`.
-    event_date: string;
-    start_date?: string;
-    end_date?: string;
+    event_date?: string | null;
+    start_date?: string | null;
+    end_date?: string | null;
+    registration_start_date?: string | null;
     registration_open: boolean;
     max_participants: number;
+    max_crew: number;
     base_price: number;
     crew_discount: number;
     deposit_amount: number;
     is_bus_trip: boolean;
+    allow_final_payments?: boolean;
     created_at: string;
     updated_at: string;
 }
@@ -1143,7 +1146,10 @@ export interface TripSignup {
     phone_number: string;
     date_of_birth?: string;
     id_document_type?: 'passport' | 'id_card';
+    id_document?: 'passport' | 'id_card'; // Legacy/Typo support
+    document_number?: string;
     allergies?: string;
+    alergies?: string; // Legacy/Typo support
     special_notes?: string;
     willing_to_drive?: boolean;
     role: 'participant' | 'crew';
@@ -1152,6 +1158,8 @@ export interface TripSignup {
     deposit_paid_at?: string;
     full_payment_paid: boolean;
     full_payment_paid_at?: string;
+    deposit_email_sent?: boolean;
+    final_email_sent?: boolean;
     terms_accepted: boolean;
     created_at: string;
     updated_at: string;
@@ -1160,7 +1168,7 @@ export interface TripSignup {
 export const tripsApi = {
     getAll: async () => {
         const query = buildQueryString({
-            fields: ['id', 'name', 'description', 'image', 'event_date', 'start_date', 'end_date', 'registration_open', 'max_participants', 'base_price', 'crew_discount', 'deposit_amount', 'is_bus_trip', 'created_at', 'updated_at'],
+            fields: ['id', 'name', 'description', 'image', 'event_date', 'start_date', 'end_date', 'registration_start_date', 'registration_open', 'max_participants', 'max_crew', 'base_price', 'crew_discount', 'deposit_amount', 'is_bus_trip', 'allow_final_payments', 'created_at', 'updated_at'],
             sort: ['-event_date']
         });
         return directusFetch<Trip[]>(`/items/trips?${query}`);
@@ -1250,7 +1258,7 @@ export const tripSignupsApi = {
 };
 
 export const tripSignupActivitiesApi = {
-    create: async (data: { trip_signup_id: number; trip_activity_id: number }) => {
+    create: async (data: { trip_signup_id: number; trip_activity_id: number; selected_options?: any }) => {
         return directusFetch<any>(`/items/trip_signup_activities`, {
             method: 'POST',
             body: JSON.stringify(data)
@@ -1264,7 +1272,14 @@ export const tripSignupActivitiesApi = {
     getBySignupId: async (signupId: number) => {
         const query = buildQueryString({
             filter: { trip_signup_id: { _eq: signupId } },
-            fields: ['id', 'trip_activity_id.*']
+            fields: ['id', 'selected_options', 'trip_activity_id.*']
+        });
+        return directusFetch<any[]>(`/items/trip_signup_activities?${query}`);
+    },
+    getByActivityId: async (activityId: number) => {
+        const query = buildQueryString({
+            filter: { trip_activity_id: { _eq: activityId } },
+            fields: ['id', 'selected_options', 'trip_signup_id.*']
         });
         return directusFetch<any[]>(`/items/trip_signup_activities?${query}`);
     },

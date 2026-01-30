@@ -4,15 +4,15 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { directusFetch } from '@/shared/lib/directus';
-import { 
-    tripActivitiesApi, 
-    tripSignupActivitiesApi 
+import {
+    tripActivitiesApi,
+    tripSignupActivitiesApi
 } from '@/shared/lib/api/salvemundi';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { 
-    Loader2, 
-    AlertCircle, 
+import {
+    Loader2,
+    AlertCircle,
     Save,
     ArrowLeft,
     User,
@@ -34,6 +34,7 @@ interface TripSignup {
     date_of_birth?: string;
     id_document_type?: 'passport' | 'id_card';
     allergies?: string;
+    alergies?: string;
     special_notes?: string;
     willing_to_drive?: boolean;
     role: 'participant' | 'crew';
@@ -109,7 +110,7 @@ export default function DeelnemerDetailPage() {
                 phone_number: signupData.phone_number,
                 date_of_birth: signupData.date_of_birth || '',
                 id_document_type: (signupData.id_document_type as 'passport' | 'id_card') || '',
-                allergies: signupData.allergies || '',
+                allergies: signupData.allergies || signupData.alergies || '',
                 special_notes: signupData.special_notes || '',
                 willing_to_drive: signupData.willing_to_drive || false,
                 role: signupData.role,
@@ -136,8 +137,8 @@ export default function DeelnemerDetailPage() {
     };
 
     const toggleActivity = (activityId: number) => {
-        setSelectedActivities(prev => 
-            prev.includes(activityId) 
+        setSelectedActivities(prev =>
+            prev.includes(activityId)
                 ? prev.filter(id => id !== activityId)
                 : [...prev, activityId]
         );
@@ -195,7 +196,7 @@ export default function DeelnemerDetailPage() {
 
             setSuccess(true);
             await loadData(); // Reload data
-            
+
             setTimeout(() => setSuccess(false), 3000);
         } catch (err: any) {
             console.error('Error saving:', err);
@@ -229,10 +230,10 @@ export default function DeelnemerDetailPage() {
 
     if (!signup) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center bg-admin-card">
                 <div className="text-center">
                     <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Deelnemer niet gevonden</h1>
+                    <h1 className="text-2xl font-bold text-admin">Deelnemer niet gevonden</h1>
                 </div>
             </div>
         );
@@ -242,7 +243,7 @@ export default function DeelnemerDetailPage() {
         <>
             <PageHeader
                 title="Deelnemer bewerken"
-                // backgroundImage="/img/backgrounds/committees-bg.jpg"
+            // backgroundImage="/img/backgrounds/committees-bg.jpg"
             />
 
             <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -271,43 +272,46 @@ export default function DeelnemerDetailPage() {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Personal Information */}
-            <div className="bg-purple-50 dark:bg-[var(--bg-card-dark)] rounded-lg shadow p-6">
+                    <div className="bg-admin-card rounded-lg shadow p-6 border border-admin">
                         <div className="flex items-center mb-6">
-                            <User className="h-6 w-6 text-purple-600 mr-3" />
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Persoonlijke gegevens</h2>
+                            <User className="h-6 w-6 text-theme-purple mr-3" />
+                            <h2 className="text-xl font-bold text-admin">Persoonlijke gegevens</h2>
                         </div>
 
                         <div className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Voornaam</label>
+                                    <label className="block text-sm font-semibold text-admin-muted mb-2">Voornaam</label>
                                     <input
                                         type="text"
                                         name="first_name"
                                         value={form.first_name}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600"
+                                        onFocus={(e) => e.target.select()}
+                                        className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Tussenvoegsel</label>
+                                    <label className="block text-sm font-semibold text-admin-muted mb-2">Tussenvoegsel</label>
                                     <input
                                         type="text"
                                         name="middle_name"
                                         value={form.middle_name}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600"
+                                        onFocus={(e) => e.target.select()}
+                                        className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Achternaam</label>
+                                    <label className="block text-sm font-semibold text-admin-muted mb-2">Achternaam</label>
                                     <input
                                         type="text"
                                         name="last_name"
                                         value={form.last_name}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600"
+                                        onFocus={(e) => e.target.select()}
+                                        className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                         required
                                     />
                                 </div>
@@ -315,24 +319,24 @@ export default function DeelnemerDetailPage() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Email</label>
+                                    <label className="block text-sm font-semibold text-admin-muted mb-2">Email</label>
                                     <input
                                         type="email"
                                         name="email"
                                         value={form.email}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600"
+                                        className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Telefoon</label>
+                                    <label className="block text-sm font-semibold text-admin-muted mb-2">Telefoon</label>
                                     <input
                                         type="tel"
                                         name="phone_number"
                                         value={form.phone_number}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600"
+                                        className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                         required
                                     />
                                 </div>
@@ -340,22 +344,22 @@ export default function DeelnemerDetailPage() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Geboortedatum</label>
+                                    <label className="block text-sm font-semibold text-admin-muted mb-2">Geboortedatum</label>
                                     <input
                                         type="date"
                                         name="date_of_birth"
                                         value={form.date_of_birth}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600"
+                                        className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent [color-scheme:dark]"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">ID Type</label>
+                                    <label className="block text-sm font-semibold text-admin-muted mb-2">ID Type</label>
                                     <select
                                         name="id_document_type"
                                         value={form.id_document_type}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600"
+                                        className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                     >
                                         <option value="">Selecteer...</option>
                                         <option value="passport">Paspoort</option>
@@ -365,24 +369,24 @@ export default function DeelnemerDetailPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Allergieën</label>
+                                <label className="block text-sm font-semibold text-admin-muted mb-2">Allergieën</label>
                                 <textarea
                                     name="allergies"
                                     value={form.allergies}
                                     onChange={handleChange}
                                     rows={2}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600"
+                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Bijzonderheden</label>
+                                <label className="block text-sm font-semibold text-admin-muted mb-2">Bijzonderheden</label>
                                 <textarea
                                     name="special_notes"
                                     value={form.special_notes}
                                     onChange={handleChange}
                                     rows={2}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600"
+                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 />
                             </div>
 
@@ -390,30 +394,31 @@ export default function DeelnemerDetailPage() {
                                 <input
                                     type="checkbox"
                                     name="willing_to_drive"
+                                    id="willing_to_drive"
                                     checked={form.willing_to_drive}
                                     onChange={handleChange}
-                                    className="h-4 w-4 text-purple-600 border-gray-300 rounded"
+                                    className="h-4 w-4 text-theme-purple border-admin rounded bg-admin-card"
                                 />
-                                <label className="ml-2 text-sm text-gray-700">Wil vrijwillig rijden</label>
+                                <label htmlFor="willing_to_drive" className="ml-2 text-sm text-admin-muted">Wil vrijwillig rijden</label>
                             </div>
                         </div>
                     </div>
 
                     {/* Status and Role */}
-                    <div className="bg-purple-50 rounded-lg shadow p-6">
+                    <div className="bg-admin-card rounded-lg shadow p-6 border border-admin">
                         <div className="flex items-center mb-6">
-                            <Calendar className="h-6 w-6 text-purple-600 mr-3" />
-                            <h2 className="text-xl font-bold text-gray-900">Status en rol</h2>
+                            <Calendar className="h-6 w-6 text-theme-purple mr-3" />
+                            <h2 className="text-xl font-bold text-admin">Status en rol</h2>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                                <label className="block text-sm font-semibold text-admin-muted mb-2">Status</label>
                                 <select
                                     name="status"
                                     value={form.status}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600"
+                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 >
                                     <option value="registered">Geregistreerd</option>
                                     <option value="confirmed">Bevestigd</option>
@@ -423,12 +428,12 @@ export default function DeelnemerDetailPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Rol</label>
+                                <label className="block text-sm font-semibold text-admin-muted mb-2">Rol</label>
                                 <select
                                     name="role"
                                     value={form.role}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600"
+                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                 >
                                     <option value="participant">Deelnemer</option>
                                     <option value="crew">Crew / Organisatie</option>
@@ -436,50 +441,52 @@ export default function DeelnemerDetailPage() {
                             </div>
                         </div>
 
-                        <div className="mt-4 p-4 bg-blue-50 rounded-lg text-sm text-blue-700">
-                            <strong>Let op:</strong> Crew leden krijgen automatisch korting op de restbetaling.
+                        <div className="mt-4 p-4 bg-admin-card-soft border border-admin rounded-lg text-sm text-admin-muted">
+                            <strong className="text-theme-purple">Let op:</strong> Crew leden krijgen automatisch korting op de restbetaling.
                         </div>
                     </div>
 
                     {/* Payment Status */}
-                    <div className="bg-purple-50 rounded-lg shadow p-6">
+                    <div className="bg-admin-card rounded-lg shadow p-6 border border-admin">
                         <div className="flex items-center mb-6">
-                            <CreditCard className="h-6 w-6 text-purple-600 mr-3" />
-                            <h2 className="text-xl font-bold text-gray-900">Betalingsstatus</h2>
+                            <CreditCard className="h-6 w-6 text-theme-purple mr-3" />
+                            <h2 className="text-xl font-bold text-admin">Betalingsstatus</h2>
                         </div>
 
                         <div className="space-y-4">
-                            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div className="flex items-center justify-between p-4 bg-admin-card-soft border border-admin rounded-lg">
                                 <div className="flex items-center">
                                     <input
                                         type="checkbox"
                                         name="deposit_paid"
+                                        id="deposit_paid"
                                         checked={form.deposit_paid}
                                         onChange={handleChange}
-                                        className="h-4 w-4 text-purple-600 border-gray-300 rounded"
+                                        className="h-4 w-4 text-theme-purple border-admin rounded bg-admin-card"
                                     />
-                                    <label className="ml-3 text-sm font-semibold text-gray-700">Aanbetaling voldaan</label>
+                                    <label htmlFor="deposit_paid" className="ml-3 text-sm font-semibold text-admin">Aanbetaling voldaan</label>
                                 </div>
                                 {signup.deposit_paid_at && (
-                                    <span className="text-sm text-gray-500">
+                                    <span className="text-sm text-admin-muted">
                                         {format(new Date(signup.deposit_paid_at), 'd MMM yyyy HH:mm', { locale: nl })}
                                     </span>
                                 )}
                             </div>
 
-                            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div className="flex items-center justify-between p-4 bg-admin-card-soft border border-admin rounded-lg">
                                 <div className="flex items-center">
                                     <input
                                         type="checkbox"
                                         name="full_payment_paid"
+                                        id="full_payment_paid"
                                         checked={form.full_payment_paid}
                                         onChange={handleChange}
-                                        className="h-4 w-4 text-purple-600 border-gray-300 rounded"
+                                        className="h-4 w-4 text-theme-purple border-admin rounded bg-admin-card"
                                     />
-                                    <label className="ml-3 text-sm font-semibold text-gray-700">Volledige betaling voldaan</label>
+                                    <label htmlFor="full_payment_paid" className="ml-3 text-sm font-semibold text-admin">Volledige betaling voldaan</label>
                                 </div>
                                 {signup.full_payment_paid_at && (
-                                    <span className="text-sm text-gray-500">
+                                    <span className="text-sm text-admin-muted">
                                         {format(new Date(signup.full_payment_paid_at), 'd MMM yyyy HH:mm', { locale: nl })}
                                     </span>
                                 )}
@@ -488,10 +495,10 @@ export default function DeelnemerDetailPage() {
                     </div>
 
                     {/* Activities */}
-                    <div className="bg-purple-50 rounded-lg shadow p-6">
+                    <div className="bg-admin-card rounded-lg shadow p-6 border border-admin">
                         <div className="flex items-center mb-6">
-                            <Utensils className="h-6 w-6 text-purple-600 mr-3" />
-                            <h2 className="text-xl font-bold text-gray-900">Activiteiten</h2>
+                            <Utensils className="h-6 w-6 text-theme-purple mr-3" />
+                            <h2 className="text-xl font-bold text-admin">Activiteiten</h2>
                         </div>
 
                         <div className="space-y-2">
@@ -499,23 +506,22 @@ export default function DeelnemerDetailPage() {
                                 <div
                                     key={activity.id}
                                     onClick={() => toggleActivity(activity.id)}
-                                    className={`cursor-pointer p-4 border-2 rounded-lg transition-all ${
-                                        selectedActivities.includes(activity.id)
-                                            ? 'border-purple-600 bg-purple-50'
-                                            : 'border-gray-200 hover:border-purple-300'
-                                    }`}
+                                    className={`cursor-pointer p-4 border rounded-lg transition-all ${selectedActivities.includes(activity.id)
+                                        ? 'border-theme-purple bg-theme-purple/10'
+                                        : 'border-admin hover:border-theme-purple/50 bg-admin-card'
+                                        }`}
                                 >
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center">
                                             <input
                                                 type="checkbox"
                                                 checked={selectedActivities.includes(activity.id)}
-                                                onChange={() => {}}
-                                                className="h-4 w-4 text-purple-600 border-gray-300 rounded"
+                                                onChange={() => { }}
+                                                className="h-4 w-4 text-theme-purple border-admin rounded bg-admin-card"
                                             />
-                                            <span className="ml-3 font-semibold text-gray-900">{activity.name}</span>
+                                            <span className="ml-3 font-semibold text-admin">{activity.name}</span>
                                         </div>
-                                        <span className="text-purple-600 font-bold">€{Number(activity.price).toFixed(2)}</span>
+                                        <span className="text-theme-purple font-bold">€{Number(activity.price).toFixed(2)}</span>
                                     </div>
                                 </div>
                             ))}
@@ -523,12 +529,12 @@ export default function DeelnemerDetailPage() {
                     </div>
 
                     {/* Metadata */}
-                    <div className="bg-purple-50 rounded-lg shadow p-6">
+                    <div className="bg-admin-card rounded-lg shadow p-6 border border-admin">
                         <div className="flex items-center mb-4">
-                            <FileText className="h-6 w-6 text-purple-600 mr-3" />
-                            <h2 className="text-xl font-bold text-gray-900">Metadata</h2>
+                            <FileText className="h-6 w-6 text-theme-purple mr-3" />
+                            <h2 className="text-xl font-bold text-admin">Metadata</h2>
                         </div>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-admin-muted">
                             <p>Aangemeld op: {format(new Date(signup.created_at), 'd MMMM yyyy HH:mm', { locale: nl })}</p>
                             <p>Deelnemer ID: {signup.id}</p>
                         </div>
@@ -548,7 +554,7 @@ export default function DeelnemerDetailPage() {
                         <button
                             type="submit"
                             disabled={saving}
-                            className="flex items-center gap-2 px-8 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50"
+                            className="flex items-center gap-2 px-8 py-3 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition disabled:opacity-50"
                         >
                             {saving ? (
                                 <>
@@ -563,8 +569,8 @@ export default function DeelnemerDetailPage() {
                             )}
                         </button>
                     </div>
-                </form>
-            </div>
+                </form >
+            </div >
         </>
     );
 }

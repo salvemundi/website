@@ -17,6 +17,8 @@ import {
     AlertCircle,
     Activity,
     Ticket,
+    RefreshCw,
+    Shield,
 } from 'lucide-react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 
@@ -303,7 +305,7 @@ export default function AdminDashboardPage() {
                 reisStats
             ] = await Promise.all([
                 // Total event signups
-                directusFetch<any>('/items/event_signups?aggregate[count]=*'),
+                directusFetch<any>('/items/event_signups?aggregate[count]=*').catch(() => [{ count: 0 }]),
                 // Users with birthdays in next 7 days
                 fetchUpcomingBirthdays(),
                 // Top sticker collectors
@@ -315,22 +317,21 @@ export default function AdminDashboardPage() {
                 // Sticker stats (total + growth)
                 fetchStickerStats(),
                 // Intro newsletter/blog stats
-                fetchIntroStats(),
-                // System health
-                fetchSystemHealth(),
+                isUserAuthorizedForIntro(effectiveUser) ? fetchIntroStats() : Promise.resolve({ signups: 0, blogLikes: 0, mostLikedPost: undefined }),
+                // System health - only for ICT/Bestuur
+                isIctMember ? fetchSystemHealth() : Promise.resolve({ errors: 0 }),
                 // Upcoming events with signup counts
                 fetchUpcomingEventsWithSignups(),
                 // Latest activities (most recent 4) with signup counts
                 fetchLatestEventsWithSignups(),
                 // Top committee by activities this year
-                fetchTopCommitteeByActivities(),
+                fetchTopStickerCollectors().then(() => fetchTopCommitteeByActivities()), // chaining ensure we don't spam
                 // Total active coupons
-                // (moved for ordering above)
                 directusFetch<any>('/items/coupons?aggregate[count]=*&filter[is_active][_eq]=true').catch(() => [{ count: 0 }]),
                 // Pub crawl stats
-                fetchPubCrawlStats(),
+                isUserAuthorizedForKroegentocht(effectiveUser) ? fetchPubCrawlStats() : Promise.resolve({ signups: 0, totalTickets: 0, groups: 0, upcomingEvent: undefined }),
                 // Reis signups
-                fetchReisStats()
+                isUserAuthorizedForReis(effectiveUser) ? fetchReisStats() : Promise.resolve(0)
             ]);
 
             setStats({
@@ -367,7 +368,7 @@ export default function AdminDashboardPage() {
         try {
             // Fetch all users with birthdays
             // Use limit=-1 to fetch ALL users, otherwise default is 100
-            const users = await directusFetch<any[]>('/users?fields=id,first_name,last_name,date_of_birth&filter[date_of_birth][_nnull]=true&limit=-1');
+            const users = await directusFetch<any[]>('/users?fields=id,first_name,last_name,date_of_birth&filter[date_of_birth][_nnull]=true&limit=-1').catch(() => []);
 
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -439,7 +440,7 @@ export default function AdminDashboardPage() {
             // Get only visible committees
             const committees = await directusFetch<any[]>(
                 '/items/committees?fields=id&filter[is_visible][_eq]=true'
-            );
+            ).catch(() => []);
 
             if (committees.length === 0) {
                 return 0;
@@ -450,7 +451,7 @@ export default function AdminDashboardPage() {
             // Fetch user ids for members and deduplicate so a user in multiple committees is counted once
             const members = await directusFetch<any[]>(
                 `/items/committee_members?fields=user_id.id,user_id&filter[committee_id][_in]=${committeeIds.join(',')}&limit=-1`
-            );
+            ).catch(() => []);
 
             const userIds = members
                 .map(m => {
@@ -503,7 +504,7 @@ export default function AdminDashboardPage() {
 
     const fetchEventsStats = async () => {
         try {
-            const allEvents = await directusFetch<any[]>('/items/events?fields=id,event_date&limit=-1');
+            const allEvents = await directusFetch<any[]>('/items/events?fields=id,event_date&limit=-1').catch(() => []);
             const now = new Date();
 
             const upcoming = allEvents.filter(event => new Date(event.event_date) >= now);
@@ -595,7 +596,7 @@ export default function AdminDashboardPage() {
             const currentYear = new Date().getFullYear();
 
             // Use eventsApi to respect permissions
-            const allEvents = await eventsApi.getAll();
+            const allEvents = await eventsApi.getAll().catch(() => []);
 
             // Filter events from this year using `event_date`
             const eventsThisYear = allEvents.filter((event: any) => {
@@ -608,7 +609,7 @@ export default function AdminDashboardPage() {
             const committeeCounts: Record<string, { name: string; count: number }> = {};
 
             // Fetch all committees to map IDs to names
-            const committees = await directusFetch<any[]>('/items/committees?fields=id,name');
+            const committees = await directusFetch<any[]>('/items/committees?fields=id,name').catch(() => []);
             const committeeMap = new Map(committees.map(c => [c.id, c.name]));
 
             eventsThisYear.forEach((event: any) => {
@@ -650,7 +651,7 @@ export default function AdminDashboardPage() {
 
     const fetchUpcomingEventsWithSignups = async () => {
         try {
-            const allEvents = await directusFetch<any[]>('/items/events?fields=id,name,event_date&limit=-1');
+            const allEvents = await directusFetch<any[]>('/items/events?fields=id,name,event_date&limit=-1').catch(() => []);
             const now = new Date();
 
             const upcoming = allEvents.filter(event => new Date(event.event_date) >= now);
@@ -659,7 +660,7 @@ export default function AdminDashboardPage() {
             const eventsWithSignups = await Promise.all(
                 upcoming.slice(0, 5).map(async (event) => {
                     try {
-                        const signups = await directusFetch<any>(`/items/event_signups?aggregate[count]=*&filter[event_id][_eq]=${event.id}`);
+                        const signups = await directusFetch<any>(`/items/event_signups?aggregate[count]=*&filter[event_id][_eq]=${event.id}`).catch(() => []);
                         return {
                             id: event.id,
                             name: event.name,
@@ -687,12 +688,12 @@ export default function AdminDashboardPage() {
     const fetchLatestEventsWithSignups = async () => {
         try {
             // Fetch latest events (use `event_date` only)
-            const allEvents = await directusFetch<any[]>('/items/events?fields=id,name,event_date&sort=-event_date&limit=4');
+            const allEvents = await directusFetch<any[]>('/items/events?fields=id,name,event_date&sort=-event_date&limit=4').catch(() => []);
 
             const eventsWithSignups = await Promise.all(
                 (allEvents || []).map(async (event) => {
                     try {
-                        const signups = await directusFetch<any>(`/items/event_signups?aggregate[count]=*&filter[event_id][_eq]=${event.id}`);
+                        const signups = await directusFetch<any>(`/items/event_signups?aggregate[count]=*&filter[event_id][_eq]=${event.id}`).catch(() => []);
                         return {
                             id: event.id,
                             name: event.name,
@@ -717,10 +718,10 @@ export default function AdminDashboardPage() {
         }
     };
 
-    const fetchPubCrawlStats = async () => {
+    const fetchPubCrawlStats = async (): Promise<{ signups: number; totalTickets: number; groups: number; upcomingEvent: { id: number; name: string; date: string } | undefined }> => {
         try {
             // Get upcoming pub crawl event
-            const allEvents = await directusFetch<any[]>('/items/pub_crawl_events?fields=id,name,date&sort=-date');
+            const allEvents = await directusFetch<any[]>('/items/pub_crawl_events?fields=id,name,date&sort=-date').catch(() => []);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
@@ -731,11 +732,11 @@ export default function AdminDashboardPage() {
             });
 
             if (!upcomingEvent) {
-                return { signups: 0, upcomingEvent: undefined };
+                return { signups: 0, totalTickets: 0, groups: 0, upcomingEvent: undefined };
             }
 
             // Get all signups for upcoming event so we can compute total tickets and groups
-            const signupsItems = await directusFetch<any[]>(`/items/pub_crawl_signups?filter[pub_crawl_event_id][_eq]=${upcomingEvent.id}&limit=-1&fields=id,amount_tickets`);
+            const signupsItems = await directusFetch<any[]>(`/items/pub_crawl_signups?filter[pub_crawl_event_id][_eq]=${upcomingEvent.id}&limit=-1&fields=id,amount_tickets`).catch(() => []);
             const groups = Array.isArray(signupsItems) ? signupsItems.length : 0;
             const totalTickets = Array.isArray(signupsItems)
                 ? signupsItems.reduce((sum, s) => sum + (Number(s.amount_tickets) || 0), 0)
@@ -753,14 +754,41 @@ export default function AdminDashboardPage() {
             };
         } catch (error) {
             console.error('Failed to fetch pub crawl stats:', error);
-            return { signups: 0, upcomingEvent: undefined };
+            return { signups: 0, totalTickets: 0, groups: 0, upcomingEvent: undefined };
         }
     };
 
     const fetchReisStats = async () => {
         try {
-            // Get all trip signups
-            const signupsData = await directusFetch<any[]>('/items/trip_signups?aggregate[count]=*');
+            // Find active trip
+            const allTrips = await directusFetch<any[]>('/items/trips?filter[status][_eq]=published&sort=-start_date');
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Find the most relevant upcoming/active trip
+            const activeTrip = allTrips.find(trip => {
+                // If trip has end_date, check if it's not finished
+                if (trip.end_date) {
+                    const endDate = new Date(trip.end_date);
+                    endDate.setHours(23, 59, 59, 999);
+                    return endDate >= today;
+                }
+
+                // Otherwise use start/event date
+                const dateStr = trip.event_date || trip.start_date;
+                if (!dateStr) return false;
+                const eventDate = new Date(dateStr);
+                eventDate.setHours(23, 59, 59, 999);
+                return eventDate >= today;
+            });
+
+            if (!activeTrip) {
+                return 0;
+            }
+
+            // Get signups for active trip, exclude cancelled
+            const signupsData = await directusFetch<any>(`/items/trip_signups?aggregate[count]=*&filter[trip_id][_eq]=${activeTrip.id}&filter[status][_neq]=cancelled`);
             return signupsData?.[0]?.count || 0;
         } catch (error) {
             console.error('Failed to fetch reis signups:', error);
@@ -798,7 +826,7 @@ export default function AdminDashboardPage() {
 
             <div className="container mx-auto px-4 py-8 max-w-7xl">
                 {/* Quick Actions Section */}
-                    <div className="mb-8">
+                <div className="mb-8">
                     <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4">
                         <StatCard
                             title="Overzicht"
@@ -891,8 +919,8 @@ export default function AdminDashboardPage() {
                                                     <div
                                                         key={person.id}
                                                         className={`flex items-center justify-between p-3 rounded-xl ${person.isToday
-                                                                ? 'bg-gradient-to-r from-yellow-100 to-yellow-50 dark:from-yellow-900/40 dark:to-yellow-900/20 border-2 border-yellow-400 dark:border-yellow-600'
-                                                                : 'bg-slate-100 dark:bg-slate-700'
+                                                            ? 'bg-gradient-to-r from-yellow-100 to-yellow-50 dark:from-yellow-900/40 dark:to-yellow-900/20 border-2 border-yellow-400 dark:border-yellow-600'
+                                                            : 'bg-slate-100 dark:bg-slate-700'
                                                             }`}
                                                     >
                                                         <div>
@@ -915,9 +943,9 @@ export default function AdminDashboardPage() {
                                 </div>
                                 <div className="col-span-1">
                                     <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
-                                       
 
-                               
+
+
 
                                         {/* Top 3 Sticker Collectors moved here */}
                                         <div className="mt-2">

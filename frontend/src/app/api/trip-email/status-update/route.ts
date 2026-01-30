@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
         const tripSignup = signupData.data;
 
         // Fetch trip data from Directus
-        const tripResponse = await fetch(`${directusUrl}/items/trips/${tripId}?fields=id,name,event_date,base_price,deposit_amount,crew_discount`, {
+        const tripResponse = await fetch(`${directusUrl}/items/trips/${tripId}?fields=id,name,event_date,start_date,end_date,base_price,deposit_amount,crew_discount`, {
             headers: {
                 'Authorization': `Bearer ${directusToken}`,
             }
@@ -82,7 +82,21 @@ async function sendTripStatusUpdateEmail(emailServiceUrl: string, tripSignup: an
 
     const statusInfo = statusMessages[newStatus] || { title: 'Status update', color: '#7B2CBF', message: `Je status is gewijzigd naar: ${newStatus}` };
 
-    const eventDate = new Date(trip.event_date).toLocaleDateString('nl-NL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    // Date formatting logic
+    const displayStartDate = trip.start_date || trip.event_date;
+    let dateDisplay = 'Datum onbekend';
+
+    if (displayStartDate) {
+        const start = new Date(displayStartDate);
+        const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+
+        if (trip.end_date) {
+            const end = new Date(trip.end_date);
+            dateDisplay = `${start.toLocaleDateString('nl-NL', options)} t/m ${end.toLocaleDateString('nl-NL', options)}`;
+        } else {
+            dateDisplay = start.toLocaleDateString('nl-NL', options);
+        }
+    }
 
     const emailHtml = `
         <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
@@ -92,7 +106,7 @@ async function sendTripStatusUpdateEmail(emailServiceUrl: string, tripSignup: an
             
             <div style="background-color: #f3f3f3; padding: 20px; border-radius: 8px; margin: 20px 0;">
                 <p style="margin: 5px 0;"><strong>Reis:</strong> ${trip.name}</p>
-                <p style="margin: 5px 0;"><strong>Datum:</strong> ${eventDate}</p>
+                <p style="margin: 5px 0;"><strong>Datum:</strong> ${dateDisplay}</p>
                 <p style="margin: 5px 0;"><strong>Status:</strong> ${newStatus}</p>
             </div>
 

@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isRateLimited, getClientIp } from '@/shared/lib/rate-limit';
+
 
 export async function POST(req: NextRequest) {
   try {
+    // 1. Rate Limiting
+    const ip = getClientIp(req);
+    if (isRateLimited(`newsletter_${ip}`, { windowMs: 60 * 1000, max: 3 })) {
+      return NextResponse.json({ error: 'Te veel aanvragen, probeer het later opnieuw.' }, { status: 429 });
+    }
+
     const { email } = await req.json();
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -10,6 +18,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
 
     const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || process.env.DIRECTUS_URL;
     const directusToken = process.env.DIRECTUS_ADMIN_TOKEN;
@@ -36,8 +45,9 @@ export async function POST(req: NextRequest) {
     if (checkResponse.ok) {
       const existingData = await checkResponse.json();
       if (existingData.data && existingData.data.length > 0) {
+        // Generic success message to prevent email enumeration
         return NextResponse.json(
-          { message: 'Je bent al ingeschreven!' },
+          { message: 'Bedankt voor je inschrijving!' },
           { status: 200 }
         );
       }
@@ -67,7 +77,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(
-      { message: 'Succesvol ingeschreven!' },
+      { message: 'Bedankt voor je inschrijving!' },
       { status: 201 }
     );
   } catch (error) {
