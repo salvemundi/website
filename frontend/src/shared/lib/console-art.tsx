@@ -44,15 +44,17 @@ const art = `
              `;
 
 export default function ConsoleArt(): null {
-    useEffect(() => {
-      try {
-        // Log raw string so browser console preserves spacing (monospace)
-        console.log(art);
-        console.log('%c Heb je een probleem(pje) gevonden, of mis je een feature die je nog graag wil zien, maak dan een issue aan via https://github.com/salvemundi/website/issues ', 'background: #663265; color: #ffffff; font-size: 16px; padding: 4px; border-radius: 4px;');
-      } catch (e) {
-        // ignore
-      }
-    }, []);
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') return;
 
-    return null;
+    try {
+      // Log raw string so browser console preserves spacing (monospace)
+      console.log(art);
+      console.log('%c Heb je een probleem(pje) gevonden, of mis je een feature die je nog graag wil zien, maak dan een issue aan via https://github.com/salvemundi/website/issues ', 'background: #663265; color: #ffffff; font-size: 16px; padding: 4px; border-radius: 4px;');
+    } catch (e) {
+      // ignore
+    }
+  }, []);
+
+  return null;
 }
