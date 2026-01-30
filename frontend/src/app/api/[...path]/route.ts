@@ -7,7 +7,7 @@ const DIRECTUS_URL = 'https://admin.salvemundi.nl';
 let API_BYPASS_USER_ID = process.env.DIRECTUS_API_USER_ID ?? null;
 
 // Detect a Directus API token used by server-side services or the frontend build.
-const API_SERVICE_TOKEN = process.env.DIRECTUS_API_TOKEN ?? process.env.VITE_DIRECTUS_API_KEY ?? process.env.NEXT_PUBLIC_DIRECTUS_API_KEY ?? null;
+const API_SERVICE_TOKEN = process.env.DIRECTUS_API_TOKEN ?? process.env.VITE_DIRECTUS_API_KEY ?? process.env.NEXT_PUBLIC_DIRECTUS_API_KEY ?? process.env.DIRECTUS_API_KEY ?? process.env.DIRECTUS_TOKEN ?? null;
 
 if (!API_SERVICE_TOKEN) {
     console.warn('[Directus Proxy] WARNING: API_SERVICE_TOKEN is not set. Admin bypass will not work.');
@@ -186,6 +186,14 @@ export async function GET(
 
         if (path.includes('site_settings')) {
             console.log(`[Directus Proxy] Final Decision for ${path}: canBypass=${canBypass}`);
+
+            if (canBypass && !API_SERVICE_TOKEN) {
+                console.error('[Directus Proxy] CRITICAL: User is authorized to bypass, but API_SERVICE_TOKEN is missing in server environment.');
+                return NextResponse.json({
+                    error: 'Server Configuration Error',
+                    message: 'Admin access authorized but Service Token is missing. Please set DIRECTUS_API_TOKEN env var.'
+                }, { status: 500 });
+            }
         }
 
         const forwardHeaders = getProxyHeaders(request);
