@@ -8,7 +8,7 @@ import { isUserInIct } from '@/shared/lib/committee-utils';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { siteSettingsApi, siteSettingsMutations } from '@/shared/lib/api/salvemundi';
 import { useSalvemundiCommittees } from '@/shared/lib/hooks/useSalvemundiApi';
-import { Shield, Save, Loader2, Check, X, AlertCircle } from 'lucide-react';
+import { Shield, Save, Loader2, Check, X, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 interface PermissionEntry {
     id: string;
@@ -55,6 +55,7 @@ export default function PermissionsPage() {
     const [isLoadingSettings, setIsLoadingSettings] = useState(true);
     const [isSaving, setIsSaving] = useState<string | null>(null);
     const [saveStatus, setSaveStatus] = useState<Record<string, 'success' | 'error' | null>>({});
+    const [showAllGroups, setShowAllGroups] = useState(false);
 
     // Authorization: only ICT can reach this page
     useEffect(() => {
@@ -75,9 +76,11 @@ export default function PermissionsPage() {
         try {
             await Promise.all(PERMISSION_PAGES.map(async (page) => {
                 const setting = await siteSettingsApi.get(page.pageKey);
-                newSettings[page.pageKey] = setting?.authorized_tokens
-                    ? setting.authorized_tokens.split(',').map(t => t.trim()).filter(Boolean)
+                // Deduplicate and normalize tokens from DB
+                const rawTokens = setting?.authorized_tokens
+                    ? setting.authorized_tokens.split(',').map(t => t.trim().toLowerCase()).filter(Boolean)
                     : [];
+                newSettings[page.pageKey] = Array.from(new Set(rawTokens));
             }));
             setSettings(newSettings);
         } catch (error) {
@@ -87,13 +90,16 @@ export default function PermissionsPage() {
         }
     };
 
-    const handleToggleToken = (pageKey: string, token: string) => {
+    const handleToggleToken = (pageKey: string, rawToken: string) => {
+        const token = rawToken.toLowerCase().trim();
         setSettings(prev => {
             const current = prev[pageKey] || [];
             if (current.includes(token)) {
                 return { ...prev, [pageKey]: current.filter(t => t !== token) };
             } else {
-                return { ...prev, [pageKey]: [...current, token] };
+                // Keep it unique
+                const next = Array.from(new Set([...current, token]));
+                return { ...prev, [pageKey]: next };
             }
         });
         // Clear status when changing
@@ -138,6 +144,27 @@ export default function PermissionsPage() {
     // Common tokens to always show (convenience)
     const commonTokens = ['bestuur', 'ict', 'kandi', 'kas'];
 
+    // Process committees to get unique tokens
+    const uniqueCommittees = Array.from(
+        (committees || []).reduce((acc, c) => {
+            const token = c.name.toLowerCase().replace(/\|\|\s*salve mundi/gi, '').replace(/[^a-z0-9]/g, '').trim();
+            if (commonTokens.includes(token)) return acc;
+
+            // If we already have this token, keep the one that is visible
+            if (acc.has(token)) {
+                if (c.is_visible !== false) {
+                    acc.set(token, { ...c, token });
+                }
+            } else {
+                acc.set(token, { ...c, token });
+            }
+            return acc;
+        }, new Map<string, any>()).values()
+    ).sort((a: any, b: any) => a.name.localeCompare(b.name)) as any[];
+
+    const visibleGroups = uniqueCommittees.filter((c: any) => c.is_visible !== false);
+    const hiddenGroups = uniqueCommittees.filter((c: any) => c.is_visible === false);
+
     return (
         <>
             <PageHeader
@@ -146,16 +173,31 @@ export default function PermissionsPage() {
             />
 
             <div className="container mx-auto px-4 py-8 max-w-5xl">
-                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8 dark:bg-blue-900/20">
-                    <div className="flex items-start">
-                        <AlertCircle className="h-5 w-5 text-blue-500 mr-3 mt-0.5" />
-                        <div>
-                            <p className="text-sm text-blue-800 dark:text-blue-300">
-                                <strong>Let op:</strong> Deze instellingen overschrijven de standaard permissies in de code.
-                                Zorg ervoor dat je altijd ten minste één groep (bijv. 'bestuur' of 'ict') toegang geeft om te voorkomen dat je jezelf opgesloten wordt.
-                            </p>
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                    <div className="flex-1">
+                        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 dark:bg-blue-900/20">
+                            <div className="flex items-start">
+                                <AlertCircle className="h-5 w-5 text-blue-500 mr-3 mt-0.5" />
+                                <div>
+                                    <p className="text-sm text-blue-800 dark:text-blue-300">
+                                        <strong>Let op:</strong> Deze instellingen overschrijven de standaard permissies in de code.
+                                        Zorg ervoor dat je altijd ten minste één groep (bijv. 'bestuur' of 'ict') toegang geeft.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    <button
+                        onClick={() => setShowAllGroups(!showAllGroups)}
+                        className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all whitespace-nowrap ${showAllGroups
+                            ? 'bg-purple-100 border-theme-purple text-theme-purple dark:bg-purple-900/40'
+                            : 'bg-admin-card border-admin text-admin-muted hover:border-theme-purple/50'
+                            }`}
+                    >
+                        {showAllGroups ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                        {showAllGroups ? 'Toon alleen zichtbare groepen' : `Toon ook verborgen groepen (${hiddenGroups.length})`}
+                    </button>
                 </div>
 
                 {isLoadingSettings ? (
@@ -202,10 +244,10 @@ export default function PermissionsPage() {
                                     <p className="text-xs font-bold text-admin-muted uppercase tracking-wider mb-4">Geselecteerde Groepen</p>
 
                                     <div className="flex flex-wrap gap-2 mb-6">
-                                        {(settings[page.pageKey] || []).length === 0 ? (
+                                        {(!settings[page.pageKey] || settings[page.pageKey].length === 0) ? (
                                             <p className="text-sm text-admin-muted italic">Geen groepen geselecteerd. Standaard code-permissies worden gebruikt.</p>
                                         ) : (
-                                            (settings[page.pageKey] || []).map(token => (
+                                            Array.from(new Set(settings[page.pageKey])).map(token => (
                                                 <span key={token} className="flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 rounded-full text-sm font-medium">
                                                     {token}
                                                     <button onClick={() => handleToggleToken(page.pageKey, token)} className="hover:text-purple-900 dark:hover:text-white">
@@ -217,7 +259,14 @@ export default function PermissionsPage() {
                                     </div>
 
                                     <div className="border-t border-admin pt-6">
-                                        <p className="text-xs font-bold text-admin-muted uppercase tracking-wider mb-4">Beschikbare Groepen</p>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <p className="text-xs font-bold text-admin-muted uppercase tracking-wider">Beschikbare Groepen</p>
+                                            {!showAllGroups && hiddenGroups.length > 0 && (
+                                                <p className="text-[10px] text-admin-muted">
+                                                    (+ {hiddenGroups.length} verborgen groepen)
+                                                </p>
+                                            )}
+                                        </div>
 
                                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                                             {/* Common tokens first */}
@@ -238,23 +287,27 @@ export default function PermissionsPage() {
                                                 );
                                             })}
 
-                                            {/* Committee names as tokens */}
-                                            {committees?.map(c => {
-                                                const token = c.name.toLowerCase().replace(/\|\|\s*salve mundi/gi, '').replace(/[^a-z0-9]/g, '').trim();
-                                                if (commonTokens.includes(token)) return null;
+                                            {/* Processed unique committee groups */}
+                                            {(showAllGroups ? uniqueCommittees : visibleGroups).map(c => {
+                                                const isSelected = (settings[page.pageKey] || []).includes(c.token);
+                                                const isHidden = c.is_visible === false;
 
-                                                const isSelected = (settings[page.pageKey] || []).includes(token);
                                                 return (
                                                     <button
                                                         key={c.id}
-                                                        onClick={() => handleToggleToken(page.pageKey, token)}
+                                                        onClick={() => handleToggleToken(page.pageKey, c.token)}
                                                         className={`flex items-center justify-between px-3 py-2 rounded-lg border text-sm transition ${isSelected
                                                             ? 'bg-purple-50 border-theme-purple text-theme-purple dark:bg-purple-900/20'
-                                                            : 'bg-admin-card border-admin text-admin hover:border-theme-purple/50'
+                                                            : isHidden
+                                                                ? 'bg-slate-50/50 border-dashed border-slate-200 text-slate-400 dark:bg-slate-800/20 dark:border-slate-700'
+                                                                : 'bg-admin-card border-admin text-admin hover:border-theme-purple/50'
                                                             }`}
                                                     >
                                                         <span className="truncate mr-1" title={c.name}>{c.name}</span>
-                                                        {isSelected && <Check className="h-3 w-3" />}
+                                                        <div className="flex items-center gap-1">
+                                                            {isHidden && <EyeOff className="h-2.5 w-2.5 opacity-50" />}
+                                                            {isSelected && <Check className="h-3 w-3" />}
+                                                        </div>
                                                     </button>
                                                 );
                                             })}
