@@ -14,7 +14,6 @@ system:
 
 docker:
   containers:
-    - "npm"
     - "frontend-dev"
 
 functional:
