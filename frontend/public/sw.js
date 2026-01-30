@@ -1,6 +1,6 @@
-const CACHE_NAME = 'salvemundi-v1';
-const STATIC_CACHE = 'static-v1';
-const DYNAMIC_CACHE = 'dynamic-v1';
+const CACHE_NAME = 'salvemundi-v2';
+const STATIC_CACHE = 'static-v2';
+const DYNAMIC_CACHE = 'dynamic-v2';
 
 // Static assets to cache on install
 const STATIC_ASSETS = [
