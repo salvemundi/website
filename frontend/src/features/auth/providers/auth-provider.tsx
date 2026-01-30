@@ -359,6 +359,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             if (shouldRedirect) {
                 checkAndRedirect();
+            } else {
+                // If we are not redirecting to another page, clean up the current URL
+                // to remove any auth artifacts like #code=... or ?code=...
+                if (typeof window !== 'undefined') {
+                    const url = new URL(window.location.href);
+                    // Clear hash if it looks like an MSAL artifact
+                    if (url.hash && (url.hash.includes('code=') || url.hash.includes('error='))) {
+                        url.hash = '';
+                    }
+                    // Clear search params if they contain code/state
+                    if (url.searchParams.has('code') || url.searchParams.has('state')) {
+                        url.searchParams.delete('code');
+                        url.searchParams.delete('state');
+                        url.searchParams.delete('session_state');
+                    }
+                    window.history.replaceState({}, document.title, url.toString());
+                }
             }
         } catch (error) {
             console.error('Microsoft login processing error:', error);
@@ -604,7 +621,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             value={{
                 user,
                 isAuthenticated: !!user,
-                isLoading: isLoading || isMsalInitializing,
+                // Only wait for MSAL if we don't have a user yet and we are still initializing
+                isLoading: isLoading || (isMsalInitializing && !user),
                 isLoggingOut,
                 loginWithMicrosoft,
                 logout,
