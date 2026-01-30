@@ -255,10 +255,10 @@ export default function AdminDashboardPage() {
             ]);
 
             // Determine effective tokens (dynamic OR hardcoded fallbacks)
-            const introTokens = getMergedTokens(introSet?.authorized_tokens, ['introcommissie', 'intro', 'ictcommissie', 'ict', 'bestuur', 'kandi', 'kandidaat']);
-            const reisTokens = getMergedTokens(reisSet?.authorized_tokens, ['reiscommissie', 'reis', 'ictcommissie', 'ict', 'bestuur', 'kandi', 'kandidaat']);
-            const loggingTokens = getMergedTokens(loggingSet?.authorized_tokens, ['ictcommissie', 'ict', 'bestuur', 'kascommissie', 'kas', 'kandi', 'kandidaat']);
-            const syncTokens = getMergedTokens(syncSet?.authorized_tokens, ['ict', 'bestuur', 'kandi']);
+            const introTokens = getMergedTokens(introSet?.authorized_tokens, ['introcommissie', 'ictcommissie', 'bestuur', 'kandidaatbestuur']);
+            const reisTokens = getMergedTokens(reisSet?.authorized_tokens, ['reiscommissie', 'ictcommissie', 'bestuur', 'kandidaatbestuur']);
+            const loggingTokens = getMergedTokens(loggingSet?.authorized_tokens, ['ictcommissie', 'bestuur', 'kascommissie', 'kandidaatbestuur']);
+            const syncTokens = getMergedTokens(syncSet?.authorized_tokens, ['ictcommissie', 'bestuur', 'kandidaatbestuur']);
 
             setCanAccessIntro(isUserAuthorized(effectiveUser, introTokens));
             setCanAccessReis(isUserAuthorized(effectiveUser, reisTokens));
@@ -285,7 +285,8 @@ export default function AdminDashboardPage() {
         try {
             // Check if user is member of ICT committee (committee with name 'ICT' or 'ict')
             const committees = await directusFetch<any[]>('/items/committee_members?fields=committee_id.name&filter[user_id][_eq]=' + userId);
-            const isIct = committees.some(cm => cm.committee_id?.name?.toLowerCase() === 'ict');
+            // Robust check for ICT membership (handles 'ICT', 'ICTCommissie', etc.)
+            const isIct = committees.some(cm => (cm.committee_id?.name || '').toLowerCase().includes('ict'));
             setIsIctMember(isIct);
         } catch (error) {
             console.error('Failed to check ICT membership:', error);
