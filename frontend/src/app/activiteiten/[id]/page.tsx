@@ -471,9 +471,16 @@ export default function EventDetailPage() {
                     )}
 
                     {event.committee_name && (
-                        <p className="text-lg sm:text-xl text-beige/90 max-w-3xl mx-auto mt-0">
-                            Georganiseerd door {event.committee_name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim()}
-                        </p>
+                        <div className="flex flex-col items-center gap-2 mt-2">
+                            <p className="text-lg sm:text-xl text-beige/90 max-w-3xl mx-auto mt-0">
+                                Georganiseerd door {event.committee_name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim()}
+                            </p>
+                            {event.only_members && (
+                                <span className="bg-amber-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg uppercase tracking-wider">
+                                    Leden Alleen
+                                </span>
+                            )}
+                        </div>
                     )}
                     {user && (
                         <div>
@@ -549,6 +556,40 @@ export default function EventDetailPage() {
                                 <div className="bg-slate-100 dark:bg-white/5 p-6 rounded-xl text-center h-full flex flex-col justify-center items-center">
                                     <h3 className="text-2xl font-bold text-slate-400 mb-2">Inschrijving Gesloten</h3>
                                     <p className="text-slate-500 dark:text-slate-400">Deze activiteit is al geweest.</p>
+                                </div>
+                            ) : (event.only_members && !user?.is_member) ? (
+                                // Members only restriction
+                                <div className="bg-amber-500/10 p-8 rounded-xl text-center border border-amber-500/30 h-full flex flex-col justify-center items-center">
+                                    <div className="bg-amber-500/20 p-4 rounded-full mb-4">
+                                        <UsersIcon className="h-10 w-10 text-amber-500 transition-transform group-hover:scale-110" />
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Leden Alleen</h3>
+                                    <p className="text-slate-600 dark:text-white/80 mb-6">
+                                        Deze activiteit is exclusief toegankelijk voor leden van Salve Mundi.
+                                    </p>
+                                    {!user ? (
+                                        <button
+                                            onClick={() => {
+                                                const returnTo = window.location.pathname + window.location.search;
+                                                router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+                                            }}
+                                            className="w-full bg-paars text-white font-bold py-3 px-6 rounded-xl hover:scale-[1.02] transition-all shadow-md"
+                                        >
+                                            INLOGGEN OM IN TE SCHRIJVEN
+                                        </button>
+                                    ) : (
+                                        <div className="space-y-4 w-full">
+                                            <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
+                                                Je bent ingelogd als gast, maar je hebt nog geen actief lidmaatschap.
+                                            </p>
+                                            <button
+                                                onClick={() => router.push('/word-lid')}
+                                                className="w-full bg-theme-purple text-white font-bold py-3 px-6 rounded-xl hover:scale-[1.02] transition-all shadow-md"
+                                            >
+                                                WORD NU LID
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
                                 // Signup Form

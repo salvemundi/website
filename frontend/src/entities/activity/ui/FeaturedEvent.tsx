@@ -25,13 +25,20 @@ export default function FeaturedEvent({ event, onEventClick }: FeaturedEventProp
 
     return (
         <div className="rounded-3xl bg-gradient-to-b from-theme-gradient-light-start via-theme-gradient-light-start to-theme-gradient-light-end dark:from-theme-gradient-dark-start dark:via-theme-gradient-dark-start dark:to-theme-gradient-dark-end p-6 shadow-xl">
-            <div className="mb-4 flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-oranje/10 text-oranje">
-                    <Calendar className="h-4 w-4" />
-                </span>
-                <h3 className="text-sm font-bold uppercase tracking-wider text-oranje dark:text-ink">
-                    Eerstvolgende Activiteit
-                </h3>
+            <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-oranje/10 text-oranje">
+                        <Calendar className="h-4 w-4" />
+                    </span>
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-oranje dark:text-ink">
+                        Eerstvolgende Activiteit
+                    </h3>
+                </div>
+                {event.only_members && (
+                    <span className="bg-amber-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider">
+                        Leden Alleen
+                    </span>
+                )}
             </div>
 
             <div
