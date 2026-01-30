@@ -8,20 +8,17 @@ discord:
   repeat_alert_after_minutes: 30
 
 system:
-  disk_usage_threshold_percent: 85
+  disk_usage_threshold_percent: 70
   memory_usage_threshold_percent: 90
-  cpu_load_threshold_percent: 90
+  cpu_load_threshold_percent: 80
 
 docker:
   containers:
     - "npm"
-    - "directus-prod"
-    - "postgres-prod"
-    - "website-prod"
-    - "vaultwarden"
+    - "frontend-latest"
 
 functional:
   http_checks:
     - name: "Website V6 Prod"
-      url: "http://website-prod:3000"
+      url: "http://frontend-latest:3000"
   # TCP Check verwijderd ivm netwerk isolatie
