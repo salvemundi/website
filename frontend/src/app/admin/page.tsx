@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
-import { stickersApi, eventsApi, siteSettingsApi } from '@/shared/lib/api/salvemundi';
-import { isUserAuthorizedForIntro, isUserAuthorizedForReis } from '@/shared/lib/committee-utils';
+import { stickersApi, eventsApi } from '@/shared/lib/api/salvemundi';
+import { isUserAuthorizedForIntro, isUserAuthorizedForReis, isUserAuthorizedForKroegentocht } from '@/shared/lib/committee-utils';
 import {
     Users,
     Calendar,
@@ -17,8 +17,6 @@ import {
     AlertCircle,
     Activity,
     Ticket,
-    RefreshCw,
-    Shield,
 } from 'lucide-react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 
@@ -235,17 +233,11 @@ export default function AdminDashboardPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [canAccessIntro, setCanAccessIntro] = useState(false);
     const [canAccessReis, setCanAccessReis] = useState(false);
-    const [visibilitySettings, setVisibilitySettings] = useState<{
-        intro: boolean;
-        kroegentocht: boolean;
-        reis: boolean;
-    }>({ intro: false, kroegentocht: false, reis: false });
 
     useEffect(() => {
         loadDashboardData();
         checkIctMembership(effectiveUser?.id);
         checkAccessPermissions();
-        loadVisibilitySettings();
         // Re-run membership check if effectiveUser changes (e.g. after login)
     }, [effectiveUser?.id]);
 
@@ -266,23 +258,7 @@ export default function AdminDashboardPage() {
         }
     };
 
-    const loadVisibilitySettings = async () => {
-        try {
-            const [introSettings, kroegentochtsSettings, reisSettings] = await Promise.all([
-                siteSettingsApi.get('intro'),
-                siteSettingsApi.get('kroegentocht'),
-                siteSettingsApi.get('reis')
-            ]);
-
-            setVisibilitySettings({
-                intro: introSettings?.show ?? false,
-                kroegentocht: kroegentochtsSettings?.show ?? false,
-                reis: reisSettings?.show ?? false
-            });
-        } catch (error) {
-            console.error('Failed to load visibility settings:', error);
-        }
-    };
+    
 
     const loadDashboardData = async () => {
         setIsLoading(true);

@@ -106,27 +106,3 @@ export function isUserInReisCommittee(user: any): boolean {
     return false;
 }
 
-// Returns true only if the user is member of Intro committee, Bestuur or ICT committee
-export function isUserAuthorizedForIntro(user: any): boolean {
-    if (!user) return false;
-
-    const allowedTokens = ['introcommissie', 'intro', 'bestuur', 'ictcommissie', 'ict'];
-
-    const committees: any[] = (user as any).committees || [];
-    const names = committees.map((c: any) => {
-        if (!c) return '';
-        if (typeof c === 'string') return normalizeCommitteeName(c);
-        if (c.name) return normalizeCommitteeName(c.name);
-        if (c.committee_id && c.committee_id.name) return normalizeCommitteeName(c.committee_id.name);
-        return '';
-    });
-
-    for (const n of names) {
-        if (!n) continue;
-        for (const token of allowedTokens) {
-            if (n.includes(token)) return true;
-        }
-    }
-
-    return false;
-}
