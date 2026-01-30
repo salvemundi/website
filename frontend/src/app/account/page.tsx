@@ -391,26 +391,44 @@ export default function AccountPage() {
   };
 
   const membershipStatus = useMemo(() => {
-    if (!user?.membership_status || user.membership_status === "none") {
-      return {
-        text: "Geen Actief Lidmaatschap",
-        color: "bg-gray-400 dark:bg-gray-600",
-        textColor: "text-white",
-      };
+    if (!user) return null;
+
+    const isLeader = user.committees?.some((c) => c.is_leader) ?? false;
+    const isInCommittee = (user.committees?.length ?? 0) > 0;
+    const isMember = user.is_member;
+    const status = user.membership_status;
+
+    let role = "Gebruiker";
+    if (isLeader) role = "Commissie Leider";
+    else if (isInCommittee) role = "Actief Lid";
+    else if (isMember) role = "Lid";
+
+    let statusText = "Geen Lidmaatschap";
+    if (status === "active") statusText = "Lidmaatschap Actief";
+    else if (status === "expired") statusText = "Lidmaatschap Verlopen";
+
+    let color = "bg-slate-100 dark:bg-white/5 border border-theme-purple/20 text-theme-purple dark:text-white";
+    let textColor = "text-theme-purple dark:text-white font-bold";
+
+    if (status === "active") {
+      if (isLeader) {
+        color = "bg-gradient-to-r from-theme-purple to-theme-purple-light shadow-lg";
+        textColor = "text-white";
+      } else if (isInCommittee || isMember) {
+        color = "bg-theme-purple shadow-lg";
+        textColor = "text-white";
+      }
+    } else if (status === "expired") {
+      color = "bg-red-500/80 shadow-lg";
+      textColor = "text-white";
     }
-    if (user.membership_status === "active") {
-      return {
-        text: "Actief Lid",
-        color: "bg-theme-purple dark:bg-theme-purple",
-        textColor: "text-white",
-      };
-    }
+
     return {
-      text: "Lidmaatschap Verlopen",
-      color: "bg-theme-purple/50 dark:bg-theme-purple/50",
-      textColor: "text-white",
+      text: `${role} • ${statusText}`,
+      color,
+      textColor
     };
-  }, [user?.membership_status]);
+  }, [user]);
 
   if (authLoading || !user) {
     return (
@@ -555,45 +573,14 @@ export default function AccountPage() {
                       : user.email || "User"}
                   </h2>
 
-                  <div className="mt-4 flex flex-wrap justify-center gap-2">
-                    {(() => {
-                      // Check if user is a committee leader
-                      const isCommitteeLeader = user.committees?.some(c => c.is_leader) ?? false;
-                      // Check if user is in any committee
-                      const isInCommittee = (user.committees?.length ?? 0) > 0;
-
-                      if (isCommitteeLeader) {
-                        return (
-                          <span className="px-4 py-1.5 bg-gradient-to-r from-theme-purple to-theme-purple-light text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-lg">
-                            Commissie Leider
-                          </span>
-                        );
-                      } else if (isInCommittee) {
-                        return (
-                          <span className="px-4 py-1.5 bg-theme-purple text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-lg">
-                            Actief Lid
-                          </span>
-                        );
-                      } else if (user.is_member) {
-                        return (
-                          <span className="px-4 py-1.5 bg-theme-purple/80 text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-lg">
-                            Lid
-                          </span>
-                        );
-                      } else {
-                        return (
-                          <span className="px-4 py-1.5 bg-slate-100 dark:bg-white/5 border border-theme-purple/20 text-theme-purple dark:text-white text-[10px] font-black uppercase tracking-wider rounded-full">
-                            Gebruiker
-                          </span>
-                        );
-                      }
-                    })()}
-
-                    <span
-                      className={`px-4 py-1.5 ${membershipStatus.color} ${membershipStatus.textColor} text-[10px] font-black uppercase tracking-wider rounded-full shadow-lg`}
-                    >
-                      {membershipStatus.text}
-                    </span>
+                  <div className="mt-4 flex flex-wrap justify-center">
+                    {membershipStatus && (
+                      <span
+                        className={`px-6 py-2 ${membershipStatus.color} ${membershipStatus.textColor} text-[11px] font-black uppercase tracking-wider rounded-full shadow-md transition-all`}
+                      >
+                        {membershipStatus.text}
+                      </span>
+                    )}
                   </div>
 
                   <div className="mt-6 flex flex-col gap-3">
