@@ -204,7 +204,7 @@ async function handleMutation(
                         canBypass = memberships.some((m: any) => {
                             const name = (m?.committee_id?.name || '').toString().toLowerCase();
                             const isLeader = m.is_leader === true;
-                            return name === 'bestuur' || name === 'ict' || name.includes('kandidaat') || isLeader;
+                            return name.includes('bestuur') || name.includes('ict') || name.includes('kandidaat') || name.includes('kandi') || isLeader;
                         });
                     }
                 } catch (e) {

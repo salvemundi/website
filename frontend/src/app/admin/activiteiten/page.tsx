@@ -180,8 +180,8 @@ export default function AdminActiviteitenPage() {
                             <button
                                 onClick={() => setFilter('all')}
                                 className={`px-4 py-2 rounded-full font-medium transition ${filter === 'all'
-                                        ? 'bg-theme-purple text-white'
-                                        : 'bg-admin-card-soft text-admin-muted hover:bg-admin-hover'
+                                    ? 'bg-theme-purple text-white'
+                                    : 'bg-admin-card-soft text-admin-muted hover:bg-admin-hover'
                                     }`}
                             >
                                 Alle
@@ -189,8 +189,8 @@ export default function AdminActiviteitenPage() {
                             <button
                                 onClick={() => setFilter('upcoming')}
                                 className={`px-4 py-2 rounded-full font-medium transition ${filter === 'upcoming'
-                                        ? 'bg-theme-purple text-white'
-                                        : 'bg-admin-card-soft text-admin-muted hover:bg-admin-hover'
+                                    ? 'bg-theme-purple text-white'
+                                    : 'bg-admin-card-soft text-admin-muted hover:bg-admin-hover'
                                     }`}
                             >
                                 Aankomend
@@ -198,8 +198,8 @@ export default function AdminActiviteitenPage() {
                             <button
                                 onClick={() => setFilter('past')}
                                 className={`px-4 py-2 rounded-full font-medium transition ${filter === 'past'
-                                        ? 'bg-theme-purple text-white'
-                                        : 'bg-admin-card-soft text-admin-muted hover:bg-admin-hover'
+                                    ? 'bg-theme-purple text-white'
+                                    : 'bg-admin-card-soft text-admin-muted hover:bg-admin-hover'
                                     }`}
                             >
                                 Verleden
@@ -212,8 +212,8 @@ export default function AdminActiviteitenPage() {
                         <button
                             onClick={() => setFilter('all')}
                             className={`px-4 py-2 rounded-full font-medium transition ${filter === 'all'
-                                    ? 'bg-theme-purple text-white'
-                                    : 'bg-admin-card-soft text-admin-muted hover:bg-admin-hover'
+                                ? 'bg-theme-purple text-white'
+                                : 'bg-admin-card-soft text-admin-muted hover:bg-admin-hover'
                                 }`}
                         >
                             Alle
@@ -221,8 +221,8 @@ export default function AdminActiviteitenPage() {
                         <button
                             onClick={() => setFilter('upcoming')}
                             className={`px-4 py-2 rounded-full font-medium transition ${filter === 'upcoming'
-                                    ? 'bg-theme-purple text-white'
-                                    : 'bg-admin-card-soft text-admin-muted hover:bg-admin-hover'
+                                ? 'bg-theme-purple text-white'
+                                : 'bg-admin-card-soft text-admin-muted hover:bg-admin-hover'
                                 }`}
                         >
                             Aankomend
@@ -230,8 +230,8 @@ export default function AdminActiviteitenPage() {
                         <button
                             onClick={() => setFilter('past')}
                             className={`px-4 py-2 rounded-full font-medium transition ${filter === 'past'
-                                    ? 'bg-theme-purple text-white'
-                                    : 'bg-admin-card-soft text-admin-muted hover:bg-admin-hover'
+                                ? 'bg-theme-purple text-white'
+                                : 'bg-admin-card-soft text-admin-muted hover:bg-admin-hover'
                                 }`}
                         >
                             Verleden
@@ -367,7 +367,7 @@ export default function AdminActiviteitenPage() {
                                             const isMember = memberships.some((c: any) => String(c.id) === eventCommitteeId);
                                             const hasPriv = memberships.some((c: any) => {
                                                 const name = (c?.name || '').toString().toLowerCase();
-                                                return name === 'bestuur' || name === 'ict';
+                                                return name.includes('bestuur') || name.includes('ict') || name.includes('kandi');
                                             });
                                             if (isMember || hasPriv) {
                                                 return (

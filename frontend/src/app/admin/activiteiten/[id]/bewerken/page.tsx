@@ -89,7 +89,7 @@ export default function BewerkenActiviteitPage() {
                 const memberships = user?.committees || [];
                 const hasPriv = memberships.some((c: any) => {
                     const name = (c?.name || '').toString().toLowerCase();
-                    return name === 'bestuur' || name === 'ict';
+                    return name.includes('bestuur') || name.includes('ict') || name.includes('kandi');
                 });
                 if (hasPriv) {
                     setCommittees(committeesData);
@@ -141,7 +141,7 @@ export default function BewerkenActiviteitPage() {
                     const isMember = eventCommitteeId ? memberships.some((c: any) => String(c.id) === eventCommitteeId) : false;
                     const hasPriv = memberships.some((c: any) => {
                         const name = (c?.name || '').toString().toLowerCase();
-                        return name === 'bestuur' || name === 'ict';
+                        return name.includes('bestuur') || name.includes('ict') || name.includes('kandi');
                     });
 
                     if (!(isMember || hasPriv)) {
