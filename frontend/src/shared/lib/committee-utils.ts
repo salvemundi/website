@@ -177,8 +177,15 @@ export function isUserAuthorized(user: any, allowedTokens: string[]): boolean {
 }
 
 // Utility to merge dynamic tokens from database with hardcoded fallback tokens
-export function getMergedTokens(dynamicTokensStr: string | undefined | null, fallbackTokens: string[]): string[] {
-    if (!dynamicTokensStr) return fallbackTokens;
-    const dynamic = dynamicTokensStr.split(',').map(t => t.trim()).filter(Boolean);
+export function getMergedTokens(dynamicTokens: string | string[] | undefined | null, fallbackTokens: string[]): string[] {
+    if (!dynamicTokens) return fallbackTokens;
+
+    let dynamic: string[] = [];
+    if (Array.isArray(dynamicTokens)) {
+        dynamic = dynamicTokens.map(t => String(t).trim()).filter(Boolean);
+    } else if (typeof dynamicTokens === 'string') {
+        dynamic = dynamicTokens.split(',').map(t => t.trim()).filter(Boolean);
+    }
+
     return dynamic.length > 0 ? dynamic : fallbackTokens;
 }
