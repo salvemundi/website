@@ -12,12 +12,11 @@ export default function Icon() {
         (
             <div
                 style={{
-                    fontSize: 200,
+                    fontSize: 280,
                     background: 'linear-gradient(135deg, #FF6542 0%, #9B4DCA 100%)',
                     width: '100%',
                     height: '100%',
                     display: 'flex',
-                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
                     color: 'white',
@@ -25,8 +24,7 @@ export default function Icon() {
                     borderRadius: '24%',
                 }}
             >
-                <div style={{ display: 'flex', fontSize: 180 }}>SM</div>
-                <div style={{ fontSize: 40, marginTop: -20, opacity: 0.9, letterSpacing: 4 }}>SALVE MUNDI</div>
+                SM
             </div>
         ),
         {

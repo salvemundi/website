@@ -12,20 +12,18 @@ export default function AppleIcon() {
         (
             <div
                 style={{
-                    fontSize: 80,
+                    fontSize: 100,
                     background: 'linear-gradient(135deg, #FF6542 0%, #9B4DCA 100%)',
                     width: '100%',
                     height: '100%',
                     display: 'flex',
-                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
                     color: 'white',
                     fontWeight: '900',
                 }}
             >
-                <div style={{ display: 'flex' }}>SM</div>
-                <div style={{ fontSize: 16, marginTop: -5, opacity: 0.9, letterSpacing: 2 }}>SALVE MUNDI</div>
+                SM
             </div>
         ),
         {

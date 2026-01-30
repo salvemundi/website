@@ -33,13 +33,15 @@ export default function manifest(): MetadataRoute.Manifest {
         shortcuts: [
             {
                 name: 'Activiteiten',
+                short_name: 'Activiteiten',
                 url: '/activiteiten',
-                icons: [{ src: '/img/Logo.png', sizes: '192x192' }]
+                icons: [{ src: '/icon.png', sizes: '192x192' }]
             },
             {
                 name: 'Mijn Account',
+                short_name: 'Account',
                 url: '/account',
-                icons: [{ src: '/img/Logo.png', sizes: '192x192' }]
+                icons: [{ src: '/icon.png', sizes: '192x192' }]
             }
         ]
     };
