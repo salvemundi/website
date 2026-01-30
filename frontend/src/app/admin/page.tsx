@@ -917,8 +917,8 @@ export default function AdminDashboardPage() {
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         {canAccessSync && (
                                             <ActionCard
-                                                title="Leden"
-                                                subtitle="Sync"
+                                                title="Sync"
+                                                subtitle="Leden"
                                                 icon={<Users className="h-6 w-6" />}
                                                 onClick={() => router.push('/admin/sync')}
                                                 colorClass="green"
@@ -926,8 +926,8 @@ export default function AdminDashboardPage() {
                                         )}
                                         {canAccessSync && (
                                             <ActionCard
-                                                title="Commissie"
-                                                subtitle="Beheer"
+                                                title="Beheer"
+                                                subtitle="Commissie"
                                                 icon={<Shield className="h-6 w-6" />}
                                                 onClick={() => router.push('/admin/committees')}
                                                 colorClass="orange"
@@ -935,8 +935,8 @@ export default function AdminDashboardPage() {
                                         )}
                                         {canAccessLogging && (
                                             <ActionCard
-                                                title="Systeem"
-                                                subtitle="Logging"
+                                                title="Logging"
+                                                subtitle="Systeem"
                                                 icon={<FileText className="h-6 w-6" />}
                                                 onClick={() => router.push('/admin/logging')}
                                                 colorClass="red"
@@ -944,8 +944,8 @@ export default function AdminDashboardPage() {
                                         )}
                                         {isIctMember && (
                                             <ActionCard
-                                                title="Permissie"
-                                                subtitle="Beheer"
+                                                title="Beheer"
+                                                subtitle="Permissie"
                                                 icon={<Shield className="h-6 w-6" />}
                                                 onClick={() => router.push('/admin/permissions')}
                                                 colorClass="teal"
