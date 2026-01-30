@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
-import { stickersApi, eventsApi } from '@/shared/lib/api/salvemundi';
-import { isUserAuthorizedForIntro, isUserAuthorizedForReis, isUserAuthorizedForKroegentocht, isUserAuthorizedForLogging } from '@/shared/lib/committee-utils';
+import { stickersApi, eventsApi, siteSettingsApi } from '@/shared/lib/api/salvemundi';
+import { isUserAuthorizedForIntro, isUserAuthorizedForReis, isUserAuthorizedForKroegentocht, isUserAuthorizedForLogging, isUserAuthorized, getMergedTokens } from '@/shared/lib/committee-utils';
 import {
     Users,
     Calendar,
@@ -17,6 +17,7 @@ import {
     AlertCircle,
     Activity,
     Ticket,
+    Shield,
 } from 'lucide-react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 
@@ -243,21 +244,40 @@ export default function AdminDashboardPage() {
         // Re-run membership check if effectiveUser changes (e.g. after login)
     }, [effectiveUser?.id]);
 
-    const checkAccessPermissions = () => {
-        setCanAccessIntro(isUserAuthorizedForIntro(effectiveUser));
-        setCanAccessReis(isUserAuthorizedForReis(effectiveUser));
-        setCanAccessLogging(isUserAuthorizedForLogging(effectiveUser));
-        // Sync is restricted to ICT and Bestuur (same as system health/logging tokens minus kas)
-        const committees: any[] = (effectiveUser as any).committees || [];
-        const names = committees.map((c: any) => {
-            if (!c) return '';
-            if (typeof c === 'string') return c.toLowerCase();
-            if (c.name) return c.name.toLowerCase();
-            if (c.committee_id && c.committee_id.name) return c.committee_id.name.toLowerCase();
-            return '';
-        });
-        const isAuthorized = names.some(n => n.includes('ict') || n.includes('bestuur'));
-        setCanAccessSync(isAuthorized);
+    const checkAccessPermissions = async () => {
+        // Fetch all relevant settings in parallel
+        try {
+            const [introSet, reisSet, loggingSet, syncSet] = await Promise.all([
+                siteSettingsApi.get('admin_intro'),
+                siteSettingsApi.get('admin_reis'),
+                siteSettingsApi.get('admin_logging'),
+                siteSettingsApi.get('admin_sync'),
+            ]);
+
+            // Determine effective tokens (dynamic OR hardcoded fallbacks)
+            const introTokens = getMergedTokens(introSet?.authorized_tokens, ['introcommissie', 'intro', 'ictcommissie', 'ict', 'bestuur', 'kandi', 'kandidaat']);
+            const reisTokens = getMergedTokens(reisSet?.authorized_tokens, ['reiscommissie', 'reis', 'ictcommissie', 'ict', 'bestuur', 'kandi', 'kandidaat']);
+            const loggingTokens = getMergedTokens(loggingSet?.authorized_tokens, ['ictcommissie', 'ict', 'bestuur', 'kascommissie', 'kas', 'kandi', 'kandidaat']);
+            const syncTokens = getMergedTokens(syncSet?.authorized_tokens, ['ict', 'bestuur', 'kandi']);
+
+            setCanAccessIntro(isUserAuthorized(effectiveUser, introTokens));
+            setCanAccessReis(isUserAuthorized(effectiveUser, reisTokens));
+            setCanAccessLogging(isUserAuthorized(effectiveUser, loggingTokens));
+            setCanAccessSync(isUserAuthorized(effectiveUser, syncTokens));
+        } catch (error) {
+            console.error('Failed to load dynamic permissions, falling back to static:', error);
+            // Fallback to existing static functions if API fails
+            setCanAccessIntro(isUserAuthorizedForIntro(effectiveUser));
+            setCanAccessReis(isUserAuthorizedForReis(effectiveUser));
+            setCanAccessLogging(isUserAuthorizedForLogging(effectiveUser));
+
+            const committees: any[] = (effectiveUser as any).committees || [];
+            const names = committees.map((c: any) => {
+                const name = (typeof c === 'string' ? c : c.name || c.committee_id?.name || '').toLowerCase();
+                return name;
+            });
+            setCanAccessSync(names.some(n => n.includes('ict') || n.includes('bestuur') || n.includes('kandi')));
+        }
     };
 
     const checkIctMembership = async (userId?: string | number) => {
@@ -910,6 +930,15 @@ export default function AdminDashboardPage() {
                                                 icon={<FileText className="h-6 w-6" />}
                                                 onClick={() => router.push('/admin/logging')}
                                                 colorClass="red"
+                                            />
+                                        )}
+                                        {isIctMember && (
+                                            <ActionCard
+                                                title="Permissie"
+                                                subtitle="Beheer"
+                                                icon={<Shield className="h-6 w-6" />}
+                                                onClick={() => router.push('/admin/permissions')}
+                                                colorClass="teal"
                                             />
                                         )}
                                     </div>

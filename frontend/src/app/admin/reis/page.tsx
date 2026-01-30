@@ -2,18 +2,17 @@
 
 import { useEffect, useState, Fragment } from 'react';
 import { useRouter } from 'next/navigation';
+import * as XLSX from 'xlsx';
 import { directusFetch } from '@/shared/lib/directus';
-import { useAuth } from '@/features/auth/providers/auth-provider';
 import NoAccessPage from '@/app/admin/no-access/page';
-import { isUserAuthorizedForReis } from '@/shared/lib/committee-utils';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { siteSettingsMutations } from '@/shared/lib/api/salvemundi';
 import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { Search, Download, Users, Plane, Edit, Trash2, Loader2, AlertCircle, UserCheck, UserX, Send } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import * as XLSX from 'xlsx';
 import { tripSignupActivitiesApi } from '@/shared/lib/api/salvemundi';
+import { usePagePermission } from '@/shared/lib/hooks/usePermissions';
 
 interface Trip {
     id: number;
@@ -57,8 +56,12 @@ interface TripSignup {
 
 export default function ReisAanmeldingenPage() {
     const router = useRouter();
-    const { user, isLoading: authLoading } = useAuth();
+    const { isAuthorized: permissionAuthorized, isLoading: permissionLoading } = usePagePermission('admin_reis', ['reiscommissie', 'reis', 'ictcommissie', 'ict', 'bestuur', 'kandi', 'kandidaat']);
     const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        setIsAuthorized(permissionAuthorized);
+    }, [permissionAuthorized]);
     const [trips, setTrips] = useState<Trip[]>([]);
     const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
     const [signups, setSignups] = useState<TripSignup[]>([]);
@@ -77,11 +80,7 @@ export default function ReisAanmeldingenPage() {
         loadTrips();
     }, []);
 
-    // Authorization: only allow members of reiscommissie, ict commissie or bestuur
-    useEffect(() => {
-        if (authLoading) return;
-        setIsAuthorized(isUserAuthorizedForReis(user));
-    }, [user, authLoading]);
+    // Authorization handled by usePagePermission hook above
 
     useEffect(() => {
         if (selectedTrip) {
@@ -458,10 +457,13 @@ export default function ReisAanmeldingenPage() {
         }
     };
 
-    if (authLoading || isAuthorized === null) {
+    if (permissionLoading || isAuthorized === null) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="h-12 w-12 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600" />
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end">
+                <div className="bg-admin-card rounded-3xl shadow-xl p-8 max-w-md mx-4 text-center">
+                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-theme-purple/20 border-t-theme-purple mx-auto mb-4" />
+                    <p className="text-admin-muted">Toegang controleren...</p>
+                </div>
             </div>
         );
     }
