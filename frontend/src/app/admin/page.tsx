@@ -924,6 +924,15 @@ export default function AdminDashboardPage() {
                                                 colorClass="green"
                                             />
                                         )}
+                                        {canAccessSync && (
+                                            <ActionCard
+                                                title="Commissie"
+                                                subtitle="Beheer"
+                                                icon={<Shield className="h-6 w-6" />}
+                                                onClick={() => router.push('/admin/committees')}
+                                                colorClass="orange"
+                                            />
+                                        )}
                                         {canAccessLogging && (
                                             <ActionCard
                                                 title="Systeem"
