@@ -21,6 +21,14 @@ const allowedCollections = [
     'documents', 'files', 'assets',
 ];
 
+function getAuthToken(request: NextRequest, url: URL): string | null {
+    let auth = request.headers.get('Authorization');
+    if (!auth && url.searchParams.has('access_token')) {
+        auth = `Bearer ${url.searchParams.get('access_token')}`;
+    }
+    return auth;
+}
+
 async function isApiBypass(auth: string | null) {
     if (!auth) return false;
 
@@ -83,11 +91,9 @@ export async function GET(
     const params = await context.params;
     const path = params.path.join('/');
     const url = new URL(request.url);
-
-    const targetUrl = `${DIRECTUS_URL}/${path}${url.search}`;
+    const auth = getAuthToken(request, url);
 
     try {
-        const auth = request.headers.get('Authorization');
         const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
         const isAuthPath =
             path.startsWith('auth/') ||
@@ -132,11 +138,22 @@ export async function GET(
         }
 
         const forwardHeaders: Record<string, string> = {};
+        let targetSearch = url.search;
+
         if (canBypass && API_SERVICE_TOKEN) {
             forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
+            // If we are bypassing, and original request had access_token in URL, remove it so Directus uses our Service Token header
+            if (url.searchParams.has('access_token')) {
+                const newParams = new URLSearchParams(url.searchParams);
+                newParams.delete('access_token');
+                const newSearch = newParams.toString();
+                targetSearch = newSearch ? `?${newSearch}` : '';
+            }
         } else if (auth) {
             forwardHeaders['Authorization'] = auth;
         }
+
+        const targetUrl = `${DIRECTUS_URL}/${path}${targetSearch}`;
 
         const contentType = request.headers.get('Content-Type');
         if (contentType) forwardHeaders['Content-Type'] = contentType;
@@ -191,7 +208,7 @@ async function handleMutation(
     const params = await context.params;
     const path = params.path.join('/');
     const url = new URL(request.url);
-    const targetUrl = `${DIRECTUS_URL}/${path}${url.search}`;
+    const authHeader = getAuthToken(request, url);
 
     let body: any = null;
     if (method !== 'DELETE') {
@@ -219,7 +236,6 @@ async function handleMutation(
 
         let canBypass = false;
         let userData: any = null;
-        const authHeader = request.headers.get('Authorization');
 
         // Optimization: skip expensive checks if path is already authorized by rule
         const needsAccessCheck = !isAllowed && !isAuthPath;
@@ -310,11 +326,23 @@ async function handleMutation(
 
         // Prepare outgoing request
         const forwardHeaders: Record<string, string> = {};
+        let targetSearch = url.search;
+
         if (canBypass && API_SERVICE_TOKEN) {
             forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
+            // If we are bypassing, and original request had access_token in URL, remove it so Directus uses our Service Token header
+            if (url.searchParams.has('access_token')) {
+                const newParams = new URLSearchParams(url.searchParams);
+                newParams.delete('access_token');
+                const newSearch = newParams.toString();
+                targetSearch = newSearch ? `?${newSearch}` : '';
+            }
         } else if (authHeader) {
             forwardHeaders['Authorization'] = authHeader;
         }
+
+        const targetUrl = `${DIRECTUS_URL}/${path}${targetSearch}`;
+
         const originalContentType = request.headers.get('Content-Type');
         if (originalContentType) forwardHeaders['Content-Type'] = originalContentType;
         const cookie = request.headers.get('Cookie');
