@@ -134,9 +134,6 @@ jobs:
           script: |
             echo "$GH_PASSWORD" | docker login "$GH_REGISTRY" -u "$GH_USERNAME" --password-stdin
 
-            docker stop "frontend-$TAG" || true
-            docker rm "frontend-$TAG" || true
-
             mkdir -p "$DEPLOY_PATH"
             cd "$DEPLOY_PATH"
 
@@ -144,12 +141,15 @@ jobs:
 
             if [ "$TAG" = "latest" ]; then
               echo "NEXT_PUBLIC_PAYMENT_API_URL=http://payment-api-latest:3002" >> .env
+              echo "ADMIN_API_URL=http://admin-api:3005" >> .env
               echo "NODE_ENV=production" >> .env
             elif [ "$TAG" = "dev" ]; then
               echo "NEXT_PUBLIC_PAYMENT_API_URL=http://payment-api-dev:3002" >> .env
+              echo "ADMIN_API_URL=http://admin-api:3005" >> .env
               echo "NODE_ENV=development" >> .env
             else
               echo "NEXT_PUBLIC_PAYMENT_API_URL=http://payment-api-local:3002" >> .env
+              echo "ADMIN_API_URL=http://admin-api:3005" >> .env
               echo "NODE_ENV=development" >> .env
             fi
 

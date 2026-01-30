@@ -8,6 +8,8 @@ services:
       - EMAIL_API_ENDPOINT=${EMAIL_API_ENDPOINT:-http://email-api-${TAG:-dev}:3001/send-email}
       # Publish payment API URL for client-side usage and server-side proxy
       - NEXT_PUBLIC_PAYMENT_API_URL=${NEXT_PUBLIC_PAYMENT_API_URL:-http://payment-api-${TAG:-dev}:3002}
+      # Admin API URL for server-side proxy
+      - ADMIN_API_URL=${ADMIN_API_URL:-http://admin-api:3005}
     networks:
       - proxy-network
 

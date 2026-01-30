@@ -1,80 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const PAYMENT_API_URL = process.env.PAYMENT_API_URL || process.env.NEXT_PUBLIC_PAYMENT_API_URL || 'http://payment-api:3002';
+const ADMIN_API_URL = process.env.ADMIN_API_URL || 'http://admin-api:3005';
 
-export async function GET(
-    request: NextRequest,
-    context: { params: Promise<{ path: string[] }> }
-) {
-    const params = await context.params;
-    const path = params.path.join('/');
+async function proxyRequest(request: NextRequest, path: string, method: string) {
     const url = new URL(request.url);
     const correlationId = Math.random().toString(36).substring(7);
 
-    console.log(`[Admin Proxy][${correlationId}] GET /${path}`);
-    console.log(`[Admin Proxy][${correlationId}] Target: ${PAYMENT_API_URL}/api/admin/${path}${url.search}`);
+    // Bifurcate routing: payment-settings goes to payment-api, rest to dedicated admin-api
+    const targetBase = path === 'payment-settings' ? PAYMENT_API_URL : ADMIN_API_URL;
+    const targetURL = `${targetBase}/api/admin/${path}${url.search}`;
+
+    console.log(`[Admin Proxy][${correlationId}] ${method} /${path} -> ${targetURL}`);
 
     try {
         const authHeader = request.headers.get('Authorization');
-        console.log('[API Proxy] Auth Header:', authHeader ? `${authHeader.substring(0, 20)}...` : 'MISSING');
+        const body = method !== 'GET' && method !== 'HEAD' ? await request.json().catch(() => null) : undefined;
 
-        const response = await fetch(`${PAYMENT_API_URL}/api/admin/${path}${url.search}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': authHeader || '',
-                'Content-Type': 'application/json',
-            },
-        });
-
-        console.log('[API Proxy] Response:', {
-            status: response.status,
-            statusText: response.statusText,
-            ok: response.ok
-        });
-
-        let data;
-        try {
-            data = await response.json();
-        } catch (e) {
-            console.error('[API Proxy] Failed to parse upstream response as JSON:', e instanceof Error ? e.message : String(e));
-            return NextResponse.json(
-                { error: 'Upstream returned invalid response', status: response.status },
-                { status: response.status === 200 ? 502 : response.status }
-            );
-        }
-
-        console.log('[API Proxy] Response data:', data);
-        return NextResponse.json(data, { status: response.status });
-    } catch (error) {
-        console.error('[API Proxy] GET error:', error);
-        return NextResponse.json(
-            { error: 'Failed to proxy request', details: error instanceof Error ? error.message : String(error) },
-            { status: 500 }
-        );
-    }
-}
-
-export async function POST(
-    request: NextRequest,
-    context: { params: Promise<{ path: string[] }> }
-) {
-    const params = await context.params;
-    const path = params.path.join('/');
-    const body = await request.json().catch(() => null);
-
-    console.log('[API Proxy] POST Request:', {
-        path,
-        hasAuthHeader: !!request.headers.get('Authorization'),
-        hasBody: !!body,
-        targetURL: `${PAYMENT_API_URL}/api/admin/${path}`
-    });
-
-    try {
-        const authHeader = request.headers.get('Authorization');
-        console.log('[API Proxy] Auth Header:', authHeader ? `${authHeader.substring(0, 20)}...` : 'MISSING');
-
-        const response = await fetch(`${PAYMENT_API_URL}/api/admin/${path}`, {
-            method: 'POST',
+        const response = await fetch(targetURL, {
+            method,
             headers: {
                 'Authorization': authHeader || '',
                 'Content-Type': 'application/json',
@@ -82,30 +26,45 @@ export async function POST(
             body: body ? JSON.stringify(body) : undefined,
         });
 
-        console.log('[API Proxy] Response:', {
-            status: response.status,
-            statusText: response.statusText,
-            ok: response.ok
-        });
+        console.log(`[Admin Proxy][${correlationId}] Upstream Status: ${response.status}`);
 
         let data;
         try {
             data = await response.json();
         } catch (e) {
-            console.error('[API Proxy] Failed to parse upstream response as JSON:', e instanceof Error ? e.message : String(e));
+            console.error(`[Admin Proxy][${correlationId}] JSON Parse Error`);
             return NextResponse.json(
-                { error: 'Upstream returned invalid response', status: response.status },
+                { error: 'Upstream returned invalid response' },
                 { status: response.status === 200 ? 502 : response.status }
             );
         }
 
-        console.log('[API Proxy] Response data:', data);
         return NextResponse.json(data, { status: response.status });
     } catch (error) {
-        console.error('[API Proxy] POST error:', error);
+        console.error(`[Admin Proxy][${correlationId}] Error:`, error);
         return NextResponse.json(
             { error: 'Failed to proxy request', details: error instanceof Error ? error.message : String(error) },
             { status: 500 }
         );
     }
+}
+
+export async function GET(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+    const { path } = await params;
+    return proxyRequest(req, path.join('/'), 'GET');
+}
+
+export async function POST(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+    const { path } = await params;
+    return proxyRequest(req, path.join('/'), 'POST');
+}
+
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+    const { path } = await params;
+    return proxyRequest(req, path.join('/'), 'PATCH');
+}
+
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+    const { path } = await params;
+    return proxyRequest(req, path.join('/'), 'DELETE');
 }

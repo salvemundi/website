@@ -1,0 +1,12 @@
+services:
+  admin-api:
+    image: ghcr.io/salvemundi/admin-api:${TAG:-latest}
+    container_name: admin-api
+    restart: unless-stopped
+    env_file: .env
+    networks:
+      - proxy-network
+
+networks:
+  proxy-network:
+    external: true
