@@ -1,7 +1,7 @@
 services:
   admin-api:
-    image: ghcr.io/salvemundi/admin-api:${TAG:-latest}
-    container_name: admin-api
+    image: ghcr.io/salvemundi/admin-api:${TAG:-dev}
+    container_name: admin-api-${TAG:-dev}
     restart: unless-stopped
     env_file: .env
     networks:
