@@ -113,14 +113,6 @@ router.post('/approve-signup/:id', async (req, res) => {
             }
         }
 
-        if (!userId && email) {
-            const existing = await directusService.getUserByEmail(DIRECTUS_URL, DIRECTUS_API_TOKEN, email);
-            if (existing) {
-                console.log(`[AdminAPI] Found existing user by email ${email}: ${existing.id}`);
-                userId = existing.id;
-            }
-        }
-
         if (userId) {
             const userData = await directusService.getUser(DIRECTUS_URL, DIRECTUS_API_TOKEN, userId, 'id,entra_id,email,first_name,last_name');
             if (!userData) throw new Error(`User record ${userId} not found in Directus.`);

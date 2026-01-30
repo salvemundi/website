@@ -115,6 +115,21 @@ async function getUser(directusUrl, directusToken, userId, fields = '*') {
 }
 
 
+async function getUserByEmail(directusUrl, directusToken, email) {
+    try {
+        const query = new URLSearchParams({
+            'filter[email][_eq]': email,
+            'fields': 'id,email'
+        }).toString();
+        const response = await axios.get(`${directusUrl}/users?${query}`, getAuthConfig(directusToken));
+        return response.data.data?.[0] || null;
+    } catch (error) {
+        console.error(`Failed to fetch user by email ${email}:`, error.message);
+        return null;
+    }
+}
+
+
 async function getTransaction(directusUrl, directusToken, id) {
     try {
         const response = await axios.get(
@@ -323,5 +338,6 @@ module.exports = {
     },
 
     checkUserCommittee,
-    getUser
+    getUser,
+    getUserByEmail
 };
