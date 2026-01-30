@@ -751,11 +751,27 @@ export const siteSettingsApi = {
 
             const query = buildQueryString(params);
 
-            const data = await directusFetch<SiteSettings | SiteSettings[] | null>(`/items/site_settings?${query}`);
-            if (Array.isArray(data)) {
-                return data[0] || null;
+            try {
+                const data = await directusFetch<SiteSettings | SiteSettings[] | null>(`/items/site_settings?${query}`);
+                if (Array.isArray(data)) {
+                    return data[0] || null;
+                }
+                return data ?? null;
+            } catch (innerError: any) {
+                // If forbiddden (403), likely due to 'authorized_tokens' field permission.
+                // Retry without that field so at least the rest of the app works.
+                if (innerError?.message?.includes('403') || innerError?.toString().includes('403')) {
+                    console.warn('[siteSettingsApi] 403 Forbidden on full fetch. Retrying without authorized_tokens.');
+                    const limitedParams = { ...params, fields: ['id', 'page', 'show', 'disabled_message'] };
+                    const limitedQuery = buildQueryString(limitedParams);
+                    const data = await directusFetch<SiteSettings | SiteSettings[] | null>(`/items/site_settings?${limitedQuery}`);
+                    if (Array.isArray(data)) {
+                        return data[0] || null;
+                    }
+                    return data ?? null;
+                }
+                throw innerError;
             }
-            return data ?? null;
         } catch (error) {
             // Silently handle errors - site_settings is optional
             // This prevents console errors when the collection doesn't exist or is inaccessible
