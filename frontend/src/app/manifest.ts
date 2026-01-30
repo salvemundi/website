@@ -26,15 +26,15 @@ export default function manifest(): MetadataRoute.Manifest {
                 purpose: 'maskable'
             },
             {
-                src: '/img/Logo.png',
+                src: '/logo_purple.svg',
                 sizes: '192x192',
-                type: 'image/png',
+                type: 'image/svg+xml',
                 purpose: 'any'
             },
             {
-                src: '/img/Logo.png',
+                src: '/logo_purple.svg',
                 sizes: '512x512',
-                type: 'image/png',
+                type: 'image/svg+xml',
                 purpose: 'any'
             },
         ],
@@ -45,14 +45,14 @@ export default function manifest(): MetadataRoute.Manifest {
                 short_name: 'Activiteiten',
                 description: 'Bekijk onze activiteiten',
                 url: '/activiteiten',
-                icons: [{ src: '/img/Logo.png', sizes: '192x192' }]
+                icons: [{ src: '/logo_purple.svg', sizes: '192x192', type: 'image/svg+xml' }]
             },
             {
                 name: 'Account',
                 short_name: 'Account',
                 description: 'Mijn account instellingen',
                 url: '/account',
-                icons: [{ src: '/img/Logo.png', sizes: '192x192' }]
+                icons: [{ src: '/logo_purple.svg', sizes: '192x192', type: 'image/svg+xml' }]
             }
         ]
     };
