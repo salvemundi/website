@@ -1,9 +1,20 @@
 import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
+    let name = 'Salve Mundi';
+    let shortName = 'Salve Mundi';
+
+    if (typeof window !== 'undefined') {
+        const hostname = window.location.hostname;
+        if (hostname.includes('dev.') || hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
+            name = 'SaMu Dev';
+            shortName = 'SaMu Dev';
+        }
+    }
+
     return {
-        name: 'Salve Mundi',
-        short_name: 'Salve Mundi',
+        name: name,
+        short_name: shortName,
         description: 'De studievereniging voor HBO-studenten in Eindhoven. Activiteiten, commissies, en meer.',
         start_url: '/',
         display: 'standalone',

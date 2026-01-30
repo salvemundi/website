@@ -354,8 +354,19 @@ export default function SignUp() {
                                 <div className="bg-theme-purple/5 border border-theme-purple/10 p-5 rounded-2xl mb-8">
                                     <p className="text-xs text-theme-purple font-bold uppercase tracking-widest mb-3">Jouw gegevens</p>
                                     <div className="space-y-1">
-                                        <p className="text-theme-text font-bold text-lg">{user.first_name} {user.last_name}</p>
-                                        <p className="text-theme-text-muted">{user.email}</p>
+                                        <p className="text-theme-text font-bold text-lg leading-tight flex flex-wrap gap-x-1">
+                                            <span>{user.first_name}</span>
+                                            {user.last_name && <span>{user.last_name}</span>}
+                                        </p>
+                                        <p className="text-theme-text-muted text-sm break-all leading-snug">
+                                            {user.email?.includes('@') ? (
+                                                <>
+                                                    {user.email.split('@')[0]}@
+                                                    <wbr />
+                                                    {user.email.split('@')[1]}
+                                                </>
+                                            ) : user.email}
+                                        </p>
                                     </div>
                                     {user.membership_expiry && (
                                         <div className="mt-4 pt-4 border-t border-theme-purple/10">
