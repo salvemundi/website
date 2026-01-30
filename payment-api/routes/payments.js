@@ -35,9 +35,19 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
 
             console.warn(`[Payment][${traceId}] Initial Amount: ${finalAmount}`);
 
-            // 1. Automatic Committee Discount Check
             // 1. Automatic Committee Discount Check & Price Enforcement
             if (isContribution) {
+                // If this is a guest signup (no userId), check if the email already exists to prevent duplicate accounts.
+                if (!userId && email) {
+                    const existingUser = await directusService.getUserByEmail(DIRECTUS_URL, DIRECTUS_API_TOKEN, email);
+                    if (existingUser) {
+                        console.warn(`[Payment][${traceId}] Signup blocked: email ${email} already has an account.`);
+                        return res.status(400).json({
+                            error: 'Dit e-mailadres is al bij ons bekend als lid. Log in met je @salvemundi.nl account om je lidmaatschap te beheren of te verlengen.'
+                        });
+                    }
+                }
+
                 // Default to standard price
                 let standardPrice = 20.00;
 
