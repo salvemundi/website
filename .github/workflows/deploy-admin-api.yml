@@ -76,7 +76,7 @@ jobs:
           DIRECTUS_URL: ${{ secrets.DIRECTUS_URL }}
           DIRECTUS_API_TOKEN: ${{ secrets.GRAPH_SYNC_DIRECTUS_TOKEN }}
           GRAPH_SYNC_URL: http://graph-sync:3001
-          MEMBERSHIP_API_URL: http://membership-api-${{ env.TAG == 'latest' && 'prod' || 'dev' }}:8000/api/membership
+          MEMBERSHIP_API_URL: http://membership-api-${{ env.TAG == 'latest' && 'latest' || 'dev' }}:8000/api/membership
           EMAIL_SERVICE_URL: http://email-api-${{ env.TAG == 'latest' && 'latest' || 'dev' }}:3001/send-email
           PROD_MOLLIE_API_KEY: ${{ secrets.PROD_MOLLIE_API_KEY }}
           DEV_MOLLIE_API_KEY: ${{ secrets.DEV_MOLLIE_API_KEY }}
