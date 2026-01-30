@@ -175,7 +175,7 @@ async function handleMutation(
 
         // Optimization: skip expensive checks if path is already authorized by rule
         const needsAccessCheck = !isAllowed && !isAuthPath;
-        const needsSpecialGuardCheck = path.startsWith('items/events') || path.startsWith('items/event_signups');
+        const needsSpecialGuardCheck = path.startsWith('items/events') || path.startsWith('items/event_signups') || path.includes('site_settings');
 
         if (authHeader && (needsAccessCheck || needsSpecialGuardCheck)) {
             // First check if it's the known bypass token
