@@ -8,17 +8,14 @@ discord:
   repeat_alert_after_minutes: 60
 
 system:
-  disk_usage_threshold_percent: 90
+  disk_usage_threshold_percent: 70
   memory_usage_threshold_percent: 90
-  cpu_load_threshold_percent: 95
+  cpu_load_threshold_percent: 80
 
 docker:
   containers:
     - "npm"
-    - "directus"
-    - "directus_db"
     - "frontend-dev"
-    - "payment-api-dev"
 
 functional:
   http_checks:
