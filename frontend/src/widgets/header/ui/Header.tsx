@@ -136,6 +136,18 @@ const Header: React.FC = () => {
         }
     }, [pathname]);
 
+    // Prevent body scroll when mobile menu is open
+    useEffect(() => {
+        if (menuOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [menuOpen]);
+
     // Hide main header only on intro blog and planning pages for immersive experience
     // Keep header visible on main /intro signup page
     if (pathname?.startsWith('/intro/blog') || pathname?.startsWith('/intro/planning')) {
@@ -281,9 +293,13 @@ const Header: React.FC = () => {
                     aria-hidden={!menuOpen}
                 />
                 <nav
-                    className={`fixed right-0 z-50 flex h-full w-full max-w-xs flex-col gap-6 bg-[var(--bg-main)] px-6 py-8 shadow-xl transition-transform duration-300 ${menuOpen ? "translate-x-0" : "translate-x-full"
+                    className={`fixed right-0 z-50 flex w-full max-w-xs flex-col gap-6 bg-[var(--bg-main)] px-6 py-8 shadow-xl transition-transform duration-300 overflow-y-auto ${menuOpen ? "translate-x-0" : "translate-x-full"
                         }`}
-                    style={{ top: 'env(safe-area-inset-top)' }}
+                    style={{
+                        top: 'env(safe-area-inset-top, 0px)',
+                        height: 'calc(100dvh - env(safe-area-inset-top, 0px))',
+                        paddingBottom: 'calc(2rem + env(safe-area-inset-bottom, 0px))'
+                    }}
                 >
                     <div className="flex items-center justify-between">
                         <Link

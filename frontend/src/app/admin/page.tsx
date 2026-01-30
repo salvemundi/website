@@ -258,7 +258,7 @@ export default function AdminDashboardPage() {
         }
     };
 
-    
+
 
     const loadDashboardData = async () => {
         setIsLoading(true);
@@ -833,7 +833,7 @@ export default function AdminDashboardPage() {
                             title="beheer"
                             value="reis"
                             icon={<FileText className="h-6 w-6" />}
-                            subtitle={`aanmeldingen:  ${stats.reisSignups}`}
+                            subtitle="Beheer de jaarlijkse reis"
                             onClick={() => router.push('/admin/reis')}
                             colorClass="teal"
                             disabled={!canAccessReis}
@@ -878,7 +878,23 @@ export default function AdminDashboardPage() {
                                         />
                                     </div>
 
-                                    {/* Removed small 'Beheer' buttons here per request */}
+                                    {/* Additional actions for ICT/Bestuur */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <ActionCard
+                                            title="Leden"
+                                            subtitle="Sync"
+                                            icon={<Users className="h-6 w-6" />}
+                                            onClick={() => router.push('/admin/sync')}
+                                            colorClass="green"
+                                        />
+                                        <ActionCard
+                                            title="Systeem"
+                                            subtitle="Logging"
+                                            icon={<FileText className="h-6 w-6" />}
+                                            onClick={() => router.push('/admin/logging')}
+                                            colorClass="red"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
