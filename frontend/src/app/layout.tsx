@@ -53,6 +53,7 @@ export const metadata: Metadata = {
         title: 'Salve Mundi',
         statusBarStyle: 'default',
     },
+    manifest: '/manifest.webmanifest',
 };
 
 
