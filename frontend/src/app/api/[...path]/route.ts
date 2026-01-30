@@ -44,7 +44,7 @@ async function isApiBypass(auth: string | null, options?: { cookie?: string | nu
         try {
             const headers: Record<string, string> = { 'Cache-Control': 'no-cache' };
             if (auth) headers['Authorization'] = auth;
-            if (!auth && options?.cookie) headers['Cookie'] = options.cookie;
+            if (options?.cookie) headers['Cookie'] = options.cookie;
 
             const meResp = await fetch(`${DIRECTUS_URL}/users/me`, {
                 headers,
@@ -73,7 +73,7 @@ async function isApiBypass(auth: string | null, options?: { cookie?: string | nu
                     // Now check if current caller matches this ID
                     const headers: Record<string, string> = { 'Cache-Control': 'no-cache' };
                     if (auth) headers['Authorization'] = auth;
-                    if (!auth && options?.cookie) headers['Cookie'] = options.cookie;
+                    if (options?.cookie) headers['Cookie'] = options.cookie;
 
                     const meResp = await fetch(`${DIRECTUS_URL}/users/me`, {
                         headers,
@@ -90,6 +90,15 @@ async function isApiBypass(auth: string | null, options?: { cookie?: string | nu
     }
 
     return false;
+}
+
+function getProxyHeaders(request: NextRequest): Record<string, string> {
+    const headers: Record<string, string> = {};
+    request.headers.forEach((value, key) => {
+        if (['host', 'content-length', 'content-type', 'cookie', 'authorization'].includes(key.toLowerCase())) return;
+        headers[key] = value;
+    });
+    return headers;
 }
 
 export async function GET(
@@ -115,13 +124,16 @@ export async function GET(
 
         const cookie = request.headers.get('Cookie');
         if ((auth || cookie) && (!isAllowed && !isAuthPath || needsSpecialGuardCheck)) {
-            canBypass = await isApiBypass(auth, { cookie: request.headers.get('Cookie') });
-            console.log(`[Directus Proxy] GET ${path} - Initial Bypass Check: ${canBypass}`);
+            const bypassOptions = cookie ? { cookie } : undefined;
+            canBypass = await isApiBypass(auth, bypassOptions);
+            // Removed verbose console check log
 
             if (!canBypass) {
                 try {
                     const cookieHeader = request.headers.get('Cookie') || '';
-                    const headers: Record<string, string> = { 'Cache-Control': 'no-cache' };
+                    const headers = getProxyHeaders(request);
+                    headers['Cache-Control'] = 'no-cache';
+
                     if (auth) headers['Authorization'] = auth;
                     if (cookieHeader) headers['Cookie'] = cookieHeader;
 
@@ -152,7 +164,8 @@ export async function GET(
             }
         }
 
-        const forwardHeaders: Record<string, string> = {};
+        const forwardHeaders = getProxyHeaders(request);
+
         let targetSearch = url.search;
 
         if (canBypass && API_SERVICE_TOKEN) {
@@ -264,7 +277,9 @@ async function handleMutation(
                 // Fetch user data once for all subsequent checks
                 try {
                     const cookieHeader = request.headers.get('Cookie') || '';
-                    const headers: Record<string, string> = { 'Cache-Control': 'no-cache' };
+                    const headers = getProxyHeaders(request);
+                    headers['Cache-Control'] = 'no-cache';
+
                     if (authHeader) headers['Authorization'] = authHeader;
                     if (cookieHeader) headers['Cookie'] = cookieHeader;
 
@@ -345,7 +360,8 @@ async function handleMutation(
         }
 
         // Prepare outgoing request
-        const forwardHeaders: Record<string, string> = {};
+        const forwardHeaders = getProxyHeaders(request);
+
         let targetSearch = url.search;
 
         if (canBypass && API_SERVICE_TOKEN) {
