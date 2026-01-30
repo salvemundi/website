@@ -29,8 +29,8 @@ function getAuthToken(request: NextRequest, url: URL): string | null {
     return auth;
 }
 
-async function isApiBypass(auth: string | null) {
-    if (!auth) return false;
+async function isApiBypass(auth: string | null, options?: { cookie?: string | null }) {
+    if (!auth && !options?.cookie) return false;
 
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : auth;
 
@@ -42,8 +42,12 @@ async function isApiBypass(auth: string | null) {
     // 2. Check if it matches a previously discovered bypass user ID
     if (API_BYPASS_USER_ID) {
         try {
+            const headers: Record<string, string> = { 'Cache-Control': 'no-cache' };
+            if (auth) headers['Authorization'] = auth;
+            if (!auth && options?.cookie) headers['Cookie'] = options.cookie;
+
             const meResp = await fetch(`${DIRECTUS_URL}/users/me`, {
-                headers: { Authorization: auth },
+                headers,
                 cache: 'no-store'
             });
             if (!meResp.ok) return false;
@@ -67,8 +71,12 @@ async function isApiBypass(auth: string | null) {
                 if (svcUserId) {
                     API_BYPASS_USER_ID = String(svcUserId);
                     // Now check if current caller matches this ID
+                    const headers: Record<string, string> = { 'Cache-Control': 'no-cache' };
+                    if (auth) headers['Authorization'] = auth;
+                    if (!auth && options?.cookie) headers['Cookie'] = options.cookie;
+
                     const meResp = await fetch(`${DIRECTUS_URL}/users/me`, {
-                        headers: { Authorization: auth },
+                        headers,
                         cache: 'no-store'
                     });
                     if (!meResp.ok) return false;
@@ -105,13 +113,20 @@ export async function GET(
         let canBypass = false;
         const needsSpecialGuardCheck = path.startsWith('items/events') || path.startsWith('items/event_signups') || path.includes('site_settings');
 
-        if (auth && (!isAllowed && !isAuthPath || needsSpecialGuardCheck)) {
-            canBypass = await isApiBypass(auth);
+        const cookie = request.headers.get('Cookie');
+        if ((auth || cookie) && (!isAllowed && !isAuthPath || needsSpecialGuardCheck)) {
+            canBypass = await isApiBypass(auth, { cookie: request.headers.get('Cookie') });
+            console.log(`[Directus Proxy] GET ${path} - Initial Bypass Check: ${canBypass}`);
 
             if (!canBypass) {
                 try {
+                    const cookieHeader = request.headers.get('Cookie') || '';
+                    const headers: Record<string, string> = { 'Cache-Control': 'no-cache' };
+                    if (auth) headers['Authorization'] = auth;
+                    if (cookieHeader) headers['Cookie'] = cookieHeader;
+
                     const meResp = await fetch(`${DIRECTUS_URL}/users/me`, {
-                        headers: { Authorization: auth },
+                        headers,
                         cache: 'no-store'
                     });
                     if (meResp.ok) {
@@ -120,7 +135,7 @@ export async function GET(
 
                         const membershipsResp = await fetch(
                             `${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name,is_leader&limit=-1`,
-                            { headers: { Authorization: auth }, cache: 'no-store' }
+                            { headers, cache: 'no-store' }
                         );
                         const membershipsJson = await membershipsResp.json().catch(() => ({}));
                         const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
@@ -241,15 +256,21 @@ async function handleMutation(
         const needsAccessCheck = !isAllowed && !isAuthPath;
         const needsSpecialGuardCheck = path.startsWith('items/events') || path.startsWith('items/event_signups') || path.includes('site_settings');
 
-        if (authHeader && (needsAccessCheck || needsSpecialGuardCheck)) {
+        const cookie = request.headers.get('Cookie');
+        if ((authHeader || cookie) && (needsAccessCheck || needsSpecialGuardCheck)) {
             // First check if it's the known bypass token
-            canBypass = await isApiBypass(authHeader);
+            canBypass = await isApiBypass(authHeader, { cookie: request.headers.get('Cookie') });
 
             if (!canBypass) {
                 // Fetch user data once for all subsequent checks
                 try {
+                    const cookieHeader = request.headers.get('Cookie') || '';
+                    const headers: Record<string, string> = { 'Cache-Control': 'no-cache' };
+                    if (authHeader) headers['Authorization'] = authHeader;
+                    if (cookieHeader) headers['Cookie'] = cookieHeader;
+
                     const meResp = await fetch(`${DIRECTUS_URL}/users/me`, {
-                        headers: { Authorization: authHeader },
+                        headers,
                         cache: 'no-store'
                     });
                     if (meResp.ok) {
@@ -259,7 +280,7 @@ async function handleMutation(
                         // Check memberships for admin/leader status
                         const membershipsResp = await fetch(
                             `${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.id,committee_id.name,is_leader&limit=-1`,
-                            { headers: { Authorization: authHeader }, cache: 'no-store' }
+                            { headers, cache: 'no-store' }
                         );
                         const membershipsJson = await membershipsResp.json().catch(() => ({}));
                         const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
