@@ -161,8 +161,28 @@ router.post('/approve-signup/:id', async (req, res) => {
 
         res.json({ success: true, message: 'Signup approved' });
     } catch (error) {
-        console.error('[AdminAPI] Approval error:', error.message);
-        res.status(500).json({ error: 'Approval failed', details: error.message });
+        let errorMsg = error.message;
+        let details = null;
+
+        if (error.response) {
+            // Internal call failed (Axios error)
+            errorMsg = `Internal Service Error: ${error.config?.url || 'Unknown URL'} returned ${error.response.status}`;
+            details = error.response.data;
+            console.error('[AdminAPI] Service call failed:', {
+                url: error.config?.url,
+                method: error.config?.method,
+                status: error.response.status,
+                data: error.response.data
+            });
+        } else {
+            console.error('[AdminAPI] Approval error:', error.stack || error.message);
+        }
+
+        res.status(500).json({
+            error: 'Approval failed',
+            message: errorMsg,
+            details: details
+        });
     }
 });
 
