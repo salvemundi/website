@@ -262,7 +262,11 @@ async function handleMutation(
 
         // Prepare outgoing request
         const forwardHeaders: Record<string, string> = {};
-        if (authHeader) forwardHeaders['Authorization'] = authHeader;
+        if (canBypass && API_SERVICE_TOKEN) {
+            forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
+        } else if (authHeader) {
+            forwardHeaders['Authorization'] = authHeader;
+        }
         const originalContentType = request.headers.get('Content-Type');
         if (originalContentType) forwardHeaders['Content-Type'] = originalContentType;
         const cookie = request.headers.get('Cookie');
