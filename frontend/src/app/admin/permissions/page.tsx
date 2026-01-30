@@ -148,7 +148,21 @@ export default function PermissionsPage() {
     const uniqueCommittees = Array.from(
         (committees || []).reduce((acc, c) => {
             const token = c.name.toLowerCase().replace(/\|\|\s*salve mundi/gi, '').replace(/[^a-z0-9]/g, '').trim();
+
+            // Skip common tokens that are already explicitly listed
             if (commonTokens.includes(token)) return acc;
+
+            // Deduplicate: If the token is effectively covered by a common token, skip it.
+            // e.g. 'ictcommissie' is covered by 'ict' because the auth check uses .includes()
+            if (token.includes('ict') && commonTokens.includes('ict')) return acc;
+            if (token.includes('kas') && commonTokens.includes('kas')) return acc;
+            if (token.includes('kandi') && commonTokens.includes('kandi')) return acc;
+            if (token.includes('bestuur') && commonTokens.includes('bestuur')) return acc;
+
+            // Specific fix for "Commissie Leider" vs "Commissieleiders"
+            // If we encounter 'commissieleiders', and we already have or will have 'commissieleider', skip the longer one.
+            // 'commissieleiders' includes 'commissieleider'.
+            if (token === 'commissieleiders') return acc;
 
             // If we already have this token, keep the one that is visible
             if (acc.has(token)) {

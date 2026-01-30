@@ -170,10 +170,14 @@ export async function GET(
 
                         if (path.includes('site_settings')) {
                             const isIct = memberships.some((m: any) => (m?.committee_id?.name || '').toString().toLowerCase().includes('ict'));
+
                             if (!isIct) {
+                                console.warn(`[Directus Proxy] BLOCKED Access to site_settings for non-ICT user ${userId}`);
                                 return NextResponse.json({ error: 'Forbidden', message: 'Only ICT allowed' }, { status: 403 });
                             }
-                            // Authorized, but force User Token to avoid Service Token issues
+
+                            // Authorized
+                            console.log(`[Directus Proxy] Access granted to site_settings for ICT user ${userId}. Using USER TOKEN.`);
                             canBypass = false;
                         } else {
                             canBypass = isGeneralPrivileged;
@@ -247,7 +251,15 @@ export async function GET(
         if (response.status === 204) {
             return new Response(null, { status: 204 });
         }
+
         const data = await response.json().catch(() => null);
+
+        // Debug logging for failures
+        if (!response.ok && path.includes('site_settings')) {
+            console.error(`[Directus Proxy] Upstream request to ${path} failed with status ${response.status}`);
+            console.error(`[Directus Proxy] Error Body:`, JSON.stringify(data, null, 2));
+        }
+
         return NextResponse.json(data, { status: response.status });
 
     } catch (error: any) {
