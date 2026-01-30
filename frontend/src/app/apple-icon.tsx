@@ -12,18 +12,15 @@ export default function AppleIcon() {
         (
             <div
                 style={{
-                    fontSize: 100,
                     background: 'linear-gradient(135deg, #FF6542 0%, #9B4DCA 100%)',
                     width: '100%',
                     height: '100%',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: 'white',
-                    fontWeight: '900',
                 }}
             >
-                SM
+                {/* No text, just the brand gradient */}
             </div>
         ),
         {
