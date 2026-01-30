@@ -78,28 +78,31 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         checkAuthorization();
     }, [user, authLoading, router]);
 
-    if (authLoading || isChecking) {
+    // Only show full loading if we don't even have a user state yet or are logging out
+    if (authLoading || isLoggingOut) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--bg-main)] to-[var(--bg-card)]">
                 <div className="bg-admin-card rounded-3xl shadow-xl p-8 max-w-md mx-4 text-center">
                     <div className="h-12 w-12 animate-spin rounded-full border-4 border-theme-purple/20 border-t-theme-purple mx-auto mb-4" />
-                    <p className="text-admin-muted">Toegang controleren...</p>
+                    <p className="text-admin-muted">Inloggen...</p>
                 </div>
             </div>
         );
     }
 
-    // If not authorized, show the no-access page
-    if (!isAuthorized) {
+    // If we're done checking and not authorized, show no-access
+    if (!isChecking && !isAuthorized) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end">
+            <div className="min-h-screen bg-gradient-to-br from-[var(--bg-main)] to-[var(--bg-card)]">
                 <NoAccessPage />
             </div>
         );
     }
 
+    // Default: render children while checking or if authorized
+    // This provides a smooth "refresh" experience where the page doesn't disappear
     return (
-        <div className="min-h-screen bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end">
+        <div className="min-h-screen bg-gradient-to-br from-[var(--bg-main)] to-[var(--bg-card)]">
             {children}
         </div>
     );
