@@ -9,6 +9,12 @@ let API_BYPASS_USER_ID = process.env.DIRECTUS_API_USER_ID ?? null;
 // Detect a Directus API token used by server-side services or the frontend build.
 const API_SERVICE_TOKEN = process.env.DIRECTUS_API_TOKEN ?? process.env.VITE_DIRECTUS_API_KEY ?? process.env.NEXT_PUBLIC_DIRECTUS_API_KEY ?? null;
 
+if (!API_SERVICE_TOKEN) {
+    console.warn('[Directus Proxy] WARNING: API_SERVICE_TOKEN is not set. Admin bypass will not work.');
+} else {
+    console.log('[Directus Proxy] API_SERVICE_TOKEN is configured.');
+}
+
 const allowedCollections = [
     'event_signups', 'pub_crawl_signups', 'intro_signups', 'intro_parent_signups',
     'intro_newsletter_subscribers', 'Stickers', 'blog_likes', 'trip_signups',
@@ -145,6 +151,10 @@ export async function GET(
                         const userData = await meResp.json().catch(() => null);
                         const userId = userData?.data?.id;
 
+                        if (path.includes('site_settings')) {
+                            console.log(`[Directus Proxy] Debugging site_settings access for User ${userId}`);
+                        }
+
                         const membershipsResp = await fetch(
                             `${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name,is_leader&limit=-1`,
                             { headers, cache: 'no-store' }
@@ -152,16 +162,30 @@ export async function GET(
                         const membershipsJson = await membershipsResp.json().catch(() => ({}));
                         const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
 
+                        if (path.includes('site_settings')) {
+                            console.log(`[Directus Proxy] User ${userId} memberships:`, memberships.map((m: any) => m.committee_id?.name));
+                        }
+
                         canBypass = memberships.some((m: any) => {
                             const name = (m?.committee_id?.name || '').toString().toLowerCase();
                             const isLeader = m.is_leader === true;
                             return name.includes('bestuur') || name.includes('ict') || name.includes('kandidaat') || name.includes('kandi') || isLeader;
                         });
+
+                        if (path.includes('site_settings')) {
+                            console.log(`[Directus Proxy] Bypass decision for ${userId}: ${canBypass}`);
+                        }
+                    } else {
+                        console.warn(`[Directus Proxy] /users/me failed: ${meResp.status}`);
                     }
                 } catch (e) {
                     console.error('[Directus Proxy] GET auth check failed:', e);
                 }
             }
+        }
+
+        if (path.includes('site_settings')) {
+            console.log(`[Directus Proxy] Final Decision for ${path}: canBypass=${canBypass}`);
         }
 
         const forwardHeaders = getProxyHeaders(request);
@@ -177,8 +201,10 @@ export async function GET(
                 const newSearch = newParams.toString();
                 targetSearch = newSearch ? `?${newSearch}` : '';
             }
+            if (path.includes('site_settings')) console.log('[Directus Proxy] Using SERVICE TOKEN for upstream request');
         } else if (auth) {
             forwardHeaders['Authorization'] = auth;
+            if (path.includes('site_settings')) console.log('[Directus Proxy] Using USER TOKEN for upstream request');
         }
 
         const targetUrl = `${DIRECTUS_URL}/${path}${targetSearch}`;
