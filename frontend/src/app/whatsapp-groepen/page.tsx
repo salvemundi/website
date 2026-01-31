@@ -10,16 +10,15 @@ import { WhatsAppGroup } from '@/shared/lib/api/salvemundi';
 
 export default function WhatsAppGroupsPage() {
     const router = useRouter();
-    const { user, isLoading: authLoading, isLoggingOut, loginWithMicrosoft } = useAuth();
+    const { user, isLoading: authLoading, isLoggingOut } = useAuth();
     const { data: groups = [], isLoading: groupsLoading, error, refetch } = useSalvemundiWhatsAppGroups(true);
 
     useEffect(() => {
         if (!authLoading && !user && !isLoggingOut) {
             const returnTo = window.location.pathname + window.location.search;
-            localStorage.setItem('auth_return_to', returnTo);
-            loginWithMicrosoft();
+            router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
         }
-    }, [user, authLoading, router, isLoggingOut, loginWithMicrosoft]);
+    }, [user, authLoading, router, isLoggingOut]);
 
     const handleJoinGroup = (inviteLink: string) => {
         window.open(inviteLink, '_blank', 'noopener,noreferrer');

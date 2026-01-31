@@ -224,73 +224,67 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    // Handle MSAL redirect promise on component mount
+    // Handle MSAL redirect promise and silent login on component mount
     useEffect(() => {
         const handleRedirect = async () => {
             if (!msalInstance) {
+                console.warn('[AuthProvider] MSAL instance not available');
                 setIsMsalInitializing(false);
                 return;
             }
 
-            // Check if noAuto is in the URL - if so, skip MSAL redirect processing
-            // to prevent auto-login after explicit logout
-            if (typeof window !== 'undefined') {
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('noAuto') === 'true') {
-                    setIsMsalInitializing(false);
-                    return;
-                }
-            }
-
             try {
                 await msalInstance.initialize();
+
+                // Process redirect response if coming back from Microsoft
                 const response = await msalInstance.handleRedirectPromise();
 
                 if (response && response.account) {
+                    console.log('[AuthProvider] Redirect login successful');
                     msalInstance.setActiveAccount(response.account);
-                    await handleLoginSuccess(response);
+                    await handleLoginSuccess(response, true);
                 } else {
-                    // Proactively restore active account from cache if nothing was returned by redirect
+                    // Not a redirect return - restore active account from cache
                     const accounts = msalInstance.getAllAccounts();
-
                     if (accounts.length > 0) {
                         const account = accounts[0];
                         msalInstance.setActiveAccount(account);
                     }
 
-                    // If we are not currently authenticated with Directus, attempt silent login
+                    // Silent Login Recovery:
+                    // If we don't have a Directus session but we HAVE a Microsoft session,
+                    // try to login silently to Directus without a full page redirect.
                     if (!user && !localStorage.getItem('auth_token')) {
                         if (accounts.length > 0) {
                             const account = accounts[0];
-                            console.log('[AuthProvider] Active MSAL account found, attempting silent login...');
+                            console.log('[AuthProvider] Attempting silent MSAL token acquisition...');
                             try {
                                 const silentResult = await msalInstance.acquireTokenSilent({
                                     ...loginRequest,
-                                    account: account
+                                    account
                                 });
                                 if (silentResult) {
-                                    await handleLoginSuccess(silentResult);
+                                    await handleLoginSuccess(silentResult, false);
                                 }
                             } catch (silentError) {
-                                console.warn('[AuthProvider] Silent MSAL token acquisition failed:', silentError);
+                                console.log('[AuthProvider] Silent MSAL failed, user must login manually');
                             }
                         } else {
-                            // No cached account, try ssoSilent to check for existing Microsoft session cookie
+                            // Try ssoSilent to check for existing cookies (no account in cache)
                             try {
-                                console.log('[AuthProvider] No cached account, attempting ssoSilent...');
+                                console.log('[AuthProvider] No accounts in cache, trying ssoSilent...');
                                 const ssoResult = await msalInstance.ssoSilent(loginRequest);
                                 if (ssoResult) {
-                                    console.log('[AuthProvider] ssoSilent success');
-                                    await handleLoginSuccess(ssoResult);
+                                    await handleLoginSuccess(ssoResult, false);
                                 }
                             } catch (ssoError) {
-                                console.log('[AuthProvider] ssoSilent failed (expected if not logged in):', ssoError);
+                                // Expected if no active Microsoft session in browser
                             }
                         }
                     }
                 }
             } catch (error) {
-                console.error('Error handling MSAL initialization:', error);
+                console.error('[AuthProvider] MSAL init/redirect error:', error);
             } finally {
                 setIsMsalInitializing(false);
             }
@@ -403,83 +397,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    // Handle MSAL redirect promise on component mount
-    useEffect(() => {
-        const handleRedirect = async () => {
-            if (!msalInstance) {
-                setIsMsalInitializing(false);
-                return;
-            }
-
-            // Check if noAuto is in the URL - if so, skip MSAL redirect processing
-            // to prevent auto-login after explicit logout
-            if (typeof window !== 'undefined') {
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('noAuto') === 'true') {
-                    setIsMsalInitializing(false);
-                    return;
-                }
-            }
-
-            try {
-                await msalInstance.initialize();
-                const response = await msalInstance.handleRedirectPromise();
-
-                if (response && response.account) {
-                    msalInstance.setActiveAccount(response.account);
-                    // This is the interactive return - we SHOULD redirect
-                    await handleLoginSuccess(response, true);
-                } else {
-                    // Proactively restore active account from cache if nothing was returned by redirect
-                    const accounts = msalInstance.getAllAccounts();
-
-                    if (accounts.length > 0) {
-                        const account = accounts[0];
-                        msalInstance.setActiveAccount(account);
-                    }
-
-                    // If we are not currently authenticated with Directus, attempt silent login
-                    if (!user && !localStorage.getItem('auth_token')) {
-                        if (accounts.length > 0) {
-                            const account = accounts[0];
-                            console.log('[AuthProvider] Active MSAL account found, attempting silent login...');
-                            try {
-                                const silentResult = await msalInstance.acquireTokenSilent({
-                                    ...loginRequest,
-                                    account: account
-                                });
-                                if (silentResult) {
-                                    // Silent recovery - do NOT redirect
-                                    await handleLoginSuccess(silentResult, false);
-                                }
-                            } catch (silentError) {
-                                console.warn('[AuthProvider] Silent MSAL token acquisition failed:', silentError);
-                            }
-                        } else {
-                            // No cached account, try ssoSilent to check for existing Microsoft session cookie
-                            try {
-                                console.log('[AuthProvider] No cached account, attempting ssoSilent...');
-                                const ssoResult = await msalInstance.ssoSilent(loginRequest);
-                                if (ssoResult) {
-                                    console.log('[AuthProvider] ssoSilent success');
-                                    // SSO Silent - do NOT redirect (we are already on the page we want, or will be handled by route)
-                                    await handleLoginSuccess(ssoResult, false);
-                                }
-                            } catch (ssoError) {
-                                console.log('[AuthProvider] ssoSilent failed (expected if not logged in):', ssoError);
-                            }
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Error handling MSAL initialization:', error);
-            } finally {
-                setIsMsalInitializing(false);
-            }
-        };
-
-        handleRedirect();
-    }, []);
 
     const trySilentMsalLogin = async (): Promise<boolean> => {
         if (!msalInstance) return false;

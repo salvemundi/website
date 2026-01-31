@@ -49,7 +49,7 @@ export default function KroegentochtAanmeldingenPage() {
     const [authorizedForAttendance, setAuthorizedForAttendance] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [showAllSignups, setShowAllSignups] = useState(false);
-    // site visibility for kroegentocht
+    const [showPastEvents, setShowPastEvents] = useState(false);
     const { data: kroegentochtSettings, refetch: refetchKroegSettings } = useSalvemundiSiteSettings('kroegentocht');
 
     useEffect(() => {
@@ -109,6 +109,21 @@ export default function KroegentochtAanmeldingenPage() {
             setIsLoading(false);
         }
     };
+
+    const getVisibleEvents = () => {
+        if (showPastEvents) return events;
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        return events.filter(event => {
+            const eventDate = new Date(event.date);
+            eventDate.setHours(0, 0, 0, 0);
+            return eventDate >= today;
+        });
+    };
+
+    const visibleEvents = getVisibleEvents();
 
     const loadSignups = async (eventId: number) => {
         setIsLoading(true);
@@ -254,39 +269,64 @@ export default function KroegentochtAanmeldingenPage() {
 
                     {/* Event Selector */}
                     <div className="mb-6 bg-admin-card rounded-2xl shadow-lg p-6">
-                        <h2 className="text-xl font-bold text-admin mb-4">Selecteer Event</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {events.map(event => {
-                                const eventDate = new Date(event.date);
-                                const isUpcoming = eventDate >= new Date();
-                                const isSelected = selectedEvent?.id === event.id;
-
-                                return (
-                                    <button
-                                        key={event.id}
-                                        onClick={() => setSelectedEvent(event)}
-                                        className={`p-4 rounded-xl border-2 transition text-left ${isSelected
-                                            ? 'border-theme-purple bg-theme-purple/10'
-                                            : 'border-admin hover:border-theme-purple'
-                                            }`}
-                                    >
-                                        <div className="flex items-start justify-between mb-2">
-                                            <h3 className="font-bold text-admin line-clamp-1">
-                                                {event.name}
-                                            </h3>
-                                            {isUpcoming && (
-                                                <span className="ml-2 px-2 py-0.5 bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-medium rounded">
-                                                    Aanstaand
-                                                </span>
-                                            )}
-                                        </div>
-                                        <p className="text-sm text-admin-muted">
-                                            {format(eventDate, 'd MMMM yyyy', { locale: nl })}
-                                        </p>
-                                    </button>
-                                );
-                            })}
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-bold text-admin">Selecteer Event</h2>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setShowPastEvents(!showPastEvents)}
+                                    className={`px-3 py-2 text-sm font-medium rounded-lg border transition ${showPastEvents
+                                        ? 'bg-theme-purple/10 border-theme-purple text-theme-purple'
+                                        : 'border-admin text-admin-muted hover:text-admin'
+                                        }`}
+                                >
+                                    {showPastEvents ? 'Verberg oude events' : 'Toon oude events'}
+                                </button>
+                                <button
+                                    onClick={() => router.push('/admin/kroegentocht/nieuw')}
+                                    className="px-4 py-2 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition font-semibold text-sm"
+                                >
+                                    + Nieuw Event
+                                </button>
+                            </div>
                         </div>
+                        {visibleEvents.length === 0 ? (
+                            <div className="text-center py-8 text-admin-muted italic bg-admin-card-soft rounded-xl">
+                                Geen evenementen gevonden met de huidige filters.
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {visibleEvents.map(event => {
+                                    const eventDate = new Date(event.date);
+                                    const isUpcoming = eventDate >= new Date();
+                                    const isSelected = selectedEvent?.id === event.id;
+
+                                    return (
+                                        <button
+                                            key={event.id}
+                                            onClick={() => setSelectedEvent(event)}
+                                            className={`p-4 rounded-xl border-2 transition text-left ${isSelected
+                                                ? 'border-theme-purple bg-theme-purple/10'
+                                                : 'border-admin hover:border-theme-purple'
+                                                }`}
+                                        >
+                                            <div className="flex items-start justify-between mb-2">
+                                                <h3 className="font-bold text-admin line-clamp-1">
+                                                    {event.name}
+                                                </h3>
+                                                {isUpcoming && (
+                                                    <span className="ml-2 px-2 py-0.5 bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-medium rounded">
+                                                        Aanstaand
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-sm text-admin-muted">
+                                                {format(eventDate, 'd MMMM yyyy', { locale: nl })}
+                                            </p>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
 
                     {selectedEvent ? (
@@ -385,6 +425,16 @@ export default function KroegentochtAanmeldingenPage() {
                                                 onClick={() => router.push(`/kroegentocht/${selectedEvent.id}/attendance`)}
                                                 className="flex items-center justify-center gap-2 px-4 py-2 bg-theme-purple text-white font-bold rounded-lg transition w-full sm:w-auto">
                                                 Aanwezigheid Beheren
+                                            </button>
+                                        )}
+                                        {selectedEvent && (
+                                            <button
+                                                onClick={() => router.push(`/admin/kroegentocht/bewerk/${selectedEvent.id}`)}
+                                                className="flex items-center justify-center gap-2 px-4 py-2 bg-admin-card-soft border-admin border text-admin font-bold rounded-lg transition hover:bg-admin-hover w-full sm:w-auto"
+                                                title="Bewerk event details"
+                                            >
+                                                <Edit className="h-5 w-5" />
+                                                Bewerk
                                             </button>
                                         )}
                                     </div>

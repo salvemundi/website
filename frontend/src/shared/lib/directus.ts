@@ -216,21 +216,38 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit, 
                         // Retry the original request with the new token
                         return directusFetch(endpoint, options, true);
                     } else {
-                        console.warn('[directusFetch] Token refresh failed');
+                        console.warn('[directusFetch] Token refresh failed, clearing session');
+                        // Refresh failed explicitly
+                        localStorage.removeItem('auth_token');
+                        localStorage.removeItem('refresh_token');
+                        window.dispatchEvent(new CustomEvent('auth:expired'));
+
+                        throw new Error('Session expired: Token refresh failed');
                     }
                 } catch (refreshErr) {
                     console.error('[directusFetch] Error during token refresh coordination', refreshErr);
+                    // Critical failure ensuring cleanup
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('refresh_token');
+                    window.dispatchEvent(new CustomEvent('auth:expired'));
+                    throw refreshErr;
                 }
             }
-            // If we are here, refresh failed or no refresh token existed.
-            // Clear tokens to prevent persistent errors.
+            // If we are here, no refresh token existed to begin with, or logic flow failed.
+            console.warn('[directusFetch] 401 with session token but no refresh capability/logic');
             localStorage.removeItem('auth_token');
             localStorage.removeItem('refresh_token');
             window.dispatchEvent(new CustomEvent('auth:expired'));
+            // Do not force reload immediately here to allow graceful UI handling if possible, 
+            // but usually a 401 in this state means we are done.
         } else if (usingSessionToken && typeof window !== 'undefined') {
-            // Already retried and failed, or logic error. Clear tokens.
+            // Already retried and failed (recursive call), or window undefined
+            console.warn('[directusFetch] 401 on retry, session is definitely invalid');
             localStorage.removeItem('auth_token');
             localStorage.removeItem('refresh_token');
+            window.dispatchEvent(new CustomEvent('auth:expired'));
+            // Stop the loop
+            throw new Error('Session expired: Retry failed');
         }
     }
 
