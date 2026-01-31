@@ -312,6 +312,20 @@ export const eventsApi = {
             if (signup && signup.id) {
                 const token = qrService.generateQRToken(signup.id, signupData.event_id);
                 await qrService.updateSignupWithQRToken(signup.id, token);
+
+                // If this is a free event, mark the signup as paid so downstream
+                // consumers (UI, admin pages, email flows) see the correct state.
+                if (signupData.event_price === 0) {
+                    try {
+                        await directusFetch(`/items/event_signups/${signup.id}`, {
+                            method: 'PATCH',
+                            body: JSON.stringify({ payment_status: 'paid' })
+                        });
+                        console.log(`eventsApi.createSignup: marked free signup ${signup.id} as paid`);
+                    } catch (e) {
+                        console.error('eventsApi.createSignup: failed to mark free signup as paid', { signupId: signup.id, error: e });
+                    }
+                }
                 // generate image
                 let qrDataUrl: string | undefined = undefined;
                 try {
