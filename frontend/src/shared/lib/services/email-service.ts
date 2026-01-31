@@ -44,19 +44,30 @@ export interface IntroSignupEmailData {
 }
 
 // Get email configuration from environment variables
+// Get email configuration from environment variables
 function getEmailConfig(): EmailConfig {
-  // Use the local server-side proxy route by default so frontend calls are
-  // forwarded from the backend (avoids CORS and keeps secrets server-side).
-  // The server route will forward to the real email API using server env vars.
-  const apiEndpoint = '/api/send-email';
+  const isServer = typeof window === 'undefined';
   const fromEmail = process.env.NEXT_PUBLIC_EMAIL_FROM || 'noreply@salvemundi.nl';
   const fromName = process.env.NEXT_PUBLIC_EMAIL_FROM_NAME || 'Salve Mundi';
 
   // Check if using Microsoft Graph API
   const useMicrosoftGraph = false;
 
+  if (isServer) {
+    // Server-side: Use the internal API URL directly to avoid relative URL fetch errors
+    // Use the same resolution logic as the proxy route
+    const apiEndpoint = process.env.EMAIL_API_ENDPOINT || process.env.NEXT_PUBLIC_EMAIL_API_URL || 'http://email-api:3001/send-email';
+    return {
+      apiEndpoint,
+      fromEmail,
+      fromName,
+      useMicrosoftGraph,
+    };
+  }
+
+  // Client-side: Use the local server-side proxy route
   return {
-    apiEndpoint,
+    apiEndpoint: '/api/send-email',
     fromEmail,
     fromName,
     useMicrosoftGraph,
