@@ -222,9 +222,6 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit, 
                         localStorage.removeItem('refresh_token');
                         window.dispatchEvent(new CustomEvent('auth:expired'));
 
-                        // Force reload to break infinite loops if the app doesn't react fast enough
-                        setTimeout(() => window.location.reload(), 500);
-
                         throw new Error('Session expired: Token refresh failed');
                     }
                 } catch (refreshErr) {
@@ -233,7 +230,6 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit, 
                     localStorage.removeItem('auth_token');
                     localStorage.removeItem('refresh_token');
                     window.dispatchEvent(new CustomEvent('auth:expired'));
-                    setTimeout(() => window.location.reload(), 500);
                     throw refreshErr;
                 }
             }
