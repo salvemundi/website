@@ -7,10 +7,10 @@ type Props = {
   onClose: () => void;
 };
 
-import { useAuth } from '@/features/auth/providers/auth-provider';
+import { useRouter } from 'next/navigation';
 
 export default function LoginRequiredModal({ open, onClose }: Props) {
-  const { loginWithMicrosoft } = useAuth();
+  const router = useRouter();
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -24,8 +24,7 @@ export default function LoginRequiredModal({ open, onClose }: Props) {
             onClick={() => {
               // Get current URL to return to
               const returnTo = window.location.pathname + window.location.search;
-              localStorage.setItem('auth_return_to', returnTo);
-              loginWithMicrosoft();
+              router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
             }}
             className="px-4 py-2 rounded-md bg-gradient-theme text-white"
           >

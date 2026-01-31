@@ -75,7 +75,7 @@ function Tile({
 
 export default function LoggingPage() {
     const router = useRouter();
-    const { user, loginWithMicrosoft } = useAuth();
+    const { user } = useAuth();
     const [signups, setSignups] = useState<Signup[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState<string | null>(null);
@@ -110,10 +110,22 @@ export default function LoggingPage() {
     const { isAuthorized, isLoading: permissionLoading } = usePagePermission('admin_logging', ['ictcommissie', 'ict', 'bestuur', 'kascommissie', 'kas', 'kandi', 'kandidaat']);
 
     useEffect(() => {
-        if (!permissionLoading && !user && isAuthorized === null) {
-            const returnTo = window.location.pathname + window.location.search;
-            localStorage.setItem('auth_return_to', returnTo);
-            loginWithMicrosoft();
+        // If we are definitely not authorized and not loading, handle authentication
+        if (!permissionLoading && isAuthorized === false) {
+            if (!user) {
+                // Not logged in: save return path and redirect to login
+                // We prefer a silent login if possible, which AuthProvider handles on mount.
+                // If it fails, we show the login prompt.
+                const returnTo = window.location.pathname + window.location.search;
+
+                // Instead of immediately redirecting, check if we're still initializing.
+                // The AuthProvider's handleRedirect already tries silent recovery.
+                // If we reach here, and there's no user, we might need a manual login.
+                router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+            } else {
+                // Logged in but not authorized for this specific page
+                router.push('/admin');
+            }
         }
 
         const isLocal = typeof window !== 'undefined' && (window.location.hostname.includes('localhost') || window.location.hostname.includes('dev.'));
@@ -122,11 +134,7 @@ export default function LoggingPage() {
         if (isLocal || isNodeDev) {
             setIsDevEnv(true);
         }
-
-        if (!permissionLoading && isAuthorized === false) {
-            router.push('/admin');
-        }
-    }, [user, isAuthorized, permissionLoading, router, loginWithMicrosoft]);
+    }, [user, isAuthorized, permissionLoading, router]);
 
     useEffect(() => {
         if (user && !user.entra_id) {
