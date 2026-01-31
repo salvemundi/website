@@ -1195,6 +1195,100 @@ async function runBulkSync(selectedFields = null, forceLink = false, activeOnly 
 
 // End of sync functions
 
+// Committee & Group Management Endpoints (for Admin API)
+
+app.get('/committees/list', async (req, res) => {
+    try {
+        // 1. Fetch committees from Directus
+        const dRes = await axios.get(`${process.env.DIRECTUS_URL}/items/committees?limit=-1`, { headers: DIRECTUS_HEADERS });
+        const committees = dRes.data.data || [];
+
+        // 2. Map to include Azure Group ID and Email if possible
+        const result = committees.map(c => {
+            const azureGroupId = groupIdByNameGlobal[c.name] || null;
+            return {
+                id: c.id,
+                name: c.name,
+                azureGroupId: azureGroupId,
+                email: azureGroupId ? `${c.name.toLowerCase().replace(/\s+/g, '.')}@salvemundi.nl` : (c.email || null)
+            };
+        });
+
+        res.json(result);
+    } catch (error) {
+        console.error('❌ [API] Failed to list committees:', error.message);
+        res.status(500).json({ error: 'Failed to list committees' });
+    }
+});
+
+app.get('/groups/:groupId/members', async (req, res) => {
+    try {
+        const { groupId } = req.params;
+        const client = await getGraphClient();
+        const response = await client.api(`/groups/${groupId}/members`).select('id,displayName,userPrincipalName,mail,givenName,surname').get();
+        res.json(response.value || []);
+    } catch (error) {
+        console.error(`❌ [API] Failed to fetch members for group ${req.params.groupId}:`, error.message);
+        res.status(500).json({ error: 'Failed to fetch members' });
+    }
+});
+
+app.post('/groups/:groupId/members', bodyParser.json(), async (req, res) => {
+    try {
+        const { groupId } = req.params;
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ error: 'Missing email' });
+
+        const client = await getGraphClient();
+        const user = await findGraphUserByEmail(email);
+        if (!user) return res.status(404).json({ error: 'User not found in Microsoft Entra ID' });
+
+        await client.api(`/groups/${groupId}/members/$ref`).post({
+            '@odata.id': `https://graph.microsoft.com/v1.0/directoryObjects/${user.id}`
+        });
+
+        // Trigger a sync for this user to update Directus immediately
+        setTimeout(() => updateDirectusUserFromGraph(user.id), 2000);
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error(`❌ [API] Failed to add member to group ${req.params.groupId}:`, error.response?.data || error.message);
+        res.status(500).json({ error: 'Failed to add member', details: error.response?.data || error.message });
+    }
+});
+
+app.delete('/groups/:groupId/members/:userId', async (req, res) => {
+    try {
+        const { groupId, userId } = req.params;
+        const client = await getGraphClient();
+        await client.api(`/groups/${groupId}/members/${userId}/$ref`).delete();
+
+        // Trigger a sync for this user
+        setTimeout(() => updateDirectusUserFromGraph(userId), 2000);
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error(`❌ [API] Failed to remove member from group ${req.params.groupId}:`, error.response?.data || error.message);
+        res.status(500).json({ error: 'Failed to remove member' });
+    }
+});
+
+app.patch('/committees/members/:membershipId', bodyParser.json(), async (req, res) => {
+    try {
+        const { membershipId } = req.params;
+        const patchRes = await axios.patch(
+            `${process.env.DIRECTUS_URL}/items/committee_members/${membershipId}`,
+            req.body,
+            { headers: DIRECTUS_HEADERS }
+        );
+        res.json(patchRes.data.data);
+    } catch (error) {
+        console.error(`❌ [API] Failed to update committee membership ${req.params.membershipId}:`, error.response?.data || error.message);
+        res.status(500).json({ error: 'Failed to update membership' });
+    }
+});
+
+
 
 
 app.listen(PORT, async () => {

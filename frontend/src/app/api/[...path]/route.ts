@@ -127,7 +127,7 @@ export async function GET(
             path.startsWith('extensions/');
 
         let canBypass = false;
-        const needsSpecialGuardCheck = path.startsWith('items/events') || path.startsWith('items/event_signups') || path.includes('site_settings');
+        const needsSpecialGuardCheck = path.startsWith('items/events') || path.startsWith('items/event_signups') || path.includes('site_settings') || path.startsWith('items/committees') || path.startsWith('items/committee_members');
 
         const cookie = request.headers.get('Cookie');
         if ((auth || cookie) && (!isAllowed && !isAuthPath || needsSpecialGuardCheck)) {
@@ -339,7 +339,7 @@ async function handleMutation(
 
         // Optimization: skip expensive checks if path is already authorized by rule
         const needsAccessCheck = !isAllowed && !isAuthPath;
-        const needsSpecialGuardCheck = path.startsWith('items/events') || path.startsWith('items/event_signups') || path.includes('site_settings');
+        const needsSpecialGuardCheck = path.startsWith('items/events') || path.startsWith('items/event_signups') || path.includes('site_settings') || path.startsWith('items/committees') || path.startsWith('items/committee_members');
 
         const cookie = request.headers.get('Cookie');
         if ((authHeader || cookie) && (needsAccessCheck || needsSpecialGuardCheck)) {
