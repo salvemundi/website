@@ -114,7 +114,15 @@ function cleanCommitteeName(name?: string | null): string | undefined {
 
 export const paymentApi = {
     create: async (data: PaymentRequest): Promise<PaymentResponse> => {
-        const baseUrl = process.env.NEXT_PUBLIC_PAYMENT_API_URL || '/api/payments';
+        let baseUrl = process.env.NEXT_PUBLIC_PAYMENT_API_URL || '/api/payments';
+
+        // Safety check: if baseUrl looks like an internal docker container and we are in browser, revert to proxy
+        if ((baseUrl.includes('payment-api:') || baseUrl.includes('localhost:3002')) && typeof window !== 'undefined') {
+            console.warn('[PaymentAPI] Detected internal URL in env var, reverting to /api/payments proxy to avoid connection failure.');
+            baseUrl = '/api/payments';
+        }
+
+        console.log('[PaymentAPI] Sending request to:', `${baseUrl}/create`);
 
         try {
             const response = await fetch(`${baseUrl}/create`, {
