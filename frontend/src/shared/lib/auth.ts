@@ -166,8 +166,8 @@ export async function loginWithEntraId(entraIdToken: string, userEmail: string):
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || error.errors?.[0]?.message || 'Microsoft login failed');
+            const errorBody = await response.json().catch(() => null);
+            throw new Error(errorBody?.error || errorBody?.errors?.[0]?.message || 'Microsoft login failed');
         }
 
         const raw = await response.json();
@@ -177,7 +177,6 @@ export async function loginWithEntraId(entraIdToken: string, userEmail: string):
 
         // Validate we actually received an access token
         if (!payload || !payload.access_token) {
-
             throw new Error('Microsoft login failed: no access token returned from backend');
         }
 
@@ -199,33 +198,6 @@ export async function loginWithEntraId(entraIdToken: string, userEmail: string):
             user: userDetails,
         };
     } catch (error: unknown) {
-        // MOCK AUTH FALLBACK FOR DEVELOPMENT
-        // If the route is missing (404) and we are in development, simulate a successful login.
-        const errMsg = error instanceof Error ? error.message : String(error);
-        if (
-            process.env.NODE_ENV === 'development' &&
-            (errMsg.includes('Route') && errMsg.includes("doesn't exist")) ||
-            (errMsg.includes('404'))
-        ) {
-
-
-            return {
-                access_token: 'mock-access-token-dev',
-                refresh_token: 'mock-refresh-token-dev',
-                expires: 3600000,
-                user: {
-                    id: 'mock-user-id',
-                    email: userEmail || 'dev@salvemundi.nl',
-                    first_name: 'Dev',
-                    last_name: 'User',
-                    entra_id: 'mock-entra-id',
-                    is_member: true,
-                    membership_status: 'active',
-                    membership_expiry: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(),
-                } as User
-            };
-        }
-
         console.error('Entra ID login error:', error);
         throw error;
     }
@@ -274,19 +246,7 @@ export async function signupWithPassword(userData: SignupData): Promise<LoginRes
 // Fetch current user details
 export async function fetchUserDetails(token: string): Promise<User | null> {
     try {
-        // MOCK USER FETCH
-        if (token === 'mock-access-token-dev') {
-            return {
-                id: 'mock-user-id',
-                email: 'dev@salvemundi.nl',
-                first_name: 'Dev',
-                last_name: 'User',
-                entra_id: 'mock-entra-id',
-                is_member: true,
-                membership_status: 'active',
-                membership_expiry: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(),
-            } as User;
-        }
+    // No development mock - require real token and backend response
 
         // Use directusFetch to gain automatic token refresh benefit
         const rawUser = await directusFetch<any>('/users/me?fields=*,membership_expiry,membership_status,entra_id,date_of_birth', {
