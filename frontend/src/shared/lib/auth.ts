@@ -288,62 +288,16 @@ export async function fetchUserDetails(token: string): Promise<User | null> {
             } as User;
         }
 
-        const response = await fetch(`${directusUrl}/users/me?fields=*,membership_expiry,membership_status,entra_id,date_of_birth`, {
+        // Use directusFetch to gain automatic token refresh benefit
+        const rawUser = await directusFetch<any>('/users/me?fields=*,membership_expiry,membership_status,entra_id,date_of_birth', {
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
             },
         });
 
-        if (!response.ok) {
-            // Try to parse JSON error payload
-            let payload: unknown;
-            try {
-                payload = await response.json();
-            } catch (e) {
-                payload = await response.text();
-            }
-
-            console.error('❌ Failed to fetch user details:', payload);
-
-            // Treat common invalid/expired token indicators as an expired session.
-            const payloadObj = payload as any;
-            const errorCode = payloadObj?.errors?.[0]?.extensions?.code || payloadObj?.code;
-            const status = response.status;
-
-            if (
-                status === 401 ||
-                status === 403 ||
-                errorCode === 'TOKEN_EXPIRED' ||
-                errorCode === 'INVALID_TOKEN' ||
-                (typeof payload === 'string' && /invalid token/i.test(payload))
-            ) {
-                try {
-                    if (typeof window !== 'undefined') {
-                        localStorage.removeItem('auth_token');
-                        localStorage.removeItem('refresh_token');
-                    }
-                } catch (e) {
-                    // ignore
-                }
-
-                try {
-                    if (typeof window !== 'undefined') {
-                        window.dispatchEvent(new CustomEvent('auth:expired'));
-                    }
-                } catch (e) {
-                    // ignore
-                }
-
-                return null;
-            }
-
-            throw new Error('Failed to fetch user details');
+        if (!rawUser) {
+            return null;
         }
-
-        const userData = await response.json();
-        // Directus usually wraps payload in { data: { ... } }
-        const rawUser = userData?.data || userData;
 
         // Don't try to map committees here - they should be fetched separately
         // via the committee_members junction table using a dedicated query
@@ -352,8 +306,10 @@ export async function fetchUserDetails(token: string): Promise<User | null> {
 
         return await mapDirectusUserToUser(user);
     } catch (error) {
+        // If we get an error, it might be an expired token which directusFetch already handled
+        // or a real network error.
         console.error('Failed to fetch user details:', error);
-        throw error;
+        return null; // Return null instead of throwing to allow AuthProvider to try other recovery methods
     }
 }
 
