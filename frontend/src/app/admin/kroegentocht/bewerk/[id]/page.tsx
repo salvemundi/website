@@ -25,7 +25,6 @@ export default function BewerkKroegentochtPage() {
         date: '',
         email: '',
         description: '',
-        association: 'Salve Mundi',
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -51,7 +50,6 @@ export default function BewerkKroegentochtPage() {
                 date: data.date || '',
                 email: data.email || '',
                 description: data.description || '',
-                association: data.association || 'Salve Mundi',
             });
             if (data.image) {
                 setExistingImageId(data.image);
@@ -157,7 +155,6 @@ export default function BewerkKroegentochtPage() {
                 date: formData.date,
                 email: formData.email,
                 description: formData.description,
-                association: formData.association,
                 image: finalImageId,
             };
 
@@ -262,21 +259,6 @@ export default function BewerkKroegentochtPage() {
                             />
                             {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                         </div>
-                    </div>
-
-                    <div>
-                        <label htmlFor="association" className="block text-sm font-bold text-admin-muted mb-2">
-                            Organiserende Vereniging
-                        </label>
-                        <input
-                            type="text"
-                            id="association"
-                            name="association"
-                            value={formData.association}
-                            onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-lg border bg-admin-card text-admin border-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
-                            placeholder="Salve Mundi"
-                        />
                     </div>
 
                     <div>
