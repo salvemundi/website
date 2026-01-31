@@ -1204,7 +1204,7 @@ app.get('/committees/list', async (req, res) => {
         const committees = dRes.data.data || [];
 
         // 2. Helper for matching names robustly
-        const normalizeName = (n) => n?.toLowerCase().replace(/\s*\|\|\s*salve mundi/g, '').replace(/\s+/g, ' ').trim();
+        const normalizeName = (n) => n?.toLowerCase().replace(/\s*(\|\||\|)\s*salve mundi/g, '').replace(/\s+/g, ' ').trim();
 
         // Build a normalized map of Azure groups for searching
         const normalizedAzureMap = {};
