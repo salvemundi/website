@@ -38,20 +38,20 @@ function BetalingContent() {
 
     // Poll for payment status after returning from Mollie
     useEffect(() => {
+        // Only run this effect once on mount or when strict dependencies change
         if (!loading && signup && !signup.full_payment_paid && !checkingPayment) {
-            // Check URL parameters or referrer to detect return from payment
             const urlParams = new URLSearchParams(window.location.search);
-            const hasPaymentReturn = urlParams.toString().length > 0 ||
-                document.referrer.includes('mollie.com');
+            const hasTransactionId = urlParams.has('transaction_id');
+            // We removed referrer check because it can cause loops if not handled carefully
 
-            if (hasPaymentReturn) {
-                console.log('[restbetaling] Detected return from payment, checking status...');
+            if (hasTransactionId) {
+                console.log('[restbetaling] Found transaction_id in URL, starting status check...');
                 setPaymentStatus('checking');
                 setCheckingPayment(true);
                 checkPaymentStatus();
             }
         }
-    }, [loading, signup]);
+    }, [loading, signup?.id]); // Removed 'signup' object dependency to prevent loops on deep updates, used ID instead
 
     const checkPaymentStatus = async () => {
         let attempts = 0;
@@ -180,7 +180,10 @@ function BetalingContent() {
     };
 
     const handlePayment = async () => {
-        if (!signup || !trip || costs.remaining <= 0) return;
+        if (!signup || !trip || costs.remaining <= 0) {
+            console.warn('[restbetaling] Cannot initiate payment:', { hasSignup: !!signup, hasTrip: !!trip, remaining: costs.remaining });
+            return;
+        }
 
         setPaying(true);
         setError(null);
@@ -190,6 +193,12 @@ function BetalingContent() {
             const description = `Restbetaling ${trip.name} - ${signup.first_name}${signup.middle_name ? ' ' + signup.middle_name : ''} ${signup.last_name}`;
             const redirectUrl = `${window.location.origin}/reis/restbetaling/${signupId}/betaling`;
 
+            console.log('[restbetaling] Initiating payment API call...', {
+                amount,
+                registrationId: signupId,
+                email: signup.email
+            });
+
             const paymentResponse = await paymentApi.create({
                 amount,
                 description,
@@ -198,12 +207,16 @@ function BetalingContent() {
                 email: signup.email,
                 registrationId: signupId,
                 registrationType: 'trip_signup',
+                firstName: signup.first_name,
+                lastName: signup.last_name,
             });
+
+            console.log('[restbetaling] Payment API success, redirecting to Mollie:', paymentResponse.checkoutUrl);
 
             // Redirect to Mollie checkout
             window.location.href = paymentResponse.checkoutUrl;
         } catch (err: any) {
-            console.error('Error creating payment:', err);
+            console.error('[restbetaling] Error creating payment:', err);
             setError(err?.message || 'Er is een fout opgetreden bij het aanmaken van de betaling.');
             setPaying(false);
         }

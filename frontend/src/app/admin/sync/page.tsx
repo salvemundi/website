@@ -77,7 +77,7 @@ function Tile({
 
 export default function SyncPage() {
     const router = useRouter();
-    const { user, loginWithMicrosoft } = useAuth();
+    const { user } = useAuth();
     const { isAuthorized, isLoading: permissionLoading } = usePagePermission('admin_sync', ['ict', 'bestuur', 'kandi']);
     const [isSyncing, setIsSyncing] = useState(false);
     const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
@@ -117,10 +117,9 @@ export default function SyncPage() {
         }
         if (!permissionLoading && !user && isAuthorized === null) {
             const returnTo = window.location.pathname + window.location.search;
-            localStorage.setItem('auth_return_to', returnTo);
-            loginWithMicrosoft();
+            router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
         }
-    }, [isAuthorized, permissionLoading, user, router, loginWithMicrosoft]);
+    }, [isAuthorized, permissionLoading, user, router]);
 
 
     useEffect(() => {

@@ -114,7 +114,15 @@ function cleanCommitteeName(name?: string | null): string | undefined {
 
 export const paymentApi = {
     create: async (data: PaymentRequest): Promise<PaymentResponse> => {
-        const baseUrl = process.env.NEXT_PUBLIC_PAYMENT_API_URL || '/api/payments';
+        let baseUrl = process.env.NEXT_PUBLIC_PAYMENT_API_URL || '/api/payments';
+
+        // Safety check: if baseUrl looks like an internal docker container and we are in browser, revert to proxy
+        if ((baseUrl.includes('payment-api:') || baseUrl.includes('localhost:3002')) && typeof window !== 'undefined') {
+            console.warn('[PaymentAPI] Detected internal URL in env var, reverting to /api/payments proxy to avoid connection failure.');
+            baseUrl = '/api/payments';
+        }
+
+        console.log('[PaymentAPI] Sending request to:', `${baseUrl}/create`);
 
         try {
             const response = await fetch(`${baseUrl}/create`, {
@@ -505,10 +513,24 @@ export const clubsApi = {
 export const pubCrawlEventsApi = {
     getAll: async () => {
         const query = buildQueryString({
-            fields: ['id', 'name', 'email', 'date', 'description', 'image', 'created_at', 'updated_at'],
-            sort: ['-created_at']
+            fields: ['id', 'name', 'email', 'date', 'description', 'image', 'created_at'],
+            sort: ['-date']
         });
         return directusFetch<any[]>(`/items/pub_crawl_events?${query}`);
+    },
+    getById: async (id: number | string) => {
+        return directusFetch<any>(`/items/pub_crawl_events/${id}?fields=*`);
+    },
+    update: async (id: number | string, data: any) => {
+        return directusFetch<any>(`/items/pub_crawl_events/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        });
+    },
+    delete: async (id: number | string) => {
+        return directusFetch<void>(`/items/pub_crawl_events/${id}`, {
+            method: 'DELETE'
+        });
     }
 };
 
