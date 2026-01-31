@@ -102,12 +102,12 @@
   /* darker but distinct from --bg-main */
 
   --text-main: #ffffff;
-  --text-subtle: #e8dce9;
-  /* 90% - Slightly dimmed white with purple tint */
-  --text-muted: #c9b2cc;
-  /* 80% */
-  --text-light: #e0d5e1;
-  /* 70% */
+  --text-subtle: rgba(255, 255, 255, 0.96);
+  /* brighter subtle text for improved contrast on darker surfaces */
+  --text-muted: rgba(255, 255, 255, 0.88);
+  /* slightly muted but more readable */
+  --text-light: rgba(255, 255, 255, 0.80);
+  /* lighter helper text with sufficient contrast */
 
   --border-color: #4b3a4d;
 
