@@ -1203,16 +1203,46 @@ app.get('/committees/list', async (req, res) => {
         const dRes = await axios.get(`${process.env.DIRECTUS_URL}/items/committees?limit=-1`, { headers: DIRECTUS_HEADERS });
         const committees = dRes.data.data || [];
 
-        // 2. Map to include Azure Group ID and Email if possible
-        const result = committees.map(c => {
-            const azureGroupId = groupIdByNameGlobal[c.name] || null;
-            return {
-                id: c.id,
-                name: c.name,
-                azureGroupId: azureGroupId,
-                email: azureGroupId ? `${c.name.toLowerCase().replace(/\s+/g, '.')}@salvemundi.nl` : (c.email || null)
-            };
+        // 2. Helper for matching names robustly
+        const normalizeName = (n) => n?.toLowerCase().replace(/\s*\|\|\s*salve mundi/g, '').replace(/\s+/g, ' ').trim();
+
+        // Build a normalized map of Azure groups for searching
+        const normalizedAzureMap = {};
+        Object.keys(groupIdByNameGlobal).forEach(rawName => {
+            normalizedAzureMap[normalizeName(rawName)] = groupIdByNameGlobal[rawName];
         });
+
+        // 3. Map to include Azure Group ID and Email if possible
+        const result = committees
+            .filter(c => {
+                // Exclude some legacy categories or specific IDs if needed
+                const name = c.name.toLowerCase();
+                return !name.includes('oud bestuur') && !name.includes('externen');
+            })
+            .map(c => {
+                const normName = normalizeName(c.name);
+
+                // Explicit check for Bestuur and other special mappings
+                let azureGroupId = null;
+                if (normName === 'bestuur') {
+                    azureGroupId = GROUP_IDS.BESTUUR;
+                } else {
+                    azureGroupId = normalizedAzureMap[normName] || null;
+                }
+
+                // If still not found, try without ' commissie' suffix if present in Directus name
+                if (!azureGroupId && normName.endsWith(' commissie')) {
+                    const baseName = normName.replace(' commissie', '');
+                    azureGroupId = normalizedAzureMap[baseName] || null;
+                }
+
+                return {
+                    id: c.id,
+                    name: c.name,
+                    azureGroupId: azureGroupId,
+                    email: azureGroupId ? `${normName.replace(/\s+/g, '.')}@salvemundi.nl` : (c.email || null)
+                };
+            });
 
         res.json(result);
     } catch (error) {
