@@ -180,7 +180,10 @@ function BetalingContent() {
     };
 
     const handlePayment = async () => {
-        if (!signup || !trip || costs.remaining <= 0) return;
+        if (!signup || !trip || costs.remaining <= 0) {
+            console.warn('[restbetaling] Cannot initiate payment:', { hasSignup: !!signup, hasTrip: !!trip, remaining: costs.remaining });
+            return;
+        }
 
         setPaying(true);
         setError(null);
@@ -190,6 +193,12 @@ function BetalingContent() {
             const description = `Restbetaling ${trip.name} - ${signup.first_name}${signup.middle_name ? ' ' + signup.middle_name : ''} ${signup.last_name}`;
             const redirectUrl = `${window.location.origin}/reis/restbetaling/${signupId}/betaling`;
 
+            console.log('[restbetaling] Initiating payment API call...', {
+                amount,
+                registrationId: signupId,
+                email: signup.email
+            });
+
             const paymentResponse = await paymentApi.create({
                 amount,
                 description,
@@ -198,12 +207,16 @@ function BetalingContent() {
                 email: signup.email,
                 registrationId: signupId,
                 registrationType: 'trip_signup',
+                firstName: signup.first_name,
+                lastName: signup.last_name,
             });
+
+            console.log('[restbetaling] Payment API success, redirecting to Mollie:', paymentResponse.checkoutUrl);
 
             // Redirect to Mollie checkout
             window.location.href = paymentResponse.checkoutUrl;
         } catch (err: any) {
-            console.error('Error creating payment:', err);
+            console.error('[restbetaling] Error creating payment:', err);
             setError(err?.message || 'Er is een fout opgetreden bij het aanmaken van de betaling.');
             setPaying(false);
         }
