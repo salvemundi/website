@@ -152,7 +152,12 @@ export const eventsApi = {
             fields: ['id', 'name', 'event_date', 'event_time', 'inschrijf_deadline', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact'],
             sort: ['-event_date']
         });
-        const events = await directusFetch<any[]>(`/items/events?${query}`);
+        let events = await directusFetch<any[]>(`/items/events?${query}`);
+
+        if (!Array.isArray(events)) {
+            console.warn('[eventsApi.getAll] Expected array response for events, received:', events);
+            events = [];
+        }
 
         const eventsWithDetails = await Promise.all(
             events.map(async (event) => {
@@ -246,7 +251,12 @@ export const eventsApi = {
             fields: ['id', 'name', 'event_date', 'event_time', 'event_time_end', 'location', 'description', 'price_members', 'price_non_members', 'image'],
             sort: ['-event_date']
         });
-        return directusFetch<any[]>(`/items/events?${query}`);
+        const res = await directusFetch<any[]>(`/items/events?${query}`);
+        if (!Array.isArray(res)) {
+            console.warn('[eventsApi.getByCommittee] Expected array response for events by committee, received:', res);
+            return [];
+        }
+        return res;
     },
 
     createSignup: async (signupData: { event_id: number; email: string; name: string; phone_number?: string; user_id?: string; event_name?: string; event_date?: string; event_price?: number }) => {

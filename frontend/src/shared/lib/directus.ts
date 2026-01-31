@@ -347,7 +347,14 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit, 
         throw err;
     }
 
-    return json.data as T;
+    // If Directus returns the standard envelope { data: ... }, return that.
+    // Otherwise, return the raw JSON (some endpoints may return arrays or objects
+    // directly). This prevents returning `undefined` when `data` is missing.
+    if (Object.prototype.hasOwnProperty.call(json, 'data')) {
+        return json.data as T;
+    }
+
+    return json as T;
 }
 
 // Legacy exports
