@@ -38,20 +38,20 @@ function BetalingContent() {
 
     // Poll for payment status after returning from Mollie
     useEffect(() => {
+        // Only run this effect once on mount or when strict dependencies change
         if (!loading && signup && !signup.full_payment_paid && !checkingPayment) {
-            // Check URL parameters specifically for transaction_id to detect return from payment
             const urlParams = new URLSearchParams(window.location.search);
             const hasTransactionId = urlParams.has('transaction_id');
-            const cameFromMollie = document.referrer.includes('mollie.com');
+            // We removed referrer check because it can cause loops if not handled carefully
 
-            if (hasTransactionId || cameFromMollie) {
-                console.log('[restbetaling] Detected return from payment (ID or Referrer), checking status...');
+            if (hasTransactionId) {
+                console.log('[restbetaling] Found transaction_id in URL, starting status check...');
                 setPaymentStatus('checking');
                 setCheckingPayment(true);
                 checkPaymentStatus();
             }
         }
-    }, [loading, signup]);
+    }, [loading, signup?.id]); // Removed 'signup' object dependency to prevent loops on deep updates, used ID instead
 
     const checkPaymentStatus = async () => {
         let attempts = 0;
