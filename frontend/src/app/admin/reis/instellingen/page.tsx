@@ -9,11 +9,7 @@ import { Loader2, Plus, Edit2, Trash2, Save, X, Upload, Calendar, Users, DollarS
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
-import DatePicker from 'react-datepicker';
-import "react-datepicker/dist/react-datepicker.css";
-
-
-
+// react-datepicker removed to prefer native date inputs
 export default function ReisInstellingenPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
@@ -439,18 +435,12 @@ export default function ReisInstellingenPage() {
                                         Als je dit invult, gaat de inschrijving automatisch open op dit tijdstip,
                                         ook al staat 'Forceer Open' hierboven uit.
                                     </p>
-                                    <DatePicker
-                                        selected={form.registration_start_date}
-                                        onChange={(date) => setForm({ ...form, registration_start_date: date })}
-                                        showTimeSelect
-                                        timeFormat="HH:mm"
-                                        timeIntervals={15}
-                                        dateFormat="d MMMM yyyy HH:mm"
-                                        locale={nl}
+                                    <input
+                                        type="datetime-local"
+                                        value={form.registration_start_date ? new Date(form.registration_start_date).toISOString().slice(0,16) : ''}
+                                        onChange={(e) => setForm({ ...form, registration_start_date: e.target.value ? new Date(e.target.value) : null })}
                                         className="w-full px-4 py-2 border border-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent bg-admin-card text-admin"
-                                        placeholderText="Selecteer startdatum en tijd..."
-                                        isClearable
-                                        showYearDropdown
+                                        placeholder="Selecteer startdatum en tijd..."
                                     />
                                 </div>
 

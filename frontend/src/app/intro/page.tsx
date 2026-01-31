@@ -8,9 +8,7 @@ import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { PhoneNumberInput, isValidPhoneNumber } from '@/shared/components/PhoneNumberInput';
 import { Users, Heart, CheckCircle2 } from 'lucide-react';
-import DatePicker from 'react-datepicker';
-import "react-datepicker/dist/react-datepicker.css";
-import { nl } from 'date-fns/locale';
+// react-datepicker removed to prefer native date inputs
 import { format } from 'date-fns';
 
 export default function IntroPage() {
@@ -405,20 +403,14 @@ export default function IntroPage() {
                         </div>
                         <div>
                           <label className="form-label">Geboortedatum *</label>
-                          <div className="w-full">
-                            <DatePicker
-                              selected={form.geboortedatum}
-                              onChange={(date) => setForm(prev => ({ ...prev, geboortedatum: date }))}
-                              dateFormat="dd-MM-yyyy"
-                              locale={nl}
-                              className="form-input"
-                              placeholderText="Selecteer datum"
-                              showYearDropdown
-                              scrollableYearDropdown
-                              yearDropdownItemNumber={100}
-                              required
-                            />
-                          </div>
+                          <input
+                            type="date"
+                            name="geboortedatum"
+                            value={form.geboortedatum ? new Date(form.geboortedatum).toISOString().split('T')[0] : ''}
+                            onChange={(e) => setForm(prev => ({ ...prev, geboortedatum: e.target.value ? new Date(e.target.value) : null }))}
+                            className="form-input w-full"
+                            required
+                          />
                         </div>
                         <div>
                           <label className="form-label">Email *</label>
