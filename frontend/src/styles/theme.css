@@ -25,7 +25,7 @@
   --color-white-mute: #f0ebf0;
 
   /* --- 2. SEMANTISCHE ROLLEN (Licht Mode) --- */
-  --theme-purple: var(--color-purple-700);
+  --theme-purple: var(--color-purple-300);
   --theme-purple-light: var(--color-purple-500);
 
   --bg-main: #f8f9fa;
