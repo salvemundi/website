@@ -33,6 +33,7 @@ interface TripSignup {
     phone_number: string;
     date_of_birth?: string;
     id_document_type?: 'passport' | 'id_card';
+    document_number?: string;
     allergies?: string;
     alergies?: string;
     special_notes?: string;
@@ -73,6 +74,7 @@ export default function DeelnemerDetailPage() {
         phone_number: '',
         date_of_birth: '',
         id_document_type: '' as '' | 'passport' | 'id_card',
+        document_number: '',
         allergies: '',
         special_notes: '',
         willing_to_drive: false,
@@ -110,6 +112,7 @@ export default function DeelnemerDetailPage() {
                 phone_number: signupData.phone_number,
                 date_of_birth: signupData.date_of_birth || '',
                 id_document_type: (signupData.id_document_type as 'passport' | 'id_card') || '',
+                document_number: signupData.document_number || '',
                 allergies: signupData.allergies || signupData.alergies || '',
                 special_notes: signupData.special_notes || '',
                 willing_to_drive: signupData.willing_to_drive || false,
@@ -162,6 +165,7 @@ export default function DeelnemerDetailPage() {
                     phone_number: form.phone_number,
                     date_of_birth: form.date_of_birth || undefined,
                     id_document_type: form.id_document_type || undefined,
+                    document_number: form.document_number || undefined,
                     allergies: form.allergies || undefined,
                     special_notes: form.special_notes || undefined,
                     willing_to_drive: form.willing_to_drive,
@@ -365,6 +369,17 @@ export default function DeelnemerDetailPage() {
                                         <option value="passport">Paspoort</option>
                                         <option value="id_card">ID Kaart</option>
                                     </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-admin-muted mb-2">Document nummer</label>
+                                    <input
+                                        type="text"
+                                        name="document_number"
+                                        value={form.document_number}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
+                                        placeholder="Bijv. BK1234567"
+                                    />
                                 </div>
                             </div>
 
