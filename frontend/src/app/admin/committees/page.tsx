@@ -123,6 +123,7 @@ export default function CommitteeManagementPage() {
         'introcommissie',
         'kascommissie',
         'ict-commissie',
+        'ictcommissie',
         'kampcommissie',
         'activiteitencommissie',
         'studiecommissie',
