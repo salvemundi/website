@@ -266,7 +266,7 @@ html.dark .map-popup__title {
 }
 
 html.dark .map-popup__meta {
-    color: #c9b2cc !important;
+    color: var(--text-muted) !important;
 }
 
 html.dark .map-popup__desc {
@@ -274,5 +274,5 @@ html.dark .map-popup__desc {
 }
 
 html.dark .map-popup__footer>div {
-    color: #c9b2cc !important;
+    color: var(--text-muted) !important;
 }
