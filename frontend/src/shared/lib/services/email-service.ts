@@ -45,9 +45,10 @@ export interface IntroSignupEmailData {
 
 // Get email configuration from environment variables
 function getEmailConfig(): EmailConfig {
-  // Use fixed public email API host for all environments
-  // Always call the central email host so dev and prod behave the same
-  const apiEndpoint = 'https://api.salvemundi.nl/send-email';
+  // Use the local server-side proxy route by default so frontend calls are
+  // forwarded from the backend (avoids CORS and keeps secrets server-side).
+  // The server route will forward to the real email API using server env vars.
+  const apiEndpoint = '/api/send-email';
   const fromEmail = process.env.NEXT_PUBLIC_EMAIL_FROM || 'noreply@salvemundi.nl';
   const fromName = process.env.NEXT_PUBLIC_EMAIL_FROM_NAME || 'Salve Mundi';
 
