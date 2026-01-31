@@ -115,6 +115,22 @@ export default function CommitteeManagementPage() {
 
     const [newUserEmail, setNewUserEmail] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
+    const [showAll, setShowAll] = useState(false);
+
+    const STANDARD_COMMITTEE_NAMES = [
+        'feestcommissie',
+        'mediacommissie',
+        'introcommissie',
+        'kascommissie',
+        'ict-commissie',
+        'kampcommissie',
+        'activiteitencommissie',
+        'studiecommissie',
+        'reiscommissie',
+        'evenementencommissie',
+        'knutselcommissie',
+        'marketingcommissie'
+    ];
 
     const [isEditingDetail, setIsEditingDetail] = useState(false);
     const [editShortDescription, setEditShortDescription] = useState('');
@@ -324,9 +340,15 @@ export default function CommitteeManagementPage() {
     if (permissionLoading) return <div className="p-8 text-center text-theme-purple-lighter">Toegang controleren...</div>;
     if (!isAuthorized) return <div className="p-8 text-center text-red-400">Geen toegang</div>;
 
-    const filteredCommittees = committees.filter(c =>
-        c.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredCommittees = committees.filter(c => {
+        const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase());
+        if (!matchesSearch) return false;
+
+        if (showAll) return true;
+
+        const cleanName = c.name.toLowerCase().replace(/\s*(\|\||\|)\s*salve mundi/gi, '').trim();
+        return STANDARD_COMMITTEE_NAMES.includes(cleanName);
+    });
 
     return (
         <div className="min-h-screen bg-[var(--bg-main)]">
@@ -355,15 +377,26 @@ export default function CommitteeManagementPage() {
                     {/* Committee List */}
                     <div className={selectedCommittee ? "w-full" : "w-full"}>
                         <Tile title="Commissies" icon={<Users className="h-5 w-5" />}>
-                            <div className="relative mb-4">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-theme-purple-lighter/40" />
-                                <input
-                                    type="text"
-                                    placeholder="Zoek commissie..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm text-theme-purple-lighter focus:ring-2 focus:ring-theme-purple outline-none"
-                                />
+                            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                                <div className="relative flex-1">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-theme-purple-lighter/40" />
+                                    <input
+                                        type="text"
+                                        placeholder="Zoek commissie..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm text-theme-purple-lighter focus:ring-2 focus:ring-theme-purple outline-none"
+                                    />
+                                </div>
+                                <button
+                                    onClick={() => setShowAll(!showAll)}
+                                    className={`px-4 py-2 rounded-xl border transition-all text-xs font-semibold whitespace-nowrap ${showAll
+                                        ? 'bg-theme-purple/40 border-theme-purple/60 text-white'
+                                        : 'bg-white/5 border-white/10 text-theme-purple-lighter/60 hover:bg-white/10'
+                                        }`}
+                                >
+                                    {showAll ? 'Standaard Weergave' : 'Toon Alle Commissies'}
+                                </button>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">

@@ -1213,12 +1213,13 @@ app.get('/committees/list', async (req, res) => {
         });
 
         // 3. Map to include Azure Group ID and Email if possible
-        const EXCLUDED_COMMITTEE_IDS = [169, 184, 185, 186, 192, 193, 196, 197, 198, 202, 214, 215, 217];
+        const EXCLUDED_COMMITTEE_IDS = [165, 169, 184, 185, 186, 192, 193, 196, 197, 198, 202, 214, 215, 217];
 
         const result = committees
             .filter(c => !EXCLUDED_COMMITTEE_IDS.includes(Number(c.id)))
             .map(c => {
                 const normName = normalizeName(c.name);
+                const displayName = c.name.replace(/\s*(\|\||\|)\s*SALVE MUNDI/gi, '').trim();
 
                 // Explicit check for Bestuur and other special mappings
                 let azureGroupId = null;
@@ -1230,7 +1231,7 @@ app.get('/committees/list', async (req, res) => {
 
                 return {
                     id: c.id,
-                    name: c.name,
+                    name: displayName,
                     azureGroupId: azureGroupId,
                     email: azureGroupId ? `${normName.replace(/\s+/g, '.')}@salvemundi.nl` : (c.email || null)
                 };
