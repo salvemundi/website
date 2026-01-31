@@ -7,6 +7,7 @@ import Header from '@/widgets/header/ui/Header';
 import Footer from '@/widgets/footer/ui/Footer';
 import { ServiceWorkerRegistration } from './ServiceWorkerRegistration';
 
+
 const getBaseUrl = () => {
     if (process.env.NEXT_PUBLIC_APP_URL) {
         return process.env.NEXT_PUBLIC_APP_URL.startsWith('http')
