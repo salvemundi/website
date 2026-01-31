@@ -50,6 +50,7 @@ export default function AanbetalingPage() {
         last_name: '',
         date_of_birth: '',
         id_document_type: '' as '' | 'passport' | 'id_card',
+        document_number: '',
         allergies: '',
         special_notes: '',
         willing_to_drive: false,
@@ -110,6 +111,7 @@ export default function AanbetalingPage() {
                 last_name: signupData.last_name,
                 date_of_birth: signupData.date_of_birth || '',
                 id_document_type: (signupData.id_document_type || (signupData as any).id_document as 'passport' | 'id_card') || '',
+                document_number: signupData.document_number || '',
                 allergies: signupData.allergies || (signupData as any).alergies || '',
                 special_notes: signupData.special_notes || '',
                 willing_to_drive: signupData.willing_to_drive || false,
@@ -182,6 +184,7 @@ export default function AanbetalingPage() {
                 last_name: form.last_name,
                 date_of_birth: form.date_of_birth,
                 id_document_type: form.id_document_type,
+                document_number: form.document_number || undefined,
                 allergies: form.allergies || undefined,
                 special_notes: form.special_notes || undefined,
                 willing_to_drive: trip?.is_bus_trip ? form.willing_to_drive : undefined,
@@ -477,6 +480,21 @@ export default function AanbetalingPage() {
                                                 <option value="passport">Paspoort</option>
                                                 <option value="id_card">ID Kaart</option>
                                             </select>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">
+                                                Document nummer {form.id_document_type && <span className="text-red-500">*</span>}
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="document_number"
+                                                value={form.document_number}
+                                                onChange={handleChange}
+                                                className="w-full px-4 py-3 border border-gray-300 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent bg-white dark:bg-[var(--bg-soft-dark)] dark:text-white"
+                                                placeholder="Bijv. BK1234567"
+                                                required={!!form.id_document_type}
+                                            />
                                         </div>
                                     </div>
 
