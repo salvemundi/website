@@ -1225,6 +1225,8 @@ app.get('/committees/list', async (req, res) => {
                 let azureGroupId = null;
                 if (normName === 'bestuur') {
                     azureGroupId = GROUP_IDS.BESTUUR;
+                } else if (normName.replace(/-/g, '') === 'ictcommissie') {
+                    azureGroupId = GROUP_IDS.ICT;
                 } else {
                     azureGroupId = normalizedAzureMap[normName] || null;
                 }
