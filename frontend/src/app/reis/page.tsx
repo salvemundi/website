@@ -10,8 +10,7 @@ import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { splitDutchLastName } from '@/shared/lib/utils/dutch-name';
 
-import DatePicker from 'react-datepicker';
-import "react-datepicker/dist/react-datepicker.css";
+// react-datepicker removed to prefer native date inputs
 import { isUserInReisCommittee } from '@/shared/lib/committee-utils';
 import { TripSignup } from '@/shared/lib/api/salvemundi';
 import { User } from '@/shared/model/types/auth';
@@ -496,20 +495,14 @@ export default function ReisPage() {
 
                                             <label className="form-label">
                                                 Geboortedatum
-                                                <div className="w-full">
-                                                    <DatePicker
-                                                        selected={form.date_of_birth}
-                                                        onChange={(date) => setForm({ ...form, date_of_birth: date })}
-                                                        dateFormat="dd-MM-yyyy"
-                                                        locale={nl}
-                                                        className="form-input mt-1"
-                                                        placeholderText="Selecteer datum"
-                                                        showYearDropdown
-                                                        scrollableYearDropdown
-                                                        yearDropdownItemNumber={100}
-                                                        required
-                                                    />
-                                                </div>
+                                                <input
+                                                    type="date"
+                                                    name="date_of_birth"
+                                                    value={form.date_of_birth ? new Date(form.date_of_birth).toISOString().split('T')[0] : ''}
+                                                    onChange={(e) => setForm({ ...form, date_of_birth: e.target.value ? new Date(e.target.value) : null })}
+                                                    className="form-input mt-1 w-full"
+                                                    required
+                                                />
                                             </label>
 
                                             <label className="form-label">

@@ -5,9 +5,6 @@ import { PhoneNumberInput, isValidPhoneNumber } from '@/shared/components/PhoneN
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { User } from '@/shared/model/types/auth';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import DatePicker from 'react-datepicker';
-import "react-datepicker/dist/react-datepicker.css";
-import { nl } from 'date-fns/locale';
 import { format } from 'date-fns';
 
 const DeletionTimer = ({ expiryDateStr }: { expiryDateStr: string }) => {
@@ -432,19 +429,13 @@ export default function SignUp() {
 
                                 <label className="form-label">
                                     Geboortedatum
-                                    <div className="w-full">
-                                        <DatePicker
-                                            selected={form.geboortedatum}
-                                            onChange={(date) => setForm({ ...form, geboortedatum: date })}
-                                            dateFormat="dd-MM-yyyy"
-                                            locale={nl}
-                                            className="form-input mt-1"
-                                            placeholderText="Selecteer datum"
-                                            showYearDropdown
-                                            scrollableYearDropdown
-                                            yearDropdownItemNumber={100}
-                                        />
-                                    </div>
+                                    <input
+                                        type="date"
+                                        name="geboortedatum"
+                                        value={form.geboortedatum ? (new Date(form.geboortedatum)).toISOString().split('T')[0] : ''}
+                                        onChange={(e) => setForm({ ...form, geboortedatum: e.target.value ? new Date(e.target.value) : null })}
+                                        className="form-input mt-1 w-full"
+                                    />
                                 </label>
 
                                 <label className="form-label">
