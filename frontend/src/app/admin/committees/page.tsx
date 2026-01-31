@@ -351,9 +351,9 @@ export default function CommitteeManagementPage() {
                     </button>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="flex flex-col gap-8">
                     {/* Committee List */}
-                    <div className="lg:col-span-4 space-y-4">
+                    <div className={selectedCommittee ? "w-full" : "w-full"}>
                         <Tile title="Commissies" icon={<Users className="h-5 w-5" />}>
                             <div className="relative mb-4">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-theme-purple-lighter/40" />
@@ -366,7 +366,7 @@ export default function CommitteeManagementPage() {
                                 />
                             </div>
 
-                            <div className="space-y-2 max-h-[600px] overflow-y-auto custom-scrollbar pr-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                 {loading && <div className="text-center py-4"><Loader2 className="h-6 w-6 animate-spin mx-auto text-theme-purple" /></div>}
                                 {!loading && filteredCommittees.length === 0 && <div className="text-center py-4 text-theme-purple-lighter/40">Geen commissies gevonden</div>}
                                 {filteredCommittees.map(c => (
@@ -412,7 +412,7 @@ export default function CommitteeManagementPage() {
                     </div>
 
                     {/* Member Management */}
-                    <div className="lg:col-span-8">
+                    <div className="w-full">
                         {selectedCommittee ? (
                             <Tile
                                 title={selectedCommittee.name}
