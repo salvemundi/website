@@ -128,8 +128,6 @@ export default function CommitteeManagementPage() {
         'activiteitencommissie',
         'studiecommissie',
         'reiscommissie',
-        'evenementencommissie',
-        'knutselcommissie',
         'marketingcommissie'
     ];
 
