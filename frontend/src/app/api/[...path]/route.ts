@@ -412,6 +412,12 @@ async function handleMutation(
             canBypass = false;
         }
 
+        // Ensure deletions of event signups always use the logged-in user's token.
+        // Some service tokens don't have delete permissions for `event_signups`.
+        if (method === 'DELETE' && path.startsWith('items/event_signups')) {
+            canBypass = false;
+        }
+
         // Prepare outgoing request
         const forwardHeaders = getProxyHeaders(request);
 
