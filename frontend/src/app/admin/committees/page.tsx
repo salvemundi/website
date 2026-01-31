@@ -339,14 +339,23 @@ export default function CommitteeManagementPage() {
     if (permissionLoading) return <div className="p-8 text-center text-theme-purple-lighter">Toegang controleren...</div>;
     if (!isAuthorized) return <div className="p-8 text-center text-red-400">Geen toegang</div>;
 
-    const filteredCommittees = committees.filter(c => {
+    const normalizedCommittees = committees.map(c => ({
+        ...c,
+        isStandard: STANDARD_COMMITTEE_NAMES.includes(c.name.toLowerCase().replace(/\s*(\|\||\|)\s*salve mundi/gi, '').trim())
+    })).sort((a, b) => {
+        // Sort by standard vs not standard first
+        if (a.isStandard && !b.isStandard) return -1;
+        if (!a.isStandard && b.isStandard) return 1;
+        // Then sort alphabetically within those groups
+        return a.name.localeCompare(b.name);
+    });
+
+    const filteredCommittees = normalizedCommittees.filter(c => {
         const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase());
         if (!matchesSearch) return false;
 
         if (showAll) return true;
-
-        const cleanName = c.name.toLowerCase().replace(/\s*(\|\||\|)\s*salve mundi/gi, '').trim();
-        return STANDARD_COMMITTEE_NAMES.includes(cleanName);
+        return c.isStandard;
     });
 
     return (
