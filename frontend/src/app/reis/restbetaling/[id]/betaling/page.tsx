@@ -39,13 +39,13 @@ function BetalingContent() {
     // Poll for payment status after returning from Mollie
     useEffect(() => {
         if (!loading && signup && !signup.full_payment_paid && !checkingPayment) {
-            // Check URL parameters or referrer to detect return from payment
+            // Check URL parameters specifically for transaction_id to detect return from payment
             const urlParams = new URLSearchParams(window.location.search);
-            const hasPaymentReturn = urlParams.toString().length > 0 ||
-                document.referrer.includes('mollie.com');
+            const hasTransactionId = urlParams.has('transaction_id');
+            const cameFromMollie = document.referrer.includes('mollie.com');
 
-            if (hasPaymentReturn) {
-                console.log('[restbetaling] Detected return from payment, checking status...');
+            if (hasTransactionId || cameFromMollie) {
+                console.log('[restbetaling] Detected return from payment (ID or Referrer), checking status...');
                 setPaymentStatus('checking');
                 setCheckingPayment(true);
                 checkPaymentStatus();
