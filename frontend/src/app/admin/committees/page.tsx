@@ -12,10 +12,14 @@ import {
     Info,
     Search,
     Loader2,
-    RefreshCw
+    RefreshCw,
+    Settings,
+    ExternalLink
 } from 'lucide-react';
 import { usePagePermission } from '@/shared/lib/hooks/usePermissions';
 import { directusFetch } from '@/shared/lib/directus';
+import { slugify } from '@/shared/lib/utils/slug';
+import { getImageUrl } from '@/shared/lib/api/salvemundi';
 
 interface AzureMember {
     id: string;
@@ -31,6 +35,9 @@ interface Committee {
     name: string;
     email?: string;
     azureGroupId?: string;
+    description?: string;
+    short_description?: string;
+    image?: string;
 }
 
 interface DirectusMember {
@@ -109,6 +116,12 @@ export default function CommitteeManagementPage() {
     const [newUserEmail, setNewUserEmail] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
 
+    const [isEditingDetail, setIsEditingDetail] = useState(false);
+    const [editShortDescription, setEditShortDescription] = useState('');
+    const [editDescription, setEditDescription] = useState('');
+    const [editImageFile, setEditImageFile] = useState<File | null>(null);
+    const [detailSaving, setDetailSaving] = useState(false);
+
     useEffect(() => {
         if (!permissionLoading && isAuthorized === false) {
             router.push('/admin');
@@ -140,28 +153,34 @@ export default function CommitteeManagementPage() {
     };
 
     const loadCommitteeMembers = async (committee: Committee) => {
-        if (!committee.azureGroupId) {
-            setSelectedCommittee(committee);
-            setAzureMembers([]);
-            setDirectusMembers([]);
-            return;
-        }
-
         setMembersLoading(true);
         setSelectedCommittee(committee);
         setNewUserEmail('');
+        setIsEditingDetail(false);
 
         try {
             const token = localStorage.getItem('auth_token');
 
-            // 1. Load Azure Members
-            const azureRes = await fetch(`/api/admin/groups/${committee.azureGroupId}/members`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const azureData = await azureRes.json();
-            setAzureMembers(azureData);
+            // 1. Fetch latest committee details from Directus
+            const committeeData = await directusFetch<Committee>(`/items/committees/${committee.id}`);
+            if (committeeData) {
+                setSelectedCommittee(committeeData);
+                setEditShortDescription(committeeData.short_description || '');
+                setEditDescription(committeeData.description || '');
+            }
 
-            // 2. Load Directus Committee Members (to check leader status)
+            if (committee.azureGroupId) {
+                // 2. Load Azure Members
+                const azureRes = await fetch(`/api/admin/groups/${committee.azureGroupId}/members`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const azureData = await azureRes.json();
+                setAzureMembers(Array.isArray(azureData) ? azureData : []);
+            } else {
+                setAzureMembers([]);
+            }
+
+            // 3. Load Directus Committee Members (to check leader status)
             const directusData = await directusFetch<any[]>(
                 `/items/committee_members?filter[committee_id][_eq]=${committee.id}&fields=id,user_id.id,user_id.entra_id,is_leader`
             );
@@ -261,6 +280,47 @@ export default function CommitteeManagementPage() {
         return directusMembers.find(m => m.user_id?.entra_id === azureId)?.is_leader || false;
     };
 
+    const handleSaveDetails = async () => {
+        if (!selectedCommittee) return;
+        setDetailSaving(true);
+        try {
+            const payload: any = {
+                short_description: editShortDescription,
+                description: editDescription
+            };
+
+            if (editImageFile) {
+                const token = localStorage.getItem('auth_token');
+                const fd = new FormData();
+                fd.append('file', editImageFile);
+                const upRes = await fetch('/api/assets', { // Proxying files through /api/assets if available, or directus
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: fd
+                });
+                if (upRes.ok) {
+                    const upData = await upRes.json();
+                    payload.image = upData.data.id;
+                }
+            }
+
+            await directusFetch(`/items/committees/${selectedCommittee.id}`, {
+                method: 'PATCH',
+                body: JSON.stringify(payload)
+            });
+
+            alert('Details opgeslagen!');
+            setIsEditingDetail(false);
+            setEditImageFile(null);
+            loadCommitteeMembers(selectedCommittee);
+        } catch (error) {
+            console.error('Failed to save details:', error);
+            alert('Fout bij opslaan details.');
+        } finally {
+            setDetailSaving(false);
+        }
+    };
+
     if (permissionLoading) return <div className="p-8 text-center text-theme-purple-lighter">Toegang controleren...</div>;
     if (!isAuthorized) return <div className="p-8 text-center text-red-400">Geen toegang</div>;
 
@@ -310,20 +370,42 @@ export default function CommitteeManagementPage() {
                                 {loading && <div className="text-center py-4"><Loader2 className="h-6 w-6 animate-spin mx-auto text-theme-purple" /></div>}
                                 {!loading && filteredCommittees.length === 0 && <div className="text-center py-4 text-theme-purple-lighter/40">Geen commissies gevonden</div>}
                                 {filteredCommittees.map(c => (
-                                    <button
-                                        key={c.id}
-                                        onClick={() => loadCommitteeMembers(c)}
-                                        className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${selectedCommittee?.id === c.id
-                                            ? 'bg-theme-purple/20 border-theme-purple/40 text-theme-purple-lighter'
-                                            : 'bg-white/5 border-white/5 text-theme-purple-lighter/60 hover:bg-white/10 hover:border-white/20'
-                                            }`}
-                                    >
-                                        <div className="text-left min-w-0">
-                                            <div className="font-semibold truncate">{c.name}</div>
-                                            {c.email && <div className="text-xs opacity-50 truncate">{c.email}</div>}
-                                        </div>
-                                        {!c.azureGroupId && <Info className="h-4 w-4 text-amber-400 shrink-0" />}
-                                    </button>
+                                    <div key={c.id} className="relative group">
+                                        <button
+                                            onClick={() => loadCommitteeMembers(c)}
+                                            className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${selectedCommittee?.id === c.id
+                                                ? 'bg-theme-purple/20 border-theme-purple/40 text-theme-purple-lighter'
+                                                : 'bg-white/5 border-white/5 text-theme-purple-lighter/60 hover:bg-white/10 hover:border-white/20'
+                                                }`}
+                                        >
+                                            <div className="text-left min-w-0 pr-8">
+                                                <div className="font-semibold truncate">{c.name}</div>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-[10px] opacity-30 font-mono">ID: {c.id}</span>
+                                                    {c.email && <span className="text-[10px] opacity-50 truncate">• {c.email}</span>}
+                                                </div>
+                                            </div>
+                                            <div className="shrink-0 flex items-center gap-2">
+                                                {!c.azureGroupId && (
+                                                    <span title="Geen Azure Groep gekoppeld">
+                                                        <Info className="h-4 w-4 text-amber-400" />
+                                                    </span>
+                                                )}
+                                                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <a
+                                                        href={`/commissies/${slugify(c.name)}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="p-1 hover:text-theme-purple-lighter"
+                                                        title="Bekijk op website"
+                                                    >
+                                                        <ExternalLink className="h-4 w-4" />
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    </div>
                                 ))}
                             </div>
                         </Tile>
@@ -336,103 +418,172 @@ export default function CommitteeManagementPage() {
                                 title={selectedCommittee.name}
                                 icon={<Users className="h-5 w-5" />}
                                 actions={
-                                    selectedCommittee.email && (
-                                        <div className="flex items-center gap-2 text-xs text-theme-purple-lighter/60 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
-                                            <Mail className="h-3 w-3" />
-                                            {selectedCommittee.email}
-                                        </div>
-                                    )
-                                }
-                            >
-                                {/* Add Member Form */}
-                                <form onSubmit={handleAddMember} className="mb-8 p-4 bg-white/5 rounded-2xl border border-white/5">
-                                    <h3 className="text-sm font-semibold text-theme-purple-lighter mb-3 flex items-center gap-2">
-                                        <UserPlus className="h-4 w-4" />
-                                        Lid Toevoegen
-                                    </h3>
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="email"
-                                            placeholder="E-mailadres (student.fontys.nl of salvemundi.nl)..."
-                                            value={newUserEmail}
-                                            onChange={(e) => setNewUserEmail(e.target.value)}
-                                            required
-                                            className="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-2 text-sm text-theme-purple-lighter focus:ring-2 focus:ring-theme-purple outline-none"
-                                        />
+                                    <div className="flex items-center gap-2">
+                                        {selectedCommittee.email && (
+                                            <div className="hidden sm:flex items-center gap-2 text-xs text-theme-purple-lighter/60 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
+                                                <Mail className="h-3 w-3" />
+                                                {selectedCommittee.email}
+                                            </div>
+                                        )}
                                         <button
-                                            type="submit"
-                                            disabled={!!actionLoading || !newUserEmail}
-                                            className="px-6 py-2 bg-theme-purple/20 hover:bg-theme-purple/30 text-theme-purple-lighter rounded-xl border border-theme-purple/40 transition-all font-semibold disabled:opacity-50 flex items-center gap-2"
+                                            onClick={() => setIsEditingDetail(!isEditingDetail)}
+                                            className={`p-2 rounded-xl border transition-all ${isEditingDetail ? 'bg-theme-purple/40 border-theme-purple/60 text-white' : 'bg-white/5 border-white/10 text-theme-purple-lighter/60 hover:bg-white/10'}`}
+                                            title="Bewerk details"
                                         >
-                                            {actionLoading === 'add' ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
-                                            Toevoegen
+                                            <Settings className="h-4 w-4" />
                                         </button>
                                     </div>
-                                    <p className="mt-2 text-[10px] text-theme-purple-lighter/40">
-                                        * Toevoegen gebeurt direct in Azure AD. De synchronisatie naar Directus volgt automatisch.
-                                    </p>
-                                </form>
-
-                                {/* Members List */}
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <h3 className="text-sm font-semibold text-theme-purple-lighter">Huidige Leden ({azureMembers.length})</h3>
-                                        <div className="text-[10px] text-theme-purple-lighter/40 italic">Data vanuit Microsoft Graph</div>
-                                    </div>
-
-                                    {membersLoading ? (
-                                        <div className="py-12 text-center">
-                                            <Loader2 className="h-8 w-8 animate-spin mx-auto text-theme-purple mb-2" />
-                                            <div className="text-theme-purple-lighter/60">Leden ophalen...</div>
-                                        </div>
-                                    ) : azureMembers.length === 0 ? (
-                                        <div className="py-12 text-center text-theme-purple-lighter/30 border border-dashed border-white/10 rounded-2xl">
-                                            Geen leden gevonden in deze Azure groep.
-                                        </div>
-                                    ) : (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {azureMembers.map(member => {
-                                                const isLeader = isMemberLeader(member.id);
-                                                return (
-                                                    <div key={member.id} className="p-4 bg-white/5 border border-white/5 rounded-2xl flex items-center justify-between gap-4 group hover:bg-white/10 transition-all">
-                                                        <div className="min-w-0 flex items-center gap-3">
-                                                            <div className="min-w-0">
-                                                                <div className="font-bold text-theme-purple-lighter truncate flex items-center gap-2">
-                                                                    {member.displayName}
-                                                                    {isLeader && (
-                                                                        <span className="shrink-0 px-2 py-0.5 bg-amber-400/20 text-amber-400 text-[10px] font-bold rounded-full border border-amber-400/20 uppercase tracking-wider">
-                                                                            Leider
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                                <div className="text-xs text-theme-purple-lighter/50 truncate">{member.mail || member.userPrincipalName}</div>
+                                }
+                            >
+                                {isEditingDetail ? (
+                                    <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className="block text-xs font-semibold text-theme-purple-lighter/60 mb-2 uppercase tracking-wider">Korte Beschrijving</label>
+                                                    <textarea
+                                                        value={editShortDescription}
+                                                        onChange={(e) => setEditShortDescription(e.target.value)}
+                                                        className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-theme-purple-lighter focus:ring-2 focus:ring-theme-purple outline-none min-h-[100px]"
+                                                        placeholder="Korte tekst voor op de overzichtskaart..."
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-xs font-semibold text-theme-purple-lighter/60 mb-2 uppercase tracking-wider">Banner Afbeelding</label>
+                                                    <div className="flex flex-col gap-3">
+                                                        {selectedCommittee.image && !editImageFile && (
+                                                            <div className="relative h-32 w-full rounded-xl overflow-hidden border border-white/10">
+                                                                <img src={getImageUrl(selectedCommittee.image)} alt="Huidige banner" className="object-cover w-full h-full" />
                                                             </div>
-                                                        </div>
-                                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                            <button
-                                                                onClick={() => handleToggleLeader(member.id)}
-                                                                disabled={!!actionLoading}
-                                                                title={isLeader ? "Verwijder leider status" : "Maak commissie leider"}
-                                                                className={`p-2 rounded-lg transition-all ${isLeader ? 'bg-amber-400/20 text-amber-400' : 'hover:bg-amber-400/20 text-amber-400/60 hover:text-amber-400'}`}
-                                                            >
-                                                                {actionLoading === `leader-${member.id}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Shield className="h-4 w-4" />}
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleRemoveMember(member.id)}
-                                                                disabled={!!actionLoading}
-                                                                title="Verwijderen uit commissie"
-                                                                className="p-2 hover:bg-red-400/20 text-red-400/60 hover:text-red-400 rounded-lg transition-all"
-                                                            >
-                                                                {actionLoading === `remove-${member.id}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserMinus className="h-4 w-4" />}
-                                                            </button>
-                                                        </div>
+                                                        )}
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            onChange={(e) => setEditImageFile(e.target.files?.[0] || null)}
+                                                            className="text-xs text-theme-purple-lighter/60 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-theme-purple/20 file:text-theme-purple-lighter hover:file:bg-theme-purple/30"
+                                                        />
                                                     </div>
-                                                );
-                                            })}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-semibold text-theme-purple-lighter/60 mb-2 uppercase tracking-wider">Volledige Beschrijving (HTML)</label>
+                                                <textarea
+                                                    value={editDescription}
+                                                    onChange={(e) => setEditDescription(e.target.value)}
+                                                    className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-theme-purple-lighter font-mono focus:ring-2 focus:ring-theme-purple outline-none h-[calc(100%-2rem)] min-h-[250px]"
+                                                    placeholder="Uitgebreide omschrijving voor de detailpagina..."
+                                                />
+                                            </div>
                                         </div>
-                                    )
-                                    }
-                                </div>
+                                        <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
+                                            <button
+                                                onClick={() => setIsEditingDetail(false)}
+                                                className="px-6 py-2 bg-white/5 hover:bg-white/10 text-theme-purple-lighter/60 rounded-xl transition-all"
+                                            >
+                                                Annuleren
+                                            </button>
+                                            <button
+                                                onClick={handleSaveDetails}
+                                                disabled={detailSaving}
+                                                className="px-6 py-2 bg-theme-purple/20 hover:bg-theme-purple/30 text-theme-purple-lighter rounded-xl border border-theme-purple/40 transition-all font-semibold flex items-center gap-2"
+                                            >
+                                                {detailSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Shield className="h-4 w-4" />}
+                                                Details Opslaan
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        {/* Add Member Form */}
+                                        <form onSubmit={handleAddMember} className="mb-8 p-4 bg-white/5 rounded-2xl border border-white/5">
+                                            <h3 className="text-sm font-semibold text-theme-purple-lighter mb-3 flex items-center gap-2">
+                                                <UserPlus className="h-4 w-4" />
+                                                Lid Toevoegen
+                                            </h3>
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="email"
+                                                    placeholder="E-mailadres (student.fontys.nl of salvemundi.nl)..."
+                                                    value={newUserEmail}
+                                                    onChange={(e) => setNewUserEmail(e.target.value)}
+                                                    required
+                                                    className="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-2 text-sm text-theme-purple-lighter focus:ring-2 focus:ring-theme-purple outline-none"
+                                                />
+                                                <button
+                                                    type="submit"
+                                                    disabled={!!actionLoading || !newUserEmail}
+                                                    className="px-6 py-2 bg-theme-purple/20 hover:bg-theme-purple/30 text-theme-purple-lighter rounded-xl border border-theme-purple/40 transition-all font-semibold disabled:opacity-50 flex items-center gap-2"
+                                                >
+                                                    {actionLoading === 'add' ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
+                                                    Toevoegen
+                                                </button>
+                                            </div>
+                                            <p className="mt-2 text-[10px] text-theme-purple-lighter/40">
+                                                * Toevoegen gebeurt direct in Azure AD. De synchronisatie naar Directus volgt automatisch.
+                                            </p>
+                                        </form>
+
+                                        {/* Members List */}
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <h3 className="text-sm font-semibold text-theme-purple-lighter">Huidige Leden ({azureMembers.length})</h3>
+                                                <div className="text-[10px] text-theme-purple-lighter/40 italic">Data vanuit Microsoft Graph</div>
+                                            </div>
+
+                                            {membersLoading ? (
+                                                <div className="py-12 text-center">
+                                                    <Loader2 className="h-8 w-8 animate-spin mx-auto text-theme-purple mb-2" />
+                                                    <div className="text-theme-purple-lighter/60">Leden ophalen...</div>
+                                                </div>
+                                            ) : azureMembers.length === 0 ? (
+                                                <div className="py-12 text-center text-theme-purple-lighter/30 border border-dashed border-white/10 rounded-2xl">
+                                                    Geen leden gevonden in deze Azure groep.
+                                                </div>
+                                            ) : (
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {azureMembers.map(member => {
+                                                        const isLeader = isMemberLeader(member.id);
+                                                        return (
+                                                            <div key={member.id} className="p-4 bg-white/5 border border-white/5 rounded-2xl flex items-center justify-between gap-4 group hover:bg-white/10 transition-all">
+                                                                <div className="min-w-0 flex items-center gap-3">
+                                                                    <div className="min-w-0">
+                                                                        <div className="font-bold text-theme-purple-lighter truncate flex items-center gap-2">
+                                                                            {member.displayName}
+                                                                            {isLeader && (
+                                                                                <span className="shrink-0 px-2 py-0.5 bg-amber-400/20 text-amber-400 text-[10px] font-bold rounded-full border border-amber-400/20 uppercase tracking-wider">
+                                                                                    Leider
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="text-xs text-theme-purple-lighter/50 truncate">{member.mail || member.userPrincipalName}</div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                    <button
+                                                                        onClick={() => handleToggleLeader(member.id)}
+                                                                        disabled={!!actionLoading}
+                                                                        title={isLeader ? "Verwijder leider status" : "Maak commissie leider"}
+                                                                        className={`p-2 rounded-lg transition-all ${isLeader ? 'bg-amber-400/20 text-amber-400' : 'hover:bg-amber-400/20 text-amber-400/60 hover:text-amber-400'}`}
+                                                                    >
+                                                                        {actionLoading === `leader-${member.id}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Shield className="h-4 w-4" />}
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleRemoveMember(member.id)}
+                                                                        disabled={!!actionLoading}
+                                                                        title="Verwijderen uit commissie"
+                                                                        className="p-2 hover:bg-red-400/20 text-red-400/60 hover:text-red-400 rounded-lg transition-all"
+                                                                    >
+                                                                        {actionLoading === `remove-${member.id}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserMinus className="h-4 w-4" />}
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </>
+                                )}
                             </Tile>
                         ) : (
                             <div className="h-full flex flex-col items-center justify-center p-12 bg-white/5 border border-dashed border-white/10 rounded-[2rem] text-theme-purple-lighter/40">
