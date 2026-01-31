@@ -585,6 +585,32 @@ export default function AccountPage() {
                     )}
                   </div>
 
+                  {/* Commissies */}
+                  {user.committees && user.committees.length > 0 && (
+                    <div className="mt-6">
+                      <p className="text-[10px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-wider mb-3 text-center">
+                        Mijn Commissies
+                      </p>
+                      <div className="flex flex-wrap gap-2 justify-center">
+                        {user.committees.map((committee) => (
+                          <a
+                            key={committee.id}
+                            href={`/commissies/${committee.name.replace(/\|\|\s*SALVE MUNDI/g, '').trim().replace(/\s+/g, '-').toLowerCase()}`}
+                            className="group relative inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-theme-purple/10 to-theme-purple/5 dark:from-white/10 dark:to-white/5 border border-theme-purple/20 dark:border-white/20 rounded-full text-xs font-bold text-theme-purple dark:text-white hover:from-theme-purple/20 hover:to-theme-purple/10 dark:hover:from-white/20 dark:hover:to-white/10 transition-all hover:scale-105 shadow-sm hover:shadow-md"
+                          >
+                            {committee.is_leader && (
+                              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 border-2 border-white dark:border-surface-dark shadow-md flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <span className="text-[8px]">⭐</span>
+                              </span>
+                            )}
+                            <Users2 className="h-3.5 w-3.5" />
+                            <span>{committee.name.replace(/\|\|\s*SALVE MUNDI/g, '').trim()}</span>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="mt-6 flex flex-col gap-3">
                     <div className="rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 px-5 py-4 shadow-sm">
                       <p className="text-[10px] text-theme-purple/60 dark:text-white/40 font-black uppercase tracking-wider mb-1.5">
