@@ -1213,12 +1213,10 @@ app.get('/committees/list', async (req, res) => {
         });
 
         // 3. Map to include Azure Group ID and Email if possible
+        const EXCLUDED_COMMITTEE_IDS = [169, 184, 185, 186, 192, 193, 196, 197, 198, 202, 214, 215, 217];
+
         const result = committees
-            .filter(c => {
-                // Exclude some legacy categories or specific IDs if needed
-                const name = c.name.toLowerCase();
-                return !name.includes('oud bestuur') && !name.includes('externen');
-            })
+            .filter(c => !EXCLUDED_COMMITTEE_IDS.includes(Number(c.id)))
             .map(c => {
                 const normName = normalizeName(c.name);
 
@@ -1228,12 +1226,6 @@ app.get('/committees/list', async (req, res) => {
                     azureGroupId = GROUP_IDS.BESTUUR;
                 } else {
                     azureGroupId = normalizedAzureMap[normName] || null;
-                }
-
-                // If still not found, try without ' commissie' suffix if present in Directus name
-                if (!azureGroupId && normName.endsWith(' commissie')) {
-                    const baseName = normName.replace(' commissie', '');
-                    azureGroupId = normalizedAzureMap[baseName] || null;
                 }
 
                 return {
