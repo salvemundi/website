@@ -451,184 +451,183 @@ export default function KroegentochtPage() {
                                     Inschrijven voor de Kroegentocht
                                 </h1>
 
-                                {submitted ? (
-                                    <div className="bg-gradient-to-br from-theme-purple/5 to-theme-purple/10 rounded-2xl p-6 border border-theme-purple/20 text-center">
-                                        <CheckCircle2 className="w-12 h-12 lg:w-16 lg:h-16 text-theme-purple mx-auto mb-4" />
-                                        <h2 className="text-2xl font-semibold mb-4 text-theme-purple dark:text-white">Inschrijving Voltooid!</h2>
-                                        <p className="text-theme-text-muted dark:text-white/80 text-lg mb-4">
-                                            Bedankt voor je inschrijving voor de Kroegentocht!
-                                        </p>
-                                        <p className="text-theme-text-muted dark:text-white/80 mb-2">
-                                            Je ontvangt binnenkort een bevestigingsmail met alle details op <strong className="text-theme-purple dark:text-white">{form.email}</strong>.
-                                        </p>
-                                        <p className="text-theme-text-muted dark:text-white/80 mb-6">
-                                            Aantal tickets: <strong className="text-theme-purple dark:text-white">{Number(form.amount_tickets) || 1}</strong>
-                                        </p>
-                                        <button
-                                            onClick={() => {
-                                                setSubmitted(false);
-                                                setForm({
-                                                    email: '',
-                                                    association: '',
-                                                    customAssociation: '',
-                                                    amount_tickets: '1',
-                                                    website: '',
-                                                });
-                                                setParticipants([{ name: '', initial: '' }]);
-                                            }}
-                                            className="form-button"
-                                        >
-                                            Nieuwe inschrijving
-                                        </button>
+                                {!eventsLoading && !canSignUp ? (
+                                    <div className="bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 px-6 py-8 rounded-xl border border-amber-200 dark:border-amber-500/20 text-center">
+                                        <h3 className="text-lg font-bold mb-2">Geen inschrijving mogelijk</h3>
+                                        <p>Momenteel is er geen kroegentocht gepland waarvoor je je kunt inschrijven. Houd deze pagina in de gaten voor nieuwe data!</p>
                                     </div>
                                 ) : (
-                                    <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-                                        {error && (
-                                            <div className="bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl border border-red-200 dark:border-red-500/20">
-                                                {error}
-                                            </div>
-                                        )}
-
-                                        {!eventsLoading && !canSignUp && (
-                                            <div className="bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 px-4 py-3 rounded-xl border border-amber-200 dark:border-amber-500/20">
-                                                Momenteel is er geen kroegentocht gepland. Houd deze pagina in de gaten voor nieuwe data!
-                                            </div>
-                                        )}
-
-                                        {/* Honeypot */}
-                                        <div className="opacity-0 absolute top-0 left-0 h-0 w-0 -z-10 pointer-events-none overflow-hidden" aria-hidden="true">
-                                            <label htmlFor="website">Website</label>
-                                            <input
-                                                type="text"
-                                                id="website"
-                                                name="website"
-                                                value={form.website}
-                                                onChange={handleChange}
-                                                tabIndex={-1}
-                                                autoComplete="off"
-                                            />
-                                        </div>
-
-                                        {/* Email */}
-                                        <div>
-                                            <label className="form-label">E-mailadres</label>
-                                            <input
-                                                type="email"
-                                                name="email"
-                                                value={form.email}
-                                                onChange={handleChange}
-                                                required
-                                                placeholder="jouw@email.nl"
-                                                className="form-input"
-                                            />
-                                        </div>
-
-                                        {/* Association */}
-                                        <div>
-                                            <label className="form-label">Vereniging</label>
-                                            <select
-                                                name="association"
-                                                value={form.association}
-                                                onChange={handleChange}
-                                                required
-                                                className="form-input"
+                                    submitted ? (
+                                        <div className="bg-gradient-to-br from-theme-purple/5 to-theme-purple/10 rounded-2xl p-6 border border-theme-purple/20 text-center">
+                                            <CheckCircle2 className="w-12 h-12 lg:w-16 lg:h-16 text-theme-purple mx-auto mb-4" />
+                                            <h2 className="text-2xl font-semibold mb-4 text-theme-purple dark:text-white">Inschrijving Voltooid!</h2>
+                                            <p className="text-theme-text-muted dark:text-white/80 text-lg mb-4">
+                                                Bedankt voor je inschrijving voor de Kroegentocht!
+                                            </p>
+                                            <p className="text-theme-text-muted dark:text-white/80 mb-2">
+                                                Je ontvangt binnenkort een bevestigingsmail met alle details op <strong className="text-theme-purple dark:text-white">{form.email}</strong>.
+                                            </p>
+                                            <p className="text-theme-text-muted dark:text-white/80 mb-6">
+                                                Aantal tickets: <strong className="text-theme-purple dark:text-white">{Number(form.amount_tickets) || 1}</strong>
+                                            </p>
+                                            <button
+                                                onClick={() => {
+                                                    setSubmitted(false);
+                                                    setForm({
+                                                        email: '',
+                                                        association: '',
+                                                        customAssociation: '',
+                                                        amount_tickets: '1',
+                                                        website: '',
+                                                    });
+                                                    setParticipants([{ name: '', initial: '' }]);
+                                                }}
+                                                className="form-button"
                                             >
-                                                <option value="">Selecteer een vereniging</option>
-                                                {ASSOCIATIONS.map((assoc) => (
-                                                    <option key={assoc} value={assoc}>
-                                                        {assoc}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                                Nieuwe inschrijving
+                                            </button>
                                         </div>
+                                    ) : (
+                                        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+                                            {error && (
+                                                <div className="bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl border border-red-200 dark:border-red-500/20">
+                                                    {error}
+                                                </div>
+                                            )}
 
-                                        {/* Custom Association */}
-                                        {form.association === 'Anders' && (
-                                            <div>
-                                                <label className="form-label">Naam vereniging</label>
+                                            {/* Honeypot */} (
+                                            <div className="opacity-0 absolute top-0 left-0 h-0 w-0 -z-10 pointer-events-none overflow-hidden" aria-hidden="true">
+                                                <label htmlFor="website">Website</label>
                                                 <input
                                                     type="text"
-                                                    name="customAssociation"
-                                                    value={form.customAssociation}
+                                                    id="website"
+                                                    name="website"
+                                                    value={form.website}
+                                                    onChange={handleChange}
+                                                    tabIndex={-1}
+                                                    autoComplete="off"
+                                                />
+                                            </div>
+
+                                            {/* Email */}
+                                            <div>
+                                                <label className="form-label">E-mailadres</label>
+                                                <input
+                                                    type="email"
+                                                    name="email"
+                                                    value={form.email}
                                                     onChange={handleChange}
                                                     required
-                                                    placeholder="Naam van je vereniging"
+                                                    placeholder="jouw@email.nl"
                                                     className="form-input"
                                                 />
                                             </div>
-                                        )}
 
-                                        {/* Amount of Tickets */}
-                                        <div>
-                                            <label className="form-label">Aantal tickets</label>
-                                            <input
-                                                type="number"
-                                                name="amount_tickets"
-                                                value={form.amount_tickets}
-                                                onChange={handleChange}
-                                                onBlur={handleAmountBlur}
-                                                required
-                                                min="1"
-                                                max="10"
-                                                className="form-input"
-                                            />
-                                            <span className="text-sm text-theme-text-muted mt-1 block">
-                                                Maximum 10 tickets per inschrijving
-                                            </span>
-                                        </div>
+                                            {/* Association */}
+                                            <div>
+                                                <label className="form-label">Vereniging</label>
+                                                <select
+                                                    name="association"
+                                                    value={form.association}
+                                                    onChange={handleChange}
+                                                    required
+                                                    className="form-input"
+                                                >
+                                                    <option value="">Selecteer een vereniging</option>
+                                                    {ASSOCIATIONS.map((assoc) => (
+                                                        <option key={assoc} value={assoc}>
+                                                            {assoc}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
 
-                                        {/* Participant Names and Initials */}
-                                        <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-4 space-y-3 border border-slate-200 dark:border-white/10">
-                                            <h3 className="font-semibold text-theme-purple dark:text-white text-lg mb-2">
-                                                Deelnemers ({displayTicketCount} {displayTicketCount === 1 ? 'ticket' : 'tickets'})
-                                            </h3>
-                                            <p className="text-sm text-theme-text-muted mb-3">
-                                                Vul voor elk ticket een naam en eerste letter van de achternaam in.
-                                            </p>
-                                            {participants.map((participant, index) => (
-                                                <div key={index} className="bg-white dark:bg-white/5 rounded-lg p-3 space-y-2 border border-slate-200 dark:border-white/10">
-                                                    <div>
-                                                        <label className="form-label text-sm">Ticket {index + 1} - Naam</label>
-                                                        <input
-                                                            type="text"
-                                                            value={participant.name}
-                                                            onChange={(e) => handleParticipantChange(index, 'name', e.target.value)}
-                                                            required
-                                                            placeholder="Voornaam + eventueel tussenvoegsel"
-                                                            className="form-input text-sm"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="form-label text-sm">Eerste letter achternaam</label>
-                                                        <input
-                                                            type="text"
-                                                            value={participant.initial}
-                                                            onChange={(e) => handleParticipantChange(index, 'initial', e.target.value)}
-                                                            required
-                                                            placeholder="Bijv. S"
-                                                            maxLength={1}
-                                                            className="form-input w-20 uppercase text-sm"
-                                                        />
-                                                    </div>
+                                            {/* Custom Association */}
+                                            {form.association === 'Anders' && (
+                                                <div>
+                                                    <label className="form-label">Naam vereniging</label>
+                                                    <input
+                                                        type="text"
+                                                        name="customAssociation"
+                                                        value={form.customAssociation}
+                                                        onChange={handleChange}
+                                                        required
+                                                        placeholder="Naam van je vereniging"
+                                                        className="form-input"
+                                                    />
                                                 </div>
-                                            ))}
-                                        </div>
+                                            )}
 
-                                        <button
-                                            type="submit"
-                                            disabled={loading || !canSignUp}
-                                            className="form-button mt-4 group"
-                                        >
-                                            <span>
-                                                {loading
-                                                    ? 'Bezig met inschrijven...'
-                                                    : canSignUp
-                                                        ? `Inschrijven (€${(Number(form.amount_tickets) * 1).toFixed(2).replace('.', ',')})`
-                                                        : 'Inschrijving nog niet beschikbaar'}
-                                            </span>
-                                            {!loading && canSignUp && <span className="group-hover:translate-x-1 transition-transform">→</span>}
-                                        </button>
-                                    </form>
+                                            {/* Amount of Tickets */}
+                                            <div>
+                                                <label className="form-label">Aantal tickets</label>
+                                                <input
+                                                    type="number"
+                                                    name="amount_tickets"
+                                                    value={form.amount_tickets}
+                                                    onChange={handleChange}
+                                                    onBlur={handleAmountBlur}
+                                                    required
+                                                    min="1"
+                                                    max="10"
+                                                    className="form-input"
+                                                />
+                                                <span className="text-sm text-theme-text-muted mt-1 block">
+                                                    Maximum 10 tickets per inschrijving
+                                                </span>
+                                            </div>
+
+                                            {/* Participant Names and Initials */}
+                                            <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-4 space-y-3 border border-slate-200 dark:border-white/10">
+                                                <h3 className="font-semibold text-theme-purple dark:text-white text-lg mb-2">
+                                                    Deelnemers ({displayTicketCount} {displayTicketCount === 1 ? 'ticket' : 'tickets'})
+                                                </h3>
+                                                <p className="text-sm text-theme-text-muted mb-3">
+                                                    Vul voor elk ticket een naam en eerste letter van de achternaam in.
+                                                </p>
+                                                {participants.map((participant, index) => (
+                                                    <div key={index} className="bg-white dark:bg-white/5 rounded-lg p-3 space-y-2 border border-slate-200 dark:border-white/10">
+                                                        <div>
+                                                            <label className="form-label text-sm">Ticket {index + 1} - Naam</label>
+                                                            <input
+                                                                type="text"
+                                                                value={participant.name}
+                                                                onChange={(e) => handleParticipantChange(index, 'name', e.target.value)}
+                                                                required
+                                                                placeholder="Voornaam + eventueel tussenvoegsel"
+                                                                className="form-input text-sm"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="form-label text-sm">Eerste letter achternaam</label>
+                                                            <input
+                                                                type="text"
+                                                                value={participant.initial}
+                                                                onChange={(e) => handleParticipantChange(index, 'initial', e.target.value)}
+                                                                required
+                                                                placeholder="Bijv. S"
+                                                                maxLength={1}
+                                                                className="form-input w-20 uppercase text-sm"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <button
+                                                type="submit"
+                                                disabled={loading || !canSignUp}
+                                                className="form-button mt-4 group"
+                                            >
+                                                <span>
+                                                    {loading
+                                                        ? 'Bezig met inschrijven...'
+                                                        : `Inschrijven (€${(Number(form.amount_tickets) * 1).toFixed(2).replace('.', ',')})`}
+                                                </span>
+                                                {!loading && <span className="group-hover:translate-x-1 transition-transform">→</span>}
+                                            </button>
+                                        </form>
+                                    )
                                 )}
                             </section>
 
