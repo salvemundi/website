@@ -513,10 +513,24 @@ export const clubsApi = {
 export const pubCrawlEventsApi = {
     getAll: async () => {
         const query = buildQueryString({
-            fields: ['id', 'name', 'email', 'date', 'description', 'image', 'created_at', 'updated_at'],
+            fields: ['id', 'name', 'email', 'date', 'description', 'image', 'association', 'created_at', 'updated_at'],
             sort: ['-created_at']
         });
         return directusFetch<any[]>(`/items/pub_crawl_events?${query}`);
+    },
+    getById: async (id: number | string) => {
+        return directusFetch<any>(`/items/pub_crawl_events/${id}?fields=*`);
+    },
+    update: async (id: number | string, data: any) => {
+        return directusFetch<any>(`/items/pub_crawl_events/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        });
+    },
+    delete: async (id: number | string) => {
+        return directusFetch<void>(`/items/pub_crawl_events/${id}`, {
+            method: 'DELETE'
+        });
     }
 };
 
