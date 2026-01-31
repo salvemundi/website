@@ -334,10 +334,19 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit, 
         const text = await response.text();
         if (!text) return {} as T;
         json = JSON.parse(text);
+
+        // Defensive: JSON.parse may successfully parse the literal `null` which
+        // produces a runtime null value. Accessing `json.data` would then throw
+        // "Cannot read properties of null (reading 'data')" as seen in errors.
+        if (json === null || typeof json !== 'object') {
+            console.error('[directusFetch] Unexpected JSON response (null or non-object)', { url, status: response.status, text });
+            throw new Error('Directus API returned unexpected response: null or non-object. This often indicates a proxy/auth error or a misconfigured Directus endpoint.');
+        }
     } catch (err) {
         console.error('[directusFetch] Failed parsing JSON response', { url, error: err });
         throw err;
     }
+
     return json.data as T;
 }
 

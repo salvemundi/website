@@ -1,6 +1,7 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useState } from 'react';
 import { AuthProvider } from '@/features/auth/providers/auth-provider';
 import { PWAProvider } from '@/features/pwa/lib/PWAContext';
@@ -37,6 +38,8 @@ export function RootProviders({ children }: { children: React.ReactNode }) {
                     <AuthProvider>
                         <AppInner>{children}</AppInner>
                         <Toaster position="bottom-right" richColors />
+                        {/* React Query Devtools - only shows in development */}
+                        <ReactQueryDevtools initialIsOpen={false} />
                     </AuthProvider>
                 </QueryClientProvider>
             </ThemeProvider>

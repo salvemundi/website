@@ -262,7 +262,11 @@ export async function GET(
         const responseContentType = response.headers.get('Content-Type');
         if (responseContentType && responseContentType.includes('application/json')) {
             const data = await response.json().catch(() => null);
-            return NextResponse.json(data, { status: response.status });
+            // If upstream returned literal `null`, convert to empty object to
+            // avoid clients attempting to read `.data` from `null` and
+            // throwing TypeError. This preserves the original status code.
+            const safe = data === null ? {} : data;
+            return NextResponse.json(safe, { status: response.status });
         } else {
             const text = await response.text().catch(() => '');
             return new Response(text, {
@@ -490,7 +494,8 @@ async function handleMutation(
         const responseContentType = response.headers.get('Content-Type');
         if (responseContentType && responseContentType.includes('application/json')) {
             const data = await response.json().catch(() => null);
-            return NextResponse.json(data, { status: response.status });
+            const safe = data === null ? {} : data;
+            return NextResponse.json(safe, { status: response.status });
         } else {
             const text = await response.text().catch(() => '');
             return new Response(text, {
