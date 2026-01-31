@@ -16,6 +16,7 @@ import {
   Mail,
   Phone,
   Gamepad2,
+  Users2,
   Calendar,
   Shield,
   ExternalLink,
