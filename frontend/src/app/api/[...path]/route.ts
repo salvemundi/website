@@ -115,6 +115,7 @@ export async function GET(
     const path = params.path.join('/');
     const url = new URL(request.url);
     const auth = getAuthToken(request, url);
+    const ip = getClientIp(request);
 
     try {
         const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
@@ -258,18 +259,25 @@ export async function GET(
             return new Response(null, { status: 204 });
         }
 
-        const data = await response.json().catch(() => null);
-
-        // Debug logging for failures
-        if (!response.ok && path.includes('site_settings')) {
-            console.error(`[Directus Proxy] Upstream request to ${path} failed with status ${response.status}`);
-            console.error(`[Directus Proxy] Error Body:`, JSON.stringify(data, null, 2));
+        const responseContentType = response.headers.get('Content-Type');
+        if (responseContentType && responseContentType.includes('application/json')) {
+            const data = await response.json().catch(() => null);
+            return NextResponse.json(data, { status: response.status });
+        } else {
+            const text = await response.text().catch(() => '');
+            return new Response(text, {
+                status: response.status,
+                headers: { 'Content-Type': responseContentType || 'text/plain' }
+            });
         }
 
-        return NextResponse.json(data, { status: response.status });
-
     } catch (error: any) {
-        console.error(`[Directus Proxy] GET ${path} failed:`, error.message);
+        console.error(`[Directus Proxy] GET ${path} failed:`, {
+            message: error.message,
+            stack: error.stack,
+            ip,
+            auth: auth ? 'Present' : 'Missing'
+        });
         return NextResponse.json({ error: 'Directus Proxy Error', details: error.message }, { status: 500 });
     }
 }
@@ -285,10 +293,24 @@ async function handleMutation(
     const authHeader = getAuthToken(request, url);
 
     let body: any = null;
+    let rawBody: ArrayBuffer | null = null;
     if (method !== 'DELETE') {
-        const contentType = request.headers.get('Content-Type') || '';
-        if (contentType.includes('application/json')) {
-            body = await request.json().catch(() => null);
+        try {
+            rawBody = await request.arrayBuffer();
+            if (rawBody && rawBody.byteLength > 0) {
+                const contentType = request.headers.get('Content-Type') || '';
+                if (contentType.includes('application/json')) {
+                    try {
+                        const text = new TextDecoder().decode(rawBody);
+                        body = JSON.parse(text);
+                    } catch (parseError: any) {
+                        console.warn(`[Directus Proxy] ${method} ${path} | JSON parse failed:`, parseError.message);
+                        // Not fatal, we still have rawBody
+                    }
+                }
+            }
+        } catch (readError: any) {
+            console.error(`[Directus Proxy] ${method} ${path} | Failed to read request body:`, readError.message);
         }
     }
 
@@ -450,8 +472,12 @@ async function handleMutation(
         const response = await fetch(targetUrl, {
             method,
             headers: forwardHeaders,
-            body: body ? JSON.stringify(body) : undefined,
+            body: rawBody && rawBody.byteLength > 0 ? rawBody : undefined,
         });
+
+        if (!response.ok) {
+            console.error(`[Directus Proxy] Upstream ${method} ${path} FAILED: Status ${response.status}`);
+        }
 
         // Trace token usage for debugging
         const usedToken = forwardHeaders['Authorization'] || 'none';
@@ -460,15 +486,31 @@ async function handleMutation(
         console.log(`[Directus Proxy] ${method} ${path} | Bypass: ${canBypass} | Forwarding: ${tokenType} (${maskedToken})`);
 
         if (response.status === 204) return new Response(null, { status: 204 });
-        const data = await response.json().catch(() => null);
-        return NextResponse.json(data, { status: response.status });
+
+        const responseContentType = response.headers.get('Content-Type');
+        if (responseContentType && responseContentType.includes('application/json')) {
+            const data = await response.json().catch(() => null);
+            return NextResponse.json(data, { status: response.status });
+        } else {
+            const text = await response.text().catch(() => '');
+            return new Response(text, {
+                status: response.status,
+                headers: { 'Content-Type': responseContentType || 'text/plain' }
+            });
+        }
 
     } catch (error: any) {
-        console.error(`[Directus Proxy] ${method} ${path} failed:`, {
+        console.error(`[Directus Proxy] ${method} ${path} failed (IP: ${getClientIp(request)}):`, {
             message: error.message,
-            stack: error.stack
+            stack: error.stack,
+            path,
+            method
         });
-        return NextResponse.json({ error: 'Directus Proxy Error', details: error.message }, { status: 500 });
+        return NextResponse.json({
+            error: 'Directus Proxy Error',
+            details: error.message,
+            path: path
+        }, { status: 500 });
     }
 }
 
