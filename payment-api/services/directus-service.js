@@ -89,7 +89,7 @@ async function getDirectusRegistration(directusUrl, directusToken, id) {
         return response.data.data;
     } catch (error) {
         console.error(`Failed to fetch registration ${id}:`, error.message);
-        return null;
+        throw error;
     }
 }
 
@@ -158,7 +158,7 @@ async function getTripSignupActivities(directusUrl, directusToken, signupId) {
         return response.data.data;
     } catch (error) {
         console.error(`Failed to fetch trip_signup_activities for ${signupId}:`, error.response?.data || error.message);
-        return [];
+        throw error;
     }
 }
 
