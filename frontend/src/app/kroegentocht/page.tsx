@@ -495,7 +495,7 @@ export default function KroegentochtPage() {
                                                 </div>
                                             )}
 
-                                            {/* Honeypot */} (
+                                            {/* Honeypot */}
                                             <div className="opacity-0 absolute top-0 left-0 h-0 w-0 -z-10 pointer-events-none overflow-hidden" aria-hidden="true">
                                                 <label htmlFor="website">Website</label>
                                                 <input
