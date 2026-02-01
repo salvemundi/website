@@ -256,16 +256,17 @@ export async function GET(
 
         const response = await fetch(targetUrl, fetchOptions);
 
-        if (response.status === 204) {
-            return new Response(null, { status: 204 });
+        if (!response.ok) {
+            if (response.status === 403 && (path.startsWith('items/committees') || path.startsWith('items/committee_members'))) {
+                console.log(`[Directus Proxy] Softening 403 for GET ${path} to avoid browser console error.`);
+                return NextResponse.json({ data: null, error: 'Forbidden', softened: true }, { status: 200 });
+            }
+            console.error(`[Directus Proxy] GET ${path} FAILED: Status ${response.status}`);
         }
 
         const responseContentType = response.headers.get('Content-Type');
         if (responseContentType && responseContentType.includes('application/json')) {
             const data = await response.json().catch(() => null);
-            // If upstream returned literal `null`, convert to empty object to
-            // avoid clients attempting to read `.data` from `null` and
-            // throwing TypeError. This preserves the original status code.
             const safe = data === null ? {} : data;
             return NextResponse.json(safe, { status: response.status });
         } else {
@@ -495,6 +496,11 @@ async function handleMutation(
         if (!response.ok) {
             const errorText = await response.text().catch(() => 'No error body');
             console.error(`[Directus Proxy] Upstream ${method} ${path} FAILED: Status ${response.status} | Body: ${errorText.slice(0, 200)}`);
+
+            if (response.status === 403 && (path.startsWith('items/committees') || path.startsWith('items/committee_members'))) {
+                console.log(`[Directus Proxy] Softening 403 for ${method} ${path} to avoid browser console error.`);
+                return NextResponse.json({ data: null, error: 'Forbidden', softened: true }, { status: 200 });
+            }
 
             // Re-create response for JSON if possible
             if (response.headers.get('Content-Type')?.includes('application/json')) {

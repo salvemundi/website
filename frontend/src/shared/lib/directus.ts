@@ -254,8 +254,8 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit, 
     if (!response.ok) {
         const contentType = response.headers.get('content-type');
 
-        // Check for suppression header
-        const suppressLog = headers['X-Suppress-Log'] === 'true' || headers['x-suppress-log'] === 'true';
+        // Check for suppression header (case-insensitive)
+        const suppressLog = Object.entries(headers).some(([k, v]) => k.toLowerCase() === 'x-suppress-log' && String(v).toLowerCase() === 'true');
 
         if (contentType && contentType.includes('text/html')) {
             // Avoid dumping HTML into the error message
