@@ -521,6 +521,10 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                                 'pub_crawl_event_id,amount_tickets,name_initials'
                             );
 
+                            if (!signup) {
+                                throw new Error(`Could not fetch signup ${registrationId} from ${collection}. Aborting ticket generation to prevent data corruption.`);
+                            }
+
                             const pubCrawlEventId = signup?.pub_crawl_event_id || 0;
                             const amountTickets = signup?.amount_tickets || 1;
                             const nameInitialsRaw = signup?.name_initials;
@@ -548,11 +552,10 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                             const ticketPromises = participants.map(async (p, index) => {
                                 const qrToken = generateQRToken(`${registrationId}-${index}`, pubCrawlEventId);
 
-                                return directusService.updateDirectusItem(
+                                return directusService.createDirectusItem(
                                     DIRECTUS_URL,
                                     DIRECTUS_API_TOKEN,
                                     COLLECTIONS.PUB_CRAWL_TICKETS,
-                                    null, // Create new record
                                     {
                                         [FIELDS.TICKETS.SIGNUP_ID]: registrationId,
                                         [FIELDS.TICKETS.NAME]: p.name || `Deelnemer ${index + 1}`,
