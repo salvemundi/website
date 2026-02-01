@@ -14,6 +14,12 @@ services:
       - MS_GRAPH_SENDER_UPN=noreply@salvemundi.nl
       - DIRECTUS_URL=${DIRECTUS_URL}
       - DIRECTUS_API_TOKEN=${DIRECTUS_API_TOKEN}
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/health', (res) => { if (res.statusCode === 200) { process.exit(0); } else { process.exit(1); } }).on('error', (e) => { process.exit(1); });"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 networks:
   proxy-network:
