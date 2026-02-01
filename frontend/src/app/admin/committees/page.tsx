@@ -176,10 +176,10 @@ export default function CommitteeManagementPage() {
         try {
             const token = localStorage.getItem('auth_token');
 
-            // 1. Try to fetch latest committee details from Directus
-            // If this fails (e.g. 403 because committee is hidden), we fall back to the basic info we already have
             try {
-                const committeeData = await directusFetch<Committee>(`/items/committees/${committee.id}`);
+                const committeeData = await directusFetch<Committee>(`/items/committees/${committee.id}`, {
+                    headers: { 'X-Suppress-Log': 'true' }
+                });
                 if (committeeData) {
                     setSelectedCommittee(committeeData);
                     setEditShortDescription(committeeData.short_description || '');
@@ -205,7 +205,8 @@ export default function CommitteeManagementPage() {
 
             // 3. Load Directus Committee Members (to check leader status)
             const directusData = await directusFetch<any[]>(
-                `/items/committee_members?filter[committee_id][_eq]=${committee.id}&fields=id,user_id.id,user_id.entra_id,is_leader`
+                `/items/committee_members?filter[committee_id][_eq]=${committee.id}&fields=id,user_id.id,user_id.entra_id,is_leader`,
+                { headers: { 'X-Suppress-Log': 'true' } }
             );
             setDirectusMembers(directusData || []);
 
@@ -427,26 +428,26 @@ export default function CommitteeManagementPage() {
                                                 : 'bg-white/5 border-white/5 text-theme-purple-lighter/60 hover:bg-white/10 hover:border-white/20'
                                                 }`}
                                         >
-                                            <div className="text-left min-w-0 pr-8">
+                                            <div className="text-left min-w-0 flex-1">
                                                 <div className="font-semibold truncate">{c.name}</div>
                                                 <div className="flex items-center gap-2 mt-1">
                                                     <span className="text-[10px] opacity-30 font-mono">ID: {c.id}</span>
                                                     {c.email && <span className="text-[10px] opacity-50 truncate">• {c.email}</span>}
                                                 </div>
                                             </div>
-                                            <div className="shrink-0 flex items-center gap-2">
+                                            <div className="flex items-center gap-2">
                                                 {!c.azureGroupId ? (
-                                                    <span title="Geen Azure Groep gekoppeld">
+                                                    <span title="Geen Azure Groep gekoppeld" className="shrink-0 mr-1">
                                                         <Info className="h-4 w-4 text-amber-400" />
                                                     </span>
                                                 ) : null}
-                                                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="hidden group-hover:flex items-center shrink-0">
                                                     <a
                                                         href={`/commissies/${slugify(c.name)}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         onClick={(e) => e.stopPropagation()}
-                                                        className="p-1 hover:text-theme-purple-lighter"
+                                                        className="p-1 hover:text-theme-purple-lighter transition-colors"
                                                         title="Bekijk op website"
                                                     >
                                                         <ExternalLink className="h-4 w-4" />
@@ -593,9 +594,9 @@ export default function CommitteeManagementPage() {
                                                     {azureMembers.map(member => {
                                                         const isLeader = isMemberLeader(member.id);
                                                         return (
-                                                            <div key={member.id} className="p-4 bg-white/5 border border-white/5 rounded-2xl flex items-center justify-between gap-4 group hover:bg-white/10 transition-all">
-                                                                <div className="min-w-0 flex items-center gap-3">
-                                                                    <div className="min-w-0">
+                                                            <div key={member.id} className="p-4 bg-white/5 border border-white/5 rounded-2xl flex items-center justify-between gap-2 group hover:bg-white/10 transition-all">
+                                                                <div className="min-w-0 flex-1 flex items-center gap-3">
+                                                                    <div className="min-w-0 flex-1">
                                                                         <div className="font-bold text-theme-purple-lighter truncate flex items-center gap-2">
                                                                             {member.displayName}
                                                                             {isLeader && (
@@ -607,7 +608,7 @@ export default function CommitteeManagementPage() {
                                                                         <div className="text-xs text-theme-purple-lighter/50 truncate">{member.mail || member.userPrincipalName}</div>
                                                                     </div>
                                                                 </div>
-                                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <div className="hidden group-hover:flex items-center gap-1 shrink-0">
                                                                     <button
                                                                         onClick={() => handleToggleLeader(member.id)}
                                                                         disabled={!!actionLoading}
