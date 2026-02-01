@@ -23,7 +23,7 @@ const allowedCollections = [
     'partners', 'FAQ', 'news', 'hero_banners', 'trips', 'trip_activities',
     'site_settings', 'boards', 'Board', 'history', 'attendance_officers',
     'whats_app_groups', 'whatsapp_groups', 'transactions', 'feedback',
-    'members', 'clubs', 'pub_crawl_events', 'jobs', 'safe_havens',
+    'members', 'clubs', 'pub_crawl_events', 'pub_crawl_tickets', 'jobs', 'safe_havens',
     'documents', 'files', 'assets',
 ];
 
