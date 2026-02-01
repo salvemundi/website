@@ -128,7 +128,15 @@ export default function CommitteeManagementPage() {
         'activiteitencommissie',
         'studiecommissie',
         'reiscommissie',
-        'marketingcommissie'
+        'marketingcommissie',
+        'adviesraad',
+        'bhv',
+        'cobo',
+        'fotografie events',
+        'gala',
+        'informatie',
+        'kandi-bestuur',
+        'lustrum'
     ];
 
     const [isEditingDetail, setIsEditingDetail] = useState(false);

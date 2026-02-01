@@ -1222,11 +1222,24 @@ app.get('/committees/list', async (req, res) => {
                 const displayName = c.name.replace(/\s*(\|\||\|)\s*SALVE MUNDI/gi, '').trim();
 
                 // Explicit check for Bestuur and other special mappings
+                const manualMappings = {
+                    'adviesraad': 'd30a8bfc-7cb6-4619-ac59-fcb307bbe6d4',
+                    'bhv': '314044d2-bafe-43c7-99f3-c8824dbcbef0',
+                    'cobo': 'f550025a-3dc3-4325-bc1b-256466066df9',
+                    'fotografie events': 'ffe78b01-b471-41c3-8151-12f013ac0273',
+                    'gala': '7337fdd6-08c7-48a8-b3b5-2921909098cd',
+                    'informatie': '15862ad9-89fc-4f2b-809c-7a00981d38eb',
+                    'kandi-bestuur': 'adf4d258-a404-4bc0-ae73-6bfa429a1537',
+                    'lustrum': '1d8538ef-7858-4d66-8cd9-c9c134bf1066'
+                };
+
                 let azureGroupId = null;
                 if (normName === 'bestuur') {
                     azureGroupId = GROUP_IDS.BESTUUR;
                 } else if (normName.replace(/-/g, '') === 'ictcommissie') {
                     azureGroupId = GROUP_IDS.ICT;
+                } else if (manualMappings[normName]) {
+                    azureGroupId = manualMappings[normName];
                 } else {
                     azureGroupId = normalizedAzureMap[normName] || null;
                 }
