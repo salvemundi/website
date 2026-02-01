@@ -128,15 +128,7 @@ export default function CommitteeManagementPage() {
         'activiteitencommissie',
         'studiecommissie',
         'reiscommissie',
-        'marketingcommissie',
-        'adviesraad',
-        'bhv',
-        'cobo',
-        'fotografie events',
-        'gala',
-        'informatie',
-        'kandi-bestuur',
-        'lustrum'
+        'marketingcommissie'
     ];
 
     const [isEditingDetail, setIsEditingDetail] = useState(false);
@@ -389,9 +381,9 @@ export default function CommitteeManagementPage() {
                     </button>
                 </div>
 
-                <div className="flex flex-col gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     {/* Committee List */}
-                    <div className={selectedCommittee ? "w-full" : "w-full"}>
+                    <div className="lg:col-span-6 space-y-4">
                         <Tile title="Commissies" icon={<Users className="h-5 w-5" />}>
                             <div className="flex flex-col sm:flex-row gap-4 mb-6">
                                 <div className="relative flex-1">
@@ -415,7 +407,7 @@ export default function CommitteeManagementPage() {
                                 </button>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
                                 {loading && <div className="text-center py-4"><Loader2 className="h-6 w-6 animate-spin mx-auto text-theme-purple" /></div>}
                                 {!loading && filteredCommittees.length === 0 && <div className="text-center py-4 text-theme-purple-lighter/40">Geen commissies gevonden</div>}
                                 {filteredCommittees.map(c => (
@@ -461,7 +453,7 @@ export default function CommitteeManagementPage() {
                     </div>
 
                     {/* Member Management */}
-                    <div className="w-full">
+                    <div className="lg:col-span-6 sticky top-8">
                         {selectedCommittee ? (
                             <Tile
                                 title={selectedCommittee.name}
