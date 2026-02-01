@@ -1,4 +1,5 @@
 import { directusFetch } from '../directus';
+import { COLLECTIONS, FIELDS } from '@/shared/lib/constants/collections';
 
 // --- Types ---
 export interface SiteSettings {
@@ -547,22 +548,31 @@ export const pubCrawlEventsApi = {
 export const pubCrawlSignupsApi = {
     getAll: async () => {
         const query = buildQueryString({
-            fields: ['id', 'pub_crawl_event_id', 'name', 'email', 'association', 'amount_tickets', 'name_initials', 'created_at', 'updated_at'],
-            sort: ['-created_at']
+            fields: [
+                FIELDS.SIGNUPS.ID,
+                FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID,
+                FIELDS.SIGNUPS.NAME,
+                FIELDS.SIGNUPS.EMAIL,
+                FIELDS.SIGNUPS.ASSOCIATION,
+                FIELDS.SIGNUPS.AMOUNT_TICKETS,
+                FIELDS.SIGNUPS.CREATED_AT,
+                FIELDS.SIGNUPS.UPDATED_AT
+            ],
+            sort: [`-${FIELDS.SIGNUPS.CREATED_AT}`]
         });
-        return directusFetch<any[]>(`/items/pub_crawl_signups?${query}`);
+        return directusFetch<any[]>(`/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}?${query}`);
     },
-    create: async (data: { name: string; email: string; association?: string; amount_tickets: number; pub_crawl_event_id: number; name_initials?: string; payment_status?: string }) => {
-        return directusFetch<any>(`/items/pub_crawl_signups`, {
+    create: async (data: any) => {
+        return directusFetch<any>(`/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}`, {
             method: 'POST',
             body: JSON.stringify(data)
         });
     },
     getById: async (id: number | string) => {
-        return directusFetch<any>(`/items/pub_crawl_signups/${id}?fields=*`);
+        return directusFetch<any>(`/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}/${id}?fields=*`);
     },
     delete: async (id: number) => {
-        return directusFetch<void>(`/items/pub_crawl_signups/${id}`, {
+        return directusFetch<void>(`/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}/${id}`, {
             method: 'DELETE'
         });
     }

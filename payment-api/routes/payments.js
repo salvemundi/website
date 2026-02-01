@@ -1,6 +1,4 @@
-const express = require('express');
-const membershipService = require('../services/membership-service');
-const { getEnvironment } = require('../services/env-utils');
+const { COLLECTIONS, FIELDS } = require('../services/collections');
 
 module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, MEMBERSHIP_API_URL, directusService, notificationService, GRAPH_SYNC_URL) {
     const router = express.Router();
@@ -509,254 +507,291 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                     let updatePayload = { payment_status: 'paid' };
 
                     if (payment.metadata.registrationType === 'pub_crawl_signup') {
-                        collection = 'pub_crawl_signups';
+                        collection = COLLECTIONS.PUB_CRAWL_SIGNUPS;
 
-                        // Fetch the signup to get the pub_crawl_event_id and amount_tickets for QR token generation
-                        let pubCrawlEventId = 0;
-                        let amountTickets = 1;
+                        // Fetch the signup to get the pub_crawl_event_id and amount_tickets for individual ticket generation
                         try {
                             const signup = await directusService.getDirectusItem(
                                 DIRECTUS_URL,
                                 DIRECTUS_API_TOKEN,
                                 collection,
                                 registrationId,
-                                'pub_crawl_event_id,amount_tickets'
+                                'pub_crawl_event_id,amount_tickets,name_initials'
                             );
-                            pubCrawlEventId = signup?.pub_crawl_event_id || 0;
-                            amountTickets = signup?.amount_tickets || 1;
-                            console.warn(`[Webhook][${traceId}] Fetched pub_crawl_event_id: ${pubCrawlEventId}, amount_tickets: ${amountTickets}`);
-                        } catch (err) {
-                            console.error(`[Webhook][${traceId}] Failed to fetch pub_crawl_event_id:`, err);
-                        }
 
-                        // Generate single QR token for pub crawl signup
-                        const qrToken = generateQRToken(registrationId, pubCrawlEventId);
-                        console.warn(`[Webhook][${traceId}] Generated QR token for pub crawl signup ${registrationId}: ${qrToken}`);
+                            const pubCrawlEventId = signup?.pub_crawl_event_id || 0;
+                            const amountTickets = signup?.amount_tickets || 1;
+                            const nameInitialsRaw = signup?.name_initials;
 
-                        // Store the token in qr_token
-                        updatePayload.qr_token = qrToken;
-
-                        // Pass token to metadata for email
-                        payment.metadata.qrToken = qrToken;
-                    } else if (payment.metadata.registrationType === 'trip_signup') {
-                        collection = 'trip_signups';
-                        // For trip signups, check description to determine if it's deposit or final payment
-                        if (payment.description.toLowerCase().includes('aanbetaling')) {
-                            updatePayload = {
-                                deposit_paid: true,
-                                deposit_paid_at: new Date().toISOString()
-                            };
-                        } else if (payment.description.toLowerCase().includes('restbetaling')) {
-                            updatePayload = {
-                                full_payment_paid: true,
-                                full_payment_paid_at: new Date().toISOString()
-                            };
-                        }
-                    }
-
-                    console.warn(`[Webhook][${traceId}] Updating ${collection} ${registrationId} with payload:`, JSON.stringify(updatePayload));
-                    try {
-                        await directusService.updateDirectusItem(
-                            DIRECTUS_URL,
-                            DIRECTUS_API_TOKEN,
-                            collection,
-                            registrationId,
-                            updatePayload
-                        );
-                        console.warn(`[Webhook][${traceId}] ✅ Successfully updated ${collection} ${registrationId}`);
-                    } catch (updateErr) {
-                        console.error(`[Webhook][${traceId}] ❌ Failed to update ${collection} ${registrationId}:`, updateErr.message);
-                        console.error(`[Webhook][${traceId}] Update payload was:`, JSON.stringify(updatePayload));
-                        if (updateErr.response?.data) {
-                            console.error(`[Webhook][${traceId}] Directus error response:`, JSON.stringify(updateErr.response.data));
-                        }
-                        throw updateErr; // Re-throw to prevent email from being sent if update fails
-                    }
-                }
-
-                // 2. ALWAYS send confirmation email if it's NOT a contribution (normal events/pub-crawl/trip)
-                if (notContribution === "true" && registrationId) {
-                    console.warn(`[Webhook][${traceId}] Sending non-contribution confirmation email`);
-
-                    // Send trip-specific email for trip signups
-                    if (payment.metadata.registrationType === 'trip_signup') {
-                        console.warn(`[Webhook][${traceId}] Detected trip_signup, fetching trip data for email...`);
-                        try {
-                            const tripSignup = await directusService.getDirectusItem(
-                                DIRECTUS_URL,
-                                DIRECTUS_API_TOKEN,
-                                'trip_signups',
-                                registrationId,
-                                'id,first_name,middle_name,last_name,email,role,trip_id'
-                            );
-                            console.warn(`[Webhook][${traceId}] Trip signup fetched:`, {
-                                id: tripSignup.id,
-                                email: tripSignup.email,
-                                trip_id: tripSignup.trip_id
-                            });
-
-                            const trip = await directusService.getDirectusItem(
-                                DIRECTUS_URL,
-                                DIRECTUS_API_TOKEN,
-                                'trips',
-                                tripSignup.trip_id,
-                                'id,name,event_date,start_date,end_date,base_price,deposit_amount,crew_discount,is_bus_trip'
-                            );
-                            console.warn(`[Webhook][${traceId}] Trip fetched:`, {
-                                id: trip.id,
-                                name: trip.name
-                            });
-
-                            const paymentType = payment.description.toLowerCase().includes('aanbetaling') ? 'deposit' : 'final';
-                            console.warn(`[Webhook][${traceId}] Payment type detected: ${paymentType}`);
-                            console.warn(`[Webhook][${traceId}] Calling sendTripPaymentConfirmation...`);
-
-                            await notificationService.sendTripPaymentConfirmation(
-                                EMAIL_SERVICE_URL,
-                                tripSignup,
-                                trip,
-                                paymentType
-                            );
-                            console.warn(`[Webhook][${traceId}] ✅ Trip payment confirmation email sent successfully!`);
-                        } catch (err) {
-                            console.error(`[Webhook][${traceId}] ❌ Failed to send trip payment confirmation:`, err);
-                            console.error(`[Webhook][${traceId}] Error details:`, err.message, err.stack);
-                        }
-                    } else {
-                        console.warn(`[Webhook][${traceId}] Not a trip_signup, sending regular confirmation email`);
-                        // Regular confirmation email for events/pub-crawls
-                        await notificationService.sendConfirmationEmail(
-                            DIRECTUS_URL,
-                            DIRECTUS_API_TOKEN,
-                            EMAIL_SERVICE_URL,
-                            payment.metadata,
-                            payment.description
-                        );
-                    }
-                }
-
-                // 3. Check approval status ONLY for membership provisioning
-                if (transactionRecordId) {
-                    const transaction = await directusService.getTransaction(
-                        DIRECTUS_URL,
-                        DIRECTUS_API_TOKEN,
-                        transactionRecordId
-                    );
-
-                    console.warn(`[Webhook][${traceId}] Transaction fetched:`, JSON.stringify(transaction));
-
-                    if (transaction &&
-                        transaction.approval_status !== 'approved' &&
-                        transaction.approval_status !== 'auto_approved') {
-                        console.warn(`[Webhook][${traceId}] Payment paid but approval pending/rejected. Status: ${transaction.approval_status}. Stopping auto-provisioning.`);
-                        return res.status(200).send('Payment recorded, status updated, but approval pending for provisioning');
-                    }
-                }
-
-                // 4. Provisioning logic (only reached if approved/auto-approved)
-                if (notContribution === "false") {
-                    if (userId) {
-                        await membershipService.provisionMember(MEMBERSHIP_API_URL, userId);
-
-                        // Update Directus status and expiry immediately for renewals
-                        const now = new Date();
-                        const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
-                        const expiryStr = expiryDate.toISOString().split('T')[0];
-                        try {
-                            await directusService.updateDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'users', userId, {
-                                membership_status: 'active',
-                                membership_expiry: expiryStr
-                            });
-                        } catch (err) {
-                            console.error(`[Webhook][${traceId}] Failed to update Directus user for renewal:`, err?.message || err);
-                        }
-
-                        // Trigger sync for existing user renewal
-                        await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, userId);
-
-                        // Always send confirmation for paid renewals
-                        await notificationService.sendConfirmationEmail(
-                            DIRECTUS_URL,
-                            DIRECTUS_API_TOKEN,
-                            EMAIL_SERVICE_URL,
-                            payment.metadata,
-                            payment.description
-                        );
-
-                        // Also increment coupon usage if applicable
-                        if (couponId) {
-                            // Coupon increment logic skipped for now
-                        }
-                    } else if (firstName && lastName && email) {
-                        // Calculate expiry date (1 year from now)
-                        const now = new Date();
-                        const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
-                        const expiryStr = expiryDate.toISOString().split('T')[0];
-
-                        // Try to create a Directus user so we have the date_of_birth set
-                        let directusUser = null;
-                        try {
-                            directusUser = await directusService.createDirectusUser(DIRECTUS_URL, DIRECTUS_API_TOKEN, {
-                                first_name: firstName,
-                                last_name: lastName,
-                                email: email,
-                                date_of_birth: dateOfBirth || null,
-                                status: 'active',
-                                membership_status: 'active',
-                                membership_expiry: expiryStr
-                            });
-                            console.warn(`[Payment][${traceId}] Created Directus user ${directusUser?.id} for ${email}`);
-                        } catch (err) {
-                            console.error(`[Payment][${traceId}] Failed to create Directus user before membership create:`, err?.message || err);
-                        }
-
-                        const credentials = await membershipService.createMember(
-                            MEMBERSHIP_API_URL, firstName, lastName, email
-                        );
-
-                        if (credentials) {
-                            // Explicitly link the Directus user if we just created one
-                            if (directusUser && directusUser.id) {
-                                try {
-                                    await directusService.updateDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'users', directusUser.id, {
-                                        entra_id: credentials.user_id,
-                                        external_identifier: credentials.user_id
-                                    });
-                                    console.warn(`[Payment][${traceId}] Linked Directus user ${directusUser.id} to Entra ID ${credentials.user_id}`);
-                                } catch (linkErr) {
-                                    console.error(`[Payment][${traceId}] Failed to link user after creation:`, linkErr.message);
+                            let participants = [];
+                            try {
+                                if (nameInitialsRaw) {
+                                    participants = JSON.parse(nameInitialsRaw);
                                 }
+                            } catch (e) {
+                                console.error(`[Webhook][${traceId}] Failed to parse name_initials:`, e);
                             }
 
-                            // Trigger sync for newly created user to sync membership_expiry to Directus
-                            await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, credentials.user_id);
+                            // If no participants found or length mismatch, create placeholders
+                            if (participants.length === 0) {
+                                participants = Array.from({ length: amountTickets }).map((_, i) => ({
+                                    name: `Deelnemer ${i + 1}`,
+                                    initial: ''
+                                }));
+                            }
 
-                            await notificationService.sendWelcomeEmail(
-                                EMAIL_SERVICE_URL, email, firstName, credentials
-                            );
+                            console.warn(`[Webhook][${traceId}] Generating ${participants.length} individual tickets for signup ${registrationId}`);
+
+                            // Generate and store individual tickets
+                            const ticketPromises = participants.map(async (p, index) => {
+                                const qrToken = generateQRToken(`${registrationId}-${index}`, pubCrawlEventId);
+
+                                return directusService.updateDirectusItem(
+                                    DIRECTUS_URL,
+                                    DIRECTUS_API_TOKEN,
+                                    COLLECTIONS.PUB_CRAWL_TICKETS,
+                                    null, // Create new record
+                                    {
+                                        [FIELDS.TICKETS.SIGNUP_ID]: registrationId,
+                                        [FIELDS.TICKETS.NAME]: p.name || `Deelnemer ${index + 1}`,
+                                        [FIELDS.TICKETS.INITIAL]: p.initial || '',
+                                        [FIELDS.TICKETS.QR_TOKEN]: qrToken,
+                                        [FIELDS.TICKETS.CHECKED_IN]: false
+                                    }
+                                );
+                            });
+
+                            await Promise.all(ticketPromises);
+                            console.warn(`[Webhook][${traceId}] ✅ Successfully generated all ${participants.length} tickets`);
+
+                            // Update payload for the signup itself
+                            updatePayload = {
+                                [FIELDS.SIGNUPS.PAYMENT_STATUS]: 'paid'
+                            };
+
+                        } catch (err) {
+                            console.error(`[Webhook][${traceId}] Failed to process pub_crawl tickets:`, err);
+                            throw err; // Important to throw so we don't proceed to mail index if DB fails
                         }
                     }
-                } else {
-                    if (registrationId) {
-                        await notificationService.sendConfirmationEmail(
-                            DIRECTUS_URL,
-                            DIRECTUS_API_TOKEN,
-                            EMAIL_SERVICE_URL,
-                            payment.metadata,
-                            payment.description
-                        );
+                    collection = 'trip_signups';
+                    // For trip signups, check description to determine if it's deposit or final payment
+                    if (payment.description.toLowerCase().includes('aanbetaling')) {
+                        updatePayload = {
+                            deposit_paid: true,
+                            deposit_paid_at: new Date().toISOString()
+                        };
+                    } else if (payment.description.toLowerCase().includes('restbetaling')) {
+                        updatePayload = {
+                            full_payment_paid: true,
+                            full_payment_paid_at: new Date().toISOString()
+                        };
                     }
+                }
+
+                console.warn(`[Webhook][${traceId}] Updating ${collection} ${registrationId} with payload:`, JSON.stringify(updatePayload));
+                try {
+                    await directusService.updateDirectusItem(
+                        DIRECTUS_URL,
+                        DIRECTUS_API_TOKEN,
+                        collection,
+                        registrationId,
+                        updatePayload
+                    );
+                    console.warn(`[Webhook][${traceId}] ✅ Successfully updated ${collection} ${registrationId}`);
+                } catch (updateErr) {
+                    console.error(`[Webhook][${traceId}] ❌ Failed to update ${collection} ${registrationId}:`, updateErr.message);
+                    console.error(`[Webhook][${traceId}] Update payload was:`, JSON.stringify(updatePayload));
+                    if (updateErr.response?.data) {
+                        console.error(`[Webhook][${traceId}] Directus error response:`, JSON.stringify(updateErr.response.data));
+                    }
+                    throw updateErr; // Re-throw to prevent email from being sent if update fails
                 }
             }
 
+            // 2. ALWAYS send confirmation email if it's NOT a contribution (normal events/pub-crawl/trip)
+            if (notContribution === "true" && registrationId) {
+                console.warn(`[Webhook][${traceId}] Sending non-contribution confirmation email`);
+
+                // Send trip-specific email for trip signups
+                if (payment.metadata.registrationType === 'trip_signup') {
+                    console.warn(`[Webhook][${traceId}] Detected trip_signup, fetching trip data for email...`);
+                    try {
+                        const tripSignup = await directusService.getDirectusItem(
+                            DIRECTUS_URL,
+                            DIRECTUS_API_TOKEN,
+                            'trip_signups',
+                            registrationId,
+                            'id,first_name,middle_name,last_name,email,role,trip_id'
+                        );
+                        console.warn(`[Webhook][${traceId}] Trip signup fetched:`, {
+                            id: tripSignup.id,
+                            email: tripSignup.email,
+                            trip_id: tripSignup.trip_id
+                        });
+
+                        const trip = await directusService.getDirectusItem(
+                            DIRECTUS_URL,
+                            DIRECTUS_API_TOKEN,
+                            'trips',
+                            tripSignup.trip_id,
+                            'id,name,event_date,start_date,end_date,base_price,deposit_amount,crew_discount,is_bus_trip'
+                        );
+                        console.warn(`[Webhook][${traceId}] Trip fetched:`, {
+                            id: trip.id,
+                            name: trip.name
+                        });
+
+                        const paymentType = payment.description.toLowerCase().includes('aanbetaling') ? 'deposit' : 'final';
+                        console.warn(`[Webhook][${traceId}] Payment type detected: ${paymentType}`);
+                        console.warn(`[Webhook][${traceId}] Calling sendTripPaymentConfirmation...`);
+
+                        await notificationService.sendTripPaymentConfirmation(
+                            EMAIL_SERVICE_URL,
+                            tripSignup,
+                            trip,
+                            paymentType
+                        );
+                        console.warn(`[Webhook][${traceId}] ✅ Trip payment confirmation email sent successfully!`);
+                    } catch (err) {
+                        console.error(`[Webhook][${traceId}] ❌ Failed to send trip payment confirmation:`, err);
+                        console.error(`[Webhook][${traceId}] Error details:`, err.message, err.stack);
+                    }
+                } else {
+                    console.warn(`[Webhook][${traceId}] Not a trip_signup, sending regular confirmation email`);
+                    // Regular confirmation email for events/pub-crawls
+                    await notificationService.sendConfirmationEmail(
+                        DIRECTUS_URL,
+                        DIRECTUS_API_TOKEN,
+                        EMAIL_SERVICE_URL,
+                        payment.metadata,
+                        payment.description
+                    );
+                }
+            }
+
+            // 3. Check approval status ONLY for membership provisioning
+            if (transactionRecordId) {
+                const transaction = await directusService.getTransaction(
+                    DIRECTUS_URL,
+                    DIRECTUS_API_TOKEN,
+                    transactionRecordId
+                );
+
+                console.warn(`[Webhook][${traceId}] Transaction fetched:`, JSON.stringify(transaction));
+
+                if (transaction &&
+                    transaction.approval_status !== 'approved' &&
+                    transaction.approval_status !== 'auto_approved') {
+                    console.warn(`[Webhook][${traceId}] Payment paid but approval pending/rejected. Status: ${transaction.approval_status}. Stopping auto-provisioning.`);
+                    return res.status(200).send('Payment recorded, status updated, but approval pending for provisioning');
+                }
+            }
+
+            // 4. Provisioning logic (only reached if approved/auto-approved)
+            if (notContribution === "false") {
+                if (userId) {
+                    await membershipService.provisionMember(MEMBERSHIP_API_URL, userId);
+
+                    // Update Directus status and expiry immediately for renewals
+                    const now = new Date();
+                    const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+                    const expiryStr = expiryDate.toISOString().split('T')[0];
+                    try {
+                        await directusService.updateDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'users', userId, {
+                            membership_status: 'active',
+                            membership_expiry: expiryStr
+                        });
+                    } catch (err) {
+                        console.error(`[Webhook][${traceId}] Failed to update Directus user for renewal:`, err?.message || err);
+                    }
+
+                    // Trigger sync for existing user renewal
+                    await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, userId);
+
+                    // Always send confirmation for paid renewals
+                    await notificationService.sendConfirmationEmail(
+                        DIRECTUS_URL,
+                        DIRECTUS_API_TOKEN,
+                        EMAIL_SERVICE_URL,
+                        payment.metadata,
+                        payment.description
+                    );
+
+                    // Also increment coupon usage if applicable
+                    if (couponId) {
+                        // Coupon increment logic skipped for now
+                    }
+                } else if (firstName && lastName && email) {
+                    // Calculate expiry date (1 year from now)
+                    const now = new Date();
+                    const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+                    const expiryStr = expiryDate.toISOString().split('T')[0];
+
+                    // Try to create a Directus user so we have the date_of_birth set
+                    let directusUser = null;
+                    try {
+                        directusUser = await directusService.createDirectusUser(DIRECTUS_URL, DIRECTUS_API_TOKEN, {
+                            first_name: firstName,
+                            last_name: lastName,
+                            email: email,
+                            date_of_birth: dateOfBirth || null,
+                            status: 'active',
+                            membership_status: 'active',
+                            membership_expiry: expiryStr
+                        });
+                        console.warn(`[Payment][${traceId}] Created Directus user ${directusUser?.id} for ${email}`);
+                    } catch (err) {
+                        console.error(`[Payment][${traceId}] Failed to create Directus user before membership create:`, err?.message || err);
+                    }
+
+                    const credentials = await membershipService.createMember(
+                        MEMBERSHIP_API_URL, firstName, lastName, email
+                    );
+
+                    if (credentials) {
+                        // Explicitly link the Directus user if we just created one
+                        if (directusUser && directusUser.id) {
+                            try {
+                                await directusService.updateDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'users', directusUser.id, {
+                                    entra_id: credentials.user_id,
+                                    external_identifier: credentials.user_id
+                                });
+                                console.warn(`[Payment][${traceId}] Linked Directus user ${directusUser.id} to Entra ID ${credentials.user_id}`);
+                            } catch (linkErr) {
+                                console.error(`[Payment][${traceId}] Failed to link user after creation:`, linkErr.message);
+                            }
+                        }
+
+                        // Trigger sync for newly created user to sync membership_expiry to Directus
+                        await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, credentials.user_id);
+
+                        await notificationService.sendWelcomeEmail(
+                            EMAIL_SERVICE_URL, email, firstName, credentials
+                        );
+                    }
+                }
+            } else {
+                if (registrationId) {
+                    await notificationService.sendConfirmationEmail(
+                        DIRECTUS_URL,
+                        DIRECTUS_API_TOKEN,
+                        EMAIL_SERVICE_URL,
+                        payment.metadata,
+                        payment.description
+                    );
+                }
+            }
+        }
+
             res.status(200).send('OK');
 
-        } catch (error) {
-            console.error(`[Webhook][${traceId || 'err'}] Error:`, error.message);
-            if (error.stack) console.error(error.stack);
-            res.status(200).send('Webhook processed with errors');
-        }
-    });
+    } catch (error) {
+        console.error(`[Webhook][${traceId || 'err'}] Error:`, error.message);
+        if (error.stack) console.error(error.stack);
+        res.status(200).send('Webhook processed with errors');
+    }
+});
 
-    return router;
+return router;
 };

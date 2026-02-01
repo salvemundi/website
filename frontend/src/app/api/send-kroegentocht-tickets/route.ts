@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendPubCrawlSignupEmail } from '@/shared/lib/services/email-service';
 import qrService from '@/shared/lib/qr-service';
 import { directusFetch } from '@/shared/lib/directus';
+import { COLLECTIONS, FIELDS } from '@/shared/lib/constants/collections';
 
 export async function POST(req: NextRequest) {
     try {
@@ -16,58 +17,55 @@ export async function POST(req: NextRequest) {
         }
 
         // Fetch signup with event details
-        // Note: Using directusFetch directly here to ensure we get the relations we need
-        // pubCrawlSignupsApi.getById might not return nested event fields deeply enough
-        const signup = await directusFetch<any>(`/items/pub_crawl_signups/${signupId}?fields=*,pub_crawl_event_id.*`);
+        const signup = await directusFetch<any>(`/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}/${signupId}?fields=*,${FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID}.*`);
 
         if (!signup) {
             return NextResponse.json({ error: 'Signup not found' }, { status: 404 });
         }
 
-        if (signup.payment_status !== 'paid') {
+        if (signup[FIELDS.SIGNUPS.PAYMENT_STATUS] !== 'paid') {
             return NextResponse.json({ error: 'Signup is not paid yet' }, { status: 400 });
         }
 
-        const baseToken = signup.qr_token;
-        if (!baseToken) {
-            // Should not happen if flow is correct, but let's be safe
-            return NextResponse.json({ error: 'QR token missing on signup' }, { status: 500 });
+        const email = signup[FIELDS.SIGNUPS.EMAIL];
+        const eventId = signup[FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID]?.id;
+
+        if (!email || !eventId) {
+            return NextResponse.json({ error: 'Missing email or eventId' }, { status: 400 });
         }
 
-        // Parse participants
-        let participants = [];
-        try {
-            participants = signup.name_initials ? JSON.parse(signup.name_initials) : [];
-        } catch (e) {
-            participants = [];
+        // Fetch all PAID signups for this email and event
+        const allPaidSignups = await directusFetch<any[]>(`/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}?filter[${FIELDS.SIGNUPS.EMAIL}][_eq]=${encodeURIComponent(email)}&filter[${FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID}][_eq]=${eventId}&filter[${FIELDS.SIGNUPS.PAYMENT_STATUS}][_eq]=paid&fields=id`);
+
+        const signupIds = allPaidSignups.map(s => s.id);
+
+        // Fetch all tickets for these signups
+        const allTickets = await directusFetch<any[]>(`/items/${COLLECTIONS.PUB_CRAWL_TICKETS}?filter[${FIELDS.TICKETS.SIGNUP_ID}][_in]=${signupIds.join(',')}&fields=*`);
+
+        if (allTickets.length === 0) {
+            return NextResponse.json({ error: 'No tickets found for these signups' }, { status: 404 });
         }
 
-        if (participants.length === 0) {
-            // Fallback for old data or empty participants
-            participants = [{ name: signup.name, initial: '' }];
-        }
-
-        // Generate QR codes for each participant
-        const participantsWithQR = await Promise.all(participants.map(async (p: any, index: number) => {
-            const token = `${baseToken}#${index}`; // Composite token for individual check-in
-            const qrDataUrl = await qrService.generateQRCode(token);
+        // Generate QR codes for each ticket
+        const ticketsWithQR = await Promise.all(allTickets.map(async (ticket: any) => {
+            const qrDataUrl = await qrService.generateQRCode(ticket[FIELDS.TICKETS.QR_TOKEN]);
             return {
-                name: p.name,
-                initial: p.initial,
+                name: ticket[FIELDS.TICKETS.NAME],
+                initial: ticket[FIELDS.TICKETS.INITIAL],
                 qrCodeDataUrl: qrDataUrl
             };
         }));
 
         // Send Email
-        const eventName = signup.pub_crawl_event_id?.name || 'Kroegentocht';
-        const eventDate = signup.pub_crawl_event_id?.date || new Date().toISOString();
+        const eventName = signup[FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID]?.name || 'Kroegentocht';
+        const eventDate = signup[FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID]?.date || new Date().toISOString();
 
         await sendPubCrawlSignupEmail({
-            recipientEmail: signup.email,
-            recipientName: signup.name,
+            recipientEmail: email,
+            recipientName: signup[FIELDS.SIGNUPS.NAME],
             eventName: eventName,
             eventDate: eventDate,
-            participants: participantsWithQR
+            participants: ticketsWithQR
         });
 
         console.log('[API] Pub Crawl tickets sent successfully');
