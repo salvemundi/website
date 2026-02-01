@@ -13,12 +13,18 @@ import qrService from '@/shared/lib/qr-service';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
+import { COLLECTIONS, FIELDS } from '@/shared/lib/constants/collections';
 
 interface PubCrawlEvent {
     id: number;
     name: string;
     date: string;
     email: string;
+}
+
+interface Participant {
+    name: string;
+    initial: string;
 }
 
 interface PubCrawlSignup {
@@ -28,13 +34,8 @@ interface PubCrawlSignup {
     association: string;
     amount_tickets: number;
     payment_status: string;
-    name_initials: string | null; // JSON string
+    participants: Participant[]; // Added tickets relation
     created_at: string;
-}
-
-interface Participant {
-    name: string;
-    initial: string;
 }
 
 export default function KroegentochtAanmeldingenPage() {
@@ -128,10 +129,25 @@ export default function KroegentochtAanmeldingenPage() {
     const loadSignups = async (eventId: number) => {
         setIsLoading(true);
         try {
-            const signupsData = await directusFetch<PubCrawlSignup[]>(
-                `/items/pub_crawl_signups?filter[pub_crawl_event_id][_eq]=${eventId}&fields=id,name,email,association,amount_tickets,payment_status,name_initials,created_at&sort=-created_at`
+            // Fetch signups
+            const signupsData = await directusFetch<any[]>(
+                `/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}?filter[${FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID}][_eq]=${eventId}&fields=id,name,email,association,amount_tickets,payment_status,created_at&sort=-created_at`
             );
-            setSignups(signupsData);
+
+            // Fetch all tickets for this event
+            const ticketsData = await directusFetch<any[]>(
+                `/items/${COLLECTIONS.PUB_CRAWL_TICKETS}?filter[${FIELDS.TICKETS.SIGNUP_ID}][${FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID}][_eq]=${eventId}&fields=id,name,initial,signup_id`
+            );
+
+            // Enhance signups with their tickets
+            const enhancedSignups = signupsData.map(signup => ({
+                ...signup,
+                participants: ticketsData
+                    .filter(t => t[FIELDS.TICKETS.SIGNUP_ID] == signup.id)
+                    .map(t => ({ name: t.name, initial: t.initial }))
+            }));
+
+            setSignups(enhancedSignups as any);
         } catch (error) {
             console.error('Failed to load signups:', error);
         } finally {
@@ -199,7 +215,7 @@ export default function KroegentochtAanmeldingenPage() {
         let groupNumber = 1;
 
         filteredSignups.forEach(signup => {
-            const participants = parseParticipants(signup.name_initials);
+            const participants = signup.participants || [];
 
             if (participants.length > 0) {
                 // Add all participants with the same group number
@@ -477,7 +493,7 @@ export default function KroegentochtAanmeldingenPage() {
                                                 </tr>
                                             ) : filteredSignups.length > 0 ? (
                                                 filteredSignups.map((signup) => {
-                                                    const participants = parseParticipants(signup.name_initials);
+                                                    const participants = signup.participants || [];
                                                     return (
                                                         <tr key={signup.id} className="hover:bg-admin-hover">
                                                             <td className="px-3 sm:px-6 py-3 sm:py-4">
