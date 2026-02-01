@@ -36,46 +36,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
     const [isMsalInitializing, setIsMsalInitializing] = useState(true);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
-    const [lastAuthAttempt, setLastAuthAttempt] = useState<number>(0);
     const [authErrorCount, setAuthErrorCount] = useState<number>(0);
+    const [authAttempts, setAuthAttempts] = useState<number[]>([]);
     const router = useRouter();
 
     // Rate limiting constants
-    const AUTH_COOLDOWN_MS = 5000; // 5 second cooldown between auth attempts
-    const MAX_AUTH_ERRORS = 3; // Max consecutive auth errors before backing off
+    const RATE_LIMIT_WINDOW_MS = 5000; // 5 second window
+    const MAX_ATTEMPTS_IN_WINDOW = 3; // Max 3 attempts in 5 seconds
     const ERROR_BACKOFF_MS = 30000; // 30 second backoff after max errors
 
     // Helper to check if we can attempt authentication
     const canAttemptAuth = (): boolean => {
         const now = Date.now();
-        
+
         // Check if we're in error backoff period
-        if (authErrorCount >= MAX_AUTH_ERRORS) {
-            if (now - lastAuthAttempt < ERROR_BACKOFF_MS) {
+        if (authErrorCount >= MAX_ATTEMPTS_IN_WINDOW) {
+            const lastAttempt = authAttempts.length > 0 ? authAttempts[authAttempts.length - 1] : 0;
+            if (now - lastAttempt < ERROR_BACKOFF_MS) {
                 console.log('[AuthProvider] In error backoff period, skipping auth attempt');
                 return false;
             } else {
                 // Reset error count after backoff period, but if we've had too many errors
                 // in succession, clear corrupted state
-                if (authErrorCount >= MAX_AUTH_ERRORS * 2) {
+                if (authErrorCount >= MAX_ATTEMPTS_IN_WINDOW * 2) {
                     clearCorruptedAuthState();
                 }
                 setAuthErrorCount(0);
             }
         }
-        
-        // Check cooldown period
-        if (now - lastAuthAttempt < AUTH_COOLDOWN_MS) {
-            console.log('[AuthProvider] Auth attempt too recent, skipping');
+
+        // Count attempts in the current window
+        const recentAttempts = authAttempts.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW_MS);
+        if (recentAttempts.length >= MAX_ATTEMPTS_IN_WINDOW) {
+            console.log('[AuthProvider] Rate limit reached (3 attempts in 5s), skipping');
             return false;
         }
-        
+
         return true;
     };
 
     // Helper to record auth attempt
     const recordAuthAttempt = (success: boolean) => {
-        setLastAuthAttempt(Date.now());
+        const now = Date.now();
+        setAuthAttempts(prev => [...prev.filter(t => now - t < RATE_LIMIT_WINDOW_MS), now]);
+
         if (success) {
             setAuthErrorCount(0);
         } else {
@@ -91,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         setAuthErrorCount(0);
         setIsLoading(false);
-        
+
         // Also clear MSAL cache if possible
         if (msalInstance) {
             try {
@@ -326,8 +330,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                 // Check if URL has auth artifacts that indicate a redirect return
                 const url = new URL(window.location.href);
-                const hasAuthArtifacts = url.hash.includes('code=') || url.hash.includes('error=') || 
-                                       url.searchParams.has('code') || url.searchParams.has('state');
+                const hasAuthArtifacts = url.hash.includes('code=') || url.hash.includes('error=') ||
+                    url.searchParams.has('code') || url.searchParams.has('state');
 
                 // Process redirect response if coming back from Microsoft
                 const response = await msalInstance.handleRedirectPromise();
@@ -513,7 +517,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const trySilentMsalLogin = async (): Promise<boolean> => {
         if (!msalInstance || !canAttemptAuth()) return false;
-        
+
         try {
             const accounts = msalInstance.getAllAccounts();
             if (accounts.length > 0) {
