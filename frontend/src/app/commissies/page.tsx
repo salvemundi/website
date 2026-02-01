@@ -12,7 +12,7 @@ import { CardSkeleton } from '@/shared/ui/skeletons';
 
 // Helper function to clean committee names
 function cleanCommitteeName(name: string): string {
-    return name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim();
+    return name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim();
 }
 
 // Helper function to get a default committee image

@@ -606,7 +606,7 @@ export default function AccountPage() {
                               </span>
                             )}
                             <Users2 className="h-3.5 w-3.5" />
-                            <span>{committee.name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim()}</span>
+                            <span>{committee.name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim()}</span>
                           </a>
                         ))}
                       </div>

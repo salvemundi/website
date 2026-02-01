@@ -20,7 +20,7 @@ interface Document {
 }
 
 function cleanCommitteeName(name: string): string {
-    return name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim();
+    return name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim();
 }
 
 export default function Footer() {

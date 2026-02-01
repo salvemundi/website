@@ -12,7 +12,7 @@ import { slugify } from '@/shared/lib/utils/slug';
 import { Mail, Calendar, Users2, History, Edit, } from 'lucide-react';
 
 function cleanCommitteeName(name: string): string {
-    return name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim();
+    return name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim();
 }
 
 export default function CommitteeDetailPage() {
@@ -333,7 +333,7 @@ export default function CommitteeDetailPage() {
                                                     loading="lazy"
                                                 />
                                             ) : (
-                                                <span className="font-semibold text-theme-purple dark:text-theme-white">{getMemberFullName(leader).split(' ').map((n: string) => n[0]).join('').slice(0,2)}</span>
+                                                <span className="font-semibold text-theme-purple dark:text-theme-white">{getMemberFullName(leader).split(' ').map((n: string) => n[0]).join('').slice(0, 2)}</span>
                                             )}
                                         </div>
                                         <div>
@@ -376,7 +376,7 @@ export default function CommitteeDetailPage() {
                                                             loading="lazy"
                                                         />
                                                     ) : (
-                                                        <span className="font-semibold text-theme-purple dark:text-theme-white">{getMemberFullName(member).split(' ').map((n: string) => n[0]).join('').slice(0,2)}</span>
+                                                        <span className="font-semibold text-theme-purple dark:text-theme-white">{getMemberFullName(member).split(' ').map((n: string) => n[0]).join('').slice(0, 2)}</span>
                                                     )}
                                                 </div>
                                                 <p className="mt-2 text-xs font-bold text-theme-purple dark:text-theme-white">
