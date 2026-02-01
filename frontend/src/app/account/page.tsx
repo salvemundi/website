@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useAuth } from "@/features/auth/providers/auth-provider";
 import { getUserEventSignups } from "@/shared/lib/auth";
 import { getImageUrl } from "@/shared/lib/api/salvemundi";
+import { slugify } from "@/shared/lib/utils/slug";
 import { format, startOfDay, isBefore } from "date-fns";
 import PageHeader from "@/widgets/page-header/ui/PageHeader";
 import {
@@ -596,7 +597,7 @@ export default function AccountPage() {
                         {user.committees.map((committee) => (
                           <a
                             key={committee.id}
-                            href={`/commissies/${committee.name.replace(/\|\|\s*SALVE MUNDI/g, '').trim().replace(/\s+/g, '-').toLowerCase()}`}
+                            href={`/commissies/${slugify(committee.name)}`}
                             className="group relative inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-theme-purple/10 to-theme-purple/5 dark:from-white/10 dark:to-white/5 border border-theme-purple/20 dark:border-white/20 rounded-full text-xs font-bold text-theme-purple dark:text-white hover:from-theme-purple/20 hover:to-theme-purple/10 dark:hover:from-white/20 dark:hover:to-white/10 transition-all hover:scale-105 shadow-sm hover:shadow-md"
                           >
                             {committee.is_leader && (
@@ -605,7 +606,7 @@ export default function AccountPage() {
                               </span>
                             )}
                             <Users2 className="h-3.5 w-3.5" />
-                            <span>{committee.name.replace(/\|\|\s*SALVE MUNDI/g, '').trim()}</span>
+                            <span>{committee.name.replace(/\s*\|\|\s*SALVE MUNDI\s*/gi, '').trim()}</span>
                           </a>
                         ))}
                       </div>
