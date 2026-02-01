@@ -1,5 +1,6 @@
 const express = require('express');
 const { COLLECTIONS, FIELDS } = require('../services/collections');
+const { getEnvironment } = require('../services/env-utils');
 
 module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, MEMBERSHIP_API_URL, directusService, notificationService, GRAPH_SYNC_URL) {
     const router = express.Router();
