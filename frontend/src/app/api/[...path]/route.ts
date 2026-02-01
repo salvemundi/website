@@ -127,6 +127,7 @@ export async function GET(
             path.startsWith('extensions/');
 
         let canBypass = false;
+        let isUserTokenValid = true;
         const needsSpecialGuardCheck = path.startsWith('items/events') || path.startsWith('items/event_signups') || path.includes('site_settings') || path.startsWith('items/committees') || path.startsWith('items/committee_members');
 
         const cookie = request.headers.get('Cookie');
@@ -152,16 +153,12 @@ export async function GET(
                         const userData = await meResp.json().catch(() => null);
                         const userId = userData?.data?.id;
 
-
-
                         const membershipsResp = await fetch(
                             `${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name,is_leader&limit=-1`,
                             { headers, cache: 'no-store' }
                         );
                         const membershipsJson = await membershipsResp.json().catch(() => ({}));
                         const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
-
-
 
                         const isGeneralPrivileged = memberships.some((m: any) => {
                             const name = (m?.committee_id?.name || '').toString().toLowerCase();
@@ -183,10 +180,11 @@ export async function GET(
                         } else {
                             canBypass = isGeneralPrivileged;
                         }
-
-
+                    } else if (meResp.status === 401 || meResp.status === 403) {
+                        console.warn(`[Directus Proxy] GET /users/me failed: ${meResp.status}. Marking token as invalid.`);
+                        isUserTokenValid = false;
                     } else {
-                        console.warn(`[Directus Proxy] /users/me failed: ${meResp.status}`);
+                        console.warn(`[Directus Proxy] GET /users/me failed: ${meResp.status}`);
                     }
                 } catch (e) {
                     console.error('[Directus Proxy] GET auth check failed:', e);
@@ -210,9 +208,12 @@ export async function GET(
                 targetSearch = newSearch ? `?${newSearch}` : '';
             }
 
-        } else if (auth) {
+        } else if (auth && isUserTokenValid) {
             forwardHeaders['Authorization'] = auth;
 
+        } else if (auth && !isUserTokenValid && isAllowed) {
+            console.log(`[Directus Proxy] Stripping invalid token for public path: ${path}`);
+            // Header is not added, effectively making it anonymous
         }
 
         const targetUrl = `${DIRECTUS_URL}/${path}${targetSearch}`;
@@ -335,6 +336,7 @@ async function handleMutation(
             path.startsWith('extensions/');
 
         let canBypass = false;
+        let isUserTokenValid = true;
         let userData: any = null;
 
         // Optimization: skip expensive checks if path is already authorized by rule
@@ -378,6 +380,9 @@ async function handleMutation(
                             const isLeader = m.is_leader === true;
                             return name.includes('bestuur') || name.includes('ict') || name.includes('kandidaat') || name.includes('kandi') || isLeader;
                         });
+                    } else if (meResp.status === 401 || meResp.status === 403) {
+                        console.warn(`[Directus Proxy] MUTATION /users/me failed: ${meResp.status}. Marking token as invalid.`);
+                        isUserTokenValid = false;
                     }
                 } catch (e) {
                     console.error('[Directus Proxy] Access check failed:', e);
@@ -458,8 +463,11 @@ async function handleMutation(
                 const newSearch = newParams.toString();
                 targetSearch = newSearch ? `?${newSearch}` : '';
             }
-        } else if (authHeader) {
+        } else if (authHeader && isUserTokenValid) {
             forwardHeaders['Authorization'] = authHeader;
+        } else if (authHeader && !isUserTokenValid && isAllowed) {
+            console.log(`[Directus Proxy] Stripping invalid token for public mutation: ${path}`);
+            // Header is not added
         }
 
         const targetUrl = `${DIRECTUS_URL}/${path}${targetSearch}`;
@@ -473,6 +481,11 @@ async function handleMutation(
             forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
         }
 
+        // DEBUG: Log everything for auth/refresh if it's failing
+        if (path.includes('auth/')) {
+            console.log(`[Directus Proxy] PROXING AUTH: ${method} ${targetUrl} | Headers: ${JSON.stringify(Object.keys(forwardHeaders))} | Body size: ${rawBody?.byteLength || 0}`);
+        }
+
         const response = await fetch(targetUrl, {
             method,
             headers: forwardHeaders,
@@ -480,7 +493,18 @@ async function handleMutation(
         });
 
         if (!response.ok) {
-            console.error(`[Directus Proxy] Upstream ${method} ${path} FAILED: Status ${response.status}`);
+            const errorText = await response.text().catch(() => 'No error body');
+            console.error(`[Directus Proxy] Upstream ${method} ${path} FAILED: Status ${response.status} | Body: ${errorText.slice(0, 200)}`);
+
+            // Re-create response for JSON if possible
+            if (response.headers.get('Content-Type')?.includes('application/json')) {
+                try {
+                    return NextResponse.json(JSON.parse(errorText), { status: response.status });
+                } catch {
+                    return new Response(errorText, { status: response.status, headers: { 'Content-Type': 'application/json' } });
+                }
+            }
+            return new Response(errorText, { status: response.status });
         }
 
         // Trace token usage for debugging
