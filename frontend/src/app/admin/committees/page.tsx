@@ -176,12 +176,20 @@ export default function CommitteeManagementPage() {
         try {
             const token = localStorage.getItem('auth_token');
 
-            // 1. Fetch latest committee details from Directus
-            const committeeData = await directusFetch<Committee>(`/items/committees/${committee.id}`);
-            if (committeeData) {
-                setSelectedCommittee(committeeData);
-                setEditShortDescription(committeeData.short_description || '');
-                setEditDescription(committeeData.description || '');
+            // 1. Try to fetch latest committee details from Directus
+            // If this fails (e.g. 403 because committee is hidden), we fall back to the basic info we already have
+            try {
+                const committeeData = await directusFetch<Committee>(`/items/committees/${committee.id}`);
+                if (committeeData) {
+                    setSelectedCommittee(committeeData);
+                    setEditShortDescription(committeeData.short_description || '');
+                    setEditDescription(committeeData.description || '');
+                }
+            } catch (detailError: any) {
+                console.warn(`[Admin] Could not fetch Directus details for committee ${committee.id} (likely hidden). Falling back to basic info.`);
+                // We keep the current committee info but clear the edit fields as we can't save them anyway
+                setEditShortDescription(committee.short_description || '');
+                setEditDescription(committee.description || '');
             }
 
             if (committee.azureGroupId) {
@@ -427,11 +435,11 @@ export default function CommitteeManagementPage() {
                                                 </div>
                                             </div>
                                             <div className="shrink-0 flex items-center gap-2">
-                                                {!c.azureGroupId && (
+                                                {!c.azureGroupId ? (
                                                     <span title="Geen Azure Groep gekoppeld">
                                                         <Info className="h-4 w-4 text-amber-400" />
                                                     </span>
-                                                )}
+                                                ) : null}
                                                 <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <a
                                                         href={`/commissies/${slugify(c.name)}`}
