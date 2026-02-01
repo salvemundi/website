@@ -61,6 +61,11 @@ jobs:
             echo "DEPLOY_PATH=/opt/payment-api-dev" >> $GITHUB_ENV
           fi
 
+      - name: Syntax Check
+        run: |
+          cd payment-api
+          find . -name "*.js" -not -path "./node_modules/*" -exec node --check {} +
+
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
@@ -125,3 +130,23 @@ jobs:
 
             docker compose pull payment-api
             docker compose up -d payment-api --force-recreate --remove-orphans
+
+            echo "Waiting for container to be healthy..."
+            CONTAINER_NAME="payment-api-${TAG:-dev}"
+            for i in {1..20}; do
+              STATUS=$(docker inspect --format='{{.State.Health.Status}}' $CONTAINER_NAME 2>/dev/null || echo "starting")
+              echo "Current status: $STATUS"
+              if [[ "$STATUS" == "healthy" ]]; then
+                echo "✅ Container is healthy!"
+                exit 0
+              fi
+              if [[ "$STATUS" == "unhealthy" ]]; then
+                echo "❌ Container is UNHEALTHY!"
+                docker logs $CONTAINER_NAME | tail -n 50
+                exit 1
+              fi
+              sleep 5
+            done
+            echo "⏳ Health check TIMEOUT!"
+            docker logs $CONTAINER_NAME | tail -n 50
+            exit 1

@@ -10,6 +10,9 @@ import 'isomorphic-fetch';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Health check
+app.get('/health', (req, res) => res.json({ status: 'ok', service: 'graph-sync' }));
+
 // Define your known group IDs (entra)
 const GROUP_IDS = {
     COMMISSIE_LEIDER: '91d77972-2695-4b7b-a0a0-df7d6523a087',
