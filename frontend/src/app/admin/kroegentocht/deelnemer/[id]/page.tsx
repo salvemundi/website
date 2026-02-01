@@ -4,26 +4,21 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { directusFetch } from '@/shared/lib/directus';
-import { Loader2, AlertCircle, Save, ArrowLeft, Trash2 } from 'lucide-react';
+import { Loader2, AlertCircle, Save, ArrowLeft, Trash2, Tag, CheckCircle } from 'lucide-react';
+import { COLLECTIONS, FIELDS } from '@/shared/lib/constants/collections';
 
 export default function PubCrawlSignupEditPage() {
     const params = useParams();
     const router = useRouter();
     const signupId = parseInt(params.id as string);
 
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [signup, setSignup] = useState<any | null>(null);
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState(false);
-
+    const [tickets, setTickets] = useState<any[]>([]);
     const [form, setForm] = useState({
         name: '',
         email: '',
         association: '',
         amount_tickets: 1,
         payment_status: 'open',
-        name_initials: ''
     });
 
     useEffect(() => {
@@ -33,16 +28,18 @@ export default function PubCrawlSignupEditPage() {
     const loadData = async () => {
         setLoading(true);
         try {
-            const data = await directusFetch<any>(`/items/pub_crawl_signups/${signupId}?fields=*`);
+            const data = await directusFetch<any>(`/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}/${signupId}?fields=id,name,email,association,amount_tickets,payment_status`);
             setSignup(data);
             setForm({
-                name: (data as any).name || '',
-                email: (data as any).email || '',
-                association: (data as any).association || '',
-                amount_tickets: (data as any).amount_tickets || 1,
-                payment_status: (data as any).payment_status || 'open',
-                name_initials: (data as any).name_initials || ''
+                name: data.name || '',
+                email: data.email || '',
+                association: data.association || '',
+                amount_tickets: data.amount_tickets || 1,
+                payment_status: data.payment_status || 'open'
             });
+
+            const ticketsData = await directusFetch<any[]>(`/items/${COLLECTIONS.PUB_CRAWL_TICKETS}?filter[${FIELDS.TICKETS.SIGNUP_ID}][_eq]=${signupId}&fields=*`);
+            setTickets(ticketsData);
         } catch (err) {
             console.error('Failed to load pub crawl signup:', err);
             setError('Fout bij laden van inschrijving');
@@ -64,15 +61,14 @@ export default function PubCrawlSignupEditPage() {
         setSaving(true);
 
         try {
-            await directusFetch(`/items/pub_crawl_signups/${signupId}`, {
+            await directusFetch(`/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}/${signupId}`, {
                 method: 'PATCH',
                 body: JSON.stringify({
-                    name: form.name || undefined,
-                    email: form.email || undefined,
-                    association: form.association || undefined,
-                    amount_tickets: form.amount_tickets,
-                    payment_status: form.payment_status || undefined,
-                    name_initials: form.name_initials || undefined
+                    [FIELDS.SIGNUPS.NAME]: form.name || undefined,
+                    [FIELDS.SIGNUPS.EMAIL]: form.email || undefined,
+                    [FIELDS.SIGNUPS.ASSOCIATION]: form.association || undefined,
+                    [FIELDS.SIGNUPS.AMOUNT_TICKETS]: form.amount_tickets,
+                    [FIELDS.SIGNUPS.PAYMENT_STATUS]: form.payment_status || undefined
                 })
             });
 
@@ -145,10 +141,33 @@ export default function PubCrawlSignupEditPage() {
                                 </div>
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-semibold text-admin mb-2">Groepsleden (JSON)</label>
-                                <textarea name="name_initials" value={form.name_initials} onChange={handleChange} rows={4} className="w-full px-4 py-2 border border-admin rounded-lg bg-admin-card text-admin" />
-                                <p className="text-xs text-admin-muted mt-1">Optioneel: JSON lijst met deelnemers, bv: <code>{'[{"name":"Jan","initial":"J"}]'}</code></p>
+                            <div className="border-t border-admin pt-4">
+                                <h3 className="text-md font-bold text-admin mb-4 flex items-center gap-2">
+                                    <Tag className="h-4 w-4" /> Tickets ({tickets.length})
+                                </h3>
+                                <div className="space-y-3">
+                                    {tickets.map((ticket, idx) => (
+                                        <div key={ticket.id} className="flex items-center justify-between p-3 bg-admin-card-soft rounded-lg border border-admin">
+                                            <div>
+                                                <p className="font-bold text-admin">{ticket.name} {ticket.initial}</p>
+                                                <p className="text-xs text-admin-muted font-mono">{ticket.qr_token}</p>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                {ticket.checked_in && (
+                                                    <span className="flex items-center gap-1 text-xs font-bold text-green-500">
+                                                        <CheckCircle className="h-3 w-3" /> Ingecheckt
+                                                    </span>
+                                                )}
+                                                <span className="text-xs bg-theme-purple/10 text-theme-purple px-2 py-1 rounded">
+                                                    Ticket {idx + 1}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {tickets.length === 0 && (
+                                        <p className="text-sm text-admin-muted italic">Geen tickets gevonden voor deze inschrijving. Betaalstatus moet 'paid' zijn om tickets te genereren.</p>
+                                    )}
+                                </div>
                             </div>
 
                             <div>

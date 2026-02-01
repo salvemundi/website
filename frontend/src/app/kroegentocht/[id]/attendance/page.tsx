@@ -9,6 +9,8 @@ import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { Search, Camera, RefreshCw, X, CheckCircle, XCircle, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { format } from 'date-fns';
+import { COLLECTIONS, FIELDS } from '@/shared/lib/constants/collections';
+import { directusFetch } from '@/shared/lib/directus';
 
 interface FlatParticipant {
     uniqueId: string; // signupId-index
@@ -48,38 +50,21 @@ export default function PubCrawlAttendancePage() {
             const list = await qrService.getPubCrawlSignupsWithCheckIn(eventId);
             setRawSignups(list);
 
-            // Flatten signups to participants
-            const flat: FlatParticipant[] = [];
-            list.forEach((signup: any) => {
-                let parts: any[] = [];
-                try {
-                    parts = signup.name_initials ? JSON.parse(signup.name_initials) : [];
-                } catch (e) { parts = []; }
-
-                // Fallback for old records without JSON or empty JSON
-                if (parts.length === 0) {
-                    parts = Array.from({ length: signup.amount_tickets }).map((_, i) => ({
-                        name: i === 0 ? signup.name : `Deelnemer ${i + 1}`,
-                        initial: '',
-                        checked_in: !!signup.checked_in, // Legacy field fallback
-                        checked_in_at: signup.checked_in_at
-                    }));
-                }
-
-                parts.forEach((p, idx) => {
-                    flat.push({
-                        uniqueId: `${signup.id}-${idx}`,
-                        signupId: signup.id,
-                        index: idx,
-                        name: p.name,
-                        initial: p.initial,
-                        email: signup.email,
-                        association: signup.association,
-                        checkedIn: !!p.checked_in,
-                        checkedInAt: p.checked_in_at,
-                        ticketCount: signup.amount_tickets
-                    });
-                });
+            // Flatten/Map tickets to participants
+            const flat: FlatParticipant[] = list.map((ticket: any) => {
+                const signup = ticket[FIELDS.TICKETS.SIGNUP_ID];
+                return {
+                    uniqueId: String(ticket.id),
+                    signupId: signup?.id || 0,
+                    index: 0,
+                    name: ticket[FIELDS.TICKETS.NAME],
+                    initial: ticket[FIELDS.TICKETS.INITIAL],
+                    email: signup?.[FIELDS.SIGNUPS.EMAIL] || '',
+                    association: signup?.[FIELDS.SIGNUPS.ASSOCIATION] || '',
+                    checkedIn: !!ticket[FIELDS.TICKETS.CHECKED_IN],
+                    checkedInAt: ticket[FIELDS.TICKETS.CHECKED_IN_AT],
+                    ticketCount: 1
+                };
             });
             setParticipants(flat);
 
@@ -126,57 +111,32 @@ export default function PubCrawlAttendancePage() {
 
     const toggleCheckIn = async (participant: FlatParticipant) => {
         try {
-            const signup = rawSignups.find(s => s.id === participant.signupId);
-            if (!signup) return;
+            const ticket = rawSignups.find(t => String(t.id) === participant.uniqueId);
+            if (!ticket) return;
 
-            let participantsData = [];
-            try {
-                participantsData = signup.name_initials ? JSON.parse(signup.name_initials) : [];
-            } catch (e) { participantsData = []; }
+            const newStatus = !ticket[FIELDS.TICKETS.CHECKED_IN];
+            const checkedInAt = newStatus ? new Date().toISOString() : null;
 
-            // Construct data if missing (migration on the fly)
-            if (participantsData.length === 0) {
-                participantsData = Array.from({ length: signup.amount_tickets }).map((_, i) => ({
-                    name: i === 0 ? signup.name : `Deelnemer ${i + 1}`,
-                    initial: '',
-                    checked_in: !!signup.checked_in,
-                    checked_in_at: signup.checked_in_at
-                }));
-            }
-
-            // Update specific participant
-            const idx = participant.index;
-            if (idx >= participantsData.length) return; // Should not happen
-
-            const newStatus = !participantsData[idx].checked_in;
-            participantsData[idx].checked_in = newStatus;
-            participantsData[idx].checked_in_at = newStatus ? new Date().toISOString() : null;
-
-            // Also update legacy root field if ALL are checked in (optional, but keep consistent)
-            const allCheckedIn = participantsData.every((p: any) => p.checked_in);
-
-            const { directusFetch } = await import('@/shared/lib/directus');
-            await directusFetch(`/items/pub_crawl_signups/${signup.id}`, {
+            await directusFetch(`/items/${COLLECTIONS.PUB_CRAWL_TICKETS}/${ticket.id}`, {
                 method: 'PATCH',
                 body: JSON.stringify({
-                    name_initials: JSON.stringify(participantsData),
-                    checked_in: allCheckedIn, // Legacy update
-                    checked_in_at: allCheckedIn ? new Date().toISOString() : null
+                    [FIELDS.TICKETS.CHECKED_IN]: newStatus,
+                    [FIELDS.TICKETS.CHECKED_IN_AT]: checkedInAt
                 })
             });
 
             // Optimistic update
             setParticipants(prev => prev.map(p =>
                 p.uniqueId === participant.uniqueId
-                    ? { ...p, checkedIn: newStatus, checkedInAt: participantsData[idx].checked_in_at, _justToggled: true }
+                    ? { ...p, checkedIn: newStatus, checkedInAt: checkedInAt, _justToggled: true }
                     : p
             ));
 
-            // Update raw signups to keep consistent for next toggles
-            setRawSignups(prev => prev.map(s =>
-                s.id === signup.id
-                    ? { ...s, name_initials: JSON.stringify(participantsData), checked_in: allCheckedIn }
-                    : s
+            // Update raw tickets
+            setRawSignups(prev => prev.map(t =>
+                String(t.id) === participant.uniqueId
+                    ? { ...t, [FIELDS.TICKETS.CHECKED_IN]: newStatus, [FIELDS.TICKETS.CHECKED_IN_AT]: checkedInAt }
+                    : t
             ));
 
             showMessage(newStatus ? 'Deelnemer ingecheckt!' : 'Check-in ongedaan gemaakt', 'success');
