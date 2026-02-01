@@ -12,6 +12,11 @@ export default function PubCrawlSignupEditPage() {
     const router = useRouter();
     const signupId = parseInt(params.id as string);
 
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [signup, setSignup] = useState<any | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState(false);
     const [tickets, setTickets] = useState<any[]>([]);
     const [form, setForm] = useState({
         name: '',
