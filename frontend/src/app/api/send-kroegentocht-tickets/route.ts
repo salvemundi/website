@@ -16,8 +16,12 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Missing signupId' }, { status: 400 });
         }
 
+        // Forward caller's authorization token to use their specific permissions
+        const authHeader = req.headers.get('Authorization');
+        const fetchOptions = authHeader ? { headers: { 'Authorization': authHeader } } : {};
+
         // Fetch signup with event details
-        const signup = await directusFetch<any>(`/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}/${signupId}?fields=*,${FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID}.*`);
+        const signup = await directusFetch<any>(`/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}/${signupId}?fields=*,${FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID}.*`, fetchOptions);
 
         if (!signup) {
             return NextResponse.json({ error: 'Signup not found' }, { status: 404 });
@@ -35,12 +39,12 @@ export async function POST(req: NextRequest) {
         }
 
         // Fetch all PAID signups for this email and event
-        const allPaidSignups = await directusFetch<any[]>(`/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}?filter[${FIELDS.SIGNUPS.EMAIL}][_eq]=${encodeURIComponent(email)}&filter[${FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID}][_eq]=${eventId}&filter[${FIELDS.SIGNUPS.PAYMENT_STATUS}][_eq]=paid&fields=id`);
+        const allPaidSignups = await directusFetch<any[]>(`/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}?filter[${FIELDS.SIGNUPS.EMAIL}][_eq]=${encodeURIComponent(email)}&filter[${FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID}][_eq]=${eventId}&filter[${FIELDS.SIGNUPS.PAYMENT_STATUS}][_eq]=paid&fields=id`, fetchOptions);
 
         const signupIds = allPaidSignups.map(s => s.id);
 
         // Fetch all tickets for these signups
-        const allTickets = await directusFetch<any[]>(`/items/${COLLECTIONS.PUB_CRAWL_TICKETS}?filter[${FIELDS.TICKETS.SIGNUP_ID}][_in]=${signupIds.join(',')}&fields=*`);
+        const allTickets = await directusFetch<any[]>(`/items/${COLLECTIONS.PUB_CRAWL_TICKETS}?filter[${FIELDS.TICKETS.SIGNUP_ID}][_in]=${signupIds.join(',')}&fields=*`, fetchOptions);
 
         if (allTickets.length === 0) {
             return NextResponse.json({ error: 'No tickets found for these signups' }, { status: 404 });

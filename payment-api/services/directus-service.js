@@ -65,6 +65,25 @@ async function updateDirectusRegistration(directusUrl, directusToken, id, data) 
 }
 
 
+async function createDirectusItem(directusUrl, directusToken, collection, data) {
+    try {
+        console.log(`[DirectusService] Creating item in ${collection} with data:`, JSON.stringify(data));
+        const endpoint = collection === 'users' ? `${directusUrl}/users` : `${directusUrl}/items/${collection}`;
+        const response = await axios.post(endpoint, data, getAuthConfig(directusToken));
+        const createdId = response.data.data.id;
+        console.log(`[DirectusService] ✅ Successfully created ${collection}/${createdId}`);
+        return response.data.data;
+    } catch (error) {
+        console.error(`[DirectusService] ❌ Failed to create item in ${collection}:`, error.message);
+        if (error.response) {
+            console.error(`[DirectusService] Response status:`, error.response.status);
+            console.error(`[DirectusService] Response data:`, JSON.stringify(error.response.data));
+        }
+        throw error;
+    }
+}
+
+
 async function updateDirectusItem(directusUrl, directusToken, collection, id, data) {
     try {
         console.log(`[DirectusService] Updating ${collection}/${id} with data:`, JSON.stringify(data));
@@ -265,6 +284,7 @@ module.exports = {
     createDirectusUser,
     updateDirectusTransaction,
     updateDirectusRegistration,
+    createDirectusItem,
     updateDirectusItem,
     getDirectusRegistration,
     getDirectusItem,
