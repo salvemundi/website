@@ -1,3 +1,4 @@
+const express = require('express');
 const { COLLECTIONS, FIELDS } = require('../services/collections');
 
 module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, MEMBERSHIP_API_URL, directusService, notificationService, GRAPH_SYNC_URL) {
