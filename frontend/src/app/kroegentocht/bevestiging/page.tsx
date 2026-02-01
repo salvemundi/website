@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { CheckCircle, Home, XCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { useEffect, useState, Suspense, useRef } from 'react';
 import { pubCrawlSignupsApi, transactionsApi } from '@/shared/lib/api/salvemundi';
+import { FIELDS } from '@/shared/lib/constants/collections';
 import qrService from '@/shared/lib/qr-service';
 
 function KroegentochtConfirmationContent() {
@@ -46,7 +47,7 @@ function KroegentochtConfirmationContent() {
                 } else if (signupId) {
                     console.log('[Kroegentocht Bevestiging] Checking signup:', signupId);
                     signup = await pubCrawlSignupsApi.getById(signupId);
-                    statusValue = signup.payment_status;
+                    statusValue = signup[FIELDS.SIGNUPS.PAYMENT_STATUS];
                     console.log('[Kroegentocht Bevestiging] Signup status:', statusValue, 'QR token:', signup.qr_token ? 'present' : 'missing');
                     setSignupData(signup);
                 }

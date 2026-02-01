@@ -4,12 +4,13 @@ import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { pubCrawlSignupsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
+import { useSalvemundiPubCrawlEvents, useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
 import qrService from '@/shared/lib/qr-service';
 import QRDisplay from '@/entities/activity/ui/QRDisplay';
 
-import { useSalvemundiPubCrawlEvents, useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
+import { COLLECTIONS, FIELDS } from '@/shared/lib/constants/collections';
 import { format } from 'date-fns';
 import { CheckCircle2, Download } from 'lucide-react';
 
@@ -58,17 +59,18 @@ export default function KroegentochtPage() {
     const [existingSignups, setExistingSignups] = useState<any[]>([]);
 
     useEffect(() => {
-        const fetchSignups = async () => {
+        const fetchTickets = async () => {
             if (isAuthenticated && user?.email) {
                 try {
-                    const signups = await directusFetch<any[]>(`/items/pub_crawl_signups?filter[email][_eq]=${encodeURIComponent(user.email)}&filter[payment_status][_eq]=paid&fields=*,pub_crawl_event_id.name&sort=-created_at`);
-                    setExistingSignups(signups || []);
+                    // Fetch all tickets for this user via signup email
+                    const tickets = await directusFetch<any[]>(`/items/${COLLECTIONS.PUB_CRAWL_TICKETS}?filter[${FIELDS.TICKETS.SIGNUP_ID}][${FIELDS.SIGNUPS.EMAIL}][_eq]=${encodeURIComponent(user.email)}&filter[${FIELDS.TICKETS.SIGNUP_ID}][${FIELDS.SIGNUPS.PAYMENT_STATUS}][_eq]=paid&fields=*,${FIELDS.TICKETS.SIGNUP_ID}.${FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID}.name&sort=-created_at`);
+                    setExistingSignups(tickets || []);
                 } catch (e) {
-                    console.error('Failed to fetch existing kroegentocht signups', e);
+                    console.error('Failed to fetch existing kroegentocht tickets', e);
                 }
             }
         };
-        fetchSignups();
+        fetchTickets();
     }, [isAuthenticated, user?.email]);
 
     const downloadTicket = async (index: number, name: string, initial: string, qrToken: string, eventName: string) => {
@@ -289,9 +291,6 @@ export default function KroegentochtPage() {
                 initial: p.initial
             })));
 
-
-
-            // Create signup with status 'open' (just like standard activity signups)
             const finalAmount = Number(form.amount_tickets) || 1;
 
             if (participants.length !== finalAmount) {
@@ -302,14 +301,14 @@ export default function KroegentochtPage() {
             const primaryName = `${participants[0].name} ${participants[0].initial}`;
 
             const signup = await pubCrawlSignupsApi.create({
-                // store registrant as "FirstName I." (initial)
-                name: primaryName,
-                email: form.email,
-                association: finalAssociation,
-                amount_tickets: finalAmount,
-                pub_crawl_event_id: nextEvent.id,
+                [FIELDS.SIGNUPS.NAME]: primaryName,
+                [FIELDS.SIGNUPS.EMAIL]: form.email.trim(),
+                [FIELDS.SIGNUPS.ASSOCIATION]: finalAssociation,
+                [FIELDS.SIGNUPS.AMOUNT_TICKETS]: finalAmount,
+                [FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID]: nextEvent.id,
+                // Keep for legacy compatibility during transition
                 name_initials: nameInitials,
-                payment_status: 'open',
+                [FIELDS.SIGNUPS.PAYMENT_STATUS]: 'open',
             });
 
             if (!signup || !signup.id) {
@@ -325,7 +324,7 @@ export default function KroegentochtPage() {
                 redirectUrl: window.location.origin + `/kroegentocht/bevestiging?id=${signup.id}`,
                 registrationId: signup.id,
                 registrationType: 'pub_crawl_signup', // Tell backend which collection to update
-                email: form.email,
+                email: form.email.trim(),
                 firstName: participants[0].name,
                 lastName: participants[0].initial,
                 isContribution: false
@@ -358,9 +357,7 @@ export default function KroegentochtPage() {
             let friendlyMessage = 'Er is een fout opgetreden bij het inschrijven. Probeer het opnieuw.';
             const isProd = process.env.NODE_ENV === 'production';
 
-            if (err?.message?.includes('RECORD_NOT_UNIQUE')) {
-                friendlyMessage = 'Je hebt al tickets op dit e-mailadres. Gebruik voor extra tickets een ander adres (bijv. van een vriend) of een alias (bijv. jouwnaam+1@gmail.com).';
-            } else if (err?.message) {
+            if (err?.message) {
                 friendlyMessage = isProd ? friendlyMessage : `Fout: ${err.message}`;
             }
 
@@ -401,45 +398,40 @@ export default function KroegentochtPage() {
                         {existingSignups.length > 0 && (
                             <section className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-lg p-5 sm:p-6 md:p-8 mb-8">
                                 <h1 className="text-2xl sm:text-3xl font-bold text-theme-purple dark:text-white mb-2">
-                                    Jouw Tickets ({existingSignups.reduce((sum: number, s: any) => sum + (Number(s.amount_tickets) || 0), 0)})
+                                    Jouw Tickets ({existingSignups.length})
                                 </h1>
                                 <p className="text-theme-text-muted dark:text-white/70 mb-6 max-w-3xl">
-                                    Je hebt al tickets voor de kroegentocht. Hieronder kun je ze downloaden. <br />
+                                    Je hebt tickets voor de kroegentocht. Hieronder kun je ze downloaden. <br />
                                     <strong>Let op:</strong> Iedere deelnemer heeft een eigen QR-code nodig. Stuur de tickets door naar je vrienden.
                                     <br /><br />
                                     Wil je <strong>extra tickets</strong> kopen? Vul dan het formulier hieronder in.
                                 </p>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                    {existingSignups.flatMap((signup) => {
-                                        const parts = signup.name_initials ? JSON.parse(signup.name_initials) : Array.from({ length: signup.amount_tickets }).map((_, i) => ({ name: `Deelnemer ${i + 1}`, initial: '' }));
-                                        return parts.map((p: any, index: number) => ({
-                                            ...p,
-                                            qrToken: `${signup.qr_token}#${index}`,
-                                            eventName: signup.pub_crawl_event_id?.name || 'Kroegentocht',
-                                            uniqueKey: `${signup.id}-${index}`
-                                        }));
-                                    }).map((ticket: any, i: number) => (
-                                        <div key={ticket.uniqueKey} className="bg-white/5 p-4 rounded-xl border border-white/10 flex flex-col items-center text-center">
-                                            <div className="bg-theme-purple text-white text-xs font-bold px-3 py-1 rounded-full mb-2">
-                                                TICKET {i + 1}
-                                            </div>
-                                            <h3 className="font-bold text-theme-purple dark:text-white text-lg mb-1">{ticket.name} {ticket.initial}</h3>
-                                            <p className="text-theme-text-muted dark:text-white/60 text-sm mb-4">{ticket.eventName}</p>
+                                    {existingSignups.map((ticket: any, i: number) => {
+                                        const eventName = ticket[FIELDS.TICKETS.SIGNUP_ID]?.[FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID]?.name || 'Kroegentocht';
+                                        return (
+                                            <div key={ticket.id} className="bg-white/5 p-4 rounded-xl border border-white/10 flex flex-col items-center text-center">
+                                                <div className="bg-theme-purple text-white text-xs font-bold px-3 py-1 rounded-full mb-2">
+                                                    TICKET {i + 1}
+                                                </div>
+                                                <h3 className="font-bold text-theme-purple dark:text-white text-lg mb-1">{ticket.name} {ticket.initial}</h3>
+                                                <p className="text-theme-text-muted dark:text-white/60 text-sm mb-4">{eventName}</p>
 
-                                            <div className="bg-white p-2 rounded-lg shadow-sm mb-4">
-                                                <QRDisplay qrToken={ticket.qrToken} size={150} />
-                                            </div>
+                                                <div className="bg-white p-2 rounded-lg shadow-sm mb-4">
+                                                    <QRDisplay qrToken={ticket.qr_token} size={150} />
+                                                </div>
 
-                                            <button
-                                                onClick={() => downloadTicket(i, ticket.name, ticket.initial, ticket.qrToken, ticket.eventName)}
-                                                className="bg-theme-purple/10 hover:bg-theme-purple/20 text-theme-purple dark:text-theme-purple-light px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 w-full justify-center"
-                                            >
-                                                <Download className="w-4 h-4" />
-                                                Download
-                                            </button>
-                                        </div>
-                                    ))}
+                                                <button
+                                                    onClick={() => downloadTicket(i, ticket.name, ticket.initial, ticket.qr_token, eventName)}
+                                                    className="bg-theme-purple/10 hover:bg-theme-purple/20 text-theme-purple dark:text-theme-purple-light px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 w-full justify-center"
+                                                >
+                                                    <Download className="w-4 h-4" />
+                                                    Download
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </section>
                         )}
