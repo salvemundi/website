@@ -197,15 +197,6 @@ export default function KroegentochtAanmeldingenPage() {
         }
     };
 
-    const parseParticipants = (nameInitials: string | null): Participant[] => {
-        if (!nameInitials) return [];
-        try {
-            const parsed = JSON.parse(nameInitials);
-            return Array.isArray(parsed) ? parsed : [];
-        } catch {
-            return [];
-        }
-    };
 
     const exportToExcel = () => {
         if (!selectedEvent) return;
