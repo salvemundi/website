@@ -115,7 +115,6 @@ export async function GET(
     const path = params.path.join('/');
     const url = new URL(request.url);
     const auth = getAuthToken(request, url);
-    const ip = getClientIp(request);
 
     try {
         const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
@@ -208,7 +207,7 @@ export async function GET(
                 targetSearch = newSearch ? `?${newSearch}` : '';
             }
 
-        } else if (auth && isUserTokenValid) {
+        } else if (auth && (isUserTokenValid || isAuthPath)) {
             forwardHeaders['Authorization'] = auth;
 
         } else if (auth && !isUserTokenValid && isAllowed) {
@@ -278,13 +277,12 @@ export async function GET(
         }
 
     } catch (error: any) {
-        console.error(`[Directus Proxy] GET ${path} failed:`, {
+        console.error(`[Directus Proxy] GET ${path} critical failure loop/exception:`, error);
+        return NextResponse.json({
+            error: 'Directus Proxy GET Error',
             message: error.message,
-            stack: error.stack,
-            ip,
-            auth: auth ? 'Present' : 'Missing'
-        });
-        return NextResponse.json({ error: 'Directus Proxy Error', details: error.message }, { status: 500 });
+            path: path
+        }, { status: 500 });
     }
 }
 
@@ -364,23 +362,26 @@ async function handleMutation(
                         cache: 'no-store'
                     });
                     if (meResp.ok) {
-                        userData = await meResp.json().catch(() => null);
-                        const userId = userData?.data?.id;
+                        const meJson = await meResp.json().catch(() => null);
+                        userData = meJson?.data || meJson;
+                        const userId = userData?.id;
 
-                        // Check memberships for admin/leader status
-                        const membershipsResp = await fetch(
-                            `${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.id,committee_id.name,is_leader&limit=-1`,
-                            { headers, cache: 'no-store' }
-                        );
-                        const membershipsJson = await membershipsResp.json().catch(() => ({}));
-                        const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
+                        if (userId) {
+                            // Check memberships for admin/leader status
+                            const membershipsResp = await fetch(
+                                `${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.id,committee_id.name,is_leader&limit=-1`,
+                                { headers, cache: 'no-store' }
+                            );
+                            const membershipsJson = await membershipsResp.json().catch(() => ({}));
+                            const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
 
-                        userData.memberships = memberships;
-                        canBypass = memberships.some((m: any) => {
-                            const name = (m?.committee_id?.name || '').toString().toLowerCase();
-                            const isLeader = m.is_leader === true;
-                            return name.includes('bestuur') || name.includes('ict') || name.includes('kandidaat') || name.includes('kandi') || isLeader;
-                        });
+                            userData.memberships = memberships;
+                            canBypass = memberships.some((m: any) => {
+                                const name = (m?.committee_id?.name || '').toString().toLowerCase();
+                                const isLeader = m.is_leader === true;
+                                return name.includes('bestuur') || name.includes('ict') || name.includes('kandidaat') || name.includes('kandi') || isLeader;
+                            });
+                        }
                     } else if (meResp.status === 401 || meResp.status === 403) {
                         console.warn(`[Directus Proxy] MUTATION /users/me failed: ${meResp.status}. Marking token as invalid.`);
                         isUserTokenValid = false;
@@ -464,7 +465,7 @@ async function handleMutation(
                 const newSearch = newParams.toString();
                 targetSearch = newSearch ? `?${newSearch}` : '';
             }
-        } else if (authHeader && isUserTokenValid) {
+        } else if (authHeader && (isUserTokenValid || isAuthPath)) {
             forwardHeaders['Authorization'] = authHeader;
         } else if (authHeader && !isUserTokenValid && isAllowed) {
             console.log(`[Directus Proxy] Stripping invalid token for public mutation: ${path}`);
@@ -490,7 +491,8 @@ async function handleMutation(
         const response = await fetch(targetUrl, {
             method,
             headers: forwardHeaders,
-            body: rawBody && rawBody.byteLength > 0 ? rawBody : undefined,
+            body: rawBody && rawBody.byteLength > 0 ? new Uint8Array(rawBody) : undefined,
+            redirect: 'follow'
         });
 
         if (!response.ok) {
@@ -535,16 +537,12 @@ async function handleMutation(
         }
 
     } catch (error: any) {
-        console.error(`[Directus Proxy] ${method} ${path} failed (IP: ${getClientIp(request)}):`, {
-            message: error.message,
-            stack: error.stack,
-            path,
-            method
-        });
+        console.error(`[Directus Proxy] ${method} ${path} critical failure loop/exception:`, error);
         return NextResponse.json({
-            error: 'Directus Proxy Error',
-            details: error.message,
-            path: path
+            error: 'Directus Proxy Mutation Error',
+            message: error.message,
+            path: path,
+            method
         }, { status: 500 });
     }
 }
