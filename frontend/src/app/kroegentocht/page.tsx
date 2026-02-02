@@ -392,8 +392,23 @@ export default function KroegentochtPage() {
         } catch (err: any) {
             console.error('Error submitting kroegentocht signup:', err);
 
-            // Use the specific error message if available, otherwise fallback
-            const friendlyMessage = err?.message || 'Er is een fout opgetreden bij het inschrijven. Probeer het opnieuw.';
+            const message = err?.message || '';
+            let friendlyMessage = 'Er is een onverwachte fout opgetreden. Neem contact op met ict@salvemundi.nl als dit blijft voorkomen.';
+
+            // Alleen specifieke, veilige foutmeldingen tonen aan de gebruiker
+            const knownErrors = [
+                'tickets',
+                'inschrijving',
+                'emailadres',
+                'deelnemer',
+                'letter',
+                'maximum'
+            ];
+
+            if (knownErrors.some(keyword => message.toLowerCase().includes(keyword))) {
+                friendlyMessage = message;
+            }
+
             setError(friendlyMessage);
         }
         finally {
