@@ -103,6 +103,7 @@ export const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
                     className={`form-input !flex items-center gap-2 ${className}`}
                     numberInputProps={{
                         required: required,
+                        maxLength: 20,
                         className: "bg-transparent border-none outline-none w-full h-full text-current placeholder:text-gray-400 focus:ring-0"
                     }}
                 />

@@ -12,6 +12,7 @@ import { splitDutchLastName } from '@/shared/lib/utils/dutch-name';
 
 // react-datepicker removed to prefer native date inputs
 import { isUserInReisCommittee } from '@/shared/lib/committee-utils';
+import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { TripSignup } from '@/shared/lib/api/salvemundi';
 import { User } from '@/shared/model/types/auth';
 import { CheckCircle2, Calendar, CreditCard, Loader2, Utensils } from 'lucide-react';
@@ -507,13 +508,11 @@ export default function ReisPage() {
 
                                             <label className="form-label">
                                                 Telefoonnummer
-                                                <input
-                                                    type="tel"
+                                                <PhoneInput
                                                     name="phone_number"
                                                     value={form.phone_number}
                                                     onChange={handleChange}
                                                     required
-                                                    placeholder="+31 6 12345678"
                                                     className="form-input mt-1"
                                                 />
                                             </label>

@@ -7,6 +7,7 @@ import { useAuth } from "@/features/auth/providers/auth-provider";
 // import { isUserAuthorizedForAttendance, getEventSignupsWithCheckIn } from "../lib/qr-service"; // TODO: Port qr-service
 // import exportEventSignups from "../lib/exportSignups"; // TODO: Port exportSignups
 import QRDisplay from "./QRDisplay";
+import { PhoneInput } from "@/shared/ui/PhoneInput";
 import {
     CalendarClock,
     Clock3,
@@ -404,8 +405,7 @@ const ActiviteitDetailModal: React.FC<ActiviteitDetailModalProps> = ({
                                         {/* Phone */}
                                         <div>
                                             <label htmlFor="phoneNumber" className="block text-theme-white font-semibold mb-2">Telefoonnummer *</label>
-                                            <input
-                                                type="tel"
+                                            <PhoneInput
                                                 id="phoneNumber"
                                                 name="phoneNumber"
                                                 value={formData.phoneNumber}
