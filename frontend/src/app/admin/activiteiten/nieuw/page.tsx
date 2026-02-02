@@ -229,10 +229,24 @@ export default function NieuweActiviteitPage() {
             }
 
             // Create event
-            await directusFetch('/items/events', {
+            const createdEvent = await directusFetch<{ id: number }>('/items/events', {
                 method: 'POST',
                 body: JSON.stringify(eventData)
             });
+
+            // Send push notification about new event
+            try {
+                const NOTIFICATION_API_URL = process.env.NEXT_PUBLIC_NOTIFICATION_API_URL || 'http://localhost:3003';
+                await fetch(`${NOTIFICATION_API_URL}/notify-new-event`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ eventId: createdEvent.id })
+                });
+                console.log('✓ New event notification sent');
+            } catch (notifError) {
+                console.error('Failed to send new event notification:', notifError);
+                // Don't fail the event creation if notification fails
+            }
 
             showToast('Activiteit succesvol aangemaakt!', 'success');
             setTimeout(() => router.push('/admin/activiteiten'), 1500);
