@@ -10,6 +10,9 @@ services:
       - NEXT_PUBLIC_PAYMENT_API_URL=${NEXT_PUBLIC_PAYMENT_API_URL:-http://payment-api-${TAG:-dev}:3002}
       # Admin API URL for server-side proxy
       - ADMIN_API_URL=${ADMIN_API_URL:-http://admin-api-dev:3005}
+      # Public notification API URL - used by both client and server
+      # All environments (dev, preprod, prod) use the same centralized notification service
+      - NEXT_PUBLIC_NOTIFICATION_API_URL=${NEXT_PUBLIC_NOTIFICATION_API_URL:-https://notifications.salvemundi.nl}
     networks:
       - proxy-network
 
