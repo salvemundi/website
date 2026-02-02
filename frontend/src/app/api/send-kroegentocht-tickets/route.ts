@@ -43,6 +43,10 @@ export async function POST(req: NextRequest) {
 
         const signupIds = allPaidSignups.map(s => s.id);
 
+        if (signupIds.length === 0) {
+            return NextResponse.json({ error: 'No paid signups found for this email' }, { status: 404 });
+        }
+
         // Fetch all tickets for these signups
         const allTickets = await directusFetch<any[]>(`/items/${COLLECTIONS.PUB_CRAWL_TICKETS}?filter[${FIELDS.TICKETS.SIGNUP_ID}][_in]=${signupIds.join(',')}&fields=*`, fetchOptions);
 

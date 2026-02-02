@@ -67,7 +67,10 @@ function KroegentochtConfirmationContent() {
                         console.log('[Kroegentocht Bevestiging] Triggering ticket email...');
                         fetch('/api/send-kroegentocht-tickets', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                            },
                             body: JSON.stringify({ signupId: currentSignupId || signup.id })
                         }).then(res => {
                             if (res.ok) console.log('[Kroegentocht Bevestiging] Email trigger sent.');
