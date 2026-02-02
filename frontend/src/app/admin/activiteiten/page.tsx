@@ -23,6 +23,8 @@ interface Event {
     inschrijf_deadline?: string;
     signup_count?: number;
     image?: { id: string } | string;
+    status?: 'published' | 'draft' | 'archived';
+    publish_date?: string;
 }
 
 export default function AdminActiviteitenPage() {
