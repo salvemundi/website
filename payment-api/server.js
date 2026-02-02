@@ -44,6 +44,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Request logging middleware
 app.use((req, res, next) => {
+    if (req.method === 'GET' && req.url === '/health') {
+        return next();
+    }
     console.log(`[PaymentAPI] Incoming Request: ${req.method} ${req.url}`);
     next();
 });

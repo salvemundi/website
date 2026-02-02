@@ -119,6 +119,10 @@ async function getDirectusItem(directusUrl, directusToken, collection, id, field
         return response.data.data;
     } catch (error) {
         console.error(`Failed to fetch ${collection} ${id}:`, error.message);
+        if (error.response) {
+            console.error(`Status: ${error.response.status}`);
+            console.error(`Data:`, JSON.stringify(error.response.data));
+        }
         return null;
     }
 }
