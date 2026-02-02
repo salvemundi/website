@@ -449,7 +449,7 @@ export default function AdminActiviteitenPage() {
                                         </button>
                                         
                                         {/* Notification buttons */}
-                                        {!isEventPast(event.event_date) && (
+                                        {!isEventPast(event.event_date) && (event as any).status === 'published' && (!((event as any).publish_date) || new Date((event as any).publish_date) <= new Date()) && (
                                             <>
                                                 <button
                                                     onClick={() => handleSendReminder(event.id, event.name)}
