@@ -82,27 +82,50 @@ export default function AdminActiviteitenPage() {
     };
 
     const filterEvents = () => {
-        let filtered = [...events];
-
-        // Apply time filter
         const now = new Date();
-        if (filter === 'upcoming') {
-            filtered = filtered.filter(event => new Date(event.event_date) >= now);
-        } else if (filter === 'past') {
-            filtered = filtered.filter(event => new Date(event.event_date) < now);
-        }
 
-        // Apply search
-        if (searchQuery) {
-            const query = searchQuery.toLowerCase();
-            filtered = filtered.filter(event =>
-                event.name.toLowerCase().includes(query) ||
-                event.description?.toLowerCase().includes(query) ||
-                event.location?.toLowerCase().includes(query)
+        const matchesSearch = (ev: Event) => {
+            if (!searchQuery) return true;
+            const q = searchQuery.toLowerCase();
+            return (
+                ev.name.toLowerCase().includes(q) ||
+                ev.description?.toLowerCase().includes(q) ||
+                ev.location?.toLowerCase().includes(q)
             );
+        };
+
+        const sortDesc = (a: Event, b: Event) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime();
+
+        if (filter === 'upcoming') {
+            const upcoming = events
+                .filter(e => new Date(e.event_date) >= now)
+                .filter(matchesSearch)
+                .sort(sortDesc);
+            setFilteredEvents(upcoming);
+            return;
         }
 
-        setFilteredEvents(filtered);
+        if (filter === 'past') {
+            // Show upcoming first, then past. Both groups newest-first so the newest activity is on top.
+            const upcoming = events
+                .filter(e => new Date(e.event_date) >= now)
+                .filter(matchesSearch)
+                .sort(sortDesc);
+
+            const past = events
+                .filter(e => new Date(e.event_date) < now)
+                .filter(matchesSearch)
+                .sort(sortDesc);
+
+            setFilteredEvents([...upcoming, ...past]);
+            return;
+        }
+
+        // All
+        const all = events
+            .filter(matchesSearch)
+            .sort(sortDesc);
+        setFilteredEvents(all);
     };
 
     const handleDelete = async (eventId: number, eventName: string) => {
