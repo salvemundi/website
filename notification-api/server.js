@@ -69,7 +69,11 @@ const DIRECTUS_NOTIFICATION_KEY = process.env.DIRECTUS_NOTIFICATION_KEY;
 if (!DIRECTUS_NOTIFICATION_KEY) {
   console.error('⚠️  DIRECTUS_NOTIFICATION_KEY not configured!');
 } else {
+  const keyPreview = DIRECTUS_NOTIFICATION_KEY.length > 4 
+    ? '...' + DIRECTUS_NOTIFICATION_KEY.slice(-4)
+    : '***';
   console.log('✓ Directus notification key configured');
+  console.log('✓ Using key ending with:', keyPreview);
 }
 
 // Helper to fetch from Directus
