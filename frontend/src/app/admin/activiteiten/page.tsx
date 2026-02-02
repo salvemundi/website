@@ -49,9 +49,9 @@ export default function AdminActiviteitenPage() {
     const loadEvents = async () => {
         setIsLoading(true);
         try {
-            // Fetch all events with signup counts
+            // Fetch all events with signup counts (including drafts for admin)
             const eventsData = await directusFetch<Event[]>(
-                '/items/events?fields=id,name,event_date,description,location,max_sign_ups,price_members,price_non_members,inschrijf_deadline,contact,image.id,committee_id&sort=-event_date&limit=-1'
+                '/items/events?fields=id,name,event_date,description,location,max_sign_ups,price_members,price_non_members,inschrijf_deadline,contact,image.id,committee_id,status,publish_date&sort=-event_date&limit=-1'
             );
 
             // Get signup counts for each event
@@ -366,9 +366,21 @@ export default function AdminActiviteitenPage() {
 
                                                 {/* Event Title and Details */}
                                                 <div className="flex-1 min-w-0">
-                                                    <h3 className="text-lg sm:text-xl font-bold text-admin mb-2 truncate">
-                                                        {event.name}
-                                                    </h3>
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <h3 className="text-lg sm:text-xl font-bold text-admin truncate">
+                                                            {event.name}
+                                                        </h3>
+                                                        {(event as any).status === 'draft' && (
+                                                            <span className="px-2 py-0.5 text-xs font-semibold bg-gray-500 text-white rounded-full whitespace-nowrap">
+                                                                Concept
+                                                            </span>
+                                                        )}
+                                                        {(event as any).status === 'published' && (event as any).publish_date && new Date((event as any).publish_date) > new Date() && (
+                                                            <span className="px-2 py-0.5 text-xs font-semibold bg-blue-500 text-white rounded-full whitespace-nowrap">
+                                                                Gepland
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                     <div className="flex flex-wrap gap-3 text-sm text-admin-muted">
                                                         <div className="flex items-center gap-1">
                                                             <Calendar className="h-4 w-4" />

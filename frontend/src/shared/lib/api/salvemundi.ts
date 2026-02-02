@@ -149,9 +149,16 @@ export const paymentApi = {
 
 export const eventsApi = {
     getAll: async () => {
+        const now = new Date().toISOString();
         const query = buildQueryString({
-            fields: ['id', 'name', 'event_date', 'event_time', 'inschrijf_deadline', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact'],
-            sort: ['-event_date']
+            fields: ['id', 'name', 'event_date', 'event_time', 'inschrijf_deadline', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact', 'status', 'publish_date'],
+            sort: ['-event_date'],
+            filter: {
+                _or: [
+                    { status: { _eq: 'published' }, publish_date: { _null: true } },
+                    { status: { _eq: 'published' }, publish_date: { _lte: now } }
+                ]
+            }
         });
         let events = await directusFetch<any[]>(`/items/events?${query}`);
 

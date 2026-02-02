@@ -39,6 +39,8 @@ export default function NieuweActiviteitPage() {
         committee_id: '',
         contact: '',
         only_members: false,
+        status: 'published' as 'published' | 'draft',
+        publish_date: '',
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -215,6 +217,8 @@ export default function NieuweActiviteitPage() {
                 contact: formData.contact || null,
                 only_members: formData.only_members,
                 image: imageId,
+                status: formData.status,
+                publish_date: formData.publish_date || null,
             };
 
             // Add optional fields
@@ -615,6 +619,71 @@ export default function NieuweActiviteitPage() {
                                 />
                             </div>
                         )}
+                    </div>
+
+                    {/* Publish Settings */}
+                    <div className="border border-admin rounded-lg p-6 space-y-4 bg-admin-card-soft">
+                        <h3 className="text-lg font-bold text-admin mb-4">Publicatie Instellingen</h3>
+                        
+                        <div className="space-y-3">
+                            <label className="flex items-center gap-3 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="status"
+                                    value="published"
+                                    checked={formData.status === 'published' && !formData.publish_date}
+                                    onChange={() => setFormData({ ...formData, status: 'published', publish_date: '' })}
+                                    className="w-4 h-4 text-theme-purple focus:ring-theme-purple"
+                                />
+                                <div>
+                                    <div className="text-sm font-semibold text-admin">Direct publiceren</div>
+                                    <div className="text-xs text-admin-muted">Activiteit wordt meteen zichtbaar</div>
+                                </div>
+                            </label>
+
+                            <label className="flex items-center gap-3 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="status"
+                                    value="draft"
+                                    checked={formData.status === 'draft'}
+                                    onChange={() => setFormData({ ...formData, status: 'draft', publish_date: '' })}
+                                    className="w-4 h-4 text-theme-purple focus:ring-theme-purple"
+                                />
+                                <div>
+                                    <div className="text-sm font-semibold text-admin">Concept opslaan</div>
+                                    <div className="text-xs text-admin-muted">Activiteit blijft verborgen</div>
+                                </div>
+                            </label>
+
+                            <label className="flex items-start gap-3 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="status"
+                                    value="scheduled"
+                                    checked={formData.status === 'published' && !!formData.publish_date}
+                                    onChange={() => setFormData({ ...formData, status: 'published' })}
+                                    className="w-4 h-4 text-theme-purple focus:ring-theme-purple mt-0.5"
+                                />
+                                <div className="flex-1">
+                                    <div className="text-sm font-semibold text-admin mb-2">Plannen voor later</div>
+                                    <input
+                                        type="datetime-local"
+                                        value={formData.publish_date}
+                                        onChange={(e) => setFormData({ ...formData, status: 'published', publish_date: e.target.value })}
+                                        onClick={(e) => {
+                                            // Select the radio when clicking the datetime input
+                                            const radio = (e.currentTarget.parentElement?.parentElement?.querySelector('input[type="radio"]') as HTMLInputElement);
+                                            if (radio) radio.checked = true;
+                                            setFormData({ ...formData, status: 'published' });
+                                        }}
+                                        className="w-full px-3 py-2 rounded-lg border border-admin bg-admin-card text-admin text-sm focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                                        placeholder="Selecteer datum en tijd"
+                                    />
+                                    <div className="text-xs text-admin-muted mt-1">Activiteit wordt automatisch gepubliceerd op de gekozen datum/tijd</div>
+                                </div>
+                            </label>
+                        </div>
                     </div>
 
                     {/* Only Members */}
