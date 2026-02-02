@@ -4,15 +4,18 @@ export function registerServiceWorker() {
       navigator.serviceWorker
         .register('/sw.js')
         .then((registration) => {
+          console.log('[SW] Service worker registered successfully:', registration.scope);
           // Service worker registered; periodically check for updates
           setInterval(() => {
             registration.update();
           }, 60000); // Check every minute
         })
-        .catch(() => {
-          // ignore registration errors
+        .catch((error) => {
+          console.error('[SW] Service worker registration failed:', error);
         });
     });
+  } else {
+    console.warn('[SW] Service workers are not supported in this browser');
   }
 }
 

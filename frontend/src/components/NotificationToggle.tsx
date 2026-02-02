@@ -66,12 +66,14 @@ export default function NotificationToggle({ userId, className = '' }: Notificat
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       
       // Provide more specific error messages
-      if (errorMessage.includes('timeout')) {
-        alert('Time-out: De notificatie service reageert niet. Controleer je internetverbinding en probeer het opnieuw.');
-      } else if (errorMessage.includes('VAPID')) {
+      if (errorMessage.includes('timeout') || errorMessage.includes('reload')) {
+        alert('Service worker probleem: Herlaad de pagina en probeer het opnieuw.');
+      } else if (errorMessage.includes('VAPID') || errorMessage.includes('Notification API')) {
         alert('Configuratiefout: Kan de notificatie service niet bereiken. Neem contact op met de beheerder.');
       } else if (errorMessage.includes('Service worker')) {
         alert('Service worker probleem: Herlaad de pagina en probeer het opnieuw.');
+      } else if (errorMessage.includes('not supported')) {
+        alert('Je browser ondersteunt geen push notificaties.');
       } else {
         alert(`Er is iets misgegaan: ${errorMessage}`);
       }
