@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { pubCrawlSignupsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
@@ -51,12 +51,19 @@ export default function KroegentochtPage() {
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const errorRef = useRef<HTMLDivElement>(null);
     const { data: pubCrawlEvents, isLoading: eventsLoading } = useSalvemundiPubCrawlEvents();
     const { data: siteSettings, isLoading: isSettingsLoading } = useSalvemundiSiteSettings('kroegentocht');
 
     // Auth & Existing Tickets
     const { user, isAuthenticated } = useAuth();
     const [existingSignups, setExistingSignups] = useState<any[]>([]);
+
+    useEffect(() => {
+        if (error && errorRef.current) {
+            errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, [error]);
 
     useEffect(() => {
         const fetchTickets = async () => {
@@ -202,6 +209,14 @@ export default function KroegentochtPage() {
 
             const parsed = parseInt(value, 10);
             const clamped = Number.isNaN(parsed) ? 1 : Math.min(10, Math.max(1, parsed));
+
+            // Limit check
+            if (clamped > 10) {
+                setError('Je kunt maximaal 10 tickets per keer kopen.');
+            } else {
+                setError(null);
+            }
+
             setForm({ ...form, amount_tickets: String(clamped) });
 
             // Update participants array based on ticket count
@@ -280,6 +295,28 @@ export default function KroegentochtPage() {
         setError(null);
 
         try {
+            // 1. Check existing tickets for this email and event
+            const email = form.email.trim();
+            const eventId = nextEvent.id;
+
+            // Fetch all paid signups for this email and event
+            // We sum the amount_tickets field
+            const existingPaidSignups = await directusFetch<any[]>(
+                `/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}?filter[${FIELDS.SIGNUPS.EMAIL}][_eq]=${encodeURIComponent(email)}&filter[${FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID}][_eq]=${eventId}&filter[${FIELDS.SIGNUPS.PAYMENT_STATUS}][_eq]=paid&fields=${FIELDS.SIGNUPS.AMOUNT_TICKETS}`
+            );
+
+            const existingTicketCount = existingPaidSignups?.reduce((sum, s) => sum + (s[FIELDS.SIGNUPS.AMOUNT_TICKETS] || 0), 0) || 0;
+            const newTicketCount = Number(form.amount_tickets) || 1;
+            const totalTickets = existingTicketCount + newTicketCount;
+
+            if (totalTickets > 10) {
+                if (existingTicketCount >= 10) {
+                    throw new Error(`Je hebt al ${existingTicketCount} tickets voor deze kroegentocht. Het maximum is 10 per emailadres.`);
+                } else {
+                    throw new Error(`Je hebt al ${existingTicketCount} tickets. Je kunt er nog maximaal ${10 - existingTicketCount} bij kopen.`);
+                }
+            }
+
             // Determine final association value
             const finalAssociation = form.association === 'Anders'
                 ? form.customAssociation
@@ -354,11 +391,22 @@ export default function KroegentochtPage() {
             setSubmitted(true);
         } catch (err: any) {
             console.error('Error submitting kroegentocht signup:', err);
-            let friendlyMessage = 'Er is een fout opgetreden bij het inschrijven. Probeer het opnieuw.';
-            const isProd = process.env.NODE_ENV === 'production';
 
-            if (err?.message) {
-                friendlyMessage = isProd ? friendlyMessage : `Fout: ${err.message}`;
+            const message = err?.message || '';
+            let friendlyMessage = 'Er is een onverwachte fout opgetreden. Neem contact op met ict@salvemundi.nl als dit blijft voorkomen.';
+
+            // Alleen specifieke, veilige foutmeldingen tonen aan de gebruiker
+            const knownErrors = [
+                'tickets',
+                'inschrijving',
+                'emailadres',
+                'deelnemer',
+                'letter',
+                'maximum'
+            ];
+
+            if (knownErrors.some(keyword => message.toLowerCase().includes(keyword))) {
+                friendlyMessage = message;
             }
 
             setError(friendlyMessage);
@@ -482,7 +530,10 @@ export default function KroegentochtPage() {
                                     ) : (
                                         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
                                             {error && (
-                                                <div className="bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl border border-red-200 dark:border-red-500/20">
+                                                <div
+                                                    ref={errorRef}
+                                                    className="bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl border border-red-200 dark:border-red-500/20"
+                                                >
                                                     {error}
                                                 </div>
                                             )}
@@ -628,6 +679,12 @@ export default function KroegentochtPage() {
                                                 </span>
                                                 {!loading && <span className="group-hover:translate-x-1 transition-transform">→</span>}
                                             </button>
+
+                                            {error && (
+                                                <div className="bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl border border-red-200 dark:border-red-500/20 text-sm">
+                                                    {error}
+                                                </div>
+                                            )}
                                         </form>
                                     )
                                 )}
