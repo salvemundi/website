@@ -393,7 +393,7 @@ app.post('/notify-event-reminder', async (req, res) => {
       badge: '/icon-192x192.png',
       tag: `event-reminder-${eventId}`,
       data: {
-        url: `/activiteit/${eventId}`,
+        url: `/activiteiten/${eventId}`,
         eventId: eventId,
         type: 'event-reminder'
       }
