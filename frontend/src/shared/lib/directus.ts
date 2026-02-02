@@ -1,12 +1,19 @@
-// Directus REST API configuration
-// Always use the /api proxy to avoid CORS issues
-export const directusUrl = '/api';
+const isServer = typeof window === 'undefined';
+
+// Use absolute URL on server, relative proxy on client
+export const directusUrl = isServer
+    ? (process.env.DIRECTUS_URL || 'https://admin.salvemundi.nl')
+    : '/api';
 
 const apiKey = process.env.NEXT_PUBLIC_DIRECTUS_API_KEY || '';
 
-// Note: debug logging removed to avoid leaking secrets in the browser
+// Secret token for server-to-server communication (directus proxy bypass)
+// Only used when running on the server
+const API_SERVICE_TOKEN = isServer
+    ? (process.env.DIRECTUS_API_TOKEN || process.env.DIRECTUS_TOKEN || process.env.DIRECTUS_API_KEY || '')
+    : '';
 
-// Singleton promise for token refresh to handle multiple simultaneous 401s
+// Singleton promise for token refresh to handle multiple simultaneous 401s (browser only)
 let refreshPromise: Promise<boolean> | null = null;
 
 // Helper to check if JWT token is about to expire (within 60 seconds)
@@ -128,8 +135,15 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit, 
             // localStorage may be unavailable
         }
 
-        if (!authHeader && apiKey) {
-            authHeader = `Bearer ${apiKey}`;
+        if (!authHeader) {
+            // Server-side fallback: Use service token if available
+            if (isServer && API_SERVICE_TOKEN) {
+                authHeader = `Bearer ${API_SERVICE_TOKEN}`;
+            }
+            // Final fallback: Use public API key
+            else if (apiKey) {
+                authHeader = `Bearer ${apiKey}`;
+            }
         }
     }
 
