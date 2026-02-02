@@ -650,7 +650,7 @@ export default function KroegentochtPage() {
                                                 />
                                                 <span className="text-sm text-theme-text-muted mt-1 block">
                                                     {existingTicketCountForEmail > 0
-                                                        ? `Je hebt al ${existingTicketCountForEmail} tickets. Je kunt er nog maximaal ${10 - existingTicketCountForEmail} bij kopen.`
+                                                        ? `Je hebt al ${existingTicketCountForEmail} tickets voor deze groep. Je kunt er nog maximaal ${10 - existingTicketCountForEmail} bij kopen. Gebruik een ander e-mailadres voor een nieuwe groep.`
                                                         : 'Maximum 10 tickets per inschrijving'}
                                                 </span>
                                             </div>
