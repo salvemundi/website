@@ -12,7 +12,9 @@ import {
     ChevronRight,
     Calendar,
     Mail,
-    RefreshCw
+    RefreshCw,
+    Bell,
+    Loader2
 } from 'lucide-react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 
@@ -56,6 +58,7 @@ export default function LedenOverzichtPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState<'active' | 'inactive'>('active');
+    const [isSendingMembershipReminder, setIsSendingMembershipReminder] = useState(false);
 
     useEffect(() => {
         if (!authLoading && !user && !isLoggingOut) {
@@ -119,6 +122,41 @@ export default function LedenOverzichtPage() {
         });
     };
 
+    const handleSendMembershipReminder = async () => {
+        const confirmed = confirm(
+            'Wil je een herinnering sturen naar alle leden die binnen 30 dagen hun lidmaatschap moeten verlengen?'
+        );
+        
+        if (!confirmed) return;
+
+        setIsSendingMembershipReminder(true);
+        try {
+            const response = await fetch('/api/notifications/send-membership-reminder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ daysBeforeExpiry: 30 })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to send reminders');
+            }
+
+            const result = await response.json();
+            
+            if (result.sent === 0) {
+                alert('Geen leden gevonden die binnen 30 dagen hun lidmaatschap moeten verlengen.');
+            } else {
+                alert(`Herinnering verstuurd naar ${result.sent} ${result.sent === 1 ? 'lid' : 'leden'}!`);
+            }
+        } catch (error) {
+            console.error('Error sending membership reminder:', error);
+            alert('Fout bij het versturen van de herinneringen: ' + (error instanceof Error ? error.message : 'Onbekende fout'));
+        } finally {
+            setIsSendingMembershipReminder(false);
+        }
+    };
+
     if (authLoading || isLoading) {
         return (
             <>
@@ -162,24 +200,45 @@ export default function LedenOverzichtPage() {
                         </button>
                     </div>
 
-                    <div className="relative w-full md:w-96">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-admin-muted pointer-events-none z-20" />
-                        <input
-                            type="text"
-                            placeholder="Zoek op naam, email of geboortedatum..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="form-input block w-full pl-10 pr-4 py-3 h-12 min-h-[44px] rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 shadow-lg focus:ring-2 focus:ring-theme-purple outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 z-10 appearance-none"
-                        />
-                    </div>
+                    <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center w-full md:w-auto">
+                        <div className="relative flex-1 md:w-96">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-admin-muted pointer-events-none z-20" />
+                            <input
+                                type="text"
+                                placeholder="Zoek op naam, email of geboortedatum..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="form-input block w-full pl-10 pr-4 py-3 h-12 min-h-[44px] rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 shadow-lg focus:ring-2 focus:ring-theme-purple outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 z-10 appearance-none"
+                            />
+                        </div>
 
-                    <button
-                        onClick={loadMembers}
-                        className="p-3 rounded-2xl bg-admin-card text-admin-muted shadow-lg hover:text-theme-purple transition-all"
-                        title="Verversen"
-                    >
-                        <RefreshCw className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`} />
-                    </button>
+                        <button
+                            onClick={handleSendMembershipReminder}
+                            disabled={isSendingMembershipReminder}
+                            className="px-4 py-3 rounded-2xl bg-orange-600 text-white shadow-lg hover:bg-orange-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed font-medium whitespace-nowrap"
+                            title="Stuur een herinnering naar leden die binnen 30 dagen hun lidmaatschap moeten verlengen"
+                        >
+                            {isSendingMembershipReminder ? (
+                                <>
+                                    <Loader2 className="h-5 w-5 animate-spin" />
+                                    <span className="hidden sm:inline">Versturen...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Bell className="h-5 w-5" />
+                                    <span className="hidden sm:inline">Stuur Herinnering</span>
+                                </>
+                            )}
+                        </button>
+
+                        <button
+                            onClick={loadMembers}
+                            className="p-3 rounded-2xl bg-admin-card text-admin-muted shadow-lg hover:text-theme-purple transition-all"
+                            title="Verversen"
+                        >
+                            <RefreshCw className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Desktop List */}
