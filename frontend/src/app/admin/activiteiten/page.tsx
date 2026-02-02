@@ -159,7 +159,6 @@ export default function AdminActiviteitenPage() {
 
         setIsSendingNotification(true);
         try {
-            const event = events.find(e => e.id === customNotification.eventId);
             const response = await fetch(`${NOTIFICATION_API_URL}/send`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
