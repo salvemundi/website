@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { PublicClientApplication } from '@azure/msal-browser';
 import { msalConfig, loginRequest } from '@/shared/config/msalConfig';
@@ -310,11 +310,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    const hasProcessedRedirect = useRef(false);
+
     // Handle MSAL redirect promise and silent login on component mount
     useEffect(() => {
         const handleRedirect = async () => {
-            if (!msalInstance) {
-                console.warn('[AuthProvider] MSAL instance not available');
+            if (!msalInstance || hasProcessedRedirect.current) {
+                return;
+            }
+
+            // If we already have a user from checkAuthStatus, don't try to process redirect
+            // as it might cause multiple login calls and redundant toasts
+            if (user) {
                 setIsMsalInitializing(false);
                 return;
             }
@@ -337,6 +344,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const response = await msalInstance.handleRedirectPromise();
 
                 if (response && response.account) {
+                    if (hasProcessedRedirect.current) return;
+                    hasProcessedRedirect.current = true;
+
                     console.log('[AuthProvider] Redirect login successful');
                     msalInstance.setActiveAccount(response.account);
                     await handleLoginSuccess(response, true);
@@ -375,6 +385,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                                 account
                             });
                             if (silentResult) {
+                                if (hasProcessedRedirect.current) return;
+                                hasProcessedRedirect.current = true;
                                 await handleLoginSuccess(silentResult, false);
                                 recordAuthAttempt(true);
                             }
@@ -389,6 +401,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                             console.log('[AuthProvider] No accounts in cache, trying ssoSilent...');
                             const ssoResult = await msalInstance.ssoSilent(loginRequest);
                             if (ssoResult) {
+                                if (hasProcessedRedirect.current) return;
+                                hasProcessedRedirect.current = true;
                                 await handleLoginSuccess(ssoResult, false);
                                 recordAuthAttempt(true);
                             }
@@ -408,13 +422,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
 
         handleRedirect();
-    }, [user]); // Add user dependency to prevent multiple attempts when user is already set
+    }, []); // Removed user dependency to avoid redundant executions during login flow
 
 
 
 
+
+    const isProcessingLogin = useRef(false);
 
     const handleLoginSuccess = async (loginResponse: unknown, shouldRedirect: boolean = false) => {
+        if (isProcessingLogin.current) return;
+        isProcessingLogin.current = true;
+
         setIsLoading(true);
         const toastId = toast.loading('Inloggen verwerken...');
 
@@ -494,6 +513,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             throw error; // Re-throw to be handled by caller if any
         } finally {
             setIsLoading(false);
+            isProcessingLogin.current = false;
         }
     };
 
