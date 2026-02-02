@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Bell, BellOff } from 'lucide-react';
 import {
   isPushSupported,
-  getNotificationPermission,
   subscribeToPushNotifications,
   unsubscribeFromPushNotifications,
   isPushSubscribed
@@ -19,7 +18,6 @@ export default function NotificationToggle({ userId, className = '' }: Notificat
   const [isSupported, setIsSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [permission, setPermission] = useState<NotificationPermission>('default');
 
   useEffect(() => {
     checkNotificationStatus();
@@ -30,7 +28,6 @@ export default function NotificationToggle({ userId, className = '' }: Notificat
     setIsSupported(supported);
 
     if (supported) {
-      setPermission(getNotificationPermission());
       const subscribed = await isPushSubscribed();
       setIsSubscribed(subscribed);
     }
@@ -57,7 +54,6 @@ export default function NotificationToggle({ userId, className = '' }: Notificat
         const subscription = await subscribeToPushNotifications(userId);
         if (subscription) {
           setIsSubscribed(true);
-          setPermission('granted');
           alert('Je ontvangt nu push notificaties!');
         } else {
           alert('Notificaties zijn geweigerd. Sta notificaties toe in je browser instellingen.');
