@@ -843,7 +843,7 @@ export default function AdminDashboardPage() {
                             title="Overzicht"
                             value="Activiteiten"
                             icon={<Calendar className="h-6 w-6" />}
-                            subtitle="Bekijk alle activiteiten"
+                            subtitle="Bekijk de activiteiten"
                             onClick={() => router.push('/admin/activiteiten')}
                             colorClass="purple"
                         />
@@ -868,7 +868,7 @@ export default function AdminDashboardPage() {
                             title="beheer"
                             value="reis"
                             icon={<FileText className="h-6 w-6" />}
-                            subtitle="Beheer de jaarlijkse reis"
+                            subtitle="Beheer de reis"
                             onClick={() => router.push('/admin/reis')}
                             colorClass="teal"
                             disabled={!canAccessReis}

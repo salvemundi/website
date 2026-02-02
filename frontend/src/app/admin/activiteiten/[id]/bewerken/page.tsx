@@ -31,6 +31,8 @@ interface Event {
     contact?: string;
     only_members?: boolean;
     image?: any;
+    status?: 'published' | 'draft' | 'archived';
+    publish_date?: string;
 }
 
 export default function BewerkenActiviteitPage() {
@@ -136,7 +138,7 @@ export default function BewerkenActiviteitPage() {
                 committee_id: event.committee_id ? String(event.committee_id) : '',
                 contact: event.contact || '',
                 only_members: event.only_members || false,
-                status: event.status || 'published',
+                status: (event.status === 'draft' ? 'draft' : 'published') as 'published' | 'draft',
                 publish_date: publishDate,
             });
 

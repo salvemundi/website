@@ -18,6 +18,8 @@ interface Event {
     committee_name?: string;
     contact?: string;
     contact_name?: string;
+    status?: 'published' | 'draft' | 'archived';
+    publish_date?: string;
 }
 
 interface Committee {
