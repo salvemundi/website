@@ -464,6 +464,13 @@ async function handleMutation(
             canBypass = false;
         }
 
+        // Force disable bypass for events so we always use the user's own token.
+        // The Service Token may not have the necessary permissions to create/update events.
+        if (path.startsWith('items/events')) {
+            console.log(`[Directus Proxy] Forcing user token for events operation (method: ${method})`);
+            canBypass = false;
+        }
+
         // Ensure deletions of event signups always use the logged-in user's token.
         // Some service tokens don't have delete permissions for `event_signups`.
         if (method === 'DELETE' && path.startsWith('items/event_signups')) {
