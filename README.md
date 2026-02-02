@@ -78,6 +78,7 @@ graph TD
 |:---|:---|:---|
 | **Website (Frontend)** | `/` | Next.js App Router (Production & Dev environments). |
 | **Email API** | `/email-api` | Service for handling transactional emails. |
+| **Notification API** | `/notification-api` | PWA Push notification service for events and reminders. |
 | **Directus** | `/directus` | Headless CMS for managing association data. |
 | **Graph Sync** | `/graph-sync` | Bi-directional sync between Entra ID and Directus. |
 | **Graph Webhook** | `/graph-webhook` | Event listener for real-time Entra ID changes. |
@@ -147,6 +148,7 @@ We follow a consistent Way of Working across the team:
 *   **Setup Instructions**: [Wiki / Docs](https://github.com/salvemundi/website/wiki)
 *   **Authentication**: [Entra ID Setup](readme/AUTH_SETUP.md)
 *   **Email**: [Email Flow](readme/EMAIL_SETUP.md)
+*   **Push Notifications**: [Push Notifications Setup](readme/PUSH_NOTIFICATIONS_SETUP.md)
 
 ---
 

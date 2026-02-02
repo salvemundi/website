@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { Calendar, Users, Edit, Trash2, Eye, Plus, Search } from 'lucide-react';
+import { Calendar, Users, Edit, Trash2, Eye, Plus, Search, Bell, Send } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
@@ -34,6 +34,11 @@ export default function AdminActiviteitenPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all');
     const [pageSize, setPageSize] = useState<number | -1>(10); // -1 === all
+    const [showCustomNotificationModal, setShowCustomNotificationModal] = useState(false);
+    const [customNotification, setCustomNotification] = useState({ title: '', body: '', eventId: 0 });
+    const [isSendingNotification, setIsSendingNotification] = useState(false);
+
+    const NOTIFICATION_API_URL = process.env.NEXT_PUBLIC_NOTIFICATION_API_URL || 'http://localhost:3003';
 
     useEffect(() => {
         loadEvents();
@@ -116,6 +121,72 @@ export default function AdminActiviteitenPage() {
         } catch (error) {
             console.error('Failed to delete event:', error);
             alert('Fout bij verwijderen van activiteit');
+        }
+    };
+
+    const handleSendReminder = async (eventId: number, eventName: string) => {
+        if (!confirm(`Wil je een herinnering sturen naar alle aangemelde deelnemers voor "${eventName}"?`)) {
+            return;
+        }
+
+        setIsSendingNotification(true);
+        try {
+            const response = await fetch(`${NOTIFICATION_API_URL}/notify-event-reminder`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ eventId })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to send reminder');
+            }
+
+            const result = await response.json();
+            alert(`Herinnering verstuurd naar ${result.sent} gebruiker(s)!`);
+        } catch (error) {
+            console.error('Failed to send reminder:', error);
+            alert('Fout bij versturen van herinnering');
+        } finally {
+            setIsSendingNotification(false);
+        }
+    };
+
+    const handleSendCustomNotification = async () => {
+        if (!customNotification.title || !customNotification.body) {
+            alert('Vul een titel en bericht in');
+            return;
+        }
+
+        setIsSendingNotification(true);
+        try {
+            const event = events.find(e => e.id === customNotification.eventId);
+            const response = await fetch(`${NOTIFICATION_API_URL}/send`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: customNotification.title,
+                    body: customNotification.body,
+                    data: {
+                        url: `/activiteit/${customNotification.eventId}`,
+                        eventId: customNotification.eventId
+                    },
+                    tag: `custom-${customNotification.eventId}`
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to send notification');
+            }
+
+            const result = await response.json();
+            alert(`Notificatie verstuurd naar ${result.sent} gebruiker(s)!`);
+            setShowCustomNotificationModal(false);
+            setCustomNotification({ title: '', body: '', eventId: 0 });
+        } catch (error) {
+            console.error('Failed to send notification:', error);
+            alert('Fout bij versturen van notificatie');
+        } finally {
+            setIsSendingNotification(false);
         }
     };
 
@@ -361,6 +432,38 @@ export default function AdminActiviteitenPage() {
                                             <Eye className="h-4 w-4" />
                                             <span className="inline">Aanmeldingen</span>
                                         </button>
+                                        
+                                        {/* Notification buttons */}
+                                        {!isEventPast(event.event_date) && (
+                                            <>
+                                                <button
+                                                    onClick={() => handleSendReminder(event.id, event.name)}
+                                                    disabled={isSendingNotification}
+                                                    className="flex items-center gap-1 px-3 py-2 w-auto text-sm bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-white dark:hover:bg-purple-800/30 rounded-lg hover:bg-purple-100 transition font-medium disabled:opacity-50"
+                                                    title="Stuur herinnering"
+                                                >
+                                                    <Bell className="h-4 w-4" />
+                                                    <span className="inline">Herinnering</span>
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        setCustomNotification({ 
+                                                            title: `Reminder: ${event.name}`, 
+                                                            body: `Je kunt je nog steeds aanmelden voor ${event.name}!`,
+                                                            eventId: event.id 
+                                                        });
+                                                        setShowCustomNotificationModal(true);
+                                                    }}
+                                                    disabled={isSendingNotification}
+                                                    className="flex items-center gap-1 px-3 py-2 w-auto text-sm bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-white dark:hover:bg-orange-800/30 rounded-lg hover:bg-orange-100 transition font-medium disabled:opacity-50"
+                                                    title="Stuur custom bericht"
+                                                >
+                                                    <Send className="h-4 w-4" />
+                                                    <span className="inline">Custom</span>
+                                                </button>
+                                            </>
+                                        )}
+                                        
                                         {(() => {
                                             const eventCommitteeId = (event as any).committee_id ? String((event as any).committee_id) : null;
                                             const memberships = auth.user?.committees || [];
@@ -400,6 +503,65 @@ export default function AdminActiviteitenPage() {
                     </div>
                 )}
             </div>
+
+            {/* Custom Notification Modal */}
+            {showCustomNotificationModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-lg w-full p-6">
+                        <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
+                            Custom Notificatie Versturen
+                        </h3>
+                        
+                        <div className="space-y-4 mb-6">
+                            <div>
+                                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                                    Titel
+                                </label>
+                                <input
+                                    type="text"
+                                    value={customNotification.title}
+                                    onChange={(e) => setCustomNotification({ ...customNotification, title: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none"
+                                    placeholder="Bijv: Reminder: Activiteit naam"
+                                />
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                                    Bericht
+                                </label>
+                                <textarea
+                                    value={customNotification.body}
+                                    onChange={(e) => setCustomNotification({ ...customNotification, body: e.target.value })}
+                                    rows={4}
+                                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none resize-none"
+                                    placeholder="Bijv: Je kunt je nog steeds aanmelden voor..."
+                                />
+                            </div>
+                        </div>
+                        
+                        <div className="flex gap-3">
+                            <button
+                                onClick={handleSendCustomNotification}
+                                disabled={isSendingNotification || !customNotification.title || !customNotification.body}
+                                className="flex-1 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isSendingNotification ? 'Verzenden...' : 'Versturen'}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowCustomNotificationModal(false);
+                                    setCustomNotification({ title: '', body: '', eventId: 0 });
+                                }}
+                                disabled={isSendingNotification}
+                                className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition font-semibold disabled:opacity-50"
+                            >
+                                Annuleren
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }

@@ -9,6 +9,7 @@ import { getImageUrl } from "@/shared/lib/api/salvemundi";
 import { slugify } from "@/shared/lib/utils/slug";
 import { format, startOfDay, isBefore } from "date-fns";
 import PageHeader from "@/widgets/page-header/ui/PageHeader";
+import NotificationToggle from "@/components/NotificationToggle";
 import {
   LogOut,
   CreditCard,
@@ -27,6 +28,7 @@ import {
   Loader2,
   Check,
   X,
+  Bell,
 } from "lucide-react";
 
 interface EventSignup {
@@ -684,6 +686,20 @@ export default function AccountPage() {
                     </p>
                   </div>
                 )}
+              </div>
+            </Tile>
+
+            {/* Push Notifications */}
+            <Tile
+              title="Notificaties"
+              icon={<Bell />}
+              className="h-fit"
+            >
+              <div className="rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
+                <p className="text-sm text-theme-purple/70 dark:text-white/60 mb-4">
+                  Ontvang push notificaties voor nieuwe activiteiten en belangrijke updates.
+                </p>
+                <NotificationToggle userId={user.id} className="w-full justify-center" />
               </div>
             </Tile>
           </div>

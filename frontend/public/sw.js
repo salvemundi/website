@@ -96,3 +96,57 @@ self.addEventListener('fetch', (event) => {
       })
   );
 });
+
+// Push notification event
+self.addEventListener('push', (event) => {
+  console.log('[Service Worker] Push notification received');
+
+  if (!event.data) {
+    console.log('[Service Worker] Push event but no data');
+    return;
+  }
+
+  try {
+    const data = event.data.json();
+    console.log('[Service Worker] Push data:', data);
+
+    const options = {
+      body: data.body,
+      icon: data.icon || '/icon-512x512.png',
+      badge: data.badge || '/icon-192x192.png',
+      tag: data.tag || 'salve-mundi-notification',
+      data: data.data || {},
+      vibrate: [200, 100, 200],
+      requireInteraction: false,
+    };
+
+    event.waitUntil(
+      self.registration.showNotification(data.title, options)
+    );
+  } catch (error) {
+    console.error('[Service Worker] Error handling push:', error);
+  }
+});
+
+// Notification click event
+self.addEventListener('notificationclick', (event) => {
+  console.log('[Service Worker] Notification clicked');
+  event.notification.close();
+
+  const urlToOpen = event.notification.data?.url || '/';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Check if there's already a window open
+      for (const client of clientList) {
+        if (client.url === urlToOpen && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // If not, open a new window
+      if (clients.openWindow) {
+        return clients.openWindow(urlToOpen);
+      }
+    })
+  );
+});
