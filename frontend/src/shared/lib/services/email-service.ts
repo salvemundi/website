@@ -796,7 +796,7 @@ export async function sendPubCrawlSignupEmail(data: PubCrawlEmailData): Promise<
     await sendEmail(
       config,
       data.recipientEmail,
-      `Je tickets voor ${data.eventName}`,
+      `Ticket: Kroegentocht Tickets - ${data.participants.length}x`,
       userEmailBody,
       attachments
     );
