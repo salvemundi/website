@@ -437,17 +437,24 @@ app.post('/notify-new-intro-blog', async (req, res) => {
   try {
     const { blogId, blogTitle } = req.body;
 
+    console.log('[Intro Blog] Received request:', { blogId, blogTitle });
+
     if (!blogId || !blogTitle) {
+      console.log('[Intro Blog] Missing blogId or blogTitle');
       return res.status(400).json({ error: 'Blog ID and title required' });
     }
 
     // Get all subscriptions
+    console.log('[Intro Blog] Fetching all subscriptions...');
     const subscriptions = await directusFetch('/items/push_notification?limit=-1');
+    console.log('[Intro Blog] Found subscriptions:', subscriptions?.length || 0);
 
     if (!subscriptions || subscriptions.length === 0) {
+      console.log('[Intro Blog] No subscriptions found');
       return res.status(404).json({ error: 'No subscriptions found' });
     }
 
+    console.log('[Intro Blog] Preparing to send notifications...');
     const payload = JSON.stringify({
       title: '📰 Nieuwe Intro Blog!',
       body: `${blogTitle} - Lees het laatste nieuws!`,
@@ -473,6 +480,7 @@ app.post('/notify-new-intro-blog', async (req, res) => {
           await webpush.sendNotification(subscription, payload);
           return { success: true };
         } catch (error) {
+          console.error('[Intro Blog] Error sending to endpoint:', sub.endpoint, error.message);
           if (error.statusCode === 410 || error.statusCode === 404) {
             await directusFetch(`/items/push_notification/${sub.id}`, {
               method: 'DELETE'
@@ -484,13 +492,15 @@ app.post('/notify-new-intro-blog', async (req, res) => {
     );
 
     const successful = results.filter(r => r.status === 'fulfilled').length;
+    const failed = results.filter(r => r.status === 'rejected').length;
 
-    console.log(`✓ Sent ${successful} new intro blog notifications`);
+    console.log(`✓ Sent ${successful} new intro blog notifications (${failed} failed)`);
 
-    res.json({ success: true, sent: successful });
+    res.json({ success: true, sent: successful, failed: failed });
   } catch (error) {
     console.error('Notify new intro blog error:', error);
-    res.status(500).json({ error: 'Failed to send notifications' });
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ error: 'Failed to send notifications', details: error.message });
   }
 });
 
@@ -499,12 +509,17 @@ app.post('/notify-intro-signups', async (req, res) => {
   try {
     const { title, body, includeParents } = req.body;
 
+    console.log('[Intro Signups] Received request:', { title, body, includeParents });
+
     if (!title || !body) {
+      console.log('[Intro Signups] Missing title or body');
       return res.status(400).json({ error: 'Title and body are required' });
     }
 
     // Fetch intro signups
+    console.log('[Intro Signups] Fetching intro signups...');
     const signups = await directusFetch('/items/intro_signups?limit=-1&fields=user_id');
+    console.log('[Intro Signups] Found signups:', signups?.length || 0);
     
     let userIds = [];
     
@@ -513,26 +528,37 @@ app.post('/notify-intro-signups', async (req, res) => {
     
     // If includeParents, also fetch parent signups which do have user_id
     if (includeParents) {
+      console.log('[Intro Signups] Fetching parent signups...');
       const parentSignups = await directusFetch('/items/intro_parent_signups?limit=-1&fields=user_id');
+      console.log('[Intro Signups] Found parent signups:', parentSignups?.length || 0);
       if (parentSignups && parentSignups.length > 0) {
         userIds = parentSignups.map(p => p.user_id).filter(Boolean);
+        console.log('[Intro Signups] Filtered user IDs:', userIds.length);
       }
     }
 
     // Get all subscriptions (or filter by userIds if available)
     let subscriptions;
     if (userIds.length > 0) {
+      console.log('[Intro Signups] Fetching subscriptions for specific users:', userIds.length);
       const userIdsParam = userIds.join(',');
       subscriptions = await directusFetch(`/items/push_notification?filter[user_id][_in]=${userIdsParam}`);
     } else {
       // Send to all since intro signups don't have user accounts
+      console.log('[Intro Signups] Fetching all subscriptions...');
       subscriptions = await directusFetch('/items/push_notification?limit=-1');
     }
 
+    console.log('[Intro Signups] Found subscriptions:', subscriptions?.length || 0);
+
+    console.log('[Intro Signups] Found subscriptions:', subscriptions?.length || 0);
+
     if (!subscriptions || subscriptions.length === 0) {
+      console.log('[Intro Signups] No subscriptions found, returning 404');
       return res.status(404).json({ error: 'No subscriptions found' });
     }
 
+    console.log('[Intro Signups] Preparing to send notifications...');
     const payload = JSON.stringify({
       title,
       body,
@@ -557,6 +583,7 @@ app.post('/notify-intro-signups', async (req, res) => {
           await webpush.sendNotification(subscription, payload);
           return { success: true };
         } catch (error) {
+          console.error('[Intro Signups] Error sending to endpoint:', sub.endpoint, error.message);
           if (error.statusCode === 410 || error.statusCode === 404) {
             await directusFetch(`/items/push_notification/${sub.id}`, {
               method: 'DELETE'
@@ -568,13 +595,15 @@ app.post('/notify-intro-signups', async (req, res) => {
     );
 
     const successful = results.filter(r => r.status === 'fulfilled').length;
+    const failed = results.filter(r => r.status === 'rejected').length;
 
-    console.log(`✓ Sent ${successful} intro custom notifications`);
+    console.log(`✓ Sent ${successful} intro custom notifications (${failed} failed)`);
 
-    res.json({ success: true, sent: successful });
+    res.json({ success: true, sent: successful, failed: failed });
   } catch (error) {
     console.error('Notify intro signups error:', error);
-    res.status(500).json({ error: 'Failed to send notifications' });
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ error: 'Failed to send notifications', details: error.message });
   }
 });
 
