@@ -10,11 +10,11 @@ function getNotificationApiUrl(): string {
   if (process.env.NEXT_PUBLIC_NOTIFICATION_API_URL) {
     return process.env.NEXT_PUBLIC_NOTIFICATION_API_URL;
   }
-  
+
   return 'https://notifications.salvemundi.nl';
 }
 
-const NOTIFICATION_API_URL = getNotificationApiUrl();
+export const NOTIFICATION_API_URL = getNotificationApiUrl();
 
 // Log the notification API URL for debugging
 if (typeof window !== 'undefined') {
@@ -23,10 +23,10 @@ if (typeof window !== 'undefined') {
 
 // Check if push notifications are supported
 export function isPushSupported(): boolean {
-  return typeof window !== 'undefined' && 
-         'serviceWorker' in navigator && 
-         'PushManager' in window &&
-         'Notification' in window;
+  return typeof window !== 'undefined' &&
+    'serviceWorker' in navigator &&
+    'PushManager' in window &&
+    'Notification' in window;
 }
 
 // Check if service worker is registered
@@ -34,7 +34,7 @@ async function isServiceWorkerRegistered(): Promise<boolean> {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
     return false;
   }
-  
+
   try {
     const registration = await navigator.serviceWorker.getRegistration();
     return registration !== undefined;
@@ -66,12 +66,12 @@ async function getVapidPublicKey(): Promise<string> {
     console.log(`[Push] Fetching VAPID key from: ${NOTIFICATION_API_URL}/vapid-public-key`);
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
-    
+
     const response = await fetch(`${NOTIFICATION_API_URL}/vapid-public-key`, {
       signal: controller.signal
     });
     clearTimeout(timeoutId);
-    
+
     if (!response.ok) {
       console.error('[Push] VAPID key fetch failed:', response.status, response.statusText);
       throw new Error(`Failed to get VAPID public key: ${response.status}`);
@@ -115,12 +115,12 @@ export async function subscribeToPushNotifications(userId?: string): Promise<Pus
   const swRegistered = await isServiceWorkerRegistered();
   if (!swRegistered) {
     console.error('[Push] Service worker is not registered. Attempting to register...');
-    
+
     // Try to register the service worker now
     try {
       const registration = await navigator.serviceWorker.register('/sw.js');
       console.log('[Push] Service worker registered successfully:', registration.scope);
-      
+
       // Wait a bit for it to activate
       await new Promise(resolve => setTimeout(resolve, 1000));
     } catch (error) {
@@ -141,7 +141,7 @@ export async function subscribeToPushNotifications(userId?: string): Promise<Pus
     console.log('[Push] Waiting for service worker to be ready...');
     const registration = await Promise.race([
       navigator.serviceWorker.ready,
-      new Promise<never>((_, reject) => 
+      new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('Service worker timeout - waited 10 seconds. Please reload the page.')), 10000)
       )
     ]);
@@ -165,7 +165,7 @@ export async function subscribeToPushNotifications(userId?: string): Promise<Pus
     console.log('[Push] Sending subscription to backend...');
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
-    
+
     const response = await fetch(`${NOTIFICATION_API_URL}/subscribe`, {
       method: 'POST',
       headers: {
@@ -177,7 +177,7 @@ export async function subscribeToPushNotifications(userId?: string): Promise<Pus
       }),
       signal: controller.signal
     });
-    
+
     clearTimeout(timeoutId);
 
     if (!response.ok) {
@@ -203,7 +203,7 @@ export async function unsubscribeFromPushNotifications(): Promise<boolean> {
   try {
     const registration = await Promise.race([
       navigator.serviceWorker.ready,
-      new Promise<never>((_, reject) => 
+      new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('Service worker timeout')), 10000)
       )
     ]);
@@ -216,7 +216,7 @@ export async function unsubscribeFromPushNotifications(): Promise<boolean> {
       // Remove from backend
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
+
       await fetch(`${NOTIFICATION_API_URL}/unsubscribe`, {
         method: 'POST',
         headers: {
@@ -227,7 +227,7 @@ export async function unsubscribeFromPushNotifications(): Promise<boolean> {
         }),
         signal: controller.signal
       });
-      
+
       clearTimeout(timeoutId);
 
       console.log('✓ Unsubscribed from push notifications');
@@ -247,10 +247,16 @@ export async function isPushSubscribed(): Promise<boolean> {
     return false;
   }
 
+  // Check if service worker is registered first to avoid hanging on .ready
+  const registered = await isServiceWorkerRegistered();
+  if (!registered) {
+    return false;
+  }
+
   try {
     const registration = await Promise.race([
       navigator.serviceWorker.ready,
-      new Promise<never>((_, reject) => 
+      new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('Service worker timeout')), 5000)
       )
     ]);
@@ -268,10 +274,16 @@ export async function getCurrentSubscription(): Promise<PushSubscription | null>
     return null;
   }
 
+  // Check if service worker is registered first
+  const registered = await isServiceWorkerRegistered();
+  if (!registered) {
+    return null;
+  }
+
   try {
     const registration = await Promise.race([
       navigator.serviceWorker.ready,
-      new Promise<never>((_, reject) => 
+      new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('Service worker timeout')), 5000)
       )
     ]);
