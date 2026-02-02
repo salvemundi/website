@@ -516,17 +516,9 @@ app.post('/notify-intro-signups', async (req, res) => {
       return res.status(400).json({ error: 'Title and body are required' });
     }
 
-    // Fetch intro signups
-    console.log('[Intro Signups] Fetching intro signups...');
-    const signups = await directusFetch('/items/intro_signups?limit=-1&fields=user_id');
-    console.log('[Intro Signups] Found signups:', signups?.length || 0);
-    
     let userIds = [];
     
-    // Get user IDs from intro_signups (though they might not have user_id as they're anonymous signups)
-    // For now, we'll send to all subscribed users since intro signups don't necessarily have accounts
-    
-    // If includeParents, also fetch parent signups which do have user_id
+    // Only fetch parent signups which have user_id (intro signups are anonymous)
     if (includeParents) {
       console.log('[Intro Signups] Fetching parent signups...');
       const parentSignups = await directusFetch('/items/intro_parent_signups?limit=-1&fields=user_id');
@@ -537,16 +529,18 @@ app.post('/notify-intro-signups', async (req, res) => {
       }
     }
 
-    // Get all subscriptions (or filter by userIds if available)
+    // Get subscriptions for intro ouders only
     let subscriptions;
     if (userIds.length > 0) {
-      console.log('[Intro Signups] Fetching subscriptions for specific users:', userIds.length);
+      console.log('[Intro Signups] Fetching subscriptions for intro ouders:', userIds.length);
       const userIdsParam = userIds.join(',');
       subscriptions = await directusFetch(`/items/push_notification?filter[user_id][_in]=${userIdsParam}`);
     } else {
-      // Send to all since intro signups don't have user accounts
-      console.log('[Intro Signups] Fetching all subscriptions...');
-      subscriptions = await directusFetch('/items/push_notification?limit=-1');
+      console.log('[Intro Signups] includeParents is false or no parent signups found');
+      return res.status(400).json({ 
+        error: 'No recipients available. Enable "includeParents" to send to intro ouders with accounts.',
+        sent: 0
+      });
     }
 
     console.log('[Intro Signups] Found subscriptions:', subscriptions?.length || 0);
