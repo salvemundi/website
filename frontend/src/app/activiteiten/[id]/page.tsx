@@ -8,6 +8,7 @@ import { eventsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
 import { directusFetch } from '@/shared/lib/directus';
 import AttendanceButton from '@/entities/activity/ui/AttendanceButton';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import { PhoneInput } from '@/shared/ui/PhoneInput';
 import QRDisplay from '@/entities/activity/ui/QRDisplay';
 import {
     CalendarClock,
@@ -648,8 +649,7 @@ export default function EventDetailPage() {
                                         {/* Phone */}
                                         <div>
                                             <label htmlFor="phone" className="block text-sm font-semibold text-theme-purple dark:text-white mb-1">Telefoonnummer *</label>
-                                            <input
-                                                type="tel"
+                                            <PhoneInput
                                                 id="phone"
                                                 name="phoneNumber"
                                                 value={formData.phoneNumber}

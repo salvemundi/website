@@ -14,6 +14,7 @@ import type { Trip, TripActivity, TripSignup } from '@/shared/lib/api/salvemundi
 import { updateTripSignup } from '../../actions';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
+import { PhoneInput } from '@/shared/ui/PhoneInput';
 import {
     CheckCircle2,
     Loader2,
@@ -369,12 +370,12 @@ export default function RestbetalingPage() {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">Telefoon</label>
-                                    <input
-                                        type="tel"
+                                    <PhoneInput
                                         name="phone_number"
                                         value={form.phone_number}
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[var(--bg-soft-dark)] dark:text-white rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                        placeholder=""
                                     />
                                 </div>
                             </div>

@@ -10,6 +10,7 @@ import {
 } from '@/shared/lib/api/salvemundi';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
+import { PhoneInput } from '@/shared/ui/PhoneInput';
 import {
     Loader2,
     AlertCircle,
@@ -335,13 +336,13 @@ export default function DeelnemerDetailPage() {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-semibold text-admin-muted mb-2">Telefoon</label>
-                                    <input
-                                        type="tel"
+                                    <PhoneInput
                                         name="phone_number"
                                         value={form.phone_number}
                                         onChange={handleChange}
                                         className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
                                         required
+                                        placeholder=""
                                     />
                                 </div>
                             </div>

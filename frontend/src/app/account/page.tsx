@@ -9,6 +9,7 @@ import { getImageUrl } from "@/shared/lib/api/salvemundi";
 import { slugify } from "@/shared/lib/utils/slug";
 import { format, startOfDay, isBefore } from "date-fns";
 import PageHeader from "@/widgets/page-header/ui/PageHeader";
+import { PhoneInput } from "@/shared/ui/PhoneInput";
 import NotificationToggle from "@/components/NotificationToggle";
 import {
   LogOut,
@@ -750,8 +751,7 @@ export default function AccountPage() {
 
                   {isEditingPhoneNumber ? (
                     <div className="space-y-3">
-                      <input
-                        type="tel"
+                      <PhoneInput
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
                         placeholder="+31612345678"
