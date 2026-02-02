@@ -15,9 +15,14 @@ env:
   IMAGE_NAME: salvemundi/directus
   DEPLOY_PATH: /opt/directus
 
+concurrency:
+  group: deploy-directus-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       packages: write
