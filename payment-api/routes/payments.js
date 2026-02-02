@@ -675,9 +675,9 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                             console.error(`[Webhook][${traceId}] ❌ Failed to send trip payment confirmation:`, err);
                             console.error(`[Webhook][${traceId}] Error details:`, err.message, err.stack);
                         }
-                    } else {
+                    } else if (payment.metadata.registrationType !== 'pub_crawl_signup') {
                         console.warn(`[Webhook][${traceId}] Not a trip_signup, sending regular confirmation email`);
-                        // Regular confirmation email for events/pub-crawls
+                        // Regular confirmation email for events
                         await notificationService.sendConfirmationEmail(
                             DIRECTUS_URL,
                             DIRECTUS_API_TOKEN,
@@ -685,6 +685,8 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                             payment.metadata,
                             payment.description
                         );
+                    } else {
+                        console.warn(`[Webhook][${traceId}] Skipping generic confirmation email for pub_crawl_signup (tickets will be sent separately)`);
                     }
                 }
 
