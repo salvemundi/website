@@ -66,8 +66,16 @@ if (!vapidKeys.publicKey || !vapidKeys.privateKey) {
 const DIRECTUS_URL = process.env.DIRECTUS_URL || 'https://admin.salvemundi.nl';
 const DIRECTUS_NOTIFICATION_KEY = process.env.DIRECTUS_NOTIFICATION_KEY;
 
+console.log('🔍 Environment variables check:');
+console.log('   DIRECTUS_URL:', DIRECTUS_URL);
+console.log('   DIRECTUS_NOTIFICATION_KEY present:', !!DIRECTUS_NOTIFICATION_KEY);
+console.log('   DIRECTUS_NOTIFICATION_KEY type:', typeof DIRECTUS_NOTIFICATION_KEY);
+console.log('   DIRECTUS_NOTIFICATION_KEY length:', DIRECTUS_NOTIFICATION_KEY ? DIRECTUS_NOTIFICATION_KEY.length : 0);
+console.log('   All env keys containing DIRECTUS:', Object.keys(process.env).filter(k => k.includes('DIRECTUS')));
+
 if (!DIRECTUS_NOTIFICATION_KEY) {
   console.error('⚠️  DIRECTUS_NOTIFICATION_KEY not configured!');
+  console.error('⚠️  Available env vars:', Object.keys(process.env).sort().join(', '));
 } else {
   const keyPreview = DIRECTUS_NOTIFICATION_KEY.length > 4 
     ? '...' + DIRECTUS_NOTIFICATION_KEY.slice(-4)
