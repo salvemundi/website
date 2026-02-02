@@ -64,7 +64,13 @@ if (!vapidKeys.publicKey || !vapidKeys.privateKey) {
 
 // Directus configuration
 const DIRECTUS_URL = process.env.DIRECTUS_URL || 'https://admin.salvemundi.nl';
-const DIRECTUS_TOKEN = process.env.DIRECTUS_API_TOKEN;
+const DIRECTUS_NOTIFICATION_KEY = process.env.DIRECTUS_NOTIFICATION_KEY;
+
+if (!DIRECTUS_NOTIFICATION_KEY) {
+  console.error('⚠️  DIRECTUS_NOTIFICATION_KEY not configured!');
+} else {
+  console.log('✓ Directus notification key configured');
+}
 
 // Helper to fetch from Directus
 async function directusFetch(endpoint, options = {}) {
@@ -74,7 +80,7 @@ async function directusFetch(endpoint, options = {}) {
       url,
       method: options.method || 'GET',
       headers: {
-        'Authorization': `Bearer ${DIRECTUS_TOKEN}`,
+        'Authorization': `Bearer ${DIRECTUS_NOTIFICATION_KEY}`,
         'Content-Type': 'application/json',
         ...options.headers
       },
