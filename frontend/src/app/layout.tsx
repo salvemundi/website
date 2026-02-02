@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     appleWebApp: {
         capable: true,
         title: 'Salve Mundi',
-        statusBarStyle: 'default',
+        statusBarStyle: 'black-translucent',
     },
 };
 
