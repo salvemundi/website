@@ -187,7 +187,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     return (
         <div
             onClick={onShowDetails}
-            className={`group relative z-0 overflow-visible w-full sm:w-[360px] md:w-[420px] rounded-[1.75rem] bg-[var(--bg-card)] dark:border dark:border-white/10 p-5 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 group-hover:z-10 ${isPast ? 'opacity-60 filter grayscale' : ''}`}
+            className={`group relative z-0 overflow-visible w-full rounded-[1.75rem] bg-[var(--bg-card)] dark:border dark:border-white/10 p-5 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 group-hover:z-10 ${isPast ? 'opacity-60 filter grayscale' : ''}`}
         >
             <span className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-theme-purple/10 transition-transform duration-500 group-hover:scale-125 pointer-events-none" />
 
