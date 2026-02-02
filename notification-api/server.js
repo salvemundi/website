@@ -601,6 +601,116 @@ app.post('/notify-intro-signups', async (req, res) => {
   }
 });
 
+// Send membership renewal reminder notification
+app.post('/notify-membership-renewal-reminder', async (req, res) => {
+  try {
+    const { daysBeforeExpiry = 30 } = req.body;
+
+    console.log(`[Membership Renewal] Fetching members expiring within ${daysBeforeExpiry} days...`);
+
+    // Calculate date range
+    const today = new Date();
+    const futureDate = new Date();
+    futureDate.setDate(today.getDate() + daysBeforeExpiry);
+
+    const todayStr = today.toISOString().split('T')[0];
+    const futureDateStr = futureDate.toISOString().split('T')[0];
+
+    console.log(`[Membership Renewal] Date range: ${todayStr} to ${futureDateStr}`);
+
+    // Fetch all users with membership expiry dates within the range
+    const users = await directusFetch(
+      `/users?filter[membership_expiry][_gte]=${todayStr}&filter[membership_expiry][_lte]=${futureDateStr}&fields=id,first_name,last_name,email,membership_expiry&limit=-1`
+    );
+
+    if (!users || users.length === 0) {
+      console.log('[Membership Renewal] No members found expiring in the specified period');
+      return res.json({ success: true, sent: 0, message: 'No members found expiring soon' });
+    }
+
+    console.log(`[Membership Renewal] Found ${users.length} members expiring soon`);
+
+    // Get subscriptions for these users
+    const userIds = users.map(u => u.id).filter(Boolean);
+    if (userIds.length === 0) {
+      return res.status(404).json({ error: 'No valid user IDs found' });
+    }
+
+    const userIdsParam = userIds.join(',');
+    const subscriptions = await directusFetch(`/items/push_notification?filter[user_id][_in]=${userIdsParam}`);
+
+    if (!subscriptions || subscriptions.length === 0) {
+      console.log('[Membership Renewal] No push subscriptions found for expiring members');
+      return res.json({ success: true, sent: 0, message: 'No push subscriptions found' });
+    }
+
+    console.log(`[Membership Renewal] Found ${subscriptions.length} subscriptions`);
+
+    // Create a map of user IDs to expiry dates for personalized messages
+    const userExpiryMap = new Map();
+    users.forEach(user => {
+      if (user.id && user.membership_expiry) {
+        userExpiryMap.set(user.id, user.membership_expiry);
+      }
+    });
+
+    // Send notifications
+    const results = await Promise.allSettled(
+      subscriptions.map(async (sub) => {
+        try {
+          const expiryDate = userExpiryMap.get(sub.user_id);
+          const daysUntilExpiry = expiryDate 
+            ? Math.ceil((new Date(expiryDate) - today) / (1000 * 60 * 60 * 24))
+            : daysBeforeExpiry;
+
+          const payload = JSON.stringify({
+            title: '⚠️ Lidmaatschap verloopt binnenkort!',
+            body: daysUntilExpiry <= 7 
+              ? `Je lidmaatschap verloopt over ${daysUntilExpiry} dag${daysUntilExpiry !== 1 ? 'en' : ''}. Verlengen kan via de app!`
+              : `Je lidmaatschap verloopt over ongeveer ${Math.floor(daysUntilExpiry / 7)} ${Math.floor(daysUntilExpiry / 7) === 1 ? 'week' : 'weken'}. Vergeet niet te verlengen!`,
+            icon: '/icon-512x512.png',
+            badge: '/icon-192x192.png',
+            tag: 'membership-renewal',
+            data: {
+              url: '/lid-worden',
+              type: 'membership-renewal',
+              daysUntilExpiry: daysUntilExpiry
+            }
+          });
+
+          const keys = typeof sub.keys === 'string' ? JSON.parse(sub.keys) : sub.keys;
+          const subscription = {
+            endpoint: sub.endpoint,
+            keys: keys
+          };
+          await webpush.sendNotification(subscription, payload);
+          console.log(`[Membership Renewal] Sent notification to user ${sub.user_id}`);
+          return { success: true };
+        } catch (error) {
+          console.error('[Membership Renewal] Error sending to endpoint:', sub.endpoint, error.message);
+          if (error.statusCode === 410 || error.statusCode === 404) {
+            await directusFetch(`/items/push_notification/${sub.id}`, {
+              method: 'DELETE'
+            });
+          }
+          throw error;
+        }
+      })
+    );
+
+    const successful = results.filter(r => r.status === 'fulfilled').length;
+    const failed = results.filter(r => r.status === 'rejected').length;
+
+    console.log(`✓ Sent ${successful} membership renewal reminders (${failed} failed)`);
+
+    res.json({ success: true, sent: successful, failed: failed });
+  } catch (error) {
+    console.error('Notify membership renewal error:', error);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ error: 'Failed to send membership renewal notifications', details: error.message });
+  }
+});
+
 // Error handling
 app.use((err, req, res, next) => {
   console.error('Error:', err);
