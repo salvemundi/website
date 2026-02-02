@@ -570,40 +570,50 @@ export default function KroegentochtPage() {
                                             </div>
 
                                             {/* Participant Names and Initials */}
-                                            <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-4 space-y-3 border border-slate-200 dark:border-white/10">
-                                                <h3 className="font-semibold text-theme-purple dark:text-white text-lg mb-2">
+                                            <div className="bg-theme-purple/5 dark:bg-white/5 rounded-2xl p-5 space-y-4 border border-theme-purple/10 dark:border-white/10">
+                                                <h3 className="font-bold text-theme-purple dark:text-white text-lg mb-2">
                                                     Deelnemers ({displayTicketCount} {displayTicketCount === 1 ? 'ticket' : 'tickets'})
                                                 </h3>
-                                                <p className="text-sm text-theme-text-muted mb-3">
+                                                <p className="text-sm text-theme-text-muted dark:text-white/60 mb-3">
                                                     Vul voor elk ticket een naam en eerste letter van de achternaam in.
                                                 </p>
-                                                {participants.map((participant, index) => (
-                                                    <div key={index} className="bg-white dark:bg-white/5 rounded-lg p-3 space-y-2 border border-slate-200 dark:border-white/10">
-                                                        <div>
-                                                            <label className="form-label text-sm">Ticket {index + 1} - Naam</label>
-                                                            <input
-                                                                type="text"
-                                                                value={participant.name}
-                                                                onChange={(e) => handleParticipantChange(index, 'name', e.target.value)}
-                                                                required
-                                                                placeholder="Voornaam + eventueel tussenvoegsel"
-                                                                className="form-input text-sm"
-                                                            />
+                                                <div className="space-y-3">
+                                                    {participants.map((participant, index) => (
+                                                        <div key={index} className="bg-white dark:bg-white/5 rounded-xl p-4 space-y-3 border border-slate-200 dark:border-white/10 shadow-sm transition-all hover:shadow-md">
+                                                            <div className="flex items-center gap-3 mb-1">
+                                                                <div className="w-8 h-8 rounded-full bg-theme-purple text-white flex items-center justify-center font-bold text-sm">
+                                                                    {index + 1}
+                                                                </div>
+                                                                <span className="font-semibold text-theme-purple dark:text-white">Deelnemer {index + 1}</span>
+                                                            </div>
+                                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                                                <div className="sm:col-span-2">
+                                                                    <label className="form-label text-xs uppercase tracking-wider opacity-70">Voornaam + tussenvoegsel</label>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={participant.name}
+                                                                        onChange={(e) => handleParticipantChange(index, 'name', e.target.value)}
+                                                                        required
+                                                                        placeholder="Bijv. Jan van"
+                                                                        className="form-input text-sm"
+                                                                    />
+                                                                </div>
+                                                                <div>
+                                                                    <label className="form-label text-xs uppercase tracking-wider opacity-70">1e letter achternaam</label>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={participant.initial}
+                                                                        onChange={(e) => handleParticipantChange(index, 'initial', e.target.value)}
+                                                                        required
+                                                                        placeholder="Bijv. S"
+                                                                        maxLength={1}
+                                                                        className="form-input text-center uppercase text-sm font-bold"
+                                                                    />
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                        <div>
-                                                            <label className="form-label text-sm">Eerste letter achternaam</label>
-                                                            <input
-                                                                type="text"
-                                                                value={participant.initial}
-                                                                onChange={(e) => handleParticipantChange(index, 'initial', e.target.value)}
-                                                                required
-                                                                placeholder="Bijv. S"
-                                                                maxLength={1}
-                                                                className="form-input w-20 uppercase text-sm"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                                    ))}
+                                                </div>
                                             </div>
 
                                             <button
