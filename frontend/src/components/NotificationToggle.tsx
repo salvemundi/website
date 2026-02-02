@@ -6,7 +6,8 @@ import {
   isPushSupported,
   subscribeToPushNotifications,
   unsubscribeFromPushNotifications,
-  isPushSubscribed
+  isPushSubscribed,
+  NOTIFICATION_API_URL
 } from '@/shared/lib/services/push-notification-service';
 
 interface NotificationToggleProps {
@@ -41,7 +42,7 @@ export default function NotificationToggle({ userId, className = '' }: Notificat
 
     console.log('[NotificationToggle] Starting toggle, isSubscribed:', isSubscribed);
     console.log('[NotificationToggle] UserId:', userId);
-    console.log('[NotificationToggle] API URL:', process.env.NEXT_PUBLIC_NOTIFICATION_API_URL || 'default (localhost:3003)');
+    console.log('[NotificationToggle] API URL:', NOTIFICATION_API_URL);
 
     setIsLoading(true);
 
@@ -70,7 +71,7 @@ export default function NotificationToggle({ userId, className = '' }: Notificat
     } catch (error) {
       console.error('Error toggling notifications:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      
+
       // Provide more specific error messages
       if (errorMessage.includes('timeout') || errorMessage.includes('reload')) {
         alert('Service worker probleem: Herlaad de pagina en probeer het opnieuw.');
@@ -96,11 +97,10 @@ export default function NotificationToggle({ userId, className = '' }: Notificat
     <button
       onClick={handleToggle}
       disabled={isLoading}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-        isSubscribed
+      className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${isSubscribed
           ? 'bg-purple-600 text-white hover:bg-purple-700'
           : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
-      } disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+        } disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
     >
       {isSubscribed ? (
         <>
