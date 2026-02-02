@@ -58,6 +58,58 @@ export default function KroegentochtPage() {
     // Auth & Existing Tickets
     const { user, isAuthenticated } = useAuth();
     const [existingSignups, setExistingSignups] = useState<any[]>([]);
+    const [existingTicketCountForEmail, setExistingTicketCountForEmail] = useState(0);
+
+    const isKroegentochtEnabled = siteSettings?.show ?? true;
+    const kroegentochtDisabledMessage = siteSettings?.disabled_message || 'De inschrijvingen voor de kroegentocht zijn momenteel gesloten.';
+
+    const nextEvent = useMemo(() => {
+        if (!pubCrawlEvents || pubCrawlEvents.length === 0) return null;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const validEvents = pubCrawlEvents.filter((event: any) => {
+            if (!event.date) return false;
+            const parsed = new Date(event.date);
+            if (isNaN(parsed.getTime())) return false;
+
+            const normalized = new Date(parsed);
+            normalized.setHours(0, 0, 0, 0);
+            return normalized.getTime() >= today.getTime();
+        });
+
+        if (validEvents.length === 0) return null;
+
+        validEvents.sort((a: any, b: any) => {
+            const dateA = new Date(a.date!);
+            const dateB = new Date(b.date!);
+            return dateA.getTime() - dateB.getTime();
+        });
+
+        return validEvents[0];
+    }, [pubCrawlEvents]);
+
+    const checkExistingTickets = async (email: string) => {
+        if (!email || !nextEvent) return;
+        try {
+            const res = await directusFetch<any[]>(
+                `/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}?filter[${FIELDS.SIGNUPS.EMAIL}][_eq]=${encodeURIComponent(email)}&filter[${FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID}][_eq]=${nextEvent.id}&filter[${FIELDS.SIGNUPS.PAYMENT_STATUS}][_eq]=paid&fields=${FIELDS.SIGNUPS.AMOUNT_TICKETS}`
+            );
+            const count = res?.reduce((sum, s) => sum + (s[FIELDS.SIGNUPS.AMOUNT_TICKETS] || 0), 0) || 0;
+            setExistingTicketCountForEmail(count);
+
+            // Adjust current form amount if it exceeds the new remaining limit
+            const remaining = 10 - count;
+            const currentAmount = parseInt(form.amount_tickets || '0', 10);
+            if (currentAmount > remaining) {
+                const newAmount = Math.max(1, remaining);
+                setForm(prev => ({ ...prev, amount_tickets: String(newAmount) }));
+                setParticipants(Array.from({ length: newAmount }, (_, i) => participants[i] || { name: '', initial: '' }));
+            }
+        } catch (e) {
+            console.error('Failed to check existing tickets for email', e);
+        }
+    };
 
     useEffect(() => {
         if (error && errorRef.current) {
@@ -72,13 +124,14 @@ export default function KroegentochtPage() {
                     // Fetch all tickets for this user via signup email
                     const tickets = await directusFetch<any[]>(`/items/${COLLECTIONS.PUB_CRAWL_TICKETS}?filter[${FIELDS.TICKETS.SIGNUP_ID}][${FIELDS.SIGNUPS.EMAIL}][_eq]=${encodeURIComponent(user.email)}&filter[${FIELDS.TICKETS.SIGNUP_ID}][${FIELDS.SIGNUPS.PAYMENT_STATUS}][_eq]=paid&fields=*,${FIELDS.TICKETS.SIGNUP_ID}.${FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID}.name&sort=-created_at`);
                     setExistingSignups(tickets || []);
+                    await checkExistingTickets(user.email);
                 } catch (e) {
                     console.error('Failed to fetch existing kroegentocht tickets', e);
                 }
             }
         };
         fetchTickets();
-    }, [isAuthenticated, user?.email]);
+    }, [isAuthenticated, user?.email, nextEvent?.id]);
 
     const downloadTicket = async (index: number, name: string, initial: string, qrToken: string, eventName: string) => {
         try {
@@ -137,34 +190,9 @@ export default function KroegentochtPage() {
         }
     };
 
-    const isKroegentochtEnabled = siteSettings?.show ?? true;
-    const kroegentochtDisabledMessage = siteSettings?.disabled_message || 'De inschrijvingen voor de kroegentocht zijn momenteel gesloten.';
 
-    const nextEvent = useMemo(() => {
-        if (!pubCrawlEvents || pubCrawlEvents.length === 0) return null;
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
 
-        const validEvents = pubCrawlEvents.filter((event: any) => {
-            if (!event.date) return false;
-            const parsed = new Date(event.date);
-            if (isNaN(parsed.getTime())) return false;
 
-            const normalized = new Date(parsed);
-            normalized.setHours(0, 0, 0, 0);
-            return normalized.getTime() >= today.getTime();
-        });
-
-        if (validEvents.length === 0) return null;
-
-        validEvents.sort((a: any, b: any) => {
-            const dateA = new Date(a.date!);
-            const dateB = new Date(b.date!);
-            return dateA.getTime() - dateB.getTime();
-        });
-
-        return validEvents[0];
-    }, [pubCrawlEvents]);
 
     const nextEventDate = nextEvent?.date ? new Date(nextEvent.date) : null;
     const formattedNextEventDate =
@@ -208,11 +236,14 @@ export default function KroegentochtPage() {
             }
 
             const parsed = parseInt(value, 10);
-            const clamped = Number.isNaN(parsed) ? 1 : Math.min(10, Math.max(1, parsed));
+            const remaining = 10 - existingTicketCountForEmail;
+            const clamped = Number.isNaN(parsed) ? 1 : Math.min(remaining, Math.max(1, parsed));
 
             // Limit check
-            if (clamped > 10) {
-                setError('Je kunt maximaal 10 tickets per keer kopen.');
+            if (parsed > remaining) {
+                setError(remaining <= 0
+                    ? `Je hebt al ${existingTicketCountForEmail} tickets. Je kunt geen nieuwe tickets meer kopen.`
+                    : `Je hebt al ${existingTicketCountForEmail} tickets. Je kunt er nog maximaal ${remaining} bij kopen.`);
             } else {
                 setError(null);
             }
@@ -239,7 +270,8 @@ export default function KroegentochtPage() {
     const handleAmountBlur = () => {
         // ensure we have a valid clamped number after leaving the input
         const parsed = parseInt(String(form.amount_tickets), 10);
-        const clamped = Number.isNaN(parsed) ? 1 : Math.min(10, Math.max(1, parsed));
+        const remaining = 10 - existingTicketCountForEmail;
+        const clamped = Number.isNaN(parsed) ? 1 : Math.min(remaining, Math.max(1, parsed));
         setForm({ ...form, amount_tickets: String(clamped) });
         const newParticipants = Array.from({ length: clamped }, (_, i) =>
             participants[i] || { name: '', initial: '' }
@@ -295,26 +327,21 @@ export default function KroegentochtPage() {
         setError(null);
 
         try {
-            // 1. Check existing tickets for this email and event
+            // Re-check existing tickets immediately before submission to be sure
             const email = form.email.trim();
             const eventId = nextEvent.id;
 
-            // Fetch all paid signups for this email and event
-            // We sum the amount_tickets field
             const existingPaidSignups = await directusFetch<any[]>(
                 `/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}?filter[${FIELDS.SIGNUPS.EMAIL}][_eq]=${encodeURIComponent(email)}&filter[${FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID}][_eq]=${eventId}&filter[${FIELDS.SIGNUPS.PAYMENT_STATUS}][_eq]=paid&fields=${FIELDS.SIGNUPS.AMOUNT_TICKETS}`
             );
 
-            const existingTicketCount = existingPaidSignups?.reduce((sum, s) => sum + (s[FIELDS.SIGNUPS.AMOUNT_TICKETS] || 0), 0) || 0;
-            const newTicketCount = Number(form.amount_tickets) || 1;
-            const totalTickets = existingTicketCount + newTicketCount;
+            const existingCount = existingPaidSignups?.reduce((sum, s) => sum + (s[FIELDS.SIGNUPS.AMOUNT_TICKETS] || 0), 0) || 0;
+            const newCount = Number(form.amount_tickets) || 1;
 
-            if (totalTickets > 10) {
-                if (existingTicketCount >= 10) {
-                    throw new Error(`Je hebt al ${existingTicketCount} tickets voor deze kroegentocht. Het maximum is 10 per emailadres.`);
-                } else {
-                    throw new Error(`Je hebt al ${existingTicketCount} tickets. Je kunt er nog maximaal ${10 - existingTicketCount} bij kopen.`);
-                }
+            if (existingCount + newCount > 10) {
+                throw new Error(existingCount >= 10
+                    ? `Je hebt al ${existingCount} tickets. Het maximum is 10.`
+                    : `Je hebt al ${existingCount} tickets. Je kunt er nog maximaal ${10 - existingCount} bij kopen.`);
             }
 
             // Determine final association value
@@ -559,7 +586,13 @@ export default function KroegentochtPage() {
                                                     type="email"
                                                     name="email"
                                                     value={form.email}
-                                                    onChange={handleChange}
+                                                    onChange={(e) => {
+                                                        handleChange(e);
+                                                        // Check tickets whenever email changes (and is valid-ish)
+                                                        if (e.target.value.includes('@')) {
+                                                            checkExistingTickets(e.target.value);
+                                                        }
+                                                    }}
                                                     required
                                                     placeholder="jouw@email.nl"
                                                     className="form-input"
@@ -612,11 +645,13 @@ export default function KroegentochtPage() {
                                                     onBlur={handleAmountBlur}
                                                     required
                                                     min="1"
-                                                    max="10"
+                                                    max={10 - existingTicketCountForEmail}
                                                     className="form-input"
                                                 />
                                                 <span className="text-sm text-theme-text-muted mt-1 block">
-                                                    Maximum 10 tickets per inschrijving
+                                                    {existingTicketCountForEmail > 0
+                                                        ? `Je hebt al ${existingTicketCountForEmail} tickets. Je kunt er nog maximaal ${10 - existingTicketCountForEmail} bij kopen.`
+                                                        : 'Maximum 10 tickets per inschrijving'}
                                                 </span>
                                             </div>
 
