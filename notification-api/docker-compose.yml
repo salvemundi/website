@@ -1,7 +1,7 @@
 services:
   notification-api:
     image: ghcr.io/salvemundi/notification-api:${TAG}
-    container_name: notification-api-${TAG:-dev}
+    container_name: notification-api
     restart: unless-stopped
     networks:
       - proxy-network

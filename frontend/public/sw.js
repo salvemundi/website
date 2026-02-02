@@ -134,21 +134,31 @@ self.addEventListener('push', (event) => {
 // Notification click event
 self.addEventListener('notificationclick', (event) => {
   console.log('[Service Worker] Notification clicked');
+  console.log('[Service Worker] Notification data:', event.notification.data);
   event.notification.close();
 
   const urlToOpen = event.notification.data?.url || '/';
+  const fullUrl = new URL(urlToOpen, self.location.origin).href;
+
+  console.log('[Service Worker] Opening URL:', fullUrl);
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // Check if there's already a window open
+      // Check if there's already a window/tab open with our origin
       for (const client of clientList) {
-        if (client.url === urlToOpen && 'focus' in client) {
-          return client.focus();
+        const clientUrl = new URL(client.url);
+        if (clientUrl.origin === self.location.origin && 'focus' in client) {
+          // Navigate the existing client to the new URL
+          return client.focus().then(() => {
+            if ('navigate' in client) {
+              return client.navigate(fullUrl);
+            }
+          });
         }
       }
-      // If not, open a new window
+      // If no window is open, open a new one
       if (clients.openWindow) {
-        return clients.openWindow(urlToOpen);
+        return clients.openWindow(fullUrl);
       }
     })
   );
