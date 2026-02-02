@@ -137,14 +137,16 @@ export default function AdminActiviteitenPage() {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to send reminder');
+                const errorData = await response.json();
+                console.error('Error response:', errorData);
+                throw new Error(errorData.details || errorData.error || 'Failed to send reminder');
             }
 
             const result = await response.json();
             alert(`Herinnering verstuurd naar ${result.sent} gebruiker(s)!`);
         } catch (error) {
             console.error('Failed to send reminder:', error);
-            alert('Fout bij versturen van herinnering');
+            alert(`Fout bij versturen van herinnering: ${error instanceof Error ? error.message : 'Unknown error'}`);
         } finally {
             setIsSendingNotification(false);
         }
