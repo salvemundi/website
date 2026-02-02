@@ -129,8 +129,8 @@ export default function AdminActiviteitenPage() {
 
         setIsSendingNotification(true);
         try {
-            const NOTIFICATION_API_URL = process.env.NEXT_PUBLIC_NOTIFICATION_API_URL || '/api/notifications';
-            const response = await fetch(`${NOTIFICATION_API_URL}/notify-event-reminder`, {
+            // Use the Next.js API route as a proxy to avoid CORS issues
+            const response = await fetch('/api/notifications/send-reminder', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ eventId })
@@ -158,8 +158,8 @@ export default function AdminActiviteitenPage() {
 
         setIsSendingNotification(true);
         try {
-            const NOTIFICATION_API_URL = process.env.NEXT_PUBLIC_NOTIFICATION_API_URL || '/api/notifications';
-            const response = await fetch(`${NOTIFICATION_API_URL}/send`, {
+            // Use the Next.js API route as a proxy to avoid CORS issues
+            const response = await fetch('/api/notifications/send-custom', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
