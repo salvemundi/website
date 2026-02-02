@@ -245,13 +245,13 @@ export default function AdminDashboardPage() {
     }, [effectiveUser?.id]);
 
     const checkAccessPermissions = async () => {
-        // Fetch all relevant settings in parallel
+        // Fetch all relevant settings in parallel (with authorized_tokens for admin page)
         try {
             const [introSet, reisSet, loggingSet, syncSet] = await Promise.all([
-                siteSettingsApi.get('admin_intro'),
-                siteSettingsApi.get('admin_reis'),
-                siteSettingsApi.get('admin_logging'),
-                siteSettingsApi.get('admin_sync'),
+                siteSettingsApi.get('admin_intro', true),
+                siteSettingsApi.get('admin_reis', true),
+                siteSettingsApi.get('admin_logging', true),
+                siteSettingsApi.get('admin_sync', true),
             ]);
 
             // Determine effective tokens (dynamic OR hardcoded fallbacks)

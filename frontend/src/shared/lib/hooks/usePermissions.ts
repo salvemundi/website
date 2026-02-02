@@ -1,10 +1,10 @@
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import { useSalvemundiSiteSettings } from './useSalvemundiApi';
+import { useSalvemundiSiteSettingsWithTokens } from './useSalvemundiApi';
 import { isUserAuthorized, getMergedTokens } from '../committee-utils';
 
 export function usePagePermission(pageKey: string, defaultTokens: string[]) {
     const { user, isLoading: authLoading } = useAuth();
-    const { data: settings, isLoading: settingsLoading } = useSalvemundiSiteSettings(pageKey);
+    const { data: settings, isLoading: settingsLoading } = useSalvemundiSiteSettingsWithTokens(pageKey);
 
     if (authLoading || settingsLoading) {
         return { isAuthorized: null, isLoading: true };

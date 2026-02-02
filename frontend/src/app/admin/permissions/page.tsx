@@ -75,7 +75,7 @@ export default function PermissionsPage() {
 
         try {
             await Promise.all(PERMISSION_PAGES.map(async (page) => {
-                const setting = await siteSettingsApi.get(page.pageKey);
+                const setting = await siteSettingsApi.get(page.pageKey, true); // Fetch with authorized_tokens
                 // Deduplicate and normalize tokens from DB
                 const rawTokensField = setting?.authorized_tokens;
                 let rawTokens: string[] = [];
