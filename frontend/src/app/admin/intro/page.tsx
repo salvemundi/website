@@ -31,7 +31,8 @@ import {
     ChevronUp,
     LayoutGrid,
     List,
-    Bell
+    Bell,
+    Mail
 } from 'lucide-react';
 import { siteSettingsMutations } from '@/shared/lib/api/salvemundi';
 import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
@@ -451,6 +452,19 @@ export default function IntroAdminPage() {
         XLSX.writeFile(workbook, `intro-ouders-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
     };
 
+    const composeEmailWithSignups = () => {
+        // Get all email addresses from signups
+        const emails = signups.map(s => s.email).filter(e => e).join(',');
+        
+        // Compose mailto link with BCC
+        const subject = encodeURIComponent('Intro Aanmeldingen');
+        const body = encodeURIComponent(`Hallo,\n\nAlle intro aanmeldingen zijn in BCC toegevoegd.\n\nMet vriendelijke groet`);
+        const mailtoLink = `mailto:?subject=${subject}&bcc=${emails}&body=${body}`;
+        
+        // Open default email client
+        window.location.href = mailtoLink;
+    };
+
     const toggleExpandSignup = (id: number) => {
         setExpandedSignups(prev =>
             prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
@@ -584,20 +598,6 @@ export default function IntroAdminPage() {
                     </button>
                 </div>
 
-                {/* Custom Notification Button */}
-                <div className="mb-6">
-                    <button
-                        onClick={() => setShowCustomNotificationModal(true)}
-                        className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
-                    >
-                        <Bell className="h-5 w-5" />
-                        Verstuur Notificatie naar Intro Ouders
-                    </button>
-                    <p className="text-xs text-admin-muted mt-2">
-                        Stuur push notificaties naar intro ouders die een account hebben en notificaties hebben ingeschakeld
-                    </p>
-                </div>
-
                 {isLoading ? (
                     <div className="flex items-center justify-center py-12">
                         <Loader2 className="h-8 w-8 animate-spin text-theme-purple" />
@@ -618,6 +618,13 @@ export default function IntroAdminPage() {
                                             className="w-full pl-10 pr-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-purple-600"
                                         />
                                     </div>
+                                    <button
+                                        onClick={composeEmailWithSignups}
+                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                                    >
+                                        <Mail className="h-5 w-5" />
+                                        Mail Opstellen (BCC)
+                                    </button>
                                     <button
                                         onClick={exportSignupsToExcel}
                                         className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
@@ -710,6 +717,13 @@ export default function IntroAdminPage() {
                                             className="w-full pl-10 pr-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-purple-600"
                                         />
                                     </div>
+                                    <button
+                                        onClick={() => setShowCustomNotificationModal(true)}
+                                        className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
+                                    >
+                                        <Bell className="h-5 w-5" />
+                                        Verstuur Notificatie
+                                    </button>
                                     <button
                                         onClick={exportParentSignupsToExcel}
                                         className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
