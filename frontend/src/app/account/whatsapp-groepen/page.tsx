@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { useSalvemundiWhatsAppGroups } from '@/shared/lib/hooks/useSalvemundiApi';
+import { useQuery } from '@tanstack/react-query';
+import { documentsApi } from '@/shared/lib/api/salvemundi';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { stripHtml } from '@/shared/lib/text';
 import { WhatsAppGroup } from '@/shared/lib/api/salvemundi';
@@ -13,6 +15,11 @@ export default function WhatsAppGroupsPage() {
     const router = useRouter();
     const { user, isLoading: authLoading, isLoggingOut } = useAuth();
     const { data: groups = [], isLoading: groupsLoading, error, refetch } = useSalvemundiWhatsAppGroups(true);
+    const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://admin.salvemundi.nl';
+    const { data: documents } = useQuery({ queryKey: ['documents'], queryFn: documentsApi.getAll });
+
+    const chatRegelsDoc = (documents || []).find((d: any) => (d.title || '').toLowerCase().trim() === 'chat regels');
+    const gedragscodeUrl = chatRegelsDoc ? `${directusUrl}/assets/${chatRegelsDoc.file}` : 'https://salvemundi.nl/gedragscode';
 
     useEffect(() => {
         if (!authLoading && !user && !isLoggingOut) {
@@ -184,7 +191,7 @@ export default function WhatsAppGroupsPage() {
                                 <span>
                                     Volg de{' '}
                                     <a
-                                        href="https://salvemundi.nl/gedragscode"
+                                        href={gedragscodeUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-theme-purple dark:text-theme-white underline hover:opacity-80 transition-opacity font-semibold"
