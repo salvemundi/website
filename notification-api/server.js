@@ -374,9 +374,13 @@ app.post('/notify-event-reminder', async (req, res) => {
 
     const userIds = signups.map(signup => signup.directus_relations).filter(Boolean);
 
-    // Get subscriptions for these users
-    const userFilter = userIds.map(id => `filter[user_id][_eq]=${id}`).join('&');
-    const subscriptions = await directusFetch(`/items/push_notification?${userFilter}`);
+    if (userIds.length === 0) {
+      return res.status(404).json({ error: 'No valid user IDs found in signups' });
+    }
+
+    // Get subscriptions for these users using _in operator
+    const userIdsParam = userIds.join(',');
+    const subscriptions = await directusFetch(`/items/push_notification?filter[user_id][_in]=${userIdsParam}`);
 
     if (!subscriptions || subscriptions.length === 0) {
       return res.status(404).json({ error: 'No subscriptions found for signed up users' });
