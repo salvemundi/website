@@ -591,8 +591,11 @@ export default function IntroAdminPage() {
                         className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
                     >
                         <Bell className="h-5 w-5" />
-                        Verstuur Custom Notificatie
+                        Verstuur Notificatie naar Intro Ouders
                     </button>
+                    <p className="text-xs text-admin-muted mt-2">
+                        Stuur push notificaties naar intro ouders die een account hebben en notificaties hebben ingeschakeld
+                    </p>
                 </div>
 
                 {isLoading ? (
@@ -1384,18 +1387,21 @@ export default function IntroAdminPage() {
                                     className="h-4 w-4 text-theme-purple"
                                 />
                                 <label htmlFor="includeParents" className="text-sm text-admin">
-                                    Verstuur ook naar Intro Ouders (met account)
+                                    Verstuur naar Intro Ouders (met account)
                                 </label>
                             </div>
-                            <p className="text-xs text-admin-muted">
-                                Deze notificatie wordt verstuurd naar alle gebruikers met push notificaties ingeschakeld.
-                                {customNotification.includeParents && ' Intro Ouders met een account krijgen de notificatie ook.'}
-                            </p>
+                            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-3">
+                                <p className="text-xs text-yellow-800 dark:text-yellow-200">
+                                    <strong>Let op:</strong> Intro aanmeldingen zijn anoniem en hebben geen account. 
+                                    Notificaties kunnen alleen naar Intro Ouders worden gestuurd die een account hebben en notificaties hebben ingeschakeld.
+                                    {!customNotification.includeParents && ' Vink de checkbox aan om naar Intro Ouders te sturen.'}
+                                </p>
+                            </div>
                         </div>
                         <div className="flex gap-3 mt-6">
                             <button
                                 onClick={handleSendCustomNotification}
-                                disabled={isSendingNotification}
+                                disabled={isSendingNotification || !customNotification.includeParents}
                                 className="flex-1 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSendingNotification ? 'Verzenden...' : 'Versturen'}
