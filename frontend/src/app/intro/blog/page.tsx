@@ -41,7 +41,7 @@ export default function IntroBlogPage() {
     const [selectedBlog, setSelectedBlog] = useState<IntroBlog | null>(null);
     const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
     const [sendingEmail, setSendingEmail] = useState<string | null>(null);
-    const { user, isAuthenticated } = useAuth();
+    const { user, isAuthenticated, isLoading: authLoading } = useAuth();
     const [likedBlogs, setLikedBlogs] = useState<(number | string)[]>([]);
     const [likeLoadingId, setLikeLoadingId] = useState<number | string | null>(null);
     const [showLoginModal, setShowLoginModal] = useState(false);
@@ -100,6 +100,10 @@ export default function IntroBlogPage() {
         queryKey: ['intro-blogs'],
         queryFn: introBlogsApi.getAll,
     });
+
+    // Combine auth + data loading to avoid flashes where the unauthenticated UI
+    // briefly appears while auth is being resolved.
+    const initialLoading = isLoading || authLoading;
 
 
     // Fetch committee_members rows for current user to determine committee membership
@@ -259,7 +263,8 @@ export default function IntroBlogPage() {
                     />
 
                     {/* Two Column Layout: Main Content + Sidebar */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+                    <div className={`transition-opacity duration-500 ${initialLoading ? 'opacity-0' : 'opacity-100'}`}>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                         {/* Main Content */}
                         <div className="lg:col-span-2 space-y-6">
 
@@ -316,7 +321,7 @@ export default function IntroBlogPage() {
                                 </>
                             )}
 
-                            {isLoading ? (
+                            {initialLoading ? (
                                 <div className="text-center py-12">
                                     <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-theme-purple"></div>
                                     <p className="text-theme-muted mt-4">Blogs laden...</p>
@@ -524,6 +529,7 @@ export default function IntroBlogPage() {
                         </aside>
                     </div>
                 </div>
+            </div>
             </main>
 
             {/* Login Required Modal */}
