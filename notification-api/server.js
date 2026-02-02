@@ -114,10 +114,12 @@ app.post('/subscribe', async (req, res) => {
     }
 
     // Store subscription in Directus
+    // Note: If 'keys' field is JSON type in Directus, store as object
+    // If it's TEXT/String type, store as JSON string
     const subscriptionData = {
       user_id: userId || null,
       endpoint: subscription.endpoint,
-      keys: JSON.stringify(subscription.keys),
+      keys: subscription.keys, // Store as object, Directus will handle JSON serialization
       user_agent: req.headers['user-agent'],
       created_at: new Date().toISOString(),
       last_used: new Date().toISOString()
@@ -219,9 +221,13 @@ app.post('/send', async (req, res) => {
     const results = await Promise.allSettled(
       subscriptions.map(async (sub) => {
         try {
+          // Handle keys: if it's already an object (JSON field in Directus), use it
+          // If it's a string, parse it
+          const keys = typeof sub.keys === 'string' ? JSON.parse(sub.keys) : sub.keys;
+          
           const subscription = {
             endpoint: sub.endpoint,
-            keys: JSON.parse(sub.keys)
+            keys: keys
           };
 
           await webpush.sendNotification(subscription, payload);
@@ -312,9 +318,10 @@ app.post('/notify-new-event', async (req, res) => {
     const results = await Promise.allSettled(
       subscriptions.map(async (sub) => {
         try {
+          const keys = typeof sub.keys === 'string' ? JSON.parse(sub.keys) : sub.keys;
           const subscription = {
             endpoint: sub.endpoint,
-            keys: JSON.parse(sub.keys)
+            keys: keys
           };
           await webpush.sendNotification(subscription, payload);
           return { success: true };
@@ -392,9 +399,10 @@ app.post('/notify-event-reminder', async (req, res) => {
     const results = await Promise.allSettled(
       subscriptions.map(async (sub) => {
         try {
+          const keys = typeof sub.keys === 'string' ? JSON.parse(sub.keys) : sub.keys;
           const subscription = {
             endpoint: sub.endpoint,
-            keys: JSON.parse(sub.keys)
+            keys: keys
           };
           await webpush.sendNotification(subscription, payload);
           return { success: true };
