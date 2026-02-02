@@ -97,6 +97,7 @@ Stuur notificatie over een nieuwe activiteit.
 ```
 
 ### POST /notify-event-reminder
+
 Stuur herinnering naar gebruikers die zijn aangemeld voor een activiteit.
 
 ```json
@@ -104,6 +105,31 @@ Stuur herinnering naar gebruikers die zijn aangemeld voor een activiteit.
   "eventId": 123
 }
 ```
+
+### POST /notify-new-intro-blog
+
+Stuur notificatie over een nieuwe intro blog.
+
+```json
+{
+  "blogId": 456,
+  "blogTitle": "Welkom bij de intro!"
+}
+```
+
+### POST /notify-intro-signups
+
+Stuur custom notificatie naar intro aanmeldingen en/of intro ouders.
+
+```json
+{
+  "title": "Belangrijke update",
+  "body": "De intro start morgen om 10:00!",
+  "includeParents": true
+}
+```
+
+**Note:** Aangezien intro aanmeldingen geen user accounts hebben, wordt de notificatie verstuurd naar alle gebruikers met push notificaties ingeschakeld. Als `includeParents` true is, worden ook intro ouders (die wel een account hebben) specifiek bereikt.
 
 ## Docker
 

@@ -30,7 +30,8 @@ import {
     ChevronDown,
     ChevronUp,
     LayoutGrid,
-    List
+    List,
+    Bell
 } from 'lucide-react';
 import { siteSettingsMutations } from '@/shared/lib/api/salvemundi';
 import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
@@ -81,6 +82,11 @@ export default function IntroAdminPage() {
     // Expanded items
     const [expandedSignups, setExpandedSignups] = useState<number[]>([]);
     const [expandedParents, setExpandedParents] = useState<number[]>([]);
+
+    // Custom notification state
+    const [showCustomNotificationModal, setShowCustomNotificationModal] = useState(false);
+    const [customNotification, setCustomNotification] = useState({ title: '', body: '', includeParents: false });
+    const [isSendingNotification, setIsSendingNotification] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -250,6 +256,24 @@ export default function IntroAdminPage() {
             } else {
                 const newBlog = await introBlogsApi.create(payload);
                 setBlogs([newBlog, ...blogs]);
+                
+                // Send push notification for new blog if it's published
+                if (newBlog.is_published) {
+                    try {
+                        await fetch('/api/notifications/send-intro-blog', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                blogId: newBlog.id,
+                                blogTitle: newBlog.title
+                            })
+                        });
+                        console.log('✓ Push notification sent for new intro blog');
+                    } catch (notifError) {
+                        console.error('Failed to send push notification:', notifError);
+                        // Don't fail the whole operation if notification fails
+                    }
+                }
             }
             setEditingBlog(null);
             setIsCreatingBlog(false);
@@ -439,6 +463,40 @@ export default function IntroAdminPage() {
         );
     };
 
+    const handleSendCustomNotification = async () => {
+        if (!customNotification.title || !customNotification.body) {
+            alert('Vul een titel en bericht in');
+            return;
+        }
+
+        setIsSendingNotification(true);
+        try {
+            const response = await fetch('/api/notifications/send-intro-custom', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: customNotification.title,
+                    body: customNotification.body,
+                    includeParents: customNotification.includeParents
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to send notification');
+            }
+
+            const result = await response.json();
+            alert(`Notificatie verstuurd naar ${result.sent} gebruiker(s)!`);
+            setShowCustomNotificationModal(false);
+            setCustomNotification({ title: '', body: '', includeParents: false });
+        } catch (error) {
+            console.error('Error sending notification:', error);
+            alert('Fout bij het versturen van de notificatie');
+        } finally {
+            setIsSendingNotification(false);
+        }
+    };
+
     if (permissionLoading || isAuthorized === null) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end">
@@ -523,6 +581,17 @@ export default function IntroAdminPage() {
                         aria-pressed={introSettings?.show ?? true}
                     >
                         <span className={`block w-5 h-5 bg-white rounded-full transform transition ${introSettings?.show ? 'translate-x-6' : 'translate-x-0'}`} />
+                    </button>
+                </div>
+
+                {/* Custom Notification Button */}
+                <div className="mb-6">
+                    <button
+                        onClick={() => setShowCustomNotificationModal(true)}
+                        className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
+                    >
+                        <Bell className="h-5 w-5" />
+                        Verstuur Custom Notificatie
                     </button>
                 </div>
 
@@ -1279,6 +1348,72 @@ export default function IntroAdminPage() {
                     </>
                 )}
             </div>
+
+            {/* Custom Notification Modal */}
+            {showCustomNotificationModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-admin-card rounded-lg shadow-xl max-w-md w-full p-6">
+                        <h3 className="text-xl font-bold text-admin mb-4">Custom Notificatie Versturen</h3>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-admin mb-2">Titel</label>
+                                <input
+                                    type="text"
+                                    value={customNotification.title}
+                                    onChange={(e) => setCustomNotification({ ...customNotification, title: e.target.value })}
+                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
+                                    placeholder="Notificatie titel"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-admin mb-2">Bericht</label>
+                                <textarea
+                                    value={customNotification.body}
+                                    onChange={(e) => setCustomNotification({ ...customNotification, body: e.target.value })}
+                                    rows={4}
+                                    className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg"
+                                    placeholder="Notificatie bericht"
+                                />
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="checkbox"
+                                    id="includeParents"
+                                    checked={customNotification.includeParents}
+                                    onChange={(e) => setCustomNotification({ ...customNotification, includeParents: e.target.checked })}
+                                    className="h-4 w-4 text-theme-purple"
+                                />
+                                <label htmlFor="includeParents" className="text-sm text-admin">
+                                    Verstuur ook naar Intro Ouders (met account)
+                                </label>
+                            </div>
+                            <p className="text-xs text-admin-muted">
+                                Deze notificatie wordt verstuurd naar alle gebruikers met push notificaties ingeschakeld.
+                                {customNotification.includeParents && ' Intro Ouders met een account krijgen de notificatie ook.'}
+                            </p>
+                        </div>
+                        <div className="flex gap-3 mt-6">
+                            <button
+                                onClick={handleSendCustomNotification}
+                                disabled={isSendingNotification}
+                                className="flex-1 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isSendingNotification ? 'Verzenden...' : 'Versturen'}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowCustomNotificationModal(false);
+                                    setCustomNotification({ title: '', body: '', includeParents: false });
+                                }}
+                                disabled={isSendingNotification}
+                                className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition font-semibold disabled:opacity-50"
+                            >
+                                Annuleren
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
