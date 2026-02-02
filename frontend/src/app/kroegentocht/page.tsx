@@ -280,6 +280,28 @@ export default function KroegentochtPage() {
         setError(null);
 
         try {
+            // 1. Check existing tickets for this email and event
+            const email = form.email.trim();
+            const eventId = nextEvent.id;
+
+            // Fetch all paid signups for this email and event
+            // We sum the amount_tickets field
+            const existingPaidSignups = await directusFetch<any[]>(
+                `/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}?filter[${FIELDS.SIGNUPS.EMAIL}][_eq]=${encodeURIComponent(email)}&filter[${FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID}][_eq]=${eventId}&filter[${FIELDS.SIGNUPS.PAYMENT_STATUS}][_eq]=paid&fields=${FIELDS.SIGNUPS.AMOUNT_TICKETS}`
+            );
+
+            const existingTicketCount = existingPaidSignups?.reduce((sum, s) => sum + (s[FIELDS.SIGNUPS.AMOUNT_TICKETS] || 0), 0) || 0;
+            const newTicketCount = Number(form.amount_tickets) || 1;
+            const totalTickets = existingTicketCount + newTicketCount;
+
+            if (totalTickets > 10) {
+                if (existingTicketCount >= 10) {
+                    throw new Error(`Je hebt al ${existingTicketCount} tickets voor deze kroegentocht. Het maximum is 10 per emailadres.`);
+                } else {
+                    throw new Error(`Je hebt al ${existingTicketCount} tickets. Je kunt er nog maximaal ${10 - existingTicketCount} bij kopen.`);
+                }
+            }
+
             // Determine final association value
             const finalAssociation = form.association === 'Anders'
                 ? form.customAssociation

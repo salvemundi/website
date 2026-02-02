@@ -38,6 +38,8 @@ export default function PubCrawlAttendancePage() {
     const [eventTitle, setEventTitle] = useState<string | null>(null);
     const [eventImageUrl, setEventImageUrl] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [emailQuery, setEmailQuery] = useState('');
+    const [associationQuery, setAssociationQuery] = useState('');
     const [showScanner, setShowScanner] = useState(false);
     const [scannerError, setScannerError] = useState<string | null>(null);
     const [scanResult, setScanResult] = useState<{ name: string; status: 'success' | 'error'; message: string } | null>(null);
@@ -225,13 +227,16 @@ export default function PubCrawlAttendancePage() {
 
     // Filter participants
     const filteredParticipants = participants.filter(p => {
-        if (!searchQuery.trim()) return true;
-        const query = searchQuery.toLowerCase();
-        return (
-            p.name.toLowerCase().includes(query) ||
-            p.email.toLowerCase().includes(query) ||
-            p.association.toLowerCase().includes(query)
-        );
+        const matchesSearch = !searchQuery.trim() ||
+            p.name.toLowerCase().includes(searchQuery.toLowerCase());
+
+        const matchesEmail = !emailQuery.trim() ||
+            p.email.toLowerCase().includes(emailQuery.toLowerCase());
+
+        const matchesAssociation = !associationQuery.trim() ||
+            p.association.toLowerCase().includes(associationQuery.toLowerCase());
+
+        return matchesSearch && matchesEmail && matchesAssociation;
     });
 
     const stats = {
@@ -353,16 +358,38 @@ export default function PubCrawlAttendancePage() {
                     </div>
                 )}
 
-                {/* Search */}
-                <div className="mb-6 relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input
-                        type="text"
-                        placeholder="Zoek op naam..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
-                    />
+                {/* Filters */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Zoek op naam..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-theme-purple/50"
+                        />
+                    </div>
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Filter op email..."
+                            value={emailQuery}
+                            onChange={(e) => setEmailQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-theme-purple/50"
+                        />
+                    </div>
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Filter op vereniging..."
+                            value={associationQuery}
+                            onChange={(e) => setAssociationQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-theme-purple/50"
+                        />
+                    </div>
                 </div>
 
                 {/* List */}
@@ -379,9 +406,16 @@ export default function PubCrawlAttendancePage() {
                         <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                             {filteredParticipants.map(p => (
                                 <tr key={p.uniqueId} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                    <td className="px-4 py-3">
-                                        <p className="font-bold">{p.name} {p.initial}</p>
-                                        <p className="text-xs text-gray-500">{p.email}</p>
+                                    <td className="px-4 py-3 max-w-[150px] sm:max-w-[250px]">
+                                        <p className="font-bold truncate" title={`${p.name} ${p.initial}`}>{p.name} {p.initial}</p>
+                                        <div className="flex flex-col">
+                                            <p className="text-xs text-gray-500 truncate" title={p.email}>{p.email}</p>
+                                            {p.association && (
+                                                <p className="text-[10px] text-theme-purple/70 font-semibold truncate" title={p.association}>
+                                                    {p.association}
+                                                </p>
+                                            )}
+                                        </div>
                                     </td>
                                     <td className="px-4 py-3 hidden sm:table-cell">
                                         Ticket {p.index + 1}
