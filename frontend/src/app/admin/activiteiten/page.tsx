@@ -38,8 +38,6 @@ export default function AdminActiviteitenPage() {
     const [customNotification, setCustomNotification] = useState({ title: '', body: '', eventId: 0 });
     const [isSendingNotification, setIsSendingNotification] = useState(false);
 
-    const NOTIFICATION_API_URL = process.env.NEXT_PUBLIC_NOTIFICATION_API_URL || 'http://localhost:3003';
-
     useEffect(() => {
         loadEvents();
     }, []);
@@ -131,6 +129,7 @@ export default function AdminActiviteitenPage() {
 
         setIsSendingNotification(true);
         try {
+            const NOTIFICATION_API_URL = process.env.NEXT_PUBLIC_NOTIFICATION_API_URL || '/api/notifications';
             const response = await fetch(`${NOTIFICATION_API_URL}/notify-event-reminder`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -159,6 +158,7 @@ export default function AdminActiviteitenPage() {
 
         setIsSendingNotification(true);
         try {
+            const NOTIFICATION_API_URL = process.env.NEXT_PUBLIC_NOTIFICATION_API_URL || '/api/notifications';
             const response = await fetch(`${NOTIFICATION_API_URL}/send`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
