@@ -324,18 +324,19 @@ a:hover {
   width: 100%;
   padding: 0.75rem 1rem;
   border-radius: var(--radius-xl);
-  background-color: #f8fafc;
-  /* slate-50 */
-  border: none;
-  color: #0f172a;
-  /* slate-900 */
+  background-color: var(--bg-soft);
+  border: 1.5px solid var(--border-color);
+  color: var(--text-main);
   font-weight: 500;
   font-size: var(--font-size-base);
   transition: all 0.2s ease;
+  appearance: none;
+  /* For better select styling */
 }
 
 .dark .form-input {
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.25);
+  border-color: rgba(255, 255, 255, 0.1);
   color: #ffffff;
 }
 
@@ -347,6 +348,23 @@ a:hover {
 .dark .form-input::placeholder {
   color: #64748b;
   /* slate-500 */
+}
+
+select.form-input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a4539b' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-position: right 1rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em;
+  padding-right: 2.5rem;
+}
+
+.dark select.form-input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+}
+
+.dark select.form-input option {
+  background-color: var(--bg-card);
+  color: #ffffff;
 }
 
 .form-input:focus {
