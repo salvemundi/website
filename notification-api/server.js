@@ -71,11 +71,14 @@ console.log('   DIRECTUS_URL:', DIRECTUS_URL);
 console.log('   DIRECTUS_NOTIFICATION_KEY present:', !!DIRECTUS_NOTIFICATION_KEY);
 console.log('   DIRECTUS_NOTIFICATION_KEY type:', typeof DIRECTUS_NOTIFICATION_KEY);
 console.log('   DIRECTUS_NOTIFICATION_KEY length:', DIRECTUS_NOTIFICATION_KEY ? DIRECTUS_NOTIFICATION_KEY.length : 0);
+console.log('   DIRECTUS_NOTIFICATION_KEY value is empty string:', DIRECTUS_NOTIFICATION_KEY === '');
+console.log('   DIRECTUS_NOTIFICATION_KEY value is undefined:', DIRECTUS_NOTIFICATION_KEY === undefined);
+console.log('   DIRECTUS_NOTIFICATION_KEY raw value:', JSON.stringify(DIRECTUS_NOTIFICATION_KEY));
 console.log('   All env keys containing DIRECTUS:', Object.keys(process.env).filter(k => k.includes('DIRECTUS')));
 
-if (!DIRECTUS_NOTIFICATION_KEY) {
-  console.error('⚠️  DIRECTUS_NOTIFICATION_KEY not configured!');
-  console.error('⚠️  Available env vars:', Object.keys(process.env).sort().join(', '));
+if (!DIRECTUS_NOTIFICATION_KEY || DIRECTUS_NOTIFICATION_KEY.trim() === '') {
+  console.error('⚠️  DIRECTUS_NOTIFICATION_KEY not configured or empty!');
+  console.error('⚠️  Raw value:', JSON.stringify(process.env.DIRECTUS_NOTIFICATION_KEY));
 } else {
   const keyPreview = DIRECTUS_NOTIFICATION_KEY.length > 4 
     ? '...' + DIRECTUS_NOTIFICATION_KEY.slice(-4)
