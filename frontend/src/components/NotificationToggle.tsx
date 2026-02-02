@@ -39,11 +39,16 @@ export default function NotificationToggle({ userId, className = '' }: Notificat
       return;
     }
 
+    console.log('[NotificationToggle] Starting toggle, isSubscribed:', isSubscribed);
+    console.log('[NotificationToggle] UserId:', userId);
+    console.log('[NotificationToggle] API URL:', process.env.NEXT_PUBLIC_NOTIFICATION_API_URL || 'default (localhost:3003)');
+
     setIsLoading(true);
 
     try {
       if (isSubscribed) {
         // Unsubscribe
+        console.log('[NotificationToggle] Attempting to unsubscribe...');
         const success = await unsubscribeFromPushNotifications();
         if (success) {
           setIsSubscribed(false);
@@ -53,6 +58,7 @@ export default function NotificationToggle({ userId, className = '' }: Notificat
         }
       } else {
         // Subscribe
+        console.log('[NotificationToggle] Attempting to subscribe...');
         const subscription = await subscribeToPushNotifications(userId);
         if (subscription) {
           setIsSubscribed(true);
