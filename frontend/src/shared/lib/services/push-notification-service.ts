@@ -3,7 +3,23 @@
  * Handles push notification subscriptions and permissions
  */
 
-const NOTIFICATION_API_URL = process.env.NEXT_PUBLIC_NOTIFICATION_API_URL || 'http://localhost:3003';
+// Determine the notification API URL
+// In production, try common patterns if env var is not set
+function getNotificationApiUrl(): string {
+  // If explicitly set, use that
+  if (process.env.NEXT_PUBLIC_NOTIFICATION_API_URL) {
+    return process.env.NEXT_PUBLIC_NOTIFICATION_API_URL;
+  }
+  
+  return 'https://notifications.salvemundi.nl';
+}
+
+const NOTIFICATION_API_URL = getNotificationApiUrl();
+
+// Log the notification API URL for debugging
+if (typeof window !== 'undefined') {
+  console.log('[Push] Notification API URL:', NOTIFICATION_API_URL);
+}
 
 // Check if push notifications are supported
 export function isPushSupported(): boolean {
