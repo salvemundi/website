@@ -518,8 +518,12 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                                 DIRECTUS_API_TOKEN,
                                 collection,
                                 registrationId,
-                                'pub_crawl_event_id,amount_tickets,name_initials'
+                                '*'
                             );
+
+                            if (signup) {
+                                console.warn(`[Webhook][${traceId}] Signup ${registrationId} keys:`, Object.keys(signup).join(', '));
+                            }
 
                             if (!signup) {
                                 const maskedToken = DIRECTUS_API_TOKEN ? `${DIRECTUS_API_TOKEN.substring(0, 4)}...${DIRECTUS_API_TOKEN.slice(-4)}` : 'MISSING';
