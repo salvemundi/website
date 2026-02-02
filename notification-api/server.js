@@ -365,14 +365,14 @@ app.post('/notify-event-reminder', async (req, res) => {
 
     // Get users who signed up for this event
     const signups = await directusFetch(
-      `/items/event_signups?filter[event_id][_eq]=${eventId}&fields=user_id`
+      `/items/event_signups?filter[event_id][_eq]=${eventId}&fields=directus_relations`
     );
 
     if (!signups || signups.length === 0) {
       return res.status(404).json({ error: 'No signups found for this event' });
     }
 
-    const userIds = signups.map(signup => signup.user_id).filter(Boolean);
+    const userIds = signups.map(signup => signup.directus_relations).filter(Boolean);
 
     // Get subscriptions for these users
     const userFilter = userIds.map(id => `filter[user_id][_eq]=${id}`).join('&');
