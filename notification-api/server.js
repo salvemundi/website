@@ -121,19 +121,19 @@ app.post('/subscribe', async (req, res) => {
 
     // Check if subscription already exists
     const existingSubscriptions = await directusFetch(
-      `/items/push_notificatin?filter[endpoint][_eq]=${encodeURIComponent(subscription.endpoint)}`
+      `/items/push_notification?filter[endpoint][_eq]=${encodeURIComponent(subscription.endpoint)}`
     );
 
     if (existingSubscriptions && existingSubscriptions.length > 0) {
       // Update existing subscription
-      await directusFetch(`/items/push_notificatin/${existingSubscriptions[0].id}`, {
+      await directusFetch(`/items/push_notification/${existingSubscriptions[0].id}`, {
         method: 'PATCH',
         body: subscriptionData
       });
       console.log('✓ Push subscription updated');
     } else {
       // Create new subscription
-      await directusFetch('/items/push_notificatin', {
+      await directusFetch('/items/push_notification', {
         method: 'POST',
         body: subscriptionData
       });
@@ -158,11 +158,11 @@ app.post('/unsubscribe', async (req, res) => {
 
     // Find and delete subscription from Directus
     const subscriptions = await directusFetch(
-      `/items/push_notificatin?filter[endpoint][_eq]=${encodeURIComponent(endpoint)}`
+      `/items/push_notification?filter[endpoint][_eq]=${encodeURIComponent(endpoint)}`
     );
 
     if (subscriptions && subscriptions.length > 0) {
-      await directusFetch(`/items/push_notificatin/${subscriptions[0].id}`, {
+      await directusFetch(`/items/push_notification/${subscriptions[0].id}`, {
         method: 'DELETE'
       });
       console.log('✓ Push subscription deleted');
@@ -189,10 +189,10 @@ app.post('/send', async (req, res) => {
     if (userIds && userIds.length > 0) {
       // Send to specific users
       const userFilter = userIds.map(id => `filter[user_id][_eq]=${id}`).join('&');
-      subscriptions = await directusFetch(`/items/push_notificatin?${userFilter}`);
+      subscriptions = await directusFetch(`/items/push_notification?${userFilter}`);
     } else {
       // Send to all subscribed users
-      subscriptions = await directusFetch('/items/push_notificatin?limit=-1');
+      subscriptions = await directusFetch('/items/push_notification?limit=-1');
     }
 
     if (!subscriptions || subscriptions.length === 0) {
@@ -223,7 +223,7 @@ app.post('/send', async (req, res) => {
           await webpush.sendNotification(subscription, payload);
           
           // Update last_used timestamp
-          await directusFetch(`/items/push_notificatin/${sub.id}`, {
+          await directusFetch(`/items/push_notification/${sub.id}`, {
             method: 'PATCH',
             body: { last_used: new Date().toISOString() }
           });
@@ -232,7 +232,7 @@ app.post('/send', async (req, res) => {
         } catch (error) {
           // If subscription is invalid, delete it
           if (error.statusCode === 410 || error.statusCode === 404) {
-            await directusFetch(`/items/push_notificatin/${sub.id}`, {
+            await directusFetch(`/items/push_notification/${sub.id}`, {
               method: 'DELETE'
             });
             console.log('Deleted invalid subscription:', sub.endpoint);
@@ -276,7 +276,7 @@ app.post('/notify-new-event', async (req, res) => {
     }
 
     // Get all subscriptions
-    const subscriptions = await directusFetch('/items/push_notificatin?limit=-1');
+    const subscriptions = await directusFetch('/items/push_notification?limit=-1');
 
     if (!subscriptions || subscriptions.length === 0) {
       return res.status(404).json({ error: 'No subscriptions found' });
@@ -307,7 +307,7 @@ app.post('/notify-new-event', async (req, res) => {
           return { success: true };
         } catch (error) {
           if (error.statusCode === 410 || error.statusCode === 404) {
-            await directusFetch(`/items/push_notificatin/${sub.id}`, {
+            await directusFetch(`/items/push_notification/${sub.id}`, {
               method: 'DELETE'
             });
           }
@@ -356,7 +356,7 @@ app.post('/notify-event-reminder', async (req, res) => {
 
     // Get subscriptions for these users
     const userFilter = userIds.map(id => `filter[user_id][_eq]=${id}`).join('&');
-    const subscriptions = await directusFetch(`/items/push_notificatin?${userFilter}`);
+    const subscriptions = await directusFetch(`/items/push_notification?${userFilter}`);
 
     if (!subscriptions || subscriptions.length === 0) {
       return res.status(404).json({ error: 'No subscriptions found for signed up users' });
@@ -387,7 +387,7 @@ app.post('/notify-event-reminder', async (req, res) => {
           return { success: true };
         } catch (error) {
           if (error.statusCode === 410 || error.statusCode === 404) {
-            await directusFetch(`/items/push_notificatin/${sub.id}`, {
+            await directusFetch(`/items/push_notification/${sub.id}`, {
               method: 'DELETE'
             });
           }
