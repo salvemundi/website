@@ -47,6 +47,9 @@ self.addEventListener('fetch', (event) => {
   // Skip API requests
   if (url.pathname.startsWith('/api/')) return;
 
+  // Skip external requests (different origin)
+  if (url.origin !== self.location.origin) return;
+
   // For Next.js static files and images - Cache first strategy
   if (
     url.pathname.startsWith('/_next/static/') ||
