@@ -13,6 +13,21 @@ export function isPushSupported(): boolean {
          'Notification' in window;
 }
 
+// Check if service worker is registered
+async function isServiceWorkerRegistered(): Promise<boolean> {
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+    return false;
+  }
+  
+  try {
+    const registration = await navigator.serviceWorker.getRegistration();
+    return registration !== undefined;
+  } catch (error) {
+    console.error('Error checking service worker registration:', error);
+    return false;
+  }
+}
+
 // Get current notification permission
 export function getNotificationPermission(): NotificationPermission {
   if (!isPushSupported()) return 'denied';
@@ -32,6 +47,7 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
 // Get VAPID public key from notification API
 async function getVapidPublicKey(): Promise<string> {
   try {
+    console.log(`[Push] Fetching VAPID key from: ${NOTIFICATION_API_URL}/vapid-public-key`);
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
     
@@ -41,11 +57,17 @@ async function getVapidPublicKey(): Promise<string> {
     clearTimeout(timeoutId);
     
     if (!response.ok) {
-      throw new Error('Failed to get VAPID public key');
+      console.error('[Push] VAPID key fetch failed:', response.status, response.statusText);
+      throw new Error(`Failed to get VAPID public key: ${response.status}`);
     }
     const data = await response.json();
+    console.log('[Push] VAPID key fetched successfully');
     return data.publicKey;
   } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.error('[Push] VAPID key fetch timed out after 5 seconds');
+      throw new Error('Notification API timeout - could not fetch VAPID key');
+    }
     console.error('Error getting VAPID public key:', error);
     throw error;
   }
@@ -73,6 +95,24 @@ export async function subscribeToPushNotifications(userId?: string): Promise<Pus
     throw new Error('Push notifications not supported');
   }
 
+  // Check if service worker is registered
+  const swRegistered = await isServiceWorkerRegistered();
+  if (!swRegistered) {
+    console.error('[Push] Service worker is not registered. Attempting to register...');
+    
+    // Try to register the service worker now
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js');
+      console.log('[Push] Service worker registered successfully:', registration.scope);
+      
+      // Wait a bit for it to activate
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+      console.error('[Push] Failed to register service worker:', error);
+      throw new Error('Service worker registration failed. Please reload the page and try again.');
+    }
+  }
+
   // Request permission first
   const permission = await requestNotificationPermission();
   if (permission !== 'granted') {
@@ -82,24 +122,31 @@ export async function subscribeToPushNotifications(userId?: string): Promise<Pus
 
   try {
     // Get service worker registration with timeout
+    console.log('[Push] Waiting for service worker to be ready...');
     const registration = await Promise.race([
       navigator.serviceWorker.ready,
       new Promise<never>((_, reject) => 
-        setTimeout(() => reject(new Error('Service worker timeout')), 10000)
+        setTimeout(() => reject(new Error('Service worker timeout - waited 10 seconds. Please reload the page.')), 10000)
       )
     ]);
+    console.log('[Push] Service worker is ready');
 
     // Get VAPID public key
+    console.log('[Push] Fetching VAPID public key...');
     const vapidPublicKey = await getVapidPublicKey();
+    console.log('[Push] VAPID key received');
     const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
 
     // Subscribe to push notifications
+    console.log('[Push] Subscribing to push manager...');
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: convertedVapidKey as BufferSource
     });
+    console.log('[Push] Push manager subscription created');
 
     // Send subscription to backend
+    console.log('[Push] Sending subscription to backend...');
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
     
@@ -118,7 +165,9 @@ export async function subscribeToPushNotifications(userId?: string): Promise<Pus
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      throw new Error('Failed to save subscription');
+      const errorText = await response.text();
+      console.error('[Push] Backend error:', response.status, errorText);
+      throw new Error(`Failed to save subscription: ${response.status}`);
     }
 
     console.log('✓ Push notification subscription successful');
