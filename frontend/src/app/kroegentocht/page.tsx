@@ -99,10 +99,11 @@ export default function KroegentochtPage() {
             setExistingTicketCountForEmail(count);
 
             // Adjust current form amount if it exceeds the new remaining limit
-            const remaining = 10 - count;
+            const remaining = Math.max(0, 10 - count);
             const currentAmount = parseInt(form.amount_tickets || '0', 10);
-            if (currentAmount > remaining) {
-                const newAmount = Math.max(1, remaining);
+
+            if (currentAmount > remaining || (remaining === 0 && currentAmount !== 0)) {
+                const newAmount = remaining;
                 setForm(prev => ({ ...prev, amount_tickets: String(newAmount) }));
                 setParticipants(Array.from({ length: newAmount }, (_, i) => participants[i] || { name: '', initial: '' }));
             }
@@ -236,15 +237,20 @@ export default function KroegentochtPage() {
             }
 
             const parsed = parseInt(value, 10);
-            const remaining = 10 - existingTicketCountForEmail;
-            const clamped = Number.isNaN(parsed) ? 1 : Math.min(remaining, Math.max(1, parsed));
+            const remaining = Math.max(0, 10 - existingTicketCountForEmail);
+            const minAllowed = remaining > 0 ? 1 : 0;
+            const clamped = Number.isNaN(parsed) ? minAllowed : Math.min(remaining, Math.max(minAllowed, parsed));
 
             // Limit check
             if (parsed > remaining) {
                 setError(remaining <= 0
-                    ? `Je hebt al ${existingTicketCountForEmail} tickets. Je kunt geen nieuwe tickets meer kopen.`
-                    : `Je hebt al ${existingTicketCountForEmail} tickets. Je kunt er nog maximaal ${remaining} bij kopen.`);
+                    ? `Je hebt al ${existingTicketCountForEmail} tickets voor deze groep. Je kunt geen nieuwe tickets meer kopen.`
+                    : `Je hebt al ${existingTicketCountForEmail} tickets voor deze groep. Je kunt er nog maximaal ${remaining} bij kopen.`);
             } else {
+                if (parsed < minAllowed && remaining > 0) {
+                    // don't set error for 0 if they are still typing?
+                    // but we clamp it anyway
+                }
                 setError(null);
             }
 
@@ -270,8 +276,10 @@ export default function KroegentochtPage() {
     const handleAmountBlur = () => {
         // ensure we have a valid clamped number after leaving the input
         const parsed = parseInt(String(form.amount_tickets), 10);
-        const remaining = 10 - existingTicketCountForEmail;
-        const clamped = Number.isNaN(parsed) ? 1 : Math.min(remaining, Math.max(1, parsed));
+        const remaining = Math.max(0, 10 - existingTicketCountForEmail);
+        const minAllowed = remaining > 0 ? 1 : 0;
+        const clamped = Number.isNaN(parsed) ? minAllowed : Math.min(remaining, Math.max(minAllowed, parsed));
+
         setForm({ ...form, amount_tickets: String(clamped) });
         const newParticipants = Array.from({ length: clamped }, (_, i) =>
             participants[i] || { name: '', initial: '' }
@@ -704,15 +712,17 @@ export default function KroegentochtPage() {
 
                                             <button
                                                 type="submit"
-                                                disabled={loading || !canSignUp}
+                                                disabled={loading || !canSignUp || (existingTicketCountForEmail >= 10)}
                                                 className="form-button mt-4 group"
                                             >
                                                 <span>
                                                     {loading
                                                         ? 'Bezig met inschrijven...'
-                                                        : `Inschrijven (€${(Number(form.amount_tickets) * 1).toFixed(2).replace('.', ',')})`}
+                                                        : existingTicketCountForEmail >= 10
+                                                            ? 'Maximum bereikt'
+                                                            : `Inschrijven (€${(Number(form.amount_tickets) * 1).toFixed(2).replace('.', ',')})`}
                                                 </span>
-                                                {!loading && <span className="group-hover:translate-x-1 transition-transform">→</span>}
+                                                {!loading && existingTicketCountForEmail < 10 && <span className="group-hover:translate-x-1 transition-transform">→</span>}
                                             </button>
 
                                             {error && (
