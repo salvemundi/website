@@ -88,6 +88,7 @@ export default function IntroAdminPage() {
     const [showCustomNotificationModal, setShowCustomNotificationModal] = useState(false);
     const [customNotification, setCustomNotification] = useState({ title: '', body: '', includeParents: false });
     const [isSendingNotification, setIsSendingNotification] = useState(false);
+    const [isSendingMembershipReminder, setIsSendingMembershipReminder] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -511,6 +512,41 @@ export default function IntroAdminPage() {
         }
     };
 
+    const handleSendMembershipReminder = async () => {
+        const confirmed = confirm(
+            'Wil je een herinnering sturen naar alle leden die binnen 30 dagen hun lidmaatschap moeten verlengen?'
+        );
+        
+        if (!confirmed) return;
+
+        setIsSendingMembershipReminder(true);
+        try {
+            const response = await fetch('/api/notifications/send-membership-reminder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ daysBeforeExpiry: 30 })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to send reminders');
+            }
+
+            const result = await response.json();
+            
+            if (result.sent === 0) {
+                alert('Geen leden gevonden die binnen 30 dagen hun lidmaatschap moeten verlengen.');
+            } else {
+                alert(`Herinnering verstuurd naar ${result.sent} ${result.sent === 1 ? 'lid' : 'leden'}!`);
+            }
+        } catch (error) {
+            console.error('Error sending membership reminder:', error);
+            alert('Fout bij het versturen van de herinneringen: ' + (error instanceof Error ? error.message : 'Onbekende fout'));
+        } finally {
+            setIsSendingMembershipReminder(false);
+        }
+    };
+
     if (permissionLoading || isAuthorized === null) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end">
@@ -576,25 +612,46 @@ export default function IntroAdminPage() {
                 </div>
 
                 {/* Visibility toggle */}
-                <div className="mb-6 flex items-center gap-4">
-                    <label className="text-sm font-medium">Intro zichtbaar</label>
+                <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
+                    <div className="flex items-center gap-4">
+                        <label className="text-sm font-medium">Intro zichtbaar</label>
+                        <button
+                            onClick={async () => {
+                                const current = introSettings?.show ?? true;
+                                try {
+                                    await siteSettingsMutations.upsertByPage('intro', { show: !current });
+                                    await refetchIntroSettings();
+                                    // reload data to reflect visibility change if needed
+                                    loadData();
+                                } catch (err) {
+                                    console.error('Failed to toggle intro visibility', err);
+                                    alert('Fout bij het bijwerken van de zichtbaarheid voor Intro');
+                                }
+                            }}
+                            className={`w-12 h-6 rounded-full p-0.5 transition ${introSettings?.show ? 'bg-green-500' : 'bg-gray-300'}`}
+                            aria-pressed={introSettings?.show ?? true}
+                        >
+                            <span className={`block w-5 h-5 bg-white rounded-full transform transition ${introSettings?.show ? 'translate-x-6' : 'translate-x-0'}`} />
+                        </button>
+                    </div>
+                    
                     <button
-                        onClick={async () => {
-                            const current = introSettings?.show ?? true;
-                            try {
-                                await siteSettingsMutations.upsertByPage('intro', { show: !current });
-                                await refetchIntroSettings();
-                                // reload data to reflect visibility change if needed
-                                loadData();
-                            } catch (err) {
-                                console.error('Failed to toggle intro visibility', err);
-                                alert('Fout bij het bijwerken van de zichtbaarheid voor Intro');
-                            }
-                        }}
-                        className={`w-12 h-6 rounded-full p-0.5 transition ${introSettings?.show ? 'bg-green-500' : 'bg-gray-300'}`}
-                        aria-pressed={introSettings?.show ?? true}
+                        onClick={handleSendMembershipReminder}
+                        disabled={isSendingMembershipReminder}
+                        className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Stuur een herinnering naar leden die binnen 30 dagen hun lidmaatschap moeten verlengen"
                     >
-                        <span className={`block w-5 h-5 bg-white rounded-full transform transition ${introSettings?.show ? 'translate-x-6' : 'translate-x-0'}`} />
+                        {isSendingMembershipReminder ? (
+                            <>
+                                <Loader2 className="h-5 w-5 animate-spin" />
+                                Versturen...
+                            </>
+                        ) : (
+                            <>
+                                <Bell className="h-5 w-5" />
+                                Stuur Lidmaatschap Herinnering
+                            </>
+                        )}
                     </button>
                 </div>
 
