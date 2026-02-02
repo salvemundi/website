@@ -166,16 +166,11 @@ export async function GET(
                         });
 
                         if (path.includes('site_settings')) {
-                            const isIct = memberships.some((m: any) => (m?.committee_id?.name || '').toString().toLowerCase().includes('ict'));
-
-                            if (!isIct) {
-                                console.warn(`[Directus Proxy] BLOCKED Access to site_settings for non-ICT user ${userId}`);
-                                return NextResponse.json({ error: 'Forbidden', message: 'Only ICT allowed' }, { status: 403 });
-                            }
-
-                            // Authorized
-                            console.log(`[Directus Proxy] Access granted to site_settings for ICT user ${userId}. Using USER TOKEN.`);
-                            canBypass = false;
+                            // For GET requests, allow all authenticated users to read site_settings
+                            // This is needed so users can see if intro/kroegentocht/reis pages are enabled
+                            // Write operations (POST/PATCH/DELETE) will still be restricted to ICT in the mutation handlers
+                            console.log(`[Directus Proxy] Allowing GET access to site_settings for user ${userId}`);
+                            canBypass = false; // Use user token for personalized access
                         } else {
                             canBypass = isGeneralPrivileged;
                         }
@@ -445,6 +440,21 @@ async function handleMutation(
             if (!isIct) {
                 console.warn(`[Directus Proxy] BLOCKED Bestuur/Leader attempt to modify authorized_tokens field on path: ${path} from IP: ${ip}`);
                 return NextResponse.json({ error: 'Forbidden', message: 'Only ICT members can modify authorization tokens' }, { status: 403 });
+            }
+        }
+
+        // Guard: only ICT can write to site_settings (POST/PATCH/DELETE)
+        // GET requests are allowed for all authenticated users (handled above)
+        if (path.includes('site_settings')) {
+            const memberships = userData?.memberships || [];
+            const isIct = memberships.some((m: any) => {
+                const name = (m?.committee_id?.name || '').toString().toLowerCase();
+                return name.includes('ict');
+            });
+
+            if (!isIct && !canBypass) {
+                console.warn(`[Directus Proxy] BLOCKED non-ICT ${method} attempt to site_settings: ${path} from IP: ${ip}`);
+                return NextResponse.json({ error: 'Forbidden', message: 'Only ICT members can modify site settings' }, { status: 403 });
             }
         }
 
