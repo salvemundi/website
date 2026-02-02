@@ -376,11 +376,25 @@ async function handleMutation(
                             const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
 
                             userData.memberships = memberships;
+                            
+                            // Debug logging for membership check
+                            console.log(`[Directus Proxy] User ${userId} memberships:`, memberships.map((m: any) => ({
+                                committee_id: m?.committee_id?.id,
+                                committee_name: m?.committee_id?.name,
+                                is_leader: m?.is_leader
+                            })));
+                            
                             canBypass = memberships.some((m: any) => {
                                 const name = (m?.committee_id?.name || '').toString().toLowerCase();
                                 const isLeader = m.is_leader === true;
-                                return name.includes('bestuur') || name.includes('ict') || name.includes('kandidaat') || name.includes('kandi') || isLeader;
+                                const hasPrivilege = name.includes('bestuur') || name.includes('ict') || name.includes('kandidaat') || name.includes('kandi') || isLeader;
+                                if (hasPrivilege) {
+                                    console.log(`[Directus Proxy] User ${userId} granted bypass via committee: ${m?.committee_id?.name} (leader: ${isLeader})`);
+                                }
+                                return hasPrivilege;
                             });
+                            
+                            console.log(`[Directus Proxy] User ${userId} canBypass result: ${canBypass}`);
                         }
                     } else if (meResp.status === 401 || meResp.status === 403) {
                         console.warn(`[Directus Proxy] MUTATION /users/me failed: ${meResp.status}. Marking token as invalid.`);
@@ -399,12 +413,17 @@ async function handleMutation(
 
         // Special Guards
         if (path.startsWith('items/events') && authHeader && !canBypass) {
+            console.log(`[Directus Proxy] Event creation guard triggered. canBypass=${canBypass}, hasAuth=${!!authHeader}`);
             const committeeId = body?.committee_id;
             const memberships = userData?.memberships || [];
+            console.log(`[Directus Proxy] Requested committee_id: ${committeeId}, User memberships count: ${memberships.length}`);
+            
             if (committeeId) {
                 const isMember = memberships.some((m: any) => String(m?.committee_id?.id || m?.committee_id) === String(committeeId));
+                console.log(`[Directus Proxy] Committee membership check: isMember=${isMember} for committee ${committeeId}`);
                 if (!isMember) return NextResponse.json({ error: 'Forbidden', message: 'Not a member of selected committee' }, { status: 403 });
             } else if (method === 'POST') {
+                console.log(`[Directus Proxy] POST to events without committee_id - blocking`);
                 return NextResponse.json({ error: 'Forbidden', message: 'Committee required' }, { status: 403 });
             }
         }
