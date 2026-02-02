@@ -432,6 +432,152 @@ app.post('/notify-event-reminder', async (req, res) => {
   }
 });
 
+// Send notification about new intro blog
+app.post('/notify-new-intro-blog', async (req, res) => {
+  try {
+    const { blogId, blogTitle } = req.body;
+
+    if (!blogId || !blogTitle) {
+      return res.status(400).json({ error: 'Blog ID and title required' });
+    }
+
+    // Get all subscriptions
+    const subscriptions = await directusFetch('/items/push_notification?limit=-1');
+
+    if (!subscriptions || subscriptions.length === 0) {
+      return res.status(404).json({ error: 'No subscriptions found' });
+    }
+
+    const payload = JSON.stringify({
+      title: '📰 Nieuwe Intro Blog!',
+      body: `${blogTitle} - Lees het laatste nieuws!`,
+      icon: '/icon-512x512.png',
+      badge: '/icon-192x192.png',
+      tag: `intro-blog-${blogId}`,
+      data: {
+        url: `/intro/blog`,
+        blogId: blogId,
+        type: 'new-intro-blog'
+      }
+    });
+
+    // Send to all subscriptions
+    const results = await Promise.allSettled(
+      subscriptions.map(async (sub) => {
+        try {
+          const keys = typeof sub.keys === 'string' ? JSON.parse(sub.keys) : sub.keys;
+          const subscription = {
+            endpoint: sub.endpoint,
+            keys: keys
+          };
+          await webpush.sendNotification(subscription, payload);
+          return { success: true };
+        } catch (error) {
+          if (error.statusCode === 410 || error.statusCode === 404) {
+            await directusFetch(`/items/push_notification/${sub.id}`, {
+              method: 'DELETE'
+            });
+          }
+          throw error;
+        }
+      })
+    );
+
+    const successful = results.filter(r => r.status === 'fulfilled').length;
+
+    console.log(`✓ Sent ${successful} new intro blog notifications`);
+
+    res.json({ success: true, sent: successful });
+  } catch (error) {
+    console.error('Notify new intro blog error:', error);
+    res.status(500).json({ error: 'Failed to send notifications' });
+  }
+});
+
+// Send custom notification to intro signups
+app.post('/notify-intro-signups', async (req, res) => {
+  try {
+    const { title, body, includeParents } = req.body;
+
+    if (!title || !body) {
+      return res.status(400).json({ error: 'Title and body are required' });
+    }
+
+    // Fetch intro signups
+    const signups = await directusFetch('/items/intro_signups?limit=-1&fields=user_id');
+    
+    let userIds = [];
+    
+    // Get user IDs from intro_signups (though they might not have user_id as they're anonymous signups)
+    // For now, we'll send to all subscribed users since intro signups don't necessarily have accounts
+    
+    // If includeParents, also fetch parent signups which do have user_id
+    if (includeParents) {
+      const parentSignups = await directusFetch('/items/intro_parent_signups?limit=-1&fields=user_id');
+      if (parentSignups && parentSignups.length > 0) {
+        userIds = parentSignups.map(p => p.user_id).filter(Boolean);
+      }
+    }
+
+    // Get all subscriptions (or filter by userIds if available)
+    let subscriptions;
+    if (userIds.length > 0) {
+      const userIdsParam = userIds.join(',');
+      subscriptions = await directusFetch(`/items/push_notification?filter[user_id][_in]=${userIdsParam}`);
+    } else {
+      // Send to all since intro signups don't have user accounts
+      subscriptions = await directusFetch('/items/push_notification?limit=-1');
+    }
+
+    if (!subscriptions || subscriptions.length === 0) {
+      return res.status(404).json({ error: 'No subscriptions found' });
+    }
+
+    const payload = JSON.stringify({
+      title,
+      body,
+      icon: '/icon-512x512.png',
+      badge: '/icon-192x192.png',
+      tag: 'intro-custom-notification',
+      data: {
+        url: '/intro',
+        type: 'intro-custom'
+      }
+    });
+
+    // Send notifications
+    const results = await Promise.allSettled(
+      subscriptions.map(async (sub) => {
+        try {
+          const keys = typeof sub.keys === 'string' ? JSON.parse(sub.keys) : sub.keys;
+          const subscription = {
+            endpoint: sub.endpoint,
+            keys: keys
+          };
+          await webpush.sendNotification(subscription, payload);
+          return { success: true };
+        } catch (error) {
+          if (error.statusCode === 410 || error.statusCode === 404) {
+            await directusFetch(`/items/push_notification/${sub.id}`, {
+              method: 'DELETE'
+            });
+          }
+          throw error;
+        }
+      })
+    );
+
+    const successful = results.filter(r => r.status === 'fulfilled').length;
+
+    console.log(`✓ Sent ${successful} intro custom notifications`);
+
+    res.json({ success: true, sent: successful });
+  } catch (error) {
+    console.error('Notify intro signups error:', error);
+    res.status(500).json({ error: 'Failed to send notifications' });
+  }
+});
+
 // Error handling
 app.use((err, req, res, next) => {
   console.error('Error:', err);
