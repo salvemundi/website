@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { pubCrawlSignupsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
@@ -51,12 +51,19 @@ export default function KroegentochtPage() {
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const errorRef = useRef<HTMLDivElement>(null);
     const { data: pubCrawlEvents, isLoading: eventsLoading } = useSalvemundiPubCrawlEvents();
     const { data: siteSettings, isLoading: isSettingsLoading } = useSalvemundiSiteSettings('kroegentocht');
 
     // Auth & Existing Tickets
     const { user, isAuthenticated } = useAuth();
     const [existingSignups, setExistingSignups] = useState<any[]>([]);
+
+    useEffect(() => {
+        if (error && errorRef.current) {
+            errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, [error]);
 
     useEffect(() => {
         const fetchTickets = async () => {
@@ -202,6 +209,14 @@ export default function KroegentochtPage() {
 
             const parsed = parseInt(value, 10);
             const clamped = Number.isNaN(parsed) ? 1 : Math.min(10, Math.max(1, parsed));
+
+            // Limit check
+            if (clamped > 10) {
+                setError('Je kunt maximaal 10 tickets per keer kopen.');
+            } else {
+                setError(null);
+            }
+
             setForm({ ...form, amount_tickets: String(clamped) });
 
             // Update participants array based on ticket count
@@ -376,13 +391,9 @@ export default function KroegentochtPage() {
             setSubmitted(true);
         } catch (err: any) {
             console.error('Error submitting kroegentocht signup:', err);
-            let friendlyMessage = 'Er is een fout opgetreden bij het inschrijven. Probeer het opnieuw.';
-            const isProd = process.env.NODE_ENV === 'production';
 
-            if (err?.message) {
-                friendlyMessage = isProd ? friendlyMessage : `Fout: ${err.message}`;
-            }
-
+            // Use the specific error message if available, otherwise fallback
+            const friendlyMessage = err?.message || 'Er is een fout opgetreden bij het inschrijven. Probeer het opnieuw.';
             setError(friendlyMessage);
         }
         finally {
@@ -504,7 +515,10 @@ export default function KroegentochtPage() {
                                     ) : (
                                         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
                                             {error && (
-                                                <div className="bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl border border-red-200 dark:border-red-500/20">
+                                                <div
+                                                    ref={errorRef}
+                                                    className="bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl border border-red-200 dark:border-red-500/20"
+                                                >
                                                     {error}
                                                 </div>
                                             )}
@@ -650,6 +664,12 @@ export default function KroegentochtPage() {
                                                 </span>
                                                 {!loading && <span className="group-hover:translate-x-1 transition-transform">→</span>}
                                             </button>
+
+                                            {error && (
+                                                <div className="bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl border border-red-200 dark:border-red-500/20 text-sm">
+                                                    {error}
+                                                </div>
+                                            )}
                                         </form>
                                     )
                                 )}
