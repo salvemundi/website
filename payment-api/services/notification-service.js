@@ -214,42 +214,46 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
         }
 
         // 1. Send Email to Participant
-        console.log('[NotificationService] Sending confirmation email to participant...');
-        console.log('[NotificationService] Email details:', {
-            to: metadata.email,
-            subject: `Ticket: ${activityName}`,
-            attachmentsCount: attachments.length
-        });
+        if (metadata.registrationType !== 'pub_crawl_signup') {
+            console.log('[NotificationService] Sending confirmation email to participant...');
+            console.log('[NotificationService] Email details:', {
+                to: metadata.email,
+                subject: `Ticket: ${activityName}`,
+                attachmentsCount: attachments.length
+            });
 
-        await axios.post(`${emailServiceUrl}/send-email`, {
-            to: metadata.email,
-            subject: `Ticket: ${activityName}`,
-            html: `
-                <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto; line-height: 1.5;">
-                    <h2 style="color: #7B2CBF; border-bottom: 2px solid #7B2CBF; padding-bottom: 10px;">Bedankt voor je inschrijving!</h2>
-                    <p>Beste ${greetingName},</p>
-                    <p>Je betaling voor <strong>${activityName}</strong> is succesvol ontvangen. Je inschrijving is nu definitief.</p>
-                    
-                    ${detailsHtml}
-                    
-                    ${qrHtml ? `
-                        <p>Hieronder vind je je persoonlijke QR-code. Laat deze scannen bij de commissieleden voor toegang.</p>
-                        ${qrHtml}
-                    ` : ''}
-                    
-                    <p style="margin-top: 25px;">Veel plezier!</p>
-                    <p style="margin-top: 10px; margin-bottom: 0;">Met vriendelijke groet,</p>
-                    <p style="margin-top: 0;"><strong>S.A. Salve Mundi</strong></p>
-                    
-                    <div style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 10px; font-size: 12px; color: #888; text-align: center;">
-                        <p>Dit is een automatische bevestiging van je betaling.</p>
+            await axios.post(`${emailServiceUrl}/send-email`, {
+                to: metadata.email,
+                subject: `Ticket: ${activityName}`,
+                html: `
+                    <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto; line-height: 1.5;">
+                        <h2 style="color: #7B2CBF; border-bottom: 2px solid #7B2CBF; padding-bottom: 10px;">Bedankt voor je inschrijving!</h2>
+                        <p>Beste ${greetingName},</p>
+                        <p>Je betaling voor <strong>${activityName}</strong> is succesvol ontvangen. Je inschrijving is nu definitief.</p>
+                        
+                        ${detailsHtml}
+                        
+                        ${qrHtml ? `
+                            <p>Hieronder vind je je persoonlijke QR-code. Laat deze scannen bij de commissieleden voor toegang.</p>
+                            ${qrHtml}
+                        ` : ''}
+                        
+                        <p style="margin-top: 25px;">Veel plezier!</p>
+                        <p style="margin-top: 10px; margin-bottom: 0;">Met vriendelijke groet,</p>
+                        <p style="margin-top: 0;"><strong>S.A. Salve Mundi</strong></p>
+                        
+                        <div style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 10px; font-size: 12px; color: #888; text-align: center;">
+                            <p>Dit is een automatische bevestiging van je betaling.</p>
+                        </div>
                     </div>
-                </div>
-            `,
-            attachments: attachments
-        }, { timeout: 10000 });
+                `,
+                attachments: attachments
+            }, { timeout: 10000 });
 
-        console.log(`[NotificationService] ✅ Confirmation email sent to ${metadata.email} for ${activityName}`);
+            console.log(`[NotificationService] ✅ Confirmation email sent to ${metadata.email} for ${activityName}`);
+        } else {
+            console.log(`[NotificationService] Skipping participant email for pub_crawl_signup (will be sent by frontend with tickets)`);
+        }
 
         // 2. Notify Organization (Best effort)
         try {
