@@ -522,6 +522,10 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                             );
 
                             if (!signup) {
+                                const maskedToken = DIRECTUS_API_TOKEN ? `${DIRECTUS_API_TOKEN.substring(0, 4)}...${DIRECTUS_API_TOKEN.slice(-4)}` : 'MISSING';
+                                console.error(`[Webhook][${traceId}] ❌ Failed to fetch signup ${registrationId} from ${collection}. Status 403 or not found.`);
+                                console.error(`[Webhook][${traceId}] Directus URL: ${DIRECTUS_URL}`);
+                                console.error(`[Webhook][${traceId}] Directus Token: ${maskedToken}`);
                                 throw new Error(`Could not fetch signup ${registrationId} from ${collection}. Aborting ticket generation to prevent data corruption.`);
                             }
 
