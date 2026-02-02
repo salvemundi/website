@@ -49,6 +49,8 @@ const vapidKeys = {
 
 if (!vapidKeys.publicKey || !vapidKeys.privateKey) {
   console.error('⚠️  VAPID keys not configured! Generate keys with: npx web-push generate-vapid-keys');
+  console.error('⚠️  Public key present:', !!vapidKeys.publicKey);
+  console.error('⚠️  Private key present:', !!vapidKeys.privateKey);
 } else {
   webpush.setVapidDetails(
     'mailto:' + (process.env.VAPID_EMAIL || 'info@salvemundi.nl'),
@@ -56,6 +58,8 @@ if (!vapidKeys.publicKey || !vapidKeys.privateKey) {
     vapidKeys.privateKey
   );
   console.log('✓ Web-push configured with VAPID keys');
+  console.log('✓ VAPID subject:', 'mailto:' + (process.env.VAPID_EMAIL || 'info@salvemundi.nl'));
+  console.log('✓ Public key (first 20 chars):', vapidKeys.publicKey.substring(0, 20) + '...');
 }
 
 // Directus configuration
@@ -230,6 +234,15 @@ app.post('/send', async (req, res) => {
 
           return { success: true, endpoint: sub.endpoint };
         } catch (error) {
+          // Log detailed error information
+          console.error('❌ Failed to send notification:', {
+            endpoint: sub.endpoint,
+            error: error.message,
+            statusCode: error.statusCode,
+            body: error.body,
+            headers: error.headers
+          });
+          
           // If subscription is invalid, delete it
           if (error.statusCode === 410 || error.statusCode === 404) {
             await directusFetch(`/items/push_notification/${sub.id}`, {
