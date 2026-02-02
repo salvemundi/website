@@ -19,7 +19,7 @@ VAPID_PUBLIC_KEY=your-public-key
 VAPID_PRIVATE_KEY=your-private-key
 VAPID_EMAIL=info@salvemundi.nl
 DIRECTUS_URL=https://admin.salvemundi.nl
-DIRECTUS_API_TOKEN=your-directus-token
+DIRECTUS_NOTIFICATION_KEY=your-directus-notification-key
 ```
 
 ### 3. Maak push_notification collectie in Directus
