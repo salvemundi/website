@@ -28,7 +28,6 @@ import {
   Loader2,
   Check,
   X,
-  Bell,
 } from "lucide-react";
 
 interface EventSignup {
