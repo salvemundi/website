@@ -38,6 +38,7 @@ graph TD
     subgraph "Backend Services"
         Proxy -->|email-api| EmailAPI[Email API]
         Proxy -->|graph-webhook| Webhook[Graph Webhook]
+        Proxy -->|notification-api| NotificationAPI[Notification API]
         GraphSync[Graph Sync Service]
     end
     
@@ -78,7 +79,7 @@ graph TD
 |:---|:---|:---|
 | **Website (Frontend)** | `/` | Next.js App Router (Production & Dev environments). |
 | **Email API** | `/email-api` | Service for handling transactional emails. |
-| **Notification API** | `/notification-api` | PWA Push notification service for events and reminders. |
+| **Notification API (notify)** | `/notification-api` | PWA Push notification service for events and reminders. Exposes endpoints such as `/notify-new-event` and `/notify-event-reminder`. See `notification-api/README.md` for full docs. |
 | **Directus** | `/directus` | Headless CMS for managing association data. |
 | **Graph Sync** | `/graph-sync` | Bi-directional sync between Entra ID and Directus. |
 | **Graph Webhook** | `/graph-webhook` | Event listener for real-time Entra ID changes. |
@@ -149,6 +150,7 @@ We follow a consistent Way of Working across the team:
 *   **Authentication**: [Entra ID Setup](readme/AUTH_SETUP.md)
 *   **Email**: [Email Flow](readme/EMAIL_SETUP.md)
 *   **Push Notifications**: [Push Notifications Setup](readme/PUSH_NOTIFICATIONS_SETUP.md)
+*   **Notifications**: `notification-api/README.md`
 
 ---
 
