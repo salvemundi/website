@@ -48,6 +48,8 @@ export default function NotificationToggle({ userId, className = '' }: Notificat
         if (success) {
           setIsSubscribed(false);
           alert('Je bent uitgeschreven van push notificaties.');
+        } else {
+          alert('Er is iets misgegaan bij het uitschrijven.');
         }
       } else {
         // Subscribe
@@ -61,7 +63,18 @@ export default function NotificationToggle({ userId, className = '' }: Notificat
       }
     } catch (error) {
       console.error('Error toggling notifications:', error);
-      alert('Er is iets misgegaan. Probeer het opnieuw.');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      // Provide more specific error messages
+      if (errorMessage.includes('timeout')) {
+        alert('Time-out: De notificatie service reageert niet. Controleer je internetverbinding en probeer het opnieuw.');
+      } else if (errorMessage.includes('VAPID')) {
+        alert('Configuratiefout: Kan de notificatie service niet bereiken. Neem contact op met de beheerder.');
+      } else if (errorMessage.includes('Service worker')) {
+        alert('Service worker probleem: Herlaad de pagina en probeer het opnieuw.');
+      } else {
+        alert(`Er is iets misgegaan: ${errorMessage}`);
+      }
     } finally {
       setIsLoading(false);
     }

@@ -32,7 +32,14 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
 // Get VAPID public key from notification API
 async function getVapidPublicKey(): Promise<string> {
   try {
-    const response = await fetch(`${NOTIFICATION_API_URL}/vapid-public-key`);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
+    const response = await fetch(`${NOTIFICATION_API_URL}/vapid-public-key`, {
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    
     if (!response.ok) {
       throw new Error('Failed to get VAPID public key');
     }
@@ -74,8 +81,13 @@ export async function subscribeToPushNotifications(userId?: string): Promise<Pus
   }
 
   try {
-    // Get service worker registration
-    const registration = await navigator.serviceWorker.ready;
+    // Get service worker registration with timeout
+    const registration = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Service worker timeout')), 10000)
+      )
+    ]);
 
     // Get VAPID public key
     const vapidPublicKey = await getVapidPublicKey();
@@ -88,6 +100,9 @@ export async function subscribeToPushNotifications(userId?: string): Promise<Pus
     });
 
     // Send subscription to backend
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
     const response = await fetch(`${NOTIFICATION_API_URL}/subscribe`, {
       method: 'POST',
       headers: {
@@ -96,8 +111,11 @@ export async function subscribeToPushNotifications(userId?: string): Promise<Pus
       body: JSON.stringify({
         subscription: subscription.toJSON(),
         userId: userId
-      })
+      }),
+      signal: controller.signal
     });
+    
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       throw new Error('Failed to save subscription');
@@ -118,7 +136,12 @@ export async function unsubscribeFromPushNotifications(): Promise<boolean> {
   }
 
   try {
-    const registration = await navigator.serviceWorker.ready;
+    const registration = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Service worker timeout')), 10000)
+      )
+    ]);
     const subscription = await registration.pushManager.getSubscription();
 
     if (subscription) {
@@ -126,6 +149,9 @@ export async function unsubscribeFromPushNotifications(): Promise<boolean> {
       await subscription.unsubscribe();
 
       // Remove from backend
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
       await fetch(`${NOTIFICATION_API_URL}/unsubscribe`, {
         method: 'POST',
         headers: {
@@ -133,8 +159,11 @@ export async function unsubscribeFromPushNotifications(): Promise<boolean> {
         },
         body: JSON.stringify({
           endpoint: subscription.endpoint
-        })
+        }),
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
 
       console.log('✓ Unsubscribed from push notifications');
       return true;
@@ -154,7 +183,12 @@ export async function isPushSubscribed(): Promise<boolean> {
   }
 
   try {
-    const registration = await navigator.serviceWorker.ready;
+    const registration = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Service worker timeout')), 5000)
+      )
+    ]);
     const subscription = await registration.pushManager.getSubscription();
     return subscription !== null;
   } catch (error) {
@@ -170,7 +204,12 @@ export async function getCurrentSubscription(): Promise<PushSubscription | null>
   }
 
   try {
-    const registration = await navigator.serviceWorker.ready;
+    const registration = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Service worker timeout')), 5000)
+      )
+    ]);
     return await registration.pushManager.getSubscription();
   } catch (error) {
     console.error('Error getting current subscription:', error);
