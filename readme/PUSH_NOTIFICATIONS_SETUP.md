@@ -2,7 +2,7 @@
 
 Deze guide helpt je met het opzetten van push notificaties voor de Salve Mundi PWA app.
 
-## Overzicht
+3. Controleer in Directus of een nieuwe record is aangemaakt in `push_notification`# Overzicht
 
 Het notificatie systeem bestaat uit:
 1. **notification-api** - Backend service voor het beheren van subscriptions en versturen van notificaties
@@ -12,7 +12,7 @@ Het notificatie systeem bestaat uit:
 
 ## Stap 1: Directus Database Setup
 
-Maak een nieuwe collectie aan in Directus met de naam `push_subscriptions`:
+Maak een nieuwe collectie aan in Directus met de naam `push_notification`:
 
 ### Velden:
 

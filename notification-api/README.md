@@ -22,9 +22,9 @@ DIRECTUS_URL=https://admin.salvemundi.nl
 DIRECTUS_API_TOKEN=your-directus-token
 ```
 
-### 3. Maak push_subscriptions collectie in Directus
+### 3. Maak push_notification collectie in Directus
 
-In Directus, maak een nieuwe collectie `push_subscriptions` met de volgende velden:
+In Directus, maak een nieuwe collectie `push_notification` met de volgende velden:
 
 - `id` (UUID, Primary Key)
 - `user_id` (Many-to-One relatie met directus_users, nullable)

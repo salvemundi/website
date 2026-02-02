@@ -688,20 +688,6 @@ export default function AccountPage() {
                 )}
               </div>
             </Tile>
-
-            {/* Push Notifications */}
-            <Tile
-              title="Notificaties"
-              icon={<Bell />}
-              className="h-fit"
-            >
-              <div className="rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
-                <p className="text-sm text-theme-purple/70 dark:text-white/60 mb-4">
-                  Ontvang push notificaties voor nieuwe activiteiten en belangrijke updates.
-                </p>
-                <NotificationToggle userId={user.id} className="w-full justify-center" />
-              </div>
-            </Tile>
           </div>
 
           {/* Right Column: Data & Actions */}
@@ -859,6 +845,19 @@ export default function AccountPage() {
                       </p>
                     </div>
                   )}
+                </div>
+
+                {/* Push Notifications */}
+                <div className="rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <p className="text-[11px] font-bold uppercase text-theme-purple/70 dark:text-white/50 tracking-wide text-left">
+                      Push Notificaties
+                    </p>
+                  </div>
+                  <p className="text-sm text-theme-purple/70 dark:text-white/60 mb-4">
+                    Ontvang push notificaties voor nieuwe activiteiten en belangrijke updates.
+                  </p>
+                  <NotificationToggle userId={user.id} className="w-full justify-center" />
                 </div>
               </div>
             </Tile>
