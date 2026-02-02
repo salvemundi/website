@@ -203,6 +203,24 @@ export function useSalvemundiSiteSettings(page?: string, options?: UseQueryOptio
         queryKey: page ? ['siteSettings', page] : ['siteSettings'],
         queryFn: () => siteSettingsApi.get(page),
         staleTime: 5 * 60 * 1000,
+        retry: false, // Don't retry on failure - site settings are optional
+        meta: {
+            errorMessage: null, // Suppress error toasts for site_settings
+        },
+        ...options
+    });
+}
+
+// Site Settings Hook with authorized_tokens (for admin/permission checks)
+export function useSalvemundiSiteSettingsWithTokens(page?: string, options?: UseQueryOptions<SiteSettings | null>) {
+    return useQuery({
+        queryKey: page ? ['siteSettings', page, 'withTokens'] : ['siteSettings', 'withTokens'],
+        queryFn: () => siteSettingsApi.get(page, true),
+        staleTime: 5 * 60 * 1000,
+        retry: false, // Don't retry on failure - site settings are optional
+        meta: {
+            errorMessage: null, // Suppress error toasts for site_settings
+        },
         ...options
     });
 }

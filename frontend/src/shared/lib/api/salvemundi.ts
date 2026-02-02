@@ -801,10 +801,17 @@ export const documentsApi = {
 
 export const siteSettingsApi = {
     // If `page` is provided, will filter settings for that page.
-    get: async (page?: string): Promise<SiteSettings | null> => {
+    // If `includeAuthorizedTokens` is true, will attempt to fetch the authorized_tokens field (admin only)
+    get: async (page?: string, includeAuthorizedTokens: boolean = false): Promise<SiteSettings | null> => {
         try {
+            // By default, fetch without authorized_tokens since most users won't have access to it
+            // This prevents 403 errors for regular users
+            const fields = includeAuthorizedTokens
+                ? ['id', 'page', 'show', 'disabled_message', 'authorized_tokens']
+                : ['id', 'page', 'show', 'disabled_message'];
+            
             const params: any = {
-                fields: ['id', 'page', 'show', 'disabled_message', 'authorized_tokens'],
+                fields,
                 limit: 1
             };
 
@@ -813,37 +820,18 @@ export const siteSettingsApi = {
             }
 
             const query = buildQueryString(params);
-
-            try {
-                // Try fetching full settings first (including authorized_tokens)
-                // Suppress log because 403 is expected for guests/non-admins
-                const data = await directusFetch<SiteSettings | SiteSettings[] | null>(
-                    `/items/site_settings?${query}`,
-                    { headers: { 'X-Suppress-Log': 'true' } }
-                );
-                if (Array.isArray(data)) {
-                    return data[0] || null;
-                }
-                return data ?? null;
-            } catch (innerError: any) {
-                // If forbiddden (403), likely due to 'authorized_tokens' field permission.
-                // Retry without that field so at least the rest of the app works.
-                if (innerError?.message?.includes('403') || innerError?.toString().includes('403')) {
-                    console.warn('[siteSettingsApi] 403 Forbidden on full fetch. Retrying without authorized_tokens.');
-                    const limitedParams = { ...params, fields: ['id', 'page', 'show', 'disabled_message'] };
-                    const limitedQuery = buildQueryString(limitedParams);
-                    const data = await directusFetch<SiteSettings | SiteSettings[] | null>(`/items/site_settings?${limitedQuery}`);
-                    if (Array.isArray(data)) {
-                        return data[0] || null;
-                    }
-                    return data ?? null;
-                }
-                throw innerError;
+            const data = await directusFetch<SiteSettings | SiteSettings[] | null>(
+                `/items/site_settings?${query}`,
+                { headers: { 'X-Suppress-Log': 'true' } }
+            );
+            
+            if (Array.isArray(data)) {
+                return data[0] || null;
             }
+            return data ?? null;
         } catch (error) {
             // Silently handle errors - site_settings is optional
             // This prevents console errors when the collection doesn't exist or is inaccessible
-            console.warn('[siteSettingsApi] Failed to fetch site settings, returning null:', error instanceof Error ? error.message : 'Unknown error');
             return null;
         }
     }

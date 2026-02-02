@@ -35,7 +35,7 @@ function ActivitiesContent() {
             now.setHours(0, 0, 0, 0);
             filtered = filtered.filter(event => new Date(event.event_date) >= now);
         }
-        return filtered.sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime());
+        return filtered.sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime());
     }, [events, showPastActivities]);
 
     const upcomingEvent = useMemo(() => {
