@@ -523,6 +523,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
 
                             if (signup) {
                                 console.warn(`[Webhook][${traceId}] Signup ${registrationId} keys:`, Object.keys(signup).join(', '));
+                                console.warn(`[Webhook][${traceId}] Full signup data:`, JSON.stringify(signup));
                             }
 
                             if (!signup) {
@@ -540,14 +541,14 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                             let participants = [];
                             try {
                                 if (nameInitialsRaw) {
-                                    participants = JSON.parse(nameInitialsRaw);
+                                    participants = typeof nameInitialsRaw === 'string' ? JSON.parse(nameInitialsRaw) : nameInitialsRaw;
                                 }
                             } catch (e) {
                                 console.error(`[Webhook][${traceId}] Failed to parse name_initials:`, e);
                             }
 
                             // If no participants found or length mismatch, create placeholders
-                            if (participants.length === 0) {
+                            if (!Array.isArray(participants) || participants.length === 0) {
                                 participants = Array.from({ length: amountTickets }).map((_, i) => ({
                                     name: `Deelnemer ${i + 1}`,
                                     initial: ''
@@ -556,26 +557,30 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
 
                             console.warn(`[Webhook][${traceId}] Generating ${participants.length} individual tickets for signup ${registrationId}`);
 
-                            // Generate and store individual tickets
-                            const ticketPromises = participants.map(async (p, index) => {
-                                const qrToken = generateQRToken(`${registrationId}-${index}`, pubCrawlEventId);
+                            try {
+                                // Generate and store individual tickets
+                                const ticketPromises = participants.map(async (p, index) => {
+                                    const qrToken = generateQRToken(`${registrationId}-${index}`, pubCrawlEventId);
 
-                                return directusService.createDirectusItem(
-                                    DIRECTUS_URL,
-                                    DIRECTUS_API_TOKEN,
-                                    COLLECTIONS.PUB_CRAWL_TICKETS,
-                                    {
-                                        [FIELDS.TICKETS.SIGNUP_ID]: registrationId,
-                                        [FIELDS.TICKETS.NAME]: p.name || `Deelnemer ${index + 1}`,
-                                        [FIELDS.TICKETS.INITIAL]: p.initial || '',
-                                        [FIELDS.TICKETS.QR_TOKEN]: qrToken,
-                                        [FIELDS.TICKETS.CHECKED_IN]: false
-                                    }
-                                );
-                            });
+                                    return directusService.createDirectusItem(
+                                        DIRECTUS_URL,
+                                        DIRECTUS_API_TOKEN,
+                                        COLLECTIONS.PUB_CRAWL_TICKETS,
+                                        {
+                                            [FIELDS.TICKETS.SIGNUP_ID]: registrationId,
+                                            [FIELDS.TICKETS.NAME]: p.name || `Deelnemer ${index + 1}`,
+                                            [FIELDS.TICKETS.INITIAL]: p.initial || '',
+                                            [FIELDS.TICKETS.QR_TOKEN]: qrToken,
+                                            [FIELDS.TICKETS.CHECKED_IN]: false
+                                        }
+                                    );
+                                });
 
-                            await Promise.all(ticketPromises);
-                            console.warn(`[Webhook][${traceId}] ✅ Successfully generated all ${participants.length} tickets`);
+                                await Promise.all(ticketPromises);
+                                console.warn(`[Webhook][${traceId}] ✅ Successfully generated all ${participants.length} tickets`);
+                            } catch (ticketErr) {
+                                console.error(`[Webhook][${traceId}] ❌ Failed to generate individual tickets, but continuing to mark signup as paid:`, ticketErr.message);
+                            }
 
                             // Update payload for the signup itself
                             updatePayload = {
