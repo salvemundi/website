@@ -24,6 +24,7 @@ export default function AttendancePage() {
     const scannerRef = useRef<any>(null);
     const videoRef = useRef<HTMLDivElement>(null);
     const scanLockRef = useRef<boolean>(false);
+    const SCAN_LOCK_MS = 3000;
 
     const load = async () => {
         setLoading(true);
@@ -123,8 +124,7 @@ export default function AttendancePage() {
             });
         }
 
-        // Auto-hide popup after 3 seconds
-        setTimeout(() => setScanResult(null), 3000);
+        // popup visibility and unlocking handled by scanner lock
     };
 
     const startScanner = async () => {
@@ -151,8 +151,8 @@ export default function AttendancePage() {
                             try {
                                 await handleScan(decodedText);
                             } finally {
-                                // small delay before allowing the next scan
-                                setTimeout(() => { scanLockRef.current = false; }, 1500);
+                                // keep popup visible for the same duration as the scan lock
+                                setTimeout(() => { scanLockRef.current = false; setScanResult(null); }, SCAN_LOCK_MS);
                             }
                             // Don't stop scanner - keep it open for next scan
                         },
@@ -374,9 +374,14 @@ export default function AttendancePage() {
                         <div className="relative">
                             <div id="qr-reader" ref={videoRef} className="rounded-xl overflow-hidden max-w-md mx-auto"></div>
 
-                            {/* Scan Result Popup */}
+                            {/* Scan Result Popup (click to dismiss and allow next scan) */}
                             {scanResult && (
-                                <div className="absolute top-0 left-0 right-0 mx-4 mt-4 z-10 animate-in slide-in-from-top duration-300">
+                                <div
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => { setScanResult(null); scanLockRef.current = false; }}
+                                    className="absolute top-0 left-0 right-0 mx-4 mt-4 z-10 animate-in slide-in-from-top duration-300 cursor-pointer"
+                                >
                                     <div className={`p-4 rounded-xl shadow-2xl backdrop-blur-sm ${scanResult.status === 'success'
                                             ? 'bg-green-500/95 text-white'
                                             : 'bg-red-500/95 text-white'

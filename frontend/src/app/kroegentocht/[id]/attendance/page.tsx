@@ -66,6 +66,8 @@ export default function PubCrawlAttendancePage() {
     const scannerRef = useRef<any>(null);
     const videoRef = useRef<HTMLDivElement>(null);
     const scanLockRef = useRef<boolean>(false);
+    const SCAN_LOCK_MS = 3000;
+    const scanLockRef = useRef<boolean>(false);
 
     const load = async () => {
         setLoading(true);
@@ -217,8 +219,7 @@ export default function PubCrawlAttendancePage() {
                 message: res.message || 'Fout bij inchecken'
             });
         }
-
-        setTimeout(() => setScanResult(null), 3000);
+        // popup visibility handled by scanner lock timeout
     };
 
     const startScanner = async () => {
@@ -239,8 +240,8 @@ export default function PubCrawlAttendancePage() {
                             try {
                                 await handleScan(decodedText);
                             } finally {
-                                // small delay before allowing the next scan
-                                setTimeout(() => { scanLockRef.current = false; }, 1500);
+                                // keep popup visible for the same duration as the scan lock
+                                setTimeout(() => { scanLockRef.current = false; setScanResult(null); }, SCAN_LOCK_MS);
                             }
                         },
                     (_errorMessage: string) => { }
@@ -410,7 +411,11 @@ export default function PubCrawlAttendancePage() {
                     <div className="mb-6 sm:mb-8 bg-black rounded-3xl overflow-hidden shadow-2xl relative max-w-2xl mx-auto aspect-square">
                         <div id="qr-reader" ref={videoRef} className="w-full h-full"></div>
                         {scanResult && (
-                            <div className={`absolute inset-x-4 top-4 z-50 p-6 rounded-2xl text-white shadow-2xl animate-in zoom-in duration-300 flex flex-col items-center text-center ${scanResult.status === 'success' ? 'bg-green-600/90 backdrop-blur-md' : 'bg-red-600/90 backdrop-blur-md'}`}>
+                            <div
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => { setScanResult(null); scanLockRef.current = false; }}
+                                className={`absolute inset-x-4 top-4 z-50 p-6 rounded-2xl text-white shadow-2xl animate-in zoom-in duration-300 flex flex-col items-center text-center cursor-pointer ${scanResult.status === 'success' ? 'bg-green-600/90 backdrop-blur-md' : 'bg-red-600/90 backdrop-blur-md'}`}>
                                 <p className="font-black text-2xl mb-1">{scanResult.name}</p>
                                 <p className="font-medium">{scanResult.message}</p>
                             </div>
