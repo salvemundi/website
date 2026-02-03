@@ -191,20 +191,24 @@ export default function CommitteeDetailPage() {
                     <div className="lg:col-span-2 space-y-8">
                         {/* Highlights Image */}
                         {committee.image && (
-                            <div className="group relative h-96 overflow-hidden rounded-3xl bg-[var(--bg-card)] shadow-lg dark:border dark:border-white/10">
+                            <div className={`group relative overflow-hidden rounded-3xl bg-[var(--bg-card)] shadow-lg dark:border dark:border-white/10 ${cleanName.toLowerCase().includes('bestuur') ? "h-auto min-h-[400px]" : "h-96"}`}>
                                 <button
                                     onClick={() => setImageModalOpen(true)}
-                                    className="absolute inset-0 h-full w-full outline-none"
+                                    className={`relative w-full outline-none ${cleanName.toLowerCase().includes('bestuur') ? "h-auto" : "h-full"}`}
                                     aria-label="Vergroot afbeelding"
                                 >
-                                    <SmartImage
-                                        src={getImageUrl(committee.image)}
-                                        alt={cleanName}
-                                        fill
-                                        className="object-cover transition duration-700 group-hover:scale-105"
-                                        priority
-                                    />
-                                    <div className="absolute inset-0 bg-black/0 transition duration-300 group-hover:bg-black/20 flex items-center justify-center">
+                                    <div className={`relative w-full ${cleanName.toLowerCase().includes('bestuur') ? "aspect-auto" : "h-full"}`}>
+                                        <SmartImage
+                                            src={getImageUrl(committee.image)}
+                                            alt={cleanName}
+                                            fill={!cleanName.toLowerCase().includes('bestuur')}
+                                            width={cleanName.toLowerCase().includes('bestuur') ? 1200 : undefined}
+                                            height={cleanName.toLowerCase().includes('bestuur') ? 800 : undefined}
+                                            className={`${cleanName.toLowerCase().includes('bestuur') ? "relative h-auto w-full object-contain" : "object-cover"} transition duration-700 group-hover:scale-105`}
+                                            priority
+                                        />
+                                    </div>
+                                    <div className="absolute inset-0 bg-black/0 transition duration-300 group-hover:bg-black/20 flex items-center justify-center pointer-events-none">
                                         <div className="opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-300 bg-white/90 dark:bg-black/80 p-3 rounded-full shadow-xl">
                                             <Users2 className="h-6 w-6 text-theme-purple" />
                                         </div>
