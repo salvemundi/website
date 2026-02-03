@@ -256,6 +256,8 @@ body {
 .chrono [class*="toolbar-wrapper"],
 .chrono .toolbar-wrapper,
 .chrono .toolbar,
+.chrono [class*="SelecterLabel"],
+.chrono [class*="label"],
 .chrono [class*="outline-"],
 .chrono [class*="timeline-outline"],
 .chrono .timeline-outline-wrapper,
@@ -268,6 +270,12 @@ body {
 .chrono button[class*="layout"] {
   display: none !important;
   visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  pointer-events: none !important;
 }
 
 /* Strong overrides to ensure Chrono card wrappers do not clip custom content */

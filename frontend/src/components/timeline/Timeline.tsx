@@ -100,7 +100,7 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
     };
 
     return (
-        <div className="w-full [&_.chrono-toolbar-wrapper]:!hidden [&_.timeline-card-content]:!max-h-none [&_.timeline-card-content]:!overflow-visible [&_.card-content-wrapper]:!max-h-none [&_.card-content-wrapper]:!overflow-visible [&_.card-description]:!line-clamp-none dark:[&_.timeline-card-content]:bg-[var(--bg-card)] dark:[&_.timeline-card-content]:!text-white dark:[&_.card-title]:!text-white dark:[&_.card-subtitle]:!text-white dark:[&_.card-description]:!text-white dark:[&_.title]:!text-white dark:[&_.timeline-card-title]:!text-white dark:[&_.timeline-title]:!text-white">
+        <div className="w-full [&_.chrono-toolbar-wrapper]:!hidden [&_.SelecterLabel]:!hidden [&_.timeline-card-content]:!max-h-none [&_.timeline-card-content]:!overflow-visible [&_.card-content-wrapper]:!max-h-none [&_.card-content-wrapper]:!overflow-visible [&_.card-description]:!line-clamp-none dark:[&_.timeline-card-content]:bg-[var(--bg-card)] dark:[&_.timeline-card-content]:!text-white dark:[&_.card-title]:!text-white dark:[&_.card-subtitle]:!text-white dark:[&_.card-description]:!text-white dark:[&_.title]:!text-white dark:[&_.timeline-card-title]:!text-white dark:[&_.timeline-title]:!text-white">
             <Chrono
                 items={items}
                 mode={isMobile ? "VERTICAL" : "VERTICAL_ALTERNATING"}
@@ -128,10 +128,10 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                                     src={
                                         (typeof board.image === 'string' && (board.image.startsWith('http') || board.image.startsWith('/')))
                                             ? board.image
-                                            : (getImageUrl ? getImageUrl(board.image, { width: 1200, height: 600 }) : '/img/group-jump.gif')
+                                            : (getImageUrl ? getImageUrl(board.image, { width: 1200 }) : '/img/group-jump.gif')
                                     }
                                     alt={board.naam}
-                                    className="aspect-video w-full object-cover transition duration-500 group-hover:scale-105"
+                                    className={`w-full transition duration-500 group-hover:scale-105 ${index === 0 ? "h-auto object-contain" : "aspect-video object-cover"}`}
                                     loading="lazy"
                                     onError={(e) => {
                                         const t = e.target as HTMLImageElement;
