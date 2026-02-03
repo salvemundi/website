@@ -178,6 +178,7 @@ body {
   border-radius: 0.5rem;
   backdrop-filter: blur(4px);
 }
+
 /* 8. Timeline / Chrono Component Overrides */
 /* Remove scrollbars and height constraints from timeline cards */
 .timeline-card-content,
@@ -241,7 +242,9 @@ body {
 
 /* Hide timeline controls completely, scoped to chrono/chrono-wrapper elements only
    to avoid accidentally matching similarly-named UI classes elsewhere in the app. */
-.chrono, .chrono-wrapper, [class*="chrono"] {
+.chrono,
+.chrono-wrapper,
+[class*="chrono"] {
   --_chrono-scope: 1;
 }
 
@@ -250,6 +253,9 @@ body {
 .chrono [class*="chrono-controls"],
 .chrono .chrono-timeline-toolbar,
 .chrono [class*="toolbar"][class*="timeline"],
+.chrono [class*="toolbar-wrapper"],
+.chrono .toolbar-wrapper,
+.chrono .toolbar,
 .chrono [class*="outline-"],
 .chrono [class*="timeline-outline"],
 .chrono .timeline-outline-wrapper,
