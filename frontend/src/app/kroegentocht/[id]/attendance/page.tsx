@@ -23,8 +23,28 @@ interface FlatParticipant {
     checkedIn: boolean;
     checkedInAt: string | null;
     ticketCount: number; // Total in group
+    signupName: string; // The name from the signup
     _justToggled?: boolean;
 }
+
+const ASSOCIATIONS = [
+    'Salve Mundi',
+    'Proxy',
+    'Prick',
+    'Young Financials',
+    'Glow',
+    'Socialis',
+    'Topsy',
+    'Watoto',
+    'Bge',
+    'Fact',
+    'Fpsa',
+    'Averroes',
+    'Paramedisch',
+    'Planck',
+    'Pac',
+    'Anders'
+];
 
 export default function PubCrawlAttendancePage() {
     const params = useParams();
@@ -52,22 +72,42 @@ export default function PubCrawlAttendancePage() {
             const list = await qrService.getPubCrawlSignupsWithCheckIn(eventId);
             setRawSignups(list);
 
+            // Group by signupId to calculate index
+            const ticketsBySignup: Record<number, any[]> = {};
+            list.forEach((t: any) => {
+                const sid = t[FIELDS.TICKETS.SIGNUP_ID]?.id || 0;
+                if (!ticketsBySignup[sid]) ticketsBySignup[sid] = [];
+                ticketsBySignup[sid].push(t);
+            });
+
             // Flatten/Map tickets to participants
             const flat: FlatParticipant[] = list.map((ticket: any) => {
                 const signup = ticket[FIELDS.TICKETS.SIGNUP_ID];
+                const signupTickets = ticketsBySignup[signup?.id || 0] || [];
+                const idx = signupTickets.findIndex(t => t.id === ticket.id);
+
                 return {
                     uniqueId: String(ticket.id),
                     signupId: signup?.id || 0,
-                    index: 0,
+                    index: idx >= 0 ? idx : 0,
                     name: ticket[FIELDS.TICKETS.NAME],
                     initial: ticket[FIELDS.TICKETS.INITIAL],
                     email: signup?.[FIELDS.SIGNUPS.EMAIL] || '',
                     association: signup?.[FIELDS.SIGNUPS.ASSOCIATION] || '',
                     checkedIn: !!ticket[FIELDS.TICKETS.CHECKED_IN],
                     checkedInAt: ticket[FIELDS.TICKETS.CHECKED_IN_AT],
-                    ticketCount: 1
+                    ticketCount: signupTickets.length,
+                    signupName: signup?.[FIELDS.SIGNUPS.NAME] || ''
                 };
             });
+
+            // Sort by email, then index
+            flat.sort((a, b) => {
+                const emailComp = a.email.localeCompare(b.email);
+                if (emailComp !== 0) return emailComp;
+                return a.index - b.index;
+            });
+
             setParticipants(flat);
 
         } catch (err) {
@@ -92,7 +132,6 @@ export default function PubCrawlAttendancePage() {
     useEffect(() => {
         const loadTitle = async () => {
             try {
-                const { directusFetch } = await import('@/shared/lib/directus');
                 const data = await directusFetch<any>(`/items/pub_crawl_events/${eventId}?fields=id,name,image`);
                 const title = data?.name || null;
                 const img = data?.image || null;
@@ -103,8 +142,8 @@ export default function PubCrawlAttendancePage() {
                 console.error('Error loading event title:', err);
             }
         };
-        if (eventId) loadTitle();
-    }, [eventId]);
+        if (eventId && authorized) loadTitle();
+    }, [eventId, authorized]);
 
     const showMessage = (text: string, type: 'success' | 'error') => {
         setMessage({ text, type });
@@ -243,7 +282,7 @@ export default function PubCrawlAttendancePage() {
         totalParticipants: participants.length,
         checkedIn: participants.filter(p => p.checkedIn).length,
         notCheckedIn: participants.filter(p => !p.checkedIn).length,
-        groups: rawSignups.length
+        groups: Array.from(new Set(participants.map(p => p.signupId))).length
     };
 
     const exportToExcel = () => {
@@ -273,6 +312,17 @@ export default function PubCrawlAttendancePage() {
         XLSX.writeFile(wb, filename);
     };
 
+    // Grouping logic for rendering
+    const groupedParticipants: { email: string; participants: FlatParticipant[] }[] = [];
+    filteredParticipants.forEach(p => {
+        let group = groupedParticipants.find(g => g.email === p.email);
+        if (!group) {
+            group = { email: p.email, participants: [] };
+            groupedParticipants.push(group);
+        }
+        group.participants.push(p);
+    });
+
     if (!user) {
         return (
             <div className="min-h-screen flex items-center justify-center p-4">
@@ -290,159 +340,194 @@ export default function PubCrawlAttendancePage() {
     }
 
     return (
-        <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-main)' }}>
+        <div className="min-h-screen pb-20" style={{ backgroundColor: 'var(--bg-main)' }}>
             <PageHeader
-                title={eventTitle ? `Aanwezigheid: ${eventTitle}` : 'Aanwezigheid beheren'}
-                backgroundImage={eventImageUrl || '/img/backgrounds/Kroto2025.jpg'}
+                title={eventTitle ? `${eventTitle}\nAanwezigheid` : 'Aanwezigheid beheren'}
+                backgroundImage={eventImageUrl || '/img/backgrounds/intro-banner.jpg'}
+                backLink="/admin/kroegentocht"
             />
 
-            <main className="mx-auto max-w-7xl px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
+            <main className="mx-auto max-w-7xl px-4 py-4 sm:py-6 sm:px-6 lg:px-8">
                 {message && (
-                    <div className={`mb-6 p-4 rounded-xl shadow-lg flex items-center gap-3 ${message.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+                    <div className={`fixed top-4 right-4 z-[100] p-4 rounded-xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300 ${message.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
                         {message.type === 'success' ? <CheckCircle className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
-                        <span className="font-semibold">{message.text}</span>
+                        <span className="font-bold">{message.text}</span>
                     </div>
                 )}
 
                 {/* Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <div className="bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end rounded-2xl p-4 shadow-lg text-white">
-                        <p className="text-sm font-semibold opacity-80">Deelnemers</p>
-                        <p className="text-2xl font-bold">{stats.totalParticipants}</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+                    <div className="bg-[var(--bg-card)] border border-white/10 rounded-2xl p-4 sm:p-5 shadow-lg flex flex-col items-center justify-center text-center">
+                        <p className="text-xs sm:text-sm font-semibold text-theme-muted uppercase tracking-wider mb-1">Deelnemers</p>
+                        <p className="text-2xl sm:text-3xl font-black text-theme-purple dark:text-white">{stats.totalParticipants}</p>
                     </div>
-                    <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-2xl p-4 shadow-lg text-white">
-                        <p className="text-sm font-semibold opacity-80">Ingecheckt</p>
-                        <p className="text-2xl font-bold">{stats.checkedIn}</p>
+                    <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-4 sm:p-5 shadow-lg flex flex-col items-center justify-center text-center">
+                        <p className="text-xs sm:text-sm font-semibold text-green-700 dark:text-green-400 uppercase tracking-wider mb-1">Ingecheckt</p>
+                        <p className="text-2xl sm:text-3xl font-black text-green-600 dark:text-green-400">{stats.checkedIn}</p>
                     </div>
-                    <div className="bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl p-4 shadow-lg text-white">
-                        <p className="text-sm font-semibold opacity-80">Niet Ingecheckt</p>
-                        <p className="text-2xl font-bold">{stats.notCheckedIn}</p>
+                    <div className="bg-orange-500/10 border border-orange-500/20 rounded-2xl p-4 sm:p-5 shadow-lg flex flex-col items-center justify-center text-center">
+                        <p className="text-xs sm:text-sm font-semibold text-orange-700 dark:text-orange-400 uppercase tracking-wider mb-1">Nog niet</p>
+                        <p className="text-2xl sm:text-3xl font-black text-orange-600 dark:text-orange-400">{stats.notCheckedIn}</p>
                     </div>
-                    <div className="bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl p-4 shadow-lg text-white">
-                        <p className="text-sm font-semibold opacity-80">Groepen</p>
-                        <p className="text-2xl font-bold">{stats.groups}</p>
+                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 sm:p-5 shadow-lg flex flex-col items-center justify-center text-center">
+                        <p className="text-xs sm:text-sm font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wider mb-1">Groepen</p>
+                        <p className="text-2xl sm:text-3xl font-black text-blue-600 dark:text-blue-400">{stats.groups}</p>
                     </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-wrap gap-3 mb-6">
-                    <button onClick={load} className="action-btn bg-white dark:bg-gray-800 text-theme-purple p-3 rounded-xl shadow font-semibold flex items-center gap-2">
+                <div className="flex flex-wrap gap-3 mb-6 sm:mb-8">
+                    <button onClick={load} className="flex-1 sm:flex-none action-btn bg-[var(--bg-card)] dark:border dark:border-white/10 text-theme-purple dark:text-white p-3.5 rounded-2xl shadow-md font-bold flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-white/5 transition-all active:scale-95">
                         <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} /> Ververs
                     </button>
-                    <button onClick={exportToExcel} className="action-btn bg-white dark:bg-gray-800 text-green-600 p-3 rounded-xl shadow font-semibold flex items-center gap-2">
+                    <button onClick={exportToExcel} className="flex-1 sm:flex-none action-btn bg-[var(--bg-card)] dark:border dark:border-white/10 text-green-600 dark:text-green-400 p-3.5 rounded-2xl shadow-md font-bold flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-white/5 transition-all active:scale-95">
                         <Download className="h-5 w-5" /> Excel
                     </button>
-                    <button onClick={showScanner ? stopScanner : startScanner} className={`action-btn p-3 rounded-xl shadow font-semibold flex items-center gap-2 text-white ${showScanner ? 'bg-red-500' : 'bg-theme-purple'}`}>
-                        {showScanner ? <X className="h-5 w-5" /> : <Camera className="h-5 w-5" />} {showScanner ? 'Sluit' : 'Camera'}
+                    <button onClick={showScanner ? stopScanner : startScanner} className={`w-full sm:flex-none action-btn p-3.5 rounded-2xl shadow-lg font-bold flex items-center justify-center gap-2 text-white transition-all active:scale-95 ${showScanner ? 'bg-red-500 hover:bg-red-600' : 'bg-theme-purple hover:bg-theme-purple-dark'}`}>
+                        {showScanner ? <X className="h-5 w-5" /> : <Camera className="h-5 w-5" />} {showScanner ? 'Stop Scanner' : 'Open Scanner'}
                     </button>
                 </div>
 
                 {/* Scanner Error */}
                 {scannerError && (
-                    <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-xl">
-                        <p className="font-semibold">Camera fout:</p>
-                        <p>{scannerError}</p>
+                    <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 rounded-2xl">
+                        <p className="font-bold flex items-center gap-2"><XCircle className="h-5 w-5" /> Camera Fout</p>
+                        <p className="text-sm mt-1">{scannerError}</p>
                     </div>
                 )}
 
                 {/* Scanner View */}
                 {showScanner && (
-                    <div className="mb-6 bg-white dark:bg-gray-800 p-4 rounded-xl shadow relative">
-                        <div id="qr-reader" ref={videoRef} className="rounded-xl overflow-hidden max-w-md mx-auto"></div>
+                    <div className="mb-6 sm:mb-8 bg-black rounded-3xl overflow-hidden shadow-2xl relative max-w-2xl mx-auto aspect-square">
+                        <div id="qr-reader" ref={videoRef} className="w-full h-full"></div>
                         {scanResult && (
-                            <div className={`absolute top-4 left-4 right-4 p-4 rounded-xl text-white shadow-xl ${scanResult.status === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
-                                <p className="font-bold text-lg">{scanResult.name}</p>
-                                <p>{scanResult.message}</p>
+                            <div className={`absolute inset-x-4 top-4 z-50 p-6 rounded-2xl text-white shadow-2xl animate-in zoom-in duration-300 flex flex-col items-center text-center ${scanResult.status === 'success' ? 'bg-green-600/90 backdrop-blur-md' : 'bg-red-600/90 backdrop-blur-md'}`}>
+                                <p className="font-black text-2xl mb-1">{scanResult.name}</p>
+                                <p className="font-medium">{scanResult.message}</p>
                             </div>
                         )}
+                        <div className="absolute inset-0 border-[40px] border-black/40 pointer-events-none"></div>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 border-2 border-white/50 rounded-3xl pointer-events-none box-content"></div>
                     </div>
                 )}
 
                 {/* Filters */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 sm:mb-8">
+                    <div className="relative group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-theme-purple transition-colors" />
                         <input
                             type="text"
                             placeholder="Zoek op naam..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-theme-purple/50"
+                            className="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-200 dark:border-white/10 bg-[var(--bg-card)] dark:text-white focus:outline-none focus:ring-4 focus:ring-theme-purple/10 focus:border-theme-purple transition-all shadow-sm"
                         />
                     </div>
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <div className="relative group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-theme-purple transition-colors" />
                         <input
                             type="text"
-                            placeholder="Filter op email..."
+                            placeholder="Zoek op email..."
                             value={emailQuery}
                             onChange={(e) => setEmailQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-theme-purple/50"
+                            className="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-200 dark:border-white/10 bg-[var(--bg-card)] dark:text-white focus:outline-none focus:ring-4 focus:ring-theme-purple/10 focus:border-theme-purple transition-all shadow-sm"
                         />
                     </div>
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Filter op vereniging..."
+                    <div className="relative group">
+                        <select
                             value={associationQuery}
                             onChange={(e) => setAssociationQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-theme-purple/50"
-                        />
+                            className="w-full px-4 py-4 rounded-2xl border border-gray-200 dark:border-white/10 bg-[var(--bg-card)] dark:text-white focus:outline-none focus:ring-4 focus:ring-theme-purple/10 focus:border-theme-purple transition-all shadow-sm appearance-none"
+                        >
+                            <option value="">Alle verenigingen</option>
+                            {ASSOCIATIONS.map(assoc => (
+                                <option key={assoc} value={assoc}>{assoc}</option>
+                            ))}
+                        </select>
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
                     </div>
                 </div>
 
                 {/* List */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden">
-                    <table className="w-full">
-                        <thead className="bg-theme-purple text-white">
-                            <tr>
-                                <th className="px-4 py-3 text-left">Naam</th>
-                                <th className="px-4 py-3 text-left hidden sm:table-cell">Ticket</th>
-                                <th className="px-4 py-3 text-center">Status</th>
-                                <th className="px-4 py-3 text-right">Actie</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                            {filteredParticipants.map(p => (
-                                <tr key={p.uniqueId} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                    <td className="px-4 py-3 max-w-[150px] sm:max-w-[250px]">
-                                        <p className="font-bold truncate" title={`${p.name} ${p.initial}`}>{p.name} {p.initial}</p>
-                                        <div className="flex flex-col">
-                                            <p className="text-xs text-gray-500 truncate" title={p.email}>{p.email}</p>
-                                            {p.association && (
-                                                <p className="text-[10px] text-theme-purple/70 font-semibold truncate" title={p.association}>
-                                                    {p.association}
-                                                </p>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-3 hidden sm:table-cell">
-                                        Ticket {p.index + 1}
-                                    </td>
-                                    <td className="px-4 py-3 text-center">
-                                        {p.checkedIn ?
-                                            <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-bold">Ingecheckt</span> :
-                                            <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded-full text-xs font-bold">Nee</span>
-                                        }
-                                    </td>
-                                    <td className="px-4 py-3 text-right">
-                                        <button
-                                            onClick={() => toggleCheckIn(p)}
-                                            className={`px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-transform ${p.checkedIn ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} ${p._justToggled ? 'scale-110' : ''}`}
-                                        >
-                                            {p.checkedIn ? 'Uit' : 'In'}
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                            {filteredParticipants.length === 0 && (
-                                <tr><td colSpan={4} className="p-8 text-center text-gray-500">Geen deelnemers gevonden</td></tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                <div className="space-y-6">
+                    {groupedParticipants.map((group) => (
+                        <div key={group.email} className="bg-[var(--bg-card)] border border-white/10 rounded-3xl overflow-hidden shadow-xl">
+                            {/* Group Header */}
+                            <div className="bg-gradient-to-r from-theme-purple to-theme-purple-dark px-5 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <div className="flex flex-col">
+                                    <h3 className="text-white font-black text-lg tracking-tight leading-tight">
+                                        Groep: {group.participants[0].signupName}
+                                    </h3>
+                                    <p className="text-white/70 text-sm font-medium">{group.email}</p>
+                                </div>
+                                <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-center">
+                                    <span className="text-white text-xs font-black uppercase">{group.participants.length} Tickets</span>
+                                </div>
+                            </div>
 
+                            {/* Group Table */}
+                            <table className="w-full">
+                                <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+                                    {group.participants.map((p) => (
+                                        <tr key={p.uniqueId} className={`hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors ${p.checkedIn ? 'opacity-80' : ''}`}>
+                                            <td className="px-5 sm:px-6 py-4">
+                                                <div className="flex flex-col">
+                                                    <span className="font-bold text-gray-900 dark:text-white text-base sm:text-lg">{p.name} {p.initial}</span>
+                                                    {p.association && (
+                                                        <span className="text-xs font-black text-theme-purple/80 dark:text-theme-purple-light uppercase tracking-widest mt-0.5">
+                                                            {p.association}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-5 sm:px-6 py-4 hidden sm:table-cell w-32">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[10px] font-black text-theme-muted uppercase tracking-tighter">Ticket Status</span>
+                                                    <span className="text-sm font-bold text-theme-muted">
+                                                        {p.index + 1} van {p.ticketCount}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-5 sm:px-6 py-4 text-right sm:text-center w-24">
+                                                <div className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border-2 ${p.checkedIn
+                                                    ? 'bg-green-500/10 border-green-500/30 text-green-600 dark:text-green-400'
+                                                    : 'bg-orange-500/10 border-orange-500/30 text-orange-600 dark:text-orange-400'
+                                                    }`}>
+                                                    {p.checkedIn ? 'In' : 'Nee'}
+                                                </div>
+                                            </td>
+                                            <td className="px-5 sm:px-6 py-4 text-right w-24 sm:w-32">
+                                                <button
+                                                    onClick={() => toggleCheckIn(p)}
+                                                    className={`px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-md active:scale-90 ${p.checkedIn
+                                                        ? 'bg-red-500 hover:bg-red-600 text-white'
+                                                        : 'bg-green-500 hover:bg-green-600 text-white'
+                                                        } ${p._justToggled ? 'scale-110 ring-4 ring-white' : ''}`}
+                                                >
+                                                    {p.checkedIn ? 'Uit' : 'In'}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ))}
+
+                    {groupedParticipants.length === 0 && (
+                        <div className="bg-[var(--bg-card)] border-2 border-dashed border-white/10 rounded-3xl p-16 text-center shadow-inner">
+                            <div className="bg-gray-100 dark:bg-white/5 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Search className="h-10 w-10 text-gray-300 dark:text-white/20" />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Geen deelnemers gevonden</h3>
+                            <p className="text-theme-muted mt-2">Probeer je zoekopdracht of filters aan te passen.</p>
+                        </div>
+                    )}
+                </div>
             </main>
         </div>
     );
