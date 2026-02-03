@@ -47,6 +47,10 @@ export default {
             "dark-start": "var(--theme-gradient-dark-start)",
             "dark-end": "var(--theme-gradient-dark-end)",
           },
+          success: "var(--theme-success)",
+          warning: "var(--theme-warning)",
+          error: "var(--theme-error)",
+          info: "var(--theme-info)",
         },
 
         // Salvemundi brand colors
