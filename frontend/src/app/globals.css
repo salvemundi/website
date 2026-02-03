@@ -311,3 +311,19 @@ body {
   height: auto !important;
   max-height: none !important;
 }
+
+/* Increase card width for clearer content */
+.sm-timeline-wrapper .timeline-vertical-circle>div {
+  width: 50vw !important;
+  /* Force wider */
+  min-width: 500px !important;
+  max-width: 650px !important;
+}
+
+@media (max-width: 768px) {
+  .sm-timeline-wrapper .timeline-vertical-circle>div {
+    min-width: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+}

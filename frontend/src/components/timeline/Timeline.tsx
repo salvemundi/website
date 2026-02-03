@@ -195,11 +195,11 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
                                                     />
                                                 </div>
                                                 <div className="min-w-0 flex-1">
-                                                    <p className="font-bold text-[var(--text-main)] text-sm truncate">
+                                                    <p className="font-bold text-[var(--text-main)] text-sm whitespace-normal break-words">
                                                         {fullName}
                                                     </p>
                                                     {member.functie && (
-                                                        <p className="text-[10px] uppercase font-black text-theme-purple truncate">{member.functie}</p>
+                                                        <p className="text-[10px] uppercase font-black text-theme-purple whitespace-normal break-words">{member.functie}</p>
                                                     )}
                                                 </div>
                                             </div>
