@@ -51,6 +51,14 @@
   /* Gradients - Light Mode: Soft white-purple to match card style preference */
   --gradient-start: #fdfbff;
   --gradient-end: #f4eef5;
+  --theme-gradient-start: var(--gradient-start);
+  --theme-gradient-end: var(--gradient-end);
+
+  /* Status Colors - Light Mode */
+  --theme-success: #16a34a;
+  --theme-warning: #d97706;
+  --theme-error: #dc2626;
+  --theme-info: #0284c7;
 
   /* Header & UI */
   --header-height: 64px;
@@ -128,6 +136,14 @@
 
   --gradient-start: #805480;
   --gradient-end: #905E8E;
+  --theme-gradient-start: var(--gradient-start);
+  --theme-gradient-end: var(--gradient-end);
+
+  /* Status Colors - Dark Mode */
+  --theme-success: #4ade80;
+  --theme-warning: #fbbf24;
+  --theme-error: #f87171;
+  --theme-info: #60a5fa;
 
   /* Dark mode specific mappings */
   --theme-white: var(--color-white);

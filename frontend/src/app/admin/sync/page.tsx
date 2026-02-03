@@ -54,12 +54,12 @@ function Tile({
                     <header className="mb-5 flex items-center justify-between gap-4">
                         <div className="flex min-w-0 items-center gap-3">
                             {icon ? (
-                                <div className="shrink-0 rounded-xl bg-theme-purple/10 p-2 text-theme-purple-lighter">
+                                <div className="shrink-0 rounded-xl bg-theme-purple/10 p-2 text-theme-text dark:text-theme-purple-lighter">
                                     {icon}
                                 </div>
                             ) : null}
                             {title ? (
-                                <h2 className="truncate text-lg font-bold text-theme-purple-lighter">
+                                <h2 className="truncate text-lg font-bold text-theme-text dark:text-theme-purple-lighter">
                                     {title}
                                 </h2>
                             ) : null}
@@ -201,7 +201,7 @@ export default function SyncPage() {
             <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
                 <div className="flex flex-col items-center">
                     <div className="h-10 w-10 animate-spin rounded-full border-4 border-theme-purple/20 border-t-theme-purple mb-4" />
-                    <div className="text-theme-purple-lighter text-xl font-semibold">
+                    <div className="text-theme-text dark:text-theme-purple-lighter text-xl font-semibold">
                         Toegang controleren...
                     </div>
                 </div>
@@ -212,7 +212,7 @@ export default function SyncPage() {
     if (!isAuthorized) {
         return (
             <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
-                <div className="text-theme-purple-lighter text-xl font-semibold">
+                <div className="text-theme-text dark:text-theme-purple-lighter text-xl font-semibold">
                     Geen toegang - onvoldoende rechten
                 </div>
             </div>
@@ -224,11 +224,11 @@ export default function SyncPage() {
             <div className="mx-auto max-w-app px-4 py-8 sm:px-6 lg:px-8">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-theme-purple-lighter flex items-center gap-3">
+                    <h1 className="text-3xl font-bold text-theme-text dark:text-theme-purple-lighter flex items-center gap-3">
                         <RefreshCw className="h-8 w-8" />
                         Synchronisatie
                     </h1>
-                    <p className="mt-1 text-sm text-theme-purple-lighter/60">
+                    <p className="mt-1 text-sm text-theme-text/60 dark:text-theme-purple-lighter/60">
                         Synchroniseer gebruikers met Microsoft Entra ID.
                     </p>
                 </div>
@@ -238,15 +238,15 @@ export default function SyncPage() {
                         <div className="flex flex-col items-start gap-4">
                             {/* Sync Controls */}
                             <div className="w-full">
-                                <label className="text-sm font-medium text-theme-purple-lighter mb-2 block">Te synchroniseren velden:</label>
+                                <label className="text-sm font-medium text-theme-text dark:text-theme-purple-lighter mb-2 block">Te synchroniseren velden:</label>
                                 <div className="flex flex-wrap gap-2">
                                     {syncFieldOptions.map(option => (
                                         <button
                                             key={option.id}
                                             onClick={() => toggleField(option.id)}
                                             className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${selectedSyncFields.includes(option.id)
-                                                ? 'bg-theme-purple/20 border-theme-purple/40 text-theme-purple-lighter'
-                                                : 'bg-white/5 border-white/10 text-theme-purple-lighter/40 hover:bg-white/10'
+                                                ? 'bg-theme-purple/20 border-theme-purple/40 text-theme-text dark:text-theme-purple-lighter'
+                                                : 'bg-white/5 border-white/10 text-theme-text/40 dark:text-theme-purple-lighter/40 hover:bg-white/10'
                                                 }`}
                                         >
                                             {option.label}
@@ -263,9 +263,9 @@ export default function SyncPage() {
                                         id="forceLink"
                                         checked={forceLink}
                                         onChange={(e) => setForceLink(e.target.checked)}
-                                        className="w-4 h-4 rounded border-white/20 bg-white/5 text-theme-purple focus:ring-theme-purple focus:ring-offset-0"
+                                        className="w-4 h-4 rounded border-gray-300 dark:border-white/20 bg-white/5 text-theme-purple focus:ring-theme-purple focus:ring-offset-0"
                                     />
-                                    <label htmlFor="forceLink" className="text-xs text-theme-purple-lighter/70 cursor-pointer">
+                                    <label htmlFor="forceLink" className="text-xs text-theme-text/70 dark:text-theme-purple-lighter/70 cursor-pointer">
                                         Koppel bestaande accounts op e-mail (eenmalige migratie)
                                     </label>
                                 </div>
@@ -276,9 +276,9 @@ export default function SyncPage() {
                                         id="activeOnly"
                                         checked={activeOnly}
                                         onChange={(e) => setActiveOnly(e.target.checked)}
-                                        className="w-4 h-4 rounded border-white/20 bg-white/5 text-theme-purple focus:ring-theme-purple focus:ring-offset-0"
+                                        className="w-4 h-4 rounded border-gray-300 dark:border-white/20 bg-white/5 text-theme-purple focus:ring-theme-purple focus:ring-offset-0"
                                     />
-                                    <label htmlFor="activeOnly" className="text-xs text-theme-purple-lighter/70 cursor-pointer">
+                                    <label htmlFor="activeOnly" className="text-xs text-theme-text/70 dark:text-theme-purple-lighter/70 cursor-pointer">
                                         Alleen actieve leden synchroniseren (sneller)
                                     </label>
                                 </div>
@@ -288,7 +288,7 @@ export default function SyncPage() {
                                 <button
                                     onClick={handleSyncUsers}
                                     disabled={isSyncing}
-                                    className="flex items-center justify-center gap-2 px-4 py-2 bg-theme-purple/20 hover:bg-theme-purple/30 text-theme-purple-lighter rounded-xl border border-theme-purple/30 transition-all font-semibold disabled:opacity-50"
+                                    className="flex items-center justify-center gap-2 px-4 py-2 bg-theme-purple/20 hover:bg-theme-purple/30 text-theme-text dark:text-theme-purple-lighter rounded-xl border border-theme-purple/30 transition-all font-semibold disabled:opacity-50"
                                 >
                                     <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
                                     {isSyncing ? 'Synchroniseren...' : 'Start Synchronisatie'}
@@ -308,12 +308,12 @@ export default function SyncPage() {
                                     <div>
                                         <div className="flex justify-between items-end mb-2">
                                             <div>
-                                                <span className="text-sm font-medium text-theme-purple-lighter/70 block mb-1">Voortgang</span>
-                                                <span className="text-2xl font-bold text-theme-purple-lighter">
+                                                <span className="text-sm font-medium text-theme-text/70 dark:text-theme-purple-lighter/70 block mb-1">Voortgang</span>
+                                                <span className="text-2xl font-bold text-theme-text dark:text-theme-purple-lighter">
                                                     {syncStatus.total > 0 ? Math.round((syncStatus.processed / syncStatus.total) * 100) : 0}%
                                                 </span>
                                             </div>
-                                            <div className="text-right text-sm text-theme-purple-lighter/60">
+                                            <div className="text-right text-sm text-theme-text/60 dark:text-theme-purple-lighter/60">
                                                 {syncStatus.processed} van {syncStatus.total} gebruikers
                                             </div>
                                         </div>
@@ -326,9 +326,9 @@ export default function SyncPage() {
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                                         <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
-                                            <div className="text-sm text-theme-purple-lighter/60 mb-1">Status</div>
-                                            <div className={`font-bold capitalize ${syncStatus.status === 'completed' ? 'text-green-400' :
-                                                syncStatus.status === 'failed' ? 'text-red-400' : 'text-theme-purple-lighter'
+                                            <div className="text-sm text-theme-text/60 dark:text-theme-purple-lighter/60 mb-1">Status</div>
+                                            <div className={`font-bold capitalize ${syncStatus.status === 'completed' ? 'text-theme-success' :
+                                                syncStatus.status === 'failed' ? 'text-theme-error' : 'text-theme-text dark:text-theme-purple-lighter'
                                                 }`}>
                                                 {syncStatus.status === 'running' ? 'Bezig...' :
                                                     syncStatus.status === 'completed' ? 'Voltooid' :
@@ -336,20 +336,20 @@ export default function SyncPage() {
                                             </div>
                                         </div>
                                         <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
-                                            <div className="text-sm text-theme-purple-lighter/60 mb-1">Waarschuwingen</div>
-                                            <div className={`font-bold ${(syncStatus.warningCount || 0) > 0 ? 'text-amber-400' : 'text-theme-purple-lighter'}`}>
+                                            <div className="text-sm text-theme-text/60 dark:text-theme-purple-lighter/60 mb-1">Waarschuwingen</div>
+                                            <div className={`font-bold ${(syncStatus.warningCount || 0) > 0 ? 'text-theme-warning' : 'text-theme-text dark:text-theme-purple-lighter'}`}>
                                                 {syncStatus.warningCount || 0}
                                             </div>
                                         </div>
                                         <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
-                                            <div className="text-sm text-theme-purple-lighter/60 mb-1">Missende Data</div>
-                                            <div className={`font-bold ${(syncStatus.missingDataCount || 0) > 0 ? 'text-blue-400' : 'text-theme-purple-lighter'}`}>
+                                            <div className="text-sm text-theme-text/60 dark:text-theme-purple-lighter/60 mb-1">Missende Data</div>
+                                            <div className={`font-bold ${(syncStatus.missingDataCount || 0) > 0 ? 'text-theme-info' : 'text-theme-text dark:text-theme-purple-lighter'}`}>
                                                 {syncStatus.missingDataCount}
                                             </div>
                                         </div>
                                         <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
-                                            <div className="text-sm text-theme-purple-lighter/60 mb-1">Fouten</div>
-                                            <div className={`font-bold ${syncStatus.errorCount > 0 ? 'text-red-500' : 'text-theme-purple-lighter'}`}>
+                                            <div className="text-sm text-theme-text/60 dark:text-theme-purple-lighter/60 mb-1">Fouten</div>
+                                            <div className={`font-bold ${syncStatus.errorCount > 0 ? 'text-theme-error' : 'text-theme-text dark:text-theme-purple-lighter'}`}>
                                                 {syncStatus.errorCount}
                                             </div>
                                         </div>
@@ -368,8 +368,8 @@ export default function SyncPage() {
                                                 key={tab.id}
                                                 onClick={() => setSyncResultFilter(tab.id)}
                                                 className={`px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${syncResultFilter === tab.id
-                                                    ? 'bg-theme-purple/20 text-theme-purple-lighter border border-theme-purple/30'
-                                                    : 'text-theme-purple-lighter/60 hover:text-theme-purple-lighter hover:bg-white/5'
+                                                    ? 'bg-theme-purple/20 text-theme-text dark:text-theme-purple-lighter border border-theme-purple/30'
+                                                    : 'text-theme-text/60 dark:text-theme-purple-lighter/60 hover:text-theme-text dark:hover:text-theme-purple-lighter hover:bg-white/5'
                                                     }`}
                                             >
                                                 {tab.label} ({tab.count})
@@ -379,11 +379,11 @@ export default function SyncPage() {
                                     {/* Filtered Results */}
                                     {(syncResultFilter === 'all' || syncResultFilter === 'success') && syncStatus.successfulUsers && syncStatus.successfulUsers.length > 0 && (
                                         <div className="mt-4">
-                                            <div className="text-xs font-medium text-green-400/80 mb-2 px-1">✅ Succesvol gesynchroniseerd</div>
-                                            <div className="max-h-48 overflow-y-auto rounded-xl bg-green-400/5 border border-green-400/10 p-2 space-y-1 custom-scrollbar">
+                                            <div className="text-xs font-medium text-theme-success/80 mb-2 px-1">✅ Succesvol gesynchroniseerd</div>
+                                            <div className="max-h-48 overflow-y-auto rounded-xl bg-theme-success/5 border border-theme-success/10 p-2 space-y-1 custom-scrollbar">
                                                 {syncStatus.successfulUsers.map((user, idx) => (
-                                                    <div key={idx} className="p-2 text-xs border-b border-green-400/10 last:border-0">
-                                                        <div className="text-green-300">{user.email}</div>
+                                                    <div key={idx} className="p-2 text-xs border-b border-theme-success/10 last:border-0">
+                                                        <div className="text-theme-success">{user.email}</div>
                                                     </div>
                                                 ))}
                                             </div>
@@ -391,12 +391,12 @@ export default function SyncPage() {
                                     )}
                                     {(syncResultFilter === 'all' || syncResultFilter === 'warnings') && syncStatus.warnings && syncStatus.warnings.length > 0 && (
                                         <div className="mt-4">
-                                            <div className="text-xs font-medium text-amber-400/80 mb-2 px-1">⚠️ Aandacht vereist (Mogelijke duplicaten)</div>
-                                            <div className="max-h-48 overflow-y-auto rounded-xl bg-amber-400/5 border border-amber-400/10 p-2 space-y-1 custom-scrollbar">
+                                            <div className="text-xs font-medium text-theme-warning/80 mb-2 px-1">⚠️ Aandacht vereist (Mogelijke duplicaten)</div>
+                                            <div className="max-h-48 overflow-y-auto rounded-xl bg-theme-warning/5 border border-theme-warning/10 p-2 space-y-1 custom-scrollbar">
                                                 {syncStatus.warnings.map((warn, idx) => (
-                                                    <div key={idx} className="p-2 text-xs border-b border-amber-400/10 last:border-0">
-                                                        <div className="font-bold text-amber-300">{warn.email}</div>
-                                                        <div className="text-amber-200/70">{warn.message}</div>
+                                                    <div key={idx} className="p-2 text-xs border-b border-theme-warning/10 last:border-0">
+                                                        <div className="font-bold text-theme-warning">{warn.email}</div>
+                                                        <div className="text-theme-text/70 dark:text-theme-purple-lighter/70">{warn.message}</div>
                                                     </div>
                                                 ))}
                                             </div>
@@ -404,12 +404,12 @@ export default function SyncPage() {
                                     )}
                                     {(syncResultFilter === 'all' || syncResultFilter === 'missing') && syncStatus.missingData && syncStatus.missingData.length > 0 && (
                                         <div className="mt-4">
-                                            <div className="text-xs font-medium text-blue-400/80 mb-2 px-1">ℹ️ Missende velden in Entra ID</div>
-                                            <div className="max-h-48 overflow-y-auto rounded-xl bg-blue-400/5 border border-blue-400/10 p-2 space-y-1 custom-scrollbar">
+                                            <div className="text-xs font-medium text-theme-info/80 mb-2 px-1">ℹ️ Missende velden in Entra ID</div>
+                                            <div className="max-h-48 overflow-y-auto rounded-xl bg-theme-info/5 border border-theme-info/10 p-2 space-y-1 custom-scrollbar">
                                                 {syncStatus.missingData.map((item, idx) => (
-                                                    <div key={idx} className="p-2 text-xs border-b border-blue-400/10 last:border-0">
-                                                        <div className="font-bold text-blue-300">{item.email}</div>
-                                                        <div className="text-blue-200/70">{item.reason}</div>
+                                                    <div key={idx} className="p-2 text-xs border-b border-theme-info/10 last:border-0">
+                                                        <div className="font-bold text-theme-info">{item.email}</div>
+                                                        <div className="text-theme-text/70 dark:text-theme-purple-lighter/70">{item.reason}</div>
                                                     </div>
                                                 ))}
                                             </div>
@@ -429,11 +429,11 @@ export default function SyncPage() {
                                     )}
                                     {(syncResultFilter === 'all' || syncResultFilter === 'errors') && syncStatus.errors.length > 0 && (
                                         <div className="mt-4">
-                                            <div className="text-xs font-medium text-red-400/80 mb-2 px-1">❌ Fouten tijdens synchronisatie</div>
-                                            <div className="max-h-48 overflow-y-auto rounded-xl bg-red-400/5 border border-red-400/10 p-2 space-y-1 custom-scrollbar">
+                                            <div className="text-xs font-medium text-theme-error/80 mb-2 px-1">❌ Fouten tijdens synchronisatie</div>
+                                            <div className="max-h-48 overflow-y-auto rounded-xl bg-theme-error/5 border border-theme-error/10 p-2 space-y-1 custom-scrollbar">
                                                 {syncStatus.errors.map((err, idx) => (
-                                                    <div key={idx} className="p-2 text-xs border-b border-red-400/10 last:border-0">
-                                                        <span className="text-red-300">{err.email}: {err.error}</span>
+                                                    <div key={idx} className="p-2 text-xs border-b border-theme-error/10 last:border-0">
+                                                        <span className="text-theme-error">{err.email}: {err.error}</span>
                                                     </div>
                                                 ))}
                                             </div>
