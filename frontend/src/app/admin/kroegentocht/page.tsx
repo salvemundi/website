@@ -201,20 +201,19 @@ export default function KroegentochtAanmeldingenPage() {
     const exportToExcel = () => {
         if (!selectedEvent) return;
 
-        // Prepare data with group numbers
+        // Prepare data
         const rows: any[] = [];
-        let groupNumber = 1;
 
         filteredSignups.forEach(signup => {
             const participants = signup.participants || [];
 
             if (participants.length > 0) {
-                // Add all participants with the same group number
+                // Add all participants with the signup email as Group
                 participants.forEach(participant => {
                     rows.push({
                         'Naam': `${participant.name} ${participant.initial}.`,
                         'Vereniging': signup.association || '-',
-                        'Groep': groupNumber
+                        'Groep': signup.email
                     });
                 });
             } else {
@@ -223,12 +222,10 @@ export default function KroegentochtAanmeldingenPage() {
                     rows.push({
                         'Naam': i === 0 ? signup.name : '-',
                         'Vereniging': signup.association || '-',
-                        'Groep': groupNumber
+                        'Groep': signup.email
                     });
                 }
             }
-
-            groupNumber++;
         });
 
         // Create workbook
@@ -240,7 +237,7 @@ export default function KroegentochtAanmeldingenPage() {
         ws['!cols'] = [
             { wch: 30 }, // Naam
             { wch: 20 }, // Vereniging
-            { wch: 10 }  // Groep
+            { wch: 30 }  // Groep
         ];
 
         // Generate filename
