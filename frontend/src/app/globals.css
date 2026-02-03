@@ -240,74 +240,110 @@ body {
   overflow: visible !important;
 }
 
-/* Hide timeline controls completely, scoped to chrono/chrono-wrapper elements only
-   to avoid accidentally matching similarly-named UI classes elsewhere in the app. */
-.chrono,
-.chrono-wrapper,
-[class*="chrono"] {
-  --_chrono-scope: 1;
+/* Sm Timeline Wrapper - Robust Overrides */
+.sm-timeline-wrapper {
+  position: relative !important;
+  width: 100% !important;
+  padding-bottom: 200px !important;
+  /* Fix bottom cut-off */
 }
 
-.chrono [class*="timeline-controls"],
-.chrono .timeline-controls,
-.chrono [class*="chrono-controls"],
-.chrono .chrono-timeline-toolbar,
-.chrono [class*="toolbar"][class*="timeline"],
-.chrono [class*="toolbar-wrapper"],
-.chrono .toolbar-wrapper,
-.chrono .toolbar,
-.chrono [class*="SelecterLabel"],
-.chrono [class*="label"],
-.chrono [class*="outline-"],
-.chrono [class*="timeline-outline"],
-.chrono .timeline-outline-wrapper,
-.chrono [class*="jump"],
-.chrono [class*="layout-switch"],
-.chrono [class*="mode-switch"],
-.chrono button[class*="outline"],
-.chrono button[class*="jump"],
-.chrono button[class*="mode"],
-.chrono button[class*="layout"] {
+/* Hide toolbar */
+.sm-timeline-wrapper [class*="Toolbar"],
+.sm-timeline-wrapper [class*="toolbar"],
+.sm-timeline-wrapper [class*="Selecter"],
+.sm-timeline-wrapper [class*="TimelineNav"] {
   display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  height: 0 !important;
-  width: 0 !important;
-  padding: 0 !important;
-  margin: 0 !important;
+}
+
+/* Center the vertical line (axis) */
+.sm-timeline-wrapper [class*="TimelineLineWrapper"],
+.sm-timeline-wrapper [class*="TimelineLine"],
+.sm-timeline-wrapper [class*="TimelineMainWrapper"]::before {
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  position: absolute !important;
+  height: 100% !important;
+  width: 4px !important;
+  background: var(--theme-purple) !important;
+  z-index: 1 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* If it's an SVG path */
+.sm-timeline-wrapper svg [class*="TimelineLine"],
+.sm-timeline-wrapper svg path {
+  stroke: var(--theme-purple) !important;
+  stroke-width: 4px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+
+/* Center points */
+.sm-timeline-wrapper [class*="TimelinePointWrapper"] {
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 10 !important;
+  background: transparent !important;
+}
+
+/* Year Styling: Large and Bold above the card */
+.sm-timeline-wrapper [class*="TimelineTitleWrapper"] {
+  position: absolute !important;
+  top: 1rem !important;
+  /* Move it up relative to the card */
+  z-index: 20 !important;
+  width: auto !important;
   pointer-events: none !important;
 }
 
-/* Strong overrides to ensure Chrono card wrappers do not clip custom content */
-[class*="chrono"] .card,
-[class*="chrono"] .chrono-card,
-.card,
-.chrono-card,
-.timeline-card,
-.timeline-card-content,
-.card-content-wrapper,
-.card-description,
-.chrono-card-content,
-.card-contents,
-[class*="card-content"] {
-  position: static !important;
-  display: block !important;
-  overflow: visible !important;
-  height: auto !important;
-  max-height: none !important;
+/* Left card -> Year on the right side of the card (or centered above) */
+.sm-timeline-wrapper [class*="VerticalItemWrapper"].left [class*="TimelineTitleWrapper"] {
+  left: 50% !important;
+  margin-left: 40px !important;
 }
 
-/* Ensure vertical wrappers and inner containers allow natural flow */
-.timeline-vertical-wrapper,
-[class*="timeline-vertical"],
-.timeline-main-wrapper,
-[class*="timeline-main"],
-[class*="chrono-wrapper"],
-.timeline-items-container,
-[class*="timeline-items"],
-[class*="card-content-wrapper"] {
-  position: static !important;
-  overflow: visible !important;
-  height: auto !important;
-  max-height: none !important;
+/* Right card -> Year on the left side of the card */
+.sm-timeline-wrapper [class*="VerticalItemWrapper"].right [class*="TimelineTitleWrapper"] {
+  right: 50% !important;
+  margin-right: 40px !important;
+}
+
+.sm-timeline-wrapper [class*="timeline-item-title"] {
+  font-size: 2.5rem !important;
+  font-weight: 900 !important;
+  color: var(--theme-purple) !important;
+  background: transparent !important;
+  text-shadow: 0 0 10px rgba(var(--theme-purple-rgb), 0.1);
+}
+
+/* Card content visibility and Light/Dark mode */
+.sm-timeline-wrapper .timeline-card-content,
+.sm-timeline-wrapper [class*="rc-card"] {
+  background: var(--bg-card) !important;
+  border-radius: 1.5rem !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-main) !important;
+}
+
+.dark .sm-timeline-wrapper .timeline-card-content,
+.dark .sm-timeline-wrapper [class*="rc-card"] {
+  background: #1a1a1a !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+
+  .sm-timeline-wrapper [class*="TimelineLineWrapper"],
+  .sm-timeline-wrapper [class*="TimelineLine"],
+  .sm-timeline-wrapper [class*="TimelinePointWrapper"] {
+    left: 20px !important;
+    transform: none !important;
+  }
 }

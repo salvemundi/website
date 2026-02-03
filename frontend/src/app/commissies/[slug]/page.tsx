@@ -334,19 +334,17 @@ export default function CommitteeDetailPage() {
                             </div>
                         )}
 
-                        {/* Members Grid */}
-                        {members.length > 0 && (
-                            <div className="rounded-3xl bg-[var(--bg-card)] p-6 shadow-card dark:border dark:border-white/10">
-                                <div className="mb-6 flex items-center justify-between">
-                                    <h3 className="flex items-center gap-2 text-lg font-bold text-theme-purple">
-                                        <Users2 className="h-5 w-5" />
-                                        Team ({members.length})
-                                    </h3>
-                                </div>
-                                <div className="grid grid-cols-4 gap-3">
-                                    {members.map((member: any) => (
-                                        <div key={member.id} className="group/member text-center">
-                                            <div className="relative mx-auto aspect-square w-full max-w-[64px] overflow-hidden rounded-full ring-2 ring-transparent transition-all group-hover/member:ring-theme-purple shadow-sm">
+                        {/* All Members List (Replaces Team Grid) */}
+                        {members.filter((m: any) => !m.is_leader).length > 0 && (
+                            <div className="space-y-4">
+                                <h3 className="flex items-center gap-2 text-lg font-bold text-theme-purple px-2">
+                                    <Users2 className="h-5 w-5" />
+                                    Overige Bestuursleden
+                                </h3>
+                                <div className="space-y-3">
+                                    {members.filter((m: any) => !m.is_leader).map((member: any) => (
+                                        <div key={member.id} className="group relative flex items-center gap-4 p-4 rounded-3xl bg-[var(--bg-card)] border border-transparent hover:border-theme-purple transition-all shadow-card dark:border-white/10">
+                                            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full ring-4 ring-theme-purple/5">
                                                 {resolveMemberAvatar(member) ? (
                                                     <SmartImage
                                                         src={getImageUrl(resolveMemberAvatar(member))}
@@ -355,24 +353,23 @@ export default function CommitteeDetailPage() {
                                                         className="object-cover"
                                                     />
                                                 ) : (
-                                                    <div className="flex h-full w-full items-center justify-center bg-[var(--bg-main)] text-sm font-bold text-theme-purple/60">
-                                                        {getMemberFullName(member).slice(0, 1)}
-                                                    </div>
-                                                )}
-                                                {member.is_leader && (
-                                                    <div className="absolute inset-x-0 bottom-0 bg-theme-purple/80 p-0.5" title="Leider">
-                                                        <ShieldCheck className="mx-auto h-3 w-3 text-white" />
+                                                    <div className="flex h-full w-full items-center justify-center bg-theme-purple/10 text-xl font-black text-theme-purple">
+                                                        {getMemberFullName(member).charAt(0)}
                                                     </div>
                                                 )}
                                             </div>
-                                            <p className="mt-1.5 truncate text-[10px] font-bold text-[var(--text-main)]">
-                                                {getMemberFullName(member).split(' ')[0]}
-                                            </p>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="truncate font-bold text-[var(--text-main)] text-lg">{getMemberFullName(member)}</p>
+                                                <p className="text-xs font-medium text-theme-purple uppercase tracking-wider">
+                                                    {member.functie || 'Bestuurslid'}
+                                                </p>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         )}
+
 
                         {/* Board History Button - Only show for Bestuur */}
                         {cleanName.toLowerCase().includes('bestuur') && (
