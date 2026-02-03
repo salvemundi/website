@@ -8,7 +8,7 @@ on:
     paths:
       - 'email-api/**'
       - '.github/workflows/deploy-email.yml'
-
+  workflow_dispatch:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: salvemundi/email-api
