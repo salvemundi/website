@@ -23,6 +23,7 @@ export default function AttendancePage() {
     const [scanResult, setScanResult] = useState<{ name: string; status: 'success' | 'error'; message: string } | null>(null);
     const scannerRef = useRef<any>(null);
     const videoRef = useRef<HTMLDivElement>(null);
+    const scanLockRef = useRef<boolean>(false);
 
     const load = async () => {
         setLoading(true);
@@ -144,9 +145,17 @@ export default function AttendancePage() {
                         qrbox: { width: 250, height: 250 }
                     },
                     async (decodedText: string) => {
-                        await handleScan(decodedText);
-                        // Don't stop scanner - keep it open for next scan
-                    },
+                            // Prevent rapid repeated scans by locking for a short timeout
+                            if (scanLockRef.current) return;
+                            scanLockRef.current = true;
+                            try {
+                                await handleScan(decodedText);
+                            } finally {
+                                // small delay before allowing the next scan
+                                setTimeout(() => { scanLockRef.current = false; }, 1500);
+                            }
+                            // Don't stop scanner - keep it open for next scan
+                        },
                     (_errorMessage: string) => {
                         // Ignore decode errors (normal when no QR in view)
                     }
