@@ -244,9 +244,9 @@ export default function SyncPage() {
                                         <button
                                             key={option.id}
                                             onClick={() => toggleField(option.id)}
-                                            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${selectedSyncFields.includes(option.id)
-                                                ? 'bg-theme-purple/20 border-theme-purple/40 text-theme-text dark:text-theme-purple-lighter'
-                                                : 'bg-white/5 border-white/10 text-theme-text/40 dark:text-theme-purple-lighter/40 hover:bg-white/10'
+                                            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all shadow-sm ${selectedSyncFields.includes(option.id)
+                                                ? 'bg-theme-purple text-white border-theme-purple'
+                                                : 'bg-white dark:bg-black/20 border-gray-200 dark:border-white/10 text-theme-text/60 dark:text-theme-purple-lighter/60 hover:border-theme-purple/40 hover:text-theme-purple'
                                                 }`}
                                         >
                                             {option.label}
@@ -288,9 +288,9 @@ export default function SyncPage() {
                                 <button
                                     onClick={handleSyncUsers}
                                     disabled={isSyncing}
-                                    className="flex items-center justify-center gap-2 px-4 py-2 bg-theme-purple/20 hover:bg-theme-purple/30 text-theme-text dark:text-theme-purple-lighter rounded-xl border border-theme-purple/30 transition-all font-semibold disabled:opacity-50"
+                                    className="flex items-center justify-center gap-2 px-6 py-2.5 bg-theme-purple text-white hover:bg-theme-purple-light rounded-xl shadow-lg hover:shadow-theme-purple/20 transition-all font-bold disabled:opacity-50"
                                 >
-                                    <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                                    <RefreshCw className={`h-5 w-5 ${isSyncing ? 'animate-spin' : ''}`} />
                                     {isSyncing ? 'Synchroniseren...' : 'Start Synchronisatie'}
                                 </button>
                             </div>
@@ -367,9 +367,9 @@ export default function SyncPage() {
                                             <button
                                                 key={tab.id}
                                                 onClick={() => setSyncResultFilter(tab.id)}
-                                                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${syncResultFilter === tab.id
-                                                    ? 'bg-theme-purple/20 text-theme-text dark:text-theme-purple-lighter border border-theme-purple/30'
-                                                    : 'text-theme-text/60 dark:text-theme-purple-lighter/60 hover:text-theme-text dark:hover:text-theme-purple-lighter hover:bg-white/5'
+                                                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap shadow-sm ${syncResultFilter === tab.id
+                                                    ? 'bg-theme-purple text-white'
+                                                    : 'bg-white dark:bg-white/5 text-theme-text/60 dark:text-theme-purple-lighter/60 hover:text-theme-purple hover:bg-theme-purple/5'
                                                     }`}
                                             >
                                                 {tab.label} ({tab.count})
