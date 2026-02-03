@@ -67,7 +67,7 @@ export default function PubCrawlAttendancePage() {
     const videoRef = useRef<HTMLDivElement>(null);
     const scanLockRef = useRef<boolean>(false);
     const SCAN_LOCK_MS = 3000;
-    const scanLockRef = useRef<boolean>(false);
+
 
     const load = async () => {
         setLoading(true);
@@ -234,16 +234,16 @@ export default function PubCrawlAttendancePage() {
                     { facingMode: 'environment' },
                     { fps: 10, qrbox: { width: 250, height: 250 } },
                     async (decodedText: string) => {
-                            // Prevent rapid repeated scans by locking for a short timeout
-                            if (scanLockRef.current) return;
-                            scanLockRef.current = true;
-                            try {
-                                await handleScan(decodedText);
-                            } finally {
-                                // keep popup visible for the same duration as the scan lock
-                                setTimeout(() => { scanLockRef.current = false; setScanResult(null); }, SCAN_LOCK_MS);
-                            }
-                        },
+                        // Prevent rapid repeated scans by locking for a short timeout
+                        if (scanLockRef.current) return;
+                        scanLockRef.current = true;
+                        try {
+                            await handleScan(decodedText);
+                        } finally {
+                            // keep popup visible for the same duration as the scan lock
+                            setTimeout(() => { scanLockRef.current = false; setScanResult(null); }, SCAN_LOCK_MS);
+                        }
+                    },
                     (_errorMessage: string) => { }
                 );
             }
@@ -296,11 +296,18 @@ export default function PubCrawlAttendancePage() {
     };
 
     const exportToExcel = () => {
+        // Calculate group numbers based on sorted unique signupIds to ensure consistency
+        const uniqueSignupIds = Array.from(new Set(filteredParticipants.map(p => p.signupId))).sort((a, b) => a - b);
+        const signupIdToGroupNumber = new Map<number, number>();
+        uniqueSignupIds.forEach((id, index) => {
+            signupIdToGroupNumber.set(id, index + 1);
+        });
+
         const rows = filteredParticipants.map((p) => ({
+            'Groep': `Groep ${signupIdToGroupNumber.get(p.signupId)}`,
             'Naam': `${p.name} ${p.initial}`,
             'Email': p.email || '-',
             'Vereniging': p.association || '-',
-            'Ticket Index': p.index + 1,
             'Ingecheckt': p.checkedIn ? 'Ja' : 'Nee',
             'Ingecheckt op': p.checkedInAt ? new Date(p.checkedInAt).toLocaleString('nl-NL') : '-'
         }));
@@ -310,10 +317,10 @@ export default function PubCrawlAttendancePage() {
         XLSX.utils.book_append_sheet(wb, ws, 'Aanwezigheid');
 
         ws['!cols'] = [
+            { wch: 15 }, // Groep
             { wch: 25 }, // Naam
             { wch: 30 }, // Email
             { wch: 20 }, // Vereniging
-            { wch: 10 }, // Index
             { wch: 12 }, // Ingecheckt
             { wch: 20 }, // Ingecheckt op
         ];
