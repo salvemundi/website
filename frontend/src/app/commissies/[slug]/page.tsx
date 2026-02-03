@@ -361,7 +361,7 @@ export default function CommitteeDetailPage() {
                                             <div className="min-w-0 flex-1">
                                                 <p className="truncate font-bold text-[var(--text-main)] text-lg">{getMemberFullName(member)}</p>
                                                 <p className="text-xs font-medium text-theme-purple uppercase tracking-wider">
-                                                    {member.functie || 'Bestuurslid'}
+                                                    {member.title || member.user_id?.title || member.member_id?.title || member.functie || 'Bestuurslid'}
                                                 </p>
                                             </div>
                                         </div>
