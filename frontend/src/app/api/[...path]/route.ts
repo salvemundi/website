@@ -202,10 +202,10 @@ export async function GET(
                 targetSearch = newSearch ? `?${newSearch}` : '';
             }
 
-        } else if (auth && (isUserTokenValid || isAuthPath)) {
+        } else if (auth && (isUserTokenValid || isAuthPath || needsSpecialGuardCheck)) {
             forwardHeaders['Authorization'] = auth;
 
-        } else if (auth && !isUserTokenValid && isAllowed) {
+        } else if (auth && !isUserTokenValid && isAllowed && !needsSpecialGuardCheck) {
             console.log(`[Directus Proxy] Stripping invalid token for public path: ${path}`);
             // Header is not added, effectively making it anonymous
         }
@@ -251,9 +251,15 @@ export async function GET(
         const response = await fetch(targetUrl, fetchOptions);
 
         if (!response.ok) {
-            if (response.status === 403 && (path.startsWith('items/committees') || path.startsWith('items/committee_members'))) {
+            if (response.status === 403 && (
+                path.startsWith('items/committees') ||
+                path.startsWith('items/committee_members') ||
+                path.startsWith('items/event_signups') ||
+                path.startsWith('items/pub_crawl_signups')
+            )) {
                 console.log(`[Directus Proxy] Softening 403 for GET ${path} to avoid browser console error.`);
-                return NextResponse.json({ data: null, error: 'Forbidden', softened: true }, { status: 200 });
+                // Return an empty array so frontend map() calls don't crash
+                return NextResponse.json({ data: [], error: 'Forbidden', softened: true }, { status: 200 });
             }
             console.error(`[Directus Proxy] GET ${path} FAILED: Status ${response.status}`);
         }
@@ -371,14 +377,14 @@ async function handleMutation(
                             const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
 
                             userData.memberships = memberships;
-                            
+
                             // Debug logging for membership check
                             console.log(`[Directus Proxy] User ${userId} memberships:`, memberships.map((m: any) => ({
                                 committee_id: m?.committee_id?.id,
                                 committee_name: m?.committee_id?.name,
                                 is_leader: m?.is_leader
                             })));
-                            
+
                             canBypass = memberships.some((m: any) => {
                                 const name = (m?.committee_id?.name || '').toString().toLowerCase();
                                 const isLeader = m.is_leader === true;
@@ -388,7 +394,7 @@ async function handleMutation(
                                 }
                                 return hasPrivilege;
                             });
-                            
+
                             console.log(`[Directus Proxy] User ${userId} canBypass result: ${canBypass}`);
                         }
                     } else if (meResp.status === 401 || meResp.status === 403) {
@@ -412,7 +418,7 @@ async function handleMutation(
             const committeeId = body?.committee_id;
             const memberships = userData?.memberships || [];
             console.log(`[Directus Proxy] Requested committee_id: ${committeeId}, User memberships count: ${memberships.length}`);
-            
+
             if (committeeId) {
                 const isMember = memberships.some((m: any) => String(m?.committee_id?.id || m?.committee_id) === String(committeeId));
                 console.log(`[Directus Proxy] Committee membership check: isMember=${isMember} for committee ${committeeId}`);
@@ -501,9 +507,9 @@ async function handleMutation(
                 const newSearch = newParams.toString();
                 targetSearch = newSearch ? `?${newSearch}` : '';
             }
-        } else if (authHeader && (isUserTokenValid || isAuthPath)) {
+        } else if (authHeader && (isUserTokenValid || isAuthPath || needsSpecialGuardCheck)) {
             forwardHeaders['Authorization'] = authHeader;
-        } else if (authHeader && !isUserTokenValid && isAllowed) {
+        } else if (authHeader && !isUserTokenValid && isAllowed && !needsSpecialGuardCheck) {
             console.log(`[Directus Proxy] Stripping invalid token for public mutation: ${path}`);
             // Header is not added
         }
