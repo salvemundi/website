@@ -258,7 +258,8 @@ export async function GET(
                 path.startsWith('items/pub_crawl_signups')
             )) {
                 console.log(`[Directus Proxy] Softening 403 for GET ${path} to avoid browser console error.`);
-                return NextResponse.json({ data: null, error: 'Forbidden', softened: true }, { status: 200 });
+                // Return an empty array so frontend map() calls don't crash
+                return NextResponse.json({ data: [], error: 'Forbidden', softened: true }, { status: 200 });
             }
             console.error(`[Directus Proxy] GET ${path} FAILED: Status ${response.status}`);
         }
