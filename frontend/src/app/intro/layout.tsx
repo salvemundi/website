@@ -97,8 +97,8 @@ export default function IntroLayout({ children }: { children: React.ReactNode })
                     </div>
                 </aside>
 
-                {/* Mobile Navigation - Only on blog/planning pages */}
-                {isBlogOrPlanning && (
+                {/* Mobile Navigation - show on main intro and on blog/planning pages */}
+                {(isMainIntroPage || isBlogOrPlanning) && (
                     <nav
                         className="md:hidden bg-[var(--bg-card)] border-b border-theme-purple/10 sticky z-40 backdrop-blur-lg bg-opacity-90"
                         style={{ top: '0' }}
