@@ -81,7 +81,8 @@ app.use(
         MEMBERSHIP_API_URL,
         directusService,
         notificationService,
-        GRAPH_SYNC_URL
+        GRAPH_SYNC_URL,
+        membershipService
     )
 );
 
