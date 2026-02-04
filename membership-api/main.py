@@ -130,7 +130,8 @@ async def update_user_attributes(user_id: str, date_of_birth: str = None):
                     ATTRIBUTE_SET_NAME: {
                         "@odata.type": "#microsoft.graph.customSecurityAttributeValue",
                         "OrigineleBetaalDatumStr": betaal_datum,
-                        "VerloopdatumStr": verloop_datum
+                        "VerloopdatumStr": verloop_datum,
+                        "Geboortedatum": date_of_birth
                     }
                 }
             }

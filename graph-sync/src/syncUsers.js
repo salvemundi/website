@@ -35,7 +35,8 @@ const ROLE_IDS = {
     BESTUUR: 'a0e51e23-15ef-4e04-a188-5c483484b0be',
     ADMIN: 'd671fd7a-cfcb-4bdc-afb8-1a96bc2d5d50',
     Intro: '877cbf0e-ed15-4d45-b164-8f251ffd278f',
-    CommitteeMember: '5848f0ed-59c4-4ae2-8683-3d9a221ac189'
+    CommitteeMember: '5848f0ed-59c4-4ae2-8683-3d9a221ac189',
+    MEMBER: process.env.DIRECTUS_DEFAULT_ROLE_ID || '877cbf0e-ed15-4d45-b164-8f251ffd278f' // Fallback to Intro if not set
 };
 
 // Hardcode committee groups here (names or IDs). If you provide names, they will be
@@ -256,9 +257,9 @@ function getRoleIdByGroupMembership(groupIds) {
         console.log(`[ROLE] ⚠️ No groups provided or empty array`);
     }
 
-    // No Entra groups found -> don't force a role change
-    console.log(`[ROLE] ❌ No matching role found -> returning null (no role change)`);
-    return null;
+    // No specific Entra groups found -> assign the default Member role
+    console.log(`[ROLE] ℹ️ No specific groups matched -> returning default Member role: ${ROLE_IDS.MEMBER}`);
+    return ROLE_IDS.MEMBER;
 }
 
 function hasChanges(existing, newData, selectedFields = null) {
@@ -588,8 +589,12 @@ async function updateDirectusUserFromGraph(userId, selectedFields = null, forceL
                 dateOfBirth = rawDob;
             }
         } else if (attributes?.Geboortedatum) {
-            const v = attributes.Geboortedatum; // Assuming yyyyMMdd if it's a string
-            if (v && v.length === 8) {
+            const v = attributes.Geboortedatum;
+            if (v && v.length === 10 && v.includes('-')) {
+                // Already in ISO format (YYYY-MM-DD)
+                dateOfBirth = v;
+            } else if (v && v.length === 8) {
+                // Legacy YYYYMMDD format
                 dateOfBirth = `${v.substring(0, 4)}-${v.substring(4, 6)}-${v.substring(6, 8)}`;
             }
         }
