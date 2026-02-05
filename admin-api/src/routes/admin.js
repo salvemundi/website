@@ -138,6 +138,16 @@ router.post('/approve-signup/:id', async (req, res) => {
                 });
 
                 await triggerUserSync(userData.entra_id);
+
+                // Send approval notification to existing user
+                if (EMAIL_SERVICE_URL) {
+                    await notificationService.sendApprovalNotificationEmail(
+                        EMAIL_SERVICE_URL, 
+                        email || userData.email, 
+                        firstName || userData.first_name, 
+                        false
+                    );
+                }
             } else {
                 // Scenario 2: User exists in Directus but has no Entra ID linked yet.
                 // We must create an Entra account for them to be a member.
@@ -160,7 +170,13 @@ router.post('/approve-signup/:id', async (req, res) => {
 
                 await triggerUserSync(credentials.user_id);
                 if (EMAIL_SERVICE_URL) {
-                    await notificationService.sendWelcomeEmail(EMAIL_SERVICE_URL, email || userData.email, firstName || userData.first_name, credentials);
+                    await notificationService.sendApprovalNotificationEmail(
+                        EMAIL_SERVICE_URL, 
+                        email || userData.email, 
+                        firstName || userData.first_name, 
+                        true, 
+                        credentials
+                    );
                 }
             }
         } else if (firstName && lastName && email) {
@@ -190,7 +206,13 @@ router.post('/approve-signup/:id', async (req, res) => {
             await triggerUserSync(credentials.user_id);
 
             if (EMAIL_SERVICE_URL) {
-                await notificationService.sendWelcomeEmail(EMAIL_SERVICE_URL, email, firstName, credentials);
+                await notificationService.sendApprovalNotificationEmail(
+                    EMAIL_SERVICE_URL, 
+                    email, 
+                    firstName, 
+                    true, 
+                    credentials
+                );
             }
         } else {
             return res.status(400).json({ error: 'Insufficient user data' });
