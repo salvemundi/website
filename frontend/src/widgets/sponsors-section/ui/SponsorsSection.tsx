@@ -16,7 +16,9 @@ export default function SponsorsSection() {
             try {
                 setLoading(true);
                 // Prefer server-side proxied public endpoint which uses a server API key
-                const resp = await fetch('/api/public-sponsors');
+                // Use no-store to bypass browser cache and Next.js ISR caching on the client
+                // so sponsor deletions/changes become visible immediately.
+                const resp = await fetch('/api/public-sponsors', { cache: 'no-store' });
                 if (resp.ok) {
                     const data = await resp.json();
                     setSponsors(data || []);
