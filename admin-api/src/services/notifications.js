@@ -25,14 +25,16 @@ async function sendWelcomeEmail(emailServiceUrl, email, firstName, credentials) 
     `;
 
     try {
-        await axios.post(`${emailServiceUrl}/send-email`, {
+        const endpoint = emailServiceUrl.replace(/\/$/, '') + '/send-email';
+        console.log('[AdminAPI Notifications] sendWelcomeEmail POST ->', endpoint);
+        const response = await axios.post(endpoint, {
             to: email,
             subject: subject,
             html: html
         }, { timeout: 10000 });
-        console.log(`[AdminAPI] Welcome email sent to ${email}`);
+        console.log(`[AdminAPI] Welcome email sent to ${email}. Response status:`, response.status);
     } catch (error) {
-        console.error(`[AdminAPI] Failed to send welcome email:`, error.response?.data || error.message);
+        console.error(`[AdminAPI] Failed to send welcome email to ${email}:`, error.response?.data || error.message);
     }
 }
 
@@ -79,14 +81,17 @@ async function sendApprovalNotificationEmail(emailServiceUrl, email, firstName, 
     `;
 
     try {
-        await axios.post(`${emailServiceUrl}/send-email`, {
+        // Normalize endpoint: allow EMAIL_SERVICE_URL to include or omit the path
+        const endpoint = emailServiceUrl.replace(/\/$/, '') + '/send-email';
+        console.log('[AdminAPI Notifications] sendApprovalNotificationEmail POST ->', endpoint);
+        const response = await axios.post(endpoint, {
             to: email,
             subject: subject,
             html: html
         }, { timeout: 10000 });
-        console.log(`[AdminAPI] Approval notification email sent to ${email}`);
+        console.log(`[AdminAPI] Approval notification email sent to ${email}. Response status:`, response.status);
     } catch (error) {
-        console.error(`[AdminAPI] Failed to send approval notification email:`, error.response?.data || error.message);
+        console.error(`[AdminAPI] Failed to send approval notification email to ${email}:`, error.response?.data || error.message);
     }
 }
 
