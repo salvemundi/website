@@ -44,10 +44,21 @@
   -webkit-font-smoothing: antialiased;
 }
 
+html {
+  /* Prevent zoom on mobile devices */
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
+  /* Prevent zoom and overscroll on mobile */
+  touch-action: manipulation;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
   overflow-x: hidden;
 }
 
