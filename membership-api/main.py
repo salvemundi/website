@@ -15,7 +15,7 @@ app = FastAPI()
 TENANT_ID = os.getenv("MS_GRAPH_TENANT_ID")
 CLIENT_ID = os.getenv("MS_GRAPH_CLIENT_ID")
 CLIENT_SECRET = os.getenv("MS_GRAPH_CLIENT_SECRET")
-DOMAIN =  "lid.salvemundi.nl"
+DOMAIN = os.getenv("MS_GRAPH_DOMAIN")
 ATTRIBUTE_SET_NAME = "SalveMundiLidmaatschap"
 
 router = APIRouter(prefix="/api/membership")
