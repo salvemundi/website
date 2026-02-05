@@ -3,20 +3,111 @@ import datetime
 import secrets
 import string
 import re
+import logging
 import unidecode
 from fastapi import FastAPI, HTTPException, Request, BackgroundTasks, APIRouter
 from pydantic import BaseModel
 import httpx
 import asyncio
+from infisical_sdk import InfisicalSDKClient
 
 
 app = FastAPI()
+
+logger = logging.getLogger("membership-api")
+
+ATTRIBUTE_SET_NAME = "SalveMundiLidmaatschap"
+REQUIRED_GRAPH_KEYS = [
+    "MS_GRAPH_TENANT_ID",
+    "MS_GRAPH_CLIENT_ID",
+    "MS_GRAPH_CLIENT_SECRET",
+    "MS_GRAPH_DOMAIN",
+]
 
 TENANT_ID = os.getenv("MS_GRAPH_TENANT_ID")
 CLIENT_ID = os.getenv("MS_GRAPH_CLIENT_ID")
 CLIENT_SECRET = os.getenv("MS_GRAPH_CLIENT_SECRET")
 DOMAIN = os.getenv("MS_GRAPH_DOMAIN")
-ATTRIBUTE_SET_NAME = "SalveMundiLidmaatschap"
+
+_config_loaded = False
+
+
+def _load_graph_config_from_infisical():
+    global TENANT_ID, CLIENT_ID, CLIENT_SECRET, DOMAIN, _config_loaded
+
+    values = {
+        "MS_GRAPH_TENANT_ID": TENANT_ID,
+        "MS_GRAPH_CLIENT_ID": CLIENT_ID,
+        "MS_GRAPH_CLIENT_SECRET": CLIENT_SECRET,
+        "MS_GRAPH_DOMAIN": DOMAIN,
+    }
+    missing = [key for key, value in values.items() if not value]
+    if not missing:
+        _config_loaded = True
+        return
+
+    inf_client_id = os.getenv("INFISICAL_CLIENT_ID")
+    inf_client_secret = os.getenv("INFISICAL_CLIENT_SECRET")
+    inf_project_slug = os.getenv("INFISICAL_PROJECT_SLUG", "salvemundi-2-j-tu")
+    inf_environment = os.getenv("INFISICAL_ENVIRONMENT", os.getenv("INFISICAL_ENV", "local"))
+    inf_secret_path = os.getenv("INFISICAL_SECRET_PATH", "/")
+    inf_host = os.getenv("INFISICAL_HOST", "https://infisical.salvemundi.nl")
+
+    if not inf_client_id or not inf_client_secret:
+        logger.warning("Infisical credentials missing; cannot fetch secrets.")
+        _config_loaded = True
+        return
+
+    try:
+        client = InfisicalSDKClient(host=inf_host)
+        client.auth.universal_auth.login(
+            client_id=inf_client_id,
+            client_secret=inf_client_secret,
+        )
+
+        for key in missing:
+            secret = client.secrets.get_secret_by_name(
+                secret_name=key,
+                project_slug=inf_project_slug,
+                environment_slug=inf_environment,
+                secret_path=inf_secret_path,
+                view_secret_value=True,
+            )
+            secret_value = getattr(secret, "secretValue", None) or getattr(secret, "secret_value", None)
+            if not secret_value:
+                raise ValueError(f"Infisical secret '{key}' returned empty value")
+            values[key] = secret_value
+
+        TENANT_ID = values["MS_GRAPH_TENANT_ID"]
+        CLIENT_ID = values["MS_GRAPH_CLIENT_ID"]
+        CLIENT_SECRET = values["MS_GRAPH_CLIENT_SECRET"]
+        DOMAIN = values["MS_GRAPH_DOMAIN"]
+    except Exception as exc:
+        logger.error("Infisical secret fetch failed: %s", exc)
+    finally:
+        _config_loaded = True
+
+
+def _ensure_graph_config():
+    if not _config_loaded or not all([TENANT_ID, CLIENT_ID, CLIENT_SECRET, DOMAIN]):
+        _load_graph_config_from_infisical()
+    current_values = {
+        "MS_GRAPH_TENANT_ID": TENANT_ID,
+        "MS_GRAPH_CLIENT_ID": CLIENT_ID,
+        "MS_GRAPH_CLIENT_SECRET": CLIENT_SECRET,
+        "MS_GRAPH_DOMAIN": DOMAIN,
+    }
+    missing = [key for key, value in current_values.items() if not value]
+    if missing:
+        logger.error(
+            "Missing required environment variables for membership-api: %s",
+            ",".join(missing),
+        )
+
+
+@app.on_event("startup")
+async def startup_event():
+    _ensure_graph_config()
 
 router = APIRouter(prefix="/api/membership")
 
@@ -31,6 +122,7 @@ class MembershipRequest(BaseModel):
     user_id: str
 
 async def get_graph_token():
+    _ensure_graph_config()
     url = f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/v2.0/token"
     data = {
         "client_id": CLIENT_ID,
