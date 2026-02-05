@@ -9,7 +9,7 @@ services:
       - MS_GRAPH_TENANT_ID=${MS_GRAPH_TENANT_ID}
       - MS_GRAPH_CLIENT_ID=${MS_GRAPH_CLIENT_ID}
       - MS_GRAPH_CLIENT_SECRET=${MS_GRAPH_CLIENT_SECRET}
-      - MS_GRAPH_DOMAIN=salvemundi.nl
+      - MS_GRAPH_DOMAIN=${MS_GRAPH_DOMAIN}
 
 networks:
   proxy-network:
