@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from 'next';
+import type { Metadata } from 'next';
 import './globals.css';
 import '@/shared/lib/silence-dev-logs';
 import ConsoleArt from '@/shared/lib/console-art';
@@ -54,15 +54,9 @@ export const metadata: Metadata = {
         title: 'Salve Mundi',
         statusBarStyle: 'black-translucent',
     },
-};
-
-
-export const viewport: Viewport = {
     themeColor: '#ff6542',
-    width: 'device-width',
-    initialScale: 1,
-    viewportFit: 'cover',
 };
+
 
 export default function RootLayout({
     children,
@@ -72,6 +66,8 @@ export default function RootLayout({
     return (
         <html lang="nl" suppressHydrationWarning>
             <head>
+                {/* Ensure consistent viewport and disallow pinch-zoom to avoid extra page spacing on Android */}
+                <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
                 {/* Resource hints for better performance */}
                 <link rel="preconnect" href="https://admin.salvemundi.nl" />
                 <link rel="dns-prefetch" href="https://admin.salvemundi.nl" />
