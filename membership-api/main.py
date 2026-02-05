@@ -28,6 +28,26 @@ CLIENT_SECRET = os.getenv("MS_GRAPH_CLIENT_SECRET")
 DOMAIN = os.getenv("MS_GRAPH_DOMAIN")
 ATTRIBUTE_SET_NAME = "SalveMundiLidmaatschap"
 
+
+def validate_env():
+    missing = []
+    for name, val in (("MS_GRAPH_TENANT_ID", TENANT_ID), ("MS_GRAPH_CLIENT_ID", CLIENT_ID), ("MS_GRAPH_CLIENT_SECRET", CLIENT_SECRET), ("MS_GRAPH_DOMAIN", DOMAIN)):
+        if not val:
+            missing.append(name)
+    if missing:
+        logger.error("Missing required environment variables for membership-api: %s", ",".join(missing))
+        # Do not raise here - allow container to start but fail fast on requests with clear log
+
+    # Basic sanity check for DOMAIN: it should look like a domain (no @)
+    if DOMAIN and "@" in DOMAIN:
+        logger.warning("MS_GRAPH_DOMAIN looks like a full email address (contains '@'). It should be a domain like 'example.com' not a user@domain. Current value: %s", DOMAIN)
+    elif DOMAIN:
+        # mask domain minimally when logging (domain is not secret)
+        logger.info("MS_GRAPH_DOMAIN set to '%s'", DOMAIN)
+
+
+validate_env()
+
 router = APIRouter(prefix="/api/membership")
 
 class CreateMemberRequest(BaseModel):
@@ -51,13 +71,18 @@ async def get_graph_token():
     async with httpx.AsyncClient() as client:
         response = await client.post(url, data=data)
         if response.status_code != 200:
+            # Try to surface any returned JSON error_description, otherwise include raw text
             try:
                 error_response = response.json()
-                error_message = error_response.get("error_description", response.text)
+                error_message = error_response.get("error_description") or error_response.get("error") or response.text
             except Exception:
-                error_message = response.text
-            logger.error("Graph Auth Failed: %s %s", response.status_code, error_message)
-            raise HTTPException(status_code=500, detail=f"Graph Auth Failed: {error_message}")
+                error_message = response.text or "<no response body>"
+
+            # Log full response for debugging (response body may contain useful details)
+            logger.error("Graph Auth Failed. status=%s, body=%s", response.status_code, error_message)
+
+            # Return more explicit detail to callers so admin-api logs are actionable
+            raise HTTPException(status_code=500, detail=f"Graph Auth Failed: status={response.status_code} body={error_message}")
         return response.json().get("access_token")
 
 def generate_password(length=12):
