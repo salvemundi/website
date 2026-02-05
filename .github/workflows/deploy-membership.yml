@@ -28,24 +28,15 @@ jobs:
 
     env:
       INFISICAL_ENVIRONMENT: ${{ github.ref_name == 'main' && 'prod' || github.ref_name == 'Development' && 'dev' || 'local' }}
+      # Use GitHub repository secrets for MS Graph credentials instead of Infisical
+      MS_GRAPH_TENANT_ID: ${{ secrets.MS_GRAPH_TENANT_ID }}
+      MS_GRAPH_CLIENT_ID: ${{ secrets.MS_GRAPH_CLIENT_ID }}
+      MS_GRAPH_CLIENT_SECRET: ${{ secrets.MS_GRAPH_CLIENT_SECRET }}
+      MS_GRAPH_DOMAIN: ${{ secrets.MS_GRAPH_DOMAIN }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      # ------------------------------
-      # Fetch Secrets from Infisical
-      # ------------------------------
-      - name: Infisical Secrets
-        uses: Infisical/secrets-action@v1.0.15
-        with:
-          method: "universal"
-          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          env-slug: ${{ env.INFISICAL_ENVIRONMENT }}
-          project-slug: "salvemundi-2-j-tu"
-          domain: "https://infisical.salvemundi.nl"
-          export-type: "env"
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
