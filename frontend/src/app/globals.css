@@ -45,21 +45,29 @@
 }
 
 html {
-  /* Prevent zoom on mobile devices */
-  touch-action: manipulation;
+  /* Prevent zoom on mobile devices but allow scrolling */
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
+  /* Force fixed width to prevent zoom-out issues on Android */
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  /* Prevent zoom and overscroll on mobile */
-  touch-action: manipulation;
-  overscroll-behavior: none;
+  /* Allow all scrolling actions */
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: auto;
   -webkit-overflow-scrolling: touch;
   overflow-x: hidden;
+  overflow-y: auto;
+  /* Additional Android-specific fixes */
+  width: 100%;
+  max-width: 100%;
 }
 
 /* 4. Scrollbar Styles */

@@ -6,6 +6,7 @@ import { RootProviders } from './providers';
 import Header from '@/widgets/header/ui/Header';
 import Footer from '@/widgets/footer/ui/Footer';
 import { ServiceWorkerRegistration } from './ServiceWorkerRegistration';
+import { PreventZoom } from '@/components/PreventZoom';
 
 
 const getBaseUrl = () => {
@@ -66,8 +67,9 @@ export default function RootLayout({
     return (
         <html lang="nl" suppressHydrationWarning>
             <head>
-                {/* Ensure consistent viewport and disallow pinch-zoom to avoid extra page spacing on Android */}
-                <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+                {/* Prevent zoom on Android - strict viewport settings */}
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover" />
+                <meta name="HandheldFriendly" content="true" />
                 {/* Resource hints for better performance */}
                 <link rel="preconnect" href="https://admin.salvemundi.nl" />
                 <link rel="dns-prefetch" href="https://admin.salvemundi.nl" />
@@ -87,6 +89,7 @@ export default function RootLayout({
                     {/* Client-only: prints ASCII art + GitHub link to browser console on page load */}
                     <ConsoleArt />
                     <ServiceWorkerRegistration />
+                    <PreventZoom />
                     <Header />
                     <div className="relative z-10">
                         {children}
