@@ -202,8 +202,10 @@ async def update_user_attributes(user_id: str, date_of_birth: str = None):
                 await asyncio.sleep(1)
                 check_res = await client.get(f"{url_beta}?$select=customSecurityAttributes", headers=headers)
                 if check_res.status_code == 200:
-                    attr_data = check_res.json().get("customSecurityAttributes", {})
-                    current_expiry = attr_data.get(ATTRIBUTE_SET_NAME, {}).get("VerloopdatumStr")
+                    # Azure may return customSecurityAttributes: null. Coerce to dict to avoid AttributeError.
+                    resp_json = check_res.json()
+                    attr_data = resp_json.get("customSecurityAttributes") or {}
+                    current_expiry = (attr_data.get(ATTRIBUTE_SET_NAME) or {}).get("VerloopdatumStr")
                     if current_expiry == verloop_datum:
                         logger.info("Verified: Azure AD reflects expiry %s for %s after %ds", verloop_datum, user_id, i+1)
                         return
