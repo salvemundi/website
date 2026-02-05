@@ -4,6 +4,8 @@ services:
     container_name: admin-api-${TAG:-dev}
     restart: unless-stopped
     env_file: .env
+    environment:
+      - EMAIL_SERVICE_URL=http://email-api-${TAG:-dev}:3001
     networks:
       - proxy-network
     healthcheck:

@@ -25,7 +25,9 @@ async function sendWelcomeEmail(emailServiceUrl, email, firstName, credentials) 
     `;
 
     try {
-        const endpoint = emailServiceUrl.replace(/\/$/, '') + '/send-email';
+        // Normalize: strip /send-email if already present, then add it once
+        let baseUrl = emailServiceUrl.replace(/\/$/, '').replace(/\/send-email$/, '');
+        const endpoint = baseUrl + '/send-email';
         console.log('[AdminAPI Notifications] sendWelcomeEmail POST ->', endpoint);
         const response = await axios.post(endpoint, {
             to: email,
@@ -81,8 +83,9 @@ async function sendApprovalNotificationEmail(emailServiceUrl, email, firstName, 
     `;
 
     try {
-        // Normalize endpoint: allow EMAIL_SERVICE_URL to include or omit the path
-        const endpoint = emailServiceUrl.replace(/\/$/, '') + '/send-email';
+        // Normalize: strip /send-email if already present, then add it once
+        let baseUrl = emailServiceUrl.replace(/\/$/, '').replace(/\/send-email$/, '');
+        const endpoint = baseUrl + '/send-email';
         console.log('[AdminAPI Notifications] sendApprovalNotificationEmail POST ->', endpoint);
         const response = await axios.post(endpoint, {
             to: email,
