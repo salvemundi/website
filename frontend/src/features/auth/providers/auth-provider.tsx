@@ -24,6 +24,7 @@ export interface AuthContextType {
     isAuthenticated: boolean;
     isLoading: boolean;
     loginWithMicrosoft: () => Promise<void>;
+    loginWithRedirect: (returnUrl?: string) => Promise<void>;
     logout: () => void;
     signup: (userData: SignupData) => Promise<void>;
     refreshUser: () => Promise<void>;
@@ -70,6 +71,7 @@ const AuthStatusContext = createContext<AuthStatusContextValue>({
 // Granular context 3: Auth actions (stable functions, never re-renders)
 interface AuthActionsContextValue {
     loginWithMicrosoft: () => Promise<void>;
+    loginWithRedirect: (returnUrl?: string) => Promise<void>;
     logout: () => void;
     signup: (userData: SignupData) => Promise<void>;
     refreshUser: () => Promise<void>;
@@ -670,6 +672,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
 
+    /**
+     * loginWithRedirect - Fallback for when popups are blocked
+     * 
+     * Stores the current URL (or requested return URL) in localStorage
+     * so checkAndRedirect() can return the user there after the MSAL redirect dance.
+     */
+    const loginWithRedirect = async (returnUrl?: string) => {
+        if (!msalInstance) {
+            throw new Error('Microsoft login is not available.');
+        }
+
+        // Store return URL
+        const target = returnUrl || (typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/account');
+        localStorage.setItem('auth_return_to', target);
+
+        try {
+            await msalInstance.loginRedirect(loginRequest);
+        } catch (error) {
+            console.error('[AuthProvider] Redirect login error:', error);
+            throw error;
+        }
+    };
+
+
     const signup = async (userData: SignupData) => {
         setIsLoading(true);
         try {
@@ -767,6 +793,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout,
         signup,
         refreshUser,
+        loginWithRedirect,
     };
 
     const authStatus = {
@@ -787,6 +814,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signup,
         refreshUser,
         authError,
+        loginWithRedirect,
     };
 
     return (
