@@ -1,12 +1,11 @@
 name: Deploy Leden Check Script
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches:
-      - 'main'
-    paths:
-      - 'leden-check-script/**'
-      - '.github/workflows/deploy-leden-check.yml'
+      - "main"
   workflow_dispatch:
 
 env:
@@ -15,6 +14,7 @@ env:
 
 jobs:
   build-and-deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -41,6 +43,8 @@ jobs:
           context: ./leden-check-script
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Copy docker-compose.yml to server
         if: github.ref_name == 'main' || github.ref_name == 'Development'

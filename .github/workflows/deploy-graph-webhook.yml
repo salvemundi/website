@@ -1,13 +1,12 @@
 name: Deploy Graph Webhook
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches:
-      - 'Development'
-      - 'main'
-    paths:
-      - 'graph-webhook/**'
-      - '.github/workflows/deploy-graph-webhook.yml'
+      - "Development"
+      - "main"
   workflow_dispatch:
 
 env:
@@ -20,6 +19,7 @@ concurrency:
 
 jobs:
   build-and-deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -28,6 +28,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -38,7 +40,8 @@ jobs:
 
       - name: Set Environment Variables
         run: |
-          if [[ "${{ github.ref_name }}" == "main" ]]; then
+          TARGET_BRANCH="${{ github.event.workflow_run.head_branch || github.ref_name }}"
+          if [[ "$TARGET_BRANCH" == "main" ]]; then
             echo "TAG=latest" >> $GITHUB_ENV
           else
             echo "TAG=dev" >> $GITHUB_ENV
@@ -52,7 +55,8 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
           provenance: false
-          no-cache: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.7
@@ -98,3 +102,23 @@ jobs:
             
             docker compose pull graph-webhook
             docker compose up -d graph-webhook --force-recreate --remove-orphans
+
+            echo "Waiting for container to be healthy..."
+            CONTAINER_NAME="graph-webhook"
+            for i in {1..20}; do
+              STATUS=$(docker inspect --format='{{.State.Health.Status}}' $CONTAINER_NAME 2>/dev/null || echo "starting")
+              echo "Current status: $STATUS"
+              if [[ "$STATUS" == "healthy" ]]; then
+                echo "✅ Container is healthy!"
+                exit 0
+              fi
+              if [[ "$STATUS" == "unhealthy" ]]; then
+                echo "❌ Container is UNHEALTHY!"
+                docker logs $CONTAINER_NAME | tail -n 50
+                exit 1
+              fi
+              sleep 5
+            done
+            echo "⏳ Health check TIMEOUT!"
+            docker logs $CONTAINER_NAME | tail -n 50
+            exit 1
