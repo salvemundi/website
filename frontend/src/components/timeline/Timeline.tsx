@@ -13,11 +13,28 @@ type TimelineProps = {
 export default function Timeline({ boards, getImageUrl, getMemberFullName }: TimelineProps) {
     if (!boards || boards.length === 0) return null;
 
-    // Sort by year descending (newest to oldest)
+    // Sort by year descending (newest to oldest).
+    // Boards may have year as a range string like '2017-2018', so extract the
+    // leading 4-digit year for sorting while keeping the original title display.
     const sortedBoards = useMemo(() => {
+        const extractYear = (v: any) => {
+            if (v == null) return 0;
+            if (typeof v === 'number') return Number(v) || 0;
+            if (typeof v === 'string') {
+                // Try to find the first 4-digit year in the string
+                const m = v.match(/(\d{4})/);
+                if (m) return Number(m[1]);
+                const n = Number(v);
+                return isNaN(n) ? 0 : n;
+            }
+            return 0;
+        };
+
         return [...boards].sort((a, b) => {
-            const ya = a?.year ?? a?.jaar ?? a?.id ?? 0;
-            const yb = b?.year ?? b?.jaar ?? b?.id ?? 0;
+            const yaRaw = a?.year ?? a?.jaar ?? a?.id ?? 0;
+            const ybRaw = b?.year ?? b?.jaar ?? b?.id ?? 0;
+            const ya = extractYear(yaRaw);
+            const yb = extractYear(ybRaw);
             return Number(yb) - Number(ya);
         });
     }, [boards]);
