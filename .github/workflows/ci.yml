@@ -29,8 +29,9 @@ jobs:
         run: npm ci
 
       - name: Lint
-        working-directory: frontend
-        run: npx next lint .
+        run: |
+          cd frontend
+          npx next lint .
 
       - name: Typecheck
         working-directory: frontend
