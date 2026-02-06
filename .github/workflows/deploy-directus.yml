@@ -191,7 +191,15 @@ jobs:
             # Cookie & Proxy Security (Hardcoded for Prod stability)
             echo "REFRESH_TOKEN_COOKIE_SECURE=true" >> .env
             echo "REFRESH_TOKEN_COOKIE_SAME_SITE=lax" >> .env
-            echo "TRUSTED_PROXIES=10.0.0.0/8,172.16.0.0/12,192.168.0.0/16" >> .env
+            echo "TRUSTED_PROXIES=loopback,linklocal,uniquelocal" >> .env
+            
+            # Voorkom dat Directus de cookie weigert op dev subdomain
+            TARGET_BRANCH="${{ github.event.workflow_run.head_branch || github.ref_name }}"
+            if [[ "$TARGET_BRANCH" == "main" ]]; then
+              echo "REFRESH_TOKEN_COOKIE_DOMAIN=salvemundi.nl" >> .env
+            else
+              echo "REFRESH_TOKEN_COOKIE_DOMAIN=dev.salvemundi.nl" >> .env
+            fi
 
             # Restart
             docker compose pull
