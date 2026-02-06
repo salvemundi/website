@@ -8,11 +8,72 @@ The central repository for Salve Mundi's digital infrastructure. This monorepo h
 
 [![Last Commit](https://img.shields.io/github/last-commit/salvemundi/website?color=blue)](https://github.com/salvemundi/website/commits/main)
 [![Issues](https://img.shields.io/github/issues/salvemundi/website)](https://github.com/salvemundi/website/issues)
-[![Pull Requests](https://img.shields.io/github/issues-pr/salvemundi/website)](https://github.com/salvemundi/website/pulls)
 
 ---
 
-## 🏛️ Architecture & Infrastructure
+## 🏛️ Architecture & Philosophy
+
+This repository is built on two core architectural pillars: **Seamless Authentication** and **Single Source of Truth**.
+
+### 1. Seamless Authentication (Zero Redirects)
+We have eliminated the traditional "redirect to login" pattern. Users should never lose their context.
+
+-   **AuthOverlay**: Instead of redirecting to `/login`, protected routes render an in-place overlay. The user stays on the URL they requested.
+-   **Popup Login**: Logging in opens a Microsoft popup. The main window waits for the signal.
+-   **Silent Refresh**: `AuthProvider` proactively refreshes tokens in the background to prevent session expiry disruptions.
+-   **Granular Context**: Authentication state is split into `AuthUser` (data), `AuthStatus` (loading), and `AuthActions` (logic) to minimize React re-renders.
+
+### 2. State-Driven Logic (Computed Status)
+We avoid storing derived state in the database. Statuses are computed in real-time on the client or API.
+
+-   **Example: Coupons**: A coupon does not have a "status" field in the DB.
+    -   *Logic*: If `usage_count >= limit` → **Sold Out**. If `date < now` → **Expired**.
+    -   This ensures the UI is always mathematically correct and never out of sync with the data.
+
+### 3. PWA & Mobile First
+We prioritize the mobile experience and application stability through a "Zero Redirect" policy.
+
+-   **Viewport Locking**: Prevents accidental zooming on mobile inputs to ensure a native app-like feel.
+-   **Standalone Stability**: Redirects can cause iOS PWAs to lose context or reset to the home screen. By using **AuthOverlay**, we accept the user exactly where they are, preserving their session and context.
+
+---
+
+## 🔄 CI/CD & DevOps
+
+We use **GitHub Actions** for automated quality assurance and deployment.
+
+### Pipelines
+-   **Lint & Build Check**: Every Pull Request to `Development` or `main` triggers a full build validation. This blocks broken code from reaching production.
+-   **Production Deploy (`main`)**: 
+    1.  Builds optimized Docker image (`tag: latest`).
+    2.  Pushes to **GitHub Container Registry (ghcr.io)**.
+    3.  Connects to the production server via SSH.
+    4.  Updates the running container via `docker-compose up -d --force-recreate`.
+-   **Stage/Dev Deploy (`Development`)**: Similar flow, but targets the staging environment (`tag: dev`) and deploys to `dev.salvemundi.nl`.
+
+### Infrastructure
+The application operates as a containerized ecosystem orchestrated by **Docker Compose**.
+
+```mermaid
+graph LR
+    Internet((Internet)) -->|443| NPM[Nginx Proxy Manager]
+    
+    subgraph "Docker Network (proxy-network)"
+        NPM -->|Host Header| Frontend[Frontend Container]
+        NPM -->|/api| Directus[Directus Container]
+        NPM -->|/sync| GraphSync[Sync Service]
+    end
+
+    Frontend -- Internal DNS --> Directus
+```
+
+-   **Orchestration**: Services (Frontend, API, Sync) communicate via a dedicated bridge network (`proxy-network`).
+-   **Reverse Proxy**: Nginx Proxy Manager handles SSL termination (Let's Encrypt) and routing based on hostname.
+-   **Environment Management**: Secrets are injected at runtime via GitHub Secrets (CI) or `.env` files (Local).
+
+---
+
+## 🏗️ System Overview
 
 ```mermaid
 graph TD
@@ -20,25 +81,14 @@ graph TD
     
     subgraph "Frontend Layer"
         Proxy -->|frontend| Frontend[Next.js Production]
-        Proxy -->|frontend-dev| FrontendDev[Next.js Development]
-    end
-
-    subgraph "Management & Security"
-        Proxy -->|npm| NPM[Nginx Proxy Manager]
-        Proxy -->|portainer| Portainer[Portainer]
-        Proxy -->|vault| Vault[HashiCorp Vault]
-        Proxy -->|vaultwarden| Vaultwarden[Bitwarden/Vaultwarden]
     end
 
     subgraph "Data & Content"
-        Proxy -->|samuwiki| Wiki[Wiki.js]
         Proxy -->|directus| Directus[Directus CMS]
     end
 
     subgraph "Backend Services"
-        Proxy -->|email-api| EmailAPI[Email API]
         Proxy -->|graph-webhook| Webhook[Graph Webhook]
-        Proxy -->|notification-api| NotificationAPI[Notification API]
         GraphSync[Graph Sync Service]
     end
     
@@ -46,72 +96,35 @@ graph TD
     GraphSync <-->|Sync| Directus
     GraphSync <-->|Sync| EntraID
     Webhook <---|Notify| EntraID[Microsoft Entra ID]
-    Nachtwacht[Leden Check Script] -->|Cron| EntraID
 ```
 
 ### 📂 Project Structure
 
 ```text
 /
-├── .github/workflows/    # CI/CD Pipelines
-├── directus/             # Headless MS Configuration
-├── email-api/            # Email Sending Service
-├── frontend/             # Next.js Frontend
-│   ├── src/              # Source Code
-│   └── public/           # Static Assets
-├── graph-sync/           # Sync Service (Entra <-> Directus)
-├── graph-webhook/        # Webhook Service (Entra Listener)
-├── leden-check-script/   # PowerShell Automation
-├── membership-api/       # Membership Logic
-├── npm/                  # Nginx Proxy Manager Config
-├── payment-api/          # Payment Processing
-├── portainer/            # Portainer Config
-├── samuwiki/             # Wiki.js Config
-├── vaultwarden/          # Bitwarden Backup
-└── README.md             # This file
+├── frontend/             # Next.js 16 App Router (The Core)
+│   ├── src/features/auth # Authentication Logic (MSAL + Directus)
+│   ├── src/entities      # Domain Objects (Committees, Activities)
+│   └── src/components    # Shared UI (Design System)
+├── directus/             # Headless CMS Configuration
+├── graph-sync/           # Bi-directional Entra <-> Directus Sync
+├── graph-webhook/        # Real-time Entra ID Listener
+├── payment-api/          # Mollie Payment Processing
+└── notification-api/     # PWA Push Notifications
 ```
-
----
-
-## 🏗️ Services Overview
-
-| Service | Path | Description |
-|:---|:---|:---|
-| **Website (Frontend)** | `/` | Next.js App Router (Production & Dev environments). |
-| **Email API** | `/email-api` | Service for handling transactional emails. |
-| **Notification API (notify)** | `/notification-api` | PWA Push notification service for events and reminders. Exposes endpoints such as `/notify-new-event` and `/notify-event-reminder`. See `notification-api/README.md` for full docs. |
-| **Directus** | `/directus` | Headless CMS for managing association data. |
-| **Graph Sync** | `/graph-sync` | Bi-directional sync between Entra ID and Directus. |
-| **Graph Webhook** | `/graph-webhook` | Event listener for real-time Entra ID changes. |
-| **Nachtwacht** | `/leden-check-script` | PowerShell automation for member lifecycles. |
-| **Infrastructure** | `/npm`, `/portainer`, `/samuwiki` | Docker configs for critical infra components. |
-| **Security** | `(External)` | Vault and Vaultwarden (Managed via Portainer). |
 
 ---
 
 ## 🚀 Tech Stack
 
-| Domain | Technology |
-|---|---|
-| **Frontend** | Next.js 14, TypeScript, TailwindCSS, Framer Motion |
-| **Backend / Sync** | Node.js, Express, Microsoft Graph API, Directus SDK |
-| **Automation** | PowerShell Core, Docker, GitHub Actions |
-| **Infrastructure** | Docker Compose, Nginx Proxy Manager, Postgres |
-
----
-
-## 🔄 CI/CD & Deployment
-
-This repository uses **GitHub Actions** for continuous delivery. Each service has its own independent workflow.
-
-### 🔹 Deployment Strategy
-*   **Development Branch**: Deploys automatically to the testing environment (typically tagged `:dev`).
-*   **Main Branch**: Deploys to production (`:latest`).
-
-### 🔹 Workflows
-1.  **Backend Services**: Deployment pipelines for Graph Sync, Webhook, Email API.
-2.  **Automation**: Scripts like Leden Check are deployed via cron/SSH.
-3.  **Infrastructure**: Managed manually via Portainer or SSH for stability (Disaster Recovery configs in Git).
+| Domain       | Technology    | Version          |
+| ------------ | ------------- | ---------------- |
+| **Frontend** | Next.js       | 16 (Turbopack)   |
+| **Styling**  | TailwindCSS   | v3.4             |
+| **Auth**     | MSAL Browser  | v3 (Silent Flow) |
+| **State**    | React Context | Granular Split   |
+| **Backend**  | Node.js       | v20+             |
+| **CMS**      | Directus      | Headless         |
 
 ---
 
@@ -120,44 +133,32 @@ This repository uses **GitHub Actions** for continuous delivery. Each service ha
 ### Prerequisites
 *   Node.js 20+
 *   Docker & Docker Compose
-*   Git
 
 ### Local Development (Frontend)
 ```bash
-git clone https://github.com/salvemundi/website.git
+cd frontend
 npm install
 npm run dev
 ```
 
-### Running Backend Services
-Navigate to the specific service directory (e.g., `graph-sync`) and check its local `README.md` or `package.json` for start instructions. most services are Docker-first.
+### Build & Production
+```bash
+npm run build
+# Output will be in .next/standalone
+```
 
 ---
 
 ## 🧠 Contributing
 
-We follow a consistent Way of Working across the team:
+We follow a **"Why over What"** documentation style.
+-   **Don't** comment: `// Sets user to null`
+-   **Do** comment: `// Clears user state to prevent automatic re-login loops logic`
 
-- **Clean Commits**: Use conventional commits (e.g., `feat: add sync logic`, `fix: style error`).
-- **Branching**: `feature/my-feature` or `fix/my-bug`. Merge to `Development` first.
-- **Language**: Code and Comments in English.
-
----
-
-## 📚 Documentation & Links
-
-*   **Setup Instructions**: [Wiki / Docs](https://github.com/salvemundi/website/wiki)
-*   **Authentication**: [Entra ID Setup](readme/AUTH_SETUP.md)
-*   **Email**: [Email Flow](readme/EMAIL_SETUP.md)
-*   **Push Notifications**: [Push Notifications Setup](readme/PUSH_NOTIFICATIONS_SETUP.md)
-*   **Notifications**: `notification-api/README.md`
-
----
-
-## 💬 Issues?
-
-Found a bug or need a feature? Open an issue on GitHub.
-Want to contribute? Fork the repo and open a Pull Request! 🚀
+### Standards
+1.  **No Redirects**: Use `LoginRequiredModal` or `AuthOverlay`.
+2.  **Computed State**: Don't add status fields to the DB if they can be calculated.
+3.  **Strict Types**: No `any`. Use functionality-specific interfaces.
 
 ---
 

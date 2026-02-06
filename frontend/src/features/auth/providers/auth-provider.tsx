@@ -31,6 +31,21 @@ export interface AuthContextType {
     authError: string | null;
 }
 
+/**
+ * [ARCHITECTURE] AuthProvider Strategy
+ * 
+ * 1. Silent Flow First: We prefer MSAL's ssoSilent/acquireTokenSilent to keep users logged in 
+ *    without redirects. Popups are used only for explicit user interaction.
+ * 
+ * 2. Proactive Refresh: We aggressively refresh tokens in the background (every minute and on window focus)
+ *    to prevent "token expired" errors during user sessions.
+ * 
+ * 3. Granular Contexts: To avoid re-rendering the entire app on every auth usage, we split context into:
+ *    - AuthUserContext: Changes only when user object changes.
+ *    - AuthStatusContext: Changes when loading/status changes.
+ *    - AuthActionsContext: Never changes (stable functions).
+ */
+
 // Performance: Granular contexts prevent full-app re-renders on every session heartbeat
 // ============================================================================
 
@@ -599,15 +614,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     /**
      * loginWithMicrosoft - User-initiated login
+     * 
+     * [ARCHITECTURE] Seamless Login
+     * We use `loginPopup` instead of `loginRedirect` to maintain the user's context.
+     * The state of the page remains intact while the user authenticates in a separate window.
+     * This eliminates the need for complex "return URL" handling and improves UX.
+     * 
      * CRITICAL: This is called SYNCHRONOUSLY from a button onClick event
      * to prevent popup blockers from interfering
      * 
      * Flow:
      * 1. First try: loginPopup (user stays on page, seamless)
-     * 2. Fallback: loginRedirect (if popup fails or is blocked)
-     * 
-     * This function should ONLY be called from explicit user actions,
-     * not automatically on app load
+     * 2. Fallback: Throw error for modal to handle (never redirect automatically)
      */
     const loginWithMicrosoft = async () => {
         if (!msalInstance) {

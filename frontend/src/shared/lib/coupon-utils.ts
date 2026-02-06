@@ -19,6 +19,19 @@ export interface ComputedStatus {
     description: string;
 }
 
+/**
+ * [ARCHITECTURE] Computed Coupon Status (Single Source of Truth)
+ * 
+ * Instead of storing 'status' in the database (which can get out of sync with dates/usage),
+ * we COMPUTE the status in real-time based on the coupon's properties.
+ * 
+ * Hierarchy of Checks (First match wins):
+ * 1. Inactive (Manual override)
+ * 2. Sold Out (Usage limit reached)
+ * 3. Expired (Date in past)
+ * 4. Pending (Date in future)
+ * 5. Active (Ready for use)
+ */
 export function getComputedCouponStatus(coupon: Coupon): ComputedStatus {
     const now = new Date();
 
