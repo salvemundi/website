@@ -7,8 +7,19 @@ import qrService from '@/shared/lib/qr-service';
 import exportEventSignups from '@/shared/lib/exportSignups';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Search, Camera, Download, RefreshCw, X, CheckCircle, XCircle, Clock } from 'lucide-react';
+import NoAccessOverlay from '@/components/AuthOverlay/NoAccessOverlay';
+
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function AttendancePage() {
+    return (
+        <ProtectedRoute requireAuth>
+            <AttendanceContent />
+        </ProtectedRoute>
+    );
+}
+
+function AttendanceContent() {
     const params = useParams();
     const eventId = Number(params?.id);
     const { user } = useAuth();
@@ -145,17 +156,17 @@ export default function AttendancePage() {
                         qrbox: { width: 250, height: 250 }
                     },
                     async (decodedText: string) => {
-                            // Prevent rapid repeated scans by locking for a short timeout
-                            if (scanLockRef.current) return;
-                            scanLockRef.current = true;
-                            try {
-                                await handleScan(decodedText);
-                            } finally {
-                                // keep popup visible for the same duration as the scan lock
-                                setTimeout(() => { scanLockRef.current = false; setScanResult(null); }, SCAN_LOCK_MS);
-                            }
-                            // Don't stop scanner - keep it open for next scan
-                        },
+                        // Prevent rapid repeated scans by locking for a short timeout
+                        if (scanLockRef.current) return;
+                        scanLockRef.current = true;
+                        try {
+                            await handleScan(decodedText);
+                        } finally {
+                            // keep popup visible for the same duration as the scan lock
+                            setTimeout(() => { scanLockRef.current = false; setScanResult(null); }, SCAN_LOCK_MS);
+                        }
+                        // Don't stop scanner - keep it open for next scan
+                    },
                     (_errorMessage: string) => {
                         // Ignore decode errors (normal when no QR in view)
                     }
@@ -204,26 +215,8 @@ export default function AttendancePage() {
         notCheckedIn: signups.filter(s => !s.checked_in).length
     };
 
-    if (!user) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end">
-                <div className="bg-white rounded-3xl shadow-xl p-8 max-w-md mx-4">
-                    <h2 className="text-2xl font-bold text-theme-purple mb-4">Inloggen vereist</h2>
-                    <p className="text-gray-600">Je moet ingelogd zijn om deze pagina te zien.</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (!authorized) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end">
-                <div className="bg-white rounded-3xl shadow-xl p-8 max-w-md mx-4">
-                    <h2 className="text-2xl font-bold text-theme-purple mb-4">Geen toegang</h2>
-                    <p className="text-gray-600">Je bent niet gemachtigd om aanwezigheden te beheren voor dit evenement.</p>
-                </div>
-            </div>
-        );
+    if (!authorized && !loading) {
+        return <NoAccessOverlay />;
     }
 
     return (
@@ -383,8 +376,8 @@ export default function AttendancePage() {
                                     className="absolute top-0 left-0 right-0 mx-4 mt-4 z-10 animate-in slide-in-from-top duration-300 cursor-pointer"
                                 >
                                     <div className={`p-4 rounded-xl shadow-2xl backdrop-blur-sm ${scanResult.status === 'success'
-                                            ? 'bg-green-500/95 text-white'
-                                            : 'bg-red-500/95 text-white'
+                                        ? 'bg-green-500/95 text-white'
+                                        : 'bg-red-500/95 text-white'
                                         }`}>
                                         <div className="flex items-start gap-3">
                                             {scanResult.status === 'success' ? (
@@ -486,8 +479,8 @@ export default function AttendancePage() {
                                                     type="button"
                                                     onClick={() => toggleCheckIn(s)}
                                                     className={`px-4 py-2 rounded-lg font-semibold transition-all transform transition-transform duration-150 ${s.checked_in
-                                                            ? 'bg-red-500 text-white hover:bg-red-600'
-                                                            : 'bg-green-500 text-white hover:bg-green-600'
+                                                        ? 'bg-red-500 text-white hover:bg-red-600'
+                                                        : 'bg-green-500 text-white hover:bg-green-600'
                                                         } ${s._justToggled ? 'scale-105 shadow-2xl' : ''}`}
                                                 >
                                                     {s.checked_in ? 'Uitchecken' : 'Inchecken'}
@@ -536,8 +529,8 @@ export default function AttendancePage() {
                                             type="button"
                                             onClick={() => toggleCheckIn(s)}
                                             className={`shrink-0 px-4 py-2 rounded-lg font-semibold text-sm transition-all active:scale-95 transform duration-150 ${s.checked_in
-                                                    ? 'bg-red-500 text-white'
-                                                    : 'bg-green-500 text-white'
+                                                ? 'bg-red-500 text-white'
+                                                : 'bg-green-500 text-white'
                                                 } ${s._justToggled ? 'scale-105 shadow-2xl' : ''}`}
                                         >
                                             {s.checked_in ? 'Uitchecken' : 'Inchecken'}
