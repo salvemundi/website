@@ -253,13 +253,28 @@ export async function GET(
             // Header is not added, effectively making it anonymous
         }
 
+        // FINAL SAFETY CHECK: Ensure we never send double auth
+        if (forwardHeaders['Authorization'] && targetSearch.includes('access_token')) {
+            console.warn(`[Directus Proxy] Detected query token despite having auth header. Stripping from targetSearch.`);
+            const sanityParams = new URLSearchParams(targetSearch.replace(/^\?/, ''));
+            sanityParams.delete('access_token');
+            const newSanitySearch = sanityParams.toString();
+            targetSearch = newSanitySearch ? `?${newSanitySearch}` : '';
+        }
+
         const targetUrl = `${DIRECTUS_URL}/${path}${targetSearch}`;
+
+        if (path.includes('assets') || path.includes('image')) {
+            console.log(`[Directus Proxy] Asset Req: ${path} | Auth: ${!!forwardHeaders['Authorization']} | Cookie: ${!!forwardHeaders['Cookie']} | Query: ${targetSearch}`);
+        }
+
 
         const contentType = request.headers.get('Content-Type');
         if (contentType) forwardHeaders['Content-Type'] = contentType;
 
         // Forward cookies if present to support cookie-based sessions, BUT ONLY if we aren't already using Bearer auth
-        if (cookie && !forwardHeaders['Authorization']) {
+        // AND if we aren't sending an access_token in the query string (which counts as an auth method)
+        if (cookie && !forwardHeaders['Authorization'] && !targetSearch.includes('access_token')) {
             forwardHeaders['Cookie'] = cookie;
         }
 
@@ -640,7 +655,13 @@ async function handleMutation(
         const targetUrl = `${DIRECTUS_URL}/${path}${targetSearch}`;
 
         if (path.includes('auth/')) {
-            console.log(`[Directus Proxy] PROXING AUTH: ${method} ${targetUrl} | Body size: ${rawBody?.byteLength || 0}`);
+            console.log(`[Directus Proxy] PROXING AUTH: ${method} ${targetUrl} | Body size: ${rawBody?.byteLength || 0} | Content-Type: ${forwardHeaders['Content-Type']}`);
+            if (rawBody && rawBody.byteLength > 0 && rawBody.byteLength < 1000) {
+                try {
+                    const text = new TextDecoder().decode(rawBody);
+                    console.log(`[Directus Proxy] Auth Body Payload: ${text}`);
+                } catch (e) { }
+            }
         }
 
 
