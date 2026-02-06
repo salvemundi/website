@@ -207,19 +207,29 @@ jobs:
 
             echo "Waiting for container to be healthy..."
             CONTAINER_NAME="directus"
-            for i in {1..20}; do
-              STATUS=$(docker inspect --format='{{.State.Health.Status}}' $CONTAINER_NAME 2>/dev/null || echo "starting")
-              echo "Current status: $STATUS"
-              if [[ "$STATUS" == "healthy" ]]; then
-                echo "✅ Container is healthy!"
+            for i in {1..30}; do
+              HEALTH_STATUS=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}no-healthcheck{{end}}' $CONTAINER_NAME 2>/dev/null || echo "not-found")
+              RUNNING_STATUS=$(docker inspect --format='{{.State.Status}}' $CONTAINER_NAME 2>/dev/null || echo "not-found")
+              
+              echo "Health: $HEALTH_STATUS, Status: $RUNNING_STATUS"
+              
+              if [[ "$HEALTH_STATUS" == "healthy" ]] || [[ "$HEALTH_STATUS" == "no-healthcheck" && "$RUNNING_STATUS" == "running" ]]; then
+                echo "✅ Container is up and running!"
                 exit 0
               fi
-              if [[ "$STATUS" == "unhealthy" ]]; then
+              
+              if [[ "$HEALTH_STATUS" == "unhealthy" ]]; then
                 echo "❌ Container is UNHEALTHY!"
+                docker logs $CONTAINER_NAME | tail -n 50
+                exit 1
+              fi
+              
+              if [[ "$RUNNING_STATUS" == "exited" ]]; then
+                echo "❌ Container has EXITED!"
                 docker logs $CONTAINER_NAME | tail -n 50
                 exit 1
               fi
               sleep 10
             done
-            echo "⏳ Health check TIMEOUT! (Or no HEALTHCHECK defined)"
-            exit 0
+            echo "⏳ Health check TIMEOUT!"
+            exit 1
