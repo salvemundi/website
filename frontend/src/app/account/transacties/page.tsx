@@ -82,7 +82,6 @@ function TransactionsContent() {
             <div className="">
                 <PageHeader
                     title="TRANSACTIES"
-                    backgroundImage="/img/backgrounds/transacties-banner.jpg"
                 >
                     <p className="text-lg sm:text-xl text-beige/90 max-w-3xl mx-auto mt-4">
                         Overzicht van jouw betalingen en transacties
@@ -103,7 +102,6 @@ function TransactionsContent() {
         <div className="">
             <PageHeader
                 title="TRANSACTIES"
-                backgroundImage="/img/backgrounds/transacties-banner.jpg"
             >
                 <p className="text-lg sm:text-xl text-beige/90 max-w-3xl mx-auto mt-4">
                     Overzicht van jouw betalingen en transacties
