@@ -565,10 +565,14 @@ async function handleMutation(
         }
 
         if (canBypass && API_SERVICE_TOKEN) {
-            forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
+            // For auth paths like /auth/refresh, we must NOT send a Bearer token.
+            // Directus expects the refresh_token in the body and adding an Authorization
+            // header can cause it to ignore the body or fail with a 500/401.
+            if (!isAuthPath) {
+                forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
+            }
         } else if (authHeader && (isUserTokenValid || isAuthPath || needsSpecialGuardCheck)) {
-            // Only forward authorization if it's not a refresh request, or if it's a valid token.
-            // Directus /auth/refresh doesn't need (and sometimes dislikes) an expired Bearer token.
+            // Only forward authorization if it's not a refresh request.
             if (!path.includes('auth/refresh')) {
                 forwardHeaders['Authorization'] = authHeader;
             }
@@ -583,7 +587,7 @@ async function handleMutation(
         const response = await fetch(targetUrl, {
             method,
             headers: forwardHeaders,
-            body: rawBody && rawBody.byteLength > 0 ? rawBody : undefined,
+            body: rawBody && rawBody.byteLength > 0 ? new Uint8Array(rawBody) : undefined,
             redirect: 'follow',
             // @ts-ignore - node-fetch / undici extension
             duplex: 'half'
@@ -595,10 +599,11 @@ async function handleMutation(
 
             // Detailed logging for auth failures
             if (path.includes('auth/')) {
-                console.error(`[Directus Proxy] AUTH UPSTREAM FAILED: ${method} ${path} | Status ${response.status} | Body: ${errorText.slice(0, 500)}`);
+                console.error(`[Directus Proxy] AUTH UPSTREAM FAILED: ${method} ${path} | Status ${response.status} | Body size: ${errorText.length} | First chars: ${errorText.slice(0, 100)}`);
             } else {
                 console.error(`[Directus Proxy] Upstream ${method} ${path} FAILED: Status ${response.status} | Body: ${errorText.slice(0, 200)}`);
             }
+
 
             if (response.status === 403 && (path.startsWith('items/committees') || path.startsWith('items/committee_members'))) {
                 console.log(`[Directus Proxy] Softening 403 for ${method} ${path} to avoid browser console error.`);
