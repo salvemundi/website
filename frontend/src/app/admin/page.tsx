@@ -236,6 +236,8 @@ export default function AdminDashboardPage() {
     const [canAccessReis, setCanAccessReis] = useState(false);
     const [canAccessLogging, setCanAccessLogging] = useState(false);
     const [canAccessSync, setCanAccessSync] = useState(false);
+    const [canAccessCoupons, setCanAccessCoupons] = useState(false);
+    const [canAccessPermissions, setCanAccessPermissions] = useState(false);
 
     useEffect(() => {
         loadDashboardData();
@@ -247,11 +249,13 @@ export default function AdminDashboardPage() {
     const checkAccessPermissions = async () => {
         // Fetch all relevant settings in parallel (with authorized_tokens for admin page)
         try {
-            const [introSet, reisSet, loggingSet, syncSet] = await Promise.all([
+            const [introSet, reisSet, loggingSet, syncSet, couponsSet, permissionsSet] = await Promise.all([
                 siteSettingsApi.get('admin_intro', true),
                 siteSettingsApi.get('admin_reis', true),
                 siteSettingsApi.get('admin_logging', true),
                 siteSettingsApi.get('admin_sync', true),
+                siteSettingsApi.get('admin_coupons', true),
+                siteSettingsApi.get('admin_permissions', true),
             ]);
 
             // Determine effective tokens (dynamic OR hardcoded fallbacks)
@@ -259,11 +263,15 @@ export default function AdminDashboardPage() {
             const reisTokens = getMergedTokens(reisSet?.authorized_tokens, ['reiscommissie', 'ictcommissie', 'bestuur', 'kandidaatbestuur']);
             const loggingTokens = getMergedTokens(loggingSet?.authorized_tokens, ['ictcommissie', 'bestuur', 'kascommissie', 'kandidaatbestuur']);
             const syncTokens = getMergedTokens(syncSet?.authorized_tokens, ['ictcommissie', 'bestuur', 'kandidaatbestuur']);
+            const couponsTokens = getMergedTokens(couponsSet?.authorized_tokens, ['ictcommissie', 'bestuur', 'kascommissie', 'kandidaatbestuur']);
+            const permissionsTokens = getMergedTokens(permissionsSet?.authorized_tokens, ['ictcommissie', 'bestuur']);
 
             setCanAccessIntro(isUserAuthorized(effectiveUser, introTokens));
             setCanAccessReis(isUserAuthorized(effectiveUser, reisTokens));
             setCanAccessLogging(isUserAuthorized(effectiveUser, loggingTokens));
             setCanAccessSync(isUserAuthorized(effectiveUser, syncTokens));
+            setCanAccessCoupons(isUserAuthorized(effectiveUser, couponsTokens));
+            setCanAccessPermissions(isUserAuthorized(effectiveUser, permissionsTokens));
         } catch (error) {
             console.error('Failed to load dynamic permissions, falling back to static:', error);
             // Fallback to existing static functions if API fails
@@ -276,7 +284,10 @@ export default function AdminDashboardPage() {
                 const name = (typeof c === 'string' ? c : c.name || c.committee_id?.name || '').toLowerCase();
                 return name;
             });
-            setCanAccessSync(names.some(n => n.includes('ict') || n.includes('bestuur') || n.includes('kandi')));
+            const hasHighPrivilege = names.some(n => n.includes('ict') || n.includes('bestuur') || n.includes('kandi'));
+            setCanAccessSync(hasHighPrivilege);
+            setCanAccessCoupons(hasHighPrivilege || names.some(n => n.includes('kas')));
+            setCanAccessPermissions(names.some(n => n.includes('ict') || n.includes('bestuur')));
         }
     };
 
@@ -838,7 +849,7 @@ export default function AdminDashboardPage() {
             <div className="container mx-auto px-4 py-8 max-w-7xl">
                 {/* Quick Actions Section */}
                 <div className="mb-8">
-                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                         <StatCard
                             title="Overzicht"
                             value="Activiteiten"
@@ -881,6 +892,15 @@ export default function AdminDashboardPage() {
                             onClick={() => router.push('/admin/kroegentocht')}
                             colorClass="orange"
                             nowrap
+                        />
+                        <StatCard
+                            title="Beheer"
+                            value="Coupons"
+                            icon={<Ticket className="h-6 w-6" />}
+                            subtitle={`Actief: ${stats.totalCoupons}`}
+                            onClick={() => router.push('/admin/coupons')}
+                            colorClass="amber"
+                            disabled={!canAccessCoupons}
                         />
                     </div>
                 </div>
@@ -942,7 +962,7 @@ export default function AdminDashboardPage() {
                                                 colorClass="red"
                                             />
                                         )}
-                                        {isIctMember && (
+                                        {canAccessPermissions && (
                                             <ActionCard
                                                 title="Beheer"
                                                 subtitle="Permissie"

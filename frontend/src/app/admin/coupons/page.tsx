@@ -2,9 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Ticket, Plus, Percent, CheckCircle, XCircle, Trash2 } from 'lucide-react';
+import { isUserAuthorized, getMergedTokens, normalizeCommitteeName } from '@/shared/lib/committee-utils';
+import { siteSettingsApi } from '@/shared/lib/api/salvemundi';
+import NoAccessPage from '../no-access/page';
 
 interface Coupon {
     id: number;
@@ -20,12 +24,34 @@ interface Coupon {
 
 export default function AdminCouponsPage() {
     const router = useRouter();
+    const { user } = useAuth();
     const [coupons, setCoupons] = useState<Coupon[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
     useEffect(() => {
+        checkAccess();
         loadCoupons();
     }, []);
+
+    const checkAccess = async () => {
+        if (!user) {
+            setIsAuthorized(false);
+            return;
+        }
+
+        try {
+            const setting = await siteSettingsApi.get('admin_coupons', true);
+            const tokens = getMergedTokens(setting?.authorized_tokens, ['ictcommissie', 'bestuur', 'kascommissie', 'kandidaatbestuur']);
+            setIsAuthorized(isUserAuthorized(user, tokens));
+        } catch (error) {
+            // Fallback for static check
+            const committees: any[] = (user as any).committees || [];
+            const names = committees.map((c: any) => normalizeCommitteeName(typeof c === 'string' ? c : c.name || c.committee_id?.name || ''));
+            const hasAccess = names.some(n => n.includes('ict') || n.includes('bestuur') || n.includes('kas') || n.includes('kandi'));
+            setIsAuthorized(hasAccess);
+        }
+    };
 
     const loadCoupons = async () => {
         setIsLoading(true);
@@ -57,6 +83,14 @@ export default function AdminCouponsPage() {
         if (num === null || num === undefined || isNaN(num)) return '€ 0,00';
         return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(num);
     };
+
+    if (isAuthorized === false) {
+        return <NoAccessPage />;
+    }
+
+    if (isAuthorized === null) {
+        return null;
+    }
 
     return (
         <>

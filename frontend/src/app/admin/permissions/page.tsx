@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import NoAccessPage from '@/app/admin/no-access/page';
-import { isUserInIct } from '@/shared/lib/committee-utils';
+import { isUserInIct, isUserAuthorized, getMergedTokens } from '@/shared/lib/committee-utils';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { siteSettingsApi, siteSettingsMutations } from '@/shared/lib/api/salvemundi';
 import { useSalvemundiCommittees } from '@/shared/lib/hooks/useSalvemundiApi';
@@ -42,6 +42,18 @@ const PERMISSION_PAGES: Omit<PermissionEntry, 'currentTokens'>[] = [
         label: 'Synchronisatie',
         description: 'Wie mag de koppeling met Microsoft Entra ID (sync) beheren?',
         pageKey: 'admin_sync'
+    },
+    {
+        id: 'coupons',
+        label: 'Coupons Beheer',
+        description: 'Wie mag de coupons en kortingscodes beheren?',
+        pageKey: 'admin_coupons'
+    },
+    {
+        id: 'permissions',
+        label: 'Permissies Beheer',
+        description: 'Wie mag de toegangsrechten van het admin paneel beheren?',
+        pageKey: 'admin_permissions'
     }
 ];
 
@@ -57,10 +69,21 @@ export default function PermissionsPage() {
     const [saveStatus, setSaveStatus] = useState<Record<string, 'success' | 'error' | null>>({});
     const [showAllGroups, setShowAllGroups] = useState(false);
 
-    // Authorization: only ICT can reach this page
+    // Authorization: ICT and Bestuur by default, or manageable via admin_permissions
     useEffect(() => {
         if (authLoading) return;
-        setIsAuthorized(isUserInIct(user));
+
+        const checkAccess = async () => {
+            try {
+                const setting = await siteSettingsApi.get('admin_permissions', true);
+                const tokens = getMergedTokens(setting?.authorized_tokens, ['ictcommissie', 'bestuur']);
+                setIsAuthorized(isUserAuthorized(user, tokens));
+            } catch (error) {
+                setIsAuthorized(isUserInIct(user));
+            }
+        };
+
+        checkAccess();
     }, [user, authLoading]);
 
     useEffect(() => {
