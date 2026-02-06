@@ -599,7 +599,7 @@ async function handleMutation(
         if (originalContentType) forwardHeaders['Content-Type'] = originalContentType;
         if (cookie) forwardHeaders['Cookie'] = cookie;
 
-        const targetUrl = `${DIRECTUS_URL}/${path}${url.search}`;
+        let targetSearch = url.search;
 
         // Auto-auth for specific public forms (Intro)
         if (!authHeader && API_SERVICE_TOKEN && (path.startsWith('items/intro_signups') || path.startsWith('items/intro_parent_signups'))) {
@@ -607,25 +607,31 @@ async function handleMutation(
         }
 
         if (canBypass && API_SERVICE_TOKEN) {
-            // For auth paths like /auth/refresh, we must NOT send a Bearer token.
-            // Directus expects the refresh_token in the body and adding an Authorization
-            // header can cause it to ignore the body or fail with a 500/401.
-            const isIdentityPath = path.startsWith('users/me');
-            if (!isAuthPath || isIdentityPath) {
-                forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
-            }
+            forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
         } else if (authHeader && (isUserTokenValid || isAuthPath || needsSpecialGuardCheck || isAllowed)) {
-            // Only forward authorization if it's not a refresh/login request.
-            // However, /users/me MUST have it.
             const isIdentityPath = path.startsWith('users/me');
             const isStrictAuthPath = (path.includes('auth/') || path.startsWith('auth/')) && !isIdentityPath;
-
             if (!isStrictAuthPath || isIdentityPath) {
                 forwardHeaders['Authorization'] = authHeader;
             }
         }
 
+        // AGGRESSIVE CLEANUP: Avoid 400 Bad Request by ensuring we never send double auth
+        // 1. If we have an Authorization header, remove access_token from query params
+        if (forwardHeaders['Authorization'] && url.searchParams.has('access_token')) {
+            const newParams = new URLSearchParams(url.searchParams);
+            newParams.delete('access_token');
+            const newSearch = newParams.toString();
+            targetSearch = newSearch ? `?${newSearch}` : '';
+        }
+
+        // 2. If we have an Authorization header (Bearer), remove cookies to avoid conflict
+        if (forwardHeaders['Authorization'] && forwardHeaders['Cookie']) {
+            delete forwardHeaders['Cookie'];
+        }
+
         // Trace token usage for debugging
+        const targetUrl = `${DIRECTUS_URL}/${path}${targetSearch}`;
         if (path.includes('auth/')) {
             console.log(`[Directus Proxy] PROXING AUTH: ${method} ${targetUrl} | Body size: ${rawBody?.byteLength || 0}`);
         }
