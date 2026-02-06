@@ -11,6 +11,7 @@ import { format, startOfDay, isBefore } from "date-fns";
 import PageHeader from "@/widgets/page-header/ui/PageHeader";
 import { PhoneInput } from "@/shared/ui/PhoneInput";
 import NotificationToggle from "@/components/NotificationToggle";
+import { formatDateToLocalISO } from "@/shared/lib/utils/date";
 import {
   LogOut,
   CreditCard,
@@ -185,7 +186,7 @@ export default function AccountPage() {
 
   useEffect(() => {
     if (user?.minecraft_username) setMinecraftUsername(user.minecraft_username);
-    if (user?.date_of_birth) setDateOfBirth(user.date_of_birth);
+    if (user?.date_of_birth) setDateOfBirth(formatDateToLocalISO(user.date_of_birth));
     if (user?.phone_number) setPhoneNumber(user.phone_number);
   }, [user]);
 
@@ -622,7 +623,7 @@ export default function AccountPage() {
                       </p>
                       <p className="text-base font-bold text-theme-purple dark:text-white">
                         {user.membership_expiry
-                          ? format(new Date(user.membership_expiry), "d MMM yyyy")
+                          ? format(new Date(user.membership_expiry.includes('T') || user.membership_expiry.includes(' ') ? user.membership_expiry : `${user.membership_expiry}T12:00:00`), "d MMM yyyy")
                           : "N/A"}
                       </p>
                     </div>
@@ -840,7 +841,7 @@ export default function AccountPage() {
                         <Calendar className="h-5 w-5" />
                       </div>
                       <p className="font-bold text-theme-purple dark:text-white text-sm">
-                        {user.date_of_birth ? format(new Date(user.date_of_birth), "d MMMM yyyy") : "Niet ingesteld"}
+                        {user.date_of_birth ? format(new Date(`${formatDateToLocalISO(user.date_of_birth)}T12:00:00`), "d MMMM yyyy") : "Niet ingesteld"}
                       </p>
                     </div>
                   )}
@@ -1006,7 +1007,7 @@ export default function AccountPage() {
                           <div className="mt-2.5 space-y-1.5">
                             <p className="flex items-center gap-2 text-xs font-bold text-theme-purple/70 dark:text-white/70">
                               <Calendar className="h-3.5 w-3.5" />
-                              {format(new Date(signup.event_id.event_date), "d MMM yyyy")}
+                              {format(new Date(signup.event_id.event_date.includes('T') || signup.event_id.event_date.includes(' ') ? signup.event_id.event_date : `${signup.event_id.event_date}T12:00:00`), "d MMM yyyy")}
                             </p>
                             <p className="text-[10px] text-theme-purple/40 dark:text-white/40 font-medium italic">
                               Inschrijving: {format(new Date(signup.created_at), "d MMM yyyy")}

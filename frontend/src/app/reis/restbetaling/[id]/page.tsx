@@ -14,6 +14,7 @@ import type { Trip, TripActivity, TripSignup } from '@/shared/lib/api/salvemundi
 import { updateTripSignup } from '../../actions';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
+import { formatDateToLocalISO } from '@/shared/lib/utils/date';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import {
     CheckCircle2,
@@ -108,7 +109,7 @@ export default function RestbetalingPage() {
                 last_name: signupData.last_name,
                 email: signupData.email,
                 phone_number: signupData.phone_number,
-                date_of_birth: signupData.date_of_birth || '',
+                date_of_birth: formatDateToLocalISO(signupData.date_of_birth),
                 id_document_type: (signupData.id_document_type || (signupData as any).id_document as 'passport' | 'id_card') || '',
                 document_number: signupData.document_number || '',
                 allergies: signupData.allergies || (signupData as any).alergies || '',
@@ -473,7 +474,7 @@ export default function RestbetalingPage() {
                             <div>
                                 <p className="text-gray-500 mb-1">Geboortedatum</p>
                                 <p className="font-semibold text-gray-900 dark:text-white">
-                                    {form.date_of_birth ? format(new Date(form.date_of_birth), 'd MMMM yyyy', { locale: nl }) : '-'}
+                                    {form.date_of_birth ? format(new Date(form.date_of_birth.includes('T') || form.date_of_birth.includes(' ') ? form.date_of_birth : `${form.date_of_birth}T12:00:00`), 'd MMMM yyyy', { locale: nl }) : '-'}
                                 </p>
                             </div>
                             <div>
