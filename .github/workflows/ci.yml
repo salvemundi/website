@@ -81,28 +81,40 @@ jobs:
           filters: |
             frontend:
               - 'frontend/**'
+              - '.github/workflows/deploy-frontend.yml'
             admin_api:
               - 'admin-api/**'
+              - '.github/workflows/deploy-admin-api.yml'
             payment_api:
               - 'payment-api/**'
+              - '.github/workflows/deploy-payment.yml'
             arcane:
               - 'arcane/**'
+              - '.github/workflows/deploy-arcane.yml'
             directus:
               - 'directus/**'
+              - '.github/workflows/deploy-directus.yml'
             email_api:
               - 'email-api/**'
+              - '.github/workflows/deploy-email.yml'
             graph_sync:
               - 'graph-sync/**'
+              - '.github/workflows/deploy-graph-sync.yml'
             graph_webhook:
               - 'graph-webhook/**'
+              - '.github/workflows/deploy-graph-webhook.yml'
             leden_check:
               - 'leden-check-script/**'
+              - '.github/workflows/deploy-leden-check.yml'
             membership_api:
               - 'membership-api/**'
+              - '.github/workflows/deploy-membership.yml'
             server_monitor:
               - 'server-monitor/**'
+              - '.github/workflows/deploy-monitor.yml'
             notification_api:
               - 'notification-api/**'
+              - '.github/workflows/deploy-notification-api.yml'
       - name: Debug Filter Outputs
         run: |
           echo "Frontend: ${{ steps.filter.outputs.frontend }}"
