@@ -264,9 +264,7 @@ export async function GET(
 
         const targetUrl = `${DIRECTUS_URL}/${path}${targetSearch}`;
 
-        if (path.includes('assets') || path.includes('image')) {
-            console.log(`[Directus Proxy] Asset Req: ${path} | Auth: ${!!forwardHeaders['Authorization']} | Cookie: ${!!forwardHeaders['Cookie']} | Query: ${targetSearch}`);
-        }
+        // Temporarily remove the premature logging here
 
 
         const contentType = request.headers.get('Content-Type');
@@ -286,6 +284,20 @@ export async function GET(
         const tags: string[] = [];
         if (isItemsPath && pathParts[1]) {
             tags.push(pathParts[1]);
+        }
+
+        // DIAGNOSTIC: Log final state for asset requests AFTER all header manipulation
+        if (path.includes('assets') || path.includes('image')) {
+            console.warn(`[ASSET DEBUG] ===== FINAL REQUEST TO DIRECTUS =====`);
+            console.warn(`[ASSET DEBUG] Path: ${path}`);
+            console.warn(`[ASSET DEBUG] Target URL: ${targetUrl}`);
+            console.warn(`[ASSET DEBUG] Query has access_token: ${targetSearch.includes('access_token')}`);
+            console.warn(`[ASSET DEBUG] Authorization header present: ${!!forwardHeaders['Authorization']}`);
+            console.warn(`[ASSET DEBUG] Cookie header present: ${!!forwardHeaders['Cookie']}`);
+            if (forwardHeaders['Cookie']) {
+                console.warn(`[ASSET DEBUG] Cookie value (first 50 chars): ${forwardHeaders['Cookie'].substring(0, 50)}`);
+            }
+            console.warn(`[ASSET DEBUG] ==========================================`);
         }
 
         const fetchOptions: RequestInit = {
@@ -314,6 +326,17 @@ export async function GET(
         const response = await fetch(targetUrl, fetchOptions);
 
         if (!response.ok) {
+            // Special handling for 400 errors on assets
+            if (response.status === 400 && (path.includes('assets') || path.includes('image'))) {
+                console.error(`[ASSET DEBUG] ===== 400 ERROR FROM DIRECTUS =====`);
+                const errorText = await response.text().catch(() => '(unable to read error body)');
+                console.error(`[ASSET DEBUG] Error body: ${errorText}`);
+                console.error(`[ASSET DEBUG] This means Directus saw multiple auth methods!`);
+                console.error(`[ASSET DEBUG] ======================================`);
+                // Return error response
+                return new NextResponse(errorText, { status: 400 });
+            }
+
             if (response.status === 403 && (
                 path.startsWith('items/committees') ||
                 path.startsWith('items/committee_members') ||

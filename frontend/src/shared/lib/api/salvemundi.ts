@@ -1121,11 +1121,10 @@ export function getImageUrl(imageId: string | undefined | any, options?: { quali
     // Always use /api proxy which handles authentication via headers
     const baseUrl = '/api';
 
-    // Build query parameters for image optimization and authentication
+    // Build query parameters for image optimization ONLY
+    // DO NOT add access_token here - the proxy will handle authentication via Cookie/Authorization headers
+    // Adding access_token causes "double auth" (query + cookie) which Directus rejects with 400
     const params = new URLSearchParams();
-    if (token) {
-        params.append('access_token', token);
-    }
     if (options?.quality) {
         params.append('quality', options.quality.toString());
     }
