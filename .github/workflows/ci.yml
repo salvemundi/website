@@ -30,7 +30,7 @@ jobs:
 
       - name: Lint
         working-directory: frontend
-        run: npm run lint
+        run: npx next lint .
 
       - name: Typecheck
         working-directory: frontend
