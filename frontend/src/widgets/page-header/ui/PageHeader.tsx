@@ -1,7 +1,5 @@
 import React from "react";
-import Link from 'next/link';
 import Image from 'next/image';
-import { /* ArrowLeft removed - back button disabled globally */ } from 'lucide-react';
 import { stripHtml } from '@/shared/lib/text';
 
 interface PageHeaderProps {
@@ -32,8 +30,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     children,
     variant = 'centered',
     description,
-    contentPadding = 'py-20',
-    backLink
+    contentPadding = 'py-20'
 }) => {
     const headerRef = useRef<HTMLElement | null>(null);
 
