@@ -234,13 +234,17 @@ export async function GET(
             if (!isStrictAuthPath || isIdentityPath) {
                 forwardHeaders['Authorization'] = auth;
 
-                // If we are forwarding the token in the header, remove it from the query params
-                // to avoid 400 Bad Request errors from Directus seeing it in both places.
+                // Eliminate ambiguity: if we send Auth header, kill the query param
                 if (url.searchParams.has('access_token')) {
                     const newParams = new URLSearchParams(url.searchParams);
                     newParams.delete('access_token');
                     const newSearch = newParams.toString();
                     targetSearch = newSearch ? `?${newSearch}` : '';
+                }
+
+                // Eliminate conflict: if we send Auth header (Bearer), remove cookies
+                if (forwardHeaders['Authorization'] && forwardHeaders['Cookie']) {
+                    delete forwardHeaders['Cookie'];
                 }
             }
 
