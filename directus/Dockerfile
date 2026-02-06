@@ -42,11 +42,8 @@ RUN echo "--- Extension Directory Contents (ROOT) ---" && \
     ls -la /directus/extensions/directus-extension-entra-auth/dist || echo "No dist folder found"
 
 
-# Stap 6: Install curl for healthchecks
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
-
 # Healthcheck om de deployment script te laten weten dat we klaar zijn
 HEALTHCHECK --interval=30s --timeout=10s --retries=5 --start-period=60s \
-  CMD curl -f http://localhost:8055/server/ping || exit 1
+  CMD wget --spider -q http://localhost:8055/server/ping || exit 1
 
 USER node
