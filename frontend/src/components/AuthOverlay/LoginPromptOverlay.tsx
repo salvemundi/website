@@ -46,7 +46,7 @@ export default function LoginPromptOverlay({
                 aria-labelledby="login-prompt-title"
                 aria-modal="true"
             >
-                <div className="relative w-full max-w-md mx-4 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 sm:p-8 transform transition-all">
+                <div className="relative w-full max-w-md mx-4 bg-theme-white dark:bg-surface-dark rounded-2xl shadow-card-elevated p-6 sm:p-8 transform transition-all border border-theme-purple/10 dark:border-white/5">
                     {/* Icon */}
                     <div className="flex justify-center mb-4">
                         <div className="w-16 h-16 rounded-full bg-gradient-theme flex items-center justify-center">
@@ -70,13 +70,13 @@ export default function LoginPromptOverlay({
                     {/* Title */}
                     <h2
                         id="login-prompt-title"
-                        className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-3"
+                        className="text-2xl font-bold text-center text-theme-text dark:text-white mb-3"
                     >
                         Inloggen vereist
                     </h2>
 
                     {/* Message */}
-                    <p className="text-center text-gray-600 dark:text-gray-400 mb-6">
+                    <p className="text-center text-theme-text-muted dark:text-theme-text-light mb-6">
                         {message}
                     </p>
 
@@ -89,7 +89,7 @@ export default function LoginPromptOverlay({
                             Inloggen met Microsoft
                         </button>
 
-                        <p className="text-center text-sm text-gray-500 dark:text-gray-500">
+                        <p className="text-center text-sm text-theme-text-muted dark:text-theme-text-light">
                             Je blijft op deze pagina tijdens het inloggen
                         </p>
                     </div>
