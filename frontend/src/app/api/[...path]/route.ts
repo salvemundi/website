@@ -258,8 +258,10 @@ export async function GET(
         const contentType = request.headers.get('Content-Type');
         if (contentType) forwardHeaders['Content-Type'] = contentType;
 
-        // Forward cookies if present to support cookie-based sessions
-        if (cookie) forwardHeaders['Cookie'] = cookie;
+        // Forward cookies if present to support cookie-based sessions, BUT ONLY if we aren't already using Bearer auth
+        if (cookie && !forwardHeaders['Authorization']) {
+            forwardHeaders['Cookie'] = cookie;
+        }
 
         const pathParts = path.split('/');
         const isItemsPath = pathParts[0] === 'items';
@@ -636,6 +638,7 @@ async function handleMutation(
 
         // Trace token usage for debugging
         const targetUrl = `${DIRECTUS_URL}/${path}${targetSearch}`;
+
         if (path.includes('auth/')) {
             console.log(`[Directus Proxy] PROXING AUTH: ${method} ${targetUrl} | Body size: ${rawBody?.byteLength || 0}`);
         }
@@ -666,6 +669,7 @@ async function handleMutation(
                 console.log(`[Directus Proxy] Softening 403 for ${method} ${path} to avoid browser console error.`);
                 return NextResponse.json({ data: null, error: 'Forbidden', softened: true }, { status: 200 });
             }
+
 
             // Re-create response for JSON if possible
             if (response.headers.get('Content-Type')?.includes('application/json')) {
