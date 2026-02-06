@@ -7,7 +7,7 @@ import { useAuth } from '@/features/auth/providers/auth-provider';
 function LoginContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { loginWithMicrosoft, isLoading, isAuthenticated } = useAuth();
+    const { loginWithMicrosoft, isLoading, isAuthenticated, authError } = useAuth();
     const [error, setError] = useState('');
 
     // Get the returnTo URL from query parameters, fallback to '/account'
@@ -43,6 +43,13 @@ function LoginContent() {
             const isCallback = typeof window !== 'undefined' && (window.location.hash || window.location.search.includes('code='));
             if (isCallback) return;
 
+            // If there's an auth error from the provider (e.g. infinite loop detected, or API failure)
+            // do NOT auto-redirect.
+            if (authError) {
+                setError(authError);
+                return;
+            }
+
             if (!isLoading && !isAuthenticated && !error && !noAuto && !isAutoRedirecting) {
                 setIsAutoRedirecting(true);
                 try {
@@ -64,7 +71,7 @@ function LoginContent() {
         };
 
         triggerAutoLogin();
-    }, [isLoading, isAuthenticated, error, noAuto, isAutoRedirecting, loginWithMicrosoft, returnTo]);
+    }, [isLoading, isAuthenticated, error, noAuto, isAutoRedirecting, loginWithMicrosoft, returnTo, authError]);
 
     const handleMicrosoftLogin = async () => {
         setError('');
