@@ -47,10 +47,9 @@ async function ensureFreshToken(): Promise<string | null> {
         // If token is still fresh, return it
         if (!isTokenExpiringSoon(currentToken)) return currentToken;
 
-        console.log('[directusFetch] Token expiring soon, proactively refreshing...');
-
         // Use singleton pattern to avoid multiple simultaneous refreshes
         if (!refreshPromise) {
+            console.log('[directusFetch] Token expiring soon, proactively refreshing...');
             refreshPromise = (async () => {
                 try {
                     const refreshResponse = await fetch(`${directusUrl}/auth/refresh`, {
@@ -81,15 +80,17 @@ async function ensureFreshToken(): Promise<string | null> {
             })();
         }
 
-        const success = await refreshPromise;
-        if (success) {
-            return localStorage.getItem('auth_token');
+
+        if (refreshPromise) {
+            await refreshPromise;
         }
-        return currentToken; // Return old token if refresh failed, let the request try anyway
+        return localStorage.getItem('auth_token');
     } catch (e) {
         return localStorage.getItem('auth_token');
     }
 }
+
+
 
 // Create a simple fetch wrapper for Directus REST API
 // Added _isRetry parameter to prevent infinite loops during token refresh
@@ -225,11 +226,22 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit, 
                         })();
                     }
 
-                    const success = await refreshPromise;
+                    let success = false;
+                    if (refreshPromise) {
+                        success = await refreshPromise;
+                    } else {
+                        // If refreshPromise is already null, it means another request just finished it.
+                        // Check if we now have a valid-looking token.
+                        const token = localStorage.getItem('auth_token');
+                        success = !!token && !isTokenExpiringSoon(token);
+                    }
+
                     if (success) {
                         // Retry the original request with the new token
                         return directusFetch(endpoint, options, true);
                     } else {
+
+
                         console.warn('[directusFetch] Token refresh failed, clearing session');
                         // Refresh failed explicitly
                         localStorage.removeItem('auth_token');
