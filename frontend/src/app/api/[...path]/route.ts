@@ -285,7 +285,10 @@ export async function GET(
         const usedToken = forwardHeaders['Authorization'] || 'none';
         const tokenType = (canBypass && API_SERVICE_TOKEN) ? 'SERVICE TOKEN' : 'USER TOKEN';
         const maskedToken = usedToken.length > 10 ? `...${usedToken.slice(-4)}` : usedToken;
-        console.log(`[Directus Proxy] GET ${path} | Bypass: ${canBypass} | Forwarding: ${tokenType} (${maskedToken})`);
+        console.log(`[Directus Proxy] GET ${path} | Bypass: ${canBypass} | Forwarding: ${tokenType} (${maskedToken}) | Target: ${targetUrl}`);
+        if (path.includes('assets') || path.includes('image')) {
+            console.log(`[Directus Proxy] Asset Request Info: Query: ${targetSearch} | Auth Header Present: ${!!forwardHeaders['Authorization']}`);
+        }
 
         const response = await fetch(targetUrl, fetchOptions);
 
