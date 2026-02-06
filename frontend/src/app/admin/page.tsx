@@ -849,7 +849,7 @@ export default function AdminDashboardPage() {
             <div className="container mx-auto px-4 py-8 max-w-7xl">
                 {/* Quick Actions Section */}
                 <div className="mb-8">
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         <StatCard
                             title="Overzicht"
                             value="Activiteiten"
@@ -860,9 +860,9 @@ export default function AdminDashboardPage() {
                         />
                         <StatCard
                             title="Beheer"
-                            value="intro"
+                            value="Intro"
                             icon={<FileText className="h-6 w-6" />}
-                            subtitle={`aanmeldingen:  ${stats.introSignups}`}
+                            subtitle={`aanmeldingen: ${stats.introSignups}`}
                             onClick={() => router.push('/admin/intro')}
                             colorClass="blue"
                             disabled={!canAccessIntro}
@@ -876,8 +876,8 @@ export default function AdminDashboardPage() {
                             colorClass="green"
                         />
                         <StatCard
-                            title="beheer"
-                            value="reis"
+                            title="Beheer"
+                            value="Reis"
                             icon={<FileText className="h-6 w-6" />}
                             subtitle="Beheer de reis"
                             onClick={() => router.push('/admin/reis')}
@@ -885,13 +885,12 @@ export default function AdminDashboardPage() {
                             disabled={!canAccessReis}
                         />
                         <StatCard
-                            title="beheer"
-                            value="kroegentocht"
+                            title="Beheer"
+                            value="Kroegentocht"
                             icon={<Ticket className="h-6 w-6" />}
-                            subtitle={`aanmeldingen:  ${stats.pubCrawlSignups}`}
+                            subtitle={`aanmeldingen: ${stats.pubCrawlSignups}`}
                             onClick={() => router.push('/admin/kroegentocht')}
                             colorClass="orange"
-                            nowrap
                         />
                         <StatCard
                             title="Beheer"
