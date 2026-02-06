@@ -101,9 +101,9 @@ export default function IntroLayout({ children }: { children: React.ReactNode })
                 {(isMainIntroPage || isBlogOrPlanning) && (
                     <nav
                         className="md:hidden bg-[var(--bg-card)] border-b border-theme-purple/10 sticky z-40 backdrop-blur-lg bg-opacity-90"
-                        style={{ top: '0' }}
+                        style={{ top: 'var(--header-height, 0px)' }}
                     >
-                        <div className="px-4 py-3 pt-16">
+                        <div className="px-4 py-2">
                             <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
                                 {navItems.map((item) => {
                                     const Icon = item.icon;
