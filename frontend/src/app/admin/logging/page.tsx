@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/features/auth/providers/auth-provider';
+import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
 import { usePagePermission } from '@/shared/lib/hooks/usePermissions';
 import { format } from 'date-fns';
 import { Shield, CheckCircle, XCircle, RefreshCw, Clock, CheckSquare, Square, Tag } from 'lucide-react';
@@ -76,6 +76,7 @@ function Tile({
 export default function LoggingPage() {
     const router = useRouter();
     const { user } = useAuth();
+    const { loginWithRedirect } = useAuthActions();
     const [signups, setSignups] = useState<Signup[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState<string | null>(null);
@@ -121,7 +122,7 @@ export default function LoggingPage() {
                 // Instead of immediately redirecting, check if we're still initializing.
                 // The AuthProvider's handleRedirect already tries silent recovery.
                 // If we reach here, and there's no user, we might need a manual login.
-                router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+                loginWithRedirect(returnTo);
             } else {
                 // Logged in but not authorized for this specific page
                 router.push('/admin');

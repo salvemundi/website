@@ -30,7 +30,7 @@ export default function LoginModal({
     mode = 'page_protected',
     message,
 }: LoginModalProps) {
-    const { loginWithMicrosoft } = useAuthActions();
+    const { loginWithMicrosoft, loginWithRedirect } = useAuthActions();
     const [isLoggingIn, setIsLoggingIn] = useState(false);
     const [popupBlocked, setPopupBlocked] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -126,13 +126,10 @@ export default function LoginModal({
      * Saves current URL in sessionStorage (not localStorage)
      */
     const handleRedirectLogin = () => {
-        // Save current URL for return after login
+        // Use the provider's redirect method which handles return URL storage correctly
         if (typeof window !== 'undefined') {
-            sessionStorage.setItem('auth_redirect_return', window.location.pathname + window.location.search);
+            loginWithRedirect(window.location.pathname + window.location.search);
         }
-
-        // Navigate to login page which will trigger MSAL redirect
-        window.location.href = '/login';
     };
 
     return (

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useAuth } from '@/features/auth/providers/auth-provider';
+import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
 import { useSalvemundiEvent } from '@/shared/lib/hooks/useSalvemundiApi';
 import { eventsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
 import { directusFetch } from '@/shared/lib/directus';
@@ -46,6 +46,7 @@ export default function EventDetailPage() {
     const router = useRouter();
     const eventId = params?.id as string;
     const { user } = useAuth();
+    const { loginWithRedirect } = useAuthActions();
 
     // Fetch event data
     const { data: event, isLoading, error } = useSalvemundiEvent(eventId);
@@ -572,7 +573,7 @@ export default function EventDetailPage() {
                                         <button
                                             onClick={() => {
                                                 const returnTo = window.location.pathname + window.location.search;
-                                                router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+                                                loginWithRedirect(returnTo);
                                             }}
                                             className="w-full bg-paars text-white font-bold py-3 px-6 rounded-xl hover:scale-[1.02] transition-all shadow-md"
                                         >
@@ -782,7 +783,7 @@ export default function EventDetailPage() {
                               Preserve newlines for plain text coming from Directus while still
                               allowing HTML descriptions to be rendered via dangerouslySetInnerHTML.
                             */}
-                            { /<\/?[a-z][\s\S]*>/i.test(event.description) ? (
+                            {/<\/?[a-z][\s\S]*>/i.test(event.description) ? (
                                 <div
                                     className="prose dark:prose-invert max-w-none text-theme-purple dark:text-theme-white/90 flex-grow"
                                     dangerouslySetInnerHTML={{ __html: event.description }}
