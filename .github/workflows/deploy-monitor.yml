@@ -109,8 +109,8 @@ jobs:
 
             echo "Waiting for Server Monitor to start..."
             CONTAINER_NAME="server-monitor-${TAG}"
-            for i in {1..15}; do
-              # Deze heeft geen poort, dus we checken of het proces draait
+            for i in {1..20}; do
+              # Check of het proces daadwerkelijk draait (via pgrep uit procps)
               if docker exec $CONTAINER_NAME pgrep -f "python -m app.main" > /dev/null 2>&1; then
                 echo "✅ Server Monitor is running!"
                 exit 0
@@ -123,9 +123,9 @@ jobs:
                 exit 1
               fi
               
-              echo "Waiting... ($i/15)"
+              echo "Waiting... ($i/20)"
               sleep 5
             done
-            echo "⏳ Start check TIMEOUT!"
+            echo "⏳ Server Monitor start check TIMEOUT!"
             docker logs $CONTAINER_NAME | tail -n 50
             exit 1

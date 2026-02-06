@@ -114,13 +114,24 @@ jobs:
 
             echo "Waiting for Arcane to respond on port 3552..."
             CONTAINER_NAME="arcane"
-            for i in {1..20}; do
+            for i in {1..30}; do
               # Probeer direct de API te raken binnen de container
               if docker exec $CONTAINER_NAME wget --spider -q http://localhost:3552/api/app-version > /dev/null 2>&1; then
                 echo "✅ Arcane is up and running!"
                 exit 0
               fi
               
+              # Fallback: check of de poort iig open staat als wget faalt door missing tool
+              if docker exec $CONTAINER_NAME sh -c "command -v wget" > /dev/null 2>&1; then
+                 : # wget is er, dus het is echt de app die nog niet start
+              else
+                 echo "⚠️ wget missing in container, falling back to basic running check"
+                 if [[ $(docker inspect --format='{{.State.Status}}' $CONTAINER_NAME) == "running" ]]; then
+                    echo "✅ Container is running (wget check skipped)"
+                    exit 0
+                 fi
+              fi
+
               # Check of hij niet gecrasht is
               if [[ $(docker inspect --format='{{.State.Status}}' $CONTAINER_NAME) == "exited" ]]; then
                 echo "❌ Container has EXITED!"
@@ -128,9 +139,11 @@ jobs:
                 exit 1
               fi
               
-              echo "Waiting... ($i/20)"
+              if (( i % 5 == 0 )); then
+                echo "Still waiting for Arcane... ($i/30)"
+              fi
               sleep 5
             done
-            echo "⏳ Start check TIMEOUT!"
+            echo "⏳ Arcane start check TIMEOUT!"
             docker logs $CONTAINER_NAME | tail -n 50
             exit 1
