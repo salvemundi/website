@@ -504,7 +504,44 @@ async function handleMutation(
         // Prepare outgoing request
         const forwardHeaders = getProxyHeaders(request);
 
-        let targetSearch = url.search;
+    let targetSearch = url.search;
+    const originalContentType = request.headers.get('Content-Type');
+
+    // Special-case: ensure sticker creations include the logged-in user's id explicitly
+        // If we have an authHeader and the incoming request is creating/updating Stickers
+        // and the body is JSON, fetch /users/me with the caller token and inject
+        // `user_created` into the body so Directus will set the relation correctly.
+        if (authHeader && rawBody && rawBody.byteLength > 0 && (path.toLowerCase().startsWith('items/stickers')) && originalContentType?.includes('application/json')) {
+            try {
+                const meResp = await fetch(`${DIRECTUS_URL}/users/me`, {
+                    headers: { Authorization: authHeader, 'Cache-Control': 'no-cache' },
+                    cache: 'no-store'
+                });
+                if (meResp.ok) {
+                    const meJson = await meResp.json().catch(() => null);
+                    const me = meJson?.data || meJson;
+                    const userId = me?.id;
+                    if (userId) {
+                        try {
+                            const text = new TextDecoder().decode(rawBody);
+                            const parsed = text ? JSON.parse(text) : {};
+                            // Only inject if not already present
+                            if (!parsed.user_created && !parsed.created_by) {
+                                parsed.user_created = userId;
+                                const newBodyText = JSON.stringify(parsed);
+                                rawBody = new TextEncoder().encode(newBodyText).buffer as ArrayBuffer;
+                            }
+                        } catch (e) {
+                            console.warn('[Directus Proxy] Failed to inject user_created into stickers body:', e);
+                        }
+                    }
+                } else {
+                    console.warn('[Directus Proxy] Could not fetch users/me to inject user_created for stickers:', meResp.status);
+                }
+            } catch (e) {
+                console.error('[Directus Proxy] Error fetching users/me for stickers injection:', e);
+            }
+        }
 
         if (canBypass && API_SERVICE_TOKEN) {
             forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
@@ -522,9 +559,7 @@ async function handleMutation(
             // Header is not added
         }
 
-        const targetUrl = `${DIRECTUS_URL}/${path}${targetSearch}`;
-
-        const originalContentType = request.headers.get('Content-Type');
+    const targetUrl = `${DIRECTUS_URL}/${path}${targetSearch}`;
         if (originalContentType) forwardHeaders['Content-Type'] = originalContentType;
         if (cookie) forwardHeaders['Cookie'] = cookie;
 
