@@ -28,9 +28,13 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      - name: Debug - List Files
+        working-directory: frontend
+        run: ls -la
+
       - name: Lint
         working-directory: frontend
-        run: npx next lint .
+        run: npx next lint --dir .
 
       - name: Typecheck
         working-directory: frontend
