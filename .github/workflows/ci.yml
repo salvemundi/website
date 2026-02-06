@@ -13,6 +13,9 @@ jobs:
   frontend-checks:
     name: Frontend Lint & Typecheck
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,19 +28,12 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install Dependencies
-        working-directory: frontend
         run: npm ci
 
-      - name: Debug - List Files
-        working-directory: frontend
-        run: ls -la
-
       - name: Lint
-        working-directory: frontend
-        run: npx next lint --dir .
+        run: npm run lint
 
       - name: Typecheck
-        working-directory: frontend
         run: npm run typecheck
 
   backend-checks:
