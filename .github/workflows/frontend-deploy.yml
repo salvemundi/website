@@ -1,13 +1,10 @@
 name: Deploy Frontend
 
 on:
-  push:
-    branches:
-      - "Development"
-      - "main"
-    paths:
-      - "frontend/**"
-      - ".github/workflows/frontend-deploy.yml"
+  workflow_run:
+    workflows: ["CI"]
+    types: 
+      - completed
   workflow_dispatch:
 env:
   REGISTRY: ghcr.io
@@ -19,6 +16,7 @@ concurrency:
 
 jobs:
   build-and-deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15  # Prevent infinite runs
     permissions:
@@ -27,13 +25,17 @@ jobs:
       packages: write
 
     env:
-      TAG: ${{ github.ref_name == 'main' && 'latest' || github.ref_name == 'Development' && 'dev' || 'local' }}
-      DEPLOY_PATH: ${{ github.ref_name == 'main' && '/opt/frontend-prod' || github.ref_name == 'Development' && '/opt/frontend-dev' || '/opt/frontend-local' }}
-      INFISICAL_ENVIRONMENT: ${{ github.ref_name == 'main' && 'prod' || github.ref_name == 'Development' && 'dev' || 'local' }}
+      # Use head_branch for logic, fallback to ref_name for dispatch
+      REF_NAME: ${{ github.event.workflow_run.head_branch || github.ref_name }}
+      TAG: ${{ (github.event.workflow_run.head_branch || github.ref_name) == 'main' && 'latest' || (github.event.workflow_run.head_branch || github.ref_name) == 'Development' && 'dev' || 'local' }}
+      DEPLOY_PATH: ${{ (github.event.workflow_run.head_branch || github.ref_name) == 'main' && '/opt/frontend-prod' || (github.event.workflow_run.head_branch || github.ref_name) == 'Development' && '/opt/frontend-dev' || '/opt/frontend-local' }}
+      INFISICAL_ENVIRONMENT: ${{ (github.event.workflow_run.head_branch || github.ref_name) == 'main' && 'prod' || (github.event.workflow_run.head_branch || github.ref_name) == 'Development' && 'dev' || 'local' }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       # ------------------------------
       # Fetch Secrets from Infisical
@@ -158,4 +160,28 @@ jobs:
             
             # Clean up old/dangling images (untagged) to free space
             docker image prune -f
+
+            echo "Waiting for container to be healthy..."
+            CONTAINER_NAME="frontend"
+            for i in {1..20}; do
+              STATUS=$(docker inspect --format='{{.State.Health.Status}}' $CONTAINER_NAME 2>/dev/null || echo "starting")
+              echo "Current status: $STATUS"
+              if [[ "$STATUS" == "healthy" ]]; then
+                echo "✅ Container is healthy!"
+                exit 0
+              fi
+              if [[ "$STATUS" == "unhealthy" ]]; then
+                echo "❌ Container is UNHEALTHY!"
+                docker logs $CONTAINER_NAME | tail -n 50
+                exit 1
+              fi
+              sleep 5
+            done
+            # Backend check if frontend doesn't have internal healthcheck yet (Next.js default doesn't)
+            # Assuming Next.js app is reachable on port 3000 inside container or mapped port
+            # If no HEALTHCHECK is defined in Dockerfile, this loop will wait for "starting" forever or fail.
+            # Next.js standalone usually needs a custom HEALTHCHECK in Dockerfile.
+            # If not present, we skip strict health check or use curl.
+            echo "⚠️  Note: If Dockerfile has no HEALTHCHECK instruction, 'docker inspect' won't return 'healthy'."
+            exit 0
 
