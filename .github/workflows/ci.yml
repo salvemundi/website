@@ -77,6 +77,7 @@ jobs:
       - uses: dorny/paths-filter@v3
         id: filter
         with:
+          base: ${{ github.event.before }}
           filters: |
             frontend:
               - 'frontend/**'
@@ -102,6 +103,13 @@ jobs:
               - 'server-monitor/**'
             notification_api:
               - 'notification-api/**'
+      - name: Debug Filter Outputs
+        run: |
+          echo "Frontend: ${{ steps.filter.outputs.frontend }}"
+          echo "Admin API: ${{ steps.filter.outputs.admin_api }}"
+          echo "Payment API: ${{ steps.filter.outputs.payment_api }}"
+          echo "Directus: ${{ steps.filter.outputs.directus }}"
+          echo "Membership API: ${{ steps.filter.outputs.membership_api }}"
 
   deploy-frontend:
     needs: [frontend-checks, backend-checks, changes]
