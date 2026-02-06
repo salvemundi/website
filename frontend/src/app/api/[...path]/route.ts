@@ -487,6 +487,14 @@ async function handleMutation(
             canBypass = false;
         }
 
+        // Force disable bypass for Stickers so creations/updates are performed with the
+        // currently logged-in user's token. This ensures Directus sets `created_by` /
+        // `user_created` to the correct user instead of the service account.
+        if (path.toLowerCase().startsWith('items/stickers')) {
+            console.log(`[Directus Proxy] Forcing user token for stickers operation (method: ${method})`);
+            canBypass = false;
+        }
+
         // Ensure deletions of event signups always use the logged-in user's token.
         // Some service tokens don't have delete permissions for `event_signups`.
         if (method === 'DELETE' && path.startsWith('items/event_signups')) {
