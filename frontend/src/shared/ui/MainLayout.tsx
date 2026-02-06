@@ -14,7 +14,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
     return (
         <>
-            <div>
+            <div className="pt-20">
                 {children}
             </div>
             {showBottomNav && <BottomNav />}
