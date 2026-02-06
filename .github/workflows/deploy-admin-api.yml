@@ -1,13 +1,13 @@
 name: Deploy Admin API Service
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches:
-      - 'Development'
-      - 'main'
-    paths:
-      - 'admin-api/**'
-      - '.github/workflows/deploy-admin-api.yml'
+      - "Development"
+      - "main"
+  # Paths filters are not supported in workflow_run, but CI handles the gateway.
   workflow_dispatch:
 
 env:
@@ -20,6 +20,7 @@ concurrency:
 
 jobs:
   build-and-deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -29,6 +30,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -39,7 +42,8 @@ jobs:
 
       - name: Set environment variables
         run: |
-          if [[ "${{ github.ref_name }}" == "main" ]]; then
+          TARGET_BRANCH="${{ github.event.workflow_run.head_branch || github.ref_name }}"
+          if [[ "$TARGET_BRANCH" == "main" ]]; then
             echo "TAG=latest" >> $GITHUB_ENV
             echo "DEPLOY_PATH=/opt/admin-api-prod" >> $GITHUB_ENV
           else
@@ -59,7 +63,8 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
           provenance: false
-          no-cache: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Delete Untagged Images
         uses: actions/delete-package-versions@v5
