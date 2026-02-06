@@ -1,10 +1,7 @@
 name: Deploy Directus
 
 on:
-  workflow_run:
-    workflows: ["CI"]
-    types:
-      - completed
+  workflow_call:
   workflow_dispatch:
 
 env:
@@ -18,7 +15,7 @@ concurrency:
 
 jobs:
   build-and-deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ true }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:

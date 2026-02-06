@@ -1,11 +1,7 @@
 name: Deploy Leden Check Script
 
 on:
-  workflow_run:
-    workflows: ["CI"]
-    types: [completed]
-    branches:
-      - "main"
+  workflow_call:
   workflow_dispatch:
 
 env:
@@ -14,7 +10,7 @@ env:
 
 jobs:
   build-and-deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ true }}
     runs-on: ubuntu-latest
     permissions:
       contents: read

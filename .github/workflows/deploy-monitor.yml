@@ -1,12 +1,7 @@
 ﻿name: Deploy Server Monitor
 
 on:
-  workflow_run:
-    workflows: ["CI"]
-    types: [completed]
-    branches:
-      - "Development"
-      - "main"
+  workflow_call:
   workflow_dispatch:
 
 env:
