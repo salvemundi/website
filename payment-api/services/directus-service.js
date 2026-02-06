@@ -190,10 +190,8 @@ async function getTripSignupActivities(directusUrl, directusToken, signupId) {
  */
 async function getCoupon(directusUrl, directusToken, code, traceId = 'no-trace') {
     try {
-        // Step 1: Normal lookup with filters
         const query = new URLSearchParams({
-            'filter[coupon_code][_eq]': code,
-            'filter[is_active][_eq]': 'true'
+            'filter[coupon_code][_eq]': code
         }).toString();
 
         const url = `${directusUrl}/items/coupons?${query}`;
@@ -203,26 +201,12 @@ async function getCoupon(directusUrl, directusToken, code, traceId = 'no-trace')
         const results = response.data.data;
 
         if (results && results.length > 0) {
-            console.warn(`[Coupon][${traceId}] Success! Found active coupon: ${results[0].id}`);
-            return results[0];
+            const coupon = results[0];
+            console.warn(`[Coupon][${traceId}] Success! Found coupon: ${coupon.id}, Code: ${coupon.coupon_code}, Active: ${coupon.is_active}`);
+            return coupon;
         }
 
-        // Step 2: Diagnostic lookup - find it even if inactive to see WHY it failed
-        console.warn(`[Coupon][${traceId}] No active coupon found. Running diagnostic lookup for code: "${code}"`);
-        const diagQuery = new URLSearchParams({
-            'filter[coupon_code][_eq]': code
-        }).toString();
-        const diagUrl = `${directusUrl}/items/coupons?${diagQuery}`;
-        const diagResponse = await axios.get(diagUrl, getAuthConfig(directusToken));
-        const diagResults = diagResponse.data.data;
-
-        if (diagResults && diagResults.length > 0) {
-            const c = diagResults[0];
-            console.warn(`[Coupon][${traceId}] DIAGNOSTIC: Coupon found but filtered out! is_active: ${c.is_active} (Type: ${typeof c.is_active}). ID: ${c.id}`);
-        } else {
-            console.warn(`[Coupon][${traceId}] DIAGNOSTIC: Coupon "${code}" NOT FOUND in Directus at all! (No filter check). URL: ${diagUrl}`);
-        }
-
+        console.warn(`[Coupon][${traceId}] Coupon "${code}" NOT FOUND in Directus.`);
         return null;
     } catch (error) {
         console.error(`[Coupon][${traceId}] Directus Fetch Failed:`, error.response?.data || error.message);
