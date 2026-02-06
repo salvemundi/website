@@ -27,6 +27,7 @@ export interface AuthContextType {
     signup: (userData: SignupData) => Promise<void>;
     refreshUser: () => Promise<void>;
     isLoggingOut: boolean;
+    authError: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,6 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
     const [isMsalInitializing, setIsMsalInitializing] = useState(true);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [authError, setAuthError] = useState<string | null>(null);
     const [authErrorCount, setAuthErrorCount] = useState<number>(0);
     const [authAttempts, setAuthAttempts] = useState<number[]>([]);
     const router = useRouter();
@@ -82,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (success) {
             setAuthErrorCount(0);
+            setAuthError(null);
         } else {
             setAuthErrorCount(prev => prev + 1);
         }
@@ -413,8 +416,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         }
                     }
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error('[AuthProvider] MSAL init/redirect error:', error);
+                setAuthError(error.message || 'Authentication initialization failed');
                 recordAuthAttempt(false);
             } finally {
                 setIsMsalInitializing(false);
@@ -685,6 +689,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 logout,
                 signup,
                 refreshUser,
+                authError,
             }}
         >
             {children}
