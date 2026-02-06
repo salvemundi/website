@@ -674,6 +674,12 @@ async function handleMutation(
             delete forwardHeaders['Cookie'];
         }
 
+        // 3. For auth paths (login/refresh), remove cookies because auth is via request body
+        // This prevents "double auth" error where Directus sees both Cookie + body credentials
+        if (path.includes('auth/') && forwardHeaders['Cookie']) {
+            delete forwardHeaders['Cookie'];
+        }
+
         // Trace token usage for debugging
         const targetUrl = `${DIRECTUS_URL}/${path}${targetSearch}`;
 
