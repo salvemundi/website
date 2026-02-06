@@ -10,7 +10,6 @@ import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { isValidPhoneNumber } from '@/shared/components/PhoneNumberInput';
 import { Users, Heart, CheckCircle2 } from 'lucide-react';
 // react-datepicker removed to prefer native date inputs
-import { format } from 'date-fns';
 
 export default function IntroPage() {
   const { isAuthenticated, user } = useAuth();
@@ -19,7 +18,7 @@ export default function IntroPage() {
     voornaam: '',
     tussenvoegsel: '',
     achternaam: '',
-    geboortedatum: null as Date | null,
+    geboortedatum: '' as string,
     email: '',
     telefoonnummer: user?.phone_number || '',
 
@@ -150,7 +149,7 @@ export default function IntroPage() {
           first_name: form.voornaam,
           middle_name: form.tussenvoegsel || undefined,
           last_name: form.achternaam,
-          date_of_birth: (form.geboortedatum ? format(form.geboortedatum, 'yyyy-MM-dd') : '') as any,
+          date_of_birth: form.geboortedatum,
           email: form.email,
           phone_number: form.telefoonnummer,
           favorite_gif: form.favorieteGif || undefined,
@@ -161,7 +160,7 @@ export default function IntroPage() {
           participantFirstName: form.voornaam,
           participantLastName: form.achternaam,
           phoneNumber: form.telefoonnummer,
-          dateOfBirth: (form.geboortedatum ? format(form.geboortedatum, 'yyyy-MM-dd') : undefined) as any,
+          dateOfBirth: form.geboortedatum || undefined,
           favoriteGif: form.favorieteGif || undefined,
         }).catch(() => { });
       }
@@ -406,8 +405,8 @@ export default function IntroPage() {
                           <input
                             type="date"
                             name="geboortedatum"
-                            value={form.geboortedatum ? new Date(form.geboortedatum).toISOString().split('T')[0] : ''}
-                            onChange={(e) => setForm(prev => ({ ...prev, geboortedatum: e.target.value ? new Date(e.target.value) : null }))}
+                            value={form.geboortedatum}
+                            onChange={handleChange}
                             className="form-input w-full"
                             required
                           />

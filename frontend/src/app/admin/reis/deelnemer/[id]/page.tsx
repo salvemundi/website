@@ -11,6 +11,7 @@ import {
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
+import { formatDateToLocalISO } from '@/shared/lib/utils/date';
 import {
     Loader2,
     AlertCircle,
@@ -111,7 +112,7 @@ export default function DeelnemerDetailPage() {
                 last_name: signupData.last_name,
                 email: signupData.email,
                 phone_number: signupData.phone_number,
-                date_of_birth: signupData.date_of_birth || '',
+                date_of_birth: formatDateToLocalISO(signupData.date_of_birth),
                 id_document_type: (signupData.id_document_type as 'passport' | 'id_card') || '',
                 document_number: signupData.document_number || '',
                 allergies: signupData.allergies || signupData.alergies || '',

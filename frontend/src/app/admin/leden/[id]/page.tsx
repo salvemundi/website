@@ -14,6 +14,7 @@ import {
     Hash,
     Layers
 } from 'lucide-react';
+import { formatDateToLocalISO } from '@/shared/lib/utils/date';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 
 interface Member {
@@ -111,11 +112,13 @@ export default function MemberDetailPage() {
 
     const formatDate = (dateString: string | null) => {
         if (!dateString) return 'Onbekend';
-        return new Date(dateString).toLocaleDateString('nl-NL', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-        });
+        const localDate = formatDateToLocalISO(dateString);
+        const [year, month, day] = localDate.split('-');
+        const monthNames = [
+            "januari", "februari", "maart", "april", "mei", "juni",
+            "juli", "augustus", "september", "oktober", "november", "december"
+        ];
+        return `${parseInt(day)} ${monthNames[parseInt(month) - 1]} ${year}`;
     };
 
     if (authLoading || isLoading) {
@@ -135,7 +138,9 @@ export default function MemberDetailPage() {
         );
     }
 
-    const isMembershipActive = member.membership_expiry ? new Date(member.membership_expiry) > new Date() : false;
+    const isMembershipActive = member.membership_expiry
+        ? new Date(formatDateToLocalISO(member.membership_expiry) + 'T23:59:59') > new Date()
+        : false;
 
     return (
         <div className="pb-20">
