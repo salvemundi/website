@@ -33,6 +33,6 @@ RUN apk add --no-cache curl
 
 # Healthcheck om de deployment script te laten weten dat we klaar zijn
 HEALTHCHECK --interval=30s --timeout=10s --retries=5 --start-period=60s \
-  CMD curl -f http://localhost:8055/server/ping || exit 1
+  CMD curl -s -f http://localhost:8055/server/ping || exit 1
 
 USER node

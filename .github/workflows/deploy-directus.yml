@@ -186,7 +186,6 @@ jobs:
             # Custom vars
             echo "AUTH_MICROSOFT_TENANT_ID=$AUTH_MICROSOFT_TENANT_ID" >> .env
             echo "ENTRA_AUTH_FRONTEND_CLIENT_ID=$ENTRA_AUTH_FRONTEND_CLIENT_ID" >> .env
-            # echo 'AUTH_ENTRA_FIELDS_MAPPING={"email": "userPrincipalName", "first_name": "givenName", "last_name": "surname"}' >> .env
 
             # Cookie & Proxy Security (Hardcoded for Prod stability)
             echo "REFRESH_TOKEN_COOKIE_SECURE=true" >> .env
@@ -207,8 +206,9 @@ jobs:
 
             echo "Waiting for Directus to respond on port 8055..."
             CONTAINER_NAME="directus"
-            for i in {1..30}; do
-              # Gebruik curl (die we in de Dockerfile installeren) voor een directe check
+            # Directus kan lang duren (migrations/boot), we wachten tot 5 min
+            for i in {1..60}; do
+              # Gebruik curl voor een directe check
               if docker exec $CONTAINER_NAME curl -s -f http://localhost:8055/server/ping > /dev/null 2>&1; then
                 echo "✅ Directus is up and running!"
                 exit 0
@@ -221,9 +221,11 @@ jobs:
                 exit 1
               fi
               
-              echo "Waiting... ($i/30)"
+              if (( i % 5 == 0 )); then
+                echo "Still waiting for Directus... ($i/60)"
+              fi
               sleep 5
             done
-            echo "⏳ Start check TIMEOUT!"
+            echo "⏳ Directus start check TIMEOUT!"
             docker logs $CONTAINER_NAME | tail -n 50
             exit 1
