@@ -35,5 +35,10 @@ USER appuser
 EXPOSE 8000
 
 
+
+# Healthcheck for deployment script
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=5s \
+  CMD wget --spider -q http://localhost:8000/api/membership/health || exit 1
+
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 # Triggering rebuild for beta endpoint change
