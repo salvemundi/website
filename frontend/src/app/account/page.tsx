@@ -12,6 +12,7 @@ import PageHeader from "@/widgets/page-header/ui/PageHeader";
 import { PhoneInput } from "@/shared/ui/PhoneInput";
 import NotificationToggle from "@/components/NotificationToggle";
 import { formatDateToLocalISO } from "@/shared/lib/utils/date";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import {
   LogOut,
   CreditCard,
@@ -155,10 +156,25 @@ function QuickLink({
   );
 }
 
+/**
+ * AccountPage - Protected user account dashboard
+ * Auth protection via ProtectedRoute wrapper
+ */
 export default function AccountPage() {
+  return (
+    <ProtectedRoute requireAuth>
+      <AccountPageContent />
+    </ProtectedRoute>
+  );
+}
+
+/**
+ * AccountPageContent - Main account page component
+ * Auth is handled by ProtectedRoute wrapper
+ */
+function AccountPageContent() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading: authLoading, logout, refreshUser, isLoggingOut } =
-    useAuth();
+  const { user, isLoading: authLoading, logout, refreshUser } = useAuth();
   const fileInputRef = useMemo(() => ({ current: null as HTMLInputElement | null }), []);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -189,17 +205,6 @@ export default function AccountPage() {
     if (user?.date_of_birth) setDateOfBirth(formatDateToLocalISO(user.date_of_birth));
     if (user?.phone_number) setPhoneNumber(user.phone_number);
   }, [user]);
-
-
-
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated && !isLoggingOut) {
-      // Store return URL and redirect to our login page
-      // Our login page handles both silent and manual login flows.
-      const returnTo = window.location.pathname + window.location.search;
-      router.replace(`/login?returnTo=${encodeURIComponent(returnTo)}`);
-    }
-  }, [isAuthenticated, authLoading, isLoggingOut, router]);
 
   useEffect(() => {
     if (user?.id) loadEventSignups();

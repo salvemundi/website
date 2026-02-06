@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, Suspense } from 'react';
+import { Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { useSalvemundiTransactions } from '@/shared/lib/hooks/useSalvemundiApi';
 import { format } from 'date-fns';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Transaction } from '@/shared/lib/api/salvemundi';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 function TransactionsContent() {
     const router = useRouter();
@@ -19,13 +20,6 @@ function TransactionsContent() {
         t.payment_status === 'completed' ||
         t.payment_status === 'paid'
     );
-
-    useEffect(() => {
-        if (!authLoading && !user) {
-            const returnTo = window.location.pathname + window.location.search;
-            router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
-        }
-    }, [user, authLoading, router]);
 
     const getInferredTransactionType = (t: Transaction) => {
         if (t.transaction_type) return t.transaction_type;
@@ -237,14 +231,20 @@ function TransactionsContent() {
     );
 }
 
+/**
+ * TransactionsPage - Protected page showing user's transaction history
+ * Auth protection via ProtectedRoute wrapper
+ */
 export default function TransactionsPage() {
     return (
-        <Suspense fallback={
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="text-theme-purple text-xl font-semibold">Laden...</div>
-            </div>
-        }>
-            <TransactionsContent />
-        </Suspense>
+        <ProtectedRoute requireAuth>
+            <Suspense fallback={
+                <div className="flex items-center justify-center min-h-screen">
+                    <div className="text-theme-purple text-xl font-semibold">Laden...</div>
+                </div>
+            }>
+                <TransactionsContent />
+            </Suspense>
+        </ProtectedRoute>
     );
 }
