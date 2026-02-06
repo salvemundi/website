@@ -36,9 +36,10 @@ EXPOSE 8000
 
 
 
-# Healthcheck for deployment script
+
+# Healthcheck using Python (guaranteed available)
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=5s \
-  CMD wget --spider -q http://localhost:8000/api/membership/health || exit 1
+  CMD python -c "import urllib.request; import sys; sys.exit(0) if urllib.request.urlopen('http://localhost:8000/api/membership/health').getcode() == 200 else sys.exit(1)"
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 # Triggering rebuild for beta endpoint change
