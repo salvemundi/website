@@ -31,7 +31,10 @@ jobs:
         run: npm ci
 
       - name: Lint
-        run: npx eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0
+        working-directory: frontend
+        env:
+          ESLINT_USE_FLAT_CONFIG: false
+        run: npx eslint src/**/*.{js,jsx,ts,tsx} --max-warnings 0
 
       - name: Typecheck
         run: npm run typecheck
@@ -40,20 +43,11 @@ jobs:
     name: Backend Syntax Check
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '22'
-
       - name: Syntax Check JS Files
         run: |
-          # Check all JS files excluding node_modules, frontend, and build artifacts
-          find . -name "*.js" \
-            -not -path "*/node_modules/*" \
-            -not -path "./frontend/*" \
-            -not -path "./.next/*" \
-            -not -path "./.git/*" \
-            -exec node --check {} +
+          # Zoek alle JS bestanden in backend mappen en check syntax
+          find . -maxdepth 2 -name "*.js" -not -path "./node_modules/*" -not -path "./frontend/*" -exec node --check {} +
