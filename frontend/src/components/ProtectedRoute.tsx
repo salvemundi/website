@@ -13,6 +13,7 @@ interface ProtectedRouteProps {
     requireAuth?: boolean;
     requireRoles?: string[];
     requirePermissions?: string[];
+    /** @deprecated Redirects are no longer supported. The component will always use the overlay strategy. */
     fallback?: 'overlay' | 'redirect';
     skeleton?: ReactNode;
 }
@@ -29,8 +30,8 @@ interface ProtectedRouteProps {
  * Features:
  * - Optimistic rendering with cached user data
  * - Background authorization checks
- * - In-place overlays (no redirects)
- * - Configurable fallback behavior
+ * - In-place overlays (Seamless Auth Architecture - Zero Redirects)
+ * - Configurable fallback behavior (Deprecated: always uses overlay)
  */
 export default function ProtectedRoute({
     children,
@@ -53,10 +54,10 @@ export default function ProtectedRoute({
     // Provide backward compatibility for existing login patterns that expect hard redirects
     useEffect(() => {
         if (checkState === 'unauthorized' && fallback === 'redirect' && authStatus === 'unauthenticated') {
-            const returnTo = typeof window !== 'undefined'
-                ? window.location.pathname + window.location.search
-                : '/';
-            router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+            // [ARCHITECTURAL CHANGE] - Seamless Auth
+            // We no longer redirect to /login. Instead, we enforce the overlay strategy.
+            // This ensures users stay on the context they are trying to access.
+            // The fallback prop is ignored for logic but kept for type compatibility.
         }
     }, [checkState, fallback, authStatus, router]);
 
@@ -126,9 +127,8 @@ export default function ProtectedRoute({
     }
 
     if (checkState === 'unauthorized') {
-        if (fallback === 'redirect') {
-            return <>{skeleton}</>;
-        }
+        // [ARCHITECTURAL CHANGE] - Even if fallback='redirect' was requested, 
+        // we now enforce the overlay to maintain the "Seamless Auth" experience.
 
         // Default: In-place overlay (RECOMMENDED)
         const overlayType = authStatus === 'unauthenticated' ? 'login' : 'unauthorized';
