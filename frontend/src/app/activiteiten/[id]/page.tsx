@@ -778,10 +778,20 @@ export default function EventDetailPage() {
                                 <Info className="h-6 w-6 text-theme-purple dark:text-theme-white" />
                                 Over dit evenement
                             </h2>
-                            <div
-                                className="prose dark:prose-invert max-w-none text-theme-purple dark:text-theme-white/90 flex-grow"
-                                dangerouslySetInnerHTML={{ __html: event.description }}
-                            />
+                            {/*
+                              Preserve newlines for plain text coming from Directus while still
+                              allowing HTML descriptions to be rendered via dangerouslySetInnerHTML.
+                            */}
+                            { /<\/?[a-z][\s\S]*>/i.test(event.description) ? (
+                                <div
+                                    className="prose dark:prose-invert max-w-none text-theme-purple dark:text-theme-white/90 flex-grow"
+                                    dangerouslySetInnerHTML={{ __html: event.description }}
+                                />
+                            ) : (
+                                <div className="prose dark:prose-invert max-w-none text-theme-purple dark:text-theme-white/90 flex-grow whitespace-pre-line">
+                                    {event.description}
+                                </div>
+                            )}
                         </div>
                     )}
 
