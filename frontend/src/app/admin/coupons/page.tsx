@@ -9,18 +9,7 @@ import { Ticket, Plus, Percent, CheckCircle, XCircle, Trash2 } from 'lucide-reac
 import { isUserAuthorized, getMergedTokens, normalizeCommitteeName } from '@/shared/lib/committee-utils';
 import { siteSettingsApi } from '@/shared/lib/api/salvemundi';
 import NoAccessPage from '../no-access/page';
-
-interface Coupon {
-    id: number;
-    coupon_code: string;
-    discount_type: 'fixed' | 'percentage';
-    discount_value: number;
-    usage_limit: number | null;
-    usage_count: number;
-    valid_from: string | null;
-    valid_until: string | null;
-    is_active: boolean;
-}
+import { getComputedCouponStatus, type Coupon } from '@/shared/lib/coupon-utils';
 
 export default function AdminCouponsPage() {
     const router = useRouter();
@@ -180,15 +169,22 @@ export default function AdminCouponsPage() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center">
-                                                {coupon.is_active ? (
-                                                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                        <CheckCircle className="h-3 w-3" /> Actief
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                        <XCircle className="h-3 w-3" /> Inactief
-                                                    </span>
-                                                )}
+                                                {(() => {
+                                                    const status = getComputedCouponStatus(coupon);
+                                                    return (
+                                                        <span
+                                                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${status.color}`}
+                                                            title={status.description}
+                                                        >
+                                                            {status.type === 'active' ? (
+                                                                <CheckCircle className="h-3 w-3" />
+                                                            ) : (
+                                                                <XCircle className="h-3 w-3" />
+                                                            )}
+                                                            {status.label}
+                                                        </span>
+                                                    );
+                                                })()}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right">
                                                 <button
