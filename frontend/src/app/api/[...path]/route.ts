@@ -100,12 +100,25 @@ async function isApiBypass(auth: string | null, options?: { cookie?: string | nu
 
 function getProxyHeaders(request: NextRequest): Record<string, string> {
     const headers: Record<string, string> = {};
+    const skipHeaders = [
+        'host',
+        'content-length',
+        'content-type',
+        'cookie',
+        'authorization',
+        'connection',
+        'upgrade',
+        'transfer-encoding',
+        'keep-alive'
+    ];
+
     request.headers.forEach((value, key) => {
-        if (['host', 'content-length', 'content-type', 'cookie', 'authorization'].includes(key.toLowerCase())) return;
+        if (skipHeaders.includes(key.toLowerCase())) return;
         headers[key] = value;
     });
     return headers;
 }
+
 
 export async function GET(
     request: NextRequest,
@@ -503,11 +516,9 @@ async function handleMutation(
 
         // Prepare outgoing request
         const forwardHeaders = getProxyHeaders(request);
+        const originalContentType = request.headers.get('Content-Type');
 
-    let targetSearch = url.search;
-    const originalContentType = request.headers.get('Content-Type');
-
-    // Special-case: ensure sticker creations include the logged-in user's id explicitly
+        // Special-case: ensure sticker creations include the logged-in user's id explicitly
         // If we have an authHeader and the incoming request is creating/updating Stickers
         // and the body is JSON, fetch /users/me with the caller token and inject
         // `user_created` into the body so Directus will set the relation correctly.
@@ -543,46 +554,51 @@ async function handleMutation(
             }
         }
 
-        if (canBypass && API_SERVICE_TOKEN) {
-            forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
-            // If we are bypassing, and original request had access_token in URL, remove it so Directus uses our Service Token header
-            if (url.searchParams.has('access_token')) {
-                const newParams = new URLSearchParams(url.searchParams);
-                newParams.delete('access_token');
-                const newSearch = newParams.toString();
-                targetSearch = newSearch ? `?${newSearch}` : '';
-            }
-        } else if (authHeader && (isUserTokenValid || isAuthPath || needsSpecialGuardCheck)) {
-            forwardHeaders['Authorization'] = authHeader;
-        } else if (authHeader && !isUserTokenValid && isAllowed && !needsSpecialGuardCheck) {
-            console.log(`[Directus Proxy] Stripping invalid token for public mutation: ${path}`);
-            // Header is not added
-        }
-
-    const targetUrl = `${DIRECTUS_URL}/${path}${targetSearch}`;
         if (originalContentType) forwardHeaders['Content-Type'] = originalContentType;
         if (cookie) forwardHeaders['Cookie'] = cookie;
+
+        const targetUrl = `${DIRECTUS_URL}/${path}${url.search}`;
 
         // Auto-auth for specific public forms (Intro)
         if (!authHeader && API_SERVICE_TOKEN && (path.startsWith('items/intro_signups') || path.startsWith('items/intro_parent_signups'))) {
             forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
         }
 
-        // DEBUG: Log everything for auth/refresh if it's failing
-        if (path.includes('auth/')) {
-            console.log(`[Directus Proxy] PROXING AUTH: ${method} ${targetUrl} | Headers: ${JSON.stringify(Object.keys(forwardHeaders))} | Body size: ${rawBody?.byteLength || 0}`);
+        if (canBypass && API_SERVICE_TOKEN) {
+            forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
+        } else if (authHeader && (isUserTokenValid || isAuthPath || needsSpecialGuardCheck)) {
+            // Only forward authorization if it's not a refresh request, or if it's a valid token.
+            // Directus /auth/refresh doesn't need (and sometimes dislikes) an expired Bearer token.
+            if (!path.includes('auth/refresh')) {
+                forwardHeaders['Authorization'] = authHeader;
+            }
         }
+
+        // Trace token usage for debugging
+        if (path.includes('auth/')) {
+            console.log(`[Directus Proxy] PROXING AUTH: ${method} ${targetUrl} | Body size: ${rawBody?.byteLength || 0}`);
+        }
+
 
         const response = await fetch(targetUrl, {
             method,
             headers: forwardHeaders,
-            body: rawBody && rawBody.byteLength > 0 ? new Uint8Array(rawBody) : undefined,
-            redirect: 'follow'
+            body: rawBody && rawBody.byteLength > 0 ? rawBody : undefined,
+            redirect: 'follow',
+            // @ts-ignore - node-fetch / undici extension
+            duplex: 'half'
         });
+
 
         if (!response.ok) {
             const errorText = await response.text().catch(() => 'No error body');
-            console.error(`[Directus Proxy] Upstream ${method} ${path} FAILED: Status ${response.status} | Body: ${errorText.slice(0, 200)}`);
+
+            // Detailed logging for auth failures
+            if (path.includes('auth/')) {
+                console.error(`[Directus Proxy] AUTH UPSTREAM FAILED: ${method} ${path} | Status ${response.status} | Body: ${errorText.slice(0, 500)}`);
+            } else {
+                console.error(`[Directus Proxy] Upstream ${method} ${path} FAILED: Status ${response.status} | Body: ${errorText.slice(0, 200)}`);
+            }
 
             if (response.status === 403 && (path.startsWith('items/committees') || path.startsWith('items/committee_members'))) {
                 console.log(`[Directus Proxy] Softening 403 for ${method} ${path} to avoid browser console error.`);
@@ -622,7 +638,12 @@ async function handleMutation(
         }
 
     } catch (error: any) {
-        console.error(`[Directus Proxy] ${method} ${path} critical failure loop/exception:`, error);
+        console.error(`[Directus Proxy] ${method} ${path} CRITICAL FAILURE:`, {
+            message: error.message,
+            stack: error.stack,
+            path: path,
+            method: method
+        });
         return NextResponse.json({
             error: 'Directus Proxy Mutation Error',
             message: error.message,
@@ -631,6 +652,7 @@ async function handleMutation(
         }, { status: 500 });
     }
 }
+
 
 export async function POST(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
     return handleMutation('POST', request, context);
