@@ -360,6 +360,7 @@ export async function refreshAccessToken(refreshToken: string): Promise<LoginRes
             },
             body: JSON.stringify({
                 refresh_token: refreshToken,
+                mode: 'json',
             }),
         });
 
