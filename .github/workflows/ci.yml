@@ -13,9 +13,6 @@ jobs:
   frontend-checks:
     name: Frontend Lint & Typecheck
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,17 +20,21 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22' # Verhoogd voor Directus SDK compatibiliteit
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install Dependencies
+        working-directory: frontend
         run: npm ci
 
       - name: Lint
-        run: npm run lint
+        working-directory: frontend
+        # We voegen --prefix toe om Next.js expliciet te vertellen waar het project staat
+        run: npm run lint -- --dir .
 
       - name: Typecheck
+        working-directory: frontend
         run: npm run typecheck
 
   backend-checks:
@@ -46,7 +47,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Syntax Check JS Files
         run: |
