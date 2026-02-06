@@ -35,8 +35,8 @@ jobs:
         env:
           ESLINT_USE_FLAT_CONFIG: false
         run: |
-          # Gebruik aanhalingstekens om glob-expansion door de shell te voorkomen
-          npx eslint "src/**/*.{js,jsx,ts,tsx}" "." --max-warnings 0 --ignore-pattern .next --ignore-pattern node_modules
+          # Lint alleen de src map om ruis van config bestanden te voorkomen
+          npx eslint "src/**/*.{js,jsx,ts,tsx}" --max-warnings 0
 
       - name: Typecheck
         run: npm run typecheck
@@ -52,3 +52,52 @@ jobs:
       - name: Syntax Check JS Files
         run: |
           find . -maxdepth 2 -name "*.js" -not -path "*/node_modules/*" -not -path "./frontend/*" -exec node --check {} +
+
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      admin_api: ${{ steps.filter.outputs.admin_api }}
+      payment_api: ${{ steps.filter.outputs.payment_api }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'frontend/**'
+            admin_api:
+              - 'admin-api/**'
+            payment_api:
+              - 'payment-api/**'
+
+  deploy-frontend:
+    needs: [frontend-checks, changes]
+    if: needs.changes.outputs.frontend == 'true'
+    uses: ./.github/workflows/frontend-deploy.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+  deploy-admin-api:
+    needs: [backend-checks, changes]
+    if: needs.changes.outputs.admin_api == 'true'
+    uses: ./.github/workflows/deploy-admin-api.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+
+  deploy-payment-api:
+    needs: [backend-checks, changes]
+    if: needs.changes.outputs.payment_api == 'true'
+    uses: ./.github/workflows/deploy-payment.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
