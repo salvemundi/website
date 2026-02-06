@@ -77,11 +77,11 @@ jobs:
       - uses: dorny/paths-filter@v3
         id: filter
         with:
-          base: ${{ github.event.before }}
           filters: |
             frontend:
               - 'frontend/**'
               - '.github/workflows/deploy-frontend.yml'
+              - '.github/workflows/ci.yml'
             admin_api:
               - 'admin-api/**'
               - '.github/workflows/deploy-admin-api.yml'
@@ -94,6 +94,7 @@ jobs:
             directus:
               - 'directus/**'
               - '.github/workflows/deploy-directus.yml'
+              - '.github/workflows/ci.yml'
             email_api:
               - 'email-api/**'
               - '.github/workflows/deploy-email.yml'
