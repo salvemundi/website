@@ -30,8 +30,7 @@ jobs:
 
       - name: Lint
         working-directory: frontend
-        # We voegen --prefix toe om Next.js expliciet te vertellen waar het project staat
-        run: npm run lint -- --dir .
+        run: npx next lint -d .
 
       - name: Typecheck
         working-directory: frontend
