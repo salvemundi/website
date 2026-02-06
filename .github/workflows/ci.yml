@@ -34,7 +34,9 @@ jobs:
         working-directory: frontend
         env:
           ESLINT_USE_FLAT_CONFIG: false
-        run: npx eslint src/**/*.{js,jsx,ts,tsx} --max-warnings 0
+        run: |
+          # Gebruik aanhalingstekens om glob-expansion door de shell te voorkomen
+          npx eslint "src/**/*.{js,jsx,ts,tsx}" "." --max-warnings 0 --ignore-pattern .next --ignore-pattern node_modules
 
       - name: Typecheck
         run: npm run typecheck
@@ -49,5 +51,4 @@ jobs:
           node-version: '22'
       - name: Syntax Check JS Files
         run: |
-          # Zoek alle JS bestanden in backend mappen en check syntax
-          find . -maxdepth 2 -name "*.js" -not -path "./node_modules/*" -not -path "./frontend/*" -exec node --check {} +
+          find . -maxdepth 2 -name "*.js" -not -path "*/node_modules/*" -not -path "./frontend/*" -exec node --check {} +
