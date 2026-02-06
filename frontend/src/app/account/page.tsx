@@ -197,7 +197,7 @@ export default function AccountPage() {
       // Store return URL and redirect to our login page
       // Our login page handles both silent and manual login flows.
       const returnTo = window.location.pathname + window.location.search;
-      router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+      router.replace(`/login?returnTo=${encodeURIComponent(returnTo)}`);
     }
   }, [isAuthenticated, authLoading, isLoggingOut, router]);
 
