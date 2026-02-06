@@ -37,7 +37,8 @@ export default function IntroLayout({ children }: { children: React.ReactNode })
             {isBlogOrPlanning && (
                 <Link
                     href="/"
-                    className="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-2 bg-[var(--bg-card)] hover:bg-gradient-theme hover:text-white text-theme-purple rounded-full shadow-lg hover:shadow-xl transition-all duration-300 font-semibold text-sm group"
+                    className="fixed right-4 z-50 flex items-center gap-2 px-4 py-2 bg-[var(--bg-card)] hover:bg-gradient-theme hover:text-white text-theme-purple rounded-full shadow-lg hover:shadow-xl transition-all duration-300 font-semibold text-sm group"
+                    style={{ top: 'calc(var(--header-height, 0px) + 1rem)' }}
                 >
                     <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
