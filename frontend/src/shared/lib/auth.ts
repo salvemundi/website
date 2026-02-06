@@ -246,14 +246,30 @@ export async function signupWithPassword(userData: SignupData): Promise<LoginRes
 // Fetch current user details
 export async function fetchUserDetails(token: string): Promise<User | null> {
     try {
-    // No development mock - require real token and backend response
+        // No development mock - require real token and backend response
 
-        // Use directusFetch to gain automatic token refresh benefit
-        const rawUser = await directusFetch<any>('/users/me?fields=*,membership_expiry,membership_status,entra_id,date_of_birth', {
+        // We use native fetch here instead of directusFetch to:
+        // 1. Avoid interference from directusFetch's automatic token logic (localStorage fallback)
+        // 2. Pass the token via query param to bypass potential header stripping in the network layer/middleware
+        // The Proxy (route.ts) will detect this query param, convert it to an Authorization header, 
+        // and remove it from the URL before forwarding to Directus.
+        const response = await fetch(`${directusUrl}/users/me?fields=*,membership_expiry,membership_status,entra_id,date_of_birth&access_token=${token}`, {
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                // Explicitly set cache-control to ensure we get fresh data
+                'Cache-Control': 'no-cache'
             },
         });
+
+        if (!response.ok) {
+            // If 401 or similar, the token is invalid
+            console.warn('[fetchUserDetails] Token validation failed:', response.status);
+            return null;
+        }
+
+        const data = await response.json();
+        // Directus returns { data: ... }
+        const rawUser = data.data || data;
 
         if (!rawUser) {
             return null;

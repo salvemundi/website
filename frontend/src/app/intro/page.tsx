@@ -239,7 +239,7 @@ export default function IntroPage() {
                       <ul className="list-disc list-inside mb-4 text-base lg:text-lg">
                         <li className="mb-1"><strong>Legendarische Feesten:</strong> Ontdek het Eindhovense nachtleven met mensen die dezelfde passie delen.</li>
                         <li className="mb-1"><strong>Connecties:</strong> Leer de ouderejaars kennen; zij weten precies hoe je die lastige vakken straks haalt.</li>
-                        <li className="mb-1"><strong>Gezelligheid boven alles:</strong> Geen ontgroening, maar een warm welkom bij dé studievereniging van Fontys ICT.</li>
+                        <li className="mb-1"><strong>Gezelligheid boven alles:</strong> Geen ontgroening, maar een warm welkom bij dè studievereniging van Fontys ICT.</li>
                       </ul>
 
                       <h3 className="font-semibold">Schrijf je nu in!</h3>
