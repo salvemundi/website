@@ -28,7 +28,7 @@ const allowedCollections = [
 ];
 
 function getAuthToken(request: NextRequest, url: URL): string | null {
-    let auth = request.headers.get('Authorization');
+    let auth = request.headers.get('Authorization') || request.headers.get('authorization');
     if (!auth && url.searchParams.has('access_token')) {
         auth = `Bearer ${url.searchParams.get('access_token')}`;
     }
@@ -225,9 +225,23 @@ export async function GET(
             }
 
         } else if (auth && (isUserTokenValid || isAuthPath || needsSpecialGuardCheck || isAllowed)) {
-            // Never send Authorization header for auth paths like /auth/refresh
-            if (!isAuthPath) {
+            // Never send Authorization header for auth paths like /auth/refresh or /auth/login
+            // as Directus expects tokens in the body and might fail if an expired/duplicate token is in the header.
+            // However, /users/me specifically MUST have the Authorization header.
+            const isIdentityPath = path.startsWith('users/me');
+            const isStrictAuthPath = (path.includes('auth/') || path.startsWith('auth/')) && !isIdentityPath;
+
+            if (!isStrictAuthPath || isIdentityPath) {
                 forwardHeaders['Authorization'] = auth;
+
+                // If we are forwarding the token in the header, remove it from the query params
+                // to avoid 400 Bad Request errors from Directus seeing it in both places.
+                if (url.searchParams.has('access_token')) {
+                    const newParams = new URLSearchParams(url.searchParams);
+                    newParams.delete('access_token');
+                    const newSearch = newParams.toString();
+                    targetSearch = newSearch ? `?${newSearch}` : '';
+                }
             }
 
         } else if (auth && !isUserTokenValid && isAllowed && !needsSpecialGuardCheck) {
@@ -593,12 +607,17 @@ async function handleMutation(
             // For auth paths like /auth/refresh, we must NOT send a Bearer token.
             // Directus expects the refresh_token in the body and adding an Authorization
             // header can cause it to ignore the body or fail with a 500/401.
-            if (!isAuthPath) {
+            const isIdentityPath = path.startsWith('users/me');
+            if (!isAuthPath || isIdentityPath) {
                 forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
             }
         } else if (authHeader && (isUserTokenValid || isAuthPath || needsSpecialGuardCheck || isAllowed)) {
-            // Only forward authorization if it's not a refresh request.
-            if (!path.includes('auth/refresh')) {
+            // Only forward authorization if it's not a refresh/login request.
+            // However, /users/me MUST have it.
+            const isIdentityPath = path.startsWith('users/me');
+            const isStrictAuthPath = (path.includes('auth/') || path.startsWith('auth/')) && !isIdentityPath;
+
+            if (!isStrictAuthPath || isIdentityPath) {
                 forwardHeaders['Authorization'] = authHeader;
             }
         }
