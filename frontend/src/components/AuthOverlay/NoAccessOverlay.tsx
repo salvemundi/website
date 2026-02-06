@@ -58,12 +58,12 @@ export default function NoAccessOverlay({
             aria-labelledby="no-access-title"
             aria-modal="true"
         >
-            <div className="relative w-full max-w-md mx-4 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 sm:p-8 transform transition-all">
+            <div className="relative w-full max-w-md mx-4 bg-theme-white dark:bg-surface-dark rounded-2xl shadow-card-elevated p-6 sm:p-8 transform transition-all border border-theme-purple/10 dark:border-white/5">
                 {/* Close button */}
                 {dismissable && onDismiss && (
                     <button
                         onClick={onDismiss}
-                        className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                        className="absolute top-4 right-4 p-2 text-theme-text-muted hover:text-theme-text dark:hover:text-white transition-colors"
                         aria-label="Sluiten"
                     >
                         <ShieldX className="w-5 h-5" />
@@ -80,13 +80,13 @@ export default function NoAccessOverlay({
                 {/* Title */}
                 <h2
                     id="no-access-title"
-                    className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-3"
+                    className="text-2xl font-bold text-center text-theme-text dark:text-white mb-3"
                 >
                     Geen toegang
                 </h2>
 
                 {/* Message */}
-                <p className="text-center text-gray-600 dark:text-gray-400 mb-6">
+                <p className="text-center text-theme-text-muted dark:text-theme-text-light mb-6">
                     {message || defaultMessage}
                 </p>
 
@@ -102,7 +102,7 @@ export default function NoAccessOverlay({
 
                     <button
                         onClick={handleRequestAccess}
-                        className="w-full px-6 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 font-semibold rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 flex items-center justify-center gap-2"
+                        className="w-full px-6 py-3 bg-theme-white dark:bg-white/5 text-theme-text dark:text-theme-text-light border border-theme-purple/20 dark:border-white/10 font-semibold rounded-full hover:bg-theme-purple/5 dark:hover:bg-white/10 transition-all duration-300 flex items-center justify-center gap-2"
                     >
                         <Mail className="w-5 h-5" />
                         Vraag toegang aan
@@ -110,7 +110,7 @@ export default function NoAccessOverlay({
 
                     <button
                         onClick={handleGoHome}
-                        className="w-full px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 font-medium transition-colors flex items-center justify-center gap-2"
+                        className="w-full px-6 py-3 text-theme-text-muted hover:text-theme-text dark:text-theme-text-light dark:hover:text-white font-medium transition-colors flex items-center justify-center gap-2"
                     >
                         <Home className="w-5 h-5" />
                         Terug naar home
@@ -118,7 +118,7 @@ export default function NoAccessOverlay({
                 </div>
 
                 {dismissable && (
-                    <p className="text-center text-sm text-gray-500 dark:text-gray-500 mt-4">
+                    <p className="text-center text-sm text-theme-text-muted dark:text-theme-text-light/70 mt-4">
                         Je kunt deze melding sluiten om op de pagina te blijven
                     </p>
                 )}

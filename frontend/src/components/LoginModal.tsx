@@ -145,11 +145,11 @@ export default function LoginModal({
                 }
             }}
         >
-            <div className="relative w-full max-w-md mx-4 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 sm:p-8 transform transition-all animate-in zoom-in-95 duration-200">
+            <div className="relative w-full max-w-md mx-4 bg-theme-white dark:bg-surface-dark rounded-2xl shadow-card-elevated p-6 sm:p-8 transform transition-all animate-in zoom-in-95 duration-200 border border-theme-purple/10 dark:border-white/5">
                 {/* Close button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                    className="absolute top-4 right-4 p-2 text-theme-text-muted hover:text-theme-text dark:hover:text-white transition-colors rounded-full hover:bg-theme-purple/5 dark:hover:bg-white/5"
                     aria-label="Sluiten"
                 >
                     <X className="w-5 h-5" />
@@ -177,19 +177,19 @@ export default function LoginModal({
                 {/* Title */}
                 <h2
                     id="login-modal-title"
-                    className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-3"
+                    className="text-2xl font-bold text-center text-theme-text dark:text-white mb-3"
                 >
                     {getModeTitle()}
                 </h2>
 
                 {/* Message */}
-                <p className="text-center text-gray-600 dark:text-gray-400 mb-6">
+                <p className="text-center text-theme-text-muted dark:text-theme-text-light mb-6">
                     {getModeMessage()}
                 </p>
 
                 {/* Error message */}
                 {error && !popupBlocked && (
-                    <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
+                    <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-lg flex items-start gap-2">
                         <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
                         <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
                     </div>
@@ -197,7 +197,7 @@ export default function LoginModal({
 
                 {/* Popup Blocked Warning */}
                 {popupBlocked && (
-                    <div className="mb-4 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                    <div className="mb-4 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 rounded-lg">
                         <div className="flex items-start gap-2 mb-3">
                             <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                             <div>
@@ -246,14 +246,14 @@ export default function LoginModal({
                     {popupBlocked && (
                         <button
                             onClick={handleRedirectLogin}
-                            className="w-full px-6 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 font-semibold rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300"
+                            className="w-full px-6 py-3 bg-theme-white dark:bg-white/5 text-theme-text dark:text-theme-text-light border border-theme-purple/20 dark:border-white/10 font-semibold rounded-full hover:bg-theme-purple/5 dark:hover:bg-white/10 transition-all duration-300"
                         >
                             Gebruik redirect login
                         </button>
                     )}
 
                     {/* Info text */}
-                    <p className="text-center text-sm text-gray-500 dark:text-gray-500">
+                    <p className="text-center text-sm text-theme-text-muted dark:text-theme-text-light/70">
                         {popupBlocked
                             ? 'De redirect brengt je terug naar deze pagina na het inloggen'
                             : 'Je blijft op deze pagina tijdens het inloggen'
