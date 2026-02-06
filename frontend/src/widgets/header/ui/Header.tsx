@@ -158,7 +158,7 @@ const Header: React.FC = () => {
         <header
             ref={headerRef}
             className="sticky top-0 z-50 w-full bg-[var(--bg-main)]/98 backdrop-blur-2xl"
-            style={{ 
+            style={{
                 marginTop: 'calc(-1 * env(safe-area-inset-top))',
                 paddingTop: 'env(safe-area-inset-top)'
             }}
@@ -204,6 +204,7 @@ const Header: React.FC = () => {
                                 key={link.href}
                                 href={link.href}
                                 className={getLinkClassName(link.href)}
+                                prefetch={false}
                             >
                                 <span>{link.name}</span>
                                 <span
@@ -216,6 +217,7 @@ const Header: React.FC = () => {
                             </Link>
                         ))}
                     </nav>
+
 
                     <div className="flex items-center gap-3">
                         {isCommitteeMember && (
