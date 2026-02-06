@@ -37,7 +37,6 @@ jobs:
         run: |
           # Lint alleen de src map om ruis van config bestanden te voorkomen
           npx eslint "src/**/*.{js,jsx,ts,tsx}" --max-warnings 0
-
       - name: Typecheck
         run: npm run typecheck
 
@@ -77,11 +76,11 @@ jobs:
       - uses: dorny/paths-filter@v3
         id: filter
         with:
+          base: ${{ github.event.before }}
           filters: |
             frontend:
               - 'frontend/**'
               - '.github/workflows/deploy-frontend.yml'
-              - '.github/workflows/ci.yml'
             admin_api:
               - 'admin-api/**'
               - '.github/workflows/deploy-admin-api.yml'
@@ -94,7 +93,6 @@ jobs:
             directus:
               - 'directus/**'
               - '.github/workflows/deploy-directus.yml'
-              - '.github/workflows/ci.yml'
             email_api:
               - 'email-api/**'
               - '.github/workflows/deploy-email.yml'

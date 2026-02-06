@@ -43,7 +43,7 @@ RUN echo "--- Extension Directory Contents (ROOT) ---" && \
 
 
 # Healthcheck om de deployment script te laten weten dat we klaar zijn
-HEALTHCHECK --interval=30s --timeout=10s --retries=5 --start-period=30s \
-  CMD node -e "const http = require('http'); const req = http.get('http://localhost:8055/server/ping', (res) => { if (res.statusCode === 200) { process.exit(0); } else { process.exit(1); } }); req.on('error', (err) => { process.exit(1); });"
+HEALTHCHECK --interval=30s --timeout=10s --retries=5 --start-period=60s \
+  CMD wget --spider -q http://localhost:8055/server/ping || exit 1
 
 USER node
