@@ -1,13 +1,7 @@
 name: Deploy Admin API Service
 
 on:
-  workflow_run:
-    workflows: ["CI"]
-    types: [completed]
-    branches:
-      - "Development"
-      - "main"
-  # Paths filters are not supported in workflow_run, but CI handles the gateway.
+  workflow_call:
   workflow_dispatch:
 
 env:
@@ -20,7 +14,7 @@ concurrency:
 
 jobs:
   build-and-deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ true }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
