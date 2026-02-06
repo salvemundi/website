@@ -6,14 +6,20 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
         const id = params.id;
         const directusBase = (process.env.DIRECTUS_URL || process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://admin.salvemundi.nl').replace(/\/$/, '');
 
-        // Prefer client-supplied Authorization header, fall back to server API key if configured
-        const clientAuth = request.headers.get('authorization');
+        // Prefer client-supplied Authorization header, then access_token query param, fall back to server API key
+        const reqUrl = new URL(request.url);
+        let clientAuth = request.headers.get('authorization');
+        if (!clientAuth && reqUrl.searchParams.has('access_token')) {
+            clientAuth = `Bearer ${reqUrl.searchParams.get('access_token')}`;
+        }
+
         const serverKey = process.env.DIRECTUS_API_KEY || process.env.NEXT_PUBLIC_DIRECTUS_API_KEY;
         const authHeader = clientAuth || (serverKey ? `Bearer ${serverKey}` : undefined);
 
+
         // Preserve query string (e.g., width/quality/access_token)
-        const reqUrl = new URL(request.url);
         const search = reqUrl.search || '';
+
 
         const target = `${directusBase}/assets/${encodeURIComponent(id)}${search}`;
 
@@ -21,7 +27,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
             method: 'GET',
             headers: {
                 ...(authHeader ? { Authorization: authHeader } : {})
-            }
+            },
+            cache: 'no-store' // Ensure we don't cache assets on the server side
         });
 
         // Stream bytes back to the client, preserving content-type

@@ -130,7 +130,10 @@ export async function GET(
     const auth = getAuthToken(request, url);
 
     try {
-        const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
+        const isAllowed = allowedCollections.some(c =>
+            path === `items/${c}` || path.startsWith(`items/${c}/`) ||
+            path === c || path.startsWith(`${c}/`)
+        );
         const isAuthPath =
             path.startsWith('auth/') ||
             path.startsWith('users/me') ||
@@ -201,7 +204,13 @@ export async function GET(
 
 
 
-        const forwardHeaders = getProxyHeaders(request);
+        const forwardHeaders: Record<string, string> = {
+            ...getProxyHeaders(request),
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-Forwarded-For': getClientIp(request) || '',
+            'X-Forwarded-Proto': 'https',
+        };
+
 
         let targetSearch = url.search;
 
@@ -215,8 +224,11 @@ export async function GET(
                 targetSearch = newSearch ? `?${newSearch}` : '';
             }
 
-        } else if (auth && (isUserTokenValid || isAuthPath || needsSpecialGuardCheck)) {
-            forwardHeaders['Authorization'] = auth;
+        } else if (auth && (isUserTokenValid || isAuthPath || needsSpecialGuardCheck || isAllowed)) {
+            // Never send Authorization header for auth paths like /auth/refresh
+            if (!isAuthPath) {
+                forwardHeaders['Authorization'] = auth;
+            }
 
         } else if (auth && !isUserTokenValid && isAllowed && !needsSpecialGuardCheck) {
             console.log(`[Directus Proxy] Stripping invalid token for public path: ${path}`);
@@ -283,12 +295,14 @@ export async function GET(
             const safe = data === null ? {} : data;
             return NextResponse.json(safe, { status: response.status });
         } else {
-            const text = await response.text().catch(() => '');
-            return new Response(text, {
+            // Use arrayBuffer for non-JSON content to preserve binary data (images, files, etc.)
+            const buffer = await response.arrayBuffer().catch(() => new ArrayBuffer(0));
+            return new Response(buffer, {
                 status: response.status,
-                headers: { 'Content-Type': responseContentType || 'text/plain' }
+                headers: { 'Content-Type': responseContentType || 'application/octet-stream' }
             });
         }
+
 
     } catch (error: any) {
         console.error(`[Directus Proxy] GET ${path} critical failure loop/exception:`, error);
@@ -340,7 +354,11 @@ async function handleMutation(
         }
 
 
-        const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
+        const isAllowed = allowedCollections.some(c =>
+            path === `items/${c}` || path.startsWith(`items/${c}/`) ||
+            path === c || path.startsWith(`${c}/`)
+        );
+
         const isAuthPath =
             path.startsWith('auth/') ||
             path.startsWith('users/me') ||
@@ -514,9 +532,16 @@ async function handleMutation(
             canBypass = false;
         }
 
-        // Prepare outgoing request
-        const forwardHeaders = getProxyHeaders(request);
-        const originalContentType = request.headers.get('Content-Type');
+        // Forward essential headers
+        const forwardHeaders: Record<string, string> = {
+            ...getProxyHeaders(request),
+            'Content-Type': request.headers.get('content-type') || 'application/json',
+            'Accept': request.headers.get('accept') || 'application/json',
+            'X-Requested-With': 'XMLHttpRequest', // Helps with some Directus security configs
+            'X-Forwarded-For': getClientIp(request) || '',
+            'X-Forwarded-Proto': 'https',
+        };
+        const originalContentType = request.headers.get('Content-Type'); // Keep this for sticker injection check
 
         // Special-case: ensure sticker creations include the logged-in user's id explicitly
         // If we have an authHeader and the incoming request is creating/updating Stickers
@@ -571,7 +596,7 @@ async function handleMutation(
             if (!isAuthPath) {
                 forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
             }
-        } else if (authHeader && (isUserTokenValid || isAuthPath || needsSpecialGuardCheck)) {
+        } else if (authHeader && (isUserTokenValid || isAuthPath || needsSpecialGuardCheck || isAllowed)) {
             // Only forward authorization if it's not a refresh request.
             if (!path.includes('auth/refresh')) {
                 forwardHeaders['Authorization'] = authHeader;

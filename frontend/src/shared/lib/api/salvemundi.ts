@@ -809,7 +809,7 @@ export const siteSettingsApi = {
             const fields = includeAuthorizedTokens
                 ? ['id', 'page', 'show', 'disabled_message', 'authorized_tokens']
                 : ['id', 'page', 'show', 'disabled_message'];
-            
+
             const params: any = {
                 fields,
                 limit: 1
@@ -824,7 +824,7 @@ export const siteSettingsApi = {
                 `/items/site_settings?${query}`,
                 { headers: { 'X-Suppress-Log': 'true' } }
             );
-            
+
             if (Array.isArray(data)) {
                 return data[0] || null;
             }
@@ -1121,9 +1121,11 @@ export function getImageUrl(imageId: string | undefined | any, options?: { quali
     // Always use /api proxy which handles authentication via headers
     const baseUrl = '/api';
 
-    // Build query parameters for image optimization only
-    // Note: Authentication is handled by the /api/assets proxy via Authorization header
+    // Build query parameters for image optimization and authentication
     const params = new URLSearchParams();
+    if (token) {
+        params.append('access_token', token);
+    }
     if (options?.quality) {
         params.append('quality', options.quality.toString());
     }
@@ -1144,6 +1146,7 @@ export function getImageUrl(imageId: string | undefined | any, options?: { quali
 
     return imageUrl;
 }
+
 
 export interface HeroBanner {
     id: number;
