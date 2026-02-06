@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isRateLimited, getClientIp } from '@/shared/lib/rate-limit';
 
-const DIRECTUS_URL = 'https://admin.salvemundi.nl';
+const DIRECTUS_URL = process.env.DIRECTUS_URL || process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://admin.salvemundi.nl';
 
 // Configure an optional Directus user ID that should bypass server-side checks.
 let API_BYPASS_USER_ID = process.env.DIRECTUS_API_USER_ID ?? null;
