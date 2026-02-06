@@ -112,34 +112,25 @@ jobs:
 
             docker image prune -f
 
-            echo "Waiting for container to be healthy..."
+            echo "Waiting for Arcane to respond on port 3552..."
             CONTAINER_NAME="arcane"
-            for i in {1..30}; do
-              # Check for health status first
-              HEALTH_STATUS=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}no-healthcheck{{end}}' $CONTAINER_NAME 2>/dev/null || echo "not-found")
-              # Also check if it's actually running
-              RUNNING_STATUS=$(docker inspect --format='{{.State.Status}}' $CONTAINER_NAME 2>/dev/null || echo "not-found")
-              
-              echo "Health: $HEALTH_STATUS, Status: $RUNNING_STATUS"
-              
-              if [[ "$HEALTH_STATUS" == "healthy" ]] || [[ "$HEALTH_STATUS" == "no-healthcheck" && "$RUNNING_STATUS" == "running" ]]; then
-                echo "✅ Container is up and running!"
+            for i in {1..20}; do
+              # Probeer direct de API te raken binnen de container
+              if docker exec $CONTAINER_NAME wget --spider -q http://localhost:3552/api/app-version > /dev/null 2>&1; then
+                echo "✅ Arcane is up and running!"
                 exit 0
               fi
               
-              if [[ "$HEALTH_STATUS" == "unhealthy" ]]; then
-                echo "❌ Container is UNHEALTHY!"
-                docker logs $CONTAINER_NAME | tail -n 50
-                exit 1
-              fi
-              
-              if [[ "$RUNNING_STATUS" == "exited" ]]; then
+              # Check of hij niet gecrasht is
+              if [[ $(docker inspect --format='{{.State.Status}}' $CONTAINER_NAME) == "exited" ]]; then
                 echo "❌ Container has EXITED!"
                 docker logs $CONTAINER_NAME | tail -n 50
                 exit 1
               fi
+              
+              echo "Waiting... ($i/20)"
               sleep 5
             done
-            echo "⏳ Health check TIMEOUT!"
+            echo "⏳ Start check TIMEOUT!"
             docker logs $CONTAINER_NAME | tail -n 50
             exit 1

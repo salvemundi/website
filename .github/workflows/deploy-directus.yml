@@ -205,31 +205,25 @@ jobs:
             docker compose pull
             docker compose up -d --force-recreate --remove-orphans
 
-            echo "Waiting for container to be healthy..."
+            echo "Waiting for Directus to respond on port 8055..."
             CONTAINER_NAME="directus"
             for i in {1..30}; do
-              HEALTH_STATUS=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}no-healthcheck{{end}}' $CONTAINER_NAME 2>/dev/null || echo "not-found")
-              RUNNING_STATUS=$(docker inspect --format='{{.State.Status}}' $CONTAINER_NAME 2>/dev/null || echo "not-found")
-              
-              echo "Health: $HEALTH_STATUS, Status: $RUNNING_STATUS"
-              
-              if [[ "$HEALTH_STATUS" == "healthy" ]] || [[ "$HEALTH_STATUS" == "no-healthcheck" && "$RUNNING_STATUS" == "running" ]]; then
-                echo "✅ Container is up and running!"
+              # Gebruik curl (die we in de Dockerfile installeren) voor een directe check
+              if docker exec $CONTAINER_NAME curl -s -f http://localhost:8055/server/ping > /dev/null 2>&1; then
+                echo "✅ Directus is up and running!"
                 exit 0
               fi
               
-              if [[ "$HEALTH_STATUS" == "unhealthy" ]]; then
-                echo "❌ Container is UNHEALTHY!"
-                docker logs $CONTAINER_NAME | tail -n 50
-                exit 1
-              fi
-              
-              if [[ "$RUNNING_STATUS" == "exited" ]]; then
+              # Check of hij niet gecrasht is
+              if [[ $(docker inspect --format='{{.State.Status}}' $CONTAINER_NAME) == "exited" ]]; then
                 echo "❌ Container has EXITED!"
                 docker logs $CONTAINER_NAME | tail -n 50
                 exit 1
               fi
-              sleep 10
+              
+              echo "Waiting... ($i/30)"
+              sleep 5
             done
-            echo "⏳ Health check TIMEOUT!"
+            echo "⏳ Start check TIMEOUT!"
+            docker logs $CONTAINER_NAME | tail -n 50
             exit 1

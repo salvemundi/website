@@ -1,49 +1,38 @@
-# Gebruik de officiële Directus basis-image
-# Directus CMS
-# Environment Isolation Audit: 2026-02-07 (Session Fix Re-run)
 FROM directus/directus:11.1.1
 
-# Stap 1: Voorbereiding
-USER root
-RUN corepack enable
+# Environment Isolation Audit: 2026-02-07 (Session Fix Re-run)
 
-# Stap 2: Kopieer de extensie DIRECT naar de root extensions map
-# Dit vervangt de 'endpoints' submap, wat soms discovery issues geeft
+# Kopieer onze custom extensie
 WORKDIR /directus/extensions/directus-extension-entra-auth
 COPY --chown=node:node ./directus-extension-entra-auth .
 
-# Stap 3: Build en Installatie (In-Place)
-# Verwijder node_modules om zeker te zijn van een schone installatie
-RUN rm -rf node_modules dist
+# Build de extensie (omdat we in een nieuwe container zitten)
+RUN npm install --include=dev && \
+    npm run build && \
+    npm prune --production
 
-# Installeer dependencies (inclusief dev voor de build)
-RUN npm install --include=dev
-
-# Draai de build (genereert dist/ van src/)
-RUN npm run build
-
-# Schoonmaak: verwijder dev dependencies
-RUN npm prune --production
-
-# Stap 4: Herstel Rechten (Critical step)
+# Terug naar root voor verdere acties
 WORKDIR /directus
+
+# Fix permissies (Directus draait als 'node' user)
 RUN chown -R node:node /directus/extensions
 
-# Stap 5: PM2 Directory Setup (Fix permission errors)
-# Ensure the PM2 directory exists with correct ownership before switching to node user
+# Zorg dat PM2 de juiste permissies heeft voor de node user
 RUN mkdir -p /home/node/.pm2 && \
     chown -R node:node /home/node/.pm2
 
-# Debug: Laat zien wat er precies aanwezig is (verschijnt in build logs)
-# Dit helpt ons bevestigen dat de files op de juiste plek staan
+# Debug: check of de extensie er staat
 RUN echo "--- Extension Directory Contents (ROOT) ---" && \
     ls -la /directus/extensions/directus-extension-entra-auth && \
     echo "--- Dist Directory Contents ---" && \
     ls -la /directus/extensions/directus-extension-entra-auth/dist || echo "No dist folder found"
 
+# Stap 6: Install curl for healthchecks (Directus is Alpine based)
+USER root
+RUN apk add --no-cache curl
 
 # Healthcheck om de deployment script te laten weten dat we klaar zijn
 HEALTHCHECK --interval=30s --timeout=10s --retries=5 --start-period=60s \
-  CMD wget --spider -q http://localhost:8055/server/ping || exit 1
+  CMD curl -f http://localhost:8055/server/ping || exit 1
 
 USER node
