@@ -15,7 +15,7 @@
     "build": "next build",
     "build:infisical": "infisical run -- next build",
     "start": "next start",
-    "lint": "next lint --dir .",
+    "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "sync:results": "node scripts/sync-results.js",
     "manage-admin": "node scripts/manage-admin.js",
