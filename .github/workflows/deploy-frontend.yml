@@ -183,15 +183,25 @@ jobs:
                 exit 1
               fi
               
-              # If no healthcheck defined, try direct HTTP check after initial startup period
-              if [[ "$STATUS" == "no-healthcheck" ]] && [[ $i -gt 6 ]]; then
-                echo "No Docker HEALTHCHECK defined, attempting direct HTTP check..."
+              # If no healthcheck defined or still starting, try direct HTTP check after brief startup period
+              if [[ $i -gt 3 ]]; then
+                echo "Attempting direct HTTP check..."
+                # Try wget inside container first (more reliable)
                 if docker exec $CONTAINER_NAME wget --no-verbose --tries=1 --spider --timeout=2 http://localhost:3000/ 2>/dev/null; then
                   echo "✅ Container is responding to HTTP requests!"
                   exit 0
-                else
-                  echo "Container not yet responding to HTTP requests, will retry..."
                 fi
+                # Fallback: check if Next.js logs show "Ready"
+                if docker logs $CONTAINER_NAME 2>&1 | grep -q "Ready in"; then
+                  echo "✅ Container logs show Next.js is ready!"
+                  # Do one more HTTP check to be sure
+                  sleep 2
+                  if docker exec $CONTAINER_NAME wget --no-verbose --tries=1 --spider --timeout=2 http://localhost:3000/ 2>/dev/null; then
+                    echo "✅ Confirmed: Container is serving requests!"
+                    exit 0
+                  fi
+                fi
+                echo "Container not yet ready, will retry..."
               fi
               
               sleep 5
