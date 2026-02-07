@@ -168,10 +168,10 @@ const Header: React.FC = () => {
     return (
         <header
             ref={headerRef}
-            className="fixed top-0 z-40 w-full bg-[var(--bg-main)]/80 backdrop-blur-md shadow-sm transition-all duration-300"
+            className="fixed z-40 w-full bg-[var(--bg-main)]/80 backdrop-blur-md shadow-sm transition-all duration-300"
             style={{
-                marginTop: 'calc(-1 * env(safe-area-inset-top))',
-                paddingTop: 'env(safe-area-inset-top)'
+                top: 'env(safe-area-inset-top, 0px)',
+                paddingTop: '0px'
             }}
         >
             {/* Scrolled state shadow/border overlay */}
