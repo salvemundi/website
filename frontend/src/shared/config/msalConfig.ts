@@ -11,7 +11,19 @@ const getRedirectUri = () => {
         return window.location.origin;
     }
 
-    // Otherwise use the env var or the current origin
+    // Dynamic redirect for our known environments
+    // This overrides the environment variable to ensure we always stay on the same domain
+    const hostname = window.location.hostname;
+    if (
+        hostname === 'salvemundi.nl' ||
+        hostname === 'www.salvemundi.nl' ||
+        hostname === 'dev.salvemundi.nl' ||
+        hostname === 'preprod.salvemundi.nl'
+    ) {
+        return window.location.origin;
+    }
+
+    // Otherwise use the env var or the current origin as fallback
     return process.env.NEXT_PUBLIC_AUTH_REDIRECT_URI || window.location.origin;
 };
 
