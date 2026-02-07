@@ -638,6 +638,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const returnTo = localStorage.getItem('auth_return_to');
             if (returnTo) {
                 localStorage.removeItem('auth_return_to');
+
+                // Get clean current path
+                const currentPath = window.location.pathname + window.location.search;
+
+                // [FIX] Avoid redundant redirect if we are already where we want to be
+                // This reduces "flickering" and satisfies "fewer redirects" request
+                if (returnTo === currentPath || returnTo === '/' && currentPath === '/') {
+                    // console.log('[AuthProvider] Already on target page, skipping redirect');
+                    return;
+                }
+
                 // Ensure we don't redirect to external sites
                 if (returnTo.startsWith('/') && !returnTo.startsWith('//')) {
                     router.replace(returnTo);
@@ -680,58 +691,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     /**
      * loginWithMicrosoft - User-initiated login
      * 
-     * [ARCHITECTURE] Seamless Login
-     * We use `loginPopup` instead of `loginRedirect` to maintain the user's context.
-     * The state of the page remains intact while the user authenticates in a separate window.
-     * This eliminates the need for complex "return URL" handling and improves UX.
-     * 
-     * CRITICAL: This is called SYNCHRONOUSLY from a button onClick event
-     * to prevent popup blockers from interfering
-     * 
-     * Flow:
-     * 1. First try: loginPopup (user stays on page, seamless)
-     * 2. Fallback: Throw error for modal to handle (never redirect automatically)
+     * [ARCHITECTURE] Redirect Login
+     * We use `loginRedirect` to ensure the most reliable login experience.
+     * While popups are seamless, they often face issues with modern browser security,
+     * popup blockers, and mobile environments. Redirects provide a consistent flow.
      */
     const loginWithMicrosoft = async () => {
-        if (!msalInstance) {
-            throw new Error('Microsoft login is not available. Use HTTPS with a redirect URI that matches your Entra app (set NEXT_PUBLIC_AUTH_REDIRECT_URI for LAN/IP testing).');
-        }
-
-        try {
-            // Initialize MSAL if needed
-            await msalInstance.initialize();
-
-            // PHASE 2 CHANGE: Use loginPopup instead of loginRedirect
-            // This keeps the user on the page and provides a seamless experience
-            // console.log('[AuthProvider] Attempting popup login...');
-
-            const result = await msalInstance.loginPopup(loginRequest);
-
-            if (result && result.account) {
-                // console.log('[AuthProvider] Popup login successful');
-                msalInstance.setActiveAccount(result.account);
-                await handleLoginSuccess(result, false); // false = no redirect notification
-                return; // Success!
-            }
-        } catch (error: any) {
-            // console.error('[AuthProvider] Popup login error:', error);
-
-            // Check if error is popup-related
-            const isPopupError =
-                error.errorCode === 'popup_window_error' ||
-                error.errorCode === 'user_cancelled' ||
-                error.message?.toLowerCase().includes('popup') ||
-                error.message?.toLowerCase().includes('blocked');
-
-            if (isPopupError) {
-                // Popup was blocked or failed
-                // console.warn('[AuthProvider] Popup blocked/failed, throwing error for LoginModal to handle');
-                throw error; // Let LoginModal detect and handle this
-            }
-
-            // For other errors, also throw so LoginModal can show error message
-            throw error;
-        }
+        return loginWithRedirect();
     };
 
 
