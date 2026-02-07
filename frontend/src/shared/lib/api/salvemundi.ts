@@ -91,12 +91,13 @@ export interface PaymentResponse {
 }
 
 // --- Helper Functions ---
-function buildQueryString(params: { fields?: string[]; sort?: string[]; filter?: unknown; limit?: number }): string {
+function buildQueryString(params: { fields?: string[]; sort?: string[]; filter?: unknown; limit?: number; search?: string }): string {
     const queryParams = new URLSearchParams();
     if (params.fields) queryParams.append('fields', params.fields.join(','));
     if (params.sort) queryParams.append('sort', params.sort.join(','));
     if (params.filter) queryParams.append('filter', JSON.stringify(params.filter));
     if (params.limit) queryParams.append('limit', String(params.limit));
+    if (params.search) queryParams.append('search', params.search);
     return queryParams.toString();
 }
 
@@ -269,7 +270,7 @@ export const eventsApi = {
         return res;
     },
 
-    createSignup: async (signupData: { event_id: number; email: string; name: string; phone_number?: string; user_id?: string; event_name?: string; event_date?: string; event_price?: number }) => {
+    createSignup: async (signupData: { event_id: number; email: string; name: string; phone_number?: string; user_id?: string; event_name?: string; event_date?: string; event_price?: number; payment_status?: string }) => {
         // 1. Check bestaande inschrijving (Alleen voor ingelogde leden)
         if (signupData.user_id) {
             const existingQuery = buildQueryString({
@@ -324,7 +325,7 @@ export const eventsApi = {
             participant_name: signupData.name || null,
             participant_email: signupData.email || null,
             participant_phone: signupData.phone_number ?? null,
-            payment_status: 'open' // Zet expliciet op open
+            payment_status: signupData.payment_status || 'open' // Zet expliciet op open of meegegeven status
         };
 
         const signup = await directusFetch<any>(`/items/event_signups`, {
@@ -341,9 +342,9 @@ export const eventsApi = {
                 const token = qrService.generateQRToken(signup.id, signupData.event_id);
                 await qrService.updateSignupWithQRToken(signup.id, token);
 
-                // If this is a free event, mark the signup as paid so downstream
+                // If this is a free event OR manually marked as paid, mark the signup as paid so downstream
                 // consumers (UI, admin pages, email flows) see the correct state.
-                if (signupData.event_price === 0) {
+                if (signupData.event_price === 0 || signupData.payment_status === 'paid') {
                     try {
                         await directusFetch(`/items/event_signups/${signup.id}`, {
                             method: 'PATCH',
@@ -394,7 +395,7 @@ export const eventsApi = {
                         console.error('eventsApi.createSignup: failed to fetch event details for contact info', { eventId: signupData.event_id, error: e });
                     }
 
-                    if (signupData.event_price === 0) {
+                    if (signupData.event_price === 0 || signupData.payment_status === 'paid') {
                         console.log('eventsApi.createSignup: qrDataUrl present?', !!qrDataUrl, qrDataUrl ? `len=${qrDataUrl.length}` : 'none');
                         await sendEventSignupEmail({
                             recipientEmail: signupData.email,
@@ -798,6 +799,18 @@ export const documentsApi = {
             sort: ['display_order', 'title']
         });
         return directusFetch<any[]>(`/items/documents?${query}`);
+    }
+};
+
+export const usersApi = {
+    search: async (searchQuery: string) => {
+        const query = buildQueryString({
+            fields: ['id', 'first_name', 'last_name', 'email'],
+            search: searchQuery,
+            limit: 10
+        });
+        return directusFetch<any[]>(`/users?${query}`);
+
     }
 };
 
