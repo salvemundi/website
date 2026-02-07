@@ -13,6 +13,7 @@ interface PWAContextType {
     showInstallPrompt: boolean;
     installPWA: () => void;
     dismissInstallPrompt: () => void;
+    isPWA: boolean;
 }
 
 const PWAContext = createContext<PWAContextType | undefined>(undefined);
@@ -21,11 +22,28 @@ export function PWAProvider({ children }: { children: ReactNode }) {
     const [showBottomNav, setShowBottomNav] = useState(false);
     const [showInstallPrompt, setShowInstallPrompt] = useState(false);
     const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+    const [isPWA, setIsPWA] = useState(false);
 
     useEffect(() => {
         // Check if mobile
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         setShowBottomNav(isMobile);
+
+        // Check if running in PWA/standalone mode
+        const checkPWAMode = () => {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                || (window.navigator as any).standalone
+                || document.referrer.includes('android-app://');
+            setIsPWA(isStandalone);
+        };
+        checkPWAMode();
+
+        // Listen for changes in display mode
+        const mediaQuery = window.matchMedia('(display-mode: standalone)');
+        const handler = () => checkPWAMode();
+        mediaQuery.addEventListener('change', handler);
+
+        const cleanupMedia = () => mediaQuery.removeEventListener('change', handler);
 
         // Listen for beforeinstallprompt event
         const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
@@ -48,6 +66,7 @@ export function PWAProvider({ children }: { children: ReactNode }) {
 
         return () => {
             window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
+            cleanupMedia();
         };
     }, []);
 
@@ -71,7 +90,7 @@ export function PWAProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <PWAContext.Provider value={{ showBottomNav, showInstallPrompt, installPWA, dismissInstallPrompt }}>
+        <PWAContext.Provider value={{ showBottomNav, showInstallPrompt, installPWA, dismissInstallPrompt, isPWA }}>
             {children}
         </PWAContext.Provider>
     );

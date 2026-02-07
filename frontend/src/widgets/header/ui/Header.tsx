@@ -11,11 +11,13 @@ import { useSalvemundiSiteSettings } from "@/shared/lib/hooks/useSalvemundiApi";
 import { ROUTES } from "@/shared/lib/routes";
 import { ThemeToggle } from "@/features/theme/ui/ThemeToggle";
 import { directusFetch } from "@/shared/lib/directus";
+import { usePWAContext } from "@/features/pwa/lib/PWAContext";
 
 const Header: React.FC = () => {
     const pathname = usePathname();
     const { isAuthenticated, user, logout } = useAuth();
     const router = useRouter();
+    const { isPWA } = usePWAContext();
     const [menuOpen, setMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const [isCommitteeMember, setIsCommitteeMember] = useState(false);
@@ -170,17 +172,19 @@ const Header: React.FC = () => {
             ref={headerRef}
             className="fixed top-0 z-40 w-full bg-[var(--bg-main)]/80 backdrop-blur-md shadow-sm transition-all duration-300"
             style={{
-                paddingTop: 'env(safe-area-inset-top, 0px)'
+                paddingTop: isPWA ? 'env(safe-area-inset-top, 0px)' : '0px'
             }}
         >
-            {/* Safe area background fill - ensures solid color above navbar on notched devices */}
-            <div 
-                className="absolute left-0 right-0 bg-[var(--bg-main)] -z-10"
-                style={{
-                    top: 'calc(-1 * env(safe-area-inset-top, 0px))',
-                    height: 'env(safe-area-inset-top, 0px)'
-                }}
-            />
+            {/* Safe area background fill - ensures solid color above navbar on notched devices - only in PWA mode */}
+            {isPWA && (
+                <div 
+                    className="absolute left-0 right-0 bg-[var(--bg-main)] -z-10"
+                    style={{
+                        top: 'calc(-1 * env(safe-area-inset-top, 0px))',
+                        height: 'env(safe-area-inset-top, 0px)'
+                    }}
+                />
+            )}
             {/* Scrolled state shadow/border overlay */}
             <div
                 className={`pointer-events-none absolute inset-0 transition-all duration-300 ${isScrolled
