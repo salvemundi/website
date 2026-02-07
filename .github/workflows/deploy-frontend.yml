@@ -158,56 +158,29 @@ jobs:
             # Clean up old/dangling images (untagged) to free space
             docker image prune -f
 
-            echo "Waiting for container to start and be healthy..."
+            echo "Waiting for Frontend to respond on port 3000..."
             CONTAINER_NAME="frontend"
-            MAX_ATTEMPTS=30
-            
-            for i in $(seq 1 $MAX_ATTEMPTS); do
-              # Check if container is running
-              if ! docker ps --filter "name=$CONTAINER_NAME" --filter "status=running" | grep -q "$CONTAINER_NAME"; then
-                echo "❌ Container is not running!"
-                docker logs $CONTAINER_NAME | tail -n 50
-                exit 1
-              fi
-              
-              # Check Docker health status (if HEALTHCHECK is defined)
-              STATUS=$(docker inspect --format='{{.State.Health.Status}}' $CONTAINER_NAME 2>/dev/null || echo "no-healthcheck")
-              echo "Attempt $i/$MAX_ATTEMPTS - Docker Health Status: $STATUS"
-              
-              if [[ "$STATUS" == "healthy" ]]; then
-                echo "✅ Container is healthy via Docker HEALTHCHECK!"
+            # Frontend is usually quick, but give it up to 2 minutes
+            for i in {1..24}; do
+              # Direct curl check inside container
+              if docker exec $CONTAINER_NAME curl -s -f http://localhost:3000/ > /dev/null 2>&1; then
+                echo "✅ Frontend is up and running!"
                 exit 0
-              elif [[ "$STATUS" == "unhealthy" ]]; then
-                echo "❌ Container is UNHEALTHY!"
+              fi
+              
+              # Check if container crashed
+              if [[ $(docker inspect --format='{{.State.Status}}' $CONTAINER_NAME) == "exited" ]]; then
+                echo "❌ Container has EXITED!"
                 docker logs $CONTAINER_NAME | tail -n 50
                 exit 1
               fi
               
-              # If no healthcheck defined or still starting, try direct HTTP check after brief startup period
-              if [[ $i -gt 3 ]]; then
-                echo "Attempting direct HTTP check..."
-                # Try wget inside container first (more reliable)
-                if docker exec $CONTAINER_NAME wget --no-verbose --tries=1 --spider --timeout=2 http://localhost:3000/ 2>/dev/null; then
-                  echo "✅ Container is responding to HTTP requests!"
-                  exit 0
-                fi
-                # Fallback: check if Next.js logs show "Ready"
-                if docker logs $CONTAINER_NAME 2>&1 | grep -q "Ready in"; then
-                  echo "✅ Container logs show Next.js is ready!"
-                  # Do one more HTTP check to be sure
-                  sleep 2
-                  if docker exec $CONTAINER_NAME wget --no-verbose --tries=1 --spider --timeout=2 http://localhost:3000/ 2>/dev/null; then
-                    echo "✅ Confirmed: Container is serving requests!"
-                    exit 0
-                  fi
-                fi
-                echo "Container not yet ready, will retry..."
+              if (( i % 4 == 0 )); then
+                echo "Still waiting for Frontend... ($i/24)"
               fi
-              
               sleep 5
             done
-            
-            echo "❌ Container failed to become healthy within timeout"
-            docker logs $CONTAINER_NAME | tail -n 100
+            echo "⏳ Frontend start check TIMEOUT!"
+            docker logs $CONTAINER_NAME | tail -n 50
             exit 1
 
