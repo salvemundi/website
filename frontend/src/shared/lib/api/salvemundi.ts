@@ -50,14 +50,16 @@ export interface Transaction {
     amount: number;
     description?: string;
     product_name?: string;
-    transaction_type?: 'payment' | 'membership' | 'event' | 'other';
+    transaction_type?: 'payment' | 'membership' | 'event' | 'other' | string;
     registration?: any;
     pub_crawl_signup?: any;
     trip_signup?: any;
     status?: 'pending' | 'completed' | 'failed' | 'paid';
     payment_status?: 'pending' | 'completed' | 'failed' | 'paid' | 'open';
     created_at: string;
+    date_created?: string;
     updated_at?: string;
+    coupon_code?: string;
 }
 
 export interface WhatsAppGroup {

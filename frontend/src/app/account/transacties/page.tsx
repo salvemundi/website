@@ -1,73 +1,88 @@
 'use client';
 
 import { Suspense } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { useSalvemundiTransactions } from '@/shared/lib/hooks/useSalvemundiApi';
 import { format } from 'date-fns';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Transaction } from '@/shared/lib/api/salvemundi';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { CreditCard, Clock, Tag, CheckCircle } from 'lucide-react';
+
+/**
+ * Tile Component - Matches the aesthetic of admin/logging
+ */
+function Tile({
+    title,
+    icon,
+    children,
+    className = '',
+    actions,
+}: {
+    title?: string;
+    icon?: React.ReactNode;
+    children: React.ReactNode;
+    className?: string;
+    actions?: React.ReactNode;
+}) {
+    return (
+        <section
+            className={[
+                'relative overflow-hidden rounded-3xl bg-gradient-to-br from-theme-gradient-start to-theme-gradient-end shadow-lg',
+                className,
+            ].join(' ')}
+        >
+            <div className="pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full bg-white/5 blur-2xl" />
+            <div className="pointer-events-none absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-white/5 blur-3xl" />
+
+            <div className="relative p-6 sm:p-7">
+                {(title || actions) && (
+                    <header className="mb-5 flex items-center justify-between gap-4 border-b border-white/5 pb-4">
+                        <div className="flex min-w-0 items-center gap-3">
+                            {icon ? (
+                                <div className="shrink-0 rounded-xl bg-theme-purple/10 p-2 text-theme-purple-lighter">
+                                    {icon}
+                                </div>
+                            ) : null}
+                            {title ? (
+                                <h2 className="truncate text-lg font-bold text-theme-purple-lighter">
+                                    {title}
+                                </h2>
+                            ) : null}
+                        </div>
+
+                        {actions ? <div className="shrink-0">{actions}</div> : null}
+                    </header>
+                )}
+
+                {children}
+            </div>
+        </section>
+    );
+}
 
 function TransactionsContent() {
-    const router = useRouter();
     const { user, isLoading: authLoading } = useAuth();
-    const { data: transactions = [], isLoading: transactionsLoading, error, refetch } = useSalvemundiTransactions(user?.id);
+    const {
+        data: transactions = [],
+        isLoading: transactionsLoading,
+        error,
+        refetch
+    } = useSalvemundiTransactions(user?.id);
 
-    const successfulTransactions = transactions.filter((t: Transaction) =>
-        t.status === 'completed' ||
-        t.status === 'paid' ||
-        t.payment_status === 'completed' ||
-        t.payment_status === 'paid'
-    );
+    // Filter for ONLY paid/completed transactions as requested
+    const paidTransactions = transactions.filter((t: Transaction) => {
+        const status = (t.payment_status || t.status || '').toLowerCase();
+        return status === 'paid' || status === 'completed';
+    });
 
     const getInferredTransactionType = (t: Transaction) => {
         if (t.transaction_type) return t.transaction_type;
-
         const desc = (t.product_name || t.description || '').toLowerCase();
-
-        if (t.registration || t.pub_crawl_signup || desc.includes('event') || desc.includes('activiteit') || desc.includes('inschrijving')) {
-            return 'event';
-        }
-        if (t.trip_signup || desc.includes('reis')) {
-            return 'event';
-        }
-        if (desc.includes('lidmaatschap') || desc.includes('contributie') || desc.includes('membership')) {
-            return 'membership';
-        }
-
+        if (t.registration || t.pub_crawl_signup || desc.includes('event') || desc.includes('activiteit') || desc.includes('inschrijving')) return 'event';
+        if (t.trip_signup || desc.includes('reis')) return 'event';
+        if (desc.includes('lidmaatschap') || desc.includes('contributie') || desc.includes('membership')) return 'membership';
         return 'payment';
-    };
-
-    const getTransactionTypeColor = (type: string | undefined) => {
-        switch (type) {
-            case 'membership':
-                return 'bg-theme-purple-lighter text-theme-purple-darker';
-            case 'event':
-                return 'bg-theme-purple/20 text-theme-purple';
-            case 'payment':
-                return 'bg-theme-purple/20 text-theme-purple';
-            default:
-                return 'bg-soft text-theme-purple';
-        }
-    };
-
-    const getStatusColor = (status: string | undefined) => {
-        const s = status?.toLowerCase();
-        switch (s) {
-            case 'completed':
-            case 'paid':
-                return 'bg-green-500 text-theme-white';
-            case 'pending':
-            case 'open':
-                return 'bg-yellow-500 text-theme-white';
-            case 'failed':
-            case 'canceled':
-            case 'expired':
-                return 'bg-theme-purple text-theme-white';
-            default:
-                return 'bg-soft text-main';
-        }
     };
 
     const formatAmount = (amount: number | string | null | undefined): string => {
@@ -79,166 +94,116 @@ function TransactionsContent() {
 
     if (authLoading) {
         return (
-            <div className="">
-                <PageHeader
-                    title="TRANSACTIES"
-                >
-                    <p className="text-lg sm:text-xl text-beige/90 max-w-3xl mx-auto mt-4">
-                        Overzicht van jouw betalingen en transacties
-                    </p>
-                </PageHeader>
+            <div className="min-h-screen bg-[var(--bg-main)]">
+                <PageHeader title="Transacties" />
                 <div className="flex items-center justify-center min-h-[50vh]">
-                    <div className="text-theme-purple text-xl font-semibold">Laden...</div>
+                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-theme-purple/20 border-t-theme-purple" />
                 </div>
             </div>
         );
     }
 
-    if (!user) {
-        return null; // Will redirect via useEffect
-    }
-
     return (
-        <div className="">
+        <div className="min-h-screen bg-[var(--bg-main)] pb-20">
             <PageHeader
-                title="TRANSACTIES"
-            >
-                <p className="text-lg sm:text-xl text-beige/90 max-w-3xl mx-auto mt-4">
-                    Overzicht van jouw betalingen en transacties
-                </p>
-            </PageHeader>
+                title="Transacties"
+                description="Overzicht van jouw afgeronde betalingen bij Salve Mundi"
+            />
 
-            <div className="container mx-auto px-4 py-8">
-                {/* Back to Account Button */}
-                <div className="mb-6">
-                    <button
-                        onClick={() => router.push('/account')}
-                        className="flex items-center gap-2 text-theme-purple hover:text-theme-purple-light transition-colors font-medium"
-                    >
-                        <span>←</span>
-                        <span>Terug naar Account</span>
-                    </button>
-                </div>
-
-                <div className="bg-card rounded-2xl shadow-card border border-transparent dark:border-white/5 overflow-hidden">
-                    <div className="p-6 flex justify-between items-center">
-                        <h2 className="text-xl font-bold text-theme-purple">Mijn Transacties</h2>
+            <main className="mx-auto max-w-app px-4 py-8">
+                <Tile
+                    title="Mijn Betalingen"
+                    icon={<CreditCard className="h-5 w-5" />}
+                    actions={
                         <button
                             onClick={() => refetch()}
-                            className="text-sm text-theme-purple hover:text-theme-purple-light font-medium"
+                            disabled={transactionsLoading}
+                            className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold text-theme-purple-lighter hover:bg-white/15 border border-white/10 transition disabled:opacity-50"
                         >
-                            Verversen
+                            <CreditCard className={`h-4 w-4 ${transactionsLoading ? 'animate-spin' : ''}`} />
+                            Ververs
                         </button>
-                    </div>
-
-                    {transactionsLoading ? (
-                        <div className="p-8 text-center text-muted">
-                            Transacties laden...
+                    }
+                >
+                    {transactionsLoading && transactions.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-10">
+                            <div className="h-8 w-8 animate-spin rounded-full border-4 border-theme-purple/20 border-t-theme-purple" />
+                            <p className="mt-4 text-theme-purple-lighter/60">Betalingen ophalen...</p>
                         </div>
                     ) : error ? (
-                        <div className="p-8 text-center text-red-500">
-                            Er is een fout opgetreden bij het laden van de transacties.
+                        <div className="rounded-2xl border-2 border-dashed border-red-500/10 bg-red-500/5 p-8 text-center text-red-400">
+                            <p className="font-bold">Kon transacties niet laden.</p>
+                            <button onClick={() => refetch()} className="text-sm underline mt-2">Probeer opnieuw</button>
                         </div>
-                    ) : successfulTransactions.length === 0 ? (
-                        <div className="p-12 text-center text-muted">
-                            <p className="text-lg mb-2">Geen transacties gevonden</p>
-                            <p className="text-sm">Je hebt nog geen betalingen gedaan.</p>
+                    ) : paidTransactions.length === 0 ? (
+                        <div className="rounded-2xl border-2 border-dashed border-theme-purple/10 bg-white/5 p-8 text-center">
+                            <p className="text-theme-purple-lighter font-medium">Geen betaalde transacties gevonden.</p>
+                            <p className="mt-2 text-sm text-theme-purple-lighter/60">Zodra je een betaling afrondt, verschijnt deze hier.</p>
                         </div>
                     ) : (
-                        <>
-                            {/* Desktop Table View */}
-                            <div className="hidden md:block overflow-x-auto">
-                                <table className="w-full">
-                                    <thead className="bg-soft">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Datum</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Beschrijving</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Type</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Status</th>
-                                            <th className="px-6 py-3 text-right text-xs font-medium text-muted uppercase tracking-wider">Bedrag</th>
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="border-b border-white/5 bg-white/5">
+                                        <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Datum</th>
+                                        <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Product</th>
+                                        <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Type</th>
+                                        <th className="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Betaalstatus</th>
+                                        <th className="px-4 py-4 text-right text-xs font-semibold uppercase tracking-wider text-theme-purple-lighter/50">Bedrag</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-white/10">
+                                    {paidTransactions.map((transaction: Transaction) => (
+                                        <tr key={transaction.id} className="hover:bg-white/5 transition-colors group">
+                                            <td className="px-4 py-5 whitespace-nowrap text-sm text-theme-purple-lighter/70">
+                                                <div className="flex items-center gap-2">
+                                                    <Clock className="h-3.5 w-3.5 text-theme-purple-lighter/30" />
+                                                    {format(new Date(transaction.created_at || transaction.date_created || new Date()), 'd MMM yyyy HH:mm')}
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-5">
+                                                <div className="text-sm font-semibold text-white">
+                                                    {transaction.product_name || transaction.description || 'Betaling'}
+                                                </div>
+                                                {transaction.coupon_code && (
+                                                    <div className="flex items-center gap-1 text-[10px] text-theme-purple-lighter/40 font-bold uppercase tracking-wider mt-1">
+                                                        <Tag className="h-3 w-3" />
+                                                        {transaction.coupon_code}
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-5 whitespace-nowrap">
+                                                <span className="px-3 py-1 inline-flex text-[10px] font-bold uppercase tracking-wider rounded-full bg-theme-purple/20 text-theme-purple-lighter border border-theme-purple/30">
+                                                    {getInferredTransactionType(transaction)}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-5 text-center whitespace-nowrap">
+                                                <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-green-400 border border-green-500/20">
+                                                    <CheckCircle className="h-3 w-3" />
+                                                    Betaald
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-5 whitespace-nowrap text-right text-sm font-mono font-bold text-theme-purple-lighter">
+                                                {formatAmount(transaction.amount)}
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody className="bg-card divide-y divide-purple-100/10">
-                                        {successfulTransactions.map((transaction: Transaction) => (
-                                            <tr key={transaction.id} className="hover:bg-soft transition-colors">
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-                                                    {format(new Date(transaction.created_at), 'd MMM yyyy HH:mm')}
-                                                </td>
-                                                <td className="px-6 py-4 text-sm text-main">
-                                                    {transaction.product_name || transaction.description || 'Geen beschrijving'}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getTransactionTypeColor(getInferredTransactionType(transaction))}`}>
-                                                        {getInferredTransactionType(transaction)}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(transaction.payment_status || transaction.status)}`}>
-                                                        {(transaction.payment_status === 'completed' || transaction.payment_status === 'paid' || transaction.status === 'completed' || transaction.status === 'paid') ? 'Betaald' :
-                                                            (transaction.payment_status === 'pending' || transaction.status === 'pending') ? 'In afwachting' : 'Mislukt'}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-main text-right font-medium">
-                                                    {formatAmount(transaction.amount)}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {/* Mobile Card View */}
-                            <div className="md:hidden space-y-4 p-4">
-                                {successfulTransactions.map((transaction: Transaction) => (
-                                    <div
-                                        key={transaction.id}
-                                        className="p-4 rounded-xl bg-card shadow-card border border-transparent dark:border-white/5 transition-all hover:shadow-card-elevated"
-                                    >
-                                        <div className="flex justify-between items-start mb-2">
-                                            <div className="flex-1">
-                                                <h3 className="font-semibold text-theme-purple mb-1">
-                                                    {transaction.product_name || transaction.description || 'Geen beschrijving'}
-                                                </h3>
-                                                <p className="text-sm text-muted">
-                                                    {format(new Date(transaction.created_at), 'd MMMM yyyy')}
-                                                </p>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="font-bold text-theme-purple text-lg">
-                                                    {formatAmount(transaction.amount)}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div className="flex gap-2 mt-3">
-                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getTransactionTypeColor(getInferredTransactionType(transaction))}`}>
-                                                {getInferredTransactionType(transaction)}
-                                            </span>
-                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(transaction.payment_status || transaction.status)}`}>
-                                                {(transaction.payment_status === 'completed' || transaction.payment_status === 'paid' || transaction.status === 'completed' || transaction.status === 'paid') ? 'Betaald' :
-                                                    (transaction.payment_status === 'pending' || transaction.status === 'pending') ? 'In afwachting' : 'Mislukt'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     )}
-                </div>
-            </div>
+                </Tile>
+            </main>
         </div>
     );
 }
 
-/**
- * TransactionsPage - Protected page showing user's transaction history
- * Auth protection via ProtectedRoute wrapper
- */
 export default function TransactionsPage() {
     return (
         <ProtectedRoute requireAuth>
             <Suspense fallback={
-                <div className="flex items-center justify-center min-h-screen">
-                    <div className="text-theme-purple text-xl font-semibold">Laden...</div>
+                <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
+                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-theme-purple/20 border-t-theme-purple" />
                 </div>
             }>
                 <TransactionsContent />
