@@ -203,7 +203,7 @@ export function useSalvemundiSiteSettings(page?: string, options?: UseQueryOptio
         queryKey: page ? ['siteSettings', page] : ['siteSettings'],
         queryFn: () => siteSettingsApi.get(page),
         staleTime: 5 * 60 * 1000,
-        retry: false, // Don't retry on failure - site settings are optional
+        retry: 2, // Retry a few times to handle container startup race conditions
         meta: {
             errorMessage: null, // Suppress error toasts for site_settings
         },
