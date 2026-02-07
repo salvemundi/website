@@ -97,6 +97,13 @@ const Header: React.FC = () => {
 
         const applyHeight = (h: number) => {
             document.documentElement.style.setProperty('--header-height', `${h}px`);
+            // Set total header height including safe area for content padding
+            // In PWA mode, add safe-area-inset-top to the header height
+            if (isPWA) {
+                document.documentElement.style.setProperty('--header-total-height', `calc(${h}px + env(safe-area-inset-top, 0px))`);
+            } else {
+                document.documentElement.style.setProperty('--header-total-height', `${h}px`);
+            }
         };
 
         // initial set
@@ -121,7 +128,7 @@ const Header: React.FC = () => {
         return () => {
             if (ro) ro.disconnect();
         };
-    }, [menuOpen]);
+    }, [menuOpen, isPWA]);
 
     const navItems = [
         { name: "Home", href: ROUTES.HOME, icon: Home },
