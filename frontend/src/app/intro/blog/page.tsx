@@ -4,13 +4,12 @@ import { useState, useMemo, useEffect } from 'react';
 import HeroBanner from '@/components/HeroBanner';
 import AuthorCard from '@/components/AuthorCard';
 import TagList from '@/components/TagList';
-import LoginRequiredModal from '@/components/LoginRequiredModal';
 import { introBlogsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { Calendar, Newspaper, Image as ImageIcon, Megaphone, PartyPopper, X, Filter, Heart, Mail } from 'lucide-react';
-import { useAuth } from '@/features/auth/providers/auth-provider';
+import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
 import { toast } from 'sonner';
 
@@ -42,9 +41,9 @@ export default function IntroBlogPage() {
     const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
     const [sendingEmail, setSendingEmail] = useState<string | null>(null);
     const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+    const { loginWithMicrosoft } = useAuthActions();
     const [likedBlogs, setLikedBlogs] = useState<(number | string)[]>([]);
     const [likeLoadingId, setLikeLoadingId] = useState<number | string | null>(null);
-    const [showLoginModal, setShowLoginModal] = useState(false);
 
     useEffect(() => {
         try {
@@ -265,275 +264,273 @@ export default function IntroBlogPage() {
                     {/* Two Column Layout: Main Content + Sidebar */}
                     <div className={`transition-opacity duration-500 ${initialLoading ? 'opacity-0' : 'opacity-100'}`}>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-                        {/* Main Content */}
-                        <div className="lg:col-span-2 space-y-6">
+                            {/* Main Content */}
+                            <div className="lg:col-span-2 space-y-6">
 
 
-                            {/* Filter Bar */}
-                            {blogTypes.length > 0 && (
-                                <>
-                                    {/* Mobile: dropdown */}
-                                    <div className="mb-4 md:hidden">
-                                        <label className="sr-only">Filter blog posts</label>
-                                        <div className="flex items-center gap-2">
-                                            <Filter className="w-5 h-5 text-theme-purple flex-shrink-0" />
-                                            <select
-                                                value={selectedFilter ?? ''}
-                                                onChange={(e) => setSelectedFilter(e.target.value === '' ? null : e.target.value)}
-                                                className="w-full px-4 py-2 rounded-full bg-[var(--bg-card)] border border-gray-200 text-theme text-sm"
-                                            >
-                                                <option value="">Alles</option>
-                                                {blogTypes.map((type) => (
-                                                    <option key={type} value={type}>{getBlogTypeConfig(type).label}</option>
-                                                ))}
-                                            </select>
+                                {/* Filter Bar */}
+                                {blogTypes.length > 0 && (
+                                    <>
+                                        {/* Mobile: dropdown */}
+                                        <div className="mb-4 md:hidden">
+                                            <label className="sr-only">Filter blog posts</label>
+                                            <div className="flex items-center gap-2">
+                                                <Filter className="w-5 h-5 text-theme-purple flex-shrink-0" />
+                                                <select
+                                                    value={selectedFilter ?? ''}
+                                                    onChange={(e) => setSelectedFilter(e.target.value === '' ? null : e.target.value)}
+                                                    className="w-full px-4 py-2 rounded-full bg-[var(--bg-card)] border border-gray-200 text-theme text-sm"
+                                                >
+                                                    <option value="">Alles</option>
+                                                    {blogTypes.map((type) => (
+                                                        <option key={type} value={type}>{getBlogTypeConfig(type).label}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    {/* Desktop: pill buttons */}
-                                    <div className="hidden md:flex items-center gap-3 mb-6 overflow-x-auto pb-2">
-                                        <Filter className="w-5 h-5 text-theme-purple flex-shrink-0" />
-                                        <button
-                                            onClick={() => setSelectedFilter(null)}
-                                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${selectedFilter === null
+                                        {/* Desktop: pill buttons */}
+                                        <div className="hidden md:flex items-center gap-3 mb-6 overflow-x-auto pb-2">
+                                            <Filter className="w-5 h-5 text-theme-purple flex-shrink-0" />
+                                            <button
+                                                onClick={() => setSelectedFilter(null)}
+                                                className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${selectedFilter === null
                                                     ? 'bg-gradient-theme text-white shadow-md'
                                                     : 'bg-theme-purple/10 text-theme-purple hover:bg-theme-purple/20'
-                                                }`}
-                                        >
-                                            Alles
-                                        </button>
-                                        {blogTypes.map((type) => {
-                                            const typeConfig = getBlogTypeConfig(type);
-                                            return (
-                                                <button
-                                                    key={type}
-                                                    onClick={() => setSelectedFilter(type)}
-                                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${selectedFilter === type
+                                                    }`}
+                                            >
+                                                Alles
+                                            </button>
+                                            {blogTypes.map((type) => {
+                                                const typeConfig = getBlogTypeConfig(type);
+                                                return (
+                                                    <button
+                                                        key={type}
+                                                        onClick={() => setSelectedFilter(type)}
+                                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${selectedFilter === type
                                                             ? 'bg-gradient-theme text-white shadow-md'
                                                             : 'bg-theme-purple/10 text-theme-purple hover:bg-theme-purple/20'
-                                                        }`}
+                                                            }`}
+                                                    >
+                                                        {typeConfig.label}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </>
+                                )}
+
+                                {initialLoading ? (
+                                    <div className="text-center py-12">
+                                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-theme-purple"></div>
+                                        <p className="text-theme-muted mt-4">Blogs laden...</p>
+                                    </div>
+                                ) : !filteredBlogs || filteredBlogs.length === 0 ? (
+                                    <div className="text-center py-12">
+                                        <Newspaper className="w-16 h-16 text-theme-purple/30 mx-auto mb-4" />
+                                        <p className="text-theme-muted text-lg">
+                                            {selectedFilter
+                                                ? `Geen ${getBlogTypeConfig(selectedFilter).label.toLowerCase()} updates gevonden.`
+                                                : 'Er zijn nog geen updates beschikbaar. Check later terug!'}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {filteredBlogs.map((blog) => {
+                                            const typeConfig = getBlogTypeConfig(blog.blog_type ?? 'update');
+                                            const TypeIcon = typeConfig.icon;
+                                            // Only show the "liked" icon/state if the current user is authenticated
+                                            // and the server/local state indicates they liked this blog.
+                                            const isUserLiked = isAuthenticated && likedBlogs.includes(blog.id);
+
+                                            return (
+                                                <article
+                                                    key={blog.id}
+                                                    className="w-full bg-[var(--bg-card)] rounded-xl lg:rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 box-border"
                                                 >
-                                                    {typeConfig.label}
-                                                </button>
+                                                    {/* Post Header */}
+                                                    <div className="flex items-center gap-3 p-4">
+                                                        <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-gradient-theme flex items-center justify-center text-white font-bold text-sm lg:text-base flex-shrink-0">
+                                                            I
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <h3 className="font-bold text-theme text-sm lg:text-base">Intro Commissie</h3>
+                                                                <span className={`${typeConfig.color} text-white text-[10px] lg:text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1`}>
+                                                                    <TypeIcon className="w-2.5 h-2.5" />
+                                                                    {typeConfig.label}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex items-center gap-1 text-xs text-theme-muted">
+                                                                <Calendar className="w-3 h-3" />
+                                                                {(() => {
+                                                                    const date = blog.updated_at;
+                                                                    return date ? format(new Date(date), 'd MMMM yyyy', { locale: nl }) : null;
+                                                                })()}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Post Content */}
+                                                    <div
+                                                        onClick={() => setSelectedBlog(blog)}
+                                                        className="cursor-pointer"
+                                                    >
+                                                        <div className="px-4 pb-3">
+                                                            <h2 className="text-xl lg:text-2xl font-bold text-theme mb-2 break-words">{blog.title}</h2>
+                                                            <p className="text-sm lg:text-base text-theme-muted line-clamp-3 break-words">
+                                                                {blog.excerpt || ((blog.content ?? '').substring(0, 200) + '...')}
+                                                            </p>
+                                                        </div>
+
+                                                        {/* Post Image */}
+                                                        {blog.image && (
+                                                            <div className="relative w-full overflow-hidden" style={{ maxHeight: '500px' }}>
+                                                                <img
+                                                                    src={getImageUrl(blog.image)}
+                                                                    alt={blog.title}
+                                                                    className="w-full h-auto max-w-full object-cover"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        {/* No placeholder shown when there's no image */}
+                                                    </div>
+
+                                                    {/* Action Bar */}
+                                                    <div className="flex flex-wrap items-center gap-3 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+                                                        <button
+                                                            onClick={async (e) => {
+                                                                e.stopPropagation();
+                                                                if (!isAuthenticated) {
+                                                                    loginWithMicrosoft();
+                                                                    return;
+                                                                }
+                                                                if (likeLoadingId) return;
+                                                                setLikeLoadingId(blog.id);
+                                                                const isLiked = likedBlogs.includes(blog.id);
+                                                                let previous: IntroBlog[] | undefined;
+                                                                try {
+                                                                    // Optimistic update
+                                                                    previous = queryClient.getQueryData<IntroBlog[]>(['intro-blogs']);
+                                                                    queryClient.setQueryData(['intro-blogs'], (old: IntroBlog[] | undefined) => {
+                                                                        if (!old) return old;
+                                                                        return old.map((b) => b.id === blog.id ? { ...b, likes: (b.likes || 0) + (isLiked ? -1 : 1) } : b);
+                                                                    });
+
+                                                                    const resp = await fetch(isLiked ? '/api/blog-unlike' : '/api/blog-like', {
+                                                                        method: 'POST',
+                                                                        headers: { 'Content-Type': 'application/json' },
+                                                                        body: JSON.stringify({ blogId: blog.id, userId: user?.id }),
+                                                                    });
+
+                                                                    if (resp.ok) {
+                                                                        const json = await resp.json();
+                                                                        // Reconcile with server value
+                                                                        queryClient.setQueryData(['intro-blogs'], (old: IntroBlog[] | undefined) => {
+                                                                            if (!old) return old;
+                                                                            return old.map((b) => b.id === blog.id ? { ...b, likes: json.likes ?? (b.likes || 0) } : b);
+                                                                        });
+                                                                        if (selectedBlog && selectedBlog.id === blog.id) {
+                                                                            setSelectedBlog({ ...selectedBlog, likes: json.likes ?? (selectedBlog.likes || 0) });
+                                                                        }
+
+                                                                        let next: Array<number | string>;
+                                                                        if (isLiked) {
+                                                                            next = likedBlogs.filter(id => id !== blog.id);
+                                                                        } else {
+                                                                            next = Array.from(new Set([...likedBlogs, blog.id]));
+                                                                        }
+                                                                        setLikedBlogs(next);
+                                                                        try { localStorage.setItem('likedBlogs', JSON.stringify(next)); } catch (e) { }
+
+                                                                        toast.success(isLiked ? 'Like verwijderd' : 'Bedankt voor je like!');
+                                                                    } else {
+                                                                        // rollback
+                                                                        if (previous) queryClient.setQueryData(['intro-blogs'], previous as IntroBlog[] | undefined);
+                                                                        const txt = await resp.text().catch(() => undefined);
+                                                                        toast.error('Kon like niet registreren');
+                                                                        console.error('Like API error', resp.status, txt);
+                                                                    }
+                                                                } catch (err) {
+                                                                    if (previous) queryClient.setQueryData(['intro-blogs'], previous as IntroBlog[] | undefined);
+                                                                    console.error('Failed to call like API', err);
+                                                                    toast.error('Er ging iets mis bij liken');
+                                                                } finally {
+                                                                    setLikeLoadingId(null);
+                                                                }
+                                                            }}
+                                                            disabled={likeLoadingId === blog.id}
+                                                            title={!isAuthenticated ? 'Log in om te liken' : (isUserLiked ? 'Klik om like te verwijderen' : 'Leuk vinden')}
+                                                            className={`flex items-center gap-2 transition-all duration-200 ${isUserLiked
+                                                                ? 'text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-full shadow-md'
+                                                                : 'text-theme-muted hover:text-red-500 hover:scale-110'
+                                                                } ${likeLoadingId === blog.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                                                        >
+                                                            {likeLoadingId === blog.id ? (
+                                                                <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                                                            ) : isUserLiked ? (
+                                                                <svg className="w-5 h-5 animate-[pulse_0.5s_ease-in-out]" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.41 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.41 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                                                                </svg>
+                                                            ) : (
+                                                                <Heart className="w-5 h-5" />
+                                                            )}
+                                                            <span className="text-sm font-medium">{isUserLiked ? 'Geliked' : 'Leuk vinden'}</span>
+                                                            <span className={`text-sm font-semibold ${isUserLiked ? 'text-white' : 'text-theme-muted'}`}>{blog.likes ?? 0}</span>
+                                                        </button>
+                                                        {/* Share button removed */}
+                                                        {canSendEmails && (
+                                                            <button
+                                                                onClick={() => handleSendEmail(blog)}
+                                                                disabled={sendingEmail === String(blog.id)}
+                                                                className="flex items-center gap-2 text-theme-muted hover:text-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ml-auto"
+                                                            >
+                                                                <Mail className="w-5 h-5" />
+                                                                <span className="text-sm">
+                                                                    {sendingEmail === String(blog.id) ? 'Versturen...' : 'Email naar deelnemers'}
+                                                                </span>
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </article>
                                             );
                                         })}
                                     </div>
-                                </>
-                            )}
+                                )}
+                            </div>
 
-                            {initialLoading ? (
-                                <div className="text-center py-12">
-                                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-theme-purple"></div>
-                                    <p className="text-theme-muted mt-4">Blogs laden...</p>
-                                </div>
-                            ) : !filteredBlogs || filteredBlogs.length === 0 ? (
-                                <div className="text-center py-12">
-                                    <Newspaper className="w-16 h-16 text-theme-purple/30 mx-auto mb-4" />
-                                    <p className="text-theme-muted text-lg">
-                                        {selectedFilter
-                                            ? `Geen ${getBlogTypeConfig(selectedFilter).label.toLowerCase()} updates gevonden.`
-                                            : 'Er zijn nog geen updates beschikbaar. Check later terug!'}
-                                    </p>
-                                </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    {filteredBlogs.map((blog) => {
-                                        const typeConfig = getBlogTypeConfig(blog.blog_type ?? 'update');
-                                        const TypeIcon = typeConfig.icon;
-                                        // Only show the "liked" icon/state if the current user is authenticated
-                                        // and the server/local state indicates they liked this blog.
-                                        const isUserLiked = isAuthenticated && likedBlogs.includes(blog.id);
+                            {/* Sidebar */}
+                            <aside className="space-y-6">
+                                {/* Newsletter Signup removed - subscriptions are now automatically handled on intro signup */}
 
-                                        return (
-                                            <article
-                                                key={blog.id}
-                                                className="w-full bg-[var(--bg-card)] rounded-xl lg:rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 box-border"
-                                            >
-                                                {/* Post Header */}
-                                                <div className="flex items-center gap-3 p-4">
-                                                    <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-gradient-theme flex items-center justify-center text-white font-bold text-sm lg:text-base flex-shrink-0">
-                                                        I
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2 flex-wrap">
-                                                            <h3 className="font-bold text-theme text-sm lg:text-base">Intro Commissie</h3>
-                                                            <span className={`${typeConfig.color} text-white text-[10px] lg:text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1`}>
-                                                                <TypeIcon className="w-2.5 h-2.5" />
-                                                                {typeConfig.label}
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex items-center gap-1 text-xs text-theme-muted">
-                                                            <Calendar className="w-3 h-3" />
-                                                            {(() => {
-                                                                const date = blog.updated_at;
-                                                                return date ? format(new Date(date), 'd MMMM yyyy', { locale: nl }) : null;
-                                                            })()}
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                {/* Post Content */}
-                                                <div
-                                                    onClick={() => setSelectedBlog(blog)}
-                                                    className="cursor-pointer"
-                                                >
-                                                    <div className="px-4 pb-3">
-                                                        <h2 className="text-xl lg:text-2xl font-bold text-theme mb-2 break-words">{blog.title}</h2>
-                                                        <p className="text-sm lg:text-base text-theme-muted line-clamp-3 break-words">
-                                                            {blog.excerpt || ((blog.content ?? '').substring(0, 200) + '...')}
-                                                        </p>
-                                                    </div>
-
-                                                    {/* Post Image */}
-                                                    {blog.image && (
-                                                        <div className="relative w-full overflow-hidden" style={{ maxHeight: '500px' }}>
-                                                            <img
-                                                                src={getImageUrl(blog.image)}
-                                                                alt={blog.title}
-                                                                className="w-full h-auto max-w-full object-cover"
-                                                            />
-                                                        </div>
-                                                    )}
-                                                    {/* No placeholder shown when there's no image */}
-                                                </div>
-
-                                                {/* Action Bar */}
-                                                <div className="flex flex-wrap items-center gap-3 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
-                                                    <button
-                                                        onClick={async (e) => {
-                                                            e.stopPropagation();
-                                                            if (!isAuthenticated) {
-                                                                setShowLoginModal(true);
-                                                                return;
-                                                            }
-                                                            if (likeLoadingId) return;
-                                                            setLikeLoadingId(blog.id);
-                                                            const isLiked = likedBlogs.includes(blog.id);
-                                                            let previous: IntroBlog[] | undefined;
-                                                            try {
-                                                                // Optimistic update
-                                                                previous = queryClient.getQueryData<IntroBlog[]>(['intro-blogs']);
-                                                                queryClient.setQueryData(['intro-blogs'], (old: IntroBlog[] | undefined) => {
-                                                                    if (!old) return old;
-                                                                    return old.map((b) => b.id === blog.id ? { ...b, likes: (b.likes || 0) + (isLiked ? -1 : 1) } : b);
-                                                                });
-
-                                                                const resp = await fetch(isLiked ? '/api/blog-unlike' : '/api/blog-like', {
-                                                                    method: 'POST',
-                                                                    headers: { 'Content-Type': 'application/json' },
-                                                                    body: JSON.stringify({ blogId: blog.id, userId: user?.id }),
-                                                                });
-
-                                                                if (resp.ok) {
-                                                                    const json = await resp.json();
-                                                                    // Reconcile with server value
-                                                                    queryClient.setQueryData(['intro-blogs'], (old: IntroBlog[] | undefined) => {
-                                                                        if (!old) return old;
-                                                                        return old.map((b) => b.id === blog.id ? { ...b, likes: json.likes ?? (b.likes || 0) } : b);
-                                                                    });
-                                                                    if (selectedBlog && selectedBlog.id === blog.id) {
-                                                                        setSelectedBlog({ ...selectedBlog, likes: json.likes ?? (selectedBlog.likes || 0) });
-                                                                    }
-
-                                                                    let next: Array<number | string>;
-                                                                    if (isLiked) {
-                                                                        next = likedBlogs.filter(id => id !== blog.id);
-                                                                    } else {
-                                                                        next = Array.from(new Set([...likedBlogs, blog.id]));
-                                                                    }
-                                                                    setLikedBlogs(next);
-                                                                    try { localStorage.setItem('likedBlogs', JSON.stringify(next)); } catch (e) { }
-
-                                                                    toast.success(isLiked ? 'Like verwijderd' : 'Bedankt voor je like!');
-                                                                } else {
-                                                                    // rollback
-                                                                    if (previous) queryClient.setQueryData(['intro-blogs'], previous as IntroBlog[] | undefined);
-                                                                    const txt = await resp.text().catch(() => undefined);
-                                                                    toast.error('Kon like niet registreren');
-                                                                    console.error('Like API error', resp.status, txt);
-                                                                }
-                                                            } catch (err) {
-                                                                if (previous) queryClient.setQueryData(['intro-blogs'], previous as IntroBlog[] | undefined);
-                                                                console.error('Failed to call like API', err);
-                                                                toast.error('Er ging iets mis bij liken');
-                                                            } finally {
-                                                                setLikeLoadingId(null);
-                                                            }
-                                                        }}
-                                                        disabled={likeLoadingId === blog.id}
-                                                        title={!isAuthenticated ? 'Log in om te liken' : (isUserLiked ? 'Klik om like te verwijderen' : 'Leuk vinden')}
-                                                        className={`flex items-center gap-2 transition-all duration-200 ${isUserLiked
-                                                                ? 'text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-full shadow-md'
-                                                                : 'text-theme-muted hover:text-red-500 hover:scale-110'
-                                                            } ${likeLoadingId === blog.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                                                    >
-                                                        {likeLoadingId === blog.id ? (
-                                                            <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                                                        ) : isUserLiked ? (
-                                                            <svg className="w-5 h-5 animate-[pulse_0.5s_ease-in-out]" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.41 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.41 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                                                            </svg>
-                                                        ) : (
-                                                            <Heart className="w-5 h-5" />
-                                                        )}
-                                                        <span className="text-sm font-medium">{isUserLiked ? 'Geliked' : 'Leuk vinden'}</span>
-                                                        <span className={`text-sm font-semibold ${isUserLiked ? 'text-white' : 'text-theme-muted'}`}>{blog.likes ?? 0}</span>
-                                                    </button>
-                                                    {/* Share button removed */}
-                                                    {canSendEmails && (
-                                                        <button
-                                                            onClick={() => handleSendEmail(blog)}
-                                                            disabled={sendingEmail === String(blog.id)}
-                                                            className="flex items-center gap-2 text-theme-muted hover:text-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ml-auto"
-                                                        >
-                                                            <Mail className="w-5 h-5" />
-                                                            <span className="text-sm">
-                                                                {sendingEmail === String(blog.id) ? 'Versturen...' : 'Email naar deelnemers'}
-                                                            </span>
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </article>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Sidebar */}
-                        <aside className="space-y-6">
-                            {/* Newsletter Signup removed - subscriptions are now automatically handled on intro signup */}
-
-                            {/* Author Card */}
-                            <AuthorCard
-                                name="Intro Commissie"
-                                bio="Het team dat de beste introweek voor je organiseert!"
-                                email="intro@salvemundi.nl"
-                                socials={[
-                                    { provider: 'instagram', href: 'https://instagram.com/salvemundi', label: 'Instagram' },
-                                    { provider: 'facebook', href: 'https://facebook.com/salvemundi', label: 'Facebook' },
-                                ]}
-                            />
-
-                            {/* Tag/Topic List */}
-                            {blogTypes.length > 0 && (
-                                <TagList
-                                    tags={blogTypes.map(type => getBlogTypeConfig(type).label)}
-                                    selectedTags={selectedFilter ? [getBlogTypeConfig(selectedFilter).label] : []}
-                                    onClick={(tag) => {
-                                        const type = blogTypes.find(t => getBlogTypeConfig(t).label === tag);
-                                        setSelectedFilter(type || null);
-                                    }}
+                                {/* Author Card */}
+                                <AuthorCard
+                                    name="Intro Commissie"
+                                    bio="Het team dat de beste introweek voor je organiseert!"
+                                    email="intro@salvemundi.nl"
+                                    socials={[
+                                        { provider: 'instagram', href: 'https://instagram.com/salvemundi', label: 'Instagram' },
+                                        { provider: 'facebook', href: 'https://facebook.com/salvemundi', label: 'Facebook' },
+                                    ]}
                                 />
-                            )}
-                        </aside>
+
+                                {/* Tag/Topic List */}
+                                {blogTypes.length > 0 && (
+                                    <TagList
+                                        tags={blogTypes.map(type => getBlogTypeConfig(type).label)}
+                                        selectedTags={selectedFilter ? [getBlogTypeConfig(selectedFilter).label] : []}
+                                        onClick={(tag) => {
+                                            const type = blogTypes.find(t => getBlogTypeConfig(t).label === tag);
+                                            setSelectedFilter(type || null);
+                                        }}
+                                    />
+                                )}
+                            </aside>
+                        </div>
                     </div>
                 </div>
-            </div>
             </main>
 
-            {/* Login Required Modal */}
-            <LoginRequiredModal open={showLoginModal} onClose={() => setShowLoginModal(false)} />
 
             {/* Blog Detail Modal */}
             {selectedBlog && (
@@ -632,7 +629,7 @@ export default function IntroBlogPage() {
                                                 onClick={async (e) => {
                                                     e.stopPropagation();
                                                     if (!isAuthenticated) {
-                                                        setShowLoginModal(true);
+                                                        loginWithMicrosoft();
                                                         return;
                                                     }
                                                     if (likeLoadingId) return;
@@ -688,8 +685,8 @@ export default function IntroBlogPage() {
                                                 disabled={likeLoadingId === selectedBlog.id}
                                                 title={!isAuthenticated ? 'Log in om te liken' : (selectedIsUserLiked ? 'Klik om like te verwijderen' : 'Leuk vinden')}
                                                 className={`flex items-center gap-2 transition-all duration-200 ${selectedIsUserLiked
-                                                        ? 'text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-full shadow-md'
-                                                        : 'text-theme-muted hover:text-red-500 hover:scale-110'
+                                                    ? 'text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-full shadow-md'
+                                                    : 'text-theme-muted hover:text-red-500 hover:scale-110'
                                                     } ${likeLoadingId === selectedBlog.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                             >
                                                 {likeLoadingId === selectedBlog.id ? (
