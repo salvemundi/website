@@ -35,7 +35,34 @@ export default function Timeline({ boards, getImageUrl, getMemberFullName }: Tim
             const ybRaw = b?.year ?? b?.jaar ?? b?.id ?? 0;
             const ya = extractYear(yaRaw);
             const yb = extractYear(ybRaw);
-            return Number(yb) - Number(ya);
+
+            // Primary: year descending
+            if (yb !== ya) return Number(yb) - Number(ya);
+
+            // Secondary: when years are equal, sort by numeric part of name (largest number first)
+            const nameA = String(a?.naam ?? a?.name ?? '').trim();
+            const nameB = String(b?.naam ?? b?.name ?? '').trim();
+
+            const extractNumber = (s: string) => {
+                if (!s) return -1;
+                const matches = s.match(/(\d+)/g);
+                if (!matches) return -1;
+                // take the last numeric group (e.g. "Bestuur 2019-2" -> 2)
+                const n = parseInt(matches[matches.length - 1], 10);
+                return isNaN(n) ? -1 : n;
+            };
+
+            const na = extractNumber(nameA);
+            const nb = extractNumber(nameB);
+
+            if (nb !== na) return nb - na;
+
+            // Fallback: purely lexicographic descending by name
+            const aLower = nameA.toLowerCase();
+            const bLower = nameB.toLowerCase();
+            if (bLower > aLower) return 1;
+            if (bLower < aLower) return -1;
+            return 0;
         });
     }, [boards]);
 
