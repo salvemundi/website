@@ -66,10 +66,9 @@ export default function SponsorsSection() {
         return null;
     }
 
-    // Create exactly two copies of the sponsors list so the track
-    // is a repeated sequence and the animation can translate -50%
-    // for a seamless infinite loop.
-    const duplicatedSponsors = [...sponsors, ...sponsors];
+    // Create multiple copies of the sponsors list for a truly seamless infinite scroll.
+    // With 4 copies, the animation can smoothly loop without visible jumps.
+    const duplicatedSponsors = [...sponsors, ...sponsors, ...sponsors, ...sponsors];
 
     return (
         <section className="py-8 sm:py-10 md:py-12 bg-[var(--bg-main)] overflow-hidden">
