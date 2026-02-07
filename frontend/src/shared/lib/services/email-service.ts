@@ -336,41 +336,7 @@ export async function sendMembershipSignupEmail(data: MembershipSignupEmailData)
   }
 
   try {
-    const adminEmailBody = `
-      <html>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-          <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #7B2CBF;">Nieuwe Lidmaatschap Aanmelding</h1>
-            <p>Er is een nieuwe aanmelding voor lidmaatschap:</p>
-            
-            <div style="background-color: #F5F5DC; padding: 15px; border-radius: 8px; margin: 20px 0;">
-              <h2 style="color: #FF6B35; margin-top: 0;">${data.firstName} ${data.lastName}</h2>
-              <p><strong>Email:</strong> ${data.recipientEmail}</p>
-              <p><strong>Telefoonnummer:</strong> ${data.phoneNumber}</p>
-              ${data.dateOfBirth ? `<p><strong>Geboortedatum:</strong> ${data.dateOfBirth}</p>` : ''}
-            </div>
-            
-            ${data.favoriteGif ? `
-              <div style="margin: 20px 0;">
-                <p><strong>Favoriete GIF:</strong></p>
-                <img src="${data.favoriteGif}" alt="Favorite GIF" style="max-width: 300px; border-radius: 8px;" />
-              </div>
-            ` : ''}
-            
-            <p style="margin-top: 30px; color: #666;">
-              <em>Aangemeld op: ${new Date().toLocaleDateString('nl-NL', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })}</em>
-            </p>
-          </div>
-        </body>
-      </html>
-    `;
+
 
     const userEmailBody = `
       <html>
@@ -405,17 +371,7 @@ export async function sendMembershipSignupEmail(data: MembershipSignupEmailData)
       console.error('Failed to send membership confirmation to participant:', error);
     }
 
-    try {
-      await sendEmail(
-        config,
-        config.fromEmail,
-        `Nieuwe lidmaatschap aanmelding: ${data.firstName} ${data.lastName}`,
-        adminEmailBody
-      );
-      // membership notification sent to organization (log removed)
-    } catch (error) {
-      console.error('Failed to send membership signup notification to organization:', error);
-    }
+
   } catch (error) {
     console.error('Failed to send membership signup email:', error);
     // Don't throw error - we don't want to fail the signup if email fails
@@ -558,27 +514,7 @@ export async function sendIntroSignupEmail(data: IntroSignupEmailData): Promise<
       </html>
     `;
 
-    const orgEmailBody = `
-      <html>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-          <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #7B2CBF;">Nieuwe intro aanmelding</h1>
-            <p>Er is een nieuwe inschrijving voor de introweek:</p>
-            <ul>
-              <li><strong>Naam:</strong> ${participantName}</li>
-              <li><strong>Email:</strong> ${data.participantEmail}</li>
-              <li><strong>Telefoonnummer:</strong> ${data.phoneNumber}</li>
-              ${data.dateOfBirth ? `<li><strong>Geboortedatum:</strong> ${data.dateOfBirth}</li>` : ''}
-            </ul>
-            ${data.favoriteGif ? `
-              <p><strong>Favoriete GIF:</strong></p>
-              <img src="${data.favoriteGif}" alt="Favoriete GIF" style="max-width: 300px; border-radius: 12px;" />
-            ` : ''}
-            ${introContactSection}
-          </div>
-        </body>
-      </html>
-    `;
+
 
     // Send emails sequentially to avoid race conditions
     try {
@@ -588,12 +524,7 @@ export async function sendIntroSignupEmail(data: IntroSignupEmailData): Promise<
       console.error('Failed to send participant email:', err);
     }
 
-    try {
-      await sendEmail(config, config.fromEmail, `Nieuwe introweek aanmelding: ${participantName}`, orgEmailBody);
 
-    } catch (err) {
-      console.error('Failed to send organization email:', err);
-    }
 
 
   } catch (error) {
