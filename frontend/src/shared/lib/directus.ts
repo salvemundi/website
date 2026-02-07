@@ -13,12 +13,10 @@ const API_SERVICE_TOKEN = isServer
     ? (process.env.DIRECTUS_API_TOKEN || process.env.DIRECTUS_TOKEN || process.env.DIRECTUS_API_KEY || '')
     : '';
 
-// Singleton promise for token refresh to handle multiple simultaneous 401s (browser only)
-let refreshPromise: Promise<boolean> | null = null;
-
 // Helper to check if JWT token is about to expire (within 60 seconds)
-function isTokenExpiringSoon(token: string): boolean {
+export function isTokenExpiringSoon(token: string): boolean {
     try {
+        if (!token) return true;
         const parts = token.split('.');
         if (parts.length !== 3) return true;
 
@@ -34,62 +32,85 @@ function isTokenExpiringSoon(token: string): boolean {
     }
 }
 
+// Shared singleton promise for token refresh
+let refreshPromise: Promise<boolean> | null = null;
+
+// The actual refresh implementation - can be called from anywhere
+export async function performTokenRefresh(): Promise<boolean> {
+    if (typeof window === 'undefined') return false;
+
+    // If a refresh is already in progress, return the existing promise
+
+    if (refreshPromise) {
+        return refreshPromise;
+    }
+
+    refreshPromise = (async () => {
+        try {
+            const refreshToken = localStorage.getItem('refresh_token');
+            if (!refreshToken) {
+                return false;
+            }
+
+            const response = await fetch(`${directusUrl}/auth/refresh`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refresh_token: refreshToken, mode: 'json' }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.data?.access_token) {
+                    localStorage.setItem('auth_token', data.data.access_token);
+                    if (data.data.refresh_token) {
+                        localStorage.setItem('refresh_token', data.data.refresh_token);
+                    }
+                    return true;
+                }
+            } else {
+                // Only log if it's not a standard expired token case to avoid noise
+                if (response.status !== 401) {
+                    const errorBody = await response.text().catch(() => 'no body');
+                    console.warn(`[directusFetch] Token refresh failed (${response.status}):`, errorBody);
+                }
+            }
+            return false;
+        } catch (error) {
+            console.error('[directusFetch] Unexpected error during token refresh:', error);
+            return false;
+        } finally {
+            refreshPromise = null;
+        }
+    })();
+
+    return refreshPromise;
+}
+
 // Proactive token refresh - returns the new access token or null if failed
 async function ensureFreshToken(): Promise<string | null> {
     if (typeof window === 'undefined') return null;
 
     try {
-        const currentToken = localStorage.getItem('auth_token');
+        let authToken = localStorage.getItem('auth_token');
         const refreshToken = localStorage.getItem('refresh_token');
 
-        if (!currentToken || !refreshToken) return currentToken;
+        if (!authToken || !refreshToken) return authToken;
 
-        // If token is still fresh, return it
-        if (!isTokenExpiringSoon(currentToken)) return currentToken;
-
-        console.log('[directusFetch] Token expiring soon, proactively refreshing...');
-
-        // Use singleton pattern to avoid multiple simultaneous refreshes
-        if (!refreshPromise) {
-            refreshPromise = (async () => {
-                try {
-                    const refreshResponse = await fetch(`${directusUrl}/auth/refresh`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ refresh_token: refreshToken }),
-                    });
-
-                    if (refreshResponse.ok) {
-                        const data = await refreshResponse.json();
-                        const payload = data.data || data;
-
-                        if (payload.access_token && payload.refresh_token) {
-                            localStorage.setItem('auth_token', payload.access_token);
-                            localStorage.setItem('refresh_token', payload.refresh_token);
-                            window.dispatchEvent(new CustomEvent('auth:refreshed', { detail: payload }));
-                            console.log('[directusFetch] Proactive token refresh successful');
-                            return true;
-                        }
-                    }
-                    return false;
-                } catch (error) {
-                    console.error('[directusFetch] Proactive token refresh failed', error);
-                    return false;
-                } finally {
-                    refreshPromise = null;
-                }
-            })();
+        // Check for proactive refresh
+        if (isTokenExpiringSoon(authToken)) {
+            const success = await performTokenRefresh();
+            if (success) {
+                authToken = localStorage.getItem('auth_token');
+            }
         }
-
-        const success = await refreshPromise;
-        if (success) {
-            return localStorage.getItem('auth_token');
-        }
-        return currentToken; // Return old token if refresh failed, let the request try anyway
+        return authToken;
     } catch (e) {
         return localStorage.getItem('auth_token');
     }
 }
+
+
+
 
 // Create a simple fetch wrapper for Directus REST API
 // Added _isRetry parameter to prevent infinite loops during token refresh
@@ -185,75 +206,31 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit, 
         if (usingSessionToken && typeof window !== 'undefined' && !_isRetry) {
             const refreshToken = localStorage.getItem('refresh_token');
             if (refreshToken) {
-                try {
-                    // Use singleton promise to ensure only one refresh happens at a time
-                    if (!refreshPromise) {
-                        console.log('[directusFetch] Token expired, attempting refresh...');
-                        refreshPromise = (async () => {
-                            try {
-                                const refreshResponse = await fetch(`${directusUrl}/auth/refresh`, {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                    },
-                                    body: JSON.stringify({
-                                        refresh_token: refreshToken,
-                                    }),
-                                });
+                const success = await performTokenRefresh();
 
-                                if (refreshResponse.ok) {
-                                    const data = await refreshResponse.json();
-                                    const payload = data.data || data;
-
-                                    if (payload.access_token && payload.refresh_token) {
-                                        console.log('[directusFetch] Token refreshed successfully');
-                                        localStorage.setItem('auth_token', payload.access_token);
-                                        localStorage.setItem('refresh_token', payload.refresh_token);
-
-                                        // Emit event to notify other components (like AuthProvider) of the new token
-                                        window.dispatchEvent(new CustomEvent('auth:refreshed', { detail: payload }));
-                                        return true;
-                                    }
-                                }
-                                return false;
-                            } catch (error) {
-                                console.error('[directusFetch] Error during token refresh', error);
-                                return false;
-                            } finally {
-                                refreshPromise = null;
-                            }
-                        })();
+                if (success) {
+                    // Refresh succeeded, retry original request with new token
+                    const newToken = localStorage.getItem('auth_token');
+                    if (newToken) {
+                        const newOptions = { ...options };
+                        const newHeaders = new Headers(options?.headers || {});
+                        newHeaders.set('Authorization', `Bearer ${newToken}`);
+                        newOptions.headers = newHeaders;
+                        return directusFetch<T>(endpoint, newOptions, true);
                     }
-
-                    const success = await refreshPromise;
-                    if (success) {
-                        // Retry the original request with the new token
-                        return directusFetch(endpoint, options, true);
-                    } else {
-                        console.warn('[directusFetch] Token refresh failed, clearing session');
-                        // Refresh failed explicitly
-                        localStorage.removeItem('auth_token');
-                        localStorage.removeItem('refresh_token');
-                        window.dispatchEvent(new CustomEvent('auth:expired'));
-
-                        throw new Error('Session expired: Token refresh failed');
-                    }
-                } catch (refreshErr) {
-                    console.error('[directusFetch] Error during token refresh coordination', refreshErr);
-                    // Critical failure ensuring cleanup
+                } else {
+                    // Refresh failed, clear session to prevent loops
                     localStorage.removeItem('auth_token');
                     localStorage.removeItem('refresh_token');
                     window.dispatchEvent(new CustomEvent('auth:expired'));
-                    throw refreshErr;
                 }
+            } else {
+                // If we are here, no refresh token existed to begin with, or logic flow failed.
+                console.warn('[directusFetch] 401 with session token but no refresh capability/token');
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('refresh_token');
+                window.dispatchEvent(new CustomEvent('auth:expired'));
             }
-            // If we are here, no refresh token existed to begin with, or logic flow failed.
-            console.warn('[directusFetch] 401 with session token but no refresh capability/logic');
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('refresh_token');
-            window.dispatchEvent(new CustomEvent('auth:expired'));
-            // Do not force reload immediately here to allow graceful UI handling if possible, 
-            // but usually a 401 in this state means we are done.
         } else if (usingSessionToken && typeof window !== 'undefined') {
             // Already retried and failed (recursive call), or window undefined
             console.warn('[directusFetch] 401 on retry, session is definitely invalid');
@@ -263,6 +240,7 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit, 
             // Stop the loop
             throw new Error('Session expired: Retry failed');
         }
+
     }
 
     if (!response.ok) {

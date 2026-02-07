@@ -294,9 +294,13 @@ function StickersContent() {
             }
         }
 
-        const dataToSubmit = { ...formData };
+        const dataToSubmit: any = { ...formData };
         if (imageId) {
             dataToSubmit.image = imageId;
+        } else {
+            // Ensure we don't send an empty string for relation fields (Directus expects a UUID or null).
+            // Remove the image key when no image was uploaded to avoid invalid UUID insert errors.
+            if (Object.prototype.hasOwnProperty.call(dataToSubmit, 'image')) delete dataToSubmit.image;
         }
 
         createMutation.mutate(dataToSubmit);

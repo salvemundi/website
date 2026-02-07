@@ -1,0 +1,233 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - "Development"
+      - "main"
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_call:
+
+jobs:
+  frontend-checks:
+    name: Frontend Lint & Typecheck
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22' # Verhoogd voor Directus SDK compatibiliteit
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Lint
+        working-directory: frontend
+        env:
+          ESLINT_USE_FLAT_CONFIG: false
+        run: |
+          # Lint alleen de src map om ruis van config bestanden te voorkomen
+          npx eslint "src/**/*.{js,jsx,ts,tsx}" --max-warnings 0
+      - name: Typecheck
+        run: npm run typecheck
+
+  backend-checks:
+    name: Backend Syntax Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax Check JS Files
+        run: |
+          find . -maxdepth 2 -name "*.js" -not -path "*/node_modules/*" -not -path "./frontend/*" -exec node --check {} +
+
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      admin_api: ${{ steps.filter.outputs.admin_api }}
+      payment_api: ${{ steps.filter.outputs.payment_api }}
+      arcane: ${{ steps.filter.outputs.arcane }}
+      directus: ${{ steps.filter.outputs.directus }}
+      email_api: ${{ steps.filter.outputs.email_api }}
+      graph_sync: ${{ steps.filter.outputs.graph_sync }}
+      graph_webhook: ${{ steps.filter.outputs.graph_webhook }}
+      leden_check: ${{ steps.filter.outputs.leden_check }}
+      membership_api: ${{ steps.filter.outputs.membership_api }}
+      server_monitor: ${{ steps.filter.outputs.server_monitor }}
+      notification_api: ${{ steps.filter.outputs.notification_api }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          base: ${{ github.event.before }}
+          filters: |
+            frontend:
+              - 'frontend/**'
+              - '.github/workflows/deploy-frontend.yml'
+            admin_api:
+              - 'admin-api/**'
+              - '.github/workflows/deploy-admin-api.yml'
+            payment_api:
+              - 'payment-api/**'
+              - '.github/workflows/deploy-payment.yml'
+            arcane:
+              - 'arcane/**'
+              - '.github/workflows/deploy-arcane.yml'
+            directus:
+              - 'directus/**'
+              - '.github/workflows/deploy-directus.yml'
+            email_api:
+              - 'email-api/**'
+              - '.github/workflows/deploy-email.yml'
+            graph_sync:
+              - 'graph-sync/**'
+              - '.github/workflows/deploy-graph-sync.yml'
+            graph_webhook:
+              - 'graph-webhook/**'
+              - '.github/workflows/deploy-graph-webhook.yml'
+            leden_check:
+              - 'leden-check-script/**'
+              - '.github/workflows/deploy-leden-check.yml'
+            membership_api:
+              - 'membership-api/**'
+              - '.github/workflows/deploy-membership.yml'
+            server_monitor:
+              - 'server-monitor/**'
+              - '.github/workflows/deploy-monitor.yml'
+            notification_api:
+              - 'notification-api/**'
+              - '.github/workflows/deploy-notification-api.yml'
+      - name: Debug Filter Outputs
+        run: |
+          echo "Frontend: ${{ steps.filter.outputs.frontend }}"
+          echo "Admin API: ${{ steps.filter.outputs.admin_api }}"
+          echo "Payment API: ${{ steps.filter.outputs.payment_api }}"
+          echo "Directus: ${{ steps.filter.outputs.directus }}"
+          echo "Membership API: ${{ steps.filter.outputs.membership_api }}"
+
+  deploy-frontend:
+    needs: [frontend-checks, backend-checks, changes]
+    if: needs.changes.outputs.frontend == 'true'
+    uses: ./.github/workflows/deploy-frontend.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+  deploy-admin-api:
+    needs: [frontend-checks, backend-checks, changes]
+    if: needs.changes.outputs.admin_api == 'true'
+    uses: ./.github/workflows/deploy-admin-api.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+
+  deploy-payment-api:
+    needs: [frontend-checks, backend-checks, changes]
+    if: needs.changes.outputs.payment_api == 'true'
+    uses: ./.github/workflows/deploy-payment.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+
+  deploy-arcane:
+    needs: [frontend-checks, backend-checks, changes]
+    if: needs.changes.outputs.arcane == 'true'
+    uses: ./.github/workflows/deploy-arcane.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+
+  deploy-directus:
+    needs: [frontend-checks, backend-checks, changes]
+    if: needs.changes.outputs.directus == 'true'
+    uses: ./.github/workflows/deploy-directus.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+
+  deploy-email-api:
+    needs: [frontend-checks, backend-checks, changes]
+    if: needs.changes.outputs.email_api == 'true'
+    uses: ./.github/workflows/deploy-email.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+
+  deploy-graph-sync:
+    needs: [frontend-checks, backend-checks, changes]
+    if: needs.changes.outputs.graph_sync == 'true'
+    uses: ./.github/workflows/deploy-graph-sync.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+
+  deploy-graph-webhook:
+    needs: [frontend-checks, backend-checks, changes]
+    if: needs.changes.outputs.graph_webhook == 'true'
+    uses: ./.github/workflows/deploy-graph-webhook.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+
+  deploy-leden-check:
+    needs: [frontend-checks, backend-checks, changes]
+    if: needs.changes.outputs.leden_check == 'true'
+    uses: ./.github/workflows/deploy-leden-check.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+
+  deploy-membership-api:
+    needs: [frontend-checks, backend-checks, changes]
+    if: needs.changes.outputs.membership_api == 'true'
+    uses: ./.github/workflows/deploy-membership.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+  deploy-monitor:
+    needs: [frontend-checks, backend-checks, changes]
+    if: needs.changes.outputs.server_monitor == 'true'
+    uses: ./.github/workflows/deploy-monitor.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+
+  deploy-notification-api:
+    needs: [frontend-checks, backend-checks, changes]
+    if: needs.changes.outputs.notification_api == 'true'
+    uses: ./.github/workflows/deploy-notification-api.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write

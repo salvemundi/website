@@ -5,11 +5,41 @@ import { useRouter } from 'next/navigation';
 import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Ticket, Save, Calendar, Euro, Percent, AlertCircle } from 'lucide-react';
+import { useAuth } from '@/features/auth/providers/auth-provider';
+import { isUserAuthorized, getMergedTokens, normalizeCommitteeName } from '@/shared/lib/committee-utils';
+import { siteSettingsApi } from '@/shared/lib/api/salvemundi';
+import NoAccessPage from '../../no-access/page';
+import { useEffect } from 'react';
 
 export default function NewCouponPage() {
     const router = useRouter();
+    const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        checkAccess();
+    }, [user]);
+
+    const checkAccess = async () => {
+        if (!user) {
+            setIsAuthorized(false);
+            return;
+        }
+
+        try {
+            const setting = await siteSettingsApi.get('admin_coupons', true);
+            const tokens = getMergedTokens(setting?.authorized_tokens, ['ictcommissie', 'bestuur', 'kascommissie', 'kandidaatbestuur']);
+            setIsAuthorized(isUserAuthorized(user, tokens));
+        } catch (error) {
+            // Fallback for static check
+            const committees: any[] = (user as any).committees || [];
+            const names = committees.map((c: any) => normalizeCommitteeName(typeof c === 'string' ? c : c.name || c.committee_id?.name || ''));
+            const hasAccess = names.some(n => n.includes('ict') || n.includes('bestuur') || n.includes('kas') || n.includes('kandi'));
+            setIsAuthorized(hasAccess);
+        }
+    };
 
     const [formData, setFormData] = useState({
         coupon_code: '',
@@ -76,6 +106,14 @@ export default function NewCouponPage() {
             setIsLoading(false);
         }
     };
+
+    if (isAuthorized === false) {
+        return <NoAccessPage />;
+    }
+
+    if (isAuthorized === null) {
+        return null;
+    }
 
     return (
         <>

@@ -9,6 +9,7 @@ import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Search, Download, Mail, Phone, CheckCircle, XCircle, Clock, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
+import ManualSignupModal from './ManualSignupModal';
 
 interface Signup {
     id: number;
@@ -37,6 +38,7 @@ export default function AanmeldingenPage() {
     const [eventData, setEventData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isManualModalOpen, setIsManualModalOpen] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -238,8 +240,23 @@ export default function AanmeldingenPage() {
                             <Download className="h-5 w-5" />
                             Exporteer CSV
                         </button>
+                        <button
+                            onClick={() => setIsManualModalOpen(true)}
+                            className="flex items-center gap-2 px-6 py-3 border border-theme-purple text-theme-purple hover:bg-theme-purple/5 rounded-lg transition font-medium"
+                        >
+                            + Handmatig
+                        </button>
                     </div>
                 </div>
+
+                <ManualSignupModal
+                    isOpen={isManualModalOpen}
+                    onClose={() => setIsManualModalOpen(false)}
+                    onSuccess={loadData}
+                    eventId={eventId}
+                    eventName={eventName}
+                    eventPrice={eventData?.price_members || 0} // Assuming member price for now, logic inside modal handles payment status
+                />
 
                 {/* Signups Table */}
                 {isLoading ? (

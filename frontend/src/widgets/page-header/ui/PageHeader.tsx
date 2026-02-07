@@ -1,7 +1,5 @@
 import React from "react";
-import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft } from 'lucide-react';
 import { stripHtml } from '@/shared/lib/text';
 
 interface PageHeaderProps {
@@ -32,8 +30,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     children,
     variant = 'centered',
     description,
-    contentPadding = 'py-20',
-    backLink
+    contentPadding = 'py-20'
 }) => {
     const headerRef = useRef<HTMLElement | null>(null);
 
@@ -88,17 +85,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
             <div className={`relative z-20 w-full max-w-app px-4 ${contentPadding} ${variant === 'centered' ? 'text-center' : ''}`}>
                 {variant === 'centered' ? (
                     <>
-                        {backLink && (
-                            <div className="absolute top-4 left-4 z-30">
-                                <Link
-                                    href={backLink}
-                                    className="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors bg-black/20 hover:bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full font-medium"
-                                >
-                                    <ArrowLeft className="h-4 w-4" />
-                                    <span>Terug</span>
-                                </Link>
-                            </div>
-                        )}
+                        {/* Back link intentionally removed site-wide */}
                         <h1 className={`text-theme-purple dark:!text-white font-bold leading-tight drop-shadow-lg shadow-black/50 ${titleClassName}`} style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)', color: isDark ? '#ffffff' : undefined }}>
                             {title.split('\n').map((line, index) => (
                                 <React.Fragment key={index}>

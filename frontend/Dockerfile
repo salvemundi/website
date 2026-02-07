@@ -26,6 +26,9 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Install curl for health checks
+RUN apk add --no-cache curl
+
 # Pass build-time variables to runtime for SSR and debugging
 ARG NEXT_PUBLIC_DIRECTUS_URL
 ARG NEXT_PUBLIC_AUTH_REDIRECT_URI
@@ -56,4 +59,9 @@ USER nextjs
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+
+# Add healthcheck using curl (consistent with deployment workflow)
+HEALTHCHECK --interval=10s --timeout=3s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:3000/ || exit 1
+
 CMD ["node", "server.js"]

@@ -1,13 +1,7 @@
 name: Deploy Frontend
 
 on:
-  push:
-    branches:
-      - "Development"
-      - "main"
-    paths:
-      - "frontend/**"
-      - ".github/workflows/frontend-deploy.yml"
+  workflow_call:
   workflow_dispatch:
 env:
   REGISTRY: ghcr.io
@@ -19,6 +13,7 @@ concurrency:
 
 jobs:
   build-and-deploy:
+    if: ${{ true }} # Always run when called (Orchestrator handles conditions)
     runs-on: ubuntu-latest
     timeout-minutes: 15  # Prevent infinite runs
     permissions:
@@ -27,13 +22,17 @@ jobs:
       packages: write
 
     env:
-      TAG: ${{ github.ref_name == 'main' && 'latest' || github.ref_name == 'Development' && 'dev' || 'local' }}
-      DEPLOY_PATH: ${{ github.ref_name == 'main' && '/opt/frontend-prod' || github.ref_name == 'Development' && '/opt/frontend-dev' || '/opt/frontend-local' }}
-      INFISICAL_ENVIRONMENT: ${{ github.ref_name == 'main' && 'prod' || github.ref_name == 'Development' && 'dev' || 'local' }}
+      # Use head_branch for logic, fallback to ref_name for dispatch
+      REF_NAME: ${{ github.event.workflow_run.head_branch || github.ref_name }}
+      TAG: ${{ (github.event.workflow_run.head_branch || github.ref_name) == 'main' && 'latest' || (github.event.workflow_run.head_branch || github.ref_name) == 'Development' && 'dev' || 'local' }}
+      DEPLOY_PATH: ${{ (github.event.workflow_run.head_branch || github.ref_name) == 'main' && '/opt/frontend-prod' || (github.event.workflow_run.head_branch || github.ref_name) == 'Development' && '/opt/frontend-dev' || '/opt/frontend-local' }}
+      INFISICAL_ENVIRONMENT: ${{ (github.event.workflow_run.head_branch || github.ref_name) == 'main' && 'prod' || (github.event.workflow_run.head_branch || github.ref_name) == 'Development' && 'dev' || 'local' }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       # ------------------------------
       # Fetch Secrets from Infisical
@@ -158,4 +157,30 @@ jobs:
             
             # Clean up old/dangling images (untagged) to free space
             docker image prune -f
+
+            echo "Waiting for Frontend to respond on port 3000..."
+            CONTAINER_NAME="frontend-$TAG"
+            # Frontend is usually quick, give it up to 1 minute
+            for i in {1..12}; do
+              # Direct curl check inside container
+              if docker exec $CONTAINER_NAME curl -s -f http://localhost:3000/ > /dev/null 2>&1; then
+                echo "✅ Frontend is up and running!"
+                exit 0
+              fi
+              
+              # Check if container crashed
+              if [[ $(docker inspect --format='{{.State.Status}}' $CONTAINER_NAME) == "exited" ]]; then
+                echo "❌ Container has EXITED!"
+                docker logs $CONTAINER_NAME | tail -n 50
+                exit 1
+              fi
+              
+              if (( i % 3 == 0 )); then
+                echo "Still waiting for Frontend... ($i/12)"
+              fi
+              sleep 5
+            done
+            echo "⏳ Frontend start check TIMEOUT!"
+            docker logs $CONTAINER_NAME | tail -n 50
+            exit 1
 

@@ -1,14 +1,21 @@
 'use client';
 
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { useAuth } from '@/features/auth/providers/auth-provider';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
+/**
+ * SafeHavenAvailabilityPage - Protected feature (currently disabled)
+ * Auth handled by ProtectedRoute wrapper
+ */
 export default function SafeHavenAvailabilityPage() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  return (
+    <ProtectedRoute requireAuth>
+      <SafeHavenContent />
+    </ProtectedRoute>
+  );
+}
 
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center">Laden...</div>;
-  if (!isAuthenticated || !user) return <div className="min-h-screen flex items-center justify-center">Niet toegestaan</div>;
-
+function SafeHavenContent() {
   return (
     <div className="min-h-screen">
       <PageHeader title="Safe Haven Beschikbaarheid" />

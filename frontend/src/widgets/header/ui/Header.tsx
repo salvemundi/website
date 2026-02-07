@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, X, Sparkles, Shield, MapPin, LogOut, Home, User, CalendarDays, Users, Beer, Map, Mail } from "lucide-react";
-import { useAuth } from "@/features/auth/providers/auth-provider";
+import { useAuth, useAuthActions } from "@/features/auth/providers/auth-provider";
 import { getImageUrl } from "@/shared/lib/api/salvemundi";
 import { useSalvemundiSiteSettings } from "@/shared/lib/hooks/useSalvemundiApi";
 import { ROUTES } from "@/shared/lib/routes";
@@ -26,6 +26,17 @@ const Header: React.FC = () => {
     const kroegentochtEnabled = kroegentochtSettings?.show ?? true;
     const { data: reisSettings } = useSalvemundiSiteSettings('reis');
     const reisEnabled = reisSettings?.show ?? true;
+    const { loginWithMicrosoft, loginWithRedirect } = useAuthActions();
+
+    const handleLogin = async () => {
+        try {
+            await loginWithMicrosoft();
+        } catch (error) {
+            // If popup is blocked or fails, fallback to redirect
+            console.warn('[Header] Popup login failed, falling back to redirect:', error);
+            await loginWithRedirect(window.location.pathname);
+        }
+    };
 
     useEffect(() => {
         const handleScroll = () => {
@@ -157,8 +168,8 @@ const Header: React.FC = () => {
     return (
         <header
             ref={headerRef}
-            className="sticky top-0 z-50 w-full bg-[var(--bg-main)]/98 backdrop-blur-2xl"
-            style={{ 
+            className="fixed top-0 z-40 w-full bg-[var(--bg-main)]/80 backdrop-blur-md shadow-sm transition-all duration-300"
+            style={{
                 marginTop: 'calc(-1 * env(safe-area-inset-top))',
                 paddingTop: 'env(safe-area-inset-top)'
             }}
@@ -204,6 +215,7 @@ const Header: React.FC = () => {
                                 key={link.href}
                                 href={link.href}
                                 className={getLinkClassName(link.href)}
+                                prefetch={false}
                             >
                                 <span>{link.name}</span>
                                 <span
@@ -216,6 +228,7 @@ const Header: React.FC = () => {
                             </Link>
                         ))}
                     </nav>
+
 
                     <div className="flex items-center gap-3">
                         {isCommitteeMember && (
@@ -246,12 +259,12 @@ const Header: React.FC = () => {
                                 <span className="hidden sm:inline">Mijn profiel</span>
                             </Link>
                         ) : (
-                            <Link
-                                href={ROUTES.LOGIN}
+                            <button
+                                onClick={handleLogin}
                                 className="flex items-center gap-2 rounded-full  bg-primary-100 dark:bg-theme-purple/20 text-theme-purple-darker dark:text-theme-white font-semibold px-3 py-1.5 text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                             >
                                 Inloggen
-                            </Link>
+                            </button>
                         )}
 
                         {!isAuthenticated && (

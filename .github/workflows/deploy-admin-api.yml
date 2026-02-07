@@ -1,13 +1,7 @@
 name: Deploy Admin API Service
 
 on:
-  push:
-    branches:
-      - 'Development'
-      - 'main'
-    paths:
-      - 'admin-api/**'
-      - '.github/workflows/deploy-admin-api.yml'
+  workflow_call:
   workflow_dispatch:
 
 env:
@@ -20,6 +14,7 @@ concurrency:
 
 jobs:
   build-and-deploy:
+    if: ${{ true }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -29,6 +24,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -36,10 +33,15 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
 
       - name: Set environment variables
         run: |
-          if [[ "${{ github.ref_name }}" == "main" ]]; then
+          TARGET_BRANCH="${{ github.event.workflow_run.head_branch || github.ref_name }}"
+          if [[ "$TARGET_BRANCH" == "main" ]]; then
             echo "TAG=latest" >> $GITHUB_ENV
             echo "DEPLOY_PATH=/opt/admin-api-prod" >> $GITHUB_ENV
           else
@@ -59,7 +61,8 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
           provenance: false
-          no-cache: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Delete Untagged Images
         uses: actions/delete-package-versions@v5

@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { useSalvemundiWhatsAppGroups } from '@/shared/lib/hooks/useSalvemundiApi';
@@ -10,23 +9,29 @@ import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { stripHtml } from '@/shared/lib/text';
 import { WhatsAppGroup } from '@/shared/lib/api/salvemundi';
 import Card from '@/shared/ui/Card';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
+/**
+ * WhatsAppGroupsPage - Protected page for viewing and joining WhatsApp groups
+ * Requires active membership (verified in component logic)
+ */
 export default function WhatsAppGroupsPage() {
+    return (
+        <ProtectedRoute requireAuth>
+            <WhatsAppGroupsContent />
+        </ProtectedRoute>
+    );
+}
+
+function WhatsAppGroupsContent() {
     const router = useRouter();
-    const { user, isLoading: authLoading, isLoggingOut } = useAuth();
+    const { user, isLoading: authLoading } = useAuth();
     const { data: groups = [], isLoading: groupsLoading, error, refetch } = useSalvemundiWhatsAppGroups(true);
     const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://admin.salvemundi.nl';
     const { data: documents } = useQuery({ queryKey: ['documents'], queryFn: documentsApi.getAll });
 
     const chatRegelsDoc = (documents || []).find((d: any) => (d.title || '').toLowerCase().trim() === 'chat regels');
     const gedragscodeUrl = chatRegelsDoc ? `${directusUrl}/assets/${chatRegelsDoc.file}` : 'https://salvemundi.nl/gedragscode';
-
-    useEffect(() => {
-        if (!authLoading && !user && !isLoggingOut) {
-            const returnTo = window.location.pathname + window.location.search;
-            router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
-        }
-    }, [user, authLoading, router, isLoggingOut]);
 
     const handleJoinGroup = (inviteLink: string) => {
         window.open(inviteLink, '_blank', 'noopener,noreferrer');

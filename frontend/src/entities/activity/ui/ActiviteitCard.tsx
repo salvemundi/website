@@ -11,6 +11,7 @@ interface ActiviteitCardProps {
     description_logged_in?: string;
     image?: string;
     date?: string;
+    endDate?: string;
     startTime?: string | null;
     endTime?: string | null;
     location?: string | null;
@@ -35,6 +36,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     image,
     title,
     date,
+    endDate,
     startTime,
     endTime,
     location,
@@ -95,13 +97,25 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
 
     const committeeLabel = cleanCommitteeName(committeeName);
 
-    const formatDate = (value?: string) => {
+    const formatDate = (value?: string, endValue?: string) => {
         if (!value) return 'Datum volgt';
         const parsed = new Date(value);
         if (Number.isNaN(parsed.getTime())) {
             return value;
         }
-        return parsed.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+
+        const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+        const startFormatted = parsed.toLocaleDateString('nl-NL', options);
+
+        if (endValue && endValue !== value) {
+            const endParsed = new Date(endValue);
+            if (!Number.isNaN(endParsed.getTime())) {
+                const endFormatted = endParsed.toLocaleDateString('nl-NL', options);
+                return `${startFormatted} t/m ${endFormatted}`;
+            }
+        }
+
+        return startFormatted;
     };
 
     const formatTime = (time?: string | null, fallbackDate?: string | undefined) => {
@@ -149,7 +163,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                     <div className="flex flex-row flex-wrap gap-4 text-right text-theme-purple/80 font-semibold">
                         <div className="min-w-[160px] text-right">
                             <p className="text-xs text-theme-purple/60 uppercase tracking-wide">Datum & Tijd</p>
-                            <p className="text-base">{formatDate(date)}{timeRange ? ` — ${timeRange}` : ''}</p>
+                            <p className="text-base">{formatDate(date, endDate)}{timeRange ? ` — ${timeRange}` : ''}</p>
                             {location && <p className="text-xs text-theme-muted mt-1 truncate max-w-[220px]">{location}</p>}
                         </div>
                         <div className="min-w-[90px]">
@@ -230,7 +244,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-2 text-sm text-theme-purple/80 font-semibold">
                         <Calendar className="h-4 w-4" />
-                        <span>{formatDate(date)}</span>
+                        <span>{formatDate(date, endDate)}</span>
                     </div>
                     {timeRange && (
                         <p className="text-sm text-theme-muted ml-6">

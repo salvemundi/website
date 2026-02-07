@@ -12,6 +12,7 @@ import { Search, Download, Users, Plane, Edit, Trash2, Loader2, AlertCircle, Use
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { tripSignupActivitiesApi } from '@/shared/lib/api/salvemundi';
+import { formatDateToLocalISO } from '@/shared/lib/utils/date';
 import { usePagePermission } from '@/shared/lib/hooks/usePermissions';
 
 interface Trip {
@@ -246,7 +247,7 @@ export default function ReisAanmeldingenPage() {
                 'Volledige naam': `${signup.first_name} ${signup.middle_name || ''} ${signup.last_name}`.trim(),
                 'Email': signup.email,
                 'Telefoonnummer': signup.phone_number,
-                'Geboortedatum': signup.date_of_birth ? format(new Date(signup.date_of_birth), 'dd-MM-yyyy') : '',
+                'Geboortedatum': signup.date_of_birth ? formatDateToLocalISO(signup.date_of_birth) : '',
                 'ID Type': idDocLabel,
                 'Document nummer': signup.document_number || '',
                 'Allergieën': signup.allergies || (signup as any).alergies || '',
@@ -496,8 +497,8 @@ export default function ReisAanmeldingenPage() {
                         {trips.map(trip => {
                             const displayStartDate = trip.start_date || trip.event_date;
                             const dateDisplay = trip.end_date
-                                ? `${format(new Date(displayStartDate), 'd MMMM yyyy', { locale: nl })} - ${format(new Date(trip.end_date), 'd MMMM yyyy', { locale: nl })}`
-                                : format(new Date(displayStartDate), 'd MMMM yyyy', { locale: nl });
+                                ? `${format(new Date(displayStartDate.includes('T') || displayStartDate.includes(' ') ? displayStartDate : `${displayStartDate}T12:00:00`), 'd MMMM yyyy', { locale: nl })} - ${format(new Date(trip.end_date.includes('T') || trip.end_date.includes(' ') ? trip.end_date : `${trip.end_date}T12:00:00`), 'd MMMM yyyy', { locale: nl })}`
+                                : format(new Date(displayStartDate.includes('T') || displayStartDate.includes(' ') ? displayStartDate : `${displayStartDate}T12:00:00`), 'd MMMM yyyy', { locale: nl });
                             return (
                                 <option key={trip.id} value={trip.id}>
                                     {trip.name} - {dateDisplay}
@@ -708,7 +709,7 @@ export default function ReisAanmeldingenPage() {
                                                     </td>
                                                     <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-admin hidden sm:table-cell">
                                                         {signup.date_of_birth
-                                                            ? format(new Date(signup.date_of_birth), 'dd-MM-yyyy')
+                                                            ? formatDateToLocalISO(signup.date_of_birth)
                                                             : '-'}
                                                     </td>
                                                     <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap hidden md:table-cell">

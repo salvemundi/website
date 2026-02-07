@@ -1,27 +1,46 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/features/auth/providers/auth-provider';
+import { useAuthUser } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
-import NoAccessPage from './no-access/page';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import NoAccessOverlay from '@/components/AuthOverlay/NoAccessOverlay';
 
+/**
+ * AdminLayout - Protected layout for all admin pages
+ * 
+ * Architecture: Two-layer protection
+ * 1. ProtectedRoute: Ensures user is authenticated
+ * 2. AdminLayoutContent: Verifies committee membership (business logic)
+ * 
+ * This separation keeps auth concerns isolated from business authorization.
+ */
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-    const router = useRouter();
-    const { user, isLoading: authLoading, isLoggingOut } = useAuth();
+    return (
+        <ProtectedRoute requireAuth>
+            <AdminLayoutContent>{children}</AdminLayoutContent>
+        </ProtectedRoute>
+    );
+}
+
+/**
+ * AdminLayoutContent - Committee membership authorization
+ * Only authenticated users reach this component (via ProtectedRoute)
+ * Here we verify committee membership for admin access
+ */
+function AdminLayoutContent({ children }: { children: React.ReactNode }) {
+    const user = useAuthUser();
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [isChecking, setIsChecking] = useState(true);
 
     useEffect(() => {
         const checkAuthorization = async () => {
-            // Reset authorization when starting a new check
             setIsAuthorized(false);
 
-            if (authLoading || isLoggingOut) return;
-
+            // At this point, user is guaranteed to be authenticated (by ProtectedRoute)
             if (!user) {
-                const returnTo = window.location.pathname + window.location.search;
-                router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+                // Should never happen, but defensive
+                setIsChecking(false);
                 return;
             }
 
@@ -75,31 +94,33 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         };
 
         checkAuthorization();
-    }, [user, authLoading, router]);
+    }, [user]);
 
-    // Only show full loading if we don't even have a user state yet or are logging out
-    if (authLoading || isLoggingOut) {
+    // Show loading skeleton while checking committee membership
+    if (isChecking) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--bg-main)] to-[var(--bg-card)]">
                 <div className="bg-admin-card rounded-3xl shadow-xl p-8 max-w-md mx-4 text-center">
                     <div className="h-12 w-12 animate-spin rounded-full border-4 border-theme-purple/20 border-t-theme-purple mx-auto mb-4" />
-                    <p className="text-admin-muted">Inloggen...</p>
+                    <p className="text-admin-muted">Autorisatie controleren...</p>
                 </div>
             </div>
         );
     }
 
-    // If we're done checking and not authorized, show no-access
-    if (!isChecking && !isAuthorized) {
+    // If not authorized after check, show NoAccessOverlay (in-place, no redirect)
+    if (!isAuthorized) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-[var(--bg-main)] to-[var(--bg-card)]">
-                <NoAccessPage />
+                <NoAccessOverlay
+                    requiredRoles={['Commissielid']}
+                    message="Deze pagina is alleen toegankelijk voor commissieleden. Je moet lid zijn van een commissie om toegang te krijgen."
+                />
             </div>
         );
     }
 
-    // Default: render children while checking or if authorized
-    // This provides a smooth "refresh" experience where the page doesn't disappear
+    // Authorized: render children
     return (
         <div className="min-h-screen bg-gradient-to-br from-[var(--bg-main)] to-[var(--bg-card)]">
             {children}

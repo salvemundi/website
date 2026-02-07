@@ -1,24 +1,18 @@
 'use client';
 
-import { useEffect, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense } from 'react';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { useSalvemundiTransactions } from '@/shared/lib/hooks/useSalvemundiApi';
 import { format } from 'date-fns';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Transaction } from '@/shared/lib/api/salvemundi';
 
+import ProtectedRoute from '@/components/ProtectedRoute';
+
 function TransactionsContent() {
-    const router = useRouter();
-    const { user, isLoading: authLoading, isLoggingOut } = useAuth();
+    const { user, isLoading: authLoading } = useAuth();
     const { data: transactions = [], isLoading: transactionsLoading, error, refetch } = useSalvemundiTransactions(user?.id);
 
-    useEffect(() => {
-        if (!authLoading && !user && !isLoggingOut) {
-            const returnTo = window.location.pathname + window.location.search;
-            router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
-        }
-    }, [user, authLoading, router, isLoggingOut]);
 
     const getInferredTransactionType = (t: Transaction) => {
         if (t.transaction_type) return t.transaction_type;
@@ -92,10 +86,6 @@ function TransactionsContent() {
                 </div>
             </div>
         );
-    }
-
-    if (!user) {
-        return null; // Will redirect via useEffect
     }
 
     return (
@@ -221,12 +211,14 @@ function TransactionsContent() {
 
 export default function TransactionsPage() {
     return (
-        <Suspense fallback={
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="text-paars text-xl font-semibold">Laden...</div>
-            </div>
-        }>
-            <TransactionsContent />
-        </Suspense>
+        <ProtectedRoute requireAuth>
+            <Suspense fallback={
+                <div className="flex items-center justify-center min-h-screen">
+                    <div className="text-paars text-xl font-semibold">Laden...</div>
+                </div>
+            }>
+                <TransactionsContent />
+            </Suspense>
+        </ProtectedRoute>
     );
 }

@@ -2,30 +2,45 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Ticket, Plus, Percent, CheckCircle, XCircle, Trash2 } from 'lucide-react';
-
-interface Coupon {
-    id: number;
-    coupon_code: string;
-    discount_type: 'fixed' | 'percentage';
-    discount_value: number;
-    usage_limit: number | null;
-    usage_count: number;
-    valid_from: string | null;
-    valid_until: string | null;
-    is_active: boolean;
-}
+import { isUserAuthorized, getMergedTokens, normalizeCommitteeName } from '@/shared/lib/committee-utils';
+import { siteSettingsApi } from '@/shared/lib/api/salvemundi';
+import NoAccessPage from '../no-access/page';
+import { getComputedCouponStatus, type Coupon } from '@/shared/lib/coupon-utils';
 
 export default function AdminCouponsPage() {
     const router = useRouter();
+    const { user } = useAuth();
     const [coupons, setCoupons] = useState<Coupon[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
     useEffect(() => {
+        checkAccess();
         loadCoupons();
     }, []);
+
+    const checkAccess = async () => {
+        if (!user) {
+            setIsAuthorized(false);
+            return;
+        }
+
+        try {
+            const setting = await siteSettingsApi.get('admin_coupons', true);
+            const tokens = getMergedTokens(setting?.authorized_tokens, ['ictcommissie', 'bestuur', 'kascommissie', 'kandidaatbestuur']);
+            setIsAuthorized(isUserAuthorized(user, tokens));
+        } catch (error) {
+            // Fallback for static check
+            const committees: any[] = (user as any).committees || [];
+            const names = committees.map((c: any) => normalizeCommitteeName(typeof c === 'string' ? c : c.name || c.committee_id?.name || ''));
+            const hasAccess = names.some(n => n.includes('ict') || n.includes('bestuur') || n.includes('kas') || n.includes('kandi'));
+            setIsAuthorized(hasAccess);
+        }
+    };
 
     const loadCoupons = async () => {
         setIsLoading(true);
@@ -57,6 +72,14 @@ export default function AdminCouponsPage() {
         if (num === null || num === undefined || isNaN(num)) return '€ 0,00';
         return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(num);
     };
+
+    if (isAuthorized === false) {
+        return <NoAccessPage />;
+    }
+
+    if (isAuthorized === null) {
+        return null;
+    }
 
     return (
         <>
@@ -146,15 +169,22 @@ export default function AdminCouponsPage() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center">
-                                                {coupon.is_active ? (
-                                                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                        <CheckCircle className="h-3 w-3" /> Actief
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                        <XCircle className="h-3 w-3" /> Inactief
-                                                    </span>
-                                                )}
+                                                {(() => {
+                                                    const status = getComputedCouponStatus(coupon);
+                                                    return (
+                                                        <span
+                                                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${status.color}`}
+                                                            title={status.description}
+                                                        >
+                                                            {status.type === 'active' ? (
+                                                                <CheckCircle className="h-3 w-3" />
+                                                            ) : (
+                                                                <XCircle className="h-3 w-3" />
+                                                            )}
+                                                            {status.label}
+                                                        </span>
+                                                    );
+                                                })()}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right">
                                                 <button

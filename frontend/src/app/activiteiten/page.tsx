@@ -32,17 +32,44 @@ function ActivitiesContent() {
         let filtered = events;
         if (!showPastActivities) {
             const now = new Date();
-            now.setHours(0, 0, 0, 0);
-            filtered = filtered.filter(event => new Date(event.event_date) >= now);
+            filtered = filtered.filter(event => {
+                // Combine event_date and event_time to get the full datetime
+                const eventDateTime = event.event_time
+                    ? new Date(`${event.event_date}T${event.event_time}`)
+                    : new Date(event.event_date);
+                return eventDateTime >= now;
+            });
         }
-        return filtered.sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime());
+        return filtered.sort((a, b) => {
+            const aDateTime = a.event_time
+                ? new Date(`${a.event_date}T${a.event_time}`).getTime()
+                : new Date(a.event_date).getTime();
+            const bDateTime = b.event_time
+                ? new Date(`${b.event_date}T${b.event_time}`).getTime()
+                : new Date(b.event_date).getTime();
+            return aDateTime - bDateTime;
+        });
     }, [events, showPastActivities]);
 
     const upcomingEvent = useMemo(() => {
         const now = new Date();
         return events
-            .filter(e => new Date(e.event_date) >= now)
-            .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())[0];
+            .filter(e => {
+                // Combine event_date and event_time to get the full datetime
+                const eventDateTime = e.event_time
+                    ? new Date(`${e.event_date}T${e.event_time}`)
+                    : new Date(e.event_date);
+                return eventDateTime >= now;
+            })
+            .sort((a, b) => {
+                const aDateTime = a.event_time
+                    ? new Date(`${a.event_date}T${a.event_time}`).getTime()
+                    : new Date(a.event_date).getTime();
+                const bDateTime = b.event_time
+                    ? new Date(`${b.event_date}T${b.event_time}`).getTime()
+                    : new Date(b.event_date).getTime();
+                return aDateTime - bDateTime;
+            })[0];
     }, [events]);
 
     // Handlers
@@ -85,7 +112,14 @@ function ActivitiesContent() {
                         dark:from-theme-gradient-dark-start 
                         dark:via-theme-gradient-dark-start 
                         dark:to-theme-gradient-dark-end">
-                        <FlipClock targetDate={upcomingEvent.event_date} title={upcomingEvent.name} href={`/activiteiten/${upcomingEvent.id}`} />
+                        <FlipClock
+                            targetDate={upcomingEvent.event_time
+                                ? `${upcomingEvent.event_date}T${upcomingEvent.event_time}`
+                                : upcomingEvent.event_date
+                            }
+                            title={upcomingEvent.name}
+                            href={`/activiteiten/${upcomingEvent.id}`}
+                        />
                     </div>
                 )}
             </PageHeader>

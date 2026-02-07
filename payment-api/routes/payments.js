@@ -126,9 +126,16 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
 
                 if (coupon) {
                     console.warn(`[Payment][${traceId}] Coupon found: ${coupon.id}. Checking constraints...`);
-                    // Check limits again (double check server side)
+                    // 1. Check if manually active
+                    const isManuallyActive = String(coupon.is_active) === 'true';
+
+                    if (!isManuallyActive) {
+                        console.warn(`[Payment][${traceId}] Coupon is manually deactivated.`);
+                        isValid = false;
+                    }
+
+                    // 2. Check limits and dates
                     const now = new Date();
-                    let isValid = true;
                     if (coupon.valid_from && new Date(coupon.valid_from) > now) {
                         console.warn(`[Payment][${traceId}] Coupon not started yet.`);
                         isValid = false;

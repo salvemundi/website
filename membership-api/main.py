@@ -3,6 +3,7 @@ import datetime
 import secrets
 import string
 import re
+import logging
 import unidecode
 from fastapi import FastAPI, HTTPException, Request, BackgroundTasks, APIRouter
 from pydantic import BaseModel
@@ -12,11 +13,40 @@ import asyncio
 
 app = FastAPI()
 
+logger = logging.getLogger("membership-api")
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG if os.getenv("DEBUG", "1") == "1" else logging.INFO)
+
+ATTRIBUTE_SET_NAME = "SalveMundiLidmaatschap"
+
 TENANT_ID = os.getenv("MS_GRAPH_TENANT_ID")
 CLIENT_ID = os.getenv("MS_GRAPH_CLIENT_ID")
 CLIENT_SECRET = os.getenv("MS_GRAPH_CLIENT_SECRET")
-DOMAIN = os.getenv("MS_GRAPH_DOMAIN", "salvemundi.nl")
-ATTRIBUTE_SET_NAME = "SalveMundiLidmaatschap"
+DOMAIN = os.getenv("MS_GRAPH_DOMAIN")
+
+
+def validate_env():
+    missing = []
+    for name, val in (("MS_GRAPH_TENANT_ID", TENANT_ID), ("MS_GRAPH_CLIENT_ID", CLIENT_ID), ("MS_GRAPH_CLIENT_SECRET", CLIENT_SECRET), ("MS_GRAPH_DOMAIN", DOMAIN)):
+        if not val:
+            missing.append(name)
+    if missing:
+        logger.error("Missing required environment variables for membership-api: %s", ",".join(missing))
+        # Do not raise here - allow container to start but fail fast on requests with clear log
+
+    # Basic sanity check for DOMAIN: it should look like a domain (no @)
+    if DOMAIN and "@" in DOMAIN:
+        logger.warning("MS_GRAPH_DOMAIN looks like a full email address (contains '@'). It should be a domain like 'example.com' not a user@domain. Current value: %s", DOMAIN)
+    elif DOMAIN:
+        # mask domain minimally when logging (domain is not secret)
+        logger.info("MS_GRAPH_DOMAIN set to '%s'", DOMAIN)
+
+
+validate_env()
 
 router = APIRouter(prefix="/api/membership")
 
@@ -41,9 +71,18 @@ async def get_graph_token():
     async with httpx.AsyncClient() as client:
         response = await client.post(url, data=data)
         if response.status_code != 200:
-            error_response = response.json()
-            error_message = error_response.get("error_description", "Unknown Authentication Error")
-            raise HTTPException(status_code=500, detail=f"Graph Auth Failed: {error_message}")
+            # Try to surface any returned JSON error_description, otherwise include raw text
+            try:
+                error_response = response.json()
+                error_message = error_response.get("error_description") or error_response.get("error") or response.text
+            except Exception:
+                error_message = response.text or "<no response body>"
+
+            # Log full response for debugging (response body may contain useful details)
+            logger.error("Graph Auth Failed. status=%s, body=%s", response.status_code, error_message)
+
+            # Return more explicit detail to callers so admin-api logs are actionable
+            raise HTTPException(status_code=500, detail=f"Graph Auth Failed: status={response.status_code} body={error_message}")
         return response.json().get("access_token")
 
 def generate_password(length=12):
@@ -106,7 +145,7 @@ async def update_user_attributes(user_id: str, date_of_birth: str = None):
     try:
         token = await get_graph_token()
         headers = { "Authorization": f"Bearer {token}", "Content-Type": "application/json" }
-        
+
         # Wij berekenen de verloopdatum (vandaag + 1 jaar)
         vandaag = datetime.date.today()
         try:
@@ -117,12 +156,15 @@ async def update_user_attributes(user_id: str, date_of_birth: str = None):
 
         betaal_datum = vandaag.strftime("%Y%m%d")
         verloop_datum = volgend_jaar.strftime("%Y%m%d")
-        
+
         # We perform a GET first to verify current state (debugging)
         url_beta = f"https://graph.microsoft.com/beta/users/{user_id}"
         async with httpx.AsyncClient() as client:
             check_res = await client.get(f"{url_beta}?$select=customSecurityAttributes", headers=headers)
-            print(f"DEBUG: Current attributes in Azure for {user_id}: {check_res.text}")
+            try:
+                logger.debug("Current attributes in Azure for %s: %s", user_id, check_res.text)
+            except Exception:
+                logger.debug("Current attributes in Azure for %s: <unreadable response> (status=%s)", user_id, check_res.status_code)
 
             # 1. Critical Update: Membership Dates
             payload_dates = {
@@ -130,45 +172,53 @@ async def update_user_attributes(user_id: str, date_of_birth: str = None):
                     ATTRIBUTE_SET_NAME: {
                         "@odata.type": "#microsoft.graph.customSecurityAttributeValue",
                         "OrigineleBetaalDatumStr": betaal_datum,
-                        "VerloopdatumStr": verloop_datum
+                        "VerloopdatumStr": verloop_datum,
+                        "Geboortedatum": date_of_birth
                     }
                 }
             }
-            
+
             # Schrijven doen we via v1.0, dat is nu bewezen werkend met de type hint
             url_v1 = f"https://graph.microsoft.com/v1.0/users/{user_id}"
-            print(f"DEBUG: Sending PATCH (Dates) to {url_v1} with payload: {payload_dates}")
+            logger.debug("Sending PATCH (Dates) to %s with payload: %s", url_v1, payload_dates)
             res = await client.patch(url_v1, json=payload_dates, headers=headers)
-            
+
             if res.status_code not in [200, 204]:
-                print(f"Graph Patch Error (Dates): {res.status_code} - {res.text}")
-                return # Critical failure
+                logger.error("Graph Patch Error (Dates): %s - %s", res.status_code, res.text)
+                raise Exception(f"Graph Patch Error (Dates): {res.status_code}")
 
             # 2. Update Date of Birth (Standard Property)
             if date_of_birth:
                 # Ensure ISO 8601 format with Easter Egg time (404: Time Not Found)
                 dob_payload = {"birthday": f"{date_of_birth}T04:04:04Z" if "T" not in date_of_birth else date_of_birth}
-                print(f"DEBUG: Sending PATCH (Birthday) to {url_v1} with: {dob_payload}")
+                logger.debug("Sending PATCH (Birthday) to %s with: %s", url_v1, dob_payload)
                 res_dob = await client.patch(url_v1, json=dob_payload, headers=headers)
                 if res_dob.status_code not in [200, 204]:
-                     print(f"⚠️ Warning: perform Birthday update failed: {res_dob.status_code} - {res_dob.text}")
-            
+                     logger.warning("Birthday update failed: %s - %s", res_dob.status_code, res_dob.text)
+
             # VERIFICATION LOOP: Wait until Azure AD actually shows the new attributes
-            print(f"DEBUG: Starting verification for {user_id}...")
+            logger.debug("Starting verification for %s...", user_id)
             for i in range(10):  # Max 10 attempts (10 seconds)
                 await asyncio.sleep(1)
                 check_res = await client.get(f"{url_beta}?$select=customSecurityAttributes", headers=headers)
                 if check_res.status_code == 200:
-                    attr_data = check_res.json().get("customSecurityAttributes", {})
-                    current_expiry = attr_data.get(ATTRIBUTE_SET_NAME, {}).get("VerloopdatumStr")
+                    # Azure may return customSecurityAttributes: null. Coerce to dict to avoid AttributeError.
+                    resp_json = check_res.json()
+                    attr_data = resp_json.get("customSecurityAttributes") or {}
+                    current_expiry = (attr_data.get(ATTRIBUTE_SET_NAME) or {}).get("VerloopdatumStr")
                     if current_expiry == verloop_datum:
-                        print(f"✅ Verified! Azure AD now reflects expiry {verloop_datum} for {user_id} after {i+1}s")
+                        logger.info("Verified: Azure AD reflects expiry %s for %s after %ds", verloop_datum, user_id, i+1)
                         return
-                print(f"DEBUG: Verification attempt {i+1} failed for {user_id}, retrying...")
-            
-            print(f"⚠️ Warning: Attributes updated but could not be verified within 10s for {user_id}")
+                logger.debug("Verification attempt %d failed for %s, retrying...", i+1, user_id)
+
+            logger.warning("Attributes updated but could not be verified within 10s for %s", user_id)
+    except HTTPException:
+        # Re-raise FastAPI HTTPExceptions
+        raise
     except Exception as e:
-        print(f"Attribute update error: {e}")
+        logger.exception("Attribute update error for %s: %s", user_id, str(e))
+        # Re-raise as generic exception so callers can see failure
+        raise
 
 @router.post("/create-user")
 async def create_user_endpoint(request: CreateMemberRequest, background_tasks: BackgroundTasks):

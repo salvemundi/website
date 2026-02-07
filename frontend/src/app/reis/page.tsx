@@ -9,13 +9,12 @@ import { fetchUserDetails, fetchAndPersistUserCommittees } from '@/shared/lib/au
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { splitDutchLastName } from '@/shared/lib/utils/dutch-name';
-
-// react-datepicker removed to prefer native date inputs
 import { isUserInReisCommittee } from '@/shared/lib/committee-utils';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { TripSignup } from '@/shared/lib/api/salvemundi';
 import { User } from '@/shared/model/types/auth';
 import { CheckCircle2, Calendar, CreditCard, Loader2, Utensils } from 'lucide-react';
+import { formatDateToLocalISO } from '@/shared/lib/utils/date';
 
 export default function ReisPage() {
     const [form, setForm] = useState({
@@ -24,7 +23,7 @@ export default function ReisPage() {
         last_name: '',
         email: '',
         phone_number: '',
-        date_of_birth: null as Date | null,
+        date_of_birth: '' as string,
         terms_accepted: false,
     });
     const [loading, setLoading] = useState(false);
@@ -212,7 +211,7 @@ export default function ReisPage() {
                         last_name: prev.last_name || lastName,
                         email: prev.email || user.email || '',
                         phone_number: prev.phone_number || user.phone_number || '',
-                        date_of_birth: prev.date_of_birth || (user.date_of_birth ? new Date(user.date_of_birth) : null),
+                        date_of_birth: prev.date_of_birth || (user.date_of_birth ? formatDateToLocalISO(user.date_of_birth) : ''),
                     }));
                     setCurrentUser(user as User);
 
@@ -269,7 +268,7 @@ export default function ReisPage() {
                 last_name: form.last_name,
                 email: form.email,
                 phone_number: form.phone_number,
-                date_of_birth: format(form.date_of_birth, 'yyyy-MM-dd'),
+                date_of_birth: form.date_of_birth,
                 terms_accepted: form.terms_accepted,
                 status: shouldBeWaitlisted ? 'waitlist' as const : 'registered' as const,
                 role: isCommitteeMember ? 'crew' as const : 'participant' as const,
@@ -499,8 +498,8 @@ export default function ReisPage() {
                                                 <input
                                                     type="date"
                                                     name="date_of_birth"
-                                                    value={form.date_of_birth ? new Date(form.date_of_birth).toISOString().split('T')[0] : ''}
-                                                    onChange={(e) => setForm({ ...form, date_of_birth: e.target.value ? new Date(e.target.value) : null })}
+                                                    value={form.date_of_birth}
+                                                    onChange={handleChange}
                                                     className="form-input mt-1 w-full"
                                                     required
                                                 />

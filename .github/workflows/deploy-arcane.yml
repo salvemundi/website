@@ -1,13 +1,8 @@
 name: Deploy Arcane Dashboard
 
 on:
-  push:
-    branches:
-      - 'Development'
-      - 'main'
-    paths:
-      - 'arcane/**'
-      - '.github/workflows/deploy-arcane.yml'
+  workflow_call:
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
@@ -19,6 +14,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: ${{ true }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -27,6 +23,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -35,9 +33,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Set Environment Variables
         run: |
-          if [[ "${{ github.ref_name }}" == "main" ]]; then
+          TARGET_BRANCH="${{ github.event.workflow_run.head_branch || github.ref_name }}"
+          if [[ "$TARGET_BRANCH" == "main" ]]; then
             echo "TAG=latest" >> $GITHUB_ENV
           else
             echo "TAG=dev" >> $GITHUB_ENV
@@ -49,6 +51,8 @@ jobs:
           context: ./arcane
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Delete Untagged Images
         uses: actions/delete-package-versions@v5
@@ -107,3 +111,39 @@ jobs:
             docker compose up -d --remove-orphans
 
             docker image prune -f
+
+            echo "Waiting for Arcane to respond on port 3552..."
+            CONTAINER_NAME="arcane"
+            for i in {1..30}; do
+              # Probeer direct de API te raken binnen de container
+              if docker exec $CONTAINER_NAME wget --spider -q http://localhost:3552/api/app-version > /dev/null 2>&1; then
+                echo "✅ Arcane is up and running!"
+                exit 0
+              fi
+              
+              # Fallback: check of de poort iig open staat als wget faalt door missing tool
+              if docker exec $CONTAINER_NAME sh -c "command -v wget" > /dev/null 2>&1; then
+                 : # wget is er, dus het is echt de app die nog niet start
+              else
+                 echo "⚠️ wget missing in container, falling back to basic running check"
+                 if [[ $(docker inspect --format='{{.State.Status}}' $CONTAINER_NAME) == "running" ]]; then
+                    echo "✅ Container is running (wget check skipped)"
+                    exit 0
+                 fi
+              fi
+
+              # Check of hij niet gecrasht is
+              if [[ $(docker inspect --format='{{.State.Status}}' $CONTAINER_NAME) == "exited" ]]; then
+                echo "❌ Container has EXITED!"
+                docker logs $CONTAINER_NAME | tail -n 50
+                exit 1
+              fi
+              
+              if (( i % 5 == 0 )); then
+                echo "Still waiting for Arcane... ($i/30)"
+              fi
+              sleep 5
+            done
+            echo "⏳ Arcane start check TIMEOUT!"
+            docker logs $CONTAINER_NAME | tail -n 50
+            exit 1

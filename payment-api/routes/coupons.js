@@ -23,19 +23,25 @@ module.exports = function (directusService, DIRECTUS_URL, DIRECTUS_API_TOKEN) {
             );
 
             if (!coupon) {
-                console.warn(`[Coupon][${traceId}] REJECT: Coupon not found or inactive in Directus`);
+                console.warn(`[Coupon][${traceId}] REJECT: Coupon "${couponCode}" not found`);
                 return res.status(404).json({ valid: false, error: 'Ongeldige coupon code' });
             }
 
-            console.warn(`[Coupon][${traceId}] Found coupon: ID=${coupon.id}, Value=${coupon.discount_value}, Type=${coupon.discount_type}`);
+            console.warn(`[Coupon][${traceId}] Found coupon: ID=${coupon.id}, Value=${coupon.discount_value}, Type=${coupon.discount_type}, Active=${coupon.is_active}`);
 
-            // Check validity period
+            // 1. Check if manually active
+            const isManuallyActive = String(coupon.is_active) === 'true'; // Handle string or boolean
+            if (!isManuallyActive) {
+                console.warn(`[Coupon][${traceId}] REJECT: Coupon is manually deactivated`);
+                return res.status(400).json({ valid: false, error: 'Deze coupon is gedeactiveerd' });
+            }
+
+            // 2. Check validity period
             const now = new Date();
-            console.warn(`[Coupon][${traceId}] Step 2: Checking dates (Now: ${now.toISOString()})`);
+            console.warn(`[Coupon][${traceId}] Checking dates (Now: ${now.toISOString()})`);
 
             if (coupon.valid_from) {
                 const validFrom = new Date(coupon.valid_from);
-                console.warn(`[Coupon][${traceId}] Valid from: ${validFrom.toISOString()}`);
                 if (validFrom > now) {
                     console.warn(`[Coupon][${traceId}] REJECT: Future valid_from`);
                     return res.status(400).json({ valid: false, error: 'Coupon is nog niet geldig' });
@@ -44,15 +50,13 @@ module.exports = function (directusService, DIRECTUS_URL, DIRECTUS_API_TOKEN) {
 
             if (coupon.valid_until) {
                 const validUntil = new Date(coupon.valid_until);
-                console.warn(`[Coupon][${traceId}] Valid until: ${validUntil.toISOString()}`);
                 if (validUntil < now) {
                     console.warn(`[Coupon][${traceId}] REJECT: Expired valid_until`);
                     return res.status(400).json({ valid: false, error: 'Coupon is verlopen' });
                 }
             }
 
-            // Check usage limit
-            console.warn(`[Coupon][${traceId}] Step 3: Checking limits (Count: ${coupon.usage_count}, Limit: ${coupon.usage_limit ?? 'none'})`);
+            // 3. Check usage limit
             if (coupon.usage_limit !== null && coupon.usage_count >= coupon.usage_limit) {
                 console.warn(`[Coupon][${traceId}] REJECT: Usage limit reached`);
                 return res.status(400).json({ valid: false, error: 'Coupon limiet bereikt' });

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useAuth } from '@/features/auth/providers/auth-provider';
+import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
 import {
     ChevronLeft,
@@ -14,6 +14,7 @@ import {
     Hash,
     Layers
 } from 'lucide-react';
+import { formatDateToLocalISO } from '@/shared/lib/utils/date';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 
 interface Member {
@@ -43,6 +44,7 @@ export default function MemberDetailPage() {
     const params = useParams();
     const id = params.id as string;
     const { user: authUser, isLoading: authLoading } = useAuth();
+    const { loginWithRedirect } = useAuthActions();
 
     const [member, setMember] = useState<Member | null>(null);
     const [committees, setCommittees] = useState<CommitteeMembership[]>([]);
@@ -51,7 +53,7 @@ export default function MemberDetailPage() {
     useEffect(() => {
         if (!authLoading && !authUser) {
             const returnTo = window.location.pathname + window.location.search;
-            router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+            loginWithRedirect(returnTo);
         }
         if (authUser && !authUser.entra_id) {
             router.push('/admin/no-access');
@@ -111,11 +113,13 @@ export default function MemberDetailPage() {
 
     const formatDate = (dateString: string | null) => {
         if (!dateString) return 'Onbekend';
-        return new Date(dateString).toLocaleDateString('nl-NL', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-        });
+        const localDate = formatDateToLocalISO(dateString);
+        const [year, month, day] = localDate.split('-');
+        const monthNames = [
+            "januari", "februari", "maart", "april", "mei", "juni",
+            "juli", "augustus", "september", "oktober", "november", "december"
+        ];
+        return `${parseInt(day)} ${monthNames[parseInt(month) - 1]} ${year}`;
     };
 
     if (authLoading || isLoading) {
@@ -135,7 +139,9 @@ export default function MemberDetailPage() {
         );
     }
 
-    const isMembershipActive = member.membership_expiry ? new Date(member.membership_expiry) > new Date() : false;
+    const isMembershipActive = member.membership_expiry
+        ? new Date(formatDateToLocalISO(member.membership_expiry) + 'T23:59:59') > new Date()
+        : false;
 
     return (
         <div className="pb-20">

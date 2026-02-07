@@ -3,23 +3,30 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
+/**
+ * DiscordPage - Protected auth-required redirect to Discord
+ * 
+ * Flow: ProtectedRoute ensures auth → checks membership → redirects to Discord or /lidmaatschap
+ */
 export default function DiscordPage() {
+    return (
+        <ProtectedRoute requireAuth>
+            <DiscordContent />
+        </ProtectedRoute>
+    );
+}
+
+function DiscordContent() {
     const { user, isAuthenticated, isLoading } = useAuth();
     const router = useRouter();
 
     useEffect(() => {
         if (isLoading) return;
 
-        if (!isAuthenticated) {
-            // Niet ingelogd -> naar ons login portaal voor silent/manual flow
-            const returnTo = '/discord';
-            router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
-            return;
-        }
-
-        // Check if user has active membership
-        // We check mostly for membership_status === 'active', but fail-safe if is_member is true
+        // Auth is guaranteed by ProtectedRoute
+        // Check membership and redirect accordingly
         if (user?.membership_status === 'active' || user?.is_member) {
             // Wel lid -> naar Discord
             window.location.href = 'https://discord.com/invite/TQ8K9ZSbdW';

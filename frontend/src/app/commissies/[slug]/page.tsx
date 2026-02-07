@@ -79,6 +79,7 @@ export default function CommitteeDetailPage() {
     }
 
     const cleanName = cleanCommitteeName(committee.name);
+    const isBestuur = cleanName.toLowerCase().includes('bestuur');
     const members = committee.committee_members?.filter((m: any) => m.is_visible) || [];
 
     function getMemberFullName(member: any) {
@@ -305,7 +306,7 @@ export default function CommitteeDetailPage() {
                             <div className="rounded-3xl bg-[var(--bg-card)] p-6 shadow-card dark:border dark:border-white/10">
                                 <h3 className="mb-6 flex items-center gap-2 text-lg font-bold text-theme-purple">
                                     <ShieldCheck className="h-5 w-5" />
-                                    Voorzitter
+                                    {isBestuur ? 'Voorzitter' : 'Commissie Leider'}
                                 </h3>
                                 <div className="group relative flex items-center gap-4 p-4 rounded-2xl bg-[var(--bg-main)] border border-transparent hover:border-theme-purple transition-all">
                                     <div className="relative h-16 w-16 overflow-hidden rounded-full ring-4 ring-theme-purple/10">
@@ -322,9 +323,9 @@ export default function CommitteeDetailPage() {
                                             </div>
                                         )}
                                     </div>
-                                    <div className="min-w-0">
+                                        <div className="min-w-0">
                                         <p className="truncate font-bold text-[var(--text-main)]">{getMemberFullName(leader)}</p>
-                                        <p className="text-xs font-medium text-theme-purple">Huidig voorzitter</p>
+                                        <p className="text-xs font-medium text-theme-purple">{isBestuur ? 'Huidig voorzitter' : 'Commissie Leider'}</p>
                                     </div>
                                 </div>
                                 {getMemberEmail(leader) && (
@@ -343,7 +344,7 @@ export default function CommitteeDetailPage() {
                             <div className="space-y-4">
                                 <h3 className="flex items-center gap-2 text-lg font-bold text-theme-purple px-2">
                                     <Users2 className="h-5 w-5" />
-                                    Overige Bestuursleden
+                                    {isBestuur ? 'Overige Bestuursleden' : 'Leden'}
                                 </h3>
                                 <div className="space-y-3">
                                     {members.filter((m: any) => !m.is_leader).map((member: any) => (
@@ -362,11 +363,18 @@ export default function CommitteeDetailPage() {
                                                     </div>
                                                 )}
                                             </div>
-                                            <div className="min-w-0 flex-1">
+                                                <div className="min-w-0 flex-1">
                                                 <p className="truncate font-bold text-[var(--text-main)] text-lg">{getMemberFullName(member)}</p>
-                                                <p className="text-xs font-medium text-theme-purple uppercase tracking-wider">
-                                                    {member.title || member.user_id?.title || member.member_id?.title || member.functie || 'Bestuurslid'}
-                                                </p>
+                                                {/* Show role titles only for the board. For other committees, only the leader gets a title. */}
+                                                {isBestuur ? (
+                                                    <p className="text-xs font-medium text-theme-purple uppercase tracking-wider">
+                                                        {member.title || member.user_id?.title || member.member_id?.title || member.functie || 'Bestuurslid'}
+                                                    </p>
+                                                ) : (
+                                                    member.is_leader ? (
+                                                        <p className="text-xs font-medium text-theme-purple uppercase tracking-wider">Commissie Leider</p>
+                                                    ) : null
+                                                )}
                                             </div>
                                         </div>
                                     ))}

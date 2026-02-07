@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isRateLimited, getClientIp } from '@/shared/lib/rate-limit';
 
-const DIRECTUS_URL = 'https://admin.salvemundi.nl';
+const DIRECTUS_URL = process.env.DIRECTUS_URL || process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://admin.salvemundi.nl';
 
 // Configure an optional Directus user ID that should bypass server-side checks.
 let API_BYPASS_USER_ID = process.env.DIRECTUS_API_USER_ID ?? null;
@@ -28,7 +28,7 @@ const allowedCollections = [
 ];
 
 function getAuthToken(request: NextRequest, url: URL): string | null {
-    let auth = request.headers.get('Authorization');
+    let auth = request.headers.get('Authorization') || request.headers.get('authorization');
     if (!auth && url.searchParams.has('access_token')) {
         auth = `Bearer ${url.searchParams.get('access_token')}`;
     }
@@ -100,12 +100,25 @@ async function isApiBypass(auth: string | null, options?: { cookie?: string | nu
 
 function getProxyHeaders(request: NextRequest): Record<string, string> {
     const headers: Record<string, string> = {};
+    const skipHeaders = [
+        'host',
+        'content-length',
+        'content-type',
+        'cookie',
+        'authorization',
+        'connection',
+        'upgrade',
+        'transfer-encoding',
+        'keep-alive'
+    ];
+
     request.headers.forEach((value, key) => {
-        if (['host', 'content-length', 'content-type', 'cookie', 'authorization'].includes(key.toLowerCase())) return;
+        if (skipHeaders.includes(key.toLowerCase())) return;
         headers[key] = value;
     });
     return headers;
 }
+
 
 export async function GET(
     request: NextRequest,
@@ -117,7 +130,10 @@ export async function GET(
     const auth = getAuthToken(request, url);
 
     try {
-        const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
+        const isAllowed = allowedCollections.some(c =>
+            path === `items/${c}` || path.startsWith(`items/${c}/`) ||
+            path === c || path.startsWith(`${c}/`)
+        );
         const isAuthPath =
             path.startsWith('auth/') ||
             path.startsWith('users/me') ||
@@ -188,7 +204,13 @@ export async function GET(
 
 
 
-        const forwardHeaders = getProxyHeaders(request);
+        const forwardHeaders: Record<string, string> = {
+            ...getProxyHeaders(request),
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-Forwarded-For': getClientIp(request) || '',
+            'X-Forwarded-Proto': 'https',
+        };
+
 
         let targetSearch = url.search;
 
@@ -202,21 +224,57 @@ export async function GET(
                 targetSearch = newSearch ? `?${newSearch}` : '';
             }
 
-        } else if (auth && (isUserTokenValid || isAuthPath)) {
-            forwardHeaders['Authorization'] = auth;
+        } else if (auth && (isUserTokenValid || isAuthPath || needsSpecialGuardCheck || isAllowed)) {
+            // Never send Authorization header for auth paths like /auth/refresh or /auth/login
+            // as Directus expects tokens in the body and might fail if an expired/duplicate token is in the header.
+            // However, /users/me specifically MUST have the Authorization header.
+            const isIdentityPath = path.startsWith('users/me');
+            const isStrictAuthPath = (path.includes('auth/') || path.startsWith('auth/')) && !isIdentityPath;
 
-        } else if (auth && !isUserTokenValid && isAllowed) {
+            if (!isStrictAuthPath || isIdentityPath) {
+                forwardHeaders['Authorization'] = auth;
+
+                // Eliminate ambiguity: if we send Auth header, kill the query param
+                if (url.searchParams.has('access_token')) {
+                    const newParams = new URLSearchParams(url.searchParams);
+                    newParams.delete('access_token');
+                    const newSearch = newParams.toString();
+                    targetSearch = newSearch ? `?${newSearch}` : '';
+                }
+
+                // Eliminate conflict: if we send Auth header (Bearer), remove cookies
+                if (forwardHeaders['Authorization'] && forwardHeaders['Cookie']) {
+                    delete forwardHeaders['Cookie'];
+                }
+            }
+
+        } else if (auth && !isUserTokenValid && isAllowed && !needsSpecialGuardCheck) {
             console.log(`[Directus Proxy] Stripping invalid token for public path: ${path}`);
             // Header is not added, effectively making it anonymous
         }
 
+        // FINAL SAFETY CHECK: Ensure we never send double auth
+        if (forwardHeaders['Authorization'] && targetSearch.includes('access_token')) {
+            console.warn(`[Directus Proxy] Detected query token despite having auth header. Stripping from targetSearch.`);
+            const sanityParams = new URLSearchParams(targetSearch.replace(/^\?/, ''));
+            sanityParams.delete('access_token');
+            const newSanitySearch = sanityParams.toString();
+            targetSearch = newSanitySearch ? `?${newSanitySearch}` : '';
+        }
+
         const targetUrl = `${DIRECTUS_URL}/${path}${targetSearch}`;
+
+        // Temporarily remove the premature logging here
+
 
         const contentType = request.headers.get('Content-Type');
         if (contentType) forwardHeaders['Content-Type'] = contentType;
 
-        // Forward cookies if present to support cookie-based sessions
-        if (cookie) forwardHeaders['Cookie'] = cookie;
+        // Forward cookies if present to support cookie-based sessions, BUT ONLY if we aren't already using Bearer auth
+        // AND if we aren't sending an access_token in the query string (which counts as an auth method)
+        if (cookie && !forwardHeaders['Authorization'] && !targetSearch.includes('access_token')) {
+            forwardHeaders['Cookie'] = cookie;
+        }
 
         const pathParts = path.split('/');
         const isItemsPath = pathParts[0] === 'items';
@@ -226,6 +284,20 @@ export async function GET(
         const tags: string[] = [];
         if (isItemsPath && pathParts[1]) {
             tags.push(pathParts[1]);
+        }
+
+        // DIAGNOSTIC: Log final state for asset requests AFTER all header manipulation
+        if (path.includes('assets') || path.includes('image')) {
+            console.warn(`[ASSET DEBUG] ===== FINAL REQUEST TO DIRECTUS =====`);
+            console.warn(`[ASSET DEBUG] Path: ${path}`);
+            console.warn(`[ASSET DEBUG] Target URL: ${targetUrl}`);
+            console.warn(`[ASSET DEBUG] Query has access_token: ${targetSearch.includes('access_token')}`);
+            console.warn(`[ASSET DEBUG] Authorization header present: ${!!forwardHeaders['Authorization']}`);
+            console.warn(`[ASSET DEBUG] Cookie header present: ${!!forwardHeaders['Cookie']}`);
+            if (forwardHeaders['Cookie']) {
+                console.warn(`[ASSET DEBUG] Cookie value (first 50 chars): ${forwardHeaders['Cookie'].substring(0, 50)}`);
+            }
+            console.warn(`[ASSET DEBUG] ==========================================`);
         }
 
         const fetchOptions: RequestInit = {
@@ -246,14 +318,34 @@ export async function GET(
         const usedToken = forwardHeaders['Authorization'] || 'none';
         const tokenType = (canBypass && API_SERVICE_TOKEN) ? 'SERVICE TOKEN' : 'USER TOKEN';
         const maskedToken = usedToken.length > 10 ? `...${usedToken.slice(-4)}` : usedToken;
-        console.log(`[Directus Proxy] GET ${path} | Bypass: ${canBypass} | Forwarding: ${tokenType} (${maskedToken})`);
+        console.log(`[Directus Proxy] GET ${path} | Bypass: ${canBypass} | Forwarding: ${tokenType} (${maskedToken}) | Target: ${targetUrl}`);
+        if (path.includes('assets') || path.includes('image')) {
+            console.log(`[Directus Proxy] Asset Request Info: Query: ${targetSearch} | Auth Header Present: ${!!forwardHeaders['Authorization']}`);
+        }
 
         const response = await fetch(targetUrl, fetchOptions);
 
         if (!response.ok) {
-            if (response.status === 403 && (path.startsWith('items/committees') || path.startsWith('items/committee_members'))) {
+            // Special handling for 400 errors on assets
+            if (response.status === 400 && (path.includes('assets') || path.includes('image'))) {
+                console.error(`[ASSET DEBUG] ===== 400 ERROR FROM DIRECTUS =====`);
+                const errorText = await response.text().catch(() => '(unable to read error body)');
+                console.error(`[ASSET DEBUG] Error body: ${errorText}`);
+                console.error(`[ASSET DEBUG] This means Directus saw multiple auth methods!`);
+                console.error(`[ASSET DEBUG] ======================================`);
+                // Return error response
+                return new NextResponse(errorText, { status: 400 });
+            }
+
+            if (response.status === 403 && (
+                path.startsWith('items/committees') ||
+                path.startsWith('items/committee_members') ||
+                path.startsWith('items/event_signups') ||
+                path.startsWith('items/pub_crawl_signups')
+            )) {
                 console.log(`[Directus Proxy] Softening 403 for GET ${path} to avoid browser console error.`);
-                return NextResponse.json({ data: null, error: 'Forbidden', softened: true }, { status: 200 });
+                // Return an empty array so frontend map() calls don't crash
+                return NextResponse.json({ data: [], error: 'Forbidden', softened: true }, { status: 200 });
             }
             console.error(`[Directus Proxy] GET ${path} FAILED: Status ${response.status}`);
         }
@@ -264,12 +356,14 @@ export async function GET(
             const safe = data === null ? {} : data;
             return NextResponse.json(safe, { status: response.status });
         } else {
-            const text = await response.text().catch(() => '');
-            return new Response(text, {
+            // Use arrayBuffer for non-JSON content to preserve binary data (images, files, etc.)
+            const buffer = await response.arrayBuffer().catch(() => new ArrayBuffer(0));
+            return new Response(buffer, {
                 status: response.status,
-                headers: { 'Content-Type': responseContentType || 'text/plain' }
+                headers: { 'Content-Type': responseContentType || 'application/octet-stream' }
             });
         }
+
 
     } catch (error: any) {
         console.error(`[Directus Proxy] GET ${path} critical failure loop/exception:`, error);
@@ -321,7 +415,11 @@ async function handleMutation(
         }
 
 
-        const isAllowed = allowedCollections.some(c => path === `items/${c}` || path.startsWith(`items/${c}/`));
+        const isAllowed = allowedCollections.some(c =>
+            path === `items/${c}` || path.startsWith(`items/${c}/`) ||
+            path === c || path.startsWith(`${c}/`)
+        );
+
         const isAuthPath =
             path.startsWith('auth/') ||
             path.startsWith('users/me') ||
@@ -371,14 +469,14 @@ async function handleMutation(
                             const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
 
                             userData.memberships = memberships;
-                            
+
                             // Debug logging for membership check
                             console.log(`[Directus Proxy] User ${userId} memberships:`, memberships.map((m: any) => ({
                                 committee_id: m?.committee_id?.id,
                                 committee_name: m?.committee_id?.name,
                                 is_leader: m?.is_leader
                             })));
-                            
+
                             canBypass = memberships.some((m: any) => {
                                 const name = (m?.committee_id?.name || '').toString().toLowerCase();
                                 const isLeader = m.is_leader === true;
@@ -388,7 +486,7 @@ async function handleMutation(
                                 }
                                 return hasPrivilege;
                             });
-                            
+
                             console.log(`[Directus Proxy] User ${userId} canBypass result: ${canBypass}`);
                         }
                     } else if (meResp.status === 401 || meResp.status === 403) {
@@ -412,7 +510,7 @@ async function handleMutation(
             const committeeId = body?.committee_id;
             const memberships = userData?.memberships || [];
             console.log(`[Directus Proxy] Requested committee_id: ${committeeId}, User memberships count: ${memberships.length}`);
-            
+
             if (committeeId) {
                 const isMember = memberships.some((m: any) => String(m?.committee_id?.id || m?.committee_id) === String(committeeId));
                 console.log(`[Directus Proxy] Committee membership check: isMember=${isMember} for committee ${committeeId}`);
@@ -481,64 +579,147 @@ async function handleMutation(
             canBypass = false;
         }
 
+        // Force disable bypass for Stickers so creations/updates are performed with the
+        // currently logged-in user's token. This ensures Directus sets `created_by` /
+        // `user_created` to the correct user instead of the service account.
+        if (path.toLowerCase().startsWith('items/stickers')) {
+            console.log(`[Directus Proxy] Forcing user token for stickers operation (method: ${method})`);
+            canBypass = false;
+        }
+
         // Ensure deletions of event signups always use the logged-in user's token.
         // Some service tokens don't have delete permissions for `event_signups`.
         if (method === 'DELETE' && path.startsWith('items/event_signups')) {
             canBypass = false;
         }
 
-        // Prepare outgoing request
-        const forwardHeaders = getProxyHeaders(request);
+        // Forward essential headers
+        const forwardHeaders: Record<string, string> = {
+            ...getProxyHeaders(request),
+            'Content-Type': request.headers.get('content-type') || 'application/json',
+            'Accept': request.headers.get('accept') || 'application/json',
+            'X-Requested-With': 'XMLHttpRequest', // Helps with some Directus security configs
+            'X-Forwarded-For': getClientIp(request) || '',
+            'X-Forwarded-Proto': 'https',
+        };
+        const originalContentType = request.headers.get('Content-Type'); // Keep this for sticker injection check
 
-        let targetSearch = url.search;
-
-        if (canBypass && API_SERVICE_TOKEN) {
-            forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
-            // If we are bypassing, and original request had access_token in URL, remove it so Directus uses our Service Token header
-            if (url.searchParams.has('access_token')) {
-                const newParams = new URLSearchParams(url.searchParams);
-                newParams.delete('access_token');
-                const newSearch = newParams.toString();
-                targetSearch = newSearch ? `?${newSearch}` : '';
+        // Special-case: ensure sticker creations include the logged-in user's id explicitly
+        // If we have an authHeader and the incoming request is creating/updating Stickers
+        // and the body is JSON, fetch /users/me with the caller token and inject
+        // `user_created` into the body so Directus will set the relation correctly.
+        if (authHeader && rawBody && rawBody.byteLength > 0 && (path.toLowerCase().startsWith('items/stickers')) && originalContentType?.includes('application/json')) {
+            try {
+                const meResp = await fetch(`${DIRECTUS_URL}/users/me`, {
+                    headers: { Authorization: authHeader, 'Cache-Control': 'no-cache' },
+                    cache: 'no-store'
+                });
+                if (meResp.ok) {
+                    const meJson = await meResp.json().catch(() => null);
+                    const me = meJson?.data || meJson;
+                    const userId = me?.id;
+                    if (userId) {
+                        try {
+                            const text = new TextDecoder().decode(rawBody);
+                            const parsed = text ? JSON.parse(text) : {};
+                            // Only inject if not already present
+                            if (!parsed.user_created && !parsed.created_by) {
+                                parsed.user_created = userId;
+                                const newBodyText = JSON.stringify(parsed);
+                                rawBody = new TextEncoder().encode(newBodyText).buffer as ArrayBuffer;
+                            }
+                        } catch (e) {
+                            console.warn('[Directus Proxy] Failed to inject user_created into stickers body:', e);
+                        }
+                    }
+                } else {
+                    console.warn('[Directus Proxy] Could not fetch users/me to inject user_created for stickers:', meResp.status);
+                }
+            } catch (e) {
+                console.error('[Directus Proxy] Error fetching users/me for stickers injection:', e);
             }
-        } else if (authHeader && (isUserTokenValid || isAuthPath)) {
-            forwardHeaders['Authorization'] = authHeader;
-        } else if (authHeader && !isUserTokenValid && isAllowed) {
-            console.log(`[Directus Proxy] Stripping invalid token for public mutation: ${path}`);
-            // Header is not added
         }
 
-        const targetUrl = `${DIRECTUS_URL}/${path}${targetSearch}`;
-
-        const originalContentType = request.headers.get('Content-Type');
         if (originalContentType) forwardHeaders['Content-Type'] = originalContentType;
         if (cookie) forwardHeaders['Cookie'] = cookie;
+
+        let targetSearch = url.search;
 
         // Auto-auth for specific public forms (Intro)
         if (!authHeader && API_SERVICE_TOKEN && (path.startsWith('items/intro_signups') || path.startsWith('items/intro_parent_signups'))) {
             forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
         }
 
-        // DEBUG: Log everything for auth/refresh if it's failing
-        if (path.includes('auth/')) {
-            console.log(`[Directus Proxy] PROXING AUTH: ${method} ${targetUrl} | Headers: ${JSON.stringify(Object.keys(forwardHeaders))} | Body size: ${rawBody?.byteLength || 0}`);
+        if (canBypass && API_SERVICE_TOKEN) {
+            forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
+        } else if (authHeader && (isUserTokenValid || isAuthPath || needsSpecialGuardCheck || isAllowed)) {
+            const isIdentityPath = path.startsWith('users/me');
+            const isStrictAuthPath = (path.includes('auth/') || path.startsWith('auth/')) && !isIdentityPath;
+            if (!isStrictAuthPath || isIdentityPath) {
+                forwardHeaders['Authorization'] = authHeader;
+            }
         }
+
+        // AGGRESSIVE CLEANUP: Avoid 400 Bad Request by ensuring we never send double auth
+        // 1. If we have an Authorization header, remove access_token from query params
+        if (forwardHeaders['Authorization'] && url.searchParams.has('access_token')) {
+            const newParams = new URLSearchParams(url.searchParams);
+            newParams.delete('access_token');
+            const newSearch = newParams.toString();
+            targetSearch = newSearch ? `?${newSearch}` : '';
+        }
+
+        // 2. If we have an Authorization header (Bearer), remove cookies to avoid conflict
+        if (forwardHeaders['Authorization'] && forwardHeaders['Cookie']) {
+            delete forwardHeaders['Cookie'];
+        }
+
+        // 3. For auth paths (login/refresh), remove cookies because auth is via request body
+        // This prevents "double auth" error where Directus sees both Cookie + body credentials
+        if (path.includes('auth/') && forwardHeaders['Cookie']) {
+            delete forwardHeaders['Cookie'];
+        }
+
+        // Trace token usage for debugging
+        const targetUrl = `${DIRECTUS_URL}/${path}${targetSearch}`;
+
+        if (path.includes('auth/')) {
+            console.log(`[Directus Proxy] PROXING AUTH: ${method} ${targetUrl} | Body size: ${rawBody?.byteLength || 0} | Content-Type: ${forwardHeaders['Content-Type']}`);
+            if (rawBody && rawBody.byteLength > 0 && rawBody.byteLength < 1000) {
+                try {
+                    const text = new TextDecoder().decode(rawBody);
+                    console.log(`[Directus Proxy] Auth Body Payload: ${text}`);
+                } catch (e) { }
+            }
+        }
+
 
         const response = await fetch(targetUrl, {
             method,
             headers: forwardHeaders,
             body: rawBody && rawBody.byteLength > 0 ? new Uint8Array(rawBody) : undefined,
-            redirect: 'follow'
+            redirect: 'follow',
+            // @ts-ignore - node-fetch / undici extension
+            duplex: 'half'
         });
+
 
         if (!response.ok) {
             const errorText = await response.text().catch(() => 'No error body');
-            console.error(`[Directus Proxy] Upstream ${method} ${path} FAILED: Status ${response.status} | Body: ${errorText.slice(0, 200)}`);
+
+            // Detailed logging for auth failures
+            if (path.includes('auth/')) {
+                console.error(`[Directus Proxy] AUTH UPSTREAM FAILED: ${method} ${path} | Status ${response.status} | Body size: ${errorText.length} | First chars: ${errorText.slice(0, 100)}`);
+            } else {
+                console.error(`[Directus Proxy] Upstream ${method} ${path} FAILED: Status ${response.status} | Body: ${errorText.slice(0, 200)}`);
+            }
+
 
             if (response.status === 403 && (path.startsWith('items/committees') || path.startsWith('items/committee_members'))) {
                 console.log(`[Directus Proxy] Softening 403 for ${method} ${path} to avoid browser console error.`);
                 return NextResponse.json({ data: null, error: 'Forbidden', softened: true }, { status: 200 });
             }
+
 
             // Re-create response for JSON if possible
             if (response.headers.get('Content-Type')?.includes('application/json')) {
@@ -573,7 +754,12 @@ async function handleMutation(
         }
 
     } catch (error: any) {
-        console.error(`[Directus Proxy] ${method} ${path} critical failure loop/exception:`, error);
+        console.error(`[Directus Proxy] ${method} ${path} CRITICAL FAILURE:`, {
+            message: error.message,
+            stack: error.stack,
+            path: path,
+            method: method
+        });
         return NextResponse.json({
             error: 'Directus Proxy Mutation Error',
             message: error.message,
@@ -582,6 +768,7 @@ async function handleMutation(
         }, { status: 500 });
     }
 }
+
 
 export async function POST(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
     return handleMutation('POST', request, context);

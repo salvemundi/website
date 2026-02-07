@@ -10,7 +10,6 @@ export const ROUTES = {
     PUB_CRAWL: '/kroegentocht',
     TRIP: '/reis',
     STICKERS: '/stickers',
-    LOGIN: '/login',
     ACCOUNT: '/account',
     SIGNUP: '/signup',
     TRANSACTIONS: '/transacties',

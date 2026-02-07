@@ -5,7 +5,7 @@ import { PhoneNumberInput, isValidPhoneNumber } from '@/shared/components/PhoneN
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { User } from '@/shared/model/types/auth';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { format } from 'date-fns';
+import { formatDateToLocalISO } from '@/shared/lib/utils/date';
 
 const DeletionTimer = ({ expiryDateStr }: { expiryDateStr: string }) => {
     const [timeLeft, setTimeLeft] = useState<{ days: number, hours: number, minutes: number } | null>(null);
@@ -78,7 +78,7 @@ export default function SignUp() {
         tussenvoegsel: '',
         achternaam: '',
         email: '',
-        geboortedatum: null as Date | null,
+        geboortedatum: '',
         telefoon: '',
         coupon: '',
     });
@@ -172,7 +172,7 @@ export default function SignUp() {
                 firstName: user ? undefined : form.voornaam,
                 lastName: user ? undefined : form.achternaam,
                 email: user ? user.email : form.email,
-                dateOfBirth: form.geboortedatum ? format(form.geboortedatum, 'yyyy-MM-dd') : undefined,
+                dateOfBirth: form.geboortedatum ? form.geboortedatum : undefined,
                 phoneNumber: form.telefoon,
                 couponCode: couponStatus?.valid ? form.coupon : undefined
             };
@@ -265,6 +265,7 @@ export default function SignUp() {
                 achternaam: user.last_name || prev.achternaam,
                 email: user.email || prev.email,
                 telefoon: user.phone_number || prev.telefoon,
+                geboortedatum: user.date_of_birth ? formatDateToLocalISO(user.date_of_birth) : prev.geboortedatum,
             }));
         }
     }, [user]);
@@ -369,7 +370,7 @@ export default function SignUp() {
                                         <div className="mt-4 pt-4 border-t border-theme-purple/10">
                                             <p className="text-theme-text-muted text-sm flex items-center gap-2">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-theme-purple/40"></span>
-                                                Geldig tot: <span className="font-semibold text-theme-text">{new Date(user.membership_expiry).toLocaleDateString('nl-NL')}</span>
+                                                Geldig tot: <span className="font-semibold text-theme-text">{new Date(user.membership_expiry.includes('T') || user.membership_expiry.includes(' ') ? user.membership_expiry : `${user.membership_expiry}T12:00:00`).toLocaleDateString('nl-NL')}</span>
                                             </p>
                                         </div>
                                     )}
@@ -432,8 +433,8 @@ export default function SignUp() {
                                     <input
                                         type="date"
                                         name="geboortedatum"
-                                        value={form.geboortedatum ? (new Date(form.geboortedatum)).toISOString().split('T')[0] : ''}
-                                        onChange={(e) => setForm({ ...form, geboortedatum: e.target.value ? new Date(e.target.value) : null })}
+                                        value={form.geboortedatum}
+                                        onChange={handleChange}
                                         className="form-input mt-1 w-full"
                                     />
                                 </label>
