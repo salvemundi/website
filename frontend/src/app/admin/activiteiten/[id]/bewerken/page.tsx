@@ -20,6 +20,7 @@ interface Event {
     description: string;
     description_logged_in?: string;
     event_date: string;
+    event_date_end?: string;
     event_time?: string;
     event_time_end?: string;
     location?: string;
@@ -56,6 +57,7 @@ export default function BewerkenActiviteitPage() {
         description: '',
         description_logged_in: '',
         event_date: '',
+        event_date_end: '',
         event_time: '',
         event_time_end: '',
         location: '',
@@ -86,8 +88,15 @@ export default function BewerkenActiviteitPage() {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            // Load committees and filter by user's memberships
+            // Load data
             const committeesData = await directusFetch<Committee[]>('/items/committees?fields=id,name&sort=name&limit=-1&filter[is_visible][_eq]=true');
+
+            // Clean committee names
+            const cleanedCommittees = committeesData.map(c => ({
+                ...c,
+                name: c.name.replace(/\|\|.*salvemundi.*$/i, '').replace(/\|+$/g, '').trim()
+            }));
+
             try {
                 const user = auth.user;
                 const memberships = user?.committees || [];
@@ -96,10 +105,10 @@ export default function BewerkenActiviteitPage() {
                     return name.includes('bestuur') || name.includes('ict') || name.includes('kandi');
                 });
                 if (hasPriv) {
-                    setCommittees(committeesData);
+                    setCommittees(cleanedCommittees);
                 } else if (memberships.length > 0) {
                     const allowed = new Set(memberships.map((c: any) => String(c.id)));
-                    setCommittees(committeesData.filter(c => allowed.has(String(c.id))));
+                    setCommittees(cleanedCommittees.filter(c => allowed.has(String(c.id))));
                 } else {
                     setCommittees([]);
                 }
@@ -112,6 +121,7 @@ export default function BewerkenActiviteitPage() {
 
             // Parse date for input (needs YYYY-MM-DD format)
             const eventDate = event.event_date ? format(new Date(event.event_date), 'yyyy-MM-dd') : '';
+            const eventDateEnd = event.event_date_end ? format(new Date(event.event_date_end), 'yyyy-MM-dd') : '';
 
             // Parse deadline for datetime-local input
             const deadline = event.inschrijf_deadline
@@ -128,6 +138,7 @@ export default function BewerkenActiviteitPage() {
                 description: event.description || '',
                 description_logged_in: event.description_logged_in || '',
                 event_date: eventDate,
+                event_date_end: eventDateEnd,
                 event_time: event.event_time || '',
                 event_time_end: event.event_time_end || '',
                 location: event.location || '',
@@ -274,6 +285,7 @@ export default function BewerkenActiviteitPage() {
                 name: formData.name,
                 description: formData.description,
                 event_date: formData.event_date,
+                event_date_end: formData.event_date_end || formData.event_date,
                 location: formData.location || null,
                 capacity: formData.capacity ? parseInt(formData.capacity) : null,
                 price_members: formData.price_members ? parseFloat(formData.price_members) : 0,
@@ -410,10 +422,10 @@ export default function BewerkenActiviteitPage() {
                         {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="lg:col-span-2">
                             <label htmlFor="event_date" className="block text-sm font-bold text-admin-muted mb-2">
-                                Datum *
+                                Startdatum *
                             </label>
                             <input
                                 type="date"
@@ -426,23 +438,7 @@ export default function BewerkenActiviteitPage() {
                             {errors.event_date && <p className="text-red-500 text-sm mt-1">{errors.event_date}</p>}
                         </div>
 
-                        <div>
-                            <label htmlFor="inschrijf_deadline" className="block text-sm font-bold text-admin-muted mb-2">
-                                Inschrijfdeadline
-                            </label>
-                            <input
-                                type="datetime-local"
-                                id="inschrijf_deadline"
-                                name="inschrijf_deadline"
-                                value={formData.inschrijf_deadline}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 rounded-lg border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
+                        <div className="lg:col-span-2">
                             <label htmlFor="event_time" className="block text-sm font-bold text-admin-muted mb-2">
                                 Starttijd
                             </label>
@@ -456,7 +452,21 @@ export default function BewerkenActiviteitPage() {
                             />
                         </div>
 
-                        <div>
+                        <div className="lg:col-span-2">
+                            <label htmlFor="event_date_end" className="block text-sm font-bold text-admin-muted mb-2">
+                                Einddatum
+                            </label>
+                            <input
+                                type="date"
+                                id="event_date_end"
+                                name="event_date_end"
+                                value={formData.event_date_end}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 rounded-lg border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                            />
+                        </div>
+
+                        <div className="lg:col-span-2">
                             <label htmlFor="event_time_end" className="block text-sm font-bold text-admin-muted mb-2">
                                 Eindtijd
                             </label>
@@ -471,19 +481,35 @@ export default function BewerkenActiviteitPage() {
                         </div>
                     </div>
 
-                    <div>
-                        <label htmlFor="location" className="block text-sm font-bold text-admin-muted mb-2">
-                            Locatie
-                        </label>
-                        <input
-                            type="text"
-                            id="location"
-                            name="location"
-                            value={formData.location}
-                            onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-lg border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
-                            placeholder="Bijv. R10 Building"
-                        />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label htmlFor="inschrijf_deadline" className="block text-sm font-bold text-admin-muted mb-2">
+                                Inschrijfdeadline
+                            </label>
+                            <input
+                                type="datetime-local"
+                                id="inschrijf_deadline"
+                                name="inschrijf_deadline"
+                                value={formData.inschrijf_deadline}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 rounded-lg border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                            />
+                        </div>
+
+                        <div>
+                            <label htmlFor="location" className="block text-sm font-bold text-admin-muted mb-2">
+                                Locatie
+                            </label>
+                            <input
+                                type="text"
+                                id="location"
+                                name="location"
+                                value={formData.location}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 rounded-lg border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                                placeholder="Bijv. R10 Building"
+                            />
+                        </div>
                     </div>
 
                     <div>
@@ -672,7 +698,7 @@ export default function BewerkenActiviteitPage() {
                     {/* Publish Settings */}
                     <div className="border border-admin rounded-lg p-6 space-y-4 bg-admin-card-soft">
                         <h3 className="text-lg font-bold text-admin mb-4">Publicatie Instellingen</h3>
-                        
+
                         <div className="space-y-3">
                             <label className="flex items-center gap-3 cursor-pointer">
                                 <input

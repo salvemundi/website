@@ -14,6 +14,7 @@ interface Event {
     id: number;
     name: string;
     event_date: string;
+    event_date_end?: string;
     description: string;
     location?: string;
     max_sign_ups?: number;
@@ -53,7 +54,7 @@ export default function AdminActiviteitenPage() {
         try {
             // Fetch all events with signup counts (including drafts for admin)
             const eventsData = await directusFetch<Event[]>(
-                '/items/events?fields=id,name,event_date,description,location,max_sign_ups,price_members,price_non_members,inschrijf_deadline,contact,image.id,committee_id,status,publish_date&sort=-event_date&limit=-1'
+                '/items/events?fields=id,name,event_date,event_date_end,description,location,max_sign_ups,price_members,price_non_members,inschrijf_deadline,contact,image.id,committee_id,status,publish_date&sort=-event_date&limit=-1'
             );
 
             // Get signup counts for each event
@@ -470,7 +471,7 @@ export default function AdminActiviteitenPage() {
                                             <Eye className="h-4 w-4" />
                                             <span className="inline">Aanmeldingen</span>
                                         </button>
-                                        
+
                                         {/* Notification buttons */}
                                         {!isEventPast(event.event_date) && (event as any).status === 'published' && (!((event as any).publish_date) || new Date((event as any).publish_date) <= new Date()) && (
                                             <>
@@ -485,10 +486,10 @@ export default function AdminActiviteitenPage() {
                                                 </button>
                                                 <button
                                                     onClick={() => {
-                                                        setCustomNotification({ 
-                                                            title: `Reminder: ${event.name}`, 
+                                                        setCustomNotification({
+                                                            title: `Reminder: ${event.name}`,
                                                             body: `Je kunt je nog steeds aanmelden voor ${event.name}!`,
-                                                            eventId: event.id 
+                                                            eventId: event.id
                                                         });
                                                         setShowCustomNotificationModal(true);
                                                     }}
@@ -501,7 +502,7 @@ export default function AdminActiviteitenPage() {
                                                 </button>
                                             </>
                                         )}
-                                        
+
                                         {(() => {
                                             const eventCommitteeId = (event as any).committee_id ? String((event as any).committee_id) : null;
                                             const memberships = auth.user?.committees || [];
@@ -549,7 +550,7 @@ export default function AdminActiviteitenPage() {
                         <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
                             Custom Notificatie Versturen
                         </h3>
-                        
+
                         <div className="space-y-4 mb-6">
                             <div>
                                 <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
@@ -563,7 +564,7 @@ export default function AdminActiviteitenPage() {
                                     placeholder="Bijv: Reminder: Activiteit naam"
                                 />
                             </div>
-                            
+
                             <div>
                                 <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                                     Bericht
@@ -577,7 +578,7 @@ export default function AdminActiviteitenPage() {
                                 />
                             </div>
                         </div>
-                        
+
                         <div className="flex gap-3">
                             <button
                                 onClick={handleSendCustomNotification}

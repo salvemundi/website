@@ -149,13 +149,26 @@ export default function EventDetailPage() {
         if (!rawDate) return null;
         const date = new Date(rawDate);
         if (Number.isNaN(date.getTime())) return rawDate;
-        return new Intl.DateTimeFormat('nl-NL', {
+
+        const formatOptions: Intl.DateTimeFormatOptions = {
             weekday: 'long',
             day: 'numeric',
             month: 'long',
             year: 'numeric',
-        }).format(date);
-    }, [rawDate]);
+        };
+
+        const startDateFormatted = new Intl.DateTimeFormat('nl-NL', formatOptions).format(date);
+
+        if (event?.event_date_end && event.event_date_end !== event.event_date) {
+            const endDate = new Date(event.event_date_end);
+            if (!Number.isNaN(endDate.getTime())) {
+                const endDateFormatted = new Intl.DateTimeFormat('nl-NL', formatOptions).format(endDate);
+                return `${startDateFormatted} t/m ${endDateFormatted}`;
+            }
+        }
+
+        return startDateFormatted;
+    }, [rawDate, event?.event_date_end]);
 
     const formattedTime = useMemo(() => {
         if (!event) return null;
