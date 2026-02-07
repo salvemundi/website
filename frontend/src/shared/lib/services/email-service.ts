@@ -201,11 +201,11 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
     let qrCodeAttachment: EmailAttachment | undefined;
     let qrCodeCid = '';
     if (data.qrCodeDataUrl) {
-      console.log('📧 email-service: QR code data URL received, length:', data.qrCodeDataUrl.length);
+      console.log('email-service: QR code data URL received, length:', data.qrCodeDataUrl.length);
       const base64Data = data.qrCodeDataUrl.includes(',')
         ? data.qrCodeDataUrl.split(',')[1]
         : data.qrCodeDataUrl;
-      console.log('📧 email-service: Base64 data extracted, length:', base64Data.length);
+      console.log('email-service: Base64 data extracted, length:', base64Data.length);
       // Use a unique content ID in an email-style format (include domain) for better
       // compatibility with mail clients and Microsoft Graph inline attachments.
       qrCodeCid = `qrcode-${Date.now()}@salvemundi`;
@@ -216,9 +216,9 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
         isInline: true,
         contentId: qrCodeCid,
       };
-      console.log('📧 email-service: QR attachment created with contentId:', qrCodeCid);
+      console.log('email-service: QR attachment created with contentId:', qrCodeCid);
     } else {
-      console.warn('⚠️ email-service: No QR code data URL provided');
+      console.warn('email-service: No QR code data URL provided');
     }
     // Prefer committee name from data, but sanitize as a fallback in case it still contains markers
     const displayCommitteeName = sanitizeCommitteeDisplay(data.committeeName) || data.committeeName;
@@ -234,16 +234,7 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
         </div>
       ` : '';
     // Organization contact block (slightly different heading, reused fields)
-    const orgContactInfoSection = (data.contactName || data.contactPhone || committeeEmail || displayCommitteeName)
-      ? `
-            <div style="background-color: #F0F8FF; padding: 12px; border-radius: 8px; margin: 16px 0;">
-              <h3 style="color: #7B2CBF; margin-top: 0;">Activiteit &amp; Contact</h3>
-              ${displayCommitteeName ? `<p><strong>Commissie:</strong> ${displayCommitteeName}</p>` : ''}
-              ${data.contactName ? `<p><strong>Contactpersoon:</strong> ${data.contactName}</p>` : ''}
-              ${data.contactPhone ? `<p><strong>Telefoon:</strong> ${data.contactPhone}</p>` : ''}
-              ${committeeEmail ? `<p><strong>E-mail:</strong> <a href="mailto:${committeeEmail}" style="color: #7B2CBF; font-weight: bold;">${committeeEmail}</a></p>` : ''}
-            </div>
-          ` : '';
+
     // Build ticket HTML if participants were provided
     const ticketsHtml = (data.participants && data.participants.length > 0)
       ? data.participants.map((p, idx) => `
@@ -306,35 +297,9 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
       </html>
     `;
 
-    // Email to the organization
-    // Build a compact participant list for organization email
-    const orgParticipantsList = (data.participants && data.participants.length > 0)
-      ? `<ul style="padding-left:16px;">${data.participants.map(p => `<li>${p.name} (${p.initial})</li>`).join('')}</ul>`
-      : '';
 
-    const orgEmailBody = `
-      <html>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-          <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #7B2CBF;">Nieuwe Aanmelding: ${data.eventName}</h1>
-            <p>Er is een nieuwe aanmelding voor een activiteit:</p>
-            
-            <div style="background-color: #F5F5DC; padding: 15px; border-radius: 8px; margin: 20px 0;">
-              <h2 style="color: #FF6B35; margin-top: 0;">${data.eventName}</h2>
-              <p><strong>Naam:</strong> ${data.recipientName}</p>
-              <p><strong>Email:</strong> ${data.recipientEmail}</p>
-              ${data.phoneNumber ? `<p><strong>Telefoonnummer:</strong> ${data.phoneNumber}</p>` : ''}
-              <p><strong>Datum en tijd:</strong> ${formattedDate}</p>
-              <p><strong>Prijs:</strong> €${eventPrice.toFixed(2)}</p>
-              <p><strong>Aangemeld door:</strong> ${data.userName}</p>
-            </div>
-            ${orgContactInfoSection}
-            ${data.amountTickets ? `<p><strong>Aantal tickets:</strong> ${data.amountTickets}</p>` : ''}
-            ${orgParticipantsList}
-          </div>
-        </body>
-      </html>
-    `;
+
+
 
     // Send emails sequentially to avoid race conditions
     try {
@@ -348,26 +313,14 @@ export async function sendEventSignupEmail(data: EventSignupEmailData): Promise<
       );
 
     } catch (err) {
-      console.error('❌ Failed to send participant email:', err);
+      console.error('Failed to send participant email:', err);
     }
 
-    try {
-      // If we have a committee email, notify them directly and also send a copy to the default org address
-      if (committeeEmail) {
-        await sendEmail(config, committeeEmail, `Nieuwe aanmelding: ${data.eventName} - ${data.recipientName}`, orgEmailBody);
-        // also send a copy to the central address for record-keeping
-        await sendEmail(config, config.fromEmail, `Kopie: Nieuwe aanmelding: ${data.eventName} - ${data.recipientName}`, orgEmailBody);
-      } else {
-        await sendEmail(config, config.fromEmail, `Nieuwe aanmelding: ${data.eventName} - ${data.recipientName}`, orgEmailBody);
-      }
-
-    } catch (err) {
-      console.error('❌ Failed to send organization email:', err);
-    }
+    // Organization notification removed as per user request (avoid spam for large events)
 
 
   } catch (error) {
-    console.error('❌ Failed to send event signup email:', error);
+    console.error('Failed to send event signup email:', error);
     // Don't throw error - we don't want to fail the signup if email fails
   }
 }
@@ -449,7 +402,7 @@ export async function sendMembershipSignupEmail(data: MembershipSignupEmailData)
       );
       // membership confirmation sent (log removed)
     } catch (error) {
-      console.error('❌ Failed to send membership confirmation to participant:', error);
+      console.error('Failed to send membership confirmation to participant:', error);
     }
 
     try {
@@ -461,10 +414,10 @@ export async function sendMembershipSignupEmail(data: MembershipSignupEmailData)
       );
       // membership notification sent to organization (log removed)
     } catch (error) {
-      console.error('❌ Failed to send membership signup notification to organization:', error);
+      console.error('Failed to send membership signup notification to organization:', error);
     }
   } catch (error) {
-    console.error('❌ Failed to send membership signup email:', error);
+    console.error('Failed to send membership signup email:', error);
     // Don't throw error - we don't want to fail the signup if email fails
   }
 }
@@ -529,7 +482,7 @@ export async function sendActivityCancellationEmail(data: ActivityCancellationEm
     );
 
   } catch (error) {
-    console.error('❌ Failed to send activity cancellation email:', error);
+    console.error('Failed to send activity cancellation email:', error);
     // Don't throw error - we don't want to fail the generic flow if email fails, but useful to log
   }
 }
@@ -552,7 +505,7 @@ export async function sendNotificationEmail(
     await sendEmail(config, to, subject, htmlBody);
     // notification sent (log removed)
   } catch (error) {
-    console.error('❌ Failed to send notification email:', error);
+    console.error('Failed to send notification email:', error);
     throw error;
   }
 }
@@ -632,19 +585,19 @@ export async function sendIntroSignupEmail(data: IntroSignupEmailData): Promise<
       await sendEmail(config, data.participantEmail, 'Bevestiging introweek aanmelding', userEmailBody);
 
     } catch (err) {
-      console.error('❌ Failed to send participant email:', err);
+      console.error('Failed to send participant email:', err);
     }
 
     try {
       await sendEmail(config, config.fromEmail, `Nieuwe introweek aanmelding: ${participantName}`, orgEmailBody);
 
     } catch (err) {
-      console.error('❌ Failed to send organization email:', err);
+      console.error('Failed to send organization email:', err);
     }
 
 
   } catch (error) {
-    console.error('❌ Failed to send intro signup emails:', error);
+    console.error('Failed to send intro signup emails:', error);
   }
 }
 
@@ -675,7 +628,7 @@ export async function sendIntroBlogUpdateNotification(data: {
     await response.json();
     // intro update notifications sent (response consumed)
   } catch (error) {
-    console.error('❌ Failed to send intro update notifications:', error);
+    console.error('Failed to send intro update notifications:', error);
     throw error;
   }
 }
@@ -802,6 +755,6 @@ export async function sendPubCrawlSignupEmail(data: PubCrawlEmailData): Promise<
     );
 
   } catch (error) {
-    console.error('❌ Failed to send pub crawl tickets email:', error);
+    console.error('Failed to send pub crawl tickets email:', error);
   }
 }
