@@ -58,3 +58,21 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* iOS PWA / notch safe-area handling
+   Ensure content is pushed below the sticky navbar on iPhones (PWA/fullscreen). */
+:root {
+  --navbar-base-height: 6rem; /* matches the inner nav h-24 (6rem) */
+  --navbar-safe-height: calc(var(--navbar-base-height) + env(safe-area-inset-top, 0px));
+}
+
+/* Offset the element immediately following the navbar so content isn't hidden.
+   This covers layouts where the nav is sticky/fixed and the next sibling should be pushed down. */
+#navbar + * {
+  margin-top: var(--navbar-safe-height);
+}
+
+/* Fallback for cases where sibling selector doesn't apply (apply padding to main as a safe default) */
+main:not([data-no-navbar-offset]) {
+  padding-top: calc(env(safe-area-inset-top, 0px));
+}

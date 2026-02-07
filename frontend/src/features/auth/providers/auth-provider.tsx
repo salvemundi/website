@@ -18,6 +18,33 @@ try {
     // MSAL initialization failed
 }
 
+/**
+ * Detect if we are running inside a popup or iframe used for authentication
+ */
+const isInternalAuthWindow = () => {
+    if (typeof window === 'undefined') return false;
+
+    // Check if we have auth artifacts in URL - this strongly indicates a popup/redirect return
+    const url = new URL(window.location.href);
+    const hasAuthArtifacts = url.hash.includes('code=') || url.hash.includes('error=') ||
+        url.searchParams.has('code') || url.searchParams.has('state');
+
+    try {
+        // [FIX] More robust detection: if we have an opener or parent and auth artifacts,
+        // we are almost certainly the authentication window that should not run app logic.
+        if (window.opener && window.opener !== window && hasAuthArtifacts) return true;
+        if (window.parent && window.parent !== window && hasAuthArtifacts) return true;
+
+        // Classic checks as fallback
+        if (window.opener && window.opener !== window) return true;
+        if (window.parent && window.parent !== window) return true;
+    } catch (e) {
+        // Cross-origin access error usually means we are in a popup/iframe from Microsoft
+        return true;
+    }
+    return false;
+};
+
 // Legacy interface for backward compatibility
 export interface AuthContextType {
     user: User | null;
@@ -209,7 +236,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Check for existing session on mount
     useEffect(() => {
-        checkAuthStatus();
+        // [FIX] Prevent all side effects (refresh intervals, status checks) 
+        // if we are in a popup or iframe window. This avoids session contamination.
+        if (isInternalAuthWindow()) return;
+
+        // Note: checkAuthStatus is now triggered by isMsalInitializing change 
+        // to ensure MSAL is ready before we attempt recovery flows.
 
         // Listen for external auth expiration events
         const onAuthExpired = () => {
@@ -266,6 +298,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             clearInterval(refreshInterval);
         };
     }, []);
+
+    // [FIX] Trigger auth check only AFTER MSAL is initialized
+    useEffect(() => {
+        if (!isMsalInitializing && !isInternalAuthWindow()) {
+            checkAuthStatus();
+        }
+    }, [isMsalInitializing]);
 
     const checkAuthStatus = async () => {
         // Skip if we're already in an auth attempt cooldown
@@ -399,6 +438,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     if (hasProcessedRedirect.current) return;
                     hasProcessedRedirect.current = true;
 
+                    // [FIX] Prevent AuthProvider from running full login logic if we are in a popup or iframe.
+                    // MSAL's loginPopup/acquireTokenSilent handles the result in the parent window.
+                    // Running this logic in the popup would cause it to navigate to /account instead of closing.
+                    if (isInternalAuthWindow()) {
+                        // console.log('[AuthProvider] Auth finished in popup/iframe, signaling and closing...');
+                        // MSAL handles communication to opener inside handleRedirectPromise.
+                        // We add a fallback close to ensure the window doesn't hang.
+                        setTimeout(() => {
+                            if (typeof window !== 'undefined' && window.opener) {
+                                window.close();
+                            }
+                        }, 500);
+                        return;
+                    }
+
                     // console.log('[AuthProvider] Redirect login successful');
                     msalInstance.setActiveAccount(response.account);
                     await handleLoginSuccess(response, true);
@@ -416,6 +470,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     cleanUrl.searchParams.delete('error');
                     cleanUrl.searchParams.delete('error_description');
                     window.history.replaceState({}, document.title, cleanUrl.toString());
+
+                    // [FIX] Also close if we are in an error state in a popup
+                    if (isInternalAuthWindow()) {
+                        setTimeout(() => {
+                            if (typeof window !== 'undefined' && window.opener) {
+                                window.close();
+                            }
+                        }, 500);
+                    }
                 } else {
                     // Not a redirect return - restore active account from cache
                     const accounts = msalInstance.getAllAccounts();
@@ -575,6 +638,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const returnTo = localStorage.getItem('auth_return_to');
             if (returnTo) {
                 localStorage.removeItem('auth_return_to');
+
+                // Get clean current path
+                const currentPath = window.location.pathname + window.location.search;
+
+                // [FIX] Avoid redundant redirect if we are already where we want to be
+                // This reduces "flickering" and satisfies "fewer redirects" request
+                if (returnTo === currentPath || returnTo === '/' && currentPath === '/') {
+                    // console.log('[AuthProvider] Already on target page, skipping redirect');
+                    return;
+                }
+
                 // Ensure we don't redirect to external sites
                 if (returnTo.startsWith('/') && !returnTo.startsWith('//')) {
                     router.replace(returnTo);
@@ -617,58 +691,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     /**
      * loginWithMicrosoft - User-initiated login
      * 
-     * [ARCHITECTURE] Seamless Login
-     * We use `loginPopup` instead of `loginRedirect` to maintain the user's context.
-     * The state of the page remains intact while the user authenticates in a separate window.
-     * This eliminates the need for complex "return URL" handling and improves UX.
-     * 
-     * CRITICAL: This is called SYNCHRONOUSLY from a button onClick event
-     * to prevent popup blockers from interfering
-     * 
-     * Flow:
-     * 1. First try: loginPopup (user stays on page, seamless)
-     * 2. Fallback: Throw error for modal to handle (never redirect automatically)
+     * [ARCHITECTURE] Redirect Login
+     * We use `loginRedirect` to ensure the most reliable login experience.
+     * While popups are seamless, they often face issues with modern browser security,
+     * popup blockers, and mobile environments. Redirects provide a consistent flow.
      */
     const loginWithMicrosoft = async () => {
-        if (!msalInstance) {
-            throw new Error('Microsoft login is not available. Use HTTPS with a redirect URI that matches your Entra app (set NEXT_PUBLIC_AUTH_REDIRECT_URI for LAN/IP testing).');
-        }
-
-        try {
-            // Initialize MSAL if needed
-            await msalInstance.initialize();
-
-            // PHASE 2 CHANGE: Use loginPopup instead of loginRedirect
-            // This keeps the user on the page and provides a seamless experience
-            // console.log('[AuthProvider] Attempting popup login...');
-
-            const result = await msalInstance.loginPopup(loginRequest);
-
-            if (result && result.account) {
-                // console.log('[AuthProvider] Popup login successful');
-                msalInstance.setActiveAccount(result.account);
-                await handleLoginSuccess(result, false); // false = no redirect notification
-                return; // Success!
-            }
-        } catch (error: any) {
-            // console.error('[AuthProvider] Popup login error:', error);
-
-            // Check if error is popup-related
-            const isPopupError =
-                error.errorCode === 'popup_window_error' ||
-                error.errorCode === 'user_cancelled' ||
-                error.message?.toLowerCase().includes('popup') ||
-                error.message?.toLowerCase().includes('blocked');
-
-            if (isPopupError) {
-                // Popup was blocked or failed
-                // console.warn('[AuthProvider] Popup blocked/failed, throwing error for LoginModal to handle');
-                throw error; // Let LoginModal detect and handle this
-            }
-
-            // For other errors, also throw so LoginModal can show error message
-            throw error;
-        }
+        return loginWithRedirect();
     };
 
 
