@@ -159,9 +159,9 @@ jobs:
             docker image prune -f
 
             echo "Waiting for Frontend to respond on port 3000..."
-            CONTAINER_NAME="frontend"
-            # Frontend is usually quick, but give it up to 2 minutes
-            for i in {1..24}; do
+            CONTAINER_NAME="frontend-$TAG"
+            # Frontend is usually quick, give it up to 1 minute
+            for i in {1..12}; do
               # Direct curl check inside container
               if docker exec $CONTAINER_NAME curl -s -f http://localhost:3000/ > /dev/null 2>&1; then
                 echo "✅ Frontend is up and running!"
@@ -175,8 +175,8 @@ jobs:
                 exit 1
               fi
               
-              if (( i % 4 == 0 )); then
-                echo "Still waiting for Frontend... ($i/24)"
+              if (( i % 3 == 0 )); then
+                echo "Still waiting for Frontend... ($i/12)"
               fi
               sleep 5
             done
