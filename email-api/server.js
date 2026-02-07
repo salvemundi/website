@@ -155,6 +155,10 @@ const limiter = rateLimit({
   max: 100, // Limit each IP to 100 requests per windowMs
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  skip: (req) => {
+    // Skip rate limiting for internal services that provide a valid API key
+    return req.headers['x-api-key'] && req.headers['x-api-key'] === process.env.INTERNAL_API_KEY;
+  },
   message: { error: 'Too many requests, please try again later.' }
 });
 
