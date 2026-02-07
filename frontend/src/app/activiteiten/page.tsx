@@ -33,15 +33,24 @@ function ActivitiesContent() {
         if (!showPastActivities) {
             const now = new Date();
             now.setHours(0, 0, 0, 0);
-            filtered = filtered.filter(event => new Date(event.event_date) >= now);
+            filtered = filtered.filter(event => {
+                const eventDate = new Date(event.event_date);
+                eventDate.setHours(0, 0, 0, 0);
+                return eventDate >= now;
+            });
         }
         return filtered.sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime());
     }, [events, showPastActivities]);
 
     const upcomingEvent = useMemo(() => {
         const now = new Date();
+        now.setHours(0, 0, 0, 0);
         return events
-            .filter(e => new Date(e.event_date) >= now)
+            .filter(e => {
+                const eventDate = new Date(e.event_date);
+                eventDate.setHours(0, 0, 0, 0);
+                return eventDate >= now;
+            })
             .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())[0];
     }, [events]);
 
