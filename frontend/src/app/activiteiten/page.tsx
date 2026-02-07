@@ -112,7 +112,14 @@ function ActivitiesContent() {
                         dark:from-theme-gradient-dark-start 
                         dark:via-theme-gradient-dark-start 
                         dark:to-theme-gradient-dark-end">
-                        <FlipClock targetDate={upcomingEvent.event_date} title={upcomingEvent.name} href={`/activiteiten/${upcomingEvent.id}`} />
+                        <FlipClock
+                            targetDate={upcomingEvent.event_time
+                                ? `${upcomingEvent.event_date}T${upcomingEvent.event_time}`
+                                : upcomingEvent.event_date
+                            }
+                            title={upcomingEvent.name}
+                            href={`/activiteiten/${upcomingEvent.id}`}
+                        />
                     </div>
                 )}
             </PageHeader>
