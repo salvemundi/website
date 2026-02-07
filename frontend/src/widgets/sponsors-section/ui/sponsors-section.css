@@ -21,6 +21,7 @@
 
 .sponsors-scroll-track {
     display: flex;
+    flex-wrap: nowrap;
     gap: 4rem;
     animation: scroll-sponsors 30s linear infinite;
     will-change: transform;
