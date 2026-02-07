@@ -248,7 +248,7 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
                     </div>
                 `,
                 attachments: attachments
-            }, { timeout: 10000 });
+            }, { headers: { 'x-api-key': process.env.INTERNAL_API_KEY }, timeout: 10000 });
 
             console.log(`[NotificationService] ✅ Confirmation email sent to ${metadata.email} for ${activityName}`);
         } else {
@@ -273,7 +273,7 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
                         </div>
                     </div>
                 `
-            }, { timeout: 10000 });
+            }, { headers: { 'x-api-key': process.env.INTERNAL_API_KEY }, timeout: 10000 });
             console.log(`[NotificationService] Organization notified for ${activityName}`);
         } catch (orgErr) {
             console.warn("[NotificationService] Failed to notify organization:", orgErr.message);
@@ -308,7 +308,7 @@ async function sendWelcomeEmail(emailServiceUrl, email, firstName, credentials) 
                     <p style="margin-top: 0;"><strong>S.A. Salve Mundi</strong></p>
                 </div>
             `
-        }, { timeout: 10000 });
+        }, { headers: { 'x-api-key': process.env.INTERNAL_API_KEY }, timeout: 10000 });
         console.log(`[NotificationService] ✅ Welcome email sent to ${email}`);
 
     } catch (error) {
@@ -362,7 +362,7 @@ async function sendTripSignupConfirmation(emailServiceUrl, tripSignup, trip) {
                     <p style="margin-top: 10px;"><strong>De ReisCommissie</strong></p>
                 </div>
             `
-        }, { timeout: 10000 });
+        }, { headers: { 'x-api-key': process.env.INTERNAL_API_KEY }, timeout: 10000 });
 
         console.log(`✅ Trip signup confirmation sent to ${tripSignup.email}`);
     } catch (error) {
@@ -418,7 +418,7 @@ async function sendTripPaymentRequest(emailServiceUrl, tripSignup, trip, payment
                     <p style="margin-top: 10px;"><strong>De ReisCommissie</strong></p>
                 </div>
             `
-        }, { timeout: 10000 });
+        }, { headers: { 'x-api-key': process.env.INTERNAL_API_KEY }, timeout: 10000 });
 
         console.log(`✅ Trip payment request (${paymentType}) sent to ${tripSignup.email}`);
     } catch (error) {
@@ -514,7 +514,7 @@ async function sendTripPaymentConfirmation(emailServiceUrl, tripSignup, trip, pa
                     <p style="margin-top: 10px;"><strong>De ReisCommissie</strong></p>
                 </div>
             `
-        }, { timeout: 10000 });
+        }, { headers: { 'x-api-key': process.env.INTERNAL_API_KEY }, timeout: 10000 });
 
         console.log(`✅ [NotificationService] Trip payment confirmation (${paymentType}) sent successfully to ${tripSignup.email}`);
     } catch (error) {
@@ -558,7 +558,7 @@ async function sendTripStatusUpdate(emailServiceUrl, tripSignup, trip, newStatus
                     <p style="margin-top: 10px;"><strong>De ReisCommissie</strong></p>
                 </div>
             `
-        }, { timeout: 10000 });
+        }, { headers: { 'x-api-key': process.env.INTERNAL_API_KEY }, timeout: 10000 });
 
         console.log(`✅ Trip status update sent to ${tripSignup.email}: ${oldStatus} → ${newStatus}`);
     } catch (error) {
@@ -593,7 +593,7 @@ async function sendTripBulkEmail(emailServiceUrl, recipients, subject, message, 
                     <p style="margin-top: 10px;"><strong>De ReisCommissie</strong></p>
                 </div>
             `
-        }, { timeout: 30000 });
+        }, { headers: { 'x-api-key': process.env.INTERNAL_API_KEY }, timeout: 30000 });
 
         console.log(`✅ Bulk email sent to ${recipientEmails.length} recipients for trip: ${tripName}`);
         return { success: true, count: recipientEmails.length };
