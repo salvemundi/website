@@ -215,7 +215,7 @@ export default function Footer() {
 
                 <div className="mt-12 pt-8 text-center">
                     <p className="text-sm text-theme-text-muted dark:text-theme-text-muted">
-                        Copyright © 2025 Salve Mundi - alle rechten voorbehouden.{" "}
+                        Copyright © 2026 Salve Mundi - alle rechten voorbehouden.{" "}
                         <a
                             href="https://github.com/salvemundi/website"
                             target="_blank"
