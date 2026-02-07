@@ -158,27 +158,46 @@ jobs:
             # Clean up old/dangling images (untagged) to free space
             docker image prune -f
 
-            echo "Waiting for container to be healthy..."
+            echo "Waiting for container to start and be healthy..."
             CONTAINER_NAME="frontend"
-            for i in {1..20}; do
-              STATUS=$(docker inspect --format='{{.State.Health.Status}}' $CONTAINER_NAME 2>/dev/null || echo "starting")
-              echo "Current status: $STATUS"
-              if [[ "$STATUS" == "healthy" ]]; then
-                echo "✅ Container is healthy!"
-                exit 0
+            MAX_ATTEMPTS=30
+            
+            for i in $(seq 1 $MAX_ATTEMPTS); do
+              # Check if container is running
+              if ! docker ps --filter "name=$CONTAINER_NAME" --filter "status=running" | grep -q "$CONTAINER_NAME"; then
+                echo "❌ Container is not running!"
+                docker logs $CONTAINER_NAME | tail -n 50
+                exit 1
               fi
-              if [[ "$STATUS" == "unhealthy" ]]; then
+              
+              # Check Docker health status (if HEALTHCHECK is defined)
+              STATUS=$(docker inspect --format='{{.State.Health.Status}}' $CONTAINER_NAME 2>/dev/null || echo "no-healthcheck")
+              echo "Attempt $i/$MAX_ATTEMPTS - Docker Health Status: $STATUS"
+              
+              if [[ "$STATUS" == "healthy" ]]; then
+                echo "✅ Container is healthy via Docker HEALTHCHECK!"
+                exit 0
+              elif [[ "$STATUS" == "unhealthy" ]]; then
                 echo "❌ Container is UNHEALTHY!"
                 docker logs $CONTAINER_NAME | tail -n 50
                 exit 1
               fi
+              
+              # If no healthcheck defined, try direct HTTP check after initial startup period
+              if [[ "$STATUS" == "no-healthcheck" ]] && [[ $i -gt 6 ]]; then
+                echo "No Docker HEALTHCHECK defined, attempting direct HTTP check..."
+                if docker exec $CONTAINER_NAME wget --no-verbose --tries=1 --spider --timeout=2 http://localhost:3000/ 2>/dev/null; then
+                  echo "✅ Container is responding to HTTP requests!"
+                  exit 0
+                else
+                  echo "Container not yet responding to HTTP requests, will retry..."
+                fi
+              fi
+              
               sleep 5
             done
-            # Backend check if frontend doesn't have internal healthcheck yet (Next.js default doesn't)
-            # Assuming Next.js app is reachable on port 3000 inside container or mapped port
-            # If no HEALTHCHECK is defined in Dockerfile, this loop will wait for "starting" forever or fail.
-            # Next.js standalone usually needs a custom HEALTHCHECK in Dockerfile.
-            # If not present, we skip strict health check or use curl.
-            echo "⚠️  Note: If Dockerfile has no HEALTHCHECK instruction, 'docker inspect' won't return 'healthy'."
-            exit 0
+            
+            echo "❌ Container failed to become healthy within timeout"
+            docker logs $CONTAINER_NAME | tail -n 100
+            exit 1
 
