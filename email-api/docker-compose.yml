@@ -14,6 +14,7 @@ services:
       - MS_GRAPH_SENDER_UPN=noreply@salvemundi.nl
       - DIRECTUS_URL=${DIRECTUS_URL}
       - DIRECTUS_API_TOKEN=${DIRECTUS_API_TOKEN}
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/health', (res) => { if (res.statusCode === 200) { process.exit(0); } else { process.exit(1); } }).on('error', (e) => { process.exit(1); });"]
       interval: 30s

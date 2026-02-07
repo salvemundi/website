@@ -12,16 +12,42 @@ interface FeaturedEventProps {
 export default function FeaturedEvent({ event, onEventClick }: FeaturedEventProps) {
     if (!event) return null;
 
-    const eventDate = new Date(event.event_date);
+    // Build a full datetime using event_time when available so times are accurate
+    const eventDate = event.event_time
+        ? new Date(`${event.event_date}T${event.event_time}`)
+        : new Date(event.event_date);
+
     const formattedDate = eventDate.toLocaleDateString('nl-NL', {
         weekday: 'long',
         day: 'numeric',
         month: 'long',
     });
-    const formattedTime = eventDate.toLocaleTimeString('nl-NL', {
-        hour: '2-digit',
-        minute: '2-digit',
-    });
+
+    const formattedTime = (() => {
+        // If event_time is explicitly provided prefer that formatting
+        if (event.event_time) {
+            try {
+                const t = new Date(`${event.event_date}T${event.event_time}`);
+                if (!Number.isNaN(t.getTime())) {
+                    return t.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+                }
+            } catch {
+                // fallthrough
+            }
+        }
+
+        // Fallback: if the date string itself contains a time portion, format it
+        try {
+            if (String(event.event_date).includes('T') || /\d{2}:\d{2}/.test(String(event.event_date))) {
+                const t = new Date(event.event_date);
+                if (!Number.isNaN(t.getTime())) return t.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+            }
+        } catch {
+            // ignore
+        }
+
+        return '';
+    })();
 
     return (
         <div className="rounded-3xl bg-gradient-to-b from-theme-gradient-light-start via-theme-gradient-light-start to-theme-gradient-light-end dark:from-theme-gradient-dark-start dark:via-theme-gradient-dark-start dark:to-theme-gradient-dark-end p-6 shadow-xl">

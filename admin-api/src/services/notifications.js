@@ -33,7 +33,7 @@ async function sendWelcomeEmail(emailServiceUrl, email, firstName, credentials) 
             to: email,
             subject: subject,
             html: html
-        }, { timeout: 10000 });
+        }, { headers: { 'x-api-key': process.env.INTERNAL_API_KEY }, timeout: 10000 });
         console.log(`[AdminAPI] Welcome email sent to ${email}. Response status:`, response.status);
     } catch (error) {
         console.error(`[AdminAPI] Failed to send welcome email to ${email}:`, error.response?.data || error.message);
@@ -44,7 +44,7 @@ async function sendApprovalNotificationEmail(emailServiceUrl, email, firstName, 
     if (!emailServiceUrl) return;
 
     const subject = `Je lidmaatschap bij Salve Mundi is goedgekeurd! 🎉`;
-    
+
     let credentialsSection = '';
     if (hasNewCredentials && credentials) {
         credentialsSection = `
@@ -91,7 +91,7 @@ async function sendApprovalNotificationEmail(emailServiceUrl, email, firstName, 
             to: email,
             subject: subject,
             html: html
-        }, { timeout: 10000 });
+        }, { headers: { 'x-api-key': process.env.INTERNAL_API_KEY }, timeout: 10000 });
         console.log(`[AdminAPI] Approval notification email sent to ${email}. Response status:`, response.status);
     } catch (error) {
         console.error(`[AdminAPI] Failed to send approval notification email to ${email}:`, error.response?.data || error.message);

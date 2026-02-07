@@ -75,6 +75,8 @@ export default function RootLayout({
     return (
         <html lang="nl" suppressHydrationWarning>
             <head>
+                {/* Character encoding */}
+                <meta charSet="utf-8" />
                 {/* Prevent zoom on Android - Handheld Mode */}
                 <meta name="HandheldFriendly" content="true" />
                 {/* Resource hints for better performance */}

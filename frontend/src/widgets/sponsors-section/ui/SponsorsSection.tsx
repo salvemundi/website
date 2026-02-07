@@ -66,31 +66,8 @@ export default function SponsorsSection() {
         return null;
     }
 
-    // Duplicate sponsors array multiple times to create seamless infinite loop
-    // The more duplicates, the smoother the transition
-    const duplicatedSponsors = [
-        ...sponsors,
-        ...sponsors,
-        ...sponsors,
-        ...sponsors,
-        ...sponsors,
-        ...sponsors,
-        ...sponsors,
-        ...sponsors,
-        ...sponsors,
-        ...sponsors,
-        ...sponsors,
-        ...sponsors,
-        ...sponsors,
-        ...sponsors,
-        ...sponsors,
-        ...sponsors,
-        ...sponsors,
-        ...sponsors,
-        ...sponsors,
-        ...sponsors,
-        ...sponsors
-    ];
+
+    const duplicatedSponsors = [...sponsors, ...sponsors, ...sponsors, ...sponsors, ...sponsors, ...sponsors, ...sponsors, ...sponsors, ...sponsors, ...sponsors, ...sponsors, ...sponsors, ...sponsors, ...sponsors, ...sponsors, ...sponsors, ...sponsors, ...sponsors, ...sponsors, ...sponsors];
 
     return (
         <section className="py-8 sm:py-10 md:py-12 bg-[var(--bg-main)] overflow-hidden">

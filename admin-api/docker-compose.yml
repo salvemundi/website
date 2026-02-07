@@ -6,6 +6,7 @@ services:
     env_file: .env
     environment:
       - EMAIL_SERVICE_URL=http://email-api-${TAG:-dev}:3001
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
     networks:
       - proxy-network
     healthcheck:

@@ -70,13 +70,12 @@ export async function performTokenRefresh(): Promise<boolean> {
             } else {
                 // Only log if it's not a standard expired token case to avoid noise
                 if (response.status !== 401) {
-                    const errorBody = await response.text().catch(() => 'no body');
-                    console.warn(`[directusFetch] Token refresh failed (${response.status}):`, errorBody);
+                    // console.warn(`[directusFetch] Token refresh failed (${response.status})`);
                 }
             }
             return false;
         } catch (error) {
-            console.error('[directusFetch] Unexpected error during token refresh:', error);
+            // console.error('[directusFetch] Unexpected error during token refresh:', error);
             return false;
         } finally {
             refreshPromise = null;
@@ -195,7 +194,7 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit, 
             headers,
         });
     } catch (err) {
-        console.error('[directusFetch] Network error when fetching', { url, method: options?.method || 'GET', error: err });
+        // console.error('[directusFetch] Network error when fetching', { url, method: options?.method || 'GET', error: err });
         throw err;
     }
 
@@ -226,14 +225,14 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit, 
                 }
             } else {
                 // If we are here, no refresh token existed to begin with, or logic flow failed.
-                console.warn('[directusFetch] 401 with session token but no refresh capability/token');
+                // console.warn('[directusFetch] 401 with session token but no refresh capability/token');
                 localStorage.removeItem('auth_token');
                 localStorage.removeItem('refresh_token');
                 window.dispatchEvent(new CustomEvent('auth:expired'));
             }
         } else if (usingSessionToken && typeof window !== 'undefined') {
             // Already retried and failed (recursive call), or window undefined
-            console.warn('[directusFetch] 401 on retry, session is definitely invalid');
+            // console.warn('[directusFetch] 401 on retry, session is definitely invalid');
             localStorage.removeItem('auth_token');
             localStorage.removeItem('refresh_token');
             window.dispatchEvent(new CustomEvent('auth:expired'));
@@ -253,7 +252,7 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit, 
             // Avoid dumping HTML into the error message
             const msg = `Directus API error: ${response.status} ${response.statusText} (Server returned HTML, likely a proxy or gateway error)`;
             if (!suppressLog) {
-                console.error('[directusFetch] Non-OK HTML response', { url, status: response.status, statusText: response.statusText });
+                // console.error('[directusFetch] Non-OK HTML response', { url, status: response.status, statusText: response.statusText });
             }
             throw new Error(msg);
         }
@@ -261,7 +260,7 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit, 
 
         if (!suppressLog) {
             try {
-                console.error('[directusFetch] Non-OK response', { url, status: response.status, statusText: response.statusText, body: errorText, usingSessionToken });
+                // console.error('[directusFetch] Non-OK response', { url, status: response.status, statusText: response.statusText, body: errorText, usingSessionToken });
             } catch (e) {
                 // ignore logging errors
             }
@@ -305,9 +304,9 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit, 
                             details.permissionsError = String(e);
                         }
 
-                        console.error('[directusFetch] 403 diagnostics', { url, details });
+                        // console.error('[directusFetch] 403 diagnostics', { url, details });
                     } catch (diagErr) {
-                        console.error('[directusFetch] Error fetching 403 diagnostic info', diagErr);
+                        // console.error('[directusFetch] Error fetching 403 diagnostic info', diagErr);
                     }
                 })();
             }
@@ -331,11 +330,11 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit, 
         // produces a runtime null value. Accessing `json.data` would then throw
         // "Cannot read properties of null (reading 'data')" as seen in errors.
         if (json === null || typeof json !== 'object') {
-            console.error('[directusFetch] Unexpected JSON response (null or non-object)', { url, status: response.status, text });
+            // console.error('[directusFetch] Unexpected JSON response (null or non-object)', { url, status: response.status, text });
             throw new Error('Directus API returned unexpected response: null or non-object. This often indicates a proxy/auth error or a misconfigured Directus endpoint.');
         }
     } catch (err) {
-        console.error('[directusFetch] Failed parsing JSON response', { url, error: err });
+        // console.error('[directusFetch] Failed parsing JSON response', { url, error: err });
         throw err;
     }
 

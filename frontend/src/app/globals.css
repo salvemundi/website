@@ -71,6 +71,20 @@ body {
   max-width: 100%;
 }
 
+/* Ensure in-page anchor navigation accounts for the safe-area and fixed header
+   This prevents elements targeted by fragment links from being hidden under
+   the iPhone dynamic island / status bar. */
+html {
+  scroll-padding-top: calc(env(safe-area-inset-top, 0px) + var(--header-height, 64px));
+  /* Older iOS fallback */
+  -webkit-scroll-padding-top: calc(constant(safe-area-inset-top, 0px) + var(--header-height, 64px));
+}
+
+/* When focusing or navigating to a target id, add a margin so content isn't obscured */
+:target {
+  scroll-margin-top: calc(env(safe-area-inset-top, 0px) + var(--header-height, 64px));
+}
+
 /* 4. Scrollbar Styles */
 .scrollbar-thin::-webkit-scrollbar {
   width: 8px;

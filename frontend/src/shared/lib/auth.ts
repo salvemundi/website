@@ -144,7 +144,7 @@ export async function loginWithPassword(email: string, password: string): Promis
             user: userDetails,
         };
     } catch (error) {
-        console.error('Login error:', error);
+        // console.error('Login error:', error);
         throw error;
     }
 }
@@ -198,7 +198,7 @@ export async function loginWithEntraId(entraIdToken: string, userEmail: string):
             user: userDetails,
         };
     } catch (error: unknown) {
-        console.error('Entra ID login error:', error);
+        // console.error('Entra ID login error:', error);
         throw error;
     }
 }
@@ -225,7 +225,7 @@ export async function signupWithPassword(userData: SignupData): Promise<LoginRes
         // Now login with the new credentials
         return await loginWithPassword(userData.email, userData.password);
     } catch (error: unknown) {
-        console.error('❌ Signup error:', error);
+        // console.error('❌ Signup error:', error);
 
         const errMsg = error instanceof Error ? error.message : String(error);
 
@@ -263,7 +263,7 @@ export async function fetchUserDetails(token: string): Promise<User | null> {
 
         if (!response.ok) {
             // If 401 or similar, the token is invalid
-            console.warn('[fetchUserDetails] Token validation failed:', response.status);
+            // console.warn('[fetchUserDetails] Token validation failed:', response.status);
             return null;
         }
 
@@ -281,10 +281,11 @@ export async function fetchUserDetails(token: string): Promise<User | null> {
         const user = { ...rawUser, committees: [] };
 
         return await mapDirectusUserToUser(user);
-    } catch (error) {
+
+    } catch {
         // If we get an error, it might be an expired token which directusFetch already handled
         // or a real network error.
-        console.error('Failed to fetch user details:', error);
+        // console.error('Failed to fetch user details:', error);
         return null; // Return null instead of throwing to allow AuthProvider to try other recovery methods
     }
 }
@@ -344,8 +345,9 @@ export async function fetchAndPersistUserCommittees(userId: string, token?: stri
         }
 
         return committees;
-    } catch (error) {
-        console.error('Failed to fetch/persist user committees:', error);
+
+    } catch {
+        // console.error('Failed to fetch/persist user committees:', error);
         return [];
     }
 }
@@ -381,7 +383,7 @@ export async function refreshAccessToken(refreshToken: string): Promise<LoginRes
             user: userDetails,
         };
     } catch (error) {
-        console.error('Token refresh error:', error);
+        // console.error('Token refresh error:', error);
         throw error;
     }
 }
@@ -398,8 +400,9 @@ export async function logout(refreshToken: string): Promise<void> {
                 refresh_token: refreshToken,
             }),
         });
-    } catch (error) {
-        console.error('Logout error:', error);
+
+    } catch {
+        // console.error('Logout error:', error);
         // Don't throw - logout should succeed even if API call fails
     }
 }

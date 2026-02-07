@@ -79,7 +79,7 @@ const Countdown: React.FC<CountdownProps> = ({ targetDate, title, onSignup }) =>
                             <div className="rounded-t-[16px] sm:rounded-t-[32px] rounded-b-none bg-[#5A3859] text-white px-4 py-6 sm:py-8 shadow-inner flex items-center justify-center">
                                 <span className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-wider">{value}</span>
                             </div>
-                            <div className="bg-[#FDD835] text-[#1A1A3C] font-semibold rounded-b-[16px] sm:rounded-b-[32px] rounded-t-none px-4 py-2 text-xs sm:text-sm uppercase tracking-wide -mt-1 shadow">
+                            <div className="bg-[#FDD835] text-white dark:text-[#1A1A3C] font-semibold rounded-b-[16px] sm:rounded-b-[32px] rounded-t-none px-4 py-2 text-xs sm:text-sm uppercase tracking-wide -mt-1 shadow">
                                 {label}
                             </div>
                         </div>

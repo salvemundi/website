@@ -120,7 +120,7 @@ const nextConfig: NextConfig = {
                     },
                     {
                         key: 'Cross-Origin-Opener-Policy',
-                        value: 'same-origin-allow-popups',
+                        value: 'same-origin',
                     },
                     {
                         key: 'Cross-Origin-Embedder-Policy',
@@ -135,7 +135,7 @@ const nextConfig: NextConfig = {
                             "font-src 'self' data: https://fonts.gstatic.com",
                             "img-src 'self' data: blob: https: http:",
                             "media-src 'self' blob: https:",
-                            "connect-src 'self' https://login.microsoftonline.com https://graph.microsoft.com https://admin.salvemundi.nl https://data.imagination.platour.net https://www.google-analytics.com https://analytics.google.com wss:", 
+                            "connect-src 'self' https://login.microsoftonline.com https://graph.microsoft.com https://admin.salvemundi.nl https://data.imagination.platour.net https://www.google-analytics.com https://analytics.google.com wss:",
                             "frame-src 'self' https://login.microsoftonline.com https://www.google.com",
                             "worker-src 'self' blob:",
                             "object-src 'none'",
