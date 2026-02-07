@@ -87,7 +87,9 @@ class SystemMonitor:
 class DockerMonitor:
     def __init__(self, config, alerter):
         self.target_containers = config['docker']['containers']
+        self.grace_period_seconds = config['docker'].get('grace_period_seconds', 60)
         self.alerter = alerter
+        self.down_since = {}  # Track when containers first went down
         try:
             self.client = docker.from_env()
         except docker.errors.DockerException as e:
@@ -99,26 +101,54 @@ class DockerMonitor:
             return
 
         running_containers = {c.name: c for c in self.client.containers.list()}
+        current_time = time.time()
 
         for name in self.target_containers:
             check_id = f"docker_{name}"
             
             if name not in running_containers:
-                self.alerter.send_alert(
-                    "Container Down",
-                    f"Container '{name}' is not running.",
-                    check_id=check_id
-                )
+                # Container is not running
+                if name not in self.down_since:
+                    # First time we noticed it's down, start tracking
+                    self.down_since[name] = current_time
+                    print(f"Container '{name}' is down. Grace period started ({self.grace_period_seconds}s).")
+                else:
+                    # Check if grace period has expired
+                    down_duration = current_time - self.down_since[name]
+                    if down_duration > self.grace_period_seconds:
+                        # Grace period expired, send alert
+                        self.alerter.send_alert(
+                            "Container Down",
+                            f"Container '{name}' has been down for {int(down_duration)}s.",
+                            check_id=check_id
+                        )
+                    else:
+                        # Still within grace period
+                        remaining = self.grace_period_seconds - down_duration
+                        print(f"Container '{name}' still down. Grace period: {int(remaining)}s remaining.")
                 continue
 
+            # Container exists, check status
             container = running_containers[name]
             if container.status != 'running':
-                 self.alerter.send_alert(
-                    "Container Unhealthy",
-                    f"Container '{name}' status is '{container.status}'.",
-                    check_id=check_id
-                )
+                # Container exists but not running (e.g., paused, restarting)
+                if name not in self.down_since:
+                    self.down_since[name] = current_time
+                    print(f"Container '{name}' status is '{container.status}'. Grace period started.")
+                else:
+                    down_duration = current_time - self.down_since[name]
+                    if down_duration > self.grace_period_seconds:
+                        self.alerter.send_alert(
+                            "Container Unhealthy",
+                            f"Container '{name}' status is '{container.status}' for {int(down_duration)}s.",
+                            check_id=check_id
+                        )
             else:
+                # Container is running fine
+                if name in self.down_since:
+                    down_duration = current_time - self.down_since[name]
+                    print(f"Container '{name}' recovered after {int(down_duration)}s downtime.")
+                    del self.down_since[name]
                 self.alerter.clear_state(check_id)
 
 class FunctionalMonitor:

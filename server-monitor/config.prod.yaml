@@ -13,6 +13,7 @@ system:
   cpu_load_threshold_percent: 80
 
 docker:
+  grace_period_seconds: 60  # Don't alert if container is down for less than this (e.g., during deployments)
   containers:
     - "npm"
     - "frontend-latest"
