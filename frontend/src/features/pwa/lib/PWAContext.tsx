@@ -29,11 +29,11 @@ export function PWAProvider({ children }: { children: ReactNode }) {
 
         // Listen for beforeinstallprompt event
         const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
-            console.log('PWA: beforeinstallprompt event fired');
+            // console.log('PWA: beforeinstallprompt event fired');
 
             // Check if user has dismissed the prompt before
             const dismissed = localStorage.getItem('pwa-install-dismissed');
-            console.log('PWA: dismissed from storage:', dismissed, 'isMobile:', isMobile);
+            // console.log('PWA: dismissed from storage:', dismissed, 'isMobile:', isMobile);
 
             if (!dismissed) {
                 // Only prevent default if we intend to show our own prompt
@@ -44,7 +44,7 @@ export function PWAProvider({ children }: { children: ReactNode }) {
         };
 
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
-        console.log('PWA: Event listener added');
+        // console.log('PWA: Event listener added');
 
         return () => {
             window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
