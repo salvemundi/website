@@ -17,11 +17,25 @@ export default function EventsSection() {
     }, [loadEvents]);
 
     const displayEvents = useMemo(() => {
-        const today = new Date();
+        const now = new Date();
         return (events ?? [])
             .filter((event) => {
-                const eventDate = new Date(event.event_date);
-                return eventDate >= today;
+                const dateStr = event.event_date;
+                const eventDate = new Date(dateStr);
+                if (Number.isNaN(eventDate.valueOf())) return false;
+
+                // If the event string contains a time (ISO T or a time part),
+                // compare full datetime. If it's date-only (e.g. "2026-02-07"),
+                // treat the event as lasting until the end of that day so
+                // same-day events are still considered upcoming.
+                const hasTime = /T|\d:\d{2}/.test(String(dateStr));
+                if (hasTime) {
+                    return eventDate >= now;
+                }
+
+                const endOfDay = new Date(eventDate);
+                endOfDay.setHours(23, 59, 59, 999);
+                return endOfDay >= now;
             })
             .sort((a, b) => {
                 const aDate = new Date(a.event_date).valueOf();
