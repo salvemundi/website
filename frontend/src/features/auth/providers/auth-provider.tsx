@@ -399,6 +399,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     if (hasProcessedRedirect.current) return;
                     hasProcessedRedirect.current = true;
 
+                    // [FIX] Prevent AuthProvider from running full login logic if we are in a popup or iframe.
+                    // MSAL's loginPopup/acquireTokenSilent handles the result in the parent window.
+                    // Running this logic in the popup would cause it to navigate to /account instead of closing.
+                    if (typeof window !== 'undefined' && (
+                        (window.opener && window.opener !== window) ||
+                        (window.parent && window.parent !== window)
+                    )) {
+                        return;
+                    }
+
                     // console.log('[AuthProvider] Redirect login successful');
                     msalInstance.setActiveAccount(response.account);
                     await handleLoginSuccess(response, true);
