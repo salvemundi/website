@@ -33,6 +33,7 @@ const ASSOCIATIONS = [
     'Anders'
 ];
 
+
 interface Participant {
     name: string;
     initial: string;
