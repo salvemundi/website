@@ -39,14 +39,26 @@ export default function manifest(): MetadataRoute.Manifest {
                 short_name: 'Activiteiten',
                 description: 'Bekijk onze activiteiten',
                 url: '/activiteiten',
-                icons: [{ src: '/icon', sizes: '512x512', type: 'image/png' }]
+                icons: [
+                    { 
+                        src: '/icon?size=96', 
+                        sizes: '96x96', 
+                        type: 'image/png'
+                    }
+                ]
             },
             {
                 name: 'Account',
                 short_name: 'Account',
                 description: 'Mijn account instellingen',
                 url: '/account',
-                icons: [{ src: '/icon', sizes: '512x512', type: 'image/png' }]
+                icons: [
+                    { 
+                        src: '/icon?size=96', 
+                        sizes: '96x96', 
+                        type: 'image/png'
+                    }
+                ]
             }
         ]
     };

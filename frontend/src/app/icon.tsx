@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og';
+import { NextRequest } from 'next/server';
 
 // Route segment config
 export const runtime = 'edge';
@@ -11,7 +12,17 @@ export const size = {
 export const contentType = 'image/png';
 
 // Image generation
-export default function Icon() {
+export default function Icon(req: NextRequest) {
+    // Support dynamic sizing via query params for shortcuts
+    const { searchParams } = new URL(req.url);
+    const sizeParam = searchParams.get('size');
+    const iconSize = sizeParam ? parseInt(sizeParam) : 512;
+    
+    // Scale SVG based on icon size
+    const svgScale = iconSize / 512;
+    const svgWidth = Math.floor(300 * svgScale);
+    const svgHeight = Math.floor(178 * svgScale);
+    
     return new ImageResponse(
         (
             // ImageResponse JSX element
@@ -27,8 +38,8 @@ export default function Icon() {
                 }}
             >
                 <svg
-                    width="300"
-                    height="178"
+                    width={svgWidth}
+                    height={svgHeight}
                     viewBox="0 0 2414.32 1430.72"
                     xmlns="http://www.w3.org/2000/svg"
                 >
@@ -38,7 +49,8 @@ export default function Icon() {
             </div>
         ),
         {
-            ...size,
+            width: iconSize,
+            height: iconSize,
         }
     );
 }
