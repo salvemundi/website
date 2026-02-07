@@ -121,6 +121,7 @@ async function sendTripStatusUpdateEmail(emailServiceUrl: string, tripSignup: an
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'x-api-key': process.env.INTERNAL_API_KEY || '',
         },
         body: JSON.stringify({
             to: tripSignup.email,

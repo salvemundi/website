@@ -11,6 +11,7 @@ services:
       - MOLLIE_WEBHOOK_URL=${MOLLIE_WEBHOOK_URL}
       - DIRECTUS_URL=${DIRECTUS_URL}
       - DIRECTUS_API_TOKEN=${DIRECTUS_API_TOKEN}
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
       - EMAIL_SERVICE_URL=http://email-api-${TAG:-dev}:3001
       - MEMBERSHIP_API_URL=http://membership-api-${TAG:-dev}:8000/api/membership
       - GRAPH_SYNC_URL=http://graph-sync:3001

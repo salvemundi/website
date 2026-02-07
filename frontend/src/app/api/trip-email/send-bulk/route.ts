@@ -63,6 +63,7 @@ async function sendTripBulkEmail(emailServiceUrl: string, recipients: any[], sub
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'x-api-key': process.env.INTERNAL_API_KEY || '',
             },
             body: JSON.stringify({
                 to: recipientEmails.join(','), // Send to multiple recipients
