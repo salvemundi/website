@@ -70,8 +70,7 @@ export async function performTokenRefresh(): Promise<boolean> {
             } else {
                 // Only log if it's not a standard expired token case to avoid noise
                 if (response.status !== 401) {
-                    const errorBody = await response.text().catch(() => 'no body');
-                    // console.warn(`[directusFetch] Token refresh failed (${response.status}):`, errorBody);
+                    // console.warn(`[directusFetch] Token refresh failed (${response.status})`);
                 }
             }
             return false;

@@ -400,11 +400,11 @@ export async function logout(refreshToken: string): Promise<void> {
                 refresh_token: refreshToken,
             }),
         });
-    });
-} catch {
-    // console.error('Logout error:', error);
-    // Don't throw - logout should succeed even if API call fails
-}
+
+    } catch {
+        // console.error('Logout error:', error);
+        // Don't throw - logout should succeed even if API call fails
+    }
 }
 
 // Get user's event signups
