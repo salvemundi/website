@@ -13,7 +13,8 @@
 /* 2. Font Declarations */
 @font-face {
   font-family: "Material Symbols Outlined";
-  src: url("/fonts/material-symbols/MaterialSymbolsOutlined.ttf") format("truetype");
+  src: url("/fonts/material-symbols/MaterialSymbolsOutlined.ttf")
+    format("truetype");
   font-weight: 100 700;
   font-style: normal;
   font-display: swap;
@@ -21,7 +22,7 @@
 
 @font-face {
   font-family: "Poppins";
-  src: url("/fonts/poppins/Poppins-Regular.ttf") format("truetype");
+  src: url("/fonts/poppins/Poppins-Regular.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -29,7 +30,7 @@
 
 @font-face {
   font-family: "Poppins";
-  src: url("/fonts/poppins/Poppins-Bold.ttf") format("truetype");
+  src: url("/fonts/poppins/Poppins-SemiBold.woff2") format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -148,7 +149,13 @@ body {
 /* 6. Mobile Home Theme Fixes */
 @media (max-width: 768px) {
   body.mobile-home-theme {
-    background: radial-gradient(circle at 15% 20%, rgba(102, 50, 101, 0.25), transparent 45%), var(--bg-main);
+    background:
+      radial-gradient(
+        circle at 15% 20%,
+        rgba(102, 50, 101, 0.25),
+        transparent 45%
+      ),
+      var(--bg-main);
   }
 }
 
@@ -166,7 +173,6 @@ body {
    - Uses semitransparent light overlay for subtle elevation while preserving theme vars
 */
 @media (prefers-color-scheme: dark) {
-
   .activity-card,
   .card,
   .card-activity,
@@ -178,7 +184,10 @@ body {
     border: 1px solid var(--border-color) !important;
     color: var(--text-main) !important;
     /* Prefer elevated shadow from theme with a safe fallback */
-    box-shadow: var(--shadow-card-elevated, 0 1px 2px rgba(0, 0, 0, 0.5)) !important;
+    box-shadow: var(
+      --shadow-card-elevated,
+      0 1px 2px rgba(0, 0, 0, 0.5)
+    ) !important;
     border-radius: 0.5rem;
     backdrop-filter: blur(4px);
   }
@@ -193,7 +202,10 @@ body {
   background-color: var(--bg-card) !important;
   border: 1px solid var(--border-color) !important;
   color: var(--text-main) !important;
-  box-shadow: var(--shadow-card-elevated, 0 1px 2px rgba(0, 0, 0, 0.5)) !important;
+  box-shadow: var(
+    --shadow-card-elevated,
+    0 1px 2px rgba(0, 0, 0, 0.5)
+  ) !important;
   border-radius: 0.5rem;
   backdrop-filter: blur(4px);
 }
@@ -332,7 +344,7 @@ body {
 }
 
 /* Increase card width for clearer content */
-.sm-timeline-wrapper .timeline-vertical-circle>div {
+.sm-timeline-wrapper .timeline-vertical-circle > div {
   width: 50vw !important;
   /* Force wider */
   min-width: 500px !important;
@@ -340,7 +352,7 @@ body {
 }
 
 @media (max-width: 768px) {
-  .sm-timeline-wrapper .timeline-vertical-circle>div {
+  .sm-timeline-wrapper .timeline-vertical-circle > div {
     min-width: auto !important;
     width: 100% !important;
     max-width: none !important;

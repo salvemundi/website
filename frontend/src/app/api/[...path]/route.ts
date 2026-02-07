@@ -143,7 +143,7 @@ export async function GET(
 
         let canBypass = false;
         let isUserTokenValid = true;
-        const needsSpecialGuardCheck = path.startsWith('items/events') || path.startsWith('items/event_signups') || path.includes('site_settings') || path.startsWith('items/committees') || path.startsWith('items/committee_members') || path.startsWith('items/pub_crawl_');
+        const needsSpecialGuardCheck = path.startsWith('items/events') || path.startsWith('items/event_signups') || path.includes('site_settings') || path.startsWith('items/committees') || path.startsWith('items/committee_members') || path.startsWith('items/pub_crawl_') || path.startsWith('items/hero_banners');
 
         const cookie = request.headers.get('Cookie');
         if ((auth || cookie) && (!isAllowed && !isAuthPath || needsSpecialGuardCheck)) {
