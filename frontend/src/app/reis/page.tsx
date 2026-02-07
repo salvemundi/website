@@ -299,19 +299,21 @@ export default function ReisPage() {
 
     return (
         <>
-            <div className="flex flex-col w-full">
-                <PageHeader
-                    title={nextTrip?.name || "SALVE MUNDI REIS"}
-                    backgroundImage={headerBackgroundImage}
-                    variant="centered"
-                    titleClassName="text-theme-purple dark:text-theme-white text-3xl sm:text-4xl md:text-6xl drop-shadow-sm"
-                    description={
-                        <p className="mx-auto text-center text-lg sm:text-xl text-white/90 max-w-3xl mt-4 font-medium drop-shadow-sm">
-                            Schrijf je in voor de jaarlijkse reis van Salve Mundi! Een onvergetelijke ervaring vol gezelligheid en avontuur.
-                        </p>
-                    }
-                />
-            </div>
+            {isReisEnabled && (
+                <div className="flex flex-col w-full">
+                    <PageHeader
+                        title={nextTrip?.name || "SALVE MUNDI REIS"}
+                        backgroundImage={headerBackgroundImage}
+                        variant="centered"
+                        titleClassName="text-theme-purple dark:text-theme-white text-3xl sm:text-4xl md:text-6xl drop-shadow-sm"
+                        description={
+                            <p className="mx-auto text-center text-lg sm:text-xl text-white/90 max-w-3xl mt-4 font-medium drop-shadow-sm">
+                                Schrijf je in voor de jaarlijkse reis van Salve Mundi! Een onvergetelijke ervaring vol gezelligheid en avontuur.
+                            </p>
+                        }
+                    />
+                </div>
+            )}
 
             <main className="relative overflow-hidden bg-background">
                 {!isReisEnabled ? (

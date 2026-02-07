@@ -14,9 +14,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
     return (
         <>
-            <div className="pt-20">
-                {children}
-            </div>
+            {children}
             {showBottomNav && <BottomNav />}
             {showInstallPrompt && (
                 <InstallPromptBanner

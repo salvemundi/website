@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        
+
         const { blogTitle, blogExcerpt, blogUrl, blogImage } = body;
 
         if (!blogTitle || !blogUrl) {
@@ -131,7 +131,10 @@ export async function POST(request: NextRequest) {
                 // suppressed non-error log
                 response = await fetch(target, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': process.env.INTERNAL_API_KEY || ''
+                    },
                     body: JSON.stringify({
                         blogTitle,
                         blogExcerpt,
@@ -173,7 +176,7 @@ export async function POST(request: NextRequest) {
 
         const result = await response.json();
         // suppressed non-error log
-        
+
         return NextResponse.json({
             success: true,
             message: 'Intro update emails sent successfully',
@@ -187,7 +190,7 @@ export async function POST(request: NextRequest) {
             cause: error.cause,
             stack: error.stack
         });
-        
+
         // Provide more specific error message for network errors
         if (error.cause?.code === 'ECONNREFUSED' || error.message?.includes('fetch failed')) {
             return NextResponse.json(
@@ -195,7 +198,7 @@ export async function POST(request: NextRequest) {
                 { status: 502 }
             );
         }
-        
+
         return NextResponse.json(
             { error: error.message || 'Failed to send intro update notifications' },
             { status: 500 }

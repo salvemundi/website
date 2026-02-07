@@ -100,7 +100,7 @@ export default function RootLayout({
                     <ServiceWorkerRegistration />
                     <PreventZoom />
                     <Header />
-                    <div className="relative z-10">
+                    <div className="relative z-10" style={{ paddingTop: 'var(--header-total-height, var(--header-height, 64px))' }}>
                         {children}
                     </div>
                     <Footer />

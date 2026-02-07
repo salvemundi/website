@@ -10,7 +10,7 @@ type Props = {
 import { useAuthActions } from '@/features/auth/providers/auth-provider';
 
 export default function LoginRequiredModal({ open, onClose }: Props) {
-  const { loginWithMicrosoft, loginWithRedirect } = useAuthActions();
+  const { loginWithMicrosoft } = useAuthActions();
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -26,8 +26,8 @@ export default function LoginRequiredModal({ open, onClose }: Props) {
                 await loginWithMicrosoft();
                 onClose();
               } catch (e) {
-                console.warn('Popup login failed, trying redirect...', e);
-                loginWithRedirect();
+                console.warn('Login failed:', e);
+                // Don't automatically fallback to redirect - let the user retry
               }
             }}
             className="px-4 py-2 rounded-md bg-gradient-theme text-white"
