@@ -9,6 +9,10 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Trust the first proxy (e.g. Nginx, Cloudflare) to get the real client IP
+// for express-rate-limit and req.ip
+app.set('trust proxy', 1);
+
 // Middleware
 // Configure CORS with a flexible origin check. In production, prefer
 // explicitly listing allowed origins. For quick debugging set
@@ -157,7 +161,8 @@ const limiter = rateLimit({
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   skip: (req) => {
     // Skip rate limiting for internal services that provide a valid API key
-    return req.headers['x-api-key'] && req.headers['x-api-key'] === process.env.INTERNAL_API_KEY;
+    const apiKey = req.headers['x-api-key'] || req.headers['x-internal-api-secret'];
+    return apiKey && apiKey === process.env.INTERNAL_API_KEY;
   },
   message: { error: 'Too many requests, please try again later.' }
 });
@@ -169,8 +174,19 @@ app.use(limiter);
 // Only allow requests with a valid x-api-key header
 // Except for /health, /calendar and debug endpoints which might be public or dev-only
 const apiKeyAuth = (req, res, next) => {
-  // Skip auth for health check and calendar feed
-  if (req.path === '/health' || req.path === '/calendar' || req.path === '/calendar.ics' || req.path.startsWith('/.well-known')) {
+  // Skip auth for health check, calendar, and common browser/debug paths
+  const publicPaths = [
+    '/health',
+    '/calendar',
+    '/calendar.ics',
+    '/favicon.ico',
+    '/robots.txt',
+    '/sitemap.xml',
+    '/debug-headers',
+    '/calendar/debug'
+  ];
+
+  if (publicPaths.includes(req.path) || req.path.startsWith('/.well-known')) {
     return next();
   }
 
@@ -179,7 +195,8 @@ const apiKeyAuth = (req, res, next) => {
     return next();
   }
 
-  const apiKey = req.headers['x-api-key'];
+  // Check for API key - support both standard and internal header names
+  const apiKey = req.headers['x-api-key'] || req.headers['x-internal-api-secret'];
   const validApiKey = process.env.INTERNAL_API_KEY;
 
   if (!validApiKey) {
@@ -189,7 +206,17 @@ const apiKeyAuth = (req, res, next) => {
   }
 
   if (!apiKey || apiKey !== validApiKey) {
-    console.warn(`⚠️ [email-api] Unauthorized access attempt from ${req.ip} to ${req.path}`);
+    // Special handling for misrouted paths to help debugging
+    if (req.path.startsWith('/api/payments')) {
+      console.warn(`🚨 [email-api] MISROUTING DETECTED: ${req.path} reached email-api instead of payment-api. Check proxy rules! (IP: ${req.ip})`);
+    } else {
+      // Only log warnings for routes that actually exist or seem like real API attempts
+      // to avoid log spam from random scans or misrouted standard requests (like /favicon.ico)
+      const isNoise = ['/favicon.ico', '/robots.txt', '/apple-touch-icon.png'].includes(req.path);
+      if (!isNoise) {
+        console.warn(`⚠️ [email-api] Unauthorized access attempt from ${req.ip} to ${req.path}`);
+      }
+    }
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
