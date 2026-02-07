@@ -1,4 +1,5 @@
 const axios = require('axios');
+const util = require('util');
 
 const getAuthConfig = (token) => ({
     headers: {
@@ -8,18 +9,36 @@ const getAuthConfig = (token) => ({
 });
 
 async function getTransaction(url, token, id) {
-    const response = await axios.get(`${url}/items/transactions/${id}`, getAuthConfig(token));
-    return response.data.data;
+    try {
+        const response = await axios.get(`${url}/items/transactions/${id}`, getAuthConfig(token));
+        return response.data.data;
+    } catch (err) {
+        console.error('[Directus] getTransaction failed:', err.message || err);
+        if (err.response) console.error('[Directus] Response data:', util.inspect(err.response.data, { depth: 3 }));
+        throw err;
+    }
 }
 
 async function updateDirectusTransaction(url, token, id, data) {
-    await axios.patch(`${url}/items/transactions/${id}`, data, getAuthConfig(token));
+    try {
+        await axios.patch(`${url}/items/transactions/${id}`, data, getAuthConfig(token));
+    } catch (err) {
+        console.error('[Directus] updateDirectusTransaction failed for', id, ':', err.message || err);
+        if (err.response) console.error('[Directus] Response data:', util.inspect(err.response.data, { depth: 3 }));
+        throw err;
+    }
 }
 
 async function updateDirectusItem(url, token, collection, id, data) {
     const path = collection === 'users' ? `/users/${id}` : `/items/${collection}/${id}`;
-    const response = await axios.patch(`${url}${path}`, data, getAuthConfig(token));
-    return response.data;
+    try {
+        const response = await axios.patch(`${url}${path}`, data, getAuthConfig(token));
+        return response.data;
+    } catch (err) {
+        console.error('[Directus] updateDirectusItem failed for', collection, id, ':', err.message || err);
+        if (err.response) console.error('[Directus] Response data:', util.inspect(err.response.data, { depth: 3 }));
+        throw err;
+    }
 }
 
 async function createDirectusUser(url, token, userData) {
@@ -35,18 +54,36 @@ async function createDirectusUser(url, token, userData) {
         membership_status: userData.membership_status,
         membership_expiry: userData.membership_expiry
     };
-    const response = await axios.post(`${url}/users`, payload, getAuthConfig(token));
-    return response.data.data;
+    try {
+        const response = await axios.post(`${url}/users`, payload, getAuthConfig(token));
+        return response.data.data;
+    } catch (err) {
+        console.error('[Directus] createDirectusUser failed:', err.message || err);
+        if (err.response) console.error('[Directus] Response data:', util.inspect(err.response.data, { depth: 3 }));
+        throw err;
+    }
 }
 
 async function getUser(url, token, userId, fields = '*') {
-    const response = await axios.get(`${url}/users/${userId}?fields=${fields}`, getAuthConfig(token));
-    return response.data.data;
+    try {
+        const response = await axios.get(`${url}/users/${userId}?fields=${fields}`, getAuthConfig(token));
+        return response.data.data;
+    } catch (err) {
+        console.error('[Directus] getUser failed for', userId, ':', err.message || err);
+        if (err.response) console.error('[Directus] Response data:', util.inspect(err.response.data, { depth: 3 }));
+        throw err;
+    }
 }
 
 async function getUserByEmail(url, token, email) {
-    const response = await axios.get(`${url}/users?filter[email][_eq]=${encodeURIComponent(email)}&fields=id,entra_id,first_name,last_name`, getAuthConfig(token));
-    return response.data.data?.[0];
+    try {
+        const response = await axios.get(`${url}/users?filter[email][_eq]=${encodeURIComponent(email)}&fields=id,entra_id,first_name,last_name`, getAuthConfig(token));
+        return response.data.data?.[0];
+    } catch (err) {
+        console.error('[Directus] getUserByEmail failed for', email, ':', err.message || err);
+        if (err.response) console.error('[Directus] Response data:', util.inspect(err.response.data, { depth: 3 }));
+        throw err;
+    }
 }
 
 module.exports = {

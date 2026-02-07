@@ -30,9 +30,10 @@ export default function NieuweActiviteitPage() {
         description_logged_in: '',
         event_date: '',
         event_time: '',
+        event_date_end: '',
         event_time_end: '',
         location: '',
-        capacity: '',
+        max_sign_ups: '',
         price_members: '',
         price_non_members: '',
         inschrijf_deadline: '',
@@ -86,6 +87,13 @@ export default function NieuweActiviteitPage() {
     const loadCommittees = async () => {
         try {
             const data = await directusFetch<Committee[]>('/items/committees?fields=id,name&sort=name&limit=-1&filter[is_visible][_eq]=true');
+
+            // Clean committee names
+            const cleanedData = data.map(c => ({
+                ...c,
+                name: c.name.replace(/\|\|.*salvemundi.*$/i, '').replace(/\|+$/g, '').trim()
+            }));
+
             try {
                 const user = auth.user;
                 const memberships = user?.committees || [];
@@ -95,12 +103,12 @@ export default function NieuweActiviteitPage() {
                 });
                 if (hasPriv) {
                     // privileged users can create events for any committee
-                    setCommittees(data);
+                    setCommittees(cleanedData);
                     return;
                 }
                 if (memberships.length > 0) {
                     const allowed = new Set(memberships.map((c: any) => String(c.id)));
-                    setCommittees(data.filter(c => allowed.has(String(c.id))));
+                    setCommittees(cleanedData.filter(c => allowed.has(String(c.id))));
                 } else {
                     // No memberships, show empty list
                     setCommittees([]);
@@ -208,8 +216,9 @@ export default function NieuweActiviteitPage() {
                 name: formData.name,
                 description: formData.description,
                 event_date: formData.event_date,
+                event_date_end: formData.event_date_end || formData.event_date,
                 location: formData.location || null,
-                capacity: formData.capacity ? parseInt(formData.capacity) : null,
+                max_sign_ups: formData.max_sign_ups ? parseInt(formData.max_sign_ups) : null,
                 price_members: formData.price_members ? parseFloat(formData.price_members) : 0,
                 price_non_members: formData.price_non_members ? parseFloat(formData.price_non_members) : 0,
                 inschrijf_deadline: formData.inschrijf_deadline || null,
@@ -358,10 +367,10 @@ export default function NieuweActiviteitPage() {
                         {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="lg:col-span-2">
                             <label htmlFor="event_date" className="block text-sm font-bold text-admin-muted mb-2">
-                                Datum *
+                                Startdatum *
                             </label>
                             <input
                                 type="date"
@@ -374,23 +383,7 @@ export default function NieuweActiviteitPage() {
                             {errors.event_date && <p className="text-red-500 text-sm mt-1">{errors.event_date}</p>}
                         </div>
 
-                        <div>
-                            <label htmlFor="inschrijf_deadline" className="block text-sm font-bold text-admin-muted mb-2">
-                                Inschrijfdeadline
-                            </label>
-                            <input
-                                type="datetime-local"
-                                id="inschrijf_deadline"
-                                name="inschrijf_deadline"
-                                value={formData.inschrijf_deadline}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 rounded-lg border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
+                        <div className="lg:col-span-2">
                             <label htmlFor="event_time" className="block text-sm font-bold text-admin-muted mb-2">
                                 Starttijd
                             </label>
@@ -404,7 +397,21 @@ export default function NieuweActiviteitPage() {
                             />
                         </div>
 
-                        <div>
+                        <div className="lg:col-span-2">
+                            <label htmlFor="event_date_end" className="block text-sm font-bold text-admin-muted mb-2">
+                                Einddatum
+                            </label>
+                            <input
+                                type="date"
+                                id="event_date_end"
+                                name="event_date_end"
+                                value={formData.event_date_end}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 rounded-lg border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                            />
+                        </div>
+
+                        <div className="lg:col-span-2">
                             <label htmlFor="event_time_end" className="block text-sm font-bold text-admin-muted mb-2">
                                 Eindtijd
                             </label>
@@ -419,19 +426,35 @@ export default function NieuweActiviteitPage() {
                         </div>
                     </div>
 
-                    <div>
-                        <label htmlFor="location" className="block text-sm font-bold text-admin-muted mb-2">
-                            Locatie
-                        </label>
-                        <input
-                            type="text"
-                            id="location"
-                            name="location"
-                            value={formData.location}
-                            onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-lg border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
-                            placeholder="Bijv. R10 Building"
-                        />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label htmlFor="inschrijf_deadline" className="block text-sm font-bold text-admin-muted mb-2">
+                                Inschrijfdeadline
+                            </label>
+                            <input
+                                type="datetime-local"
+                                id="inschrijf_deadline"
+                                name="inschrijf_deadline"
+                                value={formData.inschrijf_deadline}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 rounded-lg border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                            />
+                        </div>
+
+                        <div>
+                            <label htmlFor="location" className="block text-sm font-bold text-admin-muted mb-2">
+                                Locatie
+                            </label>
+                            <input
+                                type="text"
+                                id="location"
+                                name="location"
+                                value={formData.location}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 rounded-lg border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
+                                placeholder="Bijv. R10 Building"
+                            />
+                        </div>
                     </div>
 
                     <div>
@@ -468,14 +491,14 @@ export default function NieuweActiviteitPage() {
                     {/* Capacity & Pricing */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
-                            <label htmlFor="capacity" className="block text-sm font-bold text-admin-muted mb-2">
+                            <label htmlFor="max_sign_ups" className="block text-sm font-bold text-admin-muted mb-2">
                                 Capaciteit
                             </label>
                             <input
                                 type="number"
-                                id="capacity"
-                                name="capacity"
-                                value={formData.capacity}
+                                id="max_sign_ups"
+                                name="max_sign_ups"
+                                value={formData.max_sign_ups}
                                 onChange={handleChange}
                                 min="0"
                                 className="w-full px-4 py-3 rounded-lg border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
@@ -624,7 +647,7 @@ export default function NieuweActiviteitPage() {
                     {/* Publish Settings */}
                     <div className="border border-admin rounded-lg p-6 space-y-4 bg-admin-card-soft">
                         <h3 className="text-lg font-bold text-admin mb-4">Publicatie Instellingen</h3>
-                        
+
                         <div className="space-y-3">
                             <label className="flex items-center gap-3 cursor-pointer">
                                 <input

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/features/auth/providers/auth-provider';
+import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
 import { RefreshCw } from 'lucide-react';
 import { usePagePermission } from '@/shared/lib/hooks/usePermissions';
 
@@ -78,6 +78,7 @@ function Tile({
 export default function SyncPage() {
     const router = useRouter();
     const { user } = useAuth();
+    const { loginWithRedirect } = useAuthActions();
     const { isAuthorized, isLoading: permissionLoading } = usePagePermission('admin_sync', ['ict', 'bestuur', 'kandi']);
     const [isSyncing, setIsSyncing] = useState(false);
     const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
@@ -117,7 +118,7 @@ export default function SyncPage() {
         }
         if (!permissionLoading && !user && isAuthorized === null) {
             const returnTo = window.location.pathname + window.location.search;
-            router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+            loginWithRedirect(returnTo);
         }
     }, [isAuthorized, permissionLoading, user, router]);
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useAuth } from '@/features/auth/providers/auth-provider';
+import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
 import { useSalvemundiEvent } from '@/shared/lib/hooks/useSalvemundiApi';
 import { eventsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
 import { directusFetch } from '@/shared/lib/directus';
@@ -46,6 +46,7 @@ export default function EventDetailPage() {
     const router = useRouter();
     const eventId = params?.id as string;
     const { user } = useAuth();
+    const { loginWithRedirect } = useAuthActions();
 
     // Fetch event data
     const { data: event, isLoading, error } = useSalvemundiEvent(eventId);
@@ -148,13 +149,26 @@ export default function EventDetailPage() {
         if (!rawDate) return null;
         const date = new Date(rawDate);
         if (Number.isNaN(date.getTime())) return rawDate;
-        return new Intl.DateTimeFormat('nl-NL', {
+
+        const formatOptions: Intl.DateTimeFormatOptions = {
             weekday: 'long',
             day: 'numeric',
             month: 'long',
             year: 'numeric',
-        }).format(date);
-    }, [rawDate]);
+        };
+
+        const startDateFormatted = new Intl.DateTimeFormat('nl-NL', formatOptions).format(date);
+
+        if (event?.event_date_end && event.event_date_end !== event.event_date) {
+            const endDate = new Date(event.event_date_end);
+            if (!Number.isNaN(endDate.getTime())) {
+                const endDateFormatted = new Intl.DateTimeFormat('nl-NL', formatOptions).format(endDate);
+                return `${startDateFormatted} t/m ${endDateFormatted}`;
+            }
+        }
+
+        return startDateFormatted;
+    }, [rawDate, event?.event_date_end]);
 
     const formattedTime = useMemo(() => {
         if (!event) return null;
@@ -572,7 +586,7 @@ export default function EventDetailPage() {
                                         <button
                                             onClick={() => {
                                                 const returnTo = window.location.pathname + window.location.search;
-                                                router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+                                                loginWithRedirect(returnTo);
                                             }}
                                             className="w-full bg-paars text-white font-bold py-3 px-6 rounded-xl hover:scale-[1.02] transition-all shadow-md"
                                         >
@@ -778,10 +792,20 @@ export default function EventDetailPage() {
                                 <Info className="h-6 w-6 text-theme-purple dark:text-theme-white" />
                                 Over dit evenement
                             </h2>
-                            <div
-                                className="prose dark:prose-invert max-w-none text-theme-purple dark:text-theme-white/90 flex-grow"
-                                dangerouslySetInnerHTML={{ __html: event.description }}
-                            />
+                            {/*
+                              Preserve newlines for plain text coming from Directus while still
+                              allowing HTML descriptions to be rendered via dangerouslySetInnerHTML.
+                            */}
+                            {/<\/?[a-z][\s\S]*>/i.test(event.description) ? (
+                                <div
+                                    className="prose dark:prose-invert max-w-none text-theme-purple dark:text-theme-white/90 flex-grow"
+                                    dangerouslySetInnerHTML={{ __html: event.description }}
+                                />
+                            ) : (
+                                <div className="prose dark:prose-invert max-w-none text-theme-purple dark:text-theme-white/90 flex-grow whitespace-pre-line">
+                                    {event.description}
+                                </div>
+                            )}
                         </div>
                     )}
 

@@ -50,14 +50,16 @@ export interface Transaction {
     amount: number;
     description?: string;
     product_name?: string;
-    transaction_type?: 'payment' | 'membership' | 'event' | 'other';
+    transaction_type?: 'payment' | 'membership' | 'event' | 'other' | string;
     registration?: any;
     pub_crawl_signup?: any;
     trip_signup?: any;
     status?: 'pending' | 'completed' | 'failed' | 'paid';
     payment_status?: 'pending' | 'completed' | 'failed' | 'paid' | 'open';
     created_at: string;
+    date_created?: string;
     updated_at?: string;
+    coupon_code?: string;
 }
 
 export interface WhatsAppGroup {
@@ -89,12 +91,13 @@ export interface PaymentResponse {
 }
 
 // --- Helper Functions ---
-function buildQueryString(params: { fields?: string[]; sort?: string[]; filter?: unknown; limit?: number }): string {
+function buildQueryString(params: { fields?: string[]; sort?: string[]; filter?: unknown; limit?: number; search?: string }): string {
     const queryParams = new URLSearchParams();
     if (params.fields) queryParams.append('fields', params.fields.join(','));
     if (params.sort) queryParams.append('sort', params.sort.join(','));
     if (params.filter) queryParams.append('filter', JSON.stringify(params.filter));
     if (params.limit) queryParams.append('limit', String(params.limit));
+    if (params.search) queryParams.append('search', params.search);
     return queryParams.toString();
 }
 
@@ -267,7 +270,7 @@ export const eventsApi = {
         return res;
     },
 
-    createSignup: async (signupData: { event_id: number; email: string; name: string; phone_number?: string; user_id?: string; event_name?: string; event_date?: string; event_price?: number }) => {
+    createSignup: async (signupData: { event_id: number; email: string; name: string; phone_number?: string; user_id?: string; event_name?: string; event_date?: string; event_price?: number; payment_status?: string }) => {
         // 1. Check bestaande inschrijving (Alleen voor ingelogde leden)
         if (signupData.user_id) {
             const existingQuery = buildQueryString({
@@ -322,7 +325,7 @@ export const eventsApi = {
             participant_name: signupData.name || null,
             participant_email: signupData.email || null,
             participant_phone: signupData.phone_number ?? null,
-            payment_status: 'open' // Zet expliciet op open
+            payment_status: signupData.payment_status || 'open' // Zet expliciet op open of meegegeven status
         };
 
         const signup = await directusFetch<any>(`/items/event_signups`, {
@@ -339,9 +342,9 @@ export const eventsApi = {
                 const token = qrService.generateQRToken(signup.id, signupData.event_id);
                 await qrService.updateSignupWithQRToken(signup.id, token);
 
-                // If this is a free event, mark the signup as paid so downstream
+                // If this is a free event OR manually marked as paid, mark the signup as paid so downstream
                 // consumers (UI, admin pages, email flows) see the correct state.
-                if (signupData.event_price === 0) {
+                if (signupData.event_price === 0 || signupData.payment_status === 'paid') {
                     try {
                         await directusFetch(`/items/event_signups/${signup.id}`, {
                             method: 'PATCH',
@@ -392,7 +395,7 @@ export const eventsApi = {
                         console.error('eventsApi.createSignup: failed to fetch event details for contact info', { eventId: signupData.event_id, error: e });
                     }
 
-                    if (signupData.event_price === 0) {
+                    if (signupData.event_price === 0 || signupData.payment_status === 'paid') {
                         console.log('eventsApi.createSignup: qrDataUrl present?', !!qrDataUrl, qrDataUrl ? `len=${qrDataUrl.length}` : 'none');
                         await sendEventSignupEmail({
                             recipientEmail: signupData.email,
@@ -799,6 +802,18 @@ export const documentsApi = {
     }
 };
 
+export const usersApi = {
+    search: async (searchQuery: string) => {
+        const query = buildQueryString({
+            fields: ['id', 'first_name', 'last_name', 'email'],
+            search: searchQuery,
+            limit: 10
+        });
+        return directusFetch<any[]>(`/users?${query}`);
+
+    }
+};
+
 export const siteSettingsApi = {
     // If `page` is provided, will filter settings for that page.
     // If `includeAuthorizedTokens` is true, will attempt to fetch the authorized_tokens field (admin only)
@@ -809,7 +824,7 @@ export const siteSettingsApi = {
             const fields = includeAuthorizedTokens
                 ? ['id', 'page', 'show', 'disabled_message', 'authorized_tokens']
                 : ['id', 'page', 'show', 'disabled_message'];
-            
+
             const params: any = {
                 fields,
                 limit: 1
@@ -824,7 +839,7 @@ export const siteSettingsApi = {
                 `/items/site_settings?${query}`,
                 { headers: { 'X-Suppress-Log': 'true' } }
             );
-            
+
             if (Array.isArray(data)) {
                 return data[0] || null;
             }
@@ -1121,8 +1136,9 @@ export function getImageUrl(imageId: string | undefined | any, options?: { quali
     // Always use /api proxy which handles authentication via headers
     const baseUrl = '/api';
 
-    // Build query parameters for image optimization only
-    // Note: Authentication is handled by the /api/assets proxy via Authorization header
+    // Build query parameters for image optimization ONLY
+    // DO NOT add access_token here - the proxy will handle authentication via Cookie/Authorization headers
+    // Adding access_token causes "double auth" (query + cookie) which Directus rejects with 400
     const params = new URLSearchParams();
     if (options?.quality) {
         params.append('quality', options.quality.toString());
@@ -1144,6 +1160,7 @@ export function getImageUrl(imageId: string | undefined | any, options?: { quali
 
     return imageUrl;
 }
+
 
 export interface HeroBanner {
     id: number;

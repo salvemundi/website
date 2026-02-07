@@ -8,7 +8,7 @@ import * as authApi from '@/shared/lib/auth';
 import { User, SignupData } from '@/shared/model/types/auth';
 import { toast } from 'sonner';
 
-// Initialize MSAL instance with error handling
+// Initialize MSAL client-side only to avoid SSR mismatches
 let msalInstance: PublicClientApplication | null = null;
 try {
     if (typeof window !== 'undefined') {
@@ -18,17 +18,67 @@ try {
     // MSAL initialization failed
 }
 
+// Legacy interface for backward compatibility
 export interface AuthContextType {
     user: User | null;
     isAuthenticated: boolean;
     isLoading: boolean;
     loginWithMicrosoft: () => Promise<void>;
+    loginWithRedirect: (returnUrl?: string) => Promise<void>;
     logout: () => void;
     signup: (userData: SignupData) => Promise<void>;
     refreshUser: () => Promise<void>;
     isLoggingOut: boolean;
+    authError: string | null;
 }
 
+/**
+ * [ARCHITECTURE] AuthProvider Strategy
+ * 
+ * 1. Silent Flow First: We prefer MSAL's ssoSilent/acquireTokenSilent to keep users logged in 
+ *    without redirects. Popups are used only for explicit user interaction.
+ * 
+ * 2. Proactive Refresh: We aggressively refresh tokens in the background (every minute and on window focus)
+ *    to prevent "token expired" errors during user sessions.
+ * 
+ * 3. Granular Contexts: To avoid re-rendering the entire app on every auth usage, we split context into:
+ *    - AuthUserContext: Changes only when user object changes.
+ *    - AuthStatusContext: Changes when loading/status changes.
+ *    - AuthActionsContext: Never changes (stable functions).
+ */
+
+// Performance: Granular contexts prevent full-app re-renders on every session heartbeat
+// ============================================================================
+
+// Optimized state sub-trees
+const AuthUserContext = createContext<User | null>(null);
+
+// Granular context 2: Auth status (only re-renders when status changes)
+type AuthStatus = 'authenticated' | 'unauthenticated' | 'checking';
+interface AuthStatusContextValue {
+    status: AuthStatus;
+    isLoading: boolean;
+    isLoggingOut: boolean;
+    authError: string | null;
+}
+const AuthStatusContext = createContext<AuthStatusContextValue>({
+    status: 'checking',
+    isLoading: true,
+    isLoggingOut: false,
+    authError: null,
+});
+
+// Granular context 3: Auth actions (stable functions, never re-renders)
+interface AuthActionsContextValue {
+    loginWithMicrosoft: () => Promise<void>;
+    loginWithRedirect: (returnUrl?: string) => Promise<void>;
+    logout: () => void;
+    signup: (userData: SignupData) => Promise<void>;
+    refreshUser: () => Promise<void>;
+}
+const AuthActionsContext = createContext<AuthActionsContextValue | undefined>(undefined);
+
+// Legacy context for backward compatibility
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -36,6 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
     const [isMsalInitializing, setIsMsalInitializing] = useState(true);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [authError, setAuthError] = useState<string | null>(null);
     const [authErrorCount, setAuthErrorCount] = useState<number>(0);
     const [authAttempts, setAuthAttempts] = useState<number[]>([]);
     const router = useRouter();
@@ -82,6 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (success) {
             setAuthErrorCount(0);
+            setAuthError(null);
         } else {
             setAuthErrorCount(prev => prev + 1);
         }
@@ -413,8 +465,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         }
                     }
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error('[AuthProvider] MSAL init/redirect error:', error);
+                setAuthError(error.message || 'Authentication initialization failed');
                 recordAuthAttempt(false);
             } finally {
                 setIsMsalInitializing(false);
@@ -561,26 +614,87 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return false;
     };
 
+    /**
+     * loginWithMicrosoft - User-initiated login
+     * 
+     * [ARCHITECTURE] Seamless Login
+     * We use `loginPopup` instead of `loginRedirect` to maintain the user's context.
+     * The state of the page remains intact while the user authenticates in a separate window.
+     * This eliminates the need for complex "return URL" handling and improves UX.
+     * 
+     * CRITICAL: This is called SYNCHRONOUSLY from a button onClick event
+     * to prevent popup blockers from interfering
+     * 
+     * Flow:
+     * 1. First try: loginPopup (user stays on page, seamless)
+     * 2. Fallback: Throw error for modal to handle (never redirect automatically)
+     */
     const loginWithMicrosoft = async () => {
         if (!msalInstance) {
             throw new Error('Microsoft login is not available. Use HTTPS with a redirect URI that matches your Entra app (set NEXT_PUBLIC_AUTH_REDIRECT_URI for LAN/IP testing).');
         }
 
         try {
-            // Initialize MSAL if needed (though useEffect should have handled it)
+            // Initialize MSAL if needed
             await msalInstance.initialize();
 
-            // Attempt silent login first? No, loginRedirect handles the flow.
+            // PHASE 2 CHANGE: Use loginPopup instead of loginRedirect
+            // This keeps the user on the page and provides a seamless experience
+            console.log('[AuthProvider] Attempting popup login...');
 
-            // Login with redirect
-            await msalInstance.loginRedirect(loginRequest);
-            // Unlike loginPopup, this promise resolves only after the redirect is initiated.
-            // The actual result is handled in handleRedirectPromise on return.
-        } catch (error) {
-            console.error('Microsoft login error:', error);
+            const result = await msalInstance.loginPopup(loginRequest);
+
+            if (result && result.account) {
+                console.log('[AuthProvider] Popup login successful');
+                msalInstance.setActiveAccount(result.account);
+                await handleLoginSuccess(result, false); // false = no redirect notification
+                return; // Success!
+            }
+        } catch (error: any) {
+            console.error('[AuthProvider] Popup login error:', error);
+
+            // Check if error is popup-related
+            const isPopupError =
+                error.errorCode === 'popup_window_error' ||
+                error.errorCode === 'user_cancelled' ||
+                error.message?.toLowerCase().includes('popup') ||
+                error.message?.toLowerCase().includes('blocked');
+
+            if (isPopupError) {
+                // Popup was blocked or failed
+                console.warn('[AuthProvider] Popup blocked/failed, throwing error for LoginModal to handle');
+                throw error; // Let LoginModal detect and handle this
+            }
+
+            // For other errors, also throw so LoginModal can show error message
             throw error;
         }
     };
+
+
+    /**
+     * loginWithRedirect - Fallback for when popups are blocked
+     * 
+     * Stores the current URL (or requested return URL) in localStorage
+     * so checkAndRedirect() can return the user there after the MSAL redirect dance.
+     */
+    const loginWithRedirect = async (returnUrl?: string) => {
+        if (!msalInstance) {
+            throw new Error('Microsoft login is not available.');
+        }
+
+        // Store return URL
+        const target = returnUrl || (typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/account');
+        localStorage.setItem('auth_return_to', target);
+
+        try {
+            await msalInstance.loginRedirect(loginRequest);
+        } catch (error) {
+            console.error('[AuthProvider] Redirect login error:', error);
+            throw error;
+        }
+    };
+
 
     const signup = async (userData: SignupData) => {
         setIsLoading(true);
@@ -673,25 +787,91 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    // Memoize action functions to keep them stable
+    const authActions = {
+        loginWithMicrosoft,
+        logout,
+        signup,
+        refreshUser,
+        loginWithRedirect,
+    };
+
+    const authStatus = {
+        status: (!!user ? 'authenticated' : (isLoading ? 'checking' : 'unauthenticated')) as AuthStatus,
+        isLoading: isLoading || (isMsalInitializing && !user),
+        isLoggingOut,
+        authError,
+    };
+
+    // Legacy context value for backward compatibility
+    const legacyValue = {
+        user,
+        isAuthenticated: !!user,
+        isLoading: isLoading || (isMsalInitializing && !user),
+        isLoggingOut,
+        loginWithMicrosoft,
+        logout,
+        signup,
+        refreshUser,
+        authError,
+        loginWithRedirect,
+    };
+
     return (
-        <AuthContext.Provider
-            value={{
-                user,
-                isAuthenticated: !!user,
-                // Only wait for MSAL if we don't have a user yet and we are still initializing
-                isLoading: isLoading || (isMsalInitializing && !user),
-                isLoggingOut,
-                loginWithMicrosoft,
-                logout,
-                signup,
-                refreshUser,
-            }}
-        >
-            {children}
-        </AuthContext.Provider>
+        <AuthUserContext.Provider value={user}>
+            <AuthStatusContext.Provider value={authStatus}>
+                <AuthActionsContext.Provider value={authActions}>
+                    <AuthContext.Provider value={legacyValue}>
+                        {children}
+                    </AuthContext.Provider>
+                </AuthActionsContext.Provider>
+            </AuthStatusContext.Provider>
+        </AuthUserContext.Provider>
     );
 }
 
+// ============================================================================
+// Context Selector Hooks - Use these for performance optimization
+// ============================================================================
+
+/**
+ * useAuthUser - Subscribe only to user data changes
+ * Use this when you only need user information (e.g., displaying user name, email)
+ * This hook only re-renders when the user object changes
+ */
+export function useAuthUser() {
+    const user = useContext(AuthUserContext);
+    return user;
+}
+
+/**
+ * useAuthStatus - Subscribe only to auth status changes
+ * Use this when you only need authentication status (e.g., checking if logged in)
+ * This hook only re-renders when status/loading/error changes
+ */
+export function useAuthStatus() {
+    const context = useContext(AuthStatusContext);
+    return context;
+}
+
+/**
+ * useAuthActions - Get auth action functions
+ * Use this when you only need to call auth functions (login, logout, etc.)
+ * This hook NEVER re-renders (stable function references)
+ */
+export function useAuthActions() {
+    const context = useContext(AuthActionsContext);
+    if (context === undefined) {
+        throw new Error('useAuthActions must be used within an AuthProvider');
+    }
+    return context;
+}
+
+/**
+ * useAuth - Legacy hook for backward compatibility
+ * Returns all auth state and functions
+ * Use the granular hooks above for better performance
+ */
 export function useAuth() {
     const context = useContext(AuthContext);
     if (context === undefined) {

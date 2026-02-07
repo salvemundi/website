@@ -37,13 +37,13 @@ export default function IntroLayout({ children }: { children: React.ReactNode })
             {isBlogOrPlanning && (
                 <Link
                     href="/"
-                    className="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-2 bg-[var(--bg-card)] hover:bg-gradient-theme hover:text-white text-theme-purple rounded-full shadow-lg hover:shadow-xl transition-all duration-300 font-semibold text-sm group"
+                    className="fixed right-4 z-50 hidden md:flex items-center gap-2 px-4 py-2 bg-[var(--bg-card)] hover:bg-gradient-theme hover:text-white text-theme-purple rounded-full shadow-lg hover:shadow-xl transition-all duration-300 font-semibold text-sm group"
+                    style={{ top: 'calc(var(--header-height, 0px) + 1rem)' }}
                 >
                     <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
-                    <span className="hidden sm:inline">Terug naar hoofdsite</span>
-                    <span className="sm:hidden">Terug</span>
+                   
                 </Link>
             )}
 
@@ -101,9 +101,9 @@ export default function IntroLayout({ children }: { children: React.ReactNode })
                 {(isMainIntroPage || isBlogOrPlanning) && (
                     <nav
                         className="md:hidden bg-[var(--bg-card)] border-b border-theme-purple/10 sticky z-40 backdrop-blur-lg bg-opacity-90"
-                        style={{ top: '0' }}
+                        style={{ top: 'var(--header-height, 0px)' }}
                     >
-                        <div className="px-4 py-3 pt-16">
+                        <div className="px-4 py-2">
                             <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
                                 {navItems.map((item) => {
                                     const Icon = item.icon;

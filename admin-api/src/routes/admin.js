@@ -3,6 +3,7 @@ const axios = require('axios');
 const directusService = require('../services/directus');
 const membershipService = require('../services/membership');
 const notificationService = require('../services/notifications');
+const util = require('util');
 
 const router = express.Router();
 
@@ -83,7 +84,9 @@ router.get('/pending-signups', async (req, res) => {
 router.post('/approve-signup/:id', async (req, res) => {
     const transactionId = req.params.id;
     try {
+    console.debug(`[AdminAPI] Approve signup called for transaction ${transactionId} by user ${req.user?.id}`);
         const transaction = await directusService.getTransaction(DIRECTUS_URL, DIRECTUS_API_TOKEN, transactionId);
+    console.debug(`[AdminAPI] Transaction data: ${util.inspect(transaction, { depth: 2 })}`);
         if (!transaction) return res.status(404).json({ error: 'Transaction not found' });
         if (transaction.approval_status === 'approved') return res.status(400).json({ error: 'Already approved' });
         if (transaction.payment_status !== 'paid') return res.status(400).json({ error: 'Payment not completed' });
@@ -122,7 +125,12 @@ router.post('/approve-signup/:id', async (req, res) => {
 
             if (userData.entra_id) {
                 // Scenario 1: User exists and has Entra ID. Just ensure they are active/provisioned.
-                await membershipService.provisionMember(MEMBERSHIP_API_URL, userData.entra_id);
+                try {
+                    await membershipService.provisionMember(MEMBERSHIP_API_URL, userData.entra_id);
+                } catch (err) {
+                    console.error('[AdminAPI] Failed to provision existing member:', err.stack || err.message || err);
+                    throw err;
+                }
 
                 await directusService.updateDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'users', userId, {
                     membership_status: 'active',
@@ -130,10 +138,26 @@ router.post('/approve-signup/:id', async (req, res) => {
                 });
 
                 await triggerUserSync(userData.entra_id);
+
+                // Send approval notification to existing user
+                if (EMAIL_SERVICE_URL) {
+                    await notificationService.sendApprovalNotificationEmail(
+                        EMAIL_SERVICE_URL, 
+                        email || userData.email, 
+                        firstName || userData.first_name, 
+                        false
+                    );
+                }
             } else {
                 // Scenario 2: User exists in Directus but has no Entra ID linked yet.
                 // We must create an Entra account for them to be a member.
-                const credentials = await membershipService.createMember(MEMBERSHIP_API_URL, firstName || userData.first_name, lastName || userData.last_name, email || userData.email, phoneNumber, dateOfBirth);
+                let credentials;
+                try {
+                    credentials = await membershipService.createMember(MEMBERSHIP_API_URL, firstName || userData.first_name, lastName || userData.last_name, email || userData.email, phoneNumber, dateOfBirth);
+                } catch (err) {
+                    console.error('[AdminAPI] createMember failed:', err.stack || err.message || err);
+                    throw err;
+                }
 
                 await directusService.updateDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'users', userId, {
                     status: 'active',
@@ -146,12 +170,24 @@ router.post('/approve-signup/:id', async (req, res) => {
 
                 await triggerUserSync(credentials.user_id);
                 if (EMAIL_SERVICE_URL) {
-                    await notificationService.sendWelcomeEmail(EMAIL_SERVICE_URL, email || userData.email, firstName || userData.first_name, credentials);
+                    await notificationService.sendApprovalNotificationEmail(
+                        EMAIL_SERVICE_URL, 
+                        email || userData.email, 
+                        firstName || userData.first_name, 
+                        true, 
+                        credentials
+                    );
                 }
             }
         } else if (firstName && lastName && email) {
             // Scenario 3: Complete new user.
-            const credentials = await membershipService.createMember(MEMBERSHIP_API_URL, firstName, lastName, email, phoneNumber, dateOfBirth);
+            let credentials;
+            try {
+                credentials = await membershipService.createMember(MEMBERSHIP_API_URL, firstName, lastName, email, phoneNumber, dateOfBirth);
+            } catch (err) {
+                console.error('[AdminAPI] createMember (new user) failed:', err.stack || err.message || err);
+                throw err;
+            }
             const now = new Date();
             const expiryStr = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate()).toISOString().split('T')[0];
 
@@ -170,17 +206,28 @@ router.post('/approve-signup/:id', async (req, res) => {
             await triggerUserSync(credentials.user_id);
 
             if (EMAIL_SERVICE_URL) {
-                await notificationService.sendWelcomeEmail(EMAIL_SERVICE_URL, email, firstName, credentials);
+                await notificationService.sendApprovalNotificationEmail(
+                    EMAIL_SERVICE_URL, 
+                    email, 
+                    firstName, 
+                    true, 
+                    credentials
+                );
             }
         } else {
             return res.status(400).json({ error: 'Insufficient user data' });
         }
 
-        await directusService.updateDirectusTransaction(DIRECTUS_URL, DIRECTUS_API_TOKEN, transactionId, {
-            approval_status: 'approved',
-            approved_by: req.user.id,
-            approved_at: new Date().toISOString()
-        });
+        try {
+            await directusService.updateDirectusTransaction(DIRECTUS_URL, DIRECTUS_API_TOKEN, transactionId, {
+                approval_status: 'approved',
+                approved_by: req.user.id,
+                approved_at: new Date().toISOString()
+            });
+        } catch (err) {
+            console.error('[AdminAPI] Failed to mark transaction approved in Directus:', err.stack || err.message || err);
+            throw err;
+        }
 
         res.json({ success: true, message: 'Signup approved' });
     } catch (error) {
@@ -195,12 +242,13 @@ router.post('/approve-signup/:id', async (req, res) => {
                 url: error.config?.url,
                 method: error.config?.method,
                 status: error.response.status,
-                data: JSON.stringify(error.response.data, null, 2)
+                data: util.inspect(error.response.data, { depth: 3 })
             });
         } else {
             console.error('[AdminAPI] Approval error:', error.stack || error.message);
         }
 
+        // Return structured error to frontend (preserve original message for debugging)
         res.status(500).json({
             error: 'Approval failed',
             message: errorMsg,
@@ -211,6 +259,7 @@ router.post('/approve-signup/:id', async (req, res) => {
 
 router.post('/reject-signup/:id', async (req, res) => {
     try {
+        console.debug(`[AdminAPI] Reject signup called for transaction ${req.params.id} by user ${req.user?.id}`);
         await directusService.updateDirectusTransaction(DIRECTUS_URL, DIRECTUS_API_TOKEN, req.params.id, {
             approval_status: 'rejected',
             approved_by: req.user.id,
@@ -218,7 +267,9 @@ router.post('/reject-signup/:id', async (req, res) => {
         });
         res.json({ success: true });
     } catch (error) {
-        res.status(500).json({ error: 'Rejection failed' });
+        console.error('[AdminAPI] Rejection failed:', error.stack || error.message || error);
+        let details = error.response?.data || null;
+        res.status(500).json({ error: 'Rejection failed', message: error.message, details });
     }
 });
 

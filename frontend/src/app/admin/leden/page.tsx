@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/features/auth/providers/auth-provider';
+import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
 import {
     Users,
@@ -16,6 +16,7 @@ import {
     Bell,
     Loader2
 } from 'lucide-react';
+import { formatDateToLocalISO } from '@/shared/lib/utils/date';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 
 interface Member {
@@ -54,6 +55,7 @@ function isRealUser(member: Member) {
 export default function LedenOverzichtPage() {
     const router = useRouter();
     const { user, isLoading: authLoading, isLoggingOut } = useAuth();
+    const { loginWithRedirect } = useAuthActions();
     const [members, setMembers] = useState<Member[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -63,7 +65,7 @@ export default function LedenOverzichtPage() {
     useEffect(() => {
         if (!authLoading && !user && !isLoggingOut) {
             const returnTo = window.location.pathname + window.location.search;
-            router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+            loginWithRedirect(returnTo);
         }
         if (user && !user.entra_id && !isLoggingOut) {
             router.push('/admin/no-access');
@@ -103,7 +105,9 @@ export default function LedenOverzichtPage() {
             if (!matchesSearch) return false;
 
             const now = new Date();
-            const isMembershipActive = m.membership_expiry ? new Date(m.membership_expiry) > now : false;
+            const isMembershipActive = m.membership_expiry
+                ? new Date(formatDateToLocalISO(m.membership_expiry) + 'T23:59:59') > now
+                : false;
 
             if (activeTab === 'active') {
                 return isMembershipActive;
@@ -115,18 +119,17 @@ export default function LedenOverzichtPage() {
 
     const formatDate = (dateString: string | null) => {
         if (!dateString) return 'Onbekend';
-        return new Date(dateString).toLocaleDateString('nl-NL', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
+        // Use local ISO to avoid timezone shifts for display
+        const localDate = formatDateToLocalISO(dateString);
+        const [year, month, day] = localDate.split('-');
+        return `${day}-${month}-${year}`;
     };
 
     const handleSendMembershipReminder = async () => {
         const confirmed = confirm(
             'Wil je een herinnering sturen naar alle leden die binnen 30 dagen hun lidmaatschap moeten verlengen?'
         );
-        
+
         if (!confirmed) return;
 
         setIsSendingMembershipReminder(true);
@@ -143,7 +146,7 @@ export default function LedenOverzichtPage() {
             }
 
             const result = await response.json();
-            
+
             if (result.sent === 0) {
                 alert('Geen leden gevonden die binnen 30 dagen hun lidmaatschap moeten verlengen.');
             } else {
@@ -186,7 +189,7 @@ export default function LedenOverzichtPage() {
                                 }`}
                         >
                             <UserCheck className="h-4 w-4" />
-                            Actief ({members.filter(m => m.membership_expiry && new Date(m.membership_expiry) > new Date()).length})
+                            Actief ({members.filter(m => m.membership_expiry && new Date(formatDateToLocalISO(m.membership_expiry) + 'T23:59:59') > new Date()).length})
                         </button>
                         <button
                             onClick={() => setActiveTab('inactive')}
@@ -196,7 +199,7 @@ export default function LedenOverzichtPage() {
                                 }`}
                         >
                             <UserMinus className="h-4 w-4" />
-                            Niet Actief ({members.filter(m => !m.membership_expiry || new Date(m.membership_expiry) <= new Date()).length})
+                            Niet Actief ({members.filter(m => !m.membership_expiry || new Date(formatDateToLocalISO(m.membership_expiry) + 'T23:59:59') <= new Date()).length})
                         </button>
                     </div>
 
@@ -285,7 +288,7 @@ export default function LedenOverzichtPage() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${member.membership_expiry && new Date(member.membership_expiry) > new Date()
+                                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${member.membership_expiry && new Date(formatDateToLocalISO(member.membership_expiry) + 'T23:59:59') > new Date()
                                             ? 'bg-green-500/10 text-green-600 dark:text-green-400'
                                             : 'bg-red-500/10 text-red-600 dark:text-red-400'
                                             }`}>
@@ -329,11 +332,11 @@ export default function LedenOverzichtPage() {
                                         <p className="text-xs text-admin-muted">{member.email}</p>
                                     </div>
                                 </div>
-                                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${member.membership_expiry && new Date(member.membership_expiry) > new Date()
+                                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${member.membership_expiry && new Date(formatDateToLocalISO(member.membership_expiry) + 'T23:59:59') > new Date()
                                     ? 'bg-green-500/10 text-green-600 dark:text-green-400'
                                     : 'bg-red-500/10 text-red-600 dark:text-red-400'
                                     }`}>
-                                    {member.membership_expiry && new Date(member.membership_expiry) > new Date() ? 'Actief' : 'Niet Actief'}
+                                    {member.membership_expiry && new Date(formatDateToLocalISO(member.membership_expiry) + 'T23:59:59') > new Date() ? 'Actief' : 'Niet Actief'}
                                 </span>
                             </div>
 

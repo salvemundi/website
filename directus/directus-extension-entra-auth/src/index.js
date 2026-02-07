@@ -118,6 +118,12 @@ export default (router, context) => {
                 if (!user.external_identifier) updates.external_identifier = microsoftUser.oid;
                 if (isFontysMember && !user.fontys_email) updates.fontys_email = requestedEmail;
 
+                // CRITICAL: Ensure existing users have at least the default role
+                if (!user.role) {
+                    updates.role = env?.AUTH_MICROSOFT_DEFAULT_ROLE_ID || null;
+                    if (logger) logger.info(`[EntraAuth][${requestId}] Assigning default role to existing user ${user.id}`);
+                }
+
                 if (Object.keys(updates).length > 0) {
                     await usersService.updateOne(user.id, updates);
                 }

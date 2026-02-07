@@ -292,7 +292,7 @@ export default function Hero() {
                                     <span className="inline-block w-full">Salve Mundi</span>
                                 </h1>
                                 <p ref={descriptionRef} className="text-xs leading-relaxed text-theme-muted sm:text-sm md:text-lg lg:max-w-xl">
-                                    Dé studievereniging voor HBO-studenten in Eindhoven. Ontmoet nieuwe mensen, bouw aan je netwerk en maak het meeste van je studententijd met onze diverse activiteiten en gezellige commissies.
+                                    Dè studievereniging voor HBO-studenten in Eindhoven. Ontmoet nieuwe mensen, bouw aan je netwerk en maak het meeste van je studententijd met onze diverse activiteiten en gezellige commissies.
                                 </p>
                             </div>
 

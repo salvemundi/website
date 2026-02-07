@@ -11,6 +11,8 @@ import * as XLSX from 'xlsx';
 import { format } from 'date-fns';
 import { COLLECTIONS, FIELDS } from '@/shared/lib/constants/collections';
 import { directusFetch } from '@/shared/lib/directus';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import NoAccessOverlay from '@/components/AuthOverlay/NoAccessOverlay';
 
 interface FlatParticipant {
     uniqueId: string; // signupId-index
@@ -47,6 +49,14 @@ const ASSOCIATIONS = [
 ];
 
 export default function PubCrawlAttendancePage() {
+    return (
+        <ProtectedRoute requireAuth>
+            <PubCrawlAttendanceContent />
+        </ProtectedRoute>
+    );
+}
+
+function PubCrawlAttendanceContent() {
     const params = useParams();
     const eventId = Number(params?.id);
     const { user } = useAuth();
@@ -340,20 +350,8 @@ export default function PubCrawlAttendancePage() {
         group.participants.push(p);
     });
 
-    if (!user) {
-        return (
-            <div className="min-h-screen flex items-center justify-center p-4">
-                <p>Inloggen vereist</p>
-            </div>
-        );
-    }
-
-    if (!authorized) {
-        return (
-            <div className="min-h-screen flex items-center justify-center p-4">
-                <p>Geen toegang</p>
-            </div>
-        );
+    if (!authorized && !loading) {
+        return <NoAccessOverlay />;
     }
 
     return (

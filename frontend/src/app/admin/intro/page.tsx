@@ -38,6 +38,7 @@ import { siteSettingsMutations } from '@/shared/lib/api/salvemundi';
 import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
+import { formatDateToLocalISO } from '@/shared/lib/utils/date';
 import * as XLSX from 'xlsx';
 import { usePagePermission } from '@/shared/lib/hooks/usePermissions';
 
@@ -257,7 +258,7 @@ export default function IntroAdminPage() {
             } else {
                 const newBlog = await introBlogsApi.create(payload);
                 setBlogs([newBlog, ...blogs]);
-                
+
                 // Send push notification for new blog if it's published
                 if (newBlog.is_published) {
                     try {
@@ -417,7 +418,7 @@ export default function IntroAdminPage() {
             'Voornaam': s.first_name,
             'Tussenvoegsel': s.middle_name || '',
             'Achternaam': s.last_name,
-            'Geboortedatum': s.date_of_birth,
+            'Geboortedatum': s.date_of_birth ? formatDateToLocalISO(s.date_of_birth) : '',
             'Email': s.email,
             'Telefoonnummer': s.phone_number,
             'Favoriete GIF': s.favorite_gif || '',
@@ -455,12 +456,12 @@ export default function IntroAdminPage() {
     const composeEmailWithSignups = () => {
         // Get all email addresses from signups
         const emails = signups.map(s => s.email).filter(e => e).join(',');
-        
+
         // Compose mailto link with BCC
         const subject = encodeURIComponent('Intro Aanmeldingen');
         const body = encodeURIComponent(`Hallo,\n\nAlle intro aanmeldingen zijn in BCC toegevoegd.\n\nMet vriendelijke groet`);
         const mailtoLink = `mailto:?subject=${subject}&bcc=${emails}&body=${body}`;
-        
+
         // Open default email client
         window.location.href = mailtoLink;
     };
@@ -580,7 +581,7 @@ export default function IntroAdminPage() {
                     <label className="text-sm font-medium">Intro zichtbaar</label>
                     <button
                         onClick={async () => {
-                            const current = introSettings?.show ?? true;
+                            const current = introSettings?.show ?? false;
                             try {
                                 await siteSettingsMutations.upsertByPage('intro', { show: !current });
                                 await refetchIntroSettings();
@@ -592,7 +593,7 @@ export default function IntroAdminPage() {
                             }
                         }}
                         className={`w-12 h-6 rounded-full p-0.5 transition ${introSettings?.show ? 'bg-green-500' : 'bg-gray-300'}`}
-                        aria-pressed={introSettings?.show ?? true}
+                        aria-pressed={introSettings?.show ?? false}
                     >
                         <span className={`block w-5 h-5 bg-white rounded-full transform transition ${introSettings?.show ? 'translate-x-6' : 'translate-x-0'}`} />
                     </button>
@@ -665,7 +666,7 @@ export default function IntroAdminPage() {
                                                             </button>
                                                             {expandedSignups.includes(signup.id) && (
                                                                 <div className="mt-2 pl-6 space-y-1 text-sm text-admin-muted">
-                                                                    <p><strong>Geboortedatum:</strong> {signup.date_of_birth}</p>
+                                                                    <p><strong>Geboortedatum:</strong> {signup.date_of_birth ? formatDateToLocalISO(signup.date_of_birth) : '-'}</p>
                                                                     {signup.favorite_gif && (
                                                                         <p><strong>Favoriete GIF:</strong> <a href={signup.favorite_gif} target="_blank" rel="noopener noreferrer" className="text-theme-purple hover:underline">Bekijk</a></p>
                                                                     )}
@@ -1406,7 +1407,7 @@ export default function IntroAdminPage() {
                             </div>
                             <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-3">
                                 <p className="text-xs text-yellow-800 dark:text-yellow-200">
-                                    <strong>Let op:</strong> Intro aanmeldingen zijn anoniem en hebben geen account. 
+                                    <strong>Let op:</strong> Intro aanmeldingen zijn anoniem en hebben geen account.
                                     Notificaties kunnen alleen naar Intro Ouders worden gestuurd die een account hebben en notificaties hebben ingeschakeld.
                                     {!customNotification.includeParents && ' Vink de checkbox aan om naar Intro Ouders te sturen.'}
                                 </p>

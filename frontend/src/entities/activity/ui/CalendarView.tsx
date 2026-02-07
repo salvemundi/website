@@ -19,6 +19,7 @@ interface Event {
     id: number;
     name: string;
     event_date: string;
+    event_date_end?: string;
     committee_name?: string;
     image?: string;
 }
@@ -57,7 +58,17 @@ export default function CalendarView({
     const weekDays = ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'];
 
     const getEventsForDay = (day: Date) => {
-        return events.filter(event => isSameDay(parseISO(event.event_date), day));
+        return events.filter(event => {
+            const start = parseISO(event.event_date);
+            const end = event.event_date_end ? parseISO(event.event_date_end) : start;
+
+            // Normalize dates to midnight for comparison
+            const d = new Date(day.getFullYear(), day.getMonth(), day.getDate()).getTime();
+            const s = new Date(start.getFullYear(), start.getMonth(), start.getDate()).getTime();
+            const e = new Date(end.getFullYear(), end.getMonth(), end.getDate()).getTime();
+
+            return d >= s && d <= e;
+        });
     };
 
     return (

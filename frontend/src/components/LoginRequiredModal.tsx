@@ -7,10 +7,10 @@ type Props = {
   onClose: () => void;
 };
 
-import { useRouter } from 'next/navigation';
+import { useAuthActions } from '@/features/auth/providers/auth-provider';
 
 export default function LoginRequiredModal({ open, onClose }: Props) {
-  const router = useRouter();
+  const { loginWithMicrosoft, loginWithRedirect } = useAuthActions();
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -21,10 +21,14 @@ export default function LoginRequiredModal({ open, onClose }: Props) {
         <div className="flex justify-end gap-3">
           <button onClick={onClose} className="px-4 py-2 rounded-md bg-gray-200 dark:bg-zinc-800">Sluiten</button>
           <button
-            onClick={() => {
-              // Get current URL to return to
-              const returnTo = window.location.pathname + window.location.search;
-              router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+            onClick={async () => {
+              try {
+                await loginWithMicrosoft();
+                onClose();
+              } catch (e) {
+                console.warn('Popup login failed, trying redirect...', e);
+                loginWithRedirect();
+              }
             }}
             className="px-4 py-2 rounded-md bg-gradient-theme text-white"
           >

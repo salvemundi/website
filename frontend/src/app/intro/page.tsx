@@ -10,7 +10,6 @@ import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { isValidPhoneNumber } from '@/shared/components/PhoneNumberInput';
 import { Users, Heart, CheckCircle2 } from 'lucide-react';
 // react-datepicker removed to prefer native date inputs
-import { format } from 'date-fns';
 
 export default function IntroPage() {
   const { isAuthenticated, user } = useAuth();
@@ -19,7 +18,7 @@ export default function IntroPage() {
     voornaam: '',
     tussenvoegsel: '',
     achternaam: '',
-    geboortedatum: null as Date | null,
+    geboortedatum: '' as string,
     email: '',
     telefoonnummer: user?.phone_number || '',
 
@@ -82,7 +81,8 @@ export default function IntroPage() {
   }, [lightboxOpen]);
 
   const { data: siteSettings, isLoading: isSettingsLoading } = useSalvemundiSiteSettings('intro');
-  const isIntroEnabled = siteSettings?.show ?? true;
+  // Default to false (closed) if settings are missing or loading error, to prevent accidental signups
+  const isIntroEnabled = siteSettings?.show ?? false;
   const introDisabledMessage = siteSettings?.disabled_message || 'De inschrijvingen voor de introweek zijn momenteel gesloten.';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -150,7 +150,7 @@ export default function IntroPage() {
           first_name: form.voornaam,
           middle_name: form.tussenvoegsel || undefined,
           last_name: form.achternaam,
-          date_of_birth: (form.geboortedatum ? format(form.geboortedatum, 'yyyy-MM-dd') : '') as any,
+          date_of_birth: form.geboortedatum,
           email: form.email,
           phone_number: form.telefoonnummer,
           favorite_gif: form.favorieteGif || undefined,
@@ -161,7 +161,7 @@ export default function IntroPage() {
           participantFirstName: form.voornaam,
           participantLastName: form.achternaam,
           phoneNumber: form.telefoonnummer,
-          dateOfBirth: (form.geboortedatum ? format(form.geboortedatum, 'yyyy-MM-dd') : undefined) as any,
+          dateOfBirth: form.geboortedatum || undefined,
           favoriteGif: form.favorieteGif || undefined,
         }).catch(() => { });
       }
@@ -240,7 +240,7 @@ export default function IntroPage() {
                       <ul className="list-disc list-inside mb-4 text-base lg:text-lg">
                         <li className="mb-1"><strong>Legendarische Feesten:</strong> Ontdek het Eindhovense nachtleven met mensen die dezelfde passie delen.</li>
                         <li className="mb-1"><strong>Connecties:</strong> Leer de ouderejaars kennen; zij weten precies hoe je die lastige vakken straks haalt.</li>
-                        <li className="mb-1"><strong>Gezelligheid boven alles:</strong> Geen ontgroening, maar een warm welkom bij dé studievereniging van Fontys ICT.</li>
+                        <li className="mb-1"><strong>Gezelligheid boven alles:</strong> Geen ontgroening, maar een warm welkom bij dè studievereniging van Fontys ICT.</li>
                       </ul>
 
                       <h3 className="font-semibold">Schrijf je nu in!</h3>
@@ -406,8 +406,8 @@ export default function IntroPage() {
                           <input
                             type="date"
                             name="geboortedatum"
-                            value={form.geboortedatum ? new Date(form.geboortedatum).toISOString().split('T')[0] : ''}
-                            onChange={(e) => setForm(prev => ({ ...prev, geboortedatum: e.target.value ? new Date(e.target.value) : null }))}
+                            value={form.geboortedatum}
+                            onChange={handleChange}
                             className="form-input w-full"
                             required
                           />

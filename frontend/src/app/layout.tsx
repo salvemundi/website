@@ -6,6 +6,7 @@ import { RootProviders } from './providers';
 import Header from '@/widgets/header/ui/Header';
 import Footer from '@/widgets/footer/ui/Footer';
 import { ServiceWorkerRegistration } from './ServiceWorkerRegistration';
+import { PreventZoom } from '@/components/PreventZoom';
 
 
 const getBaseUrl = () => {
@@ -56,13 +57,15 @@ export const metadata: Metadata = {
     },
 };
 
-
 export const viewport: Viewport = {
     themeColor: '#ff6542',
     width: 'device-width',
     initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
     viewportFit: 'cover',
 };
+
 
 export default function RootLayout({
     children,
@@ -72,6 +75,8 @@ export default function RootLayout({
     return (
         <html lang="nl" suppressHydrationWarning>
             <head>
+                {/* Prevent zoom on Android - Handheld Mode */}
+                <meta name="HandheldFriendly" content="true" />
                 {/* Resource hints for better performance */}
                 <link rel="preconnect" href="https://admin.salvemundi.nl" />
                 <link rel="dns-prefetch" href="https://admin.salvemundi.nl" />
@@ -91,6 +96,7 @@ export default function RootLayout({
                     {/* Client-only: prints ASCII art + GitHub link to browser console on page load */}
                     <ConsoleArt />
                     <ServiceWorkerRegistration />
+                    <PreventZoom />
                     <Header />
                     <div className="relative z-10">
                         {children}

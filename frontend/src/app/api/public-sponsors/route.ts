@@ -19,8 +19,11 @@ export async function GET() {
                 'Authorization': `Bearer ${directusToken}`,
                 'Accept': 'application/json'
             },
+            // Reduce upstream caching so changes in Directus show up quickly.
+            // Set revalidate to 0 to avoid long ISR delays. If you want
+            // CDN caching, consider a small s-maxage instead.
             next: {
-                revalidate: 3600, // 1 uur cache, sponsors veranderen weinig
+                revalidate: 0,
                 tags: ['sponsors'],
             }
         });
@@ -33,8 +36,13 @@ export async function GET() {
         }
 
         const json = await resp.json().catch(() => null);
-        // Return the Directus data array directly
-        return NextResponse.json(json?.data ?? []);
+        // Return the Directus data array directly and prevent downstream caching
+        // so the website shows sponsor deletions immediately.
+        return NextResponse.json(json?.data ?? [], {
+            headers: {
+                'Cache-Control': 'no-store'
+            }
+        });
     } catch (err: any) {
         console.error('[public-sponsors] Error fetching sponsors', err);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
