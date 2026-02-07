@@ -26,15 +26,15 @@ const Header: React.FC = () => {
     const kroegentochtEnabled = kroegentochtSettings?.show ?? true;
     const { data: reisSettings } = useSalvemundiSiteSettings('reis');
     const reisEnabled = reisSettings?.show ?? true;
-    const { loginWithMicrosoft, loginWithRedirect } = useAuthActions();
+    const { loginWithMicrosoft } = useAuthActions();
 
     const handleLogin = async () => {
         try {
             await loginWithMicrosoft();
         } catch (error) {
-            // If popup is blocked or fails, fallback to redirect
-            console.warn('[Header] Popup login failed, falling back to redirect:', error);
-            await loginWithRedirect(window.location.pathname);
+            // Don't automatically fallback to redirect - let the user retry or handle the error
+            console.warn('[Header] Login failed:', error);
+            // The error will be shown to the user via toast notifications in the auth provider
         }
     };
 
