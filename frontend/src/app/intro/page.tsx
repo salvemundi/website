@@ -81,7 +81,8 @@ export default function IntroPage() {
   }, [lightboxOpen]);
 
   const { data: siteSettings, isLoading: isSettingsLoading } = useSalvemundiSiteSettings('intro');
-  const isIntroEnabled = siteSettings?.show ?? true;
+  // Default to false (closed) if settings are missing or loading error, to prevent accidental signups
+  const isIntroEnabled = siteSettings?.show ?? false;
   const introDisabledMessage = siteSettings?.disabled_message || 'De inschrijvingen voor de introweek zijn momenteel gesloten.';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

@@ -581,7 +581,7 @@ export default function IntroAdminPage() {
                     <label className="text-sm font-medium">Intro zichtbaar</label>
                     <button
                         onClick={async () => {
-                            const current = introSettings?.show ?? true;
+                            const current = introSettings?.show ?? false;
                             try {
                                 await siteSettingsMutations.upsertByPage('intro', { show: !current });
                                 await refetchIntroSettings();
@@ -593,7 +593,7 @@ export default function IntroAdminPage() {
                             }
                         }}
                         className={`w-12 h-6 rounded-full p-0.5 transition ${introSettings?.show ? 'bg-green-500' : 'bg-gray-300'}`}
-                        aria-pressed={introSettings?.show ?? true}
+                        aria-pressed={introSettings?.show ?? false}
                     >
                         <span className={`block w-5 h-5 bg-white rounded-full transform transition ${introSettings?.show ? 'translate-x-6' : 'translate-x-0'}`} />
                     </button>
