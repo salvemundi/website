@@ -18,6 +18,23 @@ try {
     // MSAL initialization failed
 }
 
+/**
+ * Detect if we are running inside a popup or iframe used for authentication
+ */
+const isInternalAuthWindow = () => {
+    if (typeof window === 'undefined') return false;
+    try {
+        // If we have an opener and it's not us, we are likely a popup
+        if (window.opener && window.opener !== window) return true;
+        // If we have a parent and it's not us, we are likely an iframe
+        if (window.parent && window.parent !== window) return true;
+    } catch (e) {
+        // Cross-origin access error usually means we are in a popup/iframe from Microsoft
+        return true;
+    }
+    return false;
+};
+
 // Legacy interface for backward compatibility
 export interface AuthContextType {
     user: User | null;
@@ -209,7 +226,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Check for existing session on mount
     useEffect(() => {
-        checkAuthStatus();
+        // [FIX] Prevent all side effects (refresh intervals, status checks) 
+        // if we are in a popup or iframe window. This avoids session contamination.
+        if (isInternalAuthWindow()) return;
+
+        // Note: checkAuthStatus is now triggered by isMsalInitializing change 
+        // to ensure MSAL is ready before we attempt recovery flows.
 
         // Listen for external auth expiration events
         const onAuthExpired = () => {
@@ -266,6 +288,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             clearInterval(refreshInterval);
         };
     }, []);
+
+    // [FIX] Trigger auth check only AFTER MSAL is initialized
+    useEffect(() => {
+        if (!isMsalInitializing && !isInternalAuthWindow()) {
+            checkAuthStatus();
+        }
+    }, [isMsalInitializing]);
 
     const checkAuthStatus = async () => {
         // Skip if we're already in an auth attempt cooldown
@@ -402,10 +431,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     // [FIX] Prevent AuthProvider from running full login logic if we are in a popup or iframe.
                     // MSAL's loginPopup/acquireTokenSilent handles the result in the parent window.
                     // Running this logic in the popup would cause it to navigate to /account instead of closing.
-                    if (typeof window !== 'undefined' && (
-                        (window.opener && window.opener !== window) ||
-                        (window.parent && window.parent !== window)
-                    )) {
+                    if (isInternalAuthWindow()) {
                         return;
                     }
 
