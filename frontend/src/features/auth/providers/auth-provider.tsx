@@ -104,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (authErrorCount >= MAX_ATTEMPTS_IN_WINDOW) {
             const lastAttempt = authAttempts.length > 0 ? authAttempts[authAttempts.length - 1] : 0;
             if (now - lastAttempt < ERROR_BACKOFF_MS) {
-                console.log('[AuthProvider] In error backoff period, skipping auth attempt');
+                // console.log('[AuthProvider] In error backoff period, skipping auth attempt');
                 return false;
             } else {
                 // Reset error count after backoff period, but if we've had too many errors
@@ -119,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Count attempts in the current window
         const recentAttempts = authAttempts.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW_MS);
         if (recentAttempts.length >= MAX_ATTEMPTS_IN_WINDOW) {
-            console.log('[AuthProvider] Rate limit reached (3 attempts in 5s), skipping');
+            // console.log('[AuthProvider] Rate limit reached (3 attempts in 5s), skipping');
             return false;
         }
 
@@ -141,7 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Helper to clear corrupted auth state when too many errors occur
     const clearCorruptedAuthState = () => {
-        console.log('[AuthProvider] Clearing corrupted auth state after repeated errors');
+        // console.log('[AuthProvider] Clearing corrupted auth state after repeated errors');
         localStorage.removeItem('auth_token');
         localStorage.removeItem('refresh_token');
         setUser(null);
@@ -155,7 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 msalInstance.setActiveAccount(null);
                 // Note: MSAL doesn't provide removeAccount method, but clearing active account helps
             } catch (e) {
-                console.warn('[AuthProvider] Failed to clear MSAL state:', e);
+                // console.warn('[AuthProvider] Failed to clear MSAL state:', e);
             }
         }
     };
@@ -191,16 +191,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Only refresh if token is expiring soon or already expired
         if (!isTokenExpiringSoon()) return;
 
-        console.log('[AuthProvider] Proactively refreshing token (expiring soon)...');
+        // console.log('[AuthProvider] Proactively refreshing token (expiring soon)...');
         try {
             const response = await authApi.refreshAccessToken(refreshToken);
             localStorage.setItem('auth_token', response.access_token);
             localStorage.setItem('refresh_token', response.refresh_token);
             setUser(response.user);
             recordAuthAttempt(true);
-            console.log('[AuthProvider] Token refreshed successfully');
+            // console.log('[AuthProvider] Token refreshed successfully');
         } catch (e) {
-            console.error('[AuthProvider] Proactive refresh failed:', e);
+            // console.error('[AuthProvider] Proactive refresh failed:', e);
             recordAuthAttempt(false);
             // If refresh fails, try silent recovery via MSAL to keep session alive
             await trySilentMsalLogin();
@@ -241,7 +241,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (document.visibilityState === 'visible') {
                 const refreshToken = localStorage.getItem('refresh_token');
                 if (refreshToken && !isLoading && !isMsalInitializing && !isLoggingOut && canAttemptAuth()) {
-                    console.log('[AuthProvider] Tab became visible, checking token...');
+                    // console.log('[AuthProvider] Tab became visible, checking token...');
                     proactiveRefresh();
                 }
             }
@@ -270,7 +270,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const checkAuthStatus = async () => {
         // Skip if we're already in an auth attempt cooldown
         if (!canAttemptAuth() && authErrorCount > 0) {
-            console.log('[AuthProvider] Skipping checkAuthStatus due to rate limiting');
+            // console.log('[AuthProvider] Skipping checkAuthStatus due to rate limiting');
             setIsLoading(false);
             return;
         }
@@ -399,13 +399,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     if (hasProcessedRedirect.current) return;
                     hasProcessedRedirect.current = true;
 
-                    console.log('[AuthProvider] Redirect login successful');
+                    // console.log('[AuthProvider] Redirect login successful');
                     msalInstance.setActiveAccount(response.account);
                     await handleLoginSuccess(response, true);
                     recordAuthAttempt(true);
                 } else if (hasAuthArtifacts) {
                     // We had auth artifacts but no response - likely an error
-                    console.warn('[AuthProvider] Auth artifacts present but no MSAL response');
+                    // console.warn('[AuthProvider] Auth artifacts present but no MSAL response');
                     recordAuthAttempt(false);
                     // Clean up URL artifacts
                     const cleanUrl = new URL(window.location.href);
@@ -430,7 +430,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     // Only attempt this if we don't already have a user and no stored token
                     if (!user && !localStorage.getItem('auth_token') && accounts.length > 0) {
                         const account = accounts[0];
-                        console.log('[AuthProvider] Attempting silent MSAL token acquisition...');
+                        // console.log('[AuthProvider] Attempting silent MSAL token acquisition...');
                         try {
                             const silentResult = await msalInstance.acquireTokenSilent({
                                 ...loginRequest,
@@ -443,14 +443,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                                 recordAuthAttempt(true);
                             }
                         } catch (silentError) {
-                            console.log('[AuthProvider] Silent MSAL failed, user must login manually');
+                            // console.log('[AuthProvider] Silent MSAL failed, user must login manually');
                             recordAuthAttempt(false);
                         }
                     } else if (!user && !localStorage.getItem('auth_token') && accounts.length === 0) {
                         // Try ssoSilent to check for existing cookies (no account in cache)
                         // But only if we haven't attempted recently
                         try {
-                            console.log('[AuthProvider] No accounts in cache, trying ssoSilent...');
+                            // console.log('[AuthProvider] No accounts in cache, trying ssoSilent...');
                             const ssoResult = await msalInstance.ssoSilent(loginRequest);
                             if (ssoResult) {
                                 if (hasProcessedRedirect.current) return;
@@ -460,13 +460,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                             }
                         } catch (ssoError) {
                             // Expected if no active Microsoft session in browser
-                            console.log('[AuthProvider] ssoSilent failed (expected if no session)');
+                            // console.log('[AuthProvider] ssoSilent failed (expected if no session)');
                             recordAuthAttempt(false);
                         }
                     }
                 }
             } catch (error: any) {
-                console.error('[AuthProvider] MSAL init/redirect error:', error);
+                // console.error('[AuthProvider] MSAL init/redirect error:', error);
                 setAuthError(error.message || 'Authentication initialization failed');
                 recordAuthAttempt(false);
             } finally {
@@ -608,7 +608,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }
             }
         } catch (e) {
-            console.warn('[AuthProvider] Recovery silent login failed:', e);
+            // console.warn('[AuthProvider] Recovery silent login failed:', e);
             recordAuthAttempt(false);
         }
         return false;
@@ -640,18 +640,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             // PHASE 2 CHANGE: Use loginPopup instead of loginRedirect
             // This keeps the user on the page and provides a seamless experience
-            console.log('[AuthProvider] Attempting popup login...');
+            // console.log('[AuthProvider] Attempting popup login...');
 
             const result = await msalInstance.loginPopup(loginRequest);
 
             if (result && result.account) {
-                console.log('[AuthProvider] Popup login successful');
+                // console.log('[AuthProvider] Popup login successful');
                 msalInstance.setActiveAccount(result.account);
                 await handleLoginSuccess(result, false); // false = no redirect notification
                 return; // Success!
             }
         } catch (error: any) {
-            console.error('[AuthProvider] Popup login error:', error);
+            // console.error('[AuthProvider] Popup login error:', error);
 
             // Check if error is popup-related
             const isPopupError =
@@ -662,7 +662,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             if (isPopupError) {
                 // Popup was blocked or failed
-                console.warn('[AuthProvider] Popup blocked/failed, throwing error for LoginModal to handle');
+                // console.warn('[AuthProvider] Popup blocked/failed, throwing error for LoginModal to handle');
                 throw error; // Let LoginModal detect and handle this
             }
 
@@ -690,7 +690,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             await msalInstance.loginRedirect(loginRequest);
         } catch (error) {
-            console.error('[AuthProvider] Redirect login error:', error);
+            // console.error('[AuthProvider] Redirect login error:', error);
             throw error;
         }
     };

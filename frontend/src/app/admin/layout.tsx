@@ -48,40 +48,39 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                 // Check if user is member of any committee
                 const committees = (user as any).committees;
 
-                console.log('[AdminLayout] Checking authorization for user:', user.id);
-                console.log('[AdminLayout] User committees:', committees);
+
 
                 // First check if committees were already loaded during authentication
                 if (Array.isArray(committees)) {
                     // User has committees data loaded - check if they're in any committee
                     if (committees.length > 0) {
-                        console.log('[AdminLayout] User authorized - has committees:', committees.length);
+                        // console.log('[AdminLayout] User authorized - has committees:', committees.length);
                         setIsAuthorized(true);
                     } else {
                         // User is explicitly NOT in any committee - show no-access page
-                        console.log('[AdminLayout] User NOT authorized - no committees');
+                        // console.log('[AdminLayout] User NOT authorized - no committees');
                         setIsAuthorized(false);
                     }
                 } else {
                     // Fallback: Check if user is member of any visible committee via API
-                    console.log('[AdminLayout] Committees not loaded, checking via API');
+                    // console.log('[AdminLayout] Committees not loaded, checking via API');
 
                     // Get user's committee memberships with committee details
                     const memberships = await directusFetch<any[]>(
                         `/items/committee_members?filter[user_id][_eq]=${user.id}&fields=committee_id.id,committee_id.is_visible`
                     );
-                    console.log('[AdminLayout] API response:', memberships);
+                    // console.log('[AdminLayout] API response:', memberships);
 
                     // Check if user is member of at least one visible committee
                     const hasVisibleCommittee = Array.isArray(memberships) &&
                         memberships.some(m => m.committee_id?.is_visible !== false);
 
                     if (hasVisibleCommittee) {
-                        console.log('[AdminLayout] User authorized via API - has visible committee');
+                        // console.log('[AdminLayout] User authorized via API - has visible committee');
                         setIsAuthorized(true);
                     } else {
                         // Not a member of any visible committee - show no-access page
-                        console.log('[AdminLayout] User NOT authorized via API - no visible committees');
+                        // console.log('[AdminLayout] User NOT authorized via API - no visible committees');
                         setIsAuthorized(false);
                     }
                 }
