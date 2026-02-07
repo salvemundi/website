@@ -132,7 +132,10 @@ async function sendTripPaymentConfirmationEmail(emailServiceUrl: string, tripSig
 
     const response = await fetch(emailUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': process.env.INTERNAL_API_KEY || '',
+        },
         body: JSON.stringify({ to: tripSignup.email, subject: `Betaling ontvangen: ${trip.name}`, html: emailHtml })
     }).catch(err => {
         console.error('[sendTripPaymentConfirmationEmail] Fetch error:', err);

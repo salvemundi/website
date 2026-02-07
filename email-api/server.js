@@ -147,6 +147,57 @@ function appendContactFooterToHtml(html) {
   return html + footerHtml;
 }
 
+const rateLimit = require('express-rate-limit');
+
+// Rate limiting: 100 requests per 15 minutes
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  skip: (req) => {
+    // Skip rate limiting for internal services that provide a valid API key
+    return req.headers['x-api-key'] && req.headers['x-api-key'] === process.env.INTERNAL_API_KEY;
+  },
+  message: { error: 'Too many requests, please try again later.' }
+});
+
+// Apply rate limiting to all requests
+app.use(limiter);
+
+// API Key Middleware
+// Only allow requests with a valid x-api-key header
+// Except for /health, /calendar and debug endpoints which might be public or dev-only
+const apiKeyAuth = (req, res, next) => {
+  // Skip auth for health check and calendar feed
+  if (req.path === '/health' || req.path === '/calendar' || req.path === '/calendar.ics' || req.path.startsWith('/.well-known')) {
+    return next();
+  }
+
+  // Skip auth for OPTIONS requests (CORS preflight)
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+
+  const apiKey = req.headers['x-api-key'];
+  const validApiKey = process.env.INTERNAL_API_KEY;
+
+  if (!validApiKey) {
+    // If no key is configured on server, warn but allow (or deny? Safe default: deny)
+    console.error('❌ [email-api] INTERNAL_API_KEY is not set in environment variables! Denying all requests.');
+    return res.status(500).json({ error: 'Server configuration error' });
+  }
+
+  if (!apiKey || apiKey !== validApiKey) {
+    console.warn(`⚠️ [email-api] Unauthorized access attempt from ${req.ip} to ${req.path}`);
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  next();
+};
+
+app.use(apiKeyAuth);
+
 // Send email endpoint
 app.post('/send-email', async (req, res) => {
   try {

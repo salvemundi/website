@@ -21,6 +21,7 @@
 
 .sponsors-scroll-track {
     display: flex;
+    flex-wrap: nowrap;
     gap: 4rem;
     animation: scroll-sponsors 30s linear infinite;
     will-change: transform;
@@ -88,7 +89,7 @@ html.dark .sponsor-item {
         transform: translateX(0);
     }
     100% {
-        transform: translateX(-50%);
+        transform: translateX(-25%);
     }
 }
 

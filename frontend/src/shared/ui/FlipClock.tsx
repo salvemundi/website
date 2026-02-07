@@ -109,7 +109,7 @@ const SlotUnit = ({ value, label }: { value: string | number; label: string }) =
                 </div>
             </div>
 
-            <span className="text-[9px] sm:text-xs font-bold text-theme-muted tracking-wide sm:tracking-widest uppercase mt-0.5 sm:mt-1">
+            <span className="text-[9px] sm:text-xs font-bold text-white dark:text-theme-muted tracking-wide sm:tracking-widest uppercase mt-0.5 sm:mt-1">
                 {label}
             </span>
         </div>

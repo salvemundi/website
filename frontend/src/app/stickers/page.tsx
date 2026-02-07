@@ -494,7 +494,7 @@ function StickersContent() {
                         <div className="max-h-96 overflow-y-auto pr-2">
                             <ol className="space-y-2">
                                 {leaderboard.slice(0, 50).map((c, idx) => {
-                                    const isMe = user && c.id === user.id;
+                                    const isMe = Boolean(user && String(c.id) === String(user.id));
                                     return (
                                         <li key={c.id} className={`flex items-center justify-between p-3 rounded-xl ${isMe ? 'bg-oranje/10' : ''}`}>
                                             <div className="flex items-center gap-3">
@@ -527,7 +527,7 @@ function StickersContent() {
                                         const userObj = (sticker.created_by && typeof sticker.created_by !== 'string') ? sticker.created_by :
                                             (sticker.user_created && typeof sticker.user_created !== 'string') ? sticker.user_created : null;
                                         const ownerId = userObj ? (userObj.id || (userObj as any).email || '') : (typeof sticker.user_created === 'string' ? sticker.user_created : (typeof sticker.created_by === 'string' ? sticker.created_by : ''));
-                                        const isMine = user && ownerId && user.id === ownerId;
+                                        const isMine = Boolean(user && ownerId && String(user.id) === String(ownerId));
                                         return <MapPin className={`w-5 h-5 ${isMine ? 'text-blue-500' : 'text-paars'} flex-shrink-0 mt-1`} />;
                                     })()}
                                     <div className="flex-1">
