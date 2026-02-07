@@ -1,6 +1,7 @@
 import QRCode from 'qrcode';
 import { directusFetch } from './directus';
 import { COLLECTIONS, FIELDS } from '@/shared/lib/constants/collections';
+import { normalizeCommitteeName } from './committee-utils';
 
 interface AttendanceOfficer {
     directus_users_id?: string | number | null;
@@ -86,7 +87,21 @@ export async function getEventSignupsWithCheckIn(eventId: number) {
 
 export async function isUserAuthorizedForAttendance(userId: string, eventId: number) {
     try {
-        // Check event attendance_officers relation first
+        // Check if user is in Bestuur or ICT committee (they have global access)
+        const userCommittees = await directusFetch<any[]>(`/items/committee_members?filter[user_id][_eq]=${userId}&fields=committee_id.name`);
+        if (userCommittees && userCommittees.length > 0) {
+            const committeeNames = userCommittees.map((c: any) => {
+                if (!c?.committee_id?.name) return '';
+                return normalizeCommitteeName(c.committee_id.name);
+            });
+            
+            const hasGlobalAccess = committeeNames.some((name: string) => 
+                name.includes('bestuur') || name.includes('ict')
+            );
+            if (hasGlobalAccess) return true;
+        }
+
+        // Check event attendance_officers relation
         const event = await directusFetch<any>(`/items/events/${eventId}?fields=committee_id,attendance_officers.directus_users_id`);
         if (!event) return false;
 
