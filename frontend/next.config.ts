@@ -91,9 +91,62 @@ const nextConfig: NextConfig = {
     // to allow for better debugging, logging, and consistency across environments.
     // Catches for Directus should also be handled via src/app/api/[...path]/route.ts
 
-    // Custom headers for Stale-While-Revalidate caching
+    // Custom headers for security and caching
     async headers() {
         return [
+            {
+                // Apply security headers to all routes
+                source: '/:path*',
+                headers: [
+                    {
+                        key: 'Strict-Transport-Security',
+                        value: 'max-age=63072000; includeSubDomains; preload',
+                    },
+                    {
+                        key: 'X-Frame-Options',
+                        value: 'SAMEORIGIN',
+                    },
+                    {
+                        key: 'X-Content-Type-Options',
+                        value: 'nosniff',
+                    },
+                    {
+                        key: 'Referrer-Policy',
+                        value: 'strict-origin-when-cross-origin',
+                    },
+                    {
+                        key: 'Permissions-Policy',
+                        value: 'camera=(), microphone=(), geolocation=(self), payment=()',
+                    },
+                    {
+                        key: 'Cross-Origin-Opener-Policy',
+                        value: 'same-origin-allow-popups',
+                    },
+                    {
+                        key: 'Cross-Origin-Embedder-Policy',
+                        value: 'credentialless',
+                    },
+                    {
+                        key: 'Content-Security-Policy',
+                        value: [
+                            "default-src 'self'",
+                            "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://login.microsoftonline.com https://alcdn.msauth.net https://www.googletagmanager.com https://www.google-analytics.com https://*.cloudflare.com",
+                            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+                            "font-src 'self' data: https://fonts.gstatic.com",
+                            "img-src 'self' data: blob: https: http:",
+                            "media-src 'self' blob: https:",
+                            "connect-src 'self' https://login.microsoftonline.com https://graph.microsoft.com https://admin.salvemundi.nl https://data.imagination.platour.net https://www.google-analytics.com https://analytics.google.com wss:", 
+                            "frame-src 'self' https://login.microsoftonline.com https://www.google.com",
+                            "worker-src 'self' blob:",
+                            "object-src 'none'",
+                            "base-uri 'self'",
+                            "form-action 'self'",
+                            "frame-ancestors 'self'",
+                            "upgrade-insecure-requests",
+                        ].join('; '),
+                    },
+                ],
+            },
             {
                 // Static images: 1h cache, 24h stale-while-revalidate
                 source: '/:path*.(jpg|jpeg|png|gif|webp|avif|svg|ico)',
