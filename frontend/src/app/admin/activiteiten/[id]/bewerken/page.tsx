@@ -24,7 +24,7 @@ interface Event {
     event_time?: string;
     event_time_end?: string;
     location?: string;
-    capacity?: number;
+    max_sign_ups?: number;
     price_members?: number;
     price_non_members?: number;
     inschrijf_deadline?: string;
@@ -61,7 +61,7 @@ export default function BewerkenActiviteitPage() {
         event_time: '',
         event_time_end: '',
         location: '',
-        capacity: '',
+        max_sign_ups: '',
         price_members: '',
         price_non_members: '',
         inschrijf_deadline: '',
@@ -142,7 +142,7 @@ export default function BewerkenActiviteitPage() {
                 event_time: event.event_time || '',
                 event_time_end: event.event_time_end || '',
                 location: event.location || '',
-                capacity: event.capacity ? String(event.capacity) : '',
+                max_sign_ups: event.max_sign_ups ? String(event.max_sign_ups) : '',
                 price_members: event.price_members !== undefined ? String(event.price_members) : '',
                 price_non_members: event.price_non_members !== undefined ? String(event.price_non_members) : '',
                 inschrijf_deadline: deadline,
@@ -287,7 +287,7 @@ export default function BewerkenActiviteitPage() {
                 event_date: formData.event_date,
                 event_date_end: formData.event_date_end || formData.event_date,
                 location: formData.location || null,
-                capacity: formData.capacity ? parseInt(formData.capacity) : null,
+                max_sign_ups: formData.max_sign_ups ? parseInt(formData.max_sign_ups) : null,
                 price_members: formData.price_members ? parseFloat(formData.price_members) : 0,
                 price_non_members: formData.price_non_members ? parseFloat(formData.price_non_members) : 0,
                 inschrijf_deadline: formData.inschrijf_deadline || null,
@@ -546,14 +546,14 @@ export default function BewerkenActiviteitPage() {
                     {/* Capacity & Pricing */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
-                            <label htmlFor="capacity" className="block text-sm font-bold text-admin-muted mb-2">
+                            <label htmlFor="max_sign_ups" className="block text-sm font-bold text-admin-muted mb-2">
                                 Capaciteit
                             </label>
                             <input
                                 type="number"
-                                id="capacity"
-                                name="capacity"
-                                value={formData.capacity}
+                                id="max_sign_ups"
+                                name="max_sign_ups"
+                                value={formData.max_sign_ups}
                                 onChange={handleChange}
                                 min="0"
                                 className="w-full px-4 py-3 rounded-lg border border-admin bg-admin-card text-admin focus:border-theme-purple focus:ring-2 focus:ring-theme-purple/20 outline-none transition"
