@@ -33,7 +33,7 @@ export default function HomePage() {
                                 </div>
                                 <h3 className="mb-4 text-xl font-bold text-theme">Gezelligheid</h3>
                                 <p className="text-theme-muted leading-relaxed">
-                                    Van gezellige borrels in onze eigen ruimte tot onvergetelijke feesten en weekendjes weg bij Salve Mundi bouw je vriendschappen die een leven lang meegaan.
+                                    Van gezellig chillen in onze eigen ruimte tot onvergetelijke feesten en weekendjes weg bij Salve Mundi. Bouw vriendschappen die een leven lang meegaan.
                                 </p>
                             </div>
 
@@ -55,7 +55,7 @@ export default function HomePage() {
                                 </div>
                                 <h3 className="mb-4 text-xl font-bold text-theme">Ontwikkeling</h3>
                                 <p className="text-theme-muted leading-relaxed">
-                                    Boost je CV door actief te worden in een van onze 15 commissies. Leer organiseren, besturen en samenwerken in een professionele omgeving.
+                                    Boost je CV door actief te worden in een van onze 10 commissies. Leer organiseren, besturen en samenwerken in een professionele omgeving.
                                 </p>
                             </div>
                         </div>
