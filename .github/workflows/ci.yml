@@ -133,7 +133,6 @@ jobs:
   deploy-frontend:
     needs: [frontend-checks, backend-checks, changes]
     if: |
-      always() && 
       (github.event_name == 'workflow_dispatch' && github.event.inputs.full_deploy == 'true') || 
       (needs.changes.outputs.frontend == 'true')
     uses: ./.github/workflows/deploy-frontend.yml
@@ -146,7 +145,6 @@ jobs:
   deploy-admin-api:
     needs: [frontend-checks, backend-checks, changes]
     if: |
-      always() && 
       (github.event_name == 'workflow_dispatch' && github.event.inputs.full_deploy == 'true') || 
       (needs.changes.outputs.admin_api == 'true')
     uses: ./.github/workflows/deploy-admin-api.yml
@@ -158,7 +156,6 @@ jobs:
   deploy-payment-api:
     needs: [frontend-checks, backend-checks, changes]
     if: |
-      always() && 
       (github.event_name == 'workflow_dispatch' && github.event.inputs.full_deploy == 'true') || 
       (needs.changes.outputs.payment_api == 'true')
     uses: ./.github/workflows/deploy-payment.yml
