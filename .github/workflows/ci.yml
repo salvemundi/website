@@ -8,6 +8,14 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
   workflow_call:
+  workflow_dispatch:
+    inputs:
+      full_deploy:
+        description: 'Deploy all services regardless of file changes'
+        required: false
+        type: boolean
+        default: true
+
 
 jobs:
   frontend-checks:
@@ -124,7 +132,10 @@ jobs:
 
   deploy-frontend:
     needs: [frontend-checks, backend-checks, changes]
-    if: needs.changes.outputs.frontend == 'true'
+    if: |
+      always() && 
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.full_deploy == 'true') || 
+      (needs.changes.outputs.frontend == 'true')
     uses: ./.github/workflows/deploy-frontend.yml
     secrets: inherit
     permissions:
@@ -134,7 +145,10 @@ jobs:
 
   deploy-admin-api:
     needs: [frontend-checks, backend-checks, changes]
-    if: needs.changes.outputs.admin_api == 'true'
+    if: |
+      always() && 
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.full_deploy == 'true') || 
+      (needs.changes.outputs.admin_api == 'true')
     uses: ./.github/workflows/deploy-admin-api.yml
     secrets: inherit
     permissions:
@@ -143,7 +157,10 @@ jobs:
 
   deploy-payment-api:
     needs: [frontend-checks, backend-checks, changes]
-    if: needs.changes.outputs.payment_api == 'true'
+    if: |
+      always() && 
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.full_deploy == 'true') || 
+      (needs.changes.outputs.payment_api == 'true')
     uses: ./.github/workflows/deploy-payment.yml
     secrets: inherit
     permissions:
@@ -152,7 +169,10 @@ jobs:
 
   deploy-arcane:
     needs: [frontend-checks, backend-checks, changes]
-    if: needs.changes.outputs.arcane == 'true'
+    if: |
+      always() && 
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.full_deploy == 'true') || 
+      (needs.changes.outputs.arcane == 'true')
     uses: ./.github/workflows/deploy-arcane.yml
     secrets: inherit
     permissions:
@@ -161,7 +181,10 @@ jobs:
 
   deploy-directus:
     needs: [frontend-checks, backend-checks, changes]
-    if: needs.changes.outputs.directus == 'true'
+    if: |
+      always() && 
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.full_deploy == 'true') || 
+      (needs.changes.outputs.directus == 'true')
     uses: ./.github/workflows/deploy-directus.yml
     secrets: inherit
     permissions:
@@ -170,7 +193,10 @@ jobs:
 
   deploy-email-api:
     needs: [frontend-checks, backend-checks, changes]
-    if: needs.changes.outputs.email_api == 'true'
+    if: |
+      always() && 
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.full_deploy == 'true') || 
+      (needs.changes.outputs.email_api == 'true')
     uses: ./.github/workflows/deploy-email.yml
     secrets: inherit
     permissions:
@@ -179,7 +205,10 @@ jobs:
 
   deploy-graph-sync:
     needs: [frontend-checks, backend-checks, changes]
-    if: needs.changes.outputs.graph_sync == 'true'
+    if: |
+      always() && 
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.full_deploy == 'true') || 
+      (needs.changes.outputs.graph_sync == 'true')
     uses: ./.github/workflows/deploy-graph-sync.yml
     secrets: inherit
     permissions:
@@ -188,7 +217,10 @@ jobs:
 
   deploy-graph-webhook:
     needs: [frontend-checks, backend-checks, changes]
-    if: needs.changes.outputs.graph_webhook == 'true'
+    if: |
+      always() && 
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.full_deploy == 'true') || 
+      (needs.changes.outputs.graph_webhook == 'true')
     uses: ./.github/workflows/deploy-graph-webhook.yml
     secrets: inherit
     permissions:
@@ -197,7 +229,10 @@ jobs:
 
   deploy-leden-check:
     needs: [frontend-checks, backend-checks, changes]
-    if: needs.changes.outputs.leden_check == 'true'
+    if: |
+      always() && 
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.full_deploy == 'true') || 
+      (needs.changes.outputs.leden_check == 'true')
     uses: ./.github/workflows/deploy-leden-check.yml
     secrets: inherit
     permissions:
@@ -206,7 +241,10 @@ jobs:
 
   deploy-membership-api:
     needs: [frontend-checks, backend-checks, changes]
-    if: needs.changes.outputs.membership_api == 'true'
+    if: |
+      always() && 
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.full_deploy == 'true') || 
+      (needs.changes.outputs.membership_api == 'true')
     uses: ./.github/workflows/deploy-membership.yml
     secrets: inherit
     permissions:
@@ -216,7 +254,10 @@ jobs:
 
   deploy-monitor:
     needs: [frontend-checks, backend-checks, changes]
-    if: needs.changes.outputs.server_monitor == 'true'
+    if: |
+      always() && 
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.full_deploy == 'true') || 
+      (needs.changes.outputs.server_monitor == 'true')
     uses: ./.github/workflows/deploy-monitor.yml
     secrets: inherit
     permissions:
@@ -225,7 +266,10 @@ jobs:
 
   deploy-notification-api:
     needs: [frontend-checks, backend-checks, changes]
-    if: needs.changes.outputs.notification_api == 'true'
+    if: |
+      always() && 
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.full_deploy == 'true') || 
+      (needs.changes.outputs.notification_api == 'true')
     uses: ./.github/workflows/deploy-notification-api.yml
     secrets: inherit
     permissions:
