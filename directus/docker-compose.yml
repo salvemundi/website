@@ -28,7 +28,8 @@ services:
       - PORT=8055
       - CORS_ORIGIN=${CORS_ORIGIN}
       - CORS_ALLOW_CREDENTIALS=${CORS_ALLOW_CREDENTIALS}
-      - LOG_LEVEL=debug
+      - LOG_LEVEL=info
+      - LOGGER_HTTP_USE_LEVEL=silent
       # Database connection (gebruikt de POSTGRES_ variabelen)
       - DB_CLIENT=postgres
       - DB_HOST=db
