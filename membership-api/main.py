@@ -39,6 +39,14 @@ if not logger.handlers:
     logger.addHandler(handler)
     logger.setLevel(logging.DEBUG if os.getenv("DEBUG", "1") == "1" else logging.INFO)
 
+# Filter out health check logs from uvicorn access logs
+class EndpointFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        msg = record.getMessage()
+        return "/api/membership/health" not in msg and "GET /health" not in msg
+
+logging.getLogger("uvicorn.access").addFilter(EndpointFilter())
+
 ATTRIBUTE_SET_NAME = "SalveMundiLidmaatschap"
 
 TENANT_ID = os.getenv("MS_GRAPH_TENANT_ID")
