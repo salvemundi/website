@@ -1,8 +1,9 @@
 const express = require('express');
+const axios = require('axios');
 const { COLLECTIONS, FIELDS } = require('../services/collections');
 const { getEnvironment } = require('../services/env-utils');
 
-module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, MEMBERSHIP_API_URL, directusService, notificationService, GRAPH_SYNC_URL, membershipService) {
+module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL, MEMBERSHIP_API_URL, directusService, notificationService, GRAPH_SYNC_URL, membershipService, ADMIN_API_URL) {
     const router = express.Router();
 
     // QR Token generation function (same as frontend)
@@ -10,6 +11,30 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
         const rand = Math.random().toString(36).substring(2, 15);
         const time = Date.now().toString(36);
         return `r-${signupId}-${eventId}-${time}-${rand}`;
+    }
+
+    async function delegateProvisioning(traceId, data) {
+        if (!ADMIN_API_URL) {
+            console.error(`[Payment][${traceId}] ❌ ADMIN_API_URL not configured! Cannot delegate provisioning.`);
+            throw new Error('Provisioning failed: Admin API not reachable');
+        }
+
+        try {
+            console.warn(`[Payment][${traceId}] 👑 Delegating provisioning to Admin API...`);
+            const response = await axios.post(`${ADMIN_API_URL}/api/internal/provision-member`, data, {
+                headers: {
+                    'x-api-key': process.env.INTERNAL_API_KEY,
+                    'Content-Type': 'application/json',
+                    'x-trace-id': traceId
+                },
+                timeout: 30000
+            });
+            console.warn(`[Payment][${traceId}] ✅ Admin API provisioning successful:`, response.data.message);
+            return response.data;
+        } catch (error) {
+            console.error(`[Payment][${traceId}] ❌ Admin API delegation failed:`, error.response?.data || error.message);
+            throw error;
+        }
     }
 
     router.post('/create', async (req, res) => {
@@ -225,7 +250,6 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 email: email || null,
                 first_name: firstName || null,
                 last_name: lastName || null,
-                date_of_birth: dateOfBirth || null,
                 registration: registrationType === 'pub_crawl_signup' ? null : (registrationType === 'trip_signup' ? null : (registrationId || null)),
                 pub_crawl_signup: registrationType === 'pub_crawl_signup' ? (registrationId || null) : null,
                 trip_signup: registrationType === 'trip_signup' ? (registrationId || null) : null,
@@ -298,81 +322,15 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                     }
 
                     if (isContribution) {
-                        if (userId) {
-                            await membershipService.provisionMember(MEMBERSHIP_API_URL, userId);
-
-                            // Update Directus status and expiry immediately for renewals
-                            const now = new Date();
-                            const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
-                            const expiryStr = expiryDate.toISOString().split('T')[0];
-                            try {
-                                await directusService.updateDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'users', userId, {
-                                    membership_status: 'active',
-                                    membership_expiry: expiryStr
-                                });
-                            } catch (err) {
-                                console.error(`[Payment][${traceId}] Failed to update Directus user for renewal (Zero Amount):`, err?.message || err);
-                            }
-
-                            // Trigger sync for existing user renewal
-                            await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, userId);
-
-                            // Send confirmation email for renewal (Zero Amount)
-                            const mockMetadata = {
-                                firstName, lastName, email, amount: '0.00'
-                            };
-                            await notificationService.sendConfirmationEmail(
-                                DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL_SERVICE_URL,
-                                mockMetadata, description
-                            );
-                        } else if (firstName && lastName && email) {
-                            // Calculate expiry date (1 year from now)
-                            const now = new Date();
-                            const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
-                            const expiryStr = expiryDate.toISOString().split('T')[0];
-
-                            // Try to create a Directus user so we have the date_of_birth set
-                            let directusUser = null;
-                            try {
-                                directusUser = await directusService.createDirectusUser(DIRECTUS_URL, DIRECTUS_API_TOKEN, {
-                                    first_name: firstName,
-                                    last_name: lastName,
-                                    email: email,
-                                    date_of_birth: dateOfBirth || null,
-                                    status: 'active',
-                                    membership_status: 'active',
-                                    membership_expiry: expiryStr
-                                });
-                                console.warn(`[Payment][${traceId}] Created Directus user ${directusUser.id} for ${email} (Zero Amount)`);
-                            } catch (err) {
-                                console.error(`[Payment][${traceId}] Failed to create Directus user before membership create (Zero Amount):`, err?.message || err);
-                            }
-
-                            const credentials = await membershipService.createMember(
-                                MEMBERSHIP_API_URL, firstName, lastName, email
-                            );
-                            if (credentials) {
-                                // Explicitly link the Directus user if we created one
-                                if (directusUser && directusUser.id) {
-                                    try {
-                                        await directusService.updateDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'users', directusUser.id, {
-                                            entra_id: credentials.user_id,
-                                            external_identifier: credentials.user_id
-                                        });
-                                        console.warn(`[Payment][${traceId}] Linked Directus user ${directusUser.id} to Entra ID ${credentials.user_id} (Zero Amount)`);
-                                    } catch (linkErr) {
-                                        console.error(`[Payment][${traceId}] Failed to link user after creation (Zero Amount):`, linkErr.message);
-                                    }
-                                }
-
-                                // Trigger sync for newly created user to sync membership_expiry to Directus
-                                await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, credentials.user_id);
-
-                                await notificationService.sendWelcomeEmail(
-                                    EMAIL_SERVICE_URL, email, firstName, credentials
-                                );
-                            }
-                        }
+                        await delegateProvisioning(traceId, {
+                            userId,
+                            firstName,
+                            lastName,
+                            email,
+                            dateOfBirth,
+                            phoneNumber,
+                            description
+                        });
                     } else {
                         if (registrationId) {
                             const mockMetadata = {
@@ -716,88 +674,17 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 }
 
                 // 4. Provisioning logic (only reached if approved/auto-approved)
+                // 4. Provisioning logic (only reached if approved/auto-approved)
                 if (notContribution === "false") {
-                    if (userId) {
-                        await membershipService.provisionMember(MEMBERSHIP_API_URL, userId);
-
-                        // Update Directus status and expiry immediately for renewals
-                        const now = new Date();
-                        const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
-                        const expiryStr = expiryDate.toISOString().split('T')[0];
-                        try {
-                            await directusService.updateDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'users', userId, {
-                                membership_status: 'active',
-                                membership_expiry: expiryStr
-                            });
-                        } catch (err) {
-                            console.error(`[Webhook][${traceId}] Failed to update Directus user for renewal:`, err?.message || err);
-                        }
-
-                        // Trigger sync for existing user renewal
-                        await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, userId);
-
-                        // Always send confirmation for paid renewals
-                        await notificationService.sendConfirmationEmail(
-                            DIRECTUS_URL,
-                            DIRECTUS_API_TOKEN,
-                            EMAIL_SERVICE_URL,
-                            payment.metadata,
-                            payment.description
-                        );
-
-                        // Also increment coupon usage if applicable
-                        if (couponId) {
-                            // Coupon increment logic skipped for now
-                        }
-                    } else if (firstName && lastName && email) {
-                        // Calculate expiry date (1 year from now)
-                        const now = new Date();
-                        const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
-                        const expiryStr = expiryDate.toISOString().split('T')[0];
-
-                        // Try to create a Directus user so we have the date_of_birth set
-                        let directusUser = null;
-                        try {
-                            directusUser = await directusService.createDirectusUser(DIRECTUS_URL, DIRECTUS_API_TOKEN, {
-                                first_name: firstName,
-                                last_name: lastName,
-                                email: email,
-                                date_of_birth: dateOfBirth || null,
-                                status: 'active',
-                                membership_status: 'active',
-                                membership_expiry: expiryStr
-                            });
-                            console.warn(`[Payment][${traceId}] Created Directus user ${directusUser?.id} for ${email}`);
-                        } catch (err) {
-                            console.error(`[Payment][${traceId}] Failed to create Directus user before membership create:`, err?.message || err);
-                        }
-
-                        const credentials = await membershipService.createMember(
-                            MEMBERSHIP_API_URL, firstName, lastName, email
-                        );
-
-                        if (credentials) {
-                            // Explicitly link the Directus user if we just created one
-                            if (directusUser && directusUser.id) {
-                                try {
-                                    await directusService.updateDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'users', directusUser.id, {
-                                        entra_id: credentials.user_id,
-                                        external_identifier: credentials.user_id
-                                    });
-                                    console.warn(`[Payment][${traceId}] Linked Directus user ${directusUser.id} to Entra ID ${credentials.user_id}`);
-                                } catch (linkErr) {
-                                    console.error(`[Payment][${traceId}] Failed to link user after creation:`, linkErr.message);
-                                }
-                            }
-
-                            // Trigger sync for newly created user to sync membership_expiry to Directus
-                            await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, credentials.user_id);
-
-                            await notificationService.sendWelcomeEmail(
-                                EMAIL_SERVICE_URL, email, firstName, credentials
-                            );
-                        }
-                    }
+                    await delegateProvisioning(traceId, {
+                        userId,
+                        firstName,
+                        lastName,
+                        email,
+                        dateOfBirth,
+                        phoneNumber,
+                        description: payment.description
+                    });
                 } else {
                     if (registrationId) {
                         await notificationService.sendConfirmationEmail(
