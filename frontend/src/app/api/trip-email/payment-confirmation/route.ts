@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
         }
 
         const emailServiceUrl = process.env.EMAIL_SERVICE_URL || process.env.EMAIL_API_ENDPOINT || 'http://email-api:3001';
-        const directusToken = process.env.DIRECTUS_API_TOKEN || process.env.DIRECTUS_API_KEY || process.env.NEXT_PUBLIC_DIRECTUS_API_KEY;
+        const directusToken = process.env.DIRECTUS_API_TOKEN || process.env.DIRECTUS_API_KEY;
         const frontendUrl = process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://dev.salvemundi.nl';
 
         if (!directusToken) {

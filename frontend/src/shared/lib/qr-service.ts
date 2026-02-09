@@ -32,20 +32,35 @@ export async function generateQRCode(data: string): Promise<string> {
 
 export async function updateSignupWithQRToken(signupId: number, token: string) {
     try {
-        // Use the API service token to update the QR token field, bypassing user-level authorization checks.
-        // This is necessary because the QR token is set automatically during signup creation,
-        // and the user may not have permission to edit their own signup record.
-        const apiKey = process.env.NEXT_PUBLIC_DIRECTUS_API_KEY || '';
-        await directusFetch(`/items/event_signups/${signupId}`, {
-            method: 'PATCH',
-            body: JSON.stringify({ qr_token: token }),
-            headers: {
-                Authorization: `Bearer ${apiKey}`
+        if (typeof window === 'undefined') {
+            // Server-side: Explicitly use the server token to ensure privileged access for this operation.
+            const apiKey = process.env.DIRECTUS_API_TOKEN || process.env.DIRECTUS_API_KEY;
+            await directusFetch(`/items/event_signups/${signupId}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ qr_token: token }),
+                headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {}
+            });
+        } else {
+            // Client-side: Call our specific proxy endpoint
+            const res = await fetch('/api/services/qr/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ signupId, token })
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                // If token already exists, we consider it a "success" in terms of flow (don't fail the signup)
+                // but we warn.
+                if (err.code === 'TOKEN_EXISTS') {
+                    console.warn('QR Token already exists, skipping update.');
+                    return;
+                }
+                throw new Error(err.error || 'Failed to update QR token');
             }
-        });
-        // Successfully updated QR token
+        }
     } catch (err) {
-        // Error updating signup with QR token
+        console.error('Error updating signup with QR token:', err);
         throw err;
     }
 }
@@ -94,8 +109,8 @@ export async function isUserAuthorizedForAttendance(userId: string, eventId: num
                 if (!c?.committee_id?.name) return '';
                 return normalizeCommitteeName(c.committee_id.name);
             });
-            
-            const hasGlobalAccess = committeeNames.some((name: string) => 
+
+            const hasGlobalAccess = committeeNames.some((name: string) =>
                 name.includes('bestuur') || name.includes('ict')
             );
             if (hasGlobalAccess) return true;
@@ -126,14 +141,18 @@ export async function isUserAuthorizedForAttendance(userId: string, eventId: num
 
 export async function updatePubCrawlSignupWithQRToken(signupId: number, token: string) {
     try {
-        const apiKey = process.env.NEXT_PUBLIC_DIRECTUS_API_KEY || '';
-        await directusFetch(`/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}/${signupId}`, {
-            method: 'PATCH',
-            body: JSON.stringify({ qr_token: token }),
-            headers: {
-                Authorization: `Bearer ${apiKey}`
-            }
-        });
+        if (typeof window === 'undefined') {
+            const apiKey = process.env.DIRECTUS_API_TOKEN || process.env.DIRECTUS_API_KEY;
+            await directusFetch(`/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}/${signupId}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ qr_token: token }),
+                headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {}
+            });
+        } else {
+            // TODO: Implement secure internal API route for Pub Crawl updates.
+            // Currently, client-side updates are blocked to prevent exposing secrets.
+            console.error('Client-side Pub Crawl QR update not implemented safely yet.');
+        }
     } catch (err) {
         throw err;
     }

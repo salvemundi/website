@@ -5,7 +5,8 @@ export const directusUrl = isServer
     ? (process.env.DIRECTUS_URL || 'https://admin.salvemundi.nl')
     : '/api';
 
-const apiKey = process.env.NEXT_PUBLIC_DIRECTUS_API_KEY || '';
+// Public access should be anonymous or via session. Do not use a static public key.
+const apiKey = '';
 
 // Secret token for server-to-server communication (directus proxy bypass)
 // Only used when running on the server
@@ -111,15 +112,14 @@ async function ensureFreshToken(): Promise<string | null> {
 
 
 
-// Create a simple fetch wrapper for Directus REST API
-// Added _isRetry parameter to prevent infinite loops during token refresh
+// Create a fetch wrapper for Directus REST API with automatic token refresh
 export async function directusFetch<T>(endpoint: string, options?: RequestInit, _isRetry = false): Promise<T> {
     const url = `${directusUrl}${endpoint}`;
 
     // Resolve Authorization header order:
     // 1) Explicit Authorization in options.headers
     // 2) Session token stored as 'auth_token' in localStorage
-    // 3) VITE API key (fallback for public access)
+    // 3) Public Access (fallback)
     let authHeader: string | undefined;
     let usingSessionToken = false;
 
@@ -184,8 +184,6 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit, 
         ...(authHeader ? { Authorization: authHeader } : {}),
         ...incomingHeaders,
     };
-
-    // Debug logging removed to avoid leaking masked tokens
 
     let response: Response;
     try {
@@ -326,11 +324,8 @@ export async function directusFetch<T>(endpoint: string, options?: RequestInit, 
         if (!text) return {} as T;
         json = JSON.parse(text);
 
-        // Defensive: JSON.parse may successfully parse the literal `null` which
-        // produces a runtime null value. Accessing `json.data` would then throw
-        // "Cannot read properties of null (reading 'data')" as seen in errors.
+        // Defensive: JSON.parse may return null, which is a valid JSON value but not an object we expect.
         if (json === null || typeof json !== 'object') {
-            // console.error('[directusFetch] Unexpected JSON response (null or non-object)', { url, status: response.status, text });
             throw new Error('Directus API returned unexpected response: null or non-object. This often indicates a proxy/auth error or a misconfigured Directus endpoint.');
         }
     } catch (err) {

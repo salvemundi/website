@@ -20,8 +20,8 @@ export async function POST(request: NextRequest) {
         }
 
         // 2. Secret Token Verification (Prevent unauthorized relay)
-        // If NEXT_PUBLIC_INTERNAL_API_SECRET is set, we require it in the headers.
-        const secret = process.env.NEXT_PUBLIC_INTERNAL_API_SECRET;
+        // If INTERNAL_API_SECRET is set, we require it in the headers.
+        const secret = process.env.INTERNAL_API_SECRET;
         const incomingSecret = request.headers.get('x-internal-api-secret');
 
         if (secret && incomingSecret !== secret) {

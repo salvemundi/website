@@ -12,7 +12,7 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const apiServiceToken = process.env.DIRECTUS_API_TOKEN ?? process.env.VITE_DIRECTUS_API_KEY ?? process.env.NEXT_PUBLIC_DIRECTUS_API_KEY ?? process.env.DIRECTUS_API_KEY ?? process.env.DIRECTUS_TOKEN ?? null;
+    const apiServiceToken = process.env.DIRECTUS_API_TOKEN ?? process.env.DIRECTUS_API_KEY ?? process.env.DIRECTUS_TOKEN ?? null;
     const directusUrl = process.env.DIRECTUS_URL;
     const nodeEnv = process.env.NODE_ENV;
 

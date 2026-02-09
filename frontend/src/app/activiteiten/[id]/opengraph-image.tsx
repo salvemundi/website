@@ -14,7 +14,7 @@ export default async function Image({ params }: { params: { id: string } }) {
     try {
         // Fetch event data
         const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://admin.salvemundi.nl';
-        const apiKey = process.env.NEXT_PUBLIC_DIRECTUS_API_KEY || '';
+        const apiKey = process.env.DIRECTUS_API_TOKEN || process.env.DIRECTUS_API_KEY || '';
 
         const eventResponse = await fetch(
             `${directusUrl}/items/events/${eventId}?fields=id,name,event_date,description,price_members,price_non_members,image,committee_id`,

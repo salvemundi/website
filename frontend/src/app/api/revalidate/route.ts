@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
         // 2. Secret Verification
         // Use either headers or a URL search param
-        const secret = process.env.INTERNAL_API_SECRET || process.env.NEXT_PUBLIC_INTERNAL_API_SECRET;
+        const secret = process.env.INTERNAL_API_SECRET;
         const incomingSecret = request.headers.get('x-internal-api-secret') || request.nextUrl.searchParams.get('token');
 
         if (secret && incomingSecret !== secret) {
