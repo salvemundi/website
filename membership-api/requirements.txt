@@ -4,4 +4,3 @@ httpx
 python-dotenv
 pydantic
 unidecode
-infisical-python
