@@ -221,7 +221,7 @@ export async function GET(
                 targetSearch = newSearch ? `?${newSearch}` : '';
             }
 
-        } else if (auth && (isUserTokenValid || isAuthPath || needsSpecialGuardCheck || isAllowed)) {
+        } else if (auth && (isUserTokenValid || isAuthPath)) {
             // Never send Authorization header for auth paths like /auth/refresh or /auth/login
             // as Directus expects tokens in the body and might fail if an expired/duplicate token is in the header.
             // However, /users/me specifically MUST have the Authorization header.
