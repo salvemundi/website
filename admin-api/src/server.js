@@ -27,8 +27,19 @@ async function requireAdmin(req, res, next) {
         });
         const user = response.data.data;
 
-        // Only users with entra_id (Fontys accounts) are admins
-        if (!user.entra_id) {
+        // Strictly verify that the user has an authorized role (ICT or Bestuur)
+        // Role IDs can be configured via ADMIN_ROLE_IDS environment variable
+        const authorizedRoles = process.env.ADMIN_ROLE_IDS
+            ? process.env.ADMIN_ROLE_IDS.split(',')
+            : [
+                'd671fd7a-cfcb-4bdc-afb8-1a96bc2d5d50', // ICT / Admin (Default)
+                'a0e51e23-15ef-4e04-a188-5c483484b0be'  // Bestuur (Default)
+            ];
+
+        const userRoleId = typeof user.role === 'object' ? user.role.id : (user.role || '');
+
+        if (!user.entra_id || !authorizedRoles.includes(userRoleId)) {
+            console.warn(`[AdminAPI Auth] Unauthorized access attempt by ${user.email} (Role: ${userRoleId})`);
             return res.status(403).json({ error: 'Admin access required' });
         }
 

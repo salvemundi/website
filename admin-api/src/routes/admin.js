@@ -13,9 +13,15 @@ const MEMBERSHIP_API_URL = process.env.MEMBERSHIP_API_URL;
 const EMAIL_SERVICE_URL = process.env.EMAIL_SERVICE_URL;
 const GRAPH_SYNC_URL = process.env.GRAPH_SYNC_URL;
 const MOLLIE_API_KEY = process.env.MOLLIE_API_KEY;
+const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY;
 
 const DIRECTUS_HEADERS = {
     'Authorization': `Bearer ${DIRECTUS_API_TOKEN}`,
+    'Content-Type': 'application/json'
+};
+
+const INTERNAL_HEADERS = {
+    'x-api-key': INTERNAL_API_KEY,
     'Content-Type': 'application/json'
 };
 
@@ -23,7 +29,10 @@ const DIRECTUS_HEADERS = {
 async function triggerUserSync(azureUserId) {
     if (!GRAPH_SYNC_URL || !azureUserId) return;
     try {
-        await axios.post(`${GRAPH_SYNC_URL}/sync/user`, { userId: azureUserId }, { timeout: 10000 });
+        await axios.post(`${GRAPH_SYNC_URL}/sync/user`, { userId: azureUserId }, {
+            headers: INTERNAL_HEADERS,
+            timeout: 10000
+        });
     } catch (err) {
         console.error(`[AdminAPI] Graph sync trigger failed for ${azureUserId}:`, err.message);
     }
@@ -84,9 +93,9 @@ router.get('/pending-signups', async (req, res) => {
 router.post('/approve-signup/:id', async (req, res) => {
     const transactionId = req.params.id;
     try {
-    console.debug(`[AdminAPI] Approve signup called for transaction ${transactionId} by user ${req.user?.id}`);
+        console.debug(`[AdminAPI] Approve signup called for transaction ${transactionId} by user ${req.user?.id}`);
         const transaction = await directusService.getTransaction(DIRECTUS_URL, DIRECTUS_API_TOKEN, transactionId);
-    console.debug(`[AdminAPI] Transaction data: ${util.inspect(transaction, { depth: 2 })}`);
+        console.debug(`[AdminAPI] Transaction data: ${util.inspect(transaction, { depth: 2 })}`);
         if (!transaction) return res.status(404).json({ error: 'Transaction not found' });
         if (transaction.approval_status === 'approved') return res.status(400).json({ error: 'Already approved' });
         if (transaction.payment_status !== 'paid') return res.status(400).json({ error: 'Payment not completed' });
@@ -142,9 +151,9 @@ router.post('/approve-signup/:id', async (req, res) => {
                 // Send approval notification to existing user
                 if (EMAIL_SERVICE_URL) {
                     await notificationService.sendApprovalNotificationEmail(
-                        EMAIL_SERVICE_URL, 
-                        email || userData.email, 
-                        firstName || userData.first_name, 
+                        EMAIL_SERVICE_URL,
+                        email || userData.email,
+                        firstName || userData.first_name,
                         false
                     );
                 }
@@ -171,10 +180,10 @@ router.post('/approve-signup/:id', async (req, res) => {
                 await triggerUserSync(credentials.user_id);
                 if (EMAIL_SERVICE_URL) {
                     await notificationService.sendApprovalNotificationEmail(
-                        EMAIL_SERVICE_URL, 
-                        email || userData.email, 
-                        firstName || userData.first_name, 
-                        true, 
+                        EMAIL_SERVICE_URL,
+                        email || userData.email,
+                        firstName || userData.first_name,
+                        true,
                         credentials
                     );
                 }
@@ -207,10 +216,10 @@ router.post('/approve-signup/:id', async (req, res) => {
 
             if (EMAIL_SERVICE_URL) {
                 await notificationService.sendApprovalNotificationEmail(
-                    EMAIL_SERVICE_URL, 
-                    email, 
-                    firstName, 
-                    true, 
+                    EMAIL_SERVICE_URL,
+                    email,
+                    firstName,
+                    true,
                     credentials
                 );
             }
@@ -276,7 +285,7 @@ router.post('/reject-signup/:id', async (req, res) => {
 // Proxy routes for graph-sync (Committees)
 router.get('/committees/list', async (req, res) => {
     try {
-        const response = await axios.get(`${GRAPH_SYNC_URL}/committees/list`);
+        const response = await axios.get(`${GRAPH_SYNC_URL}/committees/list`, { headers: INTERNAL_HEADERS });
         res.json(response.data);
     } catch (error) {
         res.status(500).json({ error: 'Failed to list committees' });
@@ -285,7 +294,7 @@ router.get('/committees/list', async (req, res) => {
 
 router.get('/groups/:groupId/members', async (req, res) => {
     try {
-        const response = await axios.get(`${GRAPH_SYNC_URL}/groups/${req.params.groupId}/members`);
+        const response = await axios.get(`${GRAPH_SYNC_URL}/groups/${req.params.groupId}/members`, { headers: INTERNAL_HEADERS });
         res.json(response.data);
     } catch (error) {
         res.status(500).json({ error: 'Failed to list members' });
@@ -294,7 +303,7 @@ router.get('/groups/:groupId/members', async (req, res) => {
 
 router.post('/groups/:groupId/members', async (req, res) => {
     try {
-        const response = await axios.post(`${GRAPH_SYNC_URL}/groups/${req.params.groupId}/members`, req.body);
+        const response = await axios.post(`${GRAPH_SYNC_URL}/groups/${req.params.groupId}/members`, req.body, { headers: INTERNAL_HEADERS });
         res.json(response.data);
     } catch (error) {
         res.status(500).json({ error: 'Failed to add member' });
@@ -303,7 +312,7 @@ router.post('/groups/:groupId/members', async (req, res) => {
 
 router.delete('/groups/:groupId/members/:userId', async (req, res) => {
     try {
-        const response = await axios.delete(`${GRAPH_SYNC_URL}/groups/${req.params.groupId}/members/${req.params.userId}`);
+        const response = await axios.delete(`${GRAPH_SYNC_URL}/groups/${req.params.groupId}/members/${req.params.userId}`, { headers: INTERNAL_HEADERS });
         res.json(response.data);
     } catch (error) {
         res.status(500).json({ error: 'Failed to remove member' });
@@ -312,7 +321,7 @@ router.delete('/groups/:groupId/members/:userId', async (req, res) => {
 
 router.patch('/committees/members/:membershipId', async (req, res) => {
     try {
-        const response = await axios.patch(`${GRAPH_SYNC_URL}/committees/members/${req.params.membershipId}`, req.body);
+        const response = await axios.patch(`${GRAPH_SYNC_URL}/committees/members/${req.params.membershipId}`, req.body, { headers: INTERNAL_HEADERS });
         res.json(response.data);
     } catch (error) {
         res.status(500).json({ error: 'Failed to update membership' });
@@ -321,7 +330,7 @@ router.patch('/committees/members/:membershipId', async (req, res) => {
 
 router.post('/sync-users', async (req, res) => {
     try {
-        const response = await axios.post(`${GRAPH_SYNC_URL}/sync/initial`, req.body);
+        const response = await axios.post(`${GRAPH_SYNC_URL}/sync/initial`, req.body, { headers: INTERNAL_HEADERS });
         res.json(response.data);
     } catch (error) {
         res.status(500).json({ error: 'Failed to trigger sync' });
@@ -330,7 +339,7 @@ router.post('/sync-users', async (req, res) => {
 
 router.get('/sync-status', async (req, res) => {
     try {
-        const response = await axios.get(`${GRAPH_SYNC_URL}/sync/status`);
+        const response = await axios.get(`${GRAPH_SYNC_URL}/sync/status`, { headers: INTERNAL_HEADERS });
         res.json(response.data);
     } catch (error) {
         res.status(500).json({ error: 'Failed to get sync status' });
