@@ -11,6 +11,7 @@ import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { slugify } from '@/shared/lib/utils/slug';
 import { Mail, Calendar, Users2, History, Edit, ArrowLeft, Trash2, ShieldCheck } from 'lucide-react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import { sanitizeHtml } from '@/shared/lib/utils/sanitize';
 
 function cleanCommitteeName(name: string): string {
     return name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim();
