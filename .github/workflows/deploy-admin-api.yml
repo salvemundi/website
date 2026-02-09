@@ -83,7 +83,7 @@ jobs:
           DEPLOY_PATH: ${{ env.DEPLOY_PATH }}
           TAG: ${{ env.TAG }}
           DIRECTUS_URL: ${{ secrets.DIRECTUS_URL }}
-          DIRECTUS_API_TOKEN: ${{ secrets.GRAPH_SYNC_DIRECTUS_TOKEN }}
+          DIRECTUS_API_TOKEN: ${{ secrets.DIRECTUS_ADMIN_API_ADMIN_API_TOKEN }}
           GRAPH_SYNC_URL: http://graph-sync:3001
           MEMBERSHIP_API_URL: http://membership-api-${{ env.TAG == 'latest' && 'latest' || 'dev' }}:8000/api/membership
           EMAIL_SERVICE_URL: http://email-api-${{ env.TAG == 'latest' && 'latest' || 'dev' }}:3001/send-email
