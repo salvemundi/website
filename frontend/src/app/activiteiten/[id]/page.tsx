@@ -6,6 +6,7 @@ import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider
 import { useSalvemundiEvent } from '@/shared/lib/hooks/useSalvemundiApi';
 import { eventsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
 import { directusFetch } from '@/shared/lib/directus';
+import { sanitizeHtml } from '@/shared/lib/utils/sanitize';
 import AttendanceButton from '@/entities/activity/ui/AttendanceButton';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
@@ -799,7 +800,7 @@ export default function EventDetailPage() {
                             {/<\/?[a-z][\s\S]*>/i.test(event.description) ? (
                                 <div
                                     className="prose dark:prose-invert max-w-none text-theme-purple dark:text-theme-white/90 flex-grow"
-                                    dangerouslySetInnerHTML={{ __html: event.description }}
+                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(event.description) }}
                                 />
                             ) : (
                                 <div className="prose dark:prose-invert max-w-none text-theme-purple dark:text-theme-white/90 flex-grow whitespace-pre-line">

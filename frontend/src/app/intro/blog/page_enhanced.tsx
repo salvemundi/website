@@ -13,6 +13,7 @@ import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { Calendar, Newspaper, Image as ImageIcon, Megaphone, PartyPopper, X, Filter, Heart, Share2 } from 'lucide-react';
+import { sanitizeHtml } from '@/shared/lib/utils/sanitize';
 
 export default function IntroBlogPage() {
     const [selectedBlog, setSelectedBlog] = useState<any>(null);
@@ -141,8 +142,8 @@ export default function IntroBlogPage() {
                                     <button
                                         onClick={() => setSelectedFilter(null)}
                                         className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${selectedFilter === null
-                                                ? 'bg-gradient-theme text-white shadow-md'
-                                                : 'bg-theme-purple/10 text-theme-purple hover:bg-theme-purple/20'
+                                            ? 'bg-gradient-theme text-white shadow-md'
+                                            : 'bg-theme-purple/10 text-theme-purple hover:bg-theme-purple/20'
                                             }`}
                                     >
                                         Alles
@@ -154,8 +155,8 @@ export default function IntroBlogPage() {
                                                 key={type}
                                                 onClick={() => setSelectedFilter(type)}
                                                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${selectedFilter === type
-                                                        ? 'bg-gradient-theme text-white shadow-md'
-                                                        : 'bg-theme-purple/10 text-theme-purple hover:bg-theme-purple/20'
+                                                    ? 'bg-gradient-theme text-white shadow-md'
+                                                    : 'bg-theme-purple/10 text-theme-purple hover:bg-theme-purple/20'
                                                     }`}
                                             >
                                                 {typeConfig.label}
@@ -419,7 +420,7 @@ export default function IntroBlogPage() {
 
                             <div className="prose prose-sm sm:prose lg:prose-lg max-w-none text-theme">
                                 <div
-                                    dangerouslySetInnerHTML={{ __html: selectedBlog.content }}
+                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(selectedBlog.content) }}
                                     className="whitespace-pre-wrap"
                                 />
                             </div>

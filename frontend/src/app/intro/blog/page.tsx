@@ -12,6 +12,7 @@ import { Calendar, Newspaper, Image as ImageIcon, Megaphone, PartyPopper, X, Fil
 import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
 import { toast } from 'sonner';
+import { sanitizeHtml } from '@/shared/lib/utils/sanitize';
 
 interface IntroBlog {
     id: number | string;
@@ -594,7 +595,7 @@ export default function IntroBlogPage() {
 
                             <div className="prose prose-sm sm:prose lg:prose-lg max-w-none text-theme break-words overflow-hidden max-w-full">
                                 <div
-                                    dangerouslySetInnerHTML={{ __html: selectedBlog.content ?? '' }}
+                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(selectedBlog.content ?? '') }}
                                     className="whitespace-pre-wrap break-words"
                                 />
                             </div>

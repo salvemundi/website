@@ -51,6 +51,23 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 return res.status(400).json({ error: 'Missing required parameters' });
             }
 
+            // Open Redirect Protection
+            try {
+                const redirectObj = new URL(redirectUrl, 'https://salvemundi.nl'); // second arg allows relative URLs to parse
+                const allowedDomains = ['salvemundi.nl', 'www.salvemundi.nl', 'dev.salvemundi.nl', 'preprod.salvemundi.nl', 'localhost'];
+
+                // Check if the hostname is allowed (if it's an absolute URL)
+                // If it was relative, the hostname will be the base (salvemundi.nl), which is allowed.
+                // We also check protocol to be http/https
+                if (!allowedDomains.some(d => redirectObj.hostname === d || redirectObj.hostname.endsWith('.' + d))) {
+                    console.error(`[Payment][${traceId}] 🚨 Blocked Open Redirect attempt: ${redirectUrl}`);
+                    return res.status(400).json({ error: 'Invalid redirect URL. Must be a @salvemundi.nl domain.' });
+                }
+            } catch (err) {
+                console.error(`[Payment][${traceId}] 🚨 Invalid redirect URL format: ${redirectUrl}`);
+                return res.status(400).json({ error: 'Invalid redirect URL format' });
+            }
+
             // Start with base amount
             // Log the raw incoming amount and its type to help debug mismatches
             console.warn(`[Payment][${traceId}] Raw incoming amount type: ${typeof amount}, value: ${JSON.stringify(amount)}`);

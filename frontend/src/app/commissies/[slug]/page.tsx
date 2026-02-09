@@ -226,7 +226,7 @@ export default function CommitteeDetailPage() {
                                         <h2 className="mb-6 text-2xl font-bold text-theme-purple">Over {cleanName}</h2>
                                         <div
                                             className="prose prose-purple max-w-none dark:prose-invert text-[var(--text-main)]"
-                                            dangerouslySetInnerHTML={{ __html: committee.description }}
+                                            dangerouslySetInnerHTML={{ __html: sanitizeHtml(committee.description) }}
                                         />
                                     </div>
                                 )}
@@ -236,7 +236,7 @@ export default function CommitteeDetailPage() {
                                         <h2 className="mb-6 text-2xl font-bold text-theme-purple">Achtergrondinformatie</h2>
                                         <div
                                             className="prose prose-purple max-w-none dark:prose-invert text-[var(--text-main)]"
-                                            dangerouslySetInnerHTML={{ __html: committeeDetail.description }}
+                                            dangerouslySetInnerHTML={{ __html: sanitizeHtml(committeeDetail.description) }}
                                         />
                                     </div>
                                 )}
@@ -323,7 +323,7 @@ export default function CommitteeDetailPage() {
                                             </div>
                                         )}
                                     </div>
-                                        <div className="min-w-0">
+                                    <div className="min-w-0">
                                         <p className="truncate font-bold text-[var(--text-main)]">{getMemberFullName(leader)}</p>
                                         <p className="text-xs font-medium text-theme-purple">{isBestuur ? 'Huidig voorzitter' : 'Commissie Leider'}</p>
                                     </div>
@@ -363,7 +363,7 @@ export default function CommitteeDetailPage() {
                                                     </div>
                                                 )}
                                             </div>
-                                                <div className="min-w-0 flex-1">
+                                            <div className="min-w-0 flex-1">
                                                 <p className="truncate font-bold text-[var(--text-main)] text-lg">{getMemberFullName(member)}</p>
                                                 {/* Show role titles only for the board. For other committees, only the leader gets a title. */}
                                                 {isBestuur ? (
