@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const DIRECTUS_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://directus.salvemundi.nl';
-const MEMBERSHIP_API_URL = process.env.NEXT_PUBLIC_MEMBERSHIP_API_URL || 'https://membership-api.salvemundi.nl';
+// Use internal Docker network URL - membership-api is not exposed publicly
+const MEMBERSHIP_API_URL = process.env.MEMBERSHIP_API_URL || 'http://membership-api-dev:8000/api/membership';
+const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY;
 
 export async function POST(request: NextRequest) {
     try {
@@ -32,8 +34,8 @@ export async function POST(request: NextRequest) {
         const userData = await userResponse.json();
         const user = userData?.data || userData;
 
-        // Update Directus
-        const updateResponse = await fetch(`${DIRECTUS_URL}/users/${user.id}`, {
+        // Update Directus - use /users/me since users can only update their own record
+        const updateResponse = await fetch(`${DIRECTUS_URL}/users/me`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -49,12 +51,13 @@ export async function POST(request: NextRequest) {
         }
 
         // Update Azure AD / membership API if user has entra_id
-        if (user.entra_id) {
+        if (user.entra_id && INTERNAL_API_KEY) {
             try {
                 const azureResponse = await fetch(`${MEMBERSHIP_API_URL}/update-attributes`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'x-api-key': INTERNAL_API_KEY,
                     },
                     body: JSON.stringify({
                         user_id: user.entra_id,

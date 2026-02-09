@@ -11,8 +11,6 @@ const API_SERVICE_TOKEN = process.env.DIRECTUS_API_TOKEN ?? process.env.VITE_DIR
 
 if (!API_SERVICE_TOKEN) {
     console.warn('[Directus Proxy] WARNING: API_SERVICE_TOKEN is not set. Admin bypass will not work.');
-} else {
-    console.log('[Directus Proxy] API_SERVICE_TOKEN is configured.');
 }
 
 const allowedCollections = [
@@ -185,7 +183,6 @@ export async function GET(
                             // For GET requests, allow all authenticated users to read site_settings
                             // This is needed so users can see if intro/kroegentocht/reis pages are enabled
                             // Write operations (POST/PATCH/DELETE) will still be restricted to ICT in the mutation handlers
-                            console.log(`[Directus Proxy] Allowing GET access to site_settings for user ${userId}`);
                             canBypass = false; // Use user token for personalized access
                         } else {
                             canBypass = isGeneralPrivileged;
@@ -314,14 +311,8 @@ export async function GET(
             (fetchOptions as any).cache = 'no-store';
         }
 
-        // Trace token usage for debugging
-        const usedToken = forwardHeaders['Authorization'] || 'none';
-        const tokenType = (canBypass && API_SERVICE_TOKEN) ? 'SERVICE TOKEN' : 'USER TOKEN';
-        const maskedToken = usedToken.length > 10 ? `...${usedToken.slice(-4)}` : usedToken;
-        console.log(`[Directus Proxy] GET ${path} | Bypass: ${canBypass} | Forwarding: ${tokenType} (${maskedToken}) | Target: ${targetUrl}`);
-        if (path.includes('assets') || path.includes('image')) {
-            console.log(`[Directus Proxy] Asset Request Info: Query: ${targetSearch} | Auth Header Present: ${!!forwardHeaders['Authorization']}`);
-        }
+        // Token tracing is disabled in production to reduce log noise
+        // Uncomment for debugging: console.log(`[Directus Proxy] GET ${path} | Bypass: ${canBypass}`);
 
         const response = await fetch(targetUrl, fetchOptions);
 
@@ -738,11 +729,8 @@ async function handleMutation(
             return new Response(errorText, { status: response.status });
         }
 
-        // Trace token usage for debugging
-        const usedToken = forwardHeaders['Authorization'] || 'none';
-        const tokenType = (canBypass && API_SERVICE_TOKEN) ? 'SERVICE TOKEN' : 'USER TOKEN';
-        const maskedToken = usedToken.length > 10 ? `...${usedToken.slice(-4)}` : usedToken;
-        console.log(`[Directus Proxy] ${method} ${path} | Bypass: ${canBypass} | Forwarding: ${tokenType} (${maskedToken})`);
+        // Token tracing is disabled in production to reduce log noise
+        // Uncomment for debugging: console.log(`[Directus Proxy] ${method} ${path} | Bypass: ${canBypass}`);
 
         if (response.status === 204) return new Response(null, { status: 204 });
 
