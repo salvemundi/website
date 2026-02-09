@@ -1,11 +1,21 @@
 const axios = require('axios');
 const util = require('util');
 
+const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY;
+
+const INTERNAL_HEADERS = {
+    'x-api-key': INTERNAL_API_KEY,
+    'Content-Type': 'application/json'
+};
+
 async function provisionMember(membershipApiUrl, userId) {
     if (!userId) return;
     try {
         console.debug('[Membership] Calling provision endpoint for', userId);
-        const response = await axios.post(`${membershipApiUrl}/register`, { user_id: userId }, { timeout: 30000 });
+        const response = await axios.post(`${membershipApiUrl}/register`, { user_id: userId }, {
+            headers: INTERNAL_HEADERS,
+            timeout: 30000
+        });
         console.debug('[Membership] Provision response:', util.inspect(response.data, { depth: 2 }));
         return response.data;
     } catch (err) {
@@ -26,7 +36,10 @@ async function createMember(membershipApiUrl, firstName, lastName, email, phoneN
 
     try {
         console.debug('[Membership] createMember payload:', util.inspect(payload, { depth: 2 }));
-        const response = await axios.post(`${membershipApiUrl}/create-user`, payload, { timeout: 30000 });
+        const response = await axios.post(`${membershipApiUrl}/create-user`, payload, {
+            headers: INTERNAL_HEADERS,
+            timeout: 30000
+        });
         console.debug('[Membership] createMember response:', util.inspect(response.data, { depth: 2 }));
         return response.data;
     } catch (err) {

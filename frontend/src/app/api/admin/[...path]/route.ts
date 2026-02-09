@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const PAYMENT_API_URL = process.env.PAYMENT_API_URL || process.env.NEXT_PUBLIC_PAYMENT_API_URL || 'http://payment-api:3002';
 const ADMIN_API_URL = process.env.ADMIN_API_URL || 'http://admin-api:3005';
+const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY;
 
 async function proxyRequest(request: NextRequest, path: string, method: string) {
     const url = new URL(request.url);
@@ -21,6 +22,7 @@ async function proxyRequest(request: NextRequest, path: string, method: string) 
             method,
             headers: {
                 'Authorization': authHeader || '',
+                'x-api-key': INTERNAL_API_KEY || '',
                 'Content-Type': 'application/json',
             },
             body: body ? JSON.stringify(body) : undefined,

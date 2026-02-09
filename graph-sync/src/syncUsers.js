@@ -13,6 +13,29 @@ const PORT = process.env.PORT || 3001;
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok', service: 'graph-sync' }));
 
+// API Key Middleware
+const apiKeyAuth = (req, res, next) => {
+    const apiKey = req.headers['x-api-key'] || req.headers['x-internal-api-secret'];
+    const validApiKey = process.env.INTERNAL_API_KEY;
+
+    if (!validApiKey) {
+        console.error('❌ [graph-sync] INTERNAL_API_KEY is not set!');
+        return res.status(500).json({ error: 'Server configuration error' });
+    }
+
+    if (!apiKey || apiKey !== validApiKey) {
+        console.warn(`⚠️ [graph-sync] Unauthorized access attempt from ${req.ip} to ${req.path}`);
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    next();
+};
+
+// Protect all routes except health
+app.use((req, res, next) => {
+    if (req.path === '/health') return next();
+    return apiKeyAuth(req, res, next);
+});
+
 // Define your known group IDs (entra)
 const GROUP_IDS = {
     COMMISSIE_LEIDER: '91d77972-2695-4b7b-a0a0-df7d6523a087',

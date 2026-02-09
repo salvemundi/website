@@ -42,17 +42,31 @@ const mollieClient = MOLLIE_API_KEY ? createMollieClient({ apiKey: MOLLIE_API_KE
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Request logging middleware
-app.use((req, res, next) => {
-    if (req.method === 'GET' && req.url === '/health') {
-        return next();
-    }
-    console.log(`[PaymentAPI] Incoming Request: ${req.method} ${req.url}`);
-    next();
-});
-
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
+
+// API Key Middleware
+const apiKeyAuth = (req, res, next) => {
+    const apiKey = req.headers['x-api-key'] || req.headers['x-internal-api-secret'];
+    const validApiKey = process.env.INTERNAL_API_KEY;
+
+    if (!validApiKey) {
+        console.error('❌ [payment-api] INTERNAL_API_KEY is not set!');
+        return res.status(500).json({ error: 'Server configuration error' });
+    }
+
+    if (!apiKey || apiKey !== validApiKey) {
+        console.warn(`⚠️ [payment-api] Unauthorized access attempt from ${req.ip} to ${req.path}`);
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    next();
+};
+
+// Apply auth to admin and internal trip email routes
+app.use('/api/admin', apiKeyAuth);
+app.use('/trip-email', apiKeyAuth);
+// /api/coupons/validate should be public, but we can protect other coupon routes if they existed.
+// Since only /validate exists, we'll keep it public for now or apply auth selectively.
 
 const allowedOrigins = [
     'https://dev.salvemundi.nl',
