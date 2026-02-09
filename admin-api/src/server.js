@@ -3,6 +3,7 @@ const cors = require('cors');
 const axios = require('axios');
 const adminRoutes = require('./routes/admin');
 const userRoutes = require('./routes/user');
+const internalRoutes = require('./routes/internal');
 require('dotenv').config();
 
 const app = express();
@@ -11,6 +12,26 @@ const DIRECTUS_URL = process.env.DIRECTUS_URL;
 
 app.use(cors());
 app.use(express.json());
+
+/**
+ * Middleware: require internal API key
+ */
+function internalAuth(req, res, next) {
+    const apiKey = req.headers['x-api-key'] || req.headers['x-internal-api-secret'];
+    const validKey = process.env.INTERNAL_API_KEY;
+
+    if (!validKey) {
+        console.error('[AdminAPI] INTERNAL_API_KEY not set!');
+        return res.status(500).json({ error: 'Server configuration error' });
+    }
+
+    if (!apiKey || apiKey !== validKey) {
+        console.warn(`[AdminAPI] Unauthorized internal access attempt from ${req.ip}`);
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    next();
+}
 
 /**
  * Middleware: require authenticated user (any user with valid token)
@@ -88,6 +109,9 @@ app.use('/api/user', requireAuth, userRoutes);
 
 // Admin routes (protected - ICT/Bestuur only)
 app.use('/api/admin', requireAdmin, adminRoutes);
+
+// Internal routes (protected - API Key only)
+app.use('/api/internal', internalAuth, internalRoutes);
 
 app.listen(PORT, () => {
     console.log(`[AdminAPI] Running on port ${PORT}`);

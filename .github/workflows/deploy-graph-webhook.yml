@@ -78,7 +78,7 @@ jobs:
           CLIENT_ID: ${{ secrets.GRAPH_SYNC_CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.GRAPH_SYNC_CLIENT_SECRET }}
           WEBHOOK_CLIENT_STATE: ${{ secrets.GRAPH_WEBHOOK_CLIENT_STATE }}
-          PUBLIC_WEBHOOK_URL: "https://entra-webhook.salvemundi.nl/webhooks/graph"
+          PUBLIC_WEBHOOK_URL: ${{ secrets.PUBLIC_WEBHOOK_URL }}
           INTERNAL_API_KEY: ${{ secrets.INTERNAL_API_KEY }}
         with:
           host: ${{ secrets.SERVER_HOST }}

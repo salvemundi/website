@@ -96,7 +96,8 @@ app.use(
         directusService,
         notificationService,
         GRAPH_SYNC_URL,
-        membershipService
+        membershipService,
+        process.env.ADMIN_API_URL
     )
 );
 
