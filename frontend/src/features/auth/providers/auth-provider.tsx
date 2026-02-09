@@ -218,18 +218,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Only refresh if token is expiring soon or already expired
         if (!isTokenExpiringSoon()) return;
 
-        // console.log('[AuthProvider] Proactively refreshing token (expiring soon)...');
+        // [ARCHITECTURE] Use global singleton refresh from directus.ts
+        // This ensures we never have two refresh requests in flight at once
+        // even if various components trigger them simultaneously.
         try {
-            const response = await authApi.refreshAccessToken(refreshToken);
-            localStorage.setItem('auth_token', response.access_token);
-            localStorage.setItem('refresh_token', response.refresh_token);
-            setUser(response.user);
-            recordAuthAttempt(true);
-            // console.log('[AuthProvider] Token refreshed successfully');
+            const { performTokenRefresh } = await import('@/shared/lib/directus');
+            const success = await performTokenRefresh();
+
+            if (success) {
+                // After successful shared refresh, update the user state
+                const token = localStorage.getItem('auth_token');
+                if (token) {
+                    const response = await authApi.fetchUserDetails(token);
+                    if (response) setUser(response);
+                }
+                recordAuthAttempt(true);
+            } else {
+                recordAuthAttempt(false);
+                await trySilentMsalLogin();
+            }
         } catch (e) {
-            // console.error('[AuthProvider] Proactive refresh failed:', e);
             recordAuthAttempt(false);
-            // If refresh fails, try silent recovery via MSAL to keep session alive
             await trySilentMsalLogin();
         }
     };
@@ -335,26 +344,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         // Try refresh if we still have a refresh token
                         if (refreshToken && canAttemptAuth()) {
                             try {
-                                const response = await authApi.refreshAccessToken(refreshToken);
-                                localStorage.setItem('auth_token', response.access_token);
-                                localStorage.setItem('refresh_token', response.refresh_token);
-                                try {
-                                    const committees = await authApi.fetchAndPersistUserCommittees(response.user.id, response.access_token);
-                                    setUser({ ...response.user, committees });
-                                } catch (e) {
-                                    setUser(response.user);
+                                // [ARCHITECTURE] Use global singleton refresh
+                                const { performTokenRefresh } = await import('@/shared/lib/directus');
+                                const success = await performTokenRefresh();
+
+                                if (success) {
+                                    const newToken = localStorage.getItem('auth_token');
+                                    if (newToken) {
+                                        const userData = await authApi.fetchUserDetails(newToken);
+                                        if (userData) {
+                                            try {
+                                                const committees = await authApi.fetchAndPersistUserCommittees(userData.id, newToken);
+                                                setUser({ ...userData, committees });
+                                            } catch (e) {
+                                                setUser(userData);
+                                            }
+                                        }
+                                    }
+                                    recordAuthAttempt(true);
+                                } else {
+                                    localStorage.removeItem('auth_token');
+                                    localStorage.removeItem('refresh_token');
+                                    recordAuthAttempt(false);
+                                    const recovered = await trySilentMsalLogin();
+                                    if (!recovered) setUser(null);
                                 }
-                                recordAuthAttempt(true);
                             } catch (refreshError) {
-                                // Refresh failed, clear storage
                                 localStorage.removeItem('auth_token');
                                 localStorage.removeItem('refresh_token');
                                 recordAuthAttempt(false);
-                                // Try silent recovery before giving up
                                 const recovered = await trySilentMsalLogin();
-                                if (!recovered) {
-                                    setUser(null);
-                                }
+                                if (!recovered) setUser(null);
                             }
                         } else {
                             setUser(null);
@@ -364,28 +384,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     // An unexpected error occurred while fetching details
                     console.error('Auth check failed (fetch user):', error);
                     recordAuthAttempt(false);
-                    // Attempt refresh flow
+                    // Attempt refresh flow using global singleton
                     if (refreshToken && canAttemptAuth()) {
                         try {
-                            const response = await authApi.refreshAccessToken(refreshToken);
-                            localStorage.setItem('auth_token', response.access_token);
-                            localStorage.setItem('refresh_token', response.refresh_token);
-                            setUser(response.user);
-                            recordAuthAttempt(true);
+                            const { performTokenRefresh } = await import('@/shared/lib/directus');
+                            const success = await performTokenRefresh();
+
+                            if (success) {
+                                const newToken = localStorage.getItem('auth_token');
+                                if (newToken) {
+                                    const userData = await authApi.fetchUserDetails(newToken);
+                                    if (userData) setUser(userData);
+                                }
+                                recordAuthAttempt(true);
+                            } else {
+                                localStorage.removeItem('auth_token');
+                                localStorage.removeItem('refresh_token');
+                                const recovered = await trySilentMsalLogin();
+                                if (!recovered) setUser(null);
+                            }
                         } catch (refreshError) {
                             localStorage.removeItem('auth_token');
                             localStorage.removeItem('refresh_token');
                             const recovered = await trySilentMsalLogin();
-                            if (!recovered) {
-                                setUser(null);
-                            }
+                            if (!recovered) setUser(null);
                         }
                     } else {
                         localStorage.removeItem('auth_token');
                         const recovered = await trySilentMsalLogin();
-                        if (!recovered) {
-                            setUser(null);
-                        }
+                        if (!recovered) setUser(null);
                     }
                 }
             }

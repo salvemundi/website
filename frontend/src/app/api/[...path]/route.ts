@@ -681,27 +681,32 @@ async function handleMutation(
         }
 
         // Trace token usage for debugging
-        const targetUrl = `${DIRECTUS_URL}/${path}${targetSearch}`;
+        const targetUrl = `${DIRECTUS_URL}/${path}${targetSearch}`.replace(/([^:]\/)\/+/g, "$1"); // Avoid double slashes
 
         if (path.includes('auth/')) {
             console.log(`[Directus Proxy] PROXING AUTH: ${method} ${targetUrl} | Body size: ${rawBody?.byteLength || 0} | Content-Type: ${forwardHeaders['Content-Type']}`);
-            if (rawBody && rawBody.byteLength > 0 && rawBody.byteLength < 1000) {
-                try {
-                    const text = new TextDecoder().decode(rawBody);
-                    console.log(`[Directus Proxy] Auth Body Payload: ${text}`);
-                } catch (e) { }
-            }
         }
 
 
-        const response = await fetch(targetUrl, {
-            method,
-            headers: forwardHeaders,
-            body: rawBody && rawBody.byteLength > 0 ? new Uint8Array(rawBody) : undefined,
-            redirect: 'follow',
-            // @ts-ignore - node-fetch / undici extension
-            duplex: 'half'
-        });
+        let response: Response;
+        try {
+            const fetchOptions: RequestInit = {
+                method,
+                headers: forwardHeaders,
+                redirect: 'follow',
+                // @ts-ignore - duplex is needed for streaming bodies in some environments
+                duplex: (rawBody && rawBody.byteLength > 0) ? 'half' : undefined
+            };
+
+            if (rawBody && rawBody.byteLength > 0) {
+                fetchOptions.body = new Uint8Array(rawBody);
+            }
+
+            response = await fetch(targetUrl, fetchOptions);
+        } catch (fetchError: any) {
+            console.error(`[Directus Proxy] ${method} ${path} FETCH EXCEPTION:`, fetchError.message);
+            throw fetchError; // Rethrow to be caught by the outer catch block
+        }
 
 
         if (!response.ok) {
@@ -722,7 +727,8 @@ async function handleMutation(
 
 
             // Re-create response for JSON if possible
-            if (response.headers.get('Content-Type')?.includes('application/json')) {
+            const responseContentType = response.headers.get('Content-Type');
+            if (responseContentType?.includes('application/json')) {
                 try {
                     return NextResponse.json(JSON.parse(errorText), { status: response.status });
                 } catch {
@@ -746,8 +752,9 @@ async function handleMutation(
             const safe = data === null ? {} : data;
             return NextResponse.json(safe, { status: response.status });
         } else {
-            const text = await response.text().catch(() => '');
-            return new Response(text, {
+            // Buffer to handle binary/text responses
+            const buffer = await response.arrayBuffer().catch(() => new ArrayBuffer(0));
+            return new Response(buffer, {
                 status: response.status,
                 headers: { 'Content-Type': responseContentType || 'text/plain' }
             });
@@ -763,6 +770,7 @@ async function handleMutation(
         return NextResponse.json({
             error: 'Directus Proxy Mutation Error',
             message: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
             path: path,
             method
         }, { status: 500 });
