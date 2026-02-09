@@ -83,7 +83,7 @@ jobs:
           VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
           VAPID_EMAIL: ${{ secrets.VAPID_EMAIL }}
           DIRECTUS_URL: ${{ secrets.DIRECTUS_URL }}
-          DIRECTUS_NOTIFICATION_KEY: ${{ secrets.DIRECTUS_NOTIFICATION_KEY }}
+          DIRECTUS_NOTIFICATION_KEY: ${{ secrets.DIRECTUS_NOTIFICATION_API_NOTIFICATION_API_TOKEN }}
           INTERNAL_API_KEY: ${{ secrets.INTERNAL_API_KEY }}
         with:
           host: ${{ secrets.SERVER_HOST }}

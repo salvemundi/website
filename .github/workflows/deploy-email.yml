@@ -84,7 +84,7 @@ jobs:
           MS_GRAPH_CLIENT_ID: ${{ secrets.EMAIL_API_CLIENT_ID }}
           MS_GRAPH_CLIENT_SECRET: ${{ secrets.EMAIL_API_CLIENT_SECRET }}
           DIRECTUS_URL: ${{ secrets.DIRECTUS_URL }}
-          DIRECTUS_API_TOKEN: ${{ secrets.EMAIL_API_DIRECTUS_TOKEN }}
+          DIRECTUS_API_TOKEN: ${{ secrets.DIRECTUS_EMAIL_API_EMAIL_API_TOKEN }}
           INTERNAL_API_KEY: ${{ secrets.INTERNAL_API_KEY }}
         with:
           host: ${{ secrets.SERVER_HOST }}

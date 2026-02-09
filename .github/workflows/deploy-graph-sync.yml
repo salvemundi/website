@@ -83,7 +83,7 @@ jobs:
           CLIENT_ID: ${{ secrets.GRAPH_SYNC_CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.GRAPH_SYNC_CLIENT_SECRET }}
           DIRECTUS_URL: ${{ secrets.DIRECTUS_URL }}
-          DIRECTUS_API_TOKEN: ${{ secrets.GRAPH_SYNC_DIRECTUS_TOKEN }}
+          DIRECTUS_API_TOKEN: ${{ secrets.DIRECTUS_GRAPH_SYNC_GRAPH_SYNC_TOKEN }}
           DIRECTUS_DEFAULT_ROLE_ID: ${{ secrets.GRAPH_SYNC_DEFAULT_ROLE_ID }}
           PROD_MOLLIE_API_KEY: ${{ secrets.PROD_MOLLIE_API_KEY }}
           DEV_MOLLIE_API_KEY: ${{ secrets.DEV_MOLLIE_API_KEY }}
