@@ -273,7 +273,12 @@ app.post('/trip-email/payment-request', async (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`[PaymentAPI] Server running on port ${PORT}`);
-    console.log(`[PaymentAPI] Environment: DIRECTUS_URL=${DIRECTUS_URL ? 'Set' : 'Unset'}, MEMBERSHIP=${MEMBERSHIP_API_URL}`);
+
+    // Diagnostic logging for Directus Token
+    const maskedToken = DIRECTUS_API_TOKEN
+        ? `${DIRECTUS_API_TOKEN.substring(0, 4)}...${DIRECTUS_API_TOKEN.slice(-4)}`
+        : 'MISSING';
+    console.log(`[PaymentAPI] Environment: DIRECTUS_URL=${DIRECTUS_URL ? 'Set' : 'Unset'}, Token=${maskedToken}, MEMBERSHIP=${MEMBERSHIP_API_URL}`);
     console.log(`[PaymentAPI] CORS origins configured:`, allowedOrigins);
 });
 
