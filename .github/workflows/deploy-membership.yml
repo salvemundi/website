@@ -19,11 +19,8 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write
 
     env:
-      INFISICAL_ENVIRONMENT: ${{ github.ref_name == 'main' && 'prod' || github.ref_name == 'Development' && 'dev' || 'local' }}
-      # Use GitHub repository secrets for MS Graph credentials instead of Infisical
       MS_GRAPH_TENANT_ID: ${{ secrets.MS_GRAPH_TENANT_ID }}
       MS_GRAPH_CLIENT_ID: ${{ secrets.MS_GRAPH_CLIENT_ID }}
       MS_GRAPH_CLIENT_SECRET: ${{ secrets.MS_GRAPH_CLIENT_SECRET }}
