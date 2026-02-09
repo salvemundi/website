@@ -9,14 +9,14 @@ export async function GET(request: Request) {
         if (!userId) return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
 
         const directusUrl = process.env.DIRECTUS_URL || process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://admin.salvemundi.nl';
-        const directusToken = process.env.DIRECTUS_API_KEY || process.env.NEXT_PUBLIC_DIRECTUS_API_KEY;
+        const directusToken = process.env.DIRECTUS_API_TOKEN || process.env.DIRECTUS_API_KEY;
         if (!directusToken) return NextResponse.json({ error: 'Directus API key not configured' }, { status: 500 });
 
         const likesCollection = `${directusUrl.replace(/\/$/, '')}/items/intro_blog_likes`;
 
         // Try fetching by 'user' relation field first, then 'user_id'
         const tryUrls = [
-            `${likesCollection}?filter[user][_eq]=${encodeURIComponent(userId)}&fields=blog` ,
+            `${likesCollection}?filter[user][_eq]=${encodeURIComponent(userId)}&fields=blog`,
             `${likesCollection}?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=blog`
         ];
 

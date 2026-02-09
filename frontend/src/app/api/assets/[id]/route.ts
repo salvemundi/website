@@ -13,7 +13,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
             clientAuth = `Bearer ${reqUrl.searchParams.get('access_token')}`;
         }
 
-        const serverKey = process.env.DIRECTUS_API_KEY || process.env.NEXT_PUBLIC_DIRECTUS_API_KEY;
+        const serverKey = process.env.DIRECTUS_API_TOKEN || process.env.DIRECTUS_API_KEY;
         const authHeader = clientAuth || (serverKey ? `Bearer ${serverKey}` : undefined);
 
 

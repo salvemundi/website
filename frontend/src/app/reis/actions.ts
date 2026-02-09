@@ -6,7 +6,7 @@ export async function updateTripSignup(id: number, data: any) {
     try {
         const directusUrl = (process.env.DIRECTUS_URL || process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://admin.salvemundi.nl').replace(/\/$/, '');
         // Check standard env var AND fallback to public one just in case (matching api/files/route.ts)
-        const token = process.env.DIRECTUS_API_KEY || process.env.NEXT_PUBLIC_DIRECTUS_API_KEY;
+        const token = process.env.DIRECTUS_API_TOKEN || process.env.DIRECTUS_API_KEY;
 
         if (!directusUrl || !token) {
             console.error('[updateTripSignup] Missing Directus configuration', { directusUrl, hasToken: !!token });

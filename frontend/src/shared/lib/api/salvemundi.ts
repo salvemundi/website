@@ -396,7 +396,6 @@ export const eventsApi = {
                     }
 
                     if (signupData.event_price === 0 || signupData.payment_status === 'paid') {
-                        console.log('eventsApi.createSignup: qrDataUrl present?', !!qrDataUrl, qrDataUrl ? `len=${qrDataUrl.length}` : 'none');
                         await sendEventSignupEmail({
                             recipientEmail: signupData.email,
                             recipientName: signupData.name,
@@ -412,7 +411,7 @@ export const eventsApi = {
                             contactPhone,
                         });
                     } else {
-                        console.log('paymentApi.createSignup: skipping email for paid event (will be sent on payment confirmation)', { signupId: signup.id });
+                        // Email will be sent upon payment confirmation
                     }
                 } catch (e) {
                     console.error('eventsApi.createSignup: failed to send signup email', { signupId: signup.id, error: e });
@@ -1130,7 +1129,7 @@ export function getImageUrl(imageId: string | undefined | any, options?: { quali
     }
 
     if (!token) {
-        token = process.env.NEXT_PUBLIC_DIRECTUS_API_KEY || null;
+        token = process.env.DIRECTUS_API_TOKEN || process.env.DIRECTUS_API_KEY || null;
     }
 
     // Always use /api proxy which handles authentication via headers

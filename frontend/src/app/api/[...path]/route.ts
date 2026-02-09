@@ -7,7 +7,13 @@ const DIRECTUS_URL = process.env.DIRECTUS_URL || process.env.NEXT_PUBLIC_DIRECTU
 let API_BYPASS_USER_ID = process.env.DIRECTUS_API_USER_ID ?? null;
 
 // Detect a Directus API token used by server-side services or the frontend build.
-const API_SERVICE_TOKEN = process.env.DIRECTUS_API_TOKEN ?? process.env.VITE_DIRECTUS_API_KEY ?? process.env.NEXT_PUBLIC_DIRECTUS_API_KEY ?? process.env.DIRECTUS_API_KEY ?? process.env.DIRECTUS_TOKEN ?? null;
+// SECURITY: Only use server-side environment variables. NEVER allow NEXT_PUBLIC_ variables here.
+const API_SERVICE_TOKEN = process.env.DIRECTUS_API_TOKEN ?? process.env.DIRECTUS_API_KEY ?? process.env.DIRECTUS_TOKEN ?? null;
+
+// Ensure we don't accidentally use the public key as a service token
+if (process.env.NEXT_PUBLIC_DIRECTUS_API_KEY && API_SERVICE_TOKEN === process.env.NEXT_PUBLIC_DIRECTUS_API_KEY) {
+    console.warn('[Directus Proxy] WARNING: Server token matches Public API Key. This is a security risk.');
+}
 
 if (!API_SERVICE_TOKEN) {
     console.warn('[Directus Proxy] WARNING: API_SERVICE_TOKEN is not set. Admin bypass will not work.');
@@ -147,8 +153,6 @@ export async function GET(
         if ((auth || cookie) && (!isAllowed && !isAuthPath || needsSpecialGuardCheck)) {
             const bypassOptions = cookie ? { cookie } : undefined;
             canBypass = await isApiBypass(auth, bypassOptions);
-            // Removed verbose console check log
-
             if (!canBypass) {
                 try {
                     const cookieHeader = request.headers.get('Cookie') || '';
@@ -261,7 +265,7 @@ export async function GET(
 
         const targetUrl = `${DIRECTUS_URL}/${path}${targetSearch}`;
 
-        // Temporarily remove the premature logging here
+
 
 
         const contentType = request.headers.get('Content-Type');
@@ -651,7 +655,7 @@ async function handleMutation(
             }
         }
 
-        // AGGRESSIVE CLEANUP: Avoid 400 Bad Request by ensuring we never send double auth
+        // Sanitize Headers: Avoid "double auth" (Authorization header + access_token query param)
         // 1. If we have an Authorization header, remove access_token from query params
         if (forwardHeaders['Authorization'] && url.searchParams.has('access_token')) {
             const newParams = new URLSearchParams(url.searchParams);

@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
 
     // Prefer client-supplied Authorization header, fall back to server API key if configured
     const clientAuth = request.headers.get('authorization');
-    const serverKey = process.env.DIRECTUS_API_KEY || process.env.NEXT_PUBLIC_DIRECTUS_API_KEY;
+    const serverKey = process.env.DIRECTUS_API_TOKEN || process.env.DIRECTUS_API_KEY;
     const authHeader = clientAuth || (serverKey ? `Bearer ${serverKey}` : undefined);
 
     const contentType = request.headers.get('content-type') || undefined;

@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
         // Fetch intro signups (participants and parents) from Directus using server-side env vars
         const directusUrl = process.env.DIRECTUS_URL || process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://admin.salvemundi.nl';
-        const directusToken = process.env.DIRECTUS_API_KEY || process.env.NEXT_PUBLIC_DIRECTUS_API_KEY;
+        const directusToken = process.env.DIRECTUS_API_TOKEN || process.env.DIRECTUS_API_KEY;
 
         if (!directusToken) {
             console.error('❌ Directus API key not configured (process.env.DIRECTUS_API_KEY)');

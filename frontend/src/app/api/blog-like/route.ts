@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
         }
 
         const directusUrl = process.env.DIRECTUS_URL || process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://admin.salvemundi.nl';
-        const directusToken = process.env.DIRECTUS_API_KEY || process.env.NEXT_PUBLIC_DIRECTUS_API_KEY;
+        const directusToken = process.env.DIRECTUS_API_TOKEN || process.env.DIRECTUS_API_KEY;
 
         if (!directusToken) {
             return NextResponse.json({ error: 'Directus API key not configured' }, { status: 500 });
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
                     'Authorization': `Bearer ${directusToken}`
                 },
                 body: JSON.stringify({ likes: count })
-            }).catch(() => {});
+            }).catch(() => { });
         } catch (e) {
             // suppressed non-error log
         }

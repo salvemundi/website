@@ -30,7 +30,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
     try {
         // Fetch committee data
         const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://admin.salvemundi.nl';
-        const apiKey = process.env.NEXT_PUBLIC_DIRECTUS_API_KEY || '';
+        const apiKey = process.env.DIRECTUS_API_TOKEN || process.env.DIRECTUS_API_KEY || '';
 
         const committeesResponse = await fetch(
             `${directusUrl}/items/committees?fields=id,name,short_description,is_visible&sort=name`,

@@ -135,19 +135,12 @@ async function sendEmail(
     return;
   }
 
-  // NOTE: Calling email API directly from frontend causes CORS errors.
-  // For production, implement a Next.js API route (e.g., /api/send-email) that:
-  // 1. Receives the email data from frontend
-  // 2. Calls the email service from the backend (no CORS issues)
-  // 3. Returns success/error to frontend
-  // For now, we'll attempt to send but gracefully handle CORS failures.
-
+  // We use the Next.js API route proxy to keep the API key secret and avoid CORS issues.
   try {
     const response = await fetch(config.apiEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-internal-api-secret': process.env.NEXT_PUBLIC_INTERNAL_API_SECRET || '',
       },
       body: JSON.stringify({
         to,
