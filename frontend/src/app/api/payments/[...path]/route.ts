@@ -18,6 +18,7 @@ async function proxyRequest(
     try {
         const headers: HeadersInit = {
             'Authorization': request.headers.get('Authorization') || '',
+            'x-api-key': process.env.INTERNAL_API_KEY || '',
             'X-Trace-Id': traceId,
             'X-Environment': process.env.NODE_ENV || 'development'
         };
