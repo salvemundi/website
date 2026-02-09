@@ -98,15 +98,6 @@ jobs:
             NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
             NEXT_PUBLIC_SITE_TAG=${{ env.TAG }}
 
-      - name: Delete Untagged Images
-        uses: actions/delete-package-versions@v5
-        continue-on-error: true
-        with:
-          package-name: 'frontend'
-          package-type: 'container'
-          min-versions-to-keep: 2
-          delete-only-untagged-versions: 'true'
-
       - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.7
         with:

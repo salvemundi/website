@@ -83,15 +83,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Delete Untagged Images
-        uses: actions/delete-package-versions@v5
-        continue-on-error: true
-        with:
-          package-name: 'payment-api'
-          package-type: 'container'
-          min-versions-to-keep: 2
-          delete-only-untagged-versions: 'true'
-
       - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.7
         with:
