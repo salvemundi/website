@@ -16,6 +16,7 @@ services:
       - INTERNAL_API_KEY=${INTERNAL_API_KEY}
       # Membership API URL for server-side communication with membership-api
       - MEMBERSHIP_API_URL=${MEMBERSHIP_API_URL:-http://membership-api-${TAG:-dev}:8000/api/membership}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
     networks:
       - proxy-network
 
