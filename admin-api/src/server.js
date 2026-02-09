@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
 const adminRoutes = require('./routes/admin');
+const userRoutes = require('./routes/user');
 require('dotenv').config();
 
 const app = express();
@@ -12,7 +13,35 @@ app.use(cors());
 app.use(express.json());
 
 /**
- * Middleware: require admin access (user must have entra_id)
+ * Middleware: require authenticated user (any user with valid token)
+ */
+async function requireAuth(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).json({ error: 'No authorization header' });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    try {
+        const response = await axios.get(`${DIRECTUS_URL}/users/me`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const user = response.data.data;
+
+        if (!user || !user.id) {
+            return res.status(401).json({ error: 'Invalid user' });
+        }
+
+        req.user = user;
+        next();
+    } catch (error) {
+        console.error('[AdminAPI Auth] Token verification failed:', error.message);
+        return res.status(401).json({ error: 'Invalid token' });
+    }
+}
+
+/**
+ * Middleware: require admin access (user must have entra_id and be ICT/Bestuur)
  */
 async function requireAdmin(req, res, next) {
     const authHeader = req.headers.authorization;
@@ -54,7 +83,10 @@ async function requireAdmin(req, res, next) {
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok', service: 'admin-api' }));
 
-// Admin routes (protected)
+// User routes (authenticated users only)
+app.use('/api/user', requireAuth, userRoutes);
+
+// Admin routes (protected - ICT/Bestuur only)
 app.use('/api/admin', requireAdmin, adminRoutes);
 
 app.listen(PORT, () => {
