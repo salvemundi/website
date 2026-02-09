@@ -13,6 +13,24 @@ import asyncio
 
 app = FastAPI()
 
+INTERNAL_API_KEY = os.getenv("INTERNAL_API_KEY")
+
+@app.middleware("http")
+async def api_key_middleware(request: Request, call_next):
+    if request.url.path == "/health" or request.url.path == "/api/membership/health":
+        return await call_next(request)
+    
+    api_key = request.headers.get("x-api-key") or request.headers.get("x-internal-api-secret")
+    if not INTERNAL_API_KEY:
+        logger.error("INTERNAL_API_KEY not set in environment!")
+        raise HTTPException(status_code=500, detail="Server configuration error")
+    
+    if api_key != INTERNAL_API_KEY:
+        logger.warning(f"Unauthorized access attempt from {request.client.host} to {request.url.path}")
+        raise HTTPException(status_code=401, detail="Unauthorized")
+        
+    return await call_next(request)
+
 logger = logging.getLogger("membership-api")
 if not logger.handlers:
     handler = logging.StreamHandler()
@@ -20,6 +38,14 @@ if not logger.handlers:
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     logger.setLevel(logging.DEBUG if os.getenv("DEBUG", "1") == "1" else logging.INFO)
+
+# Filter out health check logs from uvicorn access logs
+class EndpointFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        msg = record.getMessage()
+        return "/api/membership/health" not in msg and "GET /health" not in msg
+
+logging.getLogger("uvicorn.access").addFilter(EndpointFilter())
 
 ATTRIBUTE_SET_NAME = "SalveMundiLidmaatschap"
 
