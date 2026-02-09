@@ -7,6 +7,7 @@ services:
     environment:
       - EMAIL_SERVICE_URL=http://email-api-${TAG:-dev}:3001
       - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+      - MEMBERSHIP_API_URL=http://membership-api-${TAG:-dev}:8000/api/membership
     networks:
       - proxy-network
     healthcheck:
