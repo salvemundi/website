@@ -275,3 +275,49 @@ jobs:
     permissions:
       contents: read
       packages: write
+
+  cleanup-ghcr:
+    name: Cleanup GHCR
+    needs:
+      - deploy-frontend
+      - deploy-admin-api
+      - deploy-payment-api
+      - deploy-arcane
+      - deploy-directus
+      - deploy-email-api
+      - deploy-graph-sync
+      - deploy-graph-webhook
+      - deploy-leden-check
+      - deploy-membership-api
+      - deploy-monitor
+      - deploy-notification-api
+    if: always() && github.ref_name == 'main' || github.ref_name == 'Development'
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    strategy:
+      matrix:
+        package:
+          - 'frontend'
+          - 'admin-api'
+          - 'payment-api'
+          - 'arcane'
+          - 'directus'
+          - 'email-api'
+          - 'graph-sync'
+          - 'graph-webhook'
+          - 'nachtwacht'
+          - 'membership-api'
+          - 'server-monitor'
+          - 'notification-api'
+      fail-fast: false
+      max-parallel: 1 # Sequential to avoid rate limits
+    steps:
+      - name: Delete Untagged Images for ${{ matrix.package }}
+        uses: actions/delete-package-versions@v5
+        continue-on-error: true
+        with:
+          package-name: ${{ matrix.package }}
+          package-type: 'container'
+          min-versions-to-keep: 2
+          delete-only-untagged-versions: 'true'
