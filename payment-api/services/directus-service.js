@@ -18,7 +18,10 @@ async function createDirectusTransaction(directusUrl, directusToken, data) {
         const response = await axios.post(`${directusUrl}/items/transactions`, data, getAuthConfig(directusToken));
         return response.data.data.id;
     } catch (error) {
-        throw new Error(`Directus Create Failed: ${error.response?.data?.errors?.[0]?.message || error.message}`);
+        const maskedToken = directusToken
+            ? `${directusToken.substring(0, 4)}...${directusToken.slice(-4)}`
+            : 'MISSING';
+        throw new Error(`Directus Create Failed: ${error.response?.data?.errors?.[0]?.message || error.message} (Token: ${maskedToken})`);
     }
 }
 
@@ -305,7 +308,10 @@ module.exports = {
 
             return { manual_approval: false };
         } catch (error) {
-            console.error('Error fetching settings:', error.message);
+            const maskedToken = token
+                ? `${token.substring(0, 4)}...${token.slice(-4)}`
+                : 'MISSING';
+            console.error(`Error fetching settings: ${error.message} (Token: ${maskedToken})`);
             // Non-critical, return default
             return { manual_approval: false };
         }
