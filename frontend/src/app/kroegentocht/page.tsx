@@ -13,6 +13,7 @@ import QRDisplay from '@/entities/activity/ui/QRDisplay';
 import { COLLECTIONS, FIELDS } from '@/shared/lib/constants/collections';
 import { format } from 'date-fns';
 import { CheckCircle2, Download } from 'lucide-react';
+import { sanitizeHtml } from '@/shared/lib/utils/sanitize';
 
 const ASSOCIATIONS = [
     'Salve Mundi',
@@ -834,7 +835,7 @@ export default function KroegentochtPage() {
                                         ].map((item, i) => (
                                             <li key={i} className="flex items-start gap-3 sm:gap-4">
                                                 <span className="text-lg sm:text-xl flex-shrink-0">{item.icon}</span>
-                                                <span className="text-sm sm:text-base text-theme-text-muted leading-snug" dangerouslySetInnerHTML={{ __html: item.text }} />
+                                                <span className="text-sm sm:text-base text-theme-text-muted leading-snug" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.text) }} />
                                             </li>
                                         ))}
                                     </ul>

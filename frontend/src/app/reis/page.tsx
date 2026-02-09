@@ -15,6 +15,7 @@ import { TripSignup } from '@/shared/lib/api/salvemundi';
 import { User } from '@/shared/model/types/auth';
 import { CheckCircle2, Calendar, CreditCard, Loader2, Utensils } from 'lucide-react';
 import { formatDateToLocalISO } from '@/shared/lib/utils/date';
+import { sanitizeHtml } from '@/shared/lib/utils/sanitize';
 
 export default function ReisPage() {
     const [form, setForm] = useState({
@@ -609,7 +610,7 @@ export default function ReisPage() {
                                         </h2>
                                         <div
                                             className="text-theme-text-muted dark:text-theme-text-muted space-y-4 prose prose-sm sm:prose prose-purple dark:prose-invert max-w-none prose-p:leading-relaxed"
-                                            dangerouslySetInnerHTML={{ __html: nextTrip.description }}
+                                            dangerouslySetInnerHTML={{ __html: sanitizeHtml(nextTrip.description) }}
                                         />
                                     </div>
                                 )}
@@ -629,7 +630,7 @@ export default function ReisPage() {
                                         ].map((item, i) => (
                                             <li key={i} className="flex items-start gap-3 sm:gap-4">
                                                 <span className="text-lg sm:text-xl flex-shrink-0">{item.icon}</span>
-                                                <span className="text-sm sm:text-base text-theme-text-muted leading-snug" dangerouslySetInnerHTML={{ __html: item.text }} />
+                                                <span className="text-sm sm:text-base text-theme-text-muted leading-snug" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.text) }} />
                                             </li>
                                         ))}
                                     </ul>

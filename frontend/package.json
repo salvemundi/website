@@ -61,6 +61,7 @@
     "gsap": "^3.13.0",
     "he": "^1.2.0",
     "html5-qrcode": "^2.3.8",
+    "isomorphic-dompurify": "^3.0.0-rc.2",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.344.0",
     "maplibre-gl": "^5.14.0",

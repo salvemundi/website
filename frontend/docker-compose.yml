@@ -17,6 +17,9 @@ services:
       # Membership API URL for server-side communication with membership-api
       - MEMBERSHIP_API_URL=${MEMBERSHIP_API_URL:-http://membership-api-${TAG:-dev}:8000/api/membership}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      # Required for server-side API calls (e.g. public-sponsors) and proxy bypass
+      # We map the specific secret to the generic token expected by the app
+      - DIRECTUS_API_TOKEN=${DIRECTUS_FRONTEND_FRONTEND_TOKEN}
     networks:
       - proxy-network
 

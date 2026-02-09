@@ -571,25 +571,35 @@ app.post('/send-intro-update', async (req, res) => {
     let imageCid = null;
     if (blogImage) {
       try {
-        const imgResp = await fetch(String(blogImage));
-        if (imgResp.ok) {
-          const contentType = imgResp.headers.get('content-type') || 'application/octet-stream';
-          const arrayBuffer = await imgResp.arrayBuffer();
-          const buffer = Buffer.from(arrayBuffer);
-          const base64 = buffer.toString('base64');
-          // Determine extension from content-type
-          const extMatch = (contentType || '').match(/image\/(png|jpeg|jpg|webp|gif)/i);
-          const ext = extMatch ? extMatch[1].replace('jpeg', 'jpg') : 'png';
-          imageCid = `blogimg-${Date.now()}@salvemundi`;
-          inlineAttachments.push({
-            name: `blog-image.${ext}`,
-            contentType,
-            contentBytes: base64,
-            isInline: true,
-            contentId: imageCid,
-          });
+        const urlToFetch = new URL(String(blogImage));
+        const allowedHosts = ['salvemundi.nl', 'admin.salvemundi.nl', 'files.salvemundi.nl', 'localhost'];
+
+        // Basic SSRF protection: only allow specific domains
+        if (!allowedHosts.some(host => urlToFetch.hostname === host || urlToFetch.hostname.endsWith('.' + host))) {
+          console.warn(`[Intro Update] Blocked SSRF attempt to: ${urlToFetch.hostname}`);
+        } else if (urlToFetch.protocol !== 'https:' && urlToFetch.hostname !== 'localhost') {
+          console.warn(`[Intro Update] Blocked non-https URL: ${urlToFetch.protocol}`);
         } else {
-          console.warn('Could not fetch blog image for inline attachment:', imgResp.status, imgResp.statusText);
+          const imgResp = await fetch(urlToFetch.toString());
+          if (imgResp.ok) {
+            const contentType = imgResp.headers.get('content-type') || 'application/octet-stream';
+            const arrayBuffer = await imgResp.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            const base64 = buffer.toString('base64');
+            // Determine extension from content-type
+            const extMatch = (contentType || '').match(/image\/(png|jpeg|jpg|webp|gif)/i);
+            const ext = extMatch ? extMatch[1].replace('jpeg', 'jpg') : 'png';
+            imageCid = `blogimg-${Date.now()}@salvemundi`;
+            inlineAttachments.push({
+              name: `blog-image.${ext}`,
+              contentType,
+              contentBytes: base64,
+              isInline: true,
+              contentId: imageCid,
+            });
+          } else {
+            console.warn('Could not fetch blog image for inline attachment:', imgResp.status, imgResp.statusText);
+          }
         }
       } catch (e) {
         console.warn('Error fetching blog image for inline attachment:', e && e.message ? e.message : e);
