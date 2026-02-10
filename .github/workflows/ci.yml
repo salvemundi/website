@@ -130,6 +130,42 @@ jobs:
           echo "Directus: ${{ steps.filter.outputs.directus }}"
           echo "Membership API: ${{ steps.filter.outputs.membership_api }}"
 
+  setup-cleanup:
+    needs: [changes]
+    runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.set-matrix.outputs.packages }}
+    steps:
+      - id: set-matrix
+        run: |
+          PACKAGES=()
+          
+          if [[ "${{ github.event.inputs.full_deploy }}" == "true" ]]; then
+            PACKAGES+=("frontend" "admin-api" "payment-api" "arcane" "directus" "email-api" "graph-sync" "graph-webhook" "nachtwacht" "membership-api" "server-monitor" "notification-api")
+          else
+            if [[ "${{ needs.changes.outputs.frontend }}" == "true" ]]; then PACKAGES+=("frontend"); fi
+            if [[ "${{ needs.changes.outputs.admin_api }}" == "true" ]]; then PACKAGES+=("admin-api"); fi
+            if [[ "${{ needs.changes.outputs.payment_api }}" == "true" ]]; then PACKAGES+=("payment-api"); fi
+            if [[ "${{ needs.changes.outputs.arcane }}" == "true" ]]; then PACKAGES+=("arcane"); fi
+            if [[ "${{ needs.changes.outputs.directus }}" == "true" ]]; then PACKAGES+=("directus"); fi
+            if [[ "${{ needs.changes.outputs.email_api }}" == "true" ]]; then PACKAGES+=("email-api"); fi
+            if [[ "${{ needs.changes.outputs.graph_sync }}" == "true" ]]; then PACKAGES+=("graph-sync"); fi
+            if [[ "${{ needs.changes.outputs.graph_webhook }}" == "true" ]]; then PACKAGES+=("graph-webhook"); fi
+            if [[ "${{ needs.changes.outputs.leden_check }}" == "true" ]]; then PACKAGES+=("nachtwacht"); fi
+            if [[ "${{ needs.changes.outputs.membership_api }}" == "true" ]]; then PACKAGES+=("membership-api"); fi
+            if [[ "${{ needs.changes.outputs.server_monitor }}" == "true" ]]; then PACKAGES+=("server-monitor"); fi
+            if [[ "${{ needs.changes.outputs.notification_api }}" == "true" ]]; then PACKAGES+=("notification-api"); fi
+          fi
+
+          # Output as JSON using jq
+          # Checks if any packages were added; if empty, output empty array []
+          if [ ${#PACKAGES[@]} -eq 0 ]; then
+            echo "packages=[]" >> $GITHUB_OUTPUT
+          else
+            json_array=$(jq -c -n '$ARGS.positional' --args "${PACKAGES[@]}")
+            echo "packages=$json_array" >> $GITHUB_OUTPUT
+          fi
+
   deploy-frontend:
     needs: [frontend-checks, backend-checks, changes]
     if: |
@@ -276,6 +312,7 @@ jobs:
   cleanup-ghcr:
     name: Cleanup GHCR
     needs:
+      - setup-cleanup
       - deploy-frontend
       - deploy-admin-api
       - deploy-payment-api
@@ -288,25 +325,13 @@ jobs:
       - deploy-membership-api
       - deploy-monitor
       - deploy-notification-api
-    if: always() && github.ref_name == 'main' || github.ref_name == 'Development'
+    if: always() && (github.ref_name == 'main' || github.ref_name == 'Development')
     runs-on: ubuntu-latest
     permissions:
       packages: write
     strategy:
       matrix:
-        package:
-          - 'frontend'
-          - 'admin-api'
-          - 'payment-api'
-          - 'arcane'
-          - 'directus'
-          - 'email-api'
-          - 'graph-sync'
-          - 'graph-webhook'
-          - 'nachtwacht'
-          - 'membership-api'
-          - 'server-monitor'
-          - 'notification-api'
+        package: ${{ fromJson(needs.setup-cleanup.outputs.packages) }}
       fail-fast: false
       max-parallel: 1 # Sequential to avoid rate limits
     steps:
