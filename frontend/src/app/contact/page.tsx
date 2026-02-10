@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { documentsApi } from '@/shared/lib/api/salvemundi';
+import { directusUrl } from '@/shared/lib/directus';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 
@@ -18,7 +19,7 @@ interface Document {
 export default function ContactPage() {
     const router = useRouter();
     const { isAuthenticated } = useAuth();
-    const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://admin.salvemundi.nl';
+
 
     const { data: documents, isLoading: documentsLoading } = useQuery({
         queryKey: ['documents'],

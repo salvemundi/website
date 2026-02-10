@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { directusFetch } from '@/shared/lib/directus';
+import { directusFetch, directusUrl } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Calendar, Users, Edit, Trash2, Eye, Plus, Search, Bell, Send } from 'lucide-react';
 import { format } from 'date-fns';
@@ -232,7 +232,7 @@ export default function AdminActiviteitenPage() {
     const getImageUrl = (image?: { id: string } | string) => {
         if (!image) return '';
         const imageId = typeof image === 'object' ? image.id : image;
-        return `https://admin.salvemundi.nl/assets/${imageId}`;
+        return `${directusUrl}/assets/${imageId}`;
     };
 
     return (
