@@ -155,21 +155,36 @@ export const eventsApi = {
         const now = new Date().toISOString();
         const baseFields = ['id', 'name', 'event_date', 'event_time', 'inschrijf_deadline', 'description', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact', 'status', 'publish_date'];
 
-        if (typeof window !== 'undefined' && localStorage.getItem('auth_token')) {
-            baseFields.push('description_logged_in');
-        }
+        const getEventsAction = async (includeDescription: boolean) => {
+            const fields = [...baseFields];
+            if (includeDescription) fields.push('description_logged_in');
 
-        const query = buildQueryString({
-            fields: baseFields,
-            sort: ['-event_date'],
-            filter: {
-                _or: [
-                    { status: { _eq: 'published' }, publish_date: { _null: true } },
-                    { status: { _eq: 'published' }, publish_date: { _lte: now } }
-                ]
+            const q = buildQueryString({
+                fields: fields,
+                sort: ['-event_date'],
+                filter: {
+                    _or: [
+                        { status: { _eq: 'published' }, publish_date: { _null: true } },
+                        { status: { _eq: 'published' }, publish_date: { _lte: now } }
+                    ]
+                }
+            });
+            return directusFetch<any[]>(`/items/events?${q}`);
+        };
+
+        let events: any[];
+        const shouldTryDescription = typeof window !== 'undefined' && !!localStorage.getItem('auth_token');
+
+        try {
+            events = await getEventsAction(shouldTryDescription);
+        } catch (error: any) {
+            // If it failed with 403 and we tried to include the description, retry without it
+            if (error?.status === 403 && shouldTryDescription) {
+                events = await getEventsAction(false);
+            } else {
+                throw error;
             }
-        });
-        let events = await directusFetch<any[]>(`/items/events?${query}`);
+        }
 
         if (!Array.isArray(events)) {
             console.warn('[eventsApi.getAll] Expected array response for events, received:', events);
@@ -222,14 +237,25 @@ export const eventsApi = {
     getById: async (id: string) => {
         const baseFields = ['id', 'name', 'event_date', 'event_time', 'inschrijf_deadline', 'description', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact'];
 
-        if (typeof window !== 'undefined' && localStorage.getItem('auth_token')) {
-            baseFields.push('description_logged_in');
-        }
+        const getEventAction = async (includeDescription: boolean) => {
+            const fields = [...baseFields];
+            if (includeDescription) fields.push('description_logged_in');
+            const q = buildQueryString({ fields });
+            return directusFetch<any>(`/items/events/${id}?${q}`);
+        };
 
-        const query = buildQueryString({
-            fields: baseFields
-        });
-        const event = await directusFetch<any>(`/items/events/${id}?${query}`);
+        let event: any;
+        const shouldTryDescription = typeof window !== 'undefined' && !!localStorage.getItem('auth_token');
+
+        try {
+            event = await getEventAction(shouldTryDescription);
+        } catch (error: any) {
+            if (error?.status === 403 && shouldTryDescription) {
+                event = await getEventAction(false);
+            } else {
+                throw error;
+            }
+        }
 
         if (event.committee_id) {
             try {
