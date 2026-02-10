@@ -1,4 +1,4 @@
-import { directusFetch } from '../directus';
+import { directusFetch, API_SERVICE_TOKEN } from '../directus';
 import { COLLECTIONS, FIELDS } from '@/shared/lib/constants/collections';
 
 // --- Types ---
@@ -1141,7 +1141,7 @@ export function getImageUrl(imageId: string | undefined | any, options?: { quali
     }
 
     if (!token) {
-        token = process.env.DIRECTUS_API_TOKEN || process.env.DIRECTUS_API_KEY || null;
+        token = API_SERVICE_TOKEN || null;
     }
 
     // Always use /api proxy which handles authentication via headers

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { API_SERVICE_TOKEN } from '@/shared/lib/directus';
 
 export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
     try {
@@ -13,8 +14,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
             clientAuth = `Bearer ${reqUrl.searchParams.get('access_token')}`;
         }
 
-        const serverKey = process.env.DIRECTUS_API_TOKEN || process.env.DIRECTUS_API_KEY;
-        const authHeader = clientAuth || (serverKey ? `Bearer ${serverKey}` : undefined);
+        const authHeader = clientAuth || (API_SERVICE_TOKEN ? `Bearer ${API_SERVICE_TOKEN}` : undefined);
 
 
         // Preserve query string (e.g., width/quality/access_token)
