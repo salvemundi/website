@@ -970,6 +970,24 @@ export default function AdminDashboardPage() {
                                                 colorClass="teal"
                                             />
                                         )}
+                                        {isIctMember && (
+                                            <ActionCard
+                                                title="Config"
+                                                subtitle="Debug Status"
+                                                icon={<Activity className="h-6 w-6" />}
+                                                onClick={() => router.push('/admin/debug-config')}
+                                                colorClass="blue"
+                                            />
+                                        )}
+                                        {isIctMember && (
+                                            <ActionCard
+                                                title="Modus"
+                                                subtitle="Test Modus"
+                                                icon={<Users className="h-6 w-6" />}
+                                                onClick={() => router.push('/admin/impersonate')}
+                                                colorClass="orange"
+                                            />
+                                        )}
                                     </div>
                                 </div>
                             </div>
