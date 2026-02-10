@@ -22,7 +22,7 @@ const app = express();
 const PORT = process.env.PORT;
 const DIRECTUS_URL = process.env.DIRECTUS_URL;
 const WEBHOOK_URL = process.env.MOLLIE_WEBHOOK_URL;
-const MOLLIE_API_KEY = process.env.FINANCE_MOLLIE_KEY;
+const MOLLIE_API_KEY = process.env.MOLLIE_API_KEY;
 const DIRECTUS_API_TOKEN = process.env.DIRECTUS_ADMIN_TOKEN;
 const EMAIL_SERVICE_URL = process.env.EMAIL_SERVICE_URL;
 const MEMBERSHIP_API_URL = process.env.MEMBERSHIP_API_URL;
@@ -36,7 +36,7 @@ if (!PORT || !DIRECTUS_URL || !DIRECTUS_API_TOKEN) {
 }
 
 if (isProduction && (!WEBHOOK_URL || !MOLLIE_API_KEY)) {
-    console.error('FATAL ERROR: Missing production environment variables (MOLLIE_WEBHOOK_URL, FINANCE_MOLLIE_KEY)');
+    console.error('FATAL ERROR: Missing production environment variables (MOLLIE_WEBHOOK_URL, MOLLIE_API_KEY)');
     process.exit(1);
 }
 
