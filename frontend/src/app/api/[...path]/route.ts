@@ -147,59 +147,40 @@ export async function GET(
 
         let canBypass = false;
         let isUserTokenValid = true;
+        let userData: any = null;
+
         const needsSpecialGuardCheck = path.startsWith('items/events') || path.startsWith('items/event_signups') || path.includes('site_settings') || path.startsWith('items/committees') || path.startsWith('items/committee_members') || path.startsWith('items/pub_crawl_');
 
         const cookie = request.headers.get('Cookie');
-        if ((auth || cookie) && (!isAllowed && !isAuthPath || needsSpecialGuardCheck)) {
-            const bypassOptions = cookie ? { cookie } : undefined;
-            canBypass = await isApiBypass(auth, bypassOptions);
-            if (!canBypass) {
-                try {
-                    const cookieHeader = request.headers.get('Cookie') || '';
-                    const headers = getProxyHeaders(request);
-                    headers['Cache-Control'] = 'no-cache';
+        if (auth || cookie) {
+            // First check if it's the official service token (internal bypass)
+            canBypass = await isApiBypass(auth, { cookie });
 
-                    if (auth) headers['Authorization'] = auth;
-                    if (cookieHeader) headers['Cookie'] = cookieHeader;
+            // Fetch user details for guards (but NOT for automatic bypass)
+            try {
+                const headers = getProxyHeaders(request);
+                headers['Cache-Control'] = 'no-cache';
+                if (auth) headers['Authorization'] = auth;
+                if (cookie) headers['Cookie'] = cookie;
 
-                    const meResp = await fetch(`${DIRECTUS_URL}/users/me`, {
-                        headers,
-                        cache: 'no-store'
-                    });
-                    if (meResp.ok) {
-                        const userData = await meResp.json().catch(() => null);
-                        const userId = userData?.data?.id;
+                const meResp = await fetch(`${DIRECTUS_URL}/users/me`, { headers, cache: 'no-store' });
+                if (meResp.ok) {
+                    const meJson = await meResp.json().catch(() => null);
+                    userData = meJson?.data || meJson;
 
+                    if (userData?.id) {
                         const membershipsResp = await fetch(
-                            `${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.name,is_leader&limit=-1`,
+                            `${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userData.id)}&fields=committee_id.id,committee_id.name,is_leader&limit=-1`,
                             { headers, cache: 'no-store' }
                         );
                         const membershipsJson = await membershipsResp.json().catch(() => ({}));
-                        const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
-
-                        const isGeneralPrivileged = memberships.some((m: any) => {
-                            const name = (m?.committee_id?.name || '').toString().toLowerCase();
-                            const isLeader = m.is_leader === true;
-                            return name.includes('bestuur') || name.includes('ict') || name.includes('kandidaat') || name.includes('kandi') || isLeader;
-                        });
-
-                        if (path.includes('site_settings')) {
-                            // For GET requests, allow all authenticated users to read site_settings
-                            // This is needed so users can see if intro/kroegentocht/reis pages are enabled
-                            // Write operations (POST/PATCH/DELETE) will still be restricted to ICT in the mutation handlers
-                            canBypass = false; // Use user token for personalized access
-                        } else {
-                            canBypass = isGeneralPrivileged;
-                        }
-                    } else if (meResp.status === 401 || meResp.status === 403) {
-                        console.warn(`[Directus Proxy] GET /users/me failed: ${meResp.status}. Marking token as invalid.`);
-                        isUserTokenValid = false;
-                    } else {
-                        console.warn(`[Directus Proxy] GET /users/me failed: ${meResp.status}`);
+                        userData.memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
                     }
-                } catch (e) {
-                    console.error('[Directus Proxy] GET auth check failed:', e);
+                } else if (meResp.status === 401 || meResp.status === 403) {
+                    isUserTokenValid = false;
                 }
+            } catch (e) {
+                // Auth check failed, proceed with caution
             }
         }
 
@@ -336,13 +317,21 @@ export async function GET(
                 path.startsWith('items/committees') ||
                 path.startsWith('items/committee_members') ||
                 path.startsWith('items/event_signups') ||
-                path.startsWith('items/pub_crawl_signups')
+                path.startsWith('items/pub_crawl_signups') ||
+                path.startsWith('items/documents') ||
+                path.startsWith('permissions')
             )) {
                 console.log(`[Directus Proxy] Softening 403 for GET ${path} to avoid browser console error.`);
                 // Return an empty array so frontend map() calls don't crash
                 return NextResponse.json({ data: [], error: 'Forbidden', softened: true }, { status: 200 });
             }
+
+            if (response.status === 401 && path.startsWith('users/me')) {
+                // Soften 401 for /users/me to avoid browser console noise
+                return NextResponse.json({ data: null, error: 'Unauthorized', softened: true }, { status: 200 });
+            }
             console.error(`[Directus Proxy] GET ${path} FAILED: Status ${response.status}`);
+
         }
 
         const responseContentType = response.headers.get('Content-Type');
@@ -427,70 +416,43 @@ async function handleMutation(
         let userData: any = null;
 
         // Optimization: skip expensive checks if path is already authorized by rule
-        const needsAccessCheck = !isAllowed && !isAuthPath;
         const needsSpecialGuardCheck = path.startsWith('items/events') || path.startsWith('items/event_signups') || path.includes('site_settings') || path.startsWith('items/committees') || path.startsWith('items/committee_members') || path.startsWith('items/pub_crawl_');
 
         const cookie = request.headers.get('Cookie');
-        if ((authHeader || cookie) && (needsAccessCheck || needsSpecialGuardCheck)) {
-            // First check if it's the known bypass token
-            canBypass = await isApiBypass(authHeader, { cookie: request.headers.get('Cookie') });
+        if (authHeader || cookie) {
+            // First check if it's the official service token (internal bypass)
+            canBypass = await isApiBypass(authHeader, { cookie });
 
-            if (!canBypass) {
-                // Fetch user data once for all subsequent checks
-                try {
-                    const cookieHeader = request.headers.get('Cookie') || '';
-                    const headers = getProxyHeaders(request);
-                    headers['Cache-Control'] = 'no-cache';
+            // Fetch user data once for all subsequent checks
+            try {
+                const cookieHeader = request.headers.get('Cookie') || '';
+                const headers = getProxyHeaders(request);
+                headers['Cache-Control'] = 'no-cache';
 
-                    if (authHeader) headers['Authorization'] = authHeader;
-                    if (cookieHeader) headers['Cookie'] = cookieHeader;
+                if (authHeader) headers['Authorization'] = authHeader;
+                if (cookieHeader) headers['Cookie'] = cookieHeader;
 
-                    const meResp = await fetch(`${DIRECTUS_URL}/users/me`, {
-                        headers,
-                        cache: 'no-store'
-                    });
-                    if (meResp.ok) {
-                        const meJson = await meResp.json().catch(() => null);
-                        userData = meJson?.data || meJson;
-                        const userId = userData?.id;
+                const meResp = await fetch(`${DIRECTUS_URL}/users/me`, {
+                    headers,
+                    cache: 'no-store'
+                });
+                if (meResp.ok) {
+                    const meJson = await meResp.json().catch(() => null);
+                    userData = meJson?.data || meJson;
 
-                        if (userId) {
-                            // Check memberships for admin/leader status
-                            const membershipsResp = await fetch(
-                                `${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userId)}&fields=committee_id.id,committee_id.name,is_leader&limit=-1`,
-                                { headers, cache: 'no-store' }
-                            );
-                            const membershipsJson = await membershipsResp.json().catch(() => ({}));
-                            const memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
-
-                            userData.memberships = memberships;
-
-                            // Debug logging for membership check
-                            console.log(`[Directus Proxy] User ${userId} memberships:`, memberships.map((m: any) => ({
-                                committee_id: m?.committee_id?.id,
-                                committee_name: m?.committee_id?.name,
-                                is_leader: m?.is_leader
-                            })));
-
-                            canBypass = memberships.some((m: any) => {
-                                const name = (m?.committee_id?.name || '').toString().toLowerCase();
-                                const isLeader = m.is_leader === true;
-                                const hasPrivilege = name.includes('bestuur') || name.includes('ict') || name.includes('kandidaat') || name.includes('kandi') || isLeader;
-                                if (hasPrivilege) {
-                                    console.log(`[Directus Proxy] User ${userId} granted bypass via committee: ${m?.committee_id?.name} (leader: ${isLeader})`);
-                                }
-                                return hasPrivilege;
-                            });
-
-                            console.log(`[Directus Proxy] User ${userId} canBypass result: ${canBypass}`);
-                        }
-                    } else if (meResp.status === 401 || meResp.status === 403) {
-                        console.warn(`[Directus Proxy] MUTATION /users/me failed: ${meResp.status}. Marking token as invalid.`);
-                        isUserTokenValid = false;
+                    if (userData?.id) {
+                        const membershipsResp = await fetch(
+                            `${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userData.id)}&fields=committee_id.id,committee_id.name,is_leader&limit=-1`,
+                            { headers, cache: 'no-store' }
+                        );
+                        const membershipsJson = await membershipsResp.json().catch(() => ({}));
+                        userData.memberships = Array.isArray(membershipsJson?.data) ? membershipsJson.data : [];
                     }
-                } catch (e) {
-                    console.error('[Directus Proxy] Access check failed:', e);
+                } else if (meResp.status === 401 || meResp.status === 403) {
+                    isUserTokenValid = false;
                 }
+            } catch (e) {
+                console.error('[Directus Proxy] Access check failed:', e);
             }
         }
 
