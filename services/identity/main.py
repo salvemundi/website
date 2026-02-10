@@ -13,24 +13,6 @@ import asyncio
 
 app = FastAPI()
 
-INTERNAL_API_KEY = os.getenv("INTERNAL_API_KEY")
-
-@app.middleware("http")
-async def api_key_middleware(request: Request, call_next):
-    if request.url.path == "/health" or request.url.path == "/api/membership/health":
-        return await call_next(request)
-    
-    api_key = request.headers.get("x-api-key") or request.headers.get("x-internal-api-secret")
-    if not INTERNAL_API_KEY:
-        logger.error("INTERNAL_API_KEY not set in environment!")
-        raise HTTPException(status_code=500, detail="Server configuration error")
-    
-    if api_key != INTERNAL_API_KEY:
-        logger.warning(f"Unauthorized access attempt from {request.client.host} to {request.url.path}")
-        raise HTTPException(status_code=401, detail="Unauthorized")
-        
-    return await call_next(request)
-
 logger = logging.getLogger("membership-api")
 if not logger.handlers:
     handler = logging.StreamHandler()
@@ -47,32 +29,51 @@ class EndpointFilter(logging.Filter):
 
 logging.getLogger("uvicorn.access").addFilter(EndpointFilter())
 
-ATTRIBUTE_SET_NAME = "SalveMundiLidmaatschap"
-
+SERVICE_SECRET = os.getenv("SERVICE_SECRET")
 TENANT_ID = os.getenv("MS_GRAPH_TENANT_ID")
 CLIENT_ID = os.getenv("MS_GRAPH_CLIENT_ID")
 CLIENT_SECRET = os.getenv("MS_GRAPH_CLIENT_SECRET")
 DOMAIN = os.getenv("MS_GRAPH_DOMAIN")
 
-
 def validate_env():
     missing = []
-    for name, val in (("MS_GRAPH_TENANT_ID", TENANT_ID), ("MS_GRAPH_CLIENT_ID", CLIENT_ID), ("MS_GRAPH_CLIENT_SECRET", CLIENT_SECRET), ("MS_GRAPH_DOMAIN", DOMAIN)):
+    required_vars = {
+        "SERVICE_SECRET": SERVICE_SECRET,
+        "MS_GRAPH_TENANT_ID": TENANT_ID,
+        "MS_GRAPH_CLIENT_ID": CLIENT_ID,
+        "MS_GRAPH_CLIENT_SECRET": CLIENT_SECRET,
+        "MS_GRAPH_DOMAIN": DOMAIN
+    }
+    
+    for name, val in required_vars.items():
         if not val:
             missing.append(name)
+            
     if missing:
-        logger.error("Missing required environment variables for membership-api: %s", ",".join(missing))
-        # Do not raise here - allow container to start but fail fast on requests with clear log
+        logger.error("FATAL: Missing required environment variables: %s", ",".join(missing))
+        import sys
+        sys.exit(1)
 
-    # Basic sanity check for DOMAIN: it should look like a domain (no @)
     if DOMAIN and "@" in DOMAIN:
-        logger.warning("MS_GRAPH_DOMAIN looks like a full email address (contains '@'). It should be a domain like 'example.com' not a user@domain. Current value: %s", DOMAIN)
+        logger.warning("MS_GRAPH_DOMAIN looks like a full email address (contains '@'). It should be a domain like 'example.com'. Current value: %s", DOMAIN)
     elif DOMAIN:
-        # mask domain minimally when logging (domain is not secret)
         logger.info("MS_GRAPH_DOMAIN set to '%s'", DOMAIN)
 
-
 validate_env()
+
+@app.middleware("http")
+async def api_key_middleware(request: Request, call_next):
+    if request.url.path == "/health" or request.url.path == "/api/membership/health":
+        return await call_next(request)
+    
+    api_key = request.headers.get("x-api-key") or request.headers.get("x-internal-api-secret")
+    if api_key != SERVICE_SECRET:
+        logger.warning(f"Unauthorized access attempt from {request.client.host} to {request.url.path}")
+        raise HTTPException(status_code=401, detail="Unauthorized")
+        
+    return await call_next(request)
+
+ATTRIBUTE_SET_NAME = "SalveMundiLidmaatschap"
 
 router = APIRouter(prefix="/api/membership")
 
@@ -129,9 +130,10 @@ async def find_unique_upn(first_name: str, last_name: str, token: str):
     base_name = f"{clean_name_for_upn(first_name)}.{clean_name_for_upn(last_name)}"
     candidate_upn = f"{base_name}@{DOMAIN}"
     counter = 0
+    max_attempts = 50
     headers = {"Authorization": f"Bearer {token}"}
     async with httpx.AsyncClient() as client:
-        while True:
+        while counter < max_attempts:
             if counter > 0:
                 candidate_upn = f"{base_name}{counter}@{DOMAIN}"
             url = f"https://graph.microsoft.com/v1.0/users?$filter=userPrincipalName eq '{candidate_upn}'&$select=id"
@@ -140,7 +142,14 @@ async def find_unique_upn(first_name: str, last_name: str, token: str):
                 data = response.json()
                 if not data.get("value"): 
                     return candidate_upn
+            elif response.status_code != 404:
+                logger.error("Error checking UPN availability: %s - %s", response.status_code, response.text)
+                raise HTTPException(status_code=500, detail="Error checking UPN availability")
+                
             counter += 1
+        
+        logger.error("Failed to find unique UPN for %s %s after %d attempts", first_name, last_name, max_attempts)
+        raise HTTPException(status_code=500, detail="Could not generate unique UPN")
 
 async def create_azure_user(data: CreateMemberRequest, token: str):
     password = generate_password()

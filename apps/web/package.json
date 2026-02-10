@@ -11,9 +11,8 @@
     "whatwg-encoding": "npm:@exodus/bytes@^1.0.0"
   },
   "scripts": {
-    "dev": "infisical run --env=local -- next dev -p 5173",
+    "dev": "next dev -p 5173",
     "build": "next build",
-    "build:infisical": "infisical run -- next build",
     "start": "next start",
     "lint": "cross-env ESLINT_USE_FLAT_CONFIG=false eslint \"src/**/*.{js,jsx,ts,tsx}\" --fix",
     "typecheck": "tsc --noEmit",

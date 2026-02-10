@@ -6,6 +6,11 @@ services:
       - dev-public
       - dev-mesh
     env_file: .env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   finance:
     build: ./services/finance
@@ -13,6 +18,11 @@ services:
     networks:
       - dev-mesh
     env_file: .env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   email:
     build: ./services/email
@@ -20,6 +30,11 @@ services:
     networks:
       - dev-mesh
     env_file: .env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   identity:
     build: ./services/identity
@@ -27,6 +42,11 @@ services:
     networks:
       - dev-mesh
     env_file: .env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   notifications:
     build: ./services/notifications
@@ -34,6 +54,11 @@ services:
     networks:
       - dev-mesh
     env_file: .env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 networks:
   dev-public:

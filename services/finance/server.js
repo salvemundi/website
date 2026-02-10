@@ -75,12 +75,17 @@ app.use('/trip-email', requireServiceAuth(['frontend']));
 // /api/coupons/validate should be public, but we can protect other coupon routes if they existed.
 // Since only /validate exists, we'll keep it public for now or apply auth selectively.
 
+const envAllowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [];
 const allowedOrigins = [
+    ...envAllowedOrigins,
     'https://dev.salvemundi.nl',
     'https://salvemundi.nl',
-    'https://preprod.salvemundi.nl',
-    'http://localhost:5173'
+    'https://preprod.salvemundi.nl'
 ];
+
+if (process.env.NODE_ENV !== 'production') {
+    allowedOrigins.push('http://localhost:5173');
+}
 
 app.use(cors({
     origin: function (origin, callback) {

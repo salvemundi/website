@@ -12,14 +12,18 @@ const app = express();
 const PORT = process.env.PORT || 3003;
 
 // Middleware
+const envAllowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [];
 const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
+  ...envAllowedOrigins,
   'https://salvemundi.nl',
   'https://www.salvemundi.nl',
   'https://dev.salvemundi.nl',
   'https://preprod.salvemundi.nl'
 ];
+
+if (process.env.NODE_ENV !== 'production') {
+  allowedOrigins.push('http://localhost:5173', 'http://localhost:3000');
+}
 
 const corsOptions = {
   origin: function (origin, callback) {
@@ -66,25 +70,16 @@ if (!vapidKeys.publicKey || !vapidKeys.privateKey) {
 const DIRECTUS_URL = process.env.DIRECTUS_URL || 'https://admin.salvemundi.nl';
 const DIRECTUS_NOTIFICATION_KEY = process.env.DIRECTUS_NOTIFICATION_KEY;
 
-console.log('🔍 Environment variables check:');
-console.log('   DIRECTUS_URL:', DIRECTUS_URL);
-console.log('   DIRECTUS_NOTIFICATION_KEY present:', !!DIRECTUS_NOTIFICATION_KEY);
-console.log('   DIRECTUS_NOTIFICATION_KEY type:', typeof DIRECTUS_NOTIFICATION_KEY);
-console.log('   DIRECTUS_NOTIFICATION_KEY length:', DIRECTUS_NOTIFICATION_KEY ? DIRECTUS_NOTIFICATION_KEY.length : 0);
-console.log('   DIRECTUS_NOTIFICATION_KEY value is empty string:', DIRECTUS_NOTIFICATION_KEY === '');
-console.log('   DIRECTUS_NOTIFICATION_KEY value is undefined:', DIRECTUS_NOTIFICATION_KEY === undefined);
-console.log('   DIRECTUS_NOTIFICATION_KEY raw value:', JSON.stringify(DIRECTUS_NOTIFICATION_KEY));
-console.log('   All env keys containing DIRECTUS:', Object.keys(process.env).filter(k => k.includes('DIRECTUS')));
-
 if (!DIRECTUS_NOTIFICATION_KEY || DIRECTUS_NOTIFICATION_KEY.trim() === '') {
   console.error('⚠️  DIRECTUS_NOTIFICATION_KEY not configured or empty!');
-  console.error('⚠️  Raw value:', JSON.stringify(process.env.DIRECTUS_NOTIFICATION_KEY));
 } else {
-  const keyPreview = DIRECTUS_NOTIFICATION_KEY.length > 4 
-    ? '...' + DIRECTUS_NOTIFICATION_KEY.slice(-4)
-    : '***';
   console.log('✓ Directus notification key configured');
-  console.log('✓ Using key ending with:', keyPreview);
+  if (process.env.NODE_ENV !== 'production') {
+    const keyPreview = DIRECTUS_NOTIFICATION_KEY.length > 4
+      ? '...' + DIRECTUS_NOTIFICATION_KEY.slice(-4)
+      : '***';
+    console.log('✓ Using key ending with:', keyPreview);
+  }
 }
 
 // Helper to fetch from Directus
@@ -111,7 +106,7 @@ async function directusFetch(endpoint, options = {}) {
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ 
+  res.json({
     status: 'ok',
     vapidConfigured: !!(vapidKeys.publicKey && vapidKeys.privateKey)
   });
@@ -212,7 +207,7 @@ app.post('/send', async (req, res) => {
     }
 
     let subscriptions;
-    
+
     if (userIds && userIds.length > 0) {
       // Send to specific users
       const userFilter = userIds.map(id => `filter[user_id][_eq]=${id}`).join('&');
@@ -245,14 +240,14 @@ app.post('/send', async (req, res) => {
           // Handle keys: if it's already an object (JSON field in Directus), use it
           // If it's a string, parse it
           const keys = typeof sub.keys === 'string' ? JSON.parse(sub.keys) : sub.keys;
-          
+
           const subscription = {
             endpoint: sub.endpoint,
             keys: keys
           };
 
           await webpush.sendNotification(subscription, payload);
-          
+
           // Update last_used timestamp
           await directusFetch(`/items/push_notification/${sub.id}`, {
             method: 'PATCH',
@@ -269,7 +264,7 @@ app.post('/send', async (req, res) => {
             body: error.body,
             headers: error.headers
           });
-          
+
           // If subscription is invalid, delete it
           if (error.statusCode === 410 || error.statusCode === 404) {
             await directusFetch(`/items/push_notification/${sub.id}`, {
@@ -538,7 +533,7 @@ app.post('/notify-intro-signups', async (req, res) => {
     }
 
     let userIds = [];
-    
+
     // Only fetch parent signups which have user_id (intro signups are anonymous)
     if (includeParents) {
       console.log('[Intro Signups] Fetching parent signups...');
@@ -558,7 +553,7 @@ app.post('/notify-intro-signups', async (req, res) => {
       subscriptions = await directusFetch(`/items/push_notification?filter[user_id][_in]=${userIdsParam}`);
     } else {
       console.log('[Intro Signups] includeParents is false or no parent signups found');
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'No recipients available. Enable "includeParents" to send to intro ouders with accounts.',
         sent: 0
       });
@@ -680,13 +675,13 @@ app.post('/notify-membership-renewal-reminder', async (req, res) => {
       subscriptions.map(async (sub) => {
         try {
           const expiryDate = userExpiryMap.get(sub.user_id);
-          const daysUntilExpiry = expiryDate 
+          const daysUntilExpiry = expiryDate
             ? Math.ceil((new Date(expiryDate) - today) / (1000 * 60 * 60 * 24))
             : daysBeforeExpiry;
 
           const payload = JSON.stringify({
             title: '⚠️ Lidmaatschap verloopt binnenkort!',
-            body: daysUntilExpiry <= 7 
+            body: daysUntilExpiry <= 7
               ? `Je lidmaatschap verloopt over ${daysUntilExpiry} dag${daysUntilExpiry !== 1 ? 'en' : ''}. Verlengen kan via de app!`
               : `Je lidmaatschap verloopt over ongeveer ${Math.floor(daysUntilExpiry / 7)} ${Math.floor(daysUntilExpiry / 7) === 1 ? 'week' : 'weken'}. Vergeet niet te verlengen!`,
             icon: '/icon-512x512.png',

@@ -13,6 +13,11 @@
     environment:
       - TZ=Europe/Amsterdam
       - CONFIG_PATH=/app/config.yaml
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
       - proxy-network
 
