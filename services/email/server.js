@@ -162,7 +162,7 @@ const limiter = rateLimit({
   skip: (req) => {
     // Skip rate limiting for internal services that provide a valid API key
     const apiKey = req.headers['x-api-key'] || req.headers['x-internal-api-secret'];
-    return apiKey && apiKey === process.env.INTERNAL_API_KEY;
+    return apiKey && apiKey === process.env.SERVICE_SECRET;
   },
   message: { error: 'Too many requests, please try again later.' }
 });
@@ -197,11 +197,11 @@ const apiKeyAuth = (req, res, next) => {
 
   // Check for API key - support both standard and internal header names
   const apiKey = req.headers['x-api-key'] || req.headers['x-internal-api-secret'];
-  const validApiKey = process.env.INTERNAL_API_KEY;
+  const validApiKey = process.env.SERVICE_SECRET;
 
   if (!validApiKey) {
     // If no key is configured on server, warn but allow (or deny? Safe default: deny)
-    console.error('❌ [email-api] INTERNAL_API_KEY is not set in environment variables! Denying all requests.');
+    console.error('❌ [email-api] SERVICE_SECRET is not set in environment variables! Denying all requests.');
     return res.status(500).json({ error: 'Server configuration error' });
   }
 
@@ -761,7 +761,7 @@ app.get(['/calendar', '/calendar.ics'], async (req, res) => {
 
     // Fetch events from Directus
     const directusUrl = process.env.DIRECTUS_URL || 'https://admin.salvemundi.nl';
-    const directusToken = process.env.DIRECTUS_API_TOKEN;
+    const directusToken = process.env.DIRECTUS_ADMIN_TOKEN;
 
     if (!directusToken) {
       return res.status(500).json({ error: 'Directus API key not configured' });
@@ -898,7 +898,7 @@ app.get('/.well-known/webcal', (req, res) => {
 app.get('/calendar/debug', async (req, res) => {
   try {
     const directusUrl = process.env.DIRECTUS_URL || 'https://admin.salvemundi.nl';
-    const directusToken = process.env.DIRECTUS_API_TOKEN;
+    const directusToken = process.env.DIRECTUS_ADMIN_TOKEN;
     if (!directusToken) return res.status(500).json({ error: 'Directus API key not configured' });
 
     const eventsResponse = await fetch(`${directusUrl}/items/events?fields=id,name,event_date,description,location&sort=-event_date&limit=-1`, {

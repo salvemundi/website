@@ -1,5 +1,17 @@
 import type { NextConfig } from 'next';
 
+const getDirectusHostname = () => {
+    const url = process.env.NEXT_PUBLIC_DIRECTUS_URL;
+    if (!url) return null;
+    try {
+        return new URL(url).hostname;
+    } catch {
+        return null;
+    }
+};
+
+const directusHostname = getDirectusHostname();
+
 const nextConfig: NextConfig = {
     // Enable React strict mode
     reactStrictMode: true,
@@ -19,6 +31,18 @@ const nextConfig: NextConfig = {
                 protocol: 'https',
                 hostname: 'admin.salvemundi.nl',
             },
+            {
+                protocol: 'http',
+                hostname: 'directus', // Docker internal for SSR
+            },
+            ...(directusHostname && directusHostname !== 'admin.salvemundi.nl' && directusHostname !== 'directus'
+                ? [
+                    {
+                        protocol: (process.env.NEXT_PUBLIC_DIRECTUS_URL?.split(':')[0] as any) || 'https',
+                        hostname: directusHostname,
+                    },
+                ]
+                : []),
             {
                 protocol: 'https',
                 hostname: 'data.imagination.platour.net',
