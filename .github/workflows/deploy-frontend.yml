@@ -94,7 +94,6 @@ jobs:
             NEXT_PUBLIC_ENTRA_CLIENT_ID=${{ env.NEXT_PUBLIC_ENTRA_CLIENT_ID }}
             NEXT_PUBLIC_ENTRA_TENANT_ID=${{ env.NEXT_PUBLIC_ENTRA_TENANT_ID }}
             NEXT_PUBLIC_EMAIL_API_ENDPOINT=${{ env.NEXT_PUBLIC_EMAIL_API_ENDPOINT }}
-            NEXT_PUBLIC_DIRECTUS_API_KEY=${{ env.NEXT_PUBLIC_DIRECTUS_API_KEY }}
             NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
             NEXT_PUBLIC_SITE_TAG=${{ env.TAG }}
 
@@ -118,7 +117,7 @@ jobs:
           TAG: ${{ env.TAG }}
           INTERNAL_API_KEY: ${{ secrets.INTERNAL_API_KEY }}
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || env.NEXTAUTH_SECRET }}
-          DIRECTUS_FRONTEND_FRONTEND_TOKEN: ${{ secrets.DIRECTUS_FRONTEND_FRONTEND_TOKEN }}
+          DIRECTUS_FRONTEND_FRONTEND_TOKEN: ${{ env.DIRECTUS_FRONTEND_FRONTEND_TOKEN }}
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}

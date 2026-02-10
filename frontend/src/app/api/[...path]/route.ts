@@ -8,18 +8,12 @@ let API_BYPASS_USER_ID = process.env.DIRECTUS_API_USER_ID ?? null;
 
 // Detect a Directus API token used by server-side services or the frontend build.
 // SECURITY: Only use server-side environment variables. NEVER allow NEXT_PUBLIC_ variables here.
-const API_SERVICE_TOKEN = process.env.DIRECTUS_FRONTEND_FRONTEND_TOKEN ??
-    process.env.DIRECTUS_API_TOKEN ??
-    process.env.DIRECTUS_API_KEY ??
-    process.env.DIRECTUS_TOKEN ?? null;
+const DIRECTUS_FRONTEND_FRONTEND_TOKEN = process.env.DIRECTUS_FRONTEND_FRONTEND_TOKEN ?? null;
 
-// Ensure we don't accidentally use the public key as a service token
-if (process.env.NEXT_PUBLIC_DIRECTUS_API_KEY && API_SERVICE_TOKEN === process.env.NEXT_PUBLIC_DIRECTUS_API_KEY) {
-    console.warn('[Directus Proxy] WARNING: Server token matches Public API Key. This is a security risk.');
-}
+// No-op - removed security risk check for NEXT_PUBLIC_DIRECTUS_API_KEY
 
-if (!API_SERVICE_TOKEN) {
-    console.warn('[Directus Proxy] WARNING: API_SERVICE_TOKEN is not set. Admin bypass will not work.');
+if (!DIRECTUS_FRONTEND_FRONTEND_TOKEN) {
+    console.warn('[Directus Proxy] WARNING: DIRECTUS_FRONTEND_FRONTEND_TOKEN is not set. Public data access via proxy may fail.');
 }
 
 const allowedCollections = [
@@ -48,7 +42,7 @@ async function isApiBypass(auth: string | null, options?: { cookie?: string | nu
     const token = auth?.startsWith('Bearer ') ? auth.slice(7) : auth;
 
     // 1. Immediate match with service token (fastest)
-    if (API_SERVICE_TOKEN && token === String(API_SERVICE_TOKEN)) {
+    if (DIRECTUS_FRONTEND_FRONTEND_TOKEN && token === String(DIRECTUS_FRONTEND_FRONTEND_TOKEN)) {
         return true;
     }
 
@@ -72,10 +66,10 @@ async function isApiBypass(auth: string | null, options?: { cookie?: string | nu
     }
 
     // 3. One-time discovery of the service user's ID
-    if (API_SERVICE_TOKEN) {
+    if (DIRECTUS_FRONTEND_FRONTEND_TOKEN) {
         try {
             const svcResp = await fetch(`${DIRECTUS_URL}/users/me`, {
-                headers: { Authorization: `Bearer ${API_SERVICE_TOKEN}` },
+                headers: { Authorization: `Bearer ${DIRECTUS_FRONTEND_FRONTEND_TOKEN}` },
                 cache: 'no-store'
             });
             if (svcResp.ok) {
@@ -199,8 +193,8 @@ export async function GET(
 
         let targetSearch = url.search;
 
-        if (canBypass && API_SERVICE_TOKEN) {
-            forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
+        if (canBypass && DIRECTUS_FRONTEND_FRONTEND_TOKEN) {
+            forwardHeaders['Authorization'] = `Bearer ${DIRECTUS_FRONTEND_FRONTEND_TOKEN}`;
             // If we are bypassing, and original request had access_token in URL, remove it so Directus uses our Service Token header
             if (url.searchParams.has('access_token')) {
                 const newParams = new URLSearchParams(url.searchParams);
@@ -236,9 +230,9 @@ export async function GET(
         } else if (auth && !isUserTokenValid && isAllowed && !needsSpecialGuardCheck) {
             console.log(`[Directus Proxy] Stripping invalid token for public path: ${path}`);
             // Header is not added, effectively making it anonymous
-        } else if (!auth && !cookie && isAllowed && !needsSpecialGuardCheck && API_SERVICE_TOKEN) {
+        } else if (!auth && !cookie && isAllowed && !needsSpecialGuardCheck && DIRECTUS_FRONTEND_FRONTEND_TOKEN) {
             // Use service token for public requests to allowed collections
-            forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
+            forwardHeaders['Authorization'] = `Bearer ${DIRECTUS_FRONTEND_FRONTEND_TOKEN}`;
         }
 
         // FINAL SAFETY CHECK: Ensure we never send double auth
@@ -266,7 +260,7 @@ export async function GET(
 
         const pathParts = path.split('/');
         const isItemsPath = pathParts[0] === 'items';
-        const isPublicToken = !auth || (API_SERVICE_TOKEN && (auth.startsWith('Bearer ') ? auth.slice(7) : auth) === String(API_SERVICE_TOKEN));
+        const isPublicToken = !auth || (DIRECTUS_FRONTEND_FRONTEND_TOKEN && (auth.startsWith('Bearer ') ? auth.slice(7) : auth) === String(DIRECTUS_FRONTEND_FRONTEND_TOKEN));
         const shouldCache = isItemsPath && (isPublicToken || canBypass);
 
         const tags: string[] = [];
@@ -610,12 +604,12 @@ async function handleMutation(
         let targetSearch = url.search;
 
         // Auto-auth for specific public forms (Intro, Event Signups, etc.)
-        if (!authHeader && !cookie && isAllowed && !needsSpecialGuardCheck && API_SERVICE_TOKEN) {
-            forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
+        if (!authHeader && !cookie && isAllowed && !needsSpecialGuardCheck && DIRECTUS_FRONTEND_FRONTEND_TOKEN) {
+            forwardHeaders['Authorization'] = `Bearer ${DIRECTUS_FRONTEND_FRONTEND_TOKEN}`;
         }
 
-        if (canBypass && API_SERVICE_TOKEN) {
-            forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
+        if (canBypass && DIRECTUS_FRONTEND_FRONTEND_TOKEN) {
+            forwardHeaders['Authorization'] = `Bearer ${DIRECTUS_FRONTEND_FRONTEND_TOKEN}`;
         } else if (authHeader && (isUserTokenValid || isAuthPath || needsSpecialGuardCheck || isAllowed)) {
             const isIdentityPath = path.startsWith('users/me');
             const isStrictAuthPath = (path.includes('auth/') || path.startsWith('auth/')) && !isIdentityPath;
