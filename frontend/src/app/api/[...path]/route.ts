@@ -673,7 +673,10 @@ async function handleMutation(
 
         if (!response.ok) {
             // Detailed logging for impersonation errors
-            if (isImpersonating) {
+            // Skip logging for site_settings 403s as they are expected during policy testing
+            const isSiteSettings403 = response.status === 403 && path.includes('site_settings');
+
+            if (isImpersonating && !isSiteSettings403) {
                 console.error(`[IMPERSONATION ERROR] ${method} ${path} | Status: ${response.status}`);
                 const errorText = await response.clone().text().catch(() => '(unable to read error body)');
                 console.error(`[IMPERSONATION ERROR] Body: ${errorText}`);
