@@ -268,19 +268,7 @@ export async function GET(
             tags.push(pathParts[1]);
         }
 
-        // DIAGNOSTIC: Log final state for asset requests AFTER all header manipulation
-        if (path.includes('assets') || path.includes('image')) {
-            console.warn(`[ASSET DEBUG] ===== FINAL REQUEST TO DIRECTUS =====`);
-            console.warn(`[ASSET DEBUG] Path: ${path}`);
-            console.warn(`[ASSET DEBUG] Target URL: ${targetUrl}`);
-            console.warn(`[ASSET DEBUG] Query has access_token: ${targetSearch.includes('access_token')}`);
-            console.warn(`[ASSET DEBUG] Authorization header present: ${!!forwardHeaders['Authorization']}`);
-            console.warn(`[ASSET DEBUG] Cookie header present: ${!!forwardHeaders['Cookie']}`);
-            if (forwardHeaders['Cookie']) {
-                console.warn(`[ASSET DEBUG] Cookie value (first 50 chars): ${forwardHeaders['Cookie'].substring(0, 50)}`);
-            }
-            console.warn(`[ASSET DEBUG] ==========================================`);
-        }
+        // DIAGNOSTIC logs removed
 
         const fetchOptions: RequestInit = {
             method: 'GET',
@@ -302,37 +290,31 @@ export async function GET(
         const response = await fetch(targetUrl, fetchOptions);
 
         if (!response.ok) {
-            // Special handling for 400 errors on assets
+            // Detailed logging for asset failures (Critical for debugging Double Auth issues)
             if (response.status === 400 && (path.includes('assets') || path.includes('image'))) {
-                console.error(`[ASSET DEBUG] ===== 400 ERROR FROM DIRECTUS =====`);
+                console.error(`[ASSET ERROR] ===== 400 BAD REQUEST FROM DIRECTUS =====`);
+                console.error(`[ASSET ERROR] Path: ${path}`);
                 const errorText = await response.text().catch(() => '(unable to read error body)');
-                console.error(`[ASSET DEBUG] Error body: ${errorText}`);
-                console.error(`[ASSET DEBUG] This means Directus saw multiple auth methods!`);
-                console.error(`[ASSET DEBUG] ======================================`);
-                // Return error response
+                console.error(`[ASSET ERROR] Response Body: ${errorText}`);
+                console.error(`[ASSET ERROR] Potential Root Cause: Multiple authentication methods detected.`);
+                console.error(`[ASSET ERROR] ============================================`);
                 return new NextResponse(errorText, { status: 400 });
             }
 
-            if (response.status === 403 && (
-                path.startsWith('items/site_settings') ||
-                path.startsWith('items/committees') ||
-                path.startsWith('items/committee_members') ||
-                path.startsWith('items/event_signups') ||
-                path.startsWith('items/pub_crawl_signups') ||
-                path.startsWith('items/documents') ||
-                path.startsWith('permissions')
-            )) {
-                console.log(`[Directus Proxy] Softening 403 for GET ${path} to avoid browser console error.`);
-                // Return an empty array so frontend map() calls don't crash
-                return NextResponse.json({ data: [], error: 'Forbidden', softened: true }, { status: 200 });
+            // Silence 403 errors for public collections to avoid browser console noise
+            // (We don't log these to STDOUT/STDERR to prevent log pollution)
+            if (response.status === 403 && (isAllowed || path.startsWith('permissions'))) {
+                return NextResponse.json({ data: [], error: 'Forbidden', silenced: true }, { status: 200 });
             }
 
             if (response.status === 401 && path.startsWith('users/me')) {
-                // Soften 401 for /users/me to avoid browser console noise
                 return NextResponse.json({ data: null, error: 'Unauthorized', softened: true }, { status: 200 });
             }
-            console.error(`[Directus Proxy] GET ${path} FAILED: Status ${response.status}`);
 
+            // Log other actual failures (500, 404, etc.)
+            if (response.status !== 403 && response.status !== 401) {
+                console.error(`[Directus Proxy] GET ${path} FAILED: Status ${response.status}`);
+            }
         }
 
         const responseContentType = response.headers.get('Content-Type');
@@ -341,7 +323,6 @@ export async function GET(
             const safe = data === null ? {} : data;
             return NextResponse.json(safe, { status: response.status });
         } else {
-            // Use arrayBuffer for non-JSON content to preserve binary data (images, files, etc.)
             const buffer = await response.arrayBuffer().catch(() => new ArrayBuffer(0));
             return new Response(buffer, {
                 status: response.status,
@@ -670,21 +651,19 @@ async function handleMutation(
         if (!response.ok) {
             const errorText = await response.text().catch(() => 'No error body');
 
-            // Detailed logging for auth failures
-            if (path.includes('auth/')) {
-                console.error(`[Directus Proxy] AUTH UPSTREAM FAILED: ${method} ${path} | Status ${response.status} | Body size: ${errorText.length} | First chars: ${errorText.slice(0, 100)}`);
-            } else {
-                console.error(`[Directus Proxy] Upstream ${method} ${path} FAILED: Status ${response.status} | Body: ${errorText.slice(0, 200)}`);
+            // Silent logs for 403/401 in mutation handler unless it's a critical auth issue
+            if (response.status !== 403 && response.status !== 401) {
+                if (path.includes('auth/')) {
+                    console.error(`[Directus Proxy] AUTH UPSTREAM FAILED: ${method} ${path} | Status ${response.status}`);
+                } else {
+                    console.error(`[Directus Proxy] Upstream ${method} ${path} FAILED: Status ${response.status}`);
+                }
             }
 
 
-            if (response.status === 403 && (
-                path.startsWith('items/site_settings') ||
-                path.startsWith('items/documents') ||
-                path.startsWith('permissions')
-            )) {
-                console.log(`[Directus Proxy] Softening 403 for GET ${path} to avoid browser console error.`);
-                return NextResponse.json({ data: null, error: 'Forbidden', softened: true }, { status: 200 });
+            // Silence 403 errors in mutations too for softened collections
+            if (response.status === 403 && (path.includes('site_settings') || path.startsWith('permissions'))) {
+                return NextResponse.json({ data: null, error: 'Forbidden', silenced: true }, { status: 200 });
             }
 
 
