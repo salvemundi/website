@@ -153,8 +153,14 @@ export const paymentApi = {
 export const eventsApi = {
     getAll: async () => {
         const now = new Date().toISOString();
+        const baseFields = ['id', 'name', 'event_date', 'event_time', 'inschrijf_deadline', 'description', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact', 'status', 'publish_date'];
+
+        if (typeof window !== 'undefined' && localStorage.getItem('auth_token')) {
+            baseFields.push('description_logged_in');
+        }
+
         const query = buildQueryString({
-            fields: ['id', 'name', 'event_date', 'event_time', 'inschrijf_deadline', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact', 'status', 'publish_date'],
+            fields: baseFields,
             sort: ['-event_date'],
             filter: {
                 _or: [
@@ -214,8 +220,14 @@ export const eventsApi = {
     },
 
     getById: async (id: string) => {
+        const baseFields = ['id', 'name', 'event_date', 'event_time', 'inschrijf_deadline', 'description', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact'];
+
+        if (typeof window !== 'undefined' && localStorage.getItem('auth_token')) {
+            baseFields.push('description_logged_in');
+        }
+
         const query = buildQueryString({
-            fields: ['id', 'name', 'event_date', 'event_time', 'inschrijf_deadline', 'description', 'description_logged_in', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact']
+            fields: baseFields
         });
         const event = await directusFetch<any>(`/items/events/${id}?${query}`);
 

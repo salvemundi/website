@@ -32,7 +32,7 @@ interface ActiviteitCardProps {
 const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     id: _id,
     description,
-    description_logged_in: _description_logged_in,
+    description_logged_in,
     image,
     title,
     date,
@@ -254,7 +254,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                 </div>
 
                 <p className="text-theme-muted text-sm line-clamp-3 leading-relaxed">
-                    {description}
+                    {description_logged_in || description}
                 </p>
 
                 {/* Footer Section */}

@@ -471,6 +471,8 @@ export default function EventDetailPage() {
     }
 
     const headerFilter = isPast ? 'grayscale(100%) brightness(0.6) contrast(0.95)' : undefined;
+    const descriptionToUse = event?.description_logged_in || event?.description;
+
 
     return (
         <>
@@ -787,7 +789,7 @@ export default function EventDetailPage() {
                     </div>
 
                     {/* Description - Large Tile (2x2 on desktop) */}
-                    {event.description && (
+                    {descriptionToUse && (
                         <div className="md:col-span-2 md:row-span-2 rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-8 shadow-lg flex flex-col">
                             <h2 className="mb-4 text-2xl font-bold text-theme-purple dark:text-theme-white flex items-center gap-2">
                                 <Info className="h-6 w-6 text-theme-purple dark:text-theme-white" />
@@ -797,14 +799,14 @@ export default function EventDetailPage() {
                               Preserve newlines for plain text coming from Directus while still
                               allowing HTML descriptions to be rendered via dangerouslySetInnerHTML.
                             */}
-                            {/<\/?[a-z][\s\S]*>/i.test(event.description) ? (
+                            {/<\/?[a-z][\s\S]*>/i.test(descriptionToUse) ? (
                                 <div
                                     className="prose dark:prose-invert max-w-none text-theme-purple dark:text-theme-white/90 flex-grow"
-                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(event.description) }}
+                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(descriptionToUse) }}
                                 />
                             ) : (
                                 <div className="prose dark:prose-invert max-w-none text-theme-purple dark:text-theme-white/90 flex-grow whitespace-pre-line">
-                                    {event.description}
+                                    {descriptionToUse}
                                 </div>
                             )}
                         </div>
