@@ -120,7 +120,7 @@ jobs:
             fi
 
             docker compose pull graph-sync
-            docker compose up -d graph-sync --force-recreate --remove-orphans
+            docker compose up -d graph-sync --force-recreate
 
             echo "Waiting for container to be healthy..."
             CONTAINER_NAME="graph-sync"

@@ -193,7 +193,7 @@ jobs:
 
             # Restart
             docker compose pull
-            docker compose up -d --force-recreate --remove-orphans
+            docker compose up -d --force-recreate
 
             echo "Waiting for Directus to respond on port 8055..."
             CONTAINER_NAME="directus"

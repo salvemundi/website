@@ -103,7 +103,7 @@ jobs:
             
             # Starten (zonder sudo, user zit in docker groep)
             docker compose pull
-            docker compose up -d --force-recreate --remove-orphans
+            docker compose up -d --force-recreate
             
             docker image prune -f
 

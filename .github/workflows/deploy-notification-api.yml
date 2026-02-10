@@ -111,7 +111,7 @@ jobs:
             printf "INTERNAL_API_KEY=%s\n" "$INTERNAL_API_KEY" >> .env
 
             docker compose pull notification-api
-            docker compose up -d notification-api --force-recreate --remove-orphans
+            docker compose up -d notification-api --force-recreate
 
             echo "Waiting for container to be healthy..."
             CONTAINER_NAME="notification-api-${TAG:-dev}"
