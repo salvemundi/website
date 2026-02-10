@@ -110,11 +110,6 @@ const nextConfig: NextConfig = {
     // Disable x-powered-by header
     poweredByHeader: false,
 
-    // IMPORTANT: Rewrites removed. 
-    // All /api/admin, /api/payments, and /api/coupons are now handled via file-based routes
-    // to allow for better debugging, logging, and consistency across environments.
-    // Catches for Directus should also be handled via src/app/api/[...path]/route.ts
-
     // Custom headers for security and caching
     async headers() {
         return [
@@ -203,13 +198,36 @@ const nextConfig: NextConfig = {
             },
         ];
     },
+
     async rewrites() {
-        return [
-            {
-                source: '/calendar',
-                destination: 'http://email:3000/calendar',
-            },
-        ];
+        return {
+            beforeFiles: [
+                // Finance Service (Port 3002) - Keep prefixes
+                {
+                    source: '/api/payments/:path*',
+                    destination: 'http://finance:3002/api/payments/:path*',
+                },
+                {
+                    source: '/api/coupons/:path*',
+                    destination: 'http://finance:3002/api/coupons/:path*',
+                },
+                {
+                    source: '/api/admin/:path*',
+                    destination: 'http://finance:3002/api/admin/:path*',
+                },
+                // Email Service (Port 3001) - Strip prefix for API, keep for calendar
+                {
+                    source: '/api/email/:path*',
+                    destination: 'http://email:3001/:path*',
+                },
+                {
+                    source: '/calendar',
+                    destination: 'http://email:3001/calendar',
+                },
+            ],
+            afterFiles: [],
+            fallback: [],
+        };
     },
 };
 
