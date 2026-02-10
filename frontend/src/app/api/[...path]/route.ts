@@ -248,9 +248,17 @@ export async function GET(
         } else if (auth && !isUserTokenValid && isAllowed && !needsSpecialGuardCheck) {
             console.log(`[Directus Proxy] Stripping invalid token for public path: ${path}`);
             // Header is not added, effectively making it anonymous
-        } else if (!auth && !cookie && isAllowed && !needsSpecialGuardCheck && DIRECTUS_FRONTEND_FRONTEND_TOKEN) {
+        } else if (!auth && isAllowed && !needsSpecialGuardCheck && DIRECTUS_FRONTEND_FRONTEND_TOKEN) {
             // Use service token for public requests to allowed collections
+            // We ignore cookies here because for public assets/endpoints, the Service Token is preferred
+            // unless the user explicitly provided an Auth header.
             forwardHeaders['Authorization'] = `Bearer ${DIRECTUS_FRONTEND_FRONTEND_TOKEN}`;
+
+            // CRITICAL: Remove cookies to prevent "Multiple authentication methods" error from Directus
+            // (It complains if it sees both Bearer token and Cookies)
+            if (forwardHeaders['Cookie']) {
+                delete forwardHeaders['Cookie'];
+            }
         }
 
         // FINAL SAFETY CHECK: Ensure we never send double auth
@@ -623,8 +631,13 @@ async function handleMutation(
         let targetSearch = url.search;
 
         // Auto-auth for specific public forms (Intro, Event Signups, etc.)
-        if (!authHeader && !cookie && isAllowed && !needsSpecialGuardCheck && DIRECTUS_FRONTEND_FRONTEND_TOKEN) {
+        if (!authHeader && isAllowed && !needsSpecialGuardCheck && DIRECTUS_FRONTEND_FRONTEND_TOKEN) {
             forwardHeaders['Authorization'] = `Bearer ${DIRECTUS_FRONTEND_FRONTEND_TOKEN}`;
+
+            // CRITICAL: Remove cookies to prevent "Multiple authentication methods" error
+            if (forwardHeaders['Cookie']) {
+                delete forwardHeaders['Cookie'];
+            }
         }
 
         if (canBypass && DIRECTUS_FRONTEND_FRONTEND_TOKEN) {
