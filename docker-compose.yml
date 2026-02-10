@@ -1,0 +1,106 @@
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - data-plane
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_DATABASE}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  directus:
+    build: ./directus # Assuming the directus setup is in ./directus
+    restart: unless-stopped
+    environment:
+      DB_CLIENT: "pg"
+      DB_HOST: "db"
+      DB_PORT: "5432"
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      KEY: ${DIRECTUS_KEY}
+      SECRET: ${DIRECTUS_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      PUBLIC_URL: ${PUBLIC_URL}
+    networks:
+      - public-ingress
+      - service-mesh
+      - data-plane
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - directus_uploads:/directus/uploads
+
+  finance:
+    build:
+      context: .
+      dockerfile: ./services/finance/Dockerfile
+    restart: unless-stopped
+    environment:
+      SERVICE_SECRET: ${SERVICE_SECRET}
+      DIRECTUS_TOKEN: ${DIRECTUS_ADMIN_TOKEN}
+      DIRECTUS_URL: ${INTERNAL_DIRECTUS_URL}
+      MOLLIE_KEY: ${MOLLIE_KEY}
+    networks:
+      - service-mesh
+      - data-plane
+
+  identity:
+    build:
+      context: .
+      dockerfile: ./services/identity/Dockerfile
+    restart: unless-stopped
+    environment:
+      SERVICE_SECRET: ${SERVICE_SECRET}
+      DIRECTUS_TOKEN: ${DIRECTUS_ADMIN_TOKEN}
+      DIRECTUS_URL: ${INTERNAL_DIRECTUS_URL}
+    networks:
+      - service-mesh
+      - data-plane
+
+  email:
+    build:
+      context: .
+      dockerfile: ./services/email/Dockerfile
+    restart: unless-stopped
+    environment:
+      SERVICE_SECRET: ${SERVICE_SECRET}
+      DIRECTUS_TOKEN: ${DIRECTUS_ADMIN_TOKEN}
+      DIRECTUS_URL: ${INTERNAL_DIRECTUS_URL}
+    networks:
+      - service-mesh
+
+  web:
+    build:
+      context: .
+      dockerfile: ./apps/web/Dockerfile
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_DIRECTUS_URL: ${NEXT_PUBLIC_DIRECTUS_URL}
+      DIRECTUS_ADMIN_TOKEN: ${DIRECTUS_ADMIN_TOKEN}
+      SERVICE_SECRET: ${SERVICE_SECRET}
+    networks:
+      - public-ingress
+      - service-mesh
+
+networks:
+  public-ingress:
+    driver: bridge
+  service-mesh:
+    internal: true
+  data-plane:
+    internal: true
+
+volumes:
+  postgres_data:
+  directus_uploads:
