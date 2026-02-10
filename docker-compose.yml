@@ -60,7 +60,7 @@ services:
       SERVICE_SECRET: ${SERVICE_SECRET}
       DIRECTUS_ADMIN_TOKEN: ${DIRECTUS_ADMIN_TOKEN}
       DIRECTUS_URL: ${INTERNAL_DIRECTUS_URL}
-      FINANCE_MOLLIE_KEY: ${FINANCE_MOLLIE_KEY}
+      MOLLIE_API_KEY: ${MOLLIE_API_KEY}
     logging:
       driver: "json-file"
       options:
