@@ -9,6 +9,7 @@ import { slugify } from "@/shared/lib/utils/slug";
 import { useAuth } from "@/features/auth/providers/auth-provider";
 import { useSalvemundiSiteSettings } from "@/shared/lib/hooks/useSalvemundiApi";
 import { ROUTES } from "@/shared/lib/routes";
+import { directusUrl } from "@/shared/lib/directus";
 
 interface Document {
     id: number;
@@ -56,7 +57,7 @@ export default function Footer() {
         });
     }, [committeesData]);
 
-    const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://admin.salvemundi.nl';
+
 
     return (
         <footer className="relative overflow-hidden bg-gradient-theme text-theme-text dark:text-theme-white">

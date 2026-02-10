@@ -138,7 +138,13 @@ export async function GET(
     context: { params: Promise<{ path: string[] }> }
 ) {
     const params = await context.params;
-    const path = params.path.join('/');
+    let path = params.path.join('/');
+
+    // Rewrite directus-auth to auth to allow bypassing NextAuth's capture of /api/auth
+    if (path.startsWith('directus-auth/')) {
+        path = path.replace('directus-auth/', 'auth/');
+    }
+
     const url = new URL(request.url);
     const auth = getAuthToken(request, url);
 
@@ -305,8 +311,12 @@ export async function GET(
         const isImpersonating = !!request.headers.get('Cookie')?.includes(TEST_TOKEN_COOKIE);
 
         if (!response.ok) {
+            // Check if this is a benign 403 error that we should silence
+            const isIgnorableError = response.status === 403 && (isAllowed || path.startsWith('permissions'));
+
             // Detailed logging for impersonation errors as requested
-            if (isImpersonating) {
+            // ONLY log if it is NOT an ignorable error
+            if (isImpersonating && !isIgnorableError) {
                 console.error(`[IMPERSONATION ERROR] Path: ${path} | Status: ${response.status} | URL: ${targetUrl}`);
                 const errorText = await response.clone().text().catch(() => '(unable to read error body)');
                 console.error(`[IMPERSONATION ERROR] Body: ${errorText}`);
@@ -325,7 +335,7 @@ export async function GET(
 
             // Silence 403 errors for public collections to avoid browser console noise
             // (We don't log these to STDOUT/STDERR to prevent log pollution)
-            if (response.status === 403 && (isAllowed || path.startsWith('permissions'))) {
+            if (isIgnorableError) {
                 return NextResponse.json({ data: [], error: 'Forbidden', silenced: true }, { status: 200 });
             }
 
@@ -369,7 +379,13 @@ async function handleMutation(
     context: { params: Promise<{ path: string[] }> }
 ) {
     const params = await context.params;
-    const path = params.path.join('/');
+    let path = params.path.join('/');
+
+    // Rewrite directus-auth to auth to allow bypassing NextAuth's capture of /api/auth
+    if (path.startsWith('directus-auth/')) {
+        path = path.replace('directus-auth/', 'auth/');
+    }
+
     const url = new URL(request.url);
     const authHeader = getAuthToken(request, url);
 

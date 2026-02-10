@@ -80,8 +80,7 @@ export default function RootLayout({
                 {/* Prevent zoom on Android - Handheld Mode */}
                 <meta name="HandheldFriendly" content="true" />
                 {/* Resource hints for better performance */}
-                <link rel="preconnect" href="https://admin.salvemundi.nl" />
-                <link rel="dns-prefetch" href="https://admin.salvemundi.nl" />
+
 
 
                 {/* Preload critical assets */}

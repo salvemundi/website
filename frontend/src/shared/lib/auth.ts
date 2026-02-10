@@ -91,7 +91,7 @@ async function mapDirectusUserToUser(rawUser: any): Promise<User> {
 // Login with email and password (for non-members)
 export async function loginWithPassword(email: string, password: string): Promise<LoginResponse> {
     try {
-        const response = await fetch(`${directusUrl}/auth/login`, {
+        const response = await fetch(`${directusUrl}/directus-auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -355,7 +355,7 @@ export async function fetchAndPersistUserCommittees(userId: string, token?: stri
 // Refresh access token
 export async function refreshAccessToken(refreshToken: string): Promise<LoginResponse> {
     try {
-        const response = await fetch(`${directusUrl}/auth/refresh`, {
+        const response = await fetch(`${directusUrl}/directus-auth/refresh`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -391,7 +391,7 @@ export async function refreshAccessToken(refreshToken: string): Promise<LoginRes
 // Logout
 export async function logout(refreshToken: string): Promise<void> {
     try {
-        await fetch(`${directusUrl}/auth/logout`, {
+        await fetch(`${directusUrl}/directus-auth/logout`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

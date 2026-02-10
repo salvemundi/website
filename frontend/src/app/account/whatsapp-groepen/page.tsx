@@ -8,6 +8,7 @@ import { documentsApi } from '@/shared/lib/api/salvemundi';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { stripHtml } from '@/shared/lib/text';
 import { WhatsAppGroup } from '@/shared/lib/api/salvemundi';
+import { directusUrl } from '@/shared/lib/directus';
 import Card from '@/shared/ui/Card';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
@@ -27,7 +28,7 @@ function WhatsAppGroupsContent() {
     const router = useRouter();
     const { user, isLoading: authLoading } = useAuth();
     const { data: groups = [], isLoading: groupsLoading, error, refetch } = useSalvemundiWhatsAppGroups(true);
-    const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://admin.salvemundi.nl';
+
     const { data: documents } = useQuery({ queryKey: ['documents'], queryFn: documentsApi.getAll });
 
     const chatRegelsDoc = (documents || []).find((d: any) => (d.title || '').toLowerCase().trim() === 'chat regels');
