@@ -106,7 +106,7 @@ jobs:
             printf "INTERNAL_API_KEY=%s\n" "$INTERNAL_API_KEY" >> .env
 
             docker compose pull membership-api
-            docker compose up -d membership-api --force-recreate --remove-orphans
+            docker compose up -d membership-api --force-recreate
 
             echo "Waiting for container to be healthy..."
             CONTAINER_NAME="membership-api-${TAG}"

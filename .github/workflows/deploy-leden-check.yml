@@ -81,4 +81,4 @@ jobs:
 
             # 4. Pull & Up
             docker compose pull nachtwacht
-            docker compose up -d nachtwacht --force-recreate --remove-orphans
+            docker compose up -d nachtwacht --force-recreate

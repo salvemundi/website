@@ -99,7 +99,7 @@ jobs:
             printf "OIDC_ISSUER_URL=https://login.microsoftonline.com/%s/v2.0\n" "$AUTH_MICROSOFT_TENANT_ID" >> .env
 
             docker compose pull
-            docker compose up -d --remove-orphans
+            docker compose up -d
 
             docker image prune -f
 
