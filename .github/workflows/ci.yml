@@ -325,7 +325,7 @@ jobs:
       - deploy-membership-api
       - deploy-monitor
       - deploy-notification-api
-    if: always() && (github.ref_name == 'main' || github.ref_name == 'Development')
+    if: always() && (github.ref_name == 'main' || github.ref_name == 'Development') && needs.setup-cleanup.outputs.packages != '[]' && needs.setup-cleanup.outputs.packages != ''
     runs-on: ubuntu-latest
     permissions:
       packages: write
