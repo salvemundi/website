@@ -673,16 +673,15 @@ async function handleMutation(
 
         if (!response.ok) {
             // Detailed logging for impersonation errors
-            // Skip logging for site_settings 403s as they are expected during policy testing
-            const isSiteSettings403 = response.status === 403 && path.includes('site_settings');
+            const isSiteSettings403 = response.status === 403 && (path.includes('site_settings') || path.includes('permissions'));
+
+            // Read body once to reuse
+            const errorBody = await response.clone().text().catch(() => 'No error body');
 
             if (isImpersonating && !isSiteSettings403) {
-                console.error(`[IMPERSONATION ERROR] ${method} ${path} | Status: ${response.status}`);
-                const errorText = await response.clone().text().catch(() => '(unable to read error body)');
-                console.error(`[IMPERSONATION ERROR] Body: ${errorText}`);
+                console.error(`[IMPERSONATION ERROR] Path: ${path} | Status: ${response.status} | URL: ${targetUrl}`);
+                console.error(`[IMPERSONATION ERROR] Body: ${errorBody}`);
             }
-
-            const errorText = await response.text().catch(() => 'No error body');
 
             // Silent logs for 403/401 in mutation handler unless it's a critical auth issue
             if (response.status !== 403 && response.status !== 401) {
@@ -704,12 +703,12 @@ async function handleMutation(
             const responseContentType = response.headers.get('Content-Type');
             if (responseContentType?.includes('application/json')) {
                 try {
-                    return NextResponse.json(JSON.parse(errorText), { status: response.status });
+                    return NextResponse.json(JSON.parse(errorBody), { status: response.status });
                 } catch {
-                    return new Response(errorText, { status: response.status, headers: { 'Content-Type': 'application/json' } });
+                    return new Response(errorBody, { status: response.status, headers: { 'Content-Type': 'application/json' } });
                 }
             }
-            return new Response(errorText, { status: response.status });
+            return new Response(errorBody, { status: response.status });
         }
 
         // Token tracing is disabled in production to reduce log noise
