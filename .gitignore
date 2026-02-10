@@ -1,50 +1,46 @@
-# Node modules
+# Dependencies
 node_modules/
+.npm/
+.pnpm-store/
 
-# Build output
-dist/
-
-# Logs
-*.log
-.next
-
-# OS generated files
-.DS_Store
-
-# Vite cache
-.vite/
-
-# Env files
+# Environment
 .env
 .env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*
+!.env.example
 
-# IDE files
-.vscode/
-.idea/
+# Secrets & Keys
+*.pem
+*.key
+id_rsa
+id_rsa.pub
+deploy_key
+deploy_key.pub
 
-# Misc
-*.swp
-*.swo
+# Build & Output
+.next/
+out/
+build/
+dist/
+standalone/
+*.log
 
-# Coverage
-coverage/
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
 
-# TypeScript
-*.tsbuildinfo
+# OS Files
+.DS_Store
+Thumbs.db
 
-# Yarn
-.yarn/
-
-# npm
-
-frontend/env
-RSA
-
-# Agent helper scripts
-.agent/
-frontend/next-env.d.ts
-
-# Local Rules
-FRONTEND_RULES.md
-.cursorrules
-.windsurfrules
+# Project Specific
+config.prod.yaml
+.deployment-trigger
+docker-compose.override.yml

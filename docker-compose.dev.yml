@@ -1,0 +1,42 @@
+services:
+  web:
+    build: ./apps/web
+    restart: unless-stopped
+    networks:
+      - dev-public
+      - dev-mesh
+    env_file: .env
+
+  finance:
+    build: ./services/finance
+    restart: unless-stopped
+    networks:
+      - dev-mesh
+    env_file: .env
+
+  email:
+    build: ./services/email
+    restart: unless-stopped
+    networks:
+      - dev-mesh
+    env_file: .env
+
+  identity:
+    build: ./services/identity
+    restart: unless-stopped
+    networks:
+      - dev-mesh
+    env_file: .env
+
+  notifications:
+    build: ./services/notifications
+    restart: unless-stopped
+    networks:
+      - dev-mesh
+    env_file: .env
+
+networks:
+  dev-public:
+    external: true
+  dev-mesh:
+    internal: true

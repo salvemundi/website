@@ -1,8 +1,8 @@
-name: Deploy Frontend
+name: Deploy Microservices
 on:
   push:
     branches: [ "main" ]
-    paths: [ "apps/web/**" ]
+    paths: [ "services/**", "infra/**" ]
 
 jobs:
   deploy:
@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy via SSH
+      - name: Deploy Changed Services via SSH
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -19,4 +19,4 @@ jobs:
           script: |
             cd /opt/salvemundi/prod
             git pull origin main
-            docker compose up -d --build --no-deps web
+            docker compose up -d --build --no-deps finance email identity notifications monitor
