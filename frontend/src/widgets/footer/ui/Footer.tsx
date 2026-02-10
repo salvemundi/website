@@ -29,6 +29,7 @@ export default function Footer() {
     const { data: documents } = useQuery({
         queryKey: ['documents'],
         queryFn: documentsApi.getAll,
+        enabled: isAuthenticated,
     });
 
     const { data: committeesData = [] } = useQuery<any[]>({
