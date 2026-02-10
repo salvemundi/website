@@ -673,13 +673,16 @@ async function handleMutation(
 
         if (!response.ok) {
             // Detailed logging for impersonation errors
-            const isSiteSettings403 = response.status === 403 && (path.includes('site_settings') || path.includes('permissions'));
+            // Use includes checks on the full path, case-insensitive
+            const pathLower = path.toLowerCase();
+            const isSiteSettings403 = response.status === 403 && (pathLower.includes('site_settings') || pathLower.includes('permissions'));
 
             // Read body once to reuse
             const errorBody = await response.clone().text().catch(() => 'No error body');
 
             if (isImpersonating && !isSiteSettings403) {
-                console.error(`[IMPERSONATION ERROR] Path: ${path} | Status: ${response.status} | URL: ${targetUrl}`);
+                // Keep this log so we can see what IS leaking through
+                console.error(`[IMPERSONATION ERROR] Path: '${path}' | Status: ${response.status} | URL: ${targetUrl}`);
                 console.error(`[IMPERSONATION ERROR] Body: ${errorBody}`);
             }
 
