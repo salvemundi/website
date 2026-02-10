@@ -20,6 +20,7 @@ services:
       # Required for server-side API calls (e.g. public-sponsors) and proxy bypass
       # We map the specific secret to the generic token expected by the app
       - DIRECTUS_API_TOKEN=${DIRECTUS_FRONTEND_FRONTEND_TOKEN}
+      - DIRECTUS_FRONTEND_FRONTEND_TOKEN=${DIRECTUS_FRONTEND_FRONTEND_TOKEN}
     networks:
       - proxy-network
 
