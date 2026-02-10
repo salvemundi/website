@@ -3,6 +3,8 @@ import { isRateLimited, getClientIp } from '@/shared/lib/rate-limit';
 
 const DIRECTUS_URL = process.env.DIRECTUS_URL || process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://admin.salvemundi.nl';
 
+const TEST_TOKEN_COOKIE = 'directus_test_token';
+
 // Configure an optional Directus user ID that should bypass server-side checks.
 let API_BYPASS_USER_ID = process.env.DIRECTUS_API_USER_ID ?? null;
 
@@ -29,7 +31,17 @@ const allowedCollections = [
 ];
 
 function getAuthToken(request: NextRequest, url: URL): string | null {
+    // 1. Priority: User Impersonation Token from Cookie
+    const cookies = request.headers.get('Cookie') || '';
+    const testTokenMatch = cookies.match(new RegExp(`${TEST_TOKEN_COOKIE}=([^;]+)`));
+    if (testTokenMatch && testTokenMatch[1]) {
+        return `Bearer ${testTokenMatch[1]}`;
+    }
+
+    // 2. Standard Authorization Header
     let auth = request.headers.get('Authorization') || request.headers.get('authorization');
+
+    // 3. Last Resort: Query Parameter
     if (!auth && url.searchParams.has('access_token')) {
         auth = `Bearer ${url.searchParams.get('access_token')}`;
     }
@@ -289,7 +301,17 @@ export async function GET(
 
         const response = await fetch(targetUrl, fetchOptions);
 
+        // Check if we are in impersonation mode (for logging)
+        const isImpersonating = !!request.headers.get('Cookie')?.includes(TEST_TOKEN_COOKIE);
+
         if (!response.ok) {
+            // Detailed logging for impersonation errors as requested
+            if (isImpersonating) {
+                console.error(`[IMPERSONATION ERROR] Path: ${path} | Status: ${response.status} | URL: ${targetUrl}`);
+                const errorText = await response.clone().text().catch(() => '(unable to read error body)');
+                console.error(`[IMPERSONATION ERROR] Body: ${errorText}`);
+            }
+
             // Detailed logging for asset failures (Critical for debugging Double Auth issues)
             if (response.status === 400 && (path.includes('assets') || path.includes('image'))) {
                 console.error(`[ASSET ERROR] ===== 400 BAD REQUEST FROM DIRECTUS =====`);
@@ -647,8 +669,16 @@ async function handleMutation(
             throw fetchError; // Rethrow to be caught by the outer catch block
         }
 
+        const isImpersonating = !!request.headers.get('Cookie')?.includes(TEST_TOKEN_COOKIE);
 
         if (!response.ok) {
+            // Detailed logging for impersonation errors
+            if (isImpersonating) {
+                console.error(`[IMPERSONATION ERROR] ${method} ${path} | Status: ${response.status}`);
+                const errorText = await response.clone().text().catch(() => '(unable to read error body)');
+                console.error(`[IMPERSONATION ERROR] Body: ${errorText}`);
+            }
+
             const errorText = await response.text().catch(() => 'No error body');
 
             // Silent logs for 403/401 in mutation handler unless it's a critical auth issue
