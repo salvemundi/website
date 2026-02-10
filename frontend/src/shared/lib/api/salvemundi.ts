@@ -677,12 +677,36 @@ export interface SafeHavenAvailability {
 
 export const safeHavensApi = {
     getAll: async () => {
-        const query = buildQueryString({
-            // availability fields removed from Directus schema -- do not request them
-            fields: ['id', 'user_id.id', 'user_id.first_name', 'user_id.last_name', 'contact_name', 'phone_number', 'email', 'image', 'created_at'],
-            sort: ['contact_name']
-        });
-        return directusFetch<SafeHaven[]>(`/items/safe_havens?${query}`);
+        const baseFields = ['id', 'user_id.id', 'user_id.first_name', 'user_id.last_name', 'contact_name', 'image', 'created_at'];
+
+        const getSafeHavensAction = async (includeContactDetails: boolean) => {
+            const fields = [...baseFields];
+            if (includeContactDetails) {
+                fields.push('phone_number', 'email');
+            }
+
+            const query = buildQueryString({
+                fields: fields,
+                sort: ['contact_name']
+            });
+            return directusFetch<SafeHaven[]>(`/items/safe_havens?${query}`);
+        };
+
+        let safeHavens: SafeHaven[];
+        // Check if we should try to get contact details (if logged in)
+        const shouldTryContactDetails = typeof window !== 'undefined' && !!localStorage.getItem('auth_token');
+
+        try {
+            safeHavens = await getSafeHavensAction(shouldTryContactDetails);
+        } catch (error: any) {
+            // If it failed with 403 and we tried to include contact details, retry without them
+            if (error?.status === 403 && shouldTryContactDetails) {
+                safeHavens = await getSafeHavensAction(false);
+            } else {
+                throw error;
+            }
+        }
+        return safeHavens;
     },
     getByUserId: async (userId: string) => {
         const query = buildQueryString({
