@@ -8,7 +8,10 @@ let API_BYPASS_USER_ID = process.env.DIRECTUS_API_USER_ID ?? null;
 
 // Detect a Directus API token used by server-side services or the frontend build.
 // SECURITY: Only use server-side environment variables. NEVER allow NEXT_PUBLIC_ variables here.
-const API_SERVICE_TOKEN = process.env.DIRECTUS_API_TOKEN ?? process.env.DIRECTUS_API_KEY ?? process.env.DIRECTUS_TOKEN ?? null;
+const API_SERVICE_TOKEN = process.env.DIRECTUS_FRONTEND_FRONTEND_TOKEN ??
+    process.env.DIRECTUS_API_TOKEN ??
+    process.env.DIRECTUS_API_KEY ??
+    process.env.DIRECTUS_TOKEN ?? null;
 
 // Ensure we don't accidentally use the public key as a service token
 if (process.env.NEXT_PUBLIC_DIRECTUS_API_KEY && API_SERVICE_TOKEN === process.env.NEXT_PUBLIC_DIRECTUS_API_KEY) {
@@ -233,6 +236,9 @@ export async function GET(
         } else if (auth && !isUserTokenValid && isAllowed && !needsSpecialGuardCheck) {
             console.log(`[Directus Proxy] Stripping invalid token for public path: ${path}`);
             // Header is not added, effectively making it anonymous
+        } else if (!auth && !cookie && isAllowed && !needsSpecialGuardCheck && API_SERVICE_TOKEN) {
+            // Use service token for public requests to allowed collections
+            forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
         }
 
         // FINAL SAFETY CHECK: Ensure we never send double auth
@@ -314,6 +320,7 @@ export async function GET(
             }
 
             if (response.status === 403 && (
+                path.startsWith('items/site_settings') ||
                 path.startsWith('items/committees') ||
                 path.startsWith('items/committee_members') ||
                 path.startsWith('items/event_signups') ||
@@ -602,8 +609,8 @@ async function handleMutation(
 
         let targetSearch = url.search;
 
-        // Auto-auth for specific public forms (Intro)
-        if (!authHeader && API_SERVICE_TOKEN && (path.startsWith('items/intro_signups') || path.startsWith('items/intro_parent_signups'))) {
+        // Auto-auth for specific public forms (Intro, Event Signups, etc.)
+        if (!authHeader && !cookie && isAllowed && !needsSpecialGuardCheck && API_SERVICE_TOKEN) {
             forwardHeaders['Authorization'] = `Bearer ${API_SERVICE_TOKEN}`;
         }
 
@@ -677,8 +684,12 @@ async function handleMutation(
             }
 
 
-            if (response.status === 403 && (path.startsWith('items/committees') || path.startsWith('items/committee_members'))) {
-                console.log(`[Directus Proxy] Softening 403 for ${method} ${path} to avoid browser console error.`);
+            if (response.status === 403 && (
+                path.startsWith('items/site_settings') ||
+                path.startsWith('items/documents') ||
+                path.startsWith('permissions')
+            )) {
+                console.log(`[Directus Proxy] Softening 403 for GET ${path} to avoid browser console error.`);
                 return NextResponse.json({ data: null, error: 'Forbidden', softened: true }, { status: 200 });
             }
 

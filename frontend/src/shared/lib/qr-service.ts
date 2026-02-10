@@ -1,5 +1,5 @@
 import QRCode from 'qrcode';
-import { directusFetch } from './directus';
+import { directusFetch, API_SERVICE_TOKEN } from './directus';
 import { COLLECTIONS, FIELDS } from '@/shared/lib/constants/collections';
 import { normalizeCommitteeName } from './committee-utils';
 
@@ -34,11 +34,10 @@ export async function updateSignupWithQRToken(signupId: number, token: string) {
     try {
         if (typeof window === 'undefined') {
             // Server-side: Explicitly use the server token to ensure privileged access for this operation.
-            const apiKey = process.env.DIRECTUS_API_TOKEN || process.env.DIRECTUS_API_KEY;
             await directusFetch(`/items/event_signups/${signupId}`, {
                 method: 'PATCH',
                 body: JSON.stringify({ qr_token: token }),
-                headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {}
+                headers: API_SERVICE_TOKEN ? { Authorization: `Bearer ${API_SERVICE_TOKEN}` } : {}
             });
         } else {
             // Client-side: Call our specific proxy endpoint
@@ -142,11 +141,10 @@ export async function isUserAuthorizedForAttendance(userId: string, eventId: num
 export async function updatePubCrawlSignupWithQRToken(signupId: number, token: string) {
     try {
         if (typeof window === 'undefined') {
-            const apiKey = process.env.DIRECTUS_API_TOKEN || process.env.DIRECTUS_API_KEY;
             await directusFetch(`/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}/${signupId}`, {
                 method: 'PATCH',
                 body: JSON.stringify({ qr_token: token }),
-                headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {}
+                headers: API_SERVICE_TOKEN ? { Authorization: `Bearer ${API_SERVICE_TOKEN}` } : {}
             });
         } else {
             // TODO: Implement secure internal API route for Pub Crawl updates.

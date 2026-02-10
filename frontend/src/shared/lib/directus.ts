@@ -10,8 +10,8 @@ const apiKey = '';
 
 // Secret token for server-to-server communication (directus proxy bypass)
 // Only used when running on the server
-const API_SERVICE_TOKEN = isServer
-    ? (process.env.DIRECTUS_API_TOKEN || process.env.DIRECTUS_TOKEN || process.env.DIRECTUS_API_KEY || '')
+export const API_SERVICE_TOKEN = isServer
+    ? (process.env.DIRECTUS_FRONTEND_FRONTEND_TOKEN || process.env.DIRECTUS_API_TOKEN || process.env.DIRECTUS_TOKEN || process.env.DIRECTUS_API_KEY || '')
     : '';
 
 // Helper to check if JWT token is about to expire (within 60 seconds)
