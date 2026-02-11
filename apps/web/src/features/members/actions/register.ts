@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
-import { createServiceToken } from '@/shared/lib/service-auth';
+
 
 // Schema validation
 const RegisterSchema = z.object({
@@ -16,7 +16,7 @@ const RegisterSchema = z.object({
  * Server Action: Register Member
  * Securely communicates with the Identity Service using Zero Trust principles.
  */
-export async function registerMember(prevState: any, formData: FormData) {
+export async function registerMember(_prevState: any, formData: FormData) {
     const correlationId = uuidv4();
 
     // 1. Validation
@@ -37,25 +37,25 @@ export async function registerMember(prevState: any, formData: FormData) {
     const { firstName, lastName, email, dateOfBirth } = validatedFields.data;
 
     try {
-        // 2. Security: Generate Service Token & Traceability
-        const token = createServiceToken({ iss: 'frontend' });
+        // 2. Security: Traceability
+
 
         console.log(`[${correlationId}] 🚀 Initiating member registration for: ${email}`);
 
         // 3. Request to Internal Identity Service
         // Note: 'identity' is the Docker service name in the service-mesh network
         const identityUrl = process.env.IDENTITY_SERVICE_URL || 'http://identity:8000';
-        const response = await fetch(`${identityUrl}/api/users/create`, {
+        const response = await fetch(`${identityUrl}/api/membership/create-user`, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'x-internal-api-secret': process.env.SERVICE_SECRET || '',
                 'X-Correlation-ID': correlationId,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 first_name: firstName,
                 last_name: lastName,
-                email: email,
+                personal_email: email,
                 date_of_birth: dateOfBirth,
             }),
         });
