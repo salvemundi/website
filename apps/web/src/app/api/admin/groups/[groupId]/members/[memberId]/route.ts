@@ -1,0 +1,56 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+const DIRECTUS_URL = process.env.INTERNAL_DIRECTUS_URL || process.env.NEXT_PUBLIC_DIRECTUS_URL || 'http://directus:8055';
+const IDENTITY_SERVICE_URL = process.env.IDENTITY_SERVICE_URL || 'http://identity:8000';
+const SERVICE_SECRET = process.env.SERVICE_SECRET || '';
+
+async function checkAdmin(req: NextRequest) {
+    const auth = req.headers.get('Authorization');
+    if (!auth) return false;
+
+    // Check if SERVICE_SECRET is set
+    if (!SERVICE_SECRET) {
+        console.error('SERVICE_SECRET is not set in environment variables');
+        return false;
+    }
+
+    try {
+        const res = await fetch(`${DIRECTUS_URL}/users/me`, {
+            headers: { Authorization: auth },
+            cache: 'no-store'
+        });
+        return res.ok;
+    } catch (e) {
+        console.error('Auth check failed:', e);
+        return false;
+    }
+}
+
+export async function DELETE(
+    request: NextRequest,
+    context: { params: Promise<{ groupId: string; memberId: string }> }
+) {
+    const { groupId, memberId } = await context.params;
+
+    if (!await checkAdmin(request)) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    try {
+        const res = await fetch(`${IDENTITY_SERVICE_URL}/api/membership/groups/${groupId}/members/${memberId}`, {
+            method: 'DELETE',
+            headers: { 'x-internal-api-secret': SERVICE_SECRET },
+        });
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+            return NextResponse.json(err, { status: res.status });
+        }
+
+        const data = await res.json();
+        return NextResponse.json(data);
+    } catch (error: any) {
+        console.error('Proxy DELETE error:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+}

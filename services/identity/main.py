@@ -274,6 +274,75 @@ async def register_member(request: MembershipRequest, background_tasks: Backgrou
     await update_user_attributes(request.user_id)
     return {"status": "processing"}
 
+# --- Group Management ---
+
+@router.get("/groups/{group_id}/members")
+async def list_group_members(group_id: str):
+    token = await get_graph_token()
+    headers = {"Authorization": f"Bearer {token}"}
+    async with httpx.AsyncClient() as client:
+        # Fetch members from Azure AD Group
+        # Expand extension attributes if needed, or just select basic fields
+        url = f"https://graph.microsoft.com/v1.0/groups/{group_id}/members?$select=id,displayName,userPrincipalName,mail,givenName,surname"
+        response = await client.get(url, headers=headers)
+        if response.status_code != 200:
+             logger.error("List Group Members Failed: %s - %s", response.status_code, response.text)
+             raise HTTPException(status_code=response.status_code, detail="Failed to fetch group members")
+        
+        data = response.json()
+        return data.get("value", [])
+
+class AddGroupMemberRequest(BaseModel):
+    email: str
+
+@router.post("/groups/{group_id}/members")
+async def add_group_member(group_id: str, request: AddGroupMemberRequest):
+    token = await get_graph_token()
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    
+    async with httpx.AsyncClient() as client:
+        # 1. Resolve user by email
+        user_url = f"https://graph.microsoft.com/v1.0/users?$filter=mail eq '{request.email}' or userPrincipalName eq '{request.email}'&$select=id"
+        user_res = await client.get(user_url, headers=headers)
+        if user_res.status_code != 200:
+             raise HTTPException(status_code=500, detail="Failed to resolve user")
+        
+        user_data = user_res.json()
+        if not user_data.get("value"):
+            raise HTTPException(status_code=404, detail="User not found in Azure AD")
+            
+        user_id = user_data["value"][0]["id"]
+        
+        # 2. Add member to group
+        add_url = f"https://graph.microsoft.com/v1.0/groups/{group_id}/members/$ref"
+        payload = {"@odata.id": f"https://graph.microsoft.com/v1.0/directoryObjects/{user_id}"}
+        
+        add_res = await client.post(add_url, json=payload, headers=headers)
+        if add_res.status_code not in [204, 201]: # 204 No Content is success for $ref, sometimes 201
+             logger.error("Add Group Member Failed: %s - %s", add_res.status_code, add_res.text)
+             # Check if already exists
+             if "Request_BadRequest" in add_res.text and "One or more added object references already exist" in add_res.text:
+                 return {"status": "skipped", "message": "User already in group"}
+             raise HTTPException(status_code=add_res.status_code, detail="Failed to add member to group")
+             
+        return {"status": "added", "user_id": user_id}
+
+@router.delete("/groups/{group_id}/members/{member_id}")
+async def remove_group_member(group_id: str, member_id: str):
+    token = await get_graph_token()
+    headers = {"Authorization": f"Bearer {token}"}
+    async with httpx.AsyncClient() as client:
+        # Remove member ref
+        url = f"https://graph.microsoft.com/v1.0/groups/{group_id}/members/{member_id}/$ref"
+        response = await client.delete(url, headers=headers)
+        
+        if response.status_code not in [204, 200]:
+             logger.error("Remove Group Member Failed: %s - %s", response.status_code, response.text)
+             raise HTTPException(status_code=response.status_code, detail="Failed to remove member")
+             
+        return {"status": "removed"}
+
+
 @router.get("/health")
 def health_check(): return {"status": "ok"}
 
