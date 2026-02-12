@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Mail, CheckCircle2, Loader2 } from 'lucide-react';
+import { subscribeToNewsletterAction } from '@/shared/api/newsletter-actions';
 
 export interface NewsletterSignupProps {
   placement?: 'inline' | 'modal' | 'hero';
@@ -34,16 +35,11 @@ export default function NewsletterSignup({
     setError(null);
 
     try {
-      // Call API to subscribe
-      const response = await fetch('/api/newsletter/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
+      // Use Server Action instead of client-side fetch
+      const result = await subscribeToNewsletterAction(email);
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Er is iets misgegaan');
+      if (!result.success) {
+        throw new Error(result.error || 'Er is iets misgegaan');
       }
 
       setIsSuccess(true);
@@ -102,6 +98,8 @@ export default function NewsletterSignup({
 
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
         <input
+          id="newsletter-email"
+          name="email"
           type="email"
           placeholder="jouw@email.nl"
           value={email}
@@ -111,17 +109,18 @@ export default function NewsletterSignup({
           }}
           disabled={isSubmitting}
           className={`flex-1 px-4 py-2 lg:py-3 rounded-lg border ${placement === 'hero'
-              ? 'bg-white/20 border-white/30 text-white placeholder-white/60'
-              : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400'
+            ? 'bg-white/20 border-white/30 text-white placeholder-white/60'
+            : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400'
             } focus:outline-none focus:ring-2 focus:ring-theme-purple transition-all`}
+          autoComplete="email"
           required
         />
         <button
           type="submit"
           disabled={isSubmitting}
           className={`px-6 py-2 lg:py-3 font-semibold rounded-lg transition-all ${placement === 'hero'
-              ? 'bg-white text-theme-purple hover:bg-gray-100'
-              : 'bg-gradient-theme text-white hover:brightness-110'
+            ? 'bg-white text-theme-purple hover:bg-gray-100'
+            : 'bg-gradient-theme text-white hover:brightness-110'
             } disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
         >
           {isSubmitting ? (

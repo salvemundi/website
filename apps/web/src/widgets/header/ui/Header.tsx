@@ -7,13 +7,16 @@ import { usePathname, useRouter } from "next/navigation";
 import { Menu, X, Sparkles, Shield, MapPin, LogOut, Home, User, CalendarDays, Users, Beer, Map, Mail } from "lucide-react";
 import { useAuth, useAuthActions } from "@/features/auth/providers/auth-provider";
 import { getImageUrl } from "@/shared/lib/api/salvemundi";
-import { useSalvemundiSiteSettings } from "@/shared/lib/hooks/useSalvemundiApi";
 import { ROUTES } from "@/shared/lib/routes";
 import { ThemeToggle } from "@/features/theme/ui/ThemeToggle";
-import { directusFetch } from "@/shared/lib/directus";
+
 import { usePWAContext } from "@/features/pwa/lib/PWAContext";
 
-const Header: React.FC = () => {
+interface HeaderProps {
+    initialSettings?: Record<string, any>;
+}
+
+const Header: React.FC<HeaderProps> = ({ initialSettings }) => {
     const pathname = usePathname();
     const { isAuthenticated, user, logout } = useAuth();
     const router = useRouter();
@@ -22,12 +25,12 @@ const Header: React.FC = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isCommitteeMember, setIsCommitteeMember] = useState(false);
     const headerRef = useRef<HTMLElement | null>(null);
-    const { data: siteSettings } = useSalvemundiSiteSettings('intro');
-    const introEnabled = siteSettings?.show ?? true;
-    const { data: kroegentochtSettings } = useSalvemundiSiteSettings('kroegentocht');
-    const kroegentochtEnabled = kroegentochtSettings?.show ?? true;
-    const { data: reisSettings } = useSalvemundiSiteSettings('reis');
-    const reisEnabled = reisSettings?.show ?? true;
+
+    // Use initial settings from server props
+    const introEnabled = initialSettings?.['intro']?.show ?? true;
+    const kroegentochtEnabled = initialSettings?.['kroegentocht']?.show ?? true;
+    const reisEnabled = initialSettings?.['reis']?.show ?? true;
+
     const { loginWithMicrosoft } = useAuthActions();
 
     const handleLogin = async () => {
@@ -51,41 +54,22 @@ const Header: React.FC = () => {
 
     // Check if user is a committee member
     useEffect(() => {
-        const checkCommitteeMembership = async () => {
-            if (!user?.id) {
-                setIsCommitteeMember(false);
-                return;
-            }
+        if (!user?.id) {
+            setIsCommitteeMember(false);
+            return;
+        }
 
-            try {
-                // Prefer committees that were fetched during auth
-                const committees = (user as any).committees;
+        // Use committees that were fetched during auth
+        const committees = (user as any).committees;
 
-                if (Array.isArray(committees)) {
-                    // User has committees data loaded
-                    const isMember = committees.length > 0;
-                    setIsCommitteeMember(isMember);
-                    return;
-                }
-
-                // Fallback: fetch from API if committees not loaded yet
-
-                // Get user's committee memberships with committee details including is_visible
-                const memberships = await directusFetch<any[]>(
-                    `/items/committee_members?filter[user_id][_eq]=${user.id}&fields=committee_id.id,committee_id.is_visible`
-                );
-
-                // Check if user is member of at least one visible committee
-                const isMember = Array.isArray(memberships) &&
-                    memberships.some(m => m.committee_id?.is_visible !== false);
-                setIsCommitteeMember(isMember);
-            } catch (error) {
-                // Error checking committee membership
-                setIsCommitteeMember(false);
-            }
-        };
-
-        checkCommitteeMembership();
+        if (Array.isArray(committees)) {
+            // Check if user is member of at least one visible committee
+            const isMember = committees.length > 0 &&
+                committees.some((m: any) => m.committee_id?.is_visible !== false);
+            setIsCommitteeMember(isMember);
+        } else {
+            setIsCommitteeMember(false);
+        }
     }, [user?.id, user]);
 
     // Measure header height and expose as CSS variable so other components
@@ -184,7 +168,7 @@ const Header: React.FC = () => {
         >
             {/* Safe area background fill - ensures solid color above navbar on notched devices - only in PWA mode */}
             {isPWA && (
-                <div 
+                <div
                     className="absolute left-0 right-0 bg-[var(--bg-main)] -z-10"
                     style={{
                         top: 'calc(-1 * env(safe-area-inset-top, 0px))',

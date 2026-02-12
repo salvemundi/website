@@ -136,6 +136,9 @@ export default function ImpersonatePage() {
                                     <div className="relative group">
                                         <input
                                             type="password"
+                                            id="directus_token"
+                                            name="directus_token"
+                                            autoComplete="current-password"
                                             value={token}
                                             onChange={(e) => setToken(e.target.value)}
                                             placeholder="Plak hier de token..."

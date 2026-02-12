@@ -646,7 +646,7 @@ function AccountPageContent() {
               <div className="rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
                 <div className="flex items-center justify-between gap-2 mb-3">
                   <p className="text-[11px] font-bold uppercase text-theme-purple/70 dark:text-white/50 tracking-wide text-left">
-                    Minecraft Username
+                    <label htmlFor="minecraft_username">Minecraft Username</label>
                   </p>
                   {!isEditingMinecraft && (
                     <button
@@ -662,6 +662,9 @@ function AccountPageContent() {
                   <div className="flex flex-wrap gap-2">
                     <input
                       type="text"
+                      id="minecraft_username"
+                      name="minecraft_username"
+                      autoComplete="nickname"
                       value={minecraftUsername}
                       onChange={(e) => setMinecraftUsername(e.target.value)}
                       className="flex-1 min-w-0 rounded-xl bg-white dark:bg-black/40 px-3.5 py-2 text-sm text-theme-purple dark:text-white outline-none focus:ring-2 focus:ring-theme-purple shadow-inner"
@@ -743,7 +746,7 @@ function AccountPageContent() {
                 <div className="rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
                   <div className="flex items-center justify-between gap-2 mb-3">
                     <p className="text-[11px] font-bold uppercase text-theme-purple/70 dark:text-white/50 tracking-wide text-left">
-                      Telefoonnummer
+                      <label htmlFor="phone_number">Telefoonnummer</label>
                     </p>
                     {!isEditingPhoneNumber && (
                       <button
@@ -758,6 +761,9 @@ function AccountPageContent() {
                   {isEditingPhoneNumber ? (
                     <div className="space-y-3">
                       <PhoneInput
+                        id="phone_number"
+                        name="phone_number"
+                        autoComplete="tel"
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
                         placeholder="+31612345678"
@@ -799,7 +805,7 @@ function AccountPageContent() {
                 <div className="rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
                   <div className="flex items-center justify-between gap-2 mb-3">
                     <p className="text-[11px] font-bold uppercase text-theme-purple/70 dark:text-white/50 tracking-wide text-left">
-                      Geboortedatum
+                      <label htmlFor="date_of_birth">Geboortedatum</label>
                     </p>
                     {!isEditingDateOfBirth && (
                       <button
@@ -815,6 +821,9 @@ function AccountPageContent() {
                     <div className="space-y-3">
                       <input
                         type="date"
+                        id="date_of_birth"
+                        name="date_of_birth"
+                        autoComplete="bday"
                         value={dateOfBirth}
                         onChange={(e) => setDateOfBirth(e.target.value)}
                         className="w-full rounded-xl border border-theme-purple/20 bg-white dark:bg-surface-dark px-4 py-2.5 text-theme-purple dark:text-white focus:outline-none focus:ring-2 focus:ring-theme-purple/50 transition"

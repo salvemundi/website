@@ -6,6 +6,8 @@ import { useAuth } from '@/features/auth/providers/auth-provider';
 import { User } from '@/shared/model/types/auth';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { formatDateToLocalISO } from '@/shared/lib/utils/date';
+import { validateCouponAction } from '@/features/coupons/api/coupon-actions';
+import { createPaymentAction } from '@/shared/api/finance-actions';
 
 const DeletionTimer = ({ expiryDateStr }: { expiryDateStr: string }) => {
     const [timeLeft, setTimeLeft] = useState<{ days: number, hours: number, minutes: number } | null>(null);
@@ -63,8 +65,13 @@ const DeletionTimer = ({ expiryDateStr }: { expiryDateStr: string }) => {
 
 export default function SignUp() {
     const { user: realUser } = useAuth();
+    const [isMounted, setIsMounted] = useState(false);
     const [isMockExpired, setIsMockExpired] = useState(false);
     const [isMockCommittee, setIsMockCommittee] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const user = isMockExpired
         ? (realUser
@@ -109,6 +116,7 @@ export default function SignUp() {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });
         if (e.target.name === 'telefoon' && phoneError) setPhoneError(null);
+        if (e.target.name === 'coupon' && couponStatus) setCouponStatus(null);
     };
 
     const verifyCoupon = async () => {
@@ -121,24 +129,14 @@ export default function SignUp() {
 
         try {
             const startTime = Date.now();
-            const response = await fetch('/api/coupons/validate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Trace-Id': traceId
-                },
-                body: JSON.stringify({ couponCode: form.coupon }),
-            });
-
+            const data = await validateCouponAction(form.coupon, traceId);
             const duration = Date.now() - startTime;
-            const data = await response.json();
 
-            console.group(`[Coupon][${traceId}] Result after ${duration}ms`);
-            console.log('Status:', response.status);
+            console.group(`[Coupon][${traceId}] Result after ${duration}ms (Server Action)`);
             console.log('Payload:', data);
             console.groupEnd();
 
-            if (response.ok && data.valid) {
+            if (data.valid) {
                 console.info(`[Coupon][${traceId}] Success! Applied discount: ${data.discount_value}`);
                 setCouponStatus({
                     valid: true,
@@ -152,7 +150,14 @@ export default function SignUp() {
             }
         } catch (error: any) {
             console.error(`[Coupon][${traceId}] Fatal Fetch Error:`, error.message);
-            setCouponStatus({ valid: false, message: 'Kon coupon niet valideren' });
+            // Specific message for network interruptions/server restarts
+            const isNetworkError = error.message.includes('fetch') || error.name === 'TypeError';
+            setCouponStatus({
+                valid: false,
+                message: isNetworkError
+                    ? 'Netwerkfout: De server is mogelijk aan het herstarten. Probeer het over 10 seconden opnieuw.'
+                    : 'Kon coupon niet valideren'
+            });
         } finally {
             setVerifyingCoupon(false);
         }
@@ -179,30 +184,21 @@ export default function SignUp() {
 
             console.log(`[Payment][${traceId}] Payload:`, payload);
 
-            const response = await fetch('/api/payments/create', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Trace-Id': traceId
-                },
-                body: JSON.stringify(payload),
-            });
+            const result = await createPaymentAction(payload, traceId);
+            console.log(`[Payment][${traceId}] Result:`, result);
 
-            const data = await response.json();
-            console.log(`[Payment][${traceId}] Response (${response.status}):`, data);
-
-            if (response.ok && (data.checkoutUrl || data.paymentId)) {
+            if (result.success && (result.checkoutUrl || result.paymentId)) {
                 // If we get a checkoutUrl (Mollie) or just a paymentId (Free transaction), proceed
-                if (data.checkoutUrl) {
-                    console.info(`[Payment][${traceId}] Redirecting to Mollie: ${data.checkoutUrl}`);
-                    window.location.href = data.checkoutUrl;
+                if (result.checkoutUrl) {
+                    console.info(`[Payment][${traceId}] Redirecting to Mollie: ${result.checkoutUrl}`);
+                    window.location.href = result.checkoutUrl;
                 } else {
-                    console.info(`[Payment][${traceId}] Free transaction completed. ID: ${data.paymentId}`);
+                    console.info(`[Payment][${traceId}] Free transaction completed. ID: ${result.paymentId}`);
                 }
                 return true;
             } else {
-                console.error(`[Payment][${traceId}] Creation failed:`, data.error);
-                alert(`Er went iets mis: ${data.error || 'Onbekende fout'}`);
+                console.error(`[Payment][${traceId}] Creation failed:`, result.error);
+                alert(`Er went iets mis: ${result.error || 'Onbekende fout'}`);
                 setIsProcessing(false);
                 return false;
             }
@@ -290,7 +286,7 @@ export default function SignUp() {
             </div>
 
             <main className="">
-                {typeof window !== 'undefined' && (
+                {isMounted && (
                     window.location.hostname.includes('dev.') ||
                     window.location.hostname.includes('localhost') ||
                     window.location.hostname.includes('127.0.0.1')
@@ -413,29 +409,32 @@ export default function SignUp() {
                                 <p className="text-theme-text dark:text-theme-white mb-2">Vul je gegevens in om een account aan te maken en lid te worden.</p>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <label className="form-label">
+                                    <label htmlFor="voornaam" className="form-label">
                                         Voornaam
-                                        <input type="text" name="voornaam" value={form.voornaam} onChange={handleChange} required className="form-input mt-1" />
+                                        <input type="text" id="voornaam" name="voornaam" autoComplete="given-name" value={form.voornaam} onChange={handleChange} required className="form-input mt-1" suppressHydrationWarning={true} />
                                     </label>
-                                    <label className="form-label">
+                                    <label htmlFor="achternaam" className="form-label">
                                         Achternaam
-                                        <input type="text" name="achternaam" value={form.achternaam} onChange={handleChange} required className="form-input mt-1" />
+                                        <input type="text" id="achternaam" name="achternaam" autoComplete="family-name" value={form.achternaam} onChange={handleChange} required className="form-input mt-1" suppressHydrationWarning={true} />
                                     </label>
                                 </div>
 
-                                <label className="form-label">
+                                <label htmlFor="email" className="form-label">
                                     E-mail
-                                    <input type="email" name="email" value={form.email} onChange={handleChange} required className="form-input mt-1" />
+                                    <input type="email" id="email" name="email" autoComplete="email" value={form.email} onChange={handleChange} required className="form-input mt-1" suppressHydrationWarning={true} />
                                 </label>
 
-                                <label className="form-label">
+                                <label htmlFor="geboortedatum" className="form-label">
                                     Geboortedatum
                                     <input
                                         type="date"
+                                        id="geboortedatum"
                                         name="geboortedatum"
+                                        autoComplete="bday"
                                         value={form.geboortedatum}
                                         onChange={handleChange}
                                         className="form-input mt-1 w-full"
+                                        suppressHydrationWarning={true}
                                     />
                                 </label>
 
@@ -450,23 +449,30 @@ export default function SignUp() {
                                 </label>
 
                                 <div className="border-t border-theme-purple/10 pt-6 mt-6">
-                                    <label className="form-label mb-2">Heb je een coupon code?</label>
+                                    <label htmlFor="coupon" className="form-label mb-2">Heb je een coupon code?</label>
                                     <div className="flex gap-2">
                                         <input
-                                            type="text"
+                                            id="coupon"
                                             name="coupon"
+                                            type="text"
                                             value={form.coupon}
                                             onChange={handleChange}
-                                            placeholder="Bijv. ACTIE2024"
-                                            className="form-input uppercase"
+                                            placeholder="Bijv. SALVEMUNDI2024"
+                                            className="form-input flex-1"
+                                            suppressHydrationWarning={true}
                                         />
                                         <button
                                             type="button"
                                             onClick={verifyCoupon}
                                             disabled={!form.coupon || verifyingCoupon}
-                                            className="bg-theme-purple text-white font-bold px-4 rounded-xl hover:bg-theme-purple-light disabled:opacity-50 transition-all shadow-md"
+                                            className="bg-theme-purple text-white font-bold px-4 rounded-xl hover:bg-theme-purple-light disabled:opacity-50 transition-all shadow-md min-w-[100px] flex items-center justify-center gap-2"
                                         >
-                                            {verifyingCoupon ? '...' : 'Check'}
+                                            {verifyingCoupon ? (
+                                                <>
+                                                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                                    <span>...</span>
+                                                </>
+                                            ) : 'Check'}
                                         </button>
                                     </div>
                                     {couponStatus && (
@@ -496,8 +502,15 @@ export default function SignUp() {
                                     </div>
                                 </div>
 
-                                <button type="submit" disabled={isProcessing} className="form-button mt-4">
-                                    {isProcessing ? 'Verwerken...' : `Betalen en Inschrijven (€${baseAmount.toFixed(2).replace('.', ',')})`}
+                                <button type="submit" disabled={isProcessing} className="form-button mt-4 flex items-center justify-center gap-3">
+                                    {isProcessing ? (
+                                        <>
+                                            <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                            <span>Verwerken...</span>
+                                        </>
+                                    ) : (
+                                        `Betalen en Inschrijven (€${baseAmount.toFixed(2).replace('.', ',')})`
+                                    )}
                                 </button>
                             </form>
                         )}
@@ -516,7 +529,7 @@ export default function SignUp() {
                         </div>
                     </div>
                 </div>
-            </main>
+            </main >
         </>
     );
 }

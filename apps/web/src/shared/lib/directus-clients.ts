@@ -1,5 +1,5 @@
 import 'server-only';
-import { createDirectus, rest, staticToken, authentication, readMe } from '@directus/sdk';
+import { createDirectus, rest, staticToken, authentication } from '@directus/sdk';
 import { cookies } from 'next/headers';
 
 const DIRECTUS_URL = process.env.INTERNAL_DIRECTUS_URL || process.env.NEXT_PUBLIC_DIRECTUS_URL || 'http://directus:8055';

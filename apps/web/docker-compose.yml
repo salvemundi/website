@@ -19,7 +19,7 @@ services:
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       # Required for server-side API calls (e.g. public-sponsors) and proxy bypass
       # We map the specific secret to the generic token expected by the app
-      - DIRECTUS_FRONTEND_FRONTEND_TOKEN=${DIRECTUS_FRONTEND_FRONTEND_TOKEN}
+      - DIRECTUS_ADMIN_TOKEN=${DIRECTUS_ADMIN_TOKEN}
     networks:
       - proxy-network
 

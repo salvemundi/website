@@ -327,9 +327,10 @@ export default function RestbetalingPage() {
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Voornaam</label>
+                                    <label htmlFor="first_name" className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Voornaam</label>
                                     <input
                                         type="text"
+                                        id="first_name"
                                         name="first_name"
                                         value={form.first_name}
                                         onChange={handleChange}
@@ -337,9 +338,10 @@ export default function RestbetalingPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Tussenvoegsel</label>
+                                    <label htmlFor="middle_name" className="block text-sm font-semibold text-gray-700 mb-2">Tussenvoegsel</label>
                                     <input
                                         type="text"
+                                        id="middle_name"
                                         name="middle_name"
                                         value={form.middle_name}
                                         onChange={handleChange}
@@ -347,9 +349,10 @@ export default function RestbetalingPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Achternaam</label>
+                                    <label htmlFor="last_name" className="block text-sm font-semibold text-gray-700 mb-2">Achternaam</label>
                                     <input
                                         type="text"
+                                        id="last_name"
                                         name="last_name"
                                         value={form.last_name}
                                         onChange={handleChange}
@@ -360,9 +363,10 @@ export default function RestbetalingPage() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                                    <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
                                     <input
                                         type="email"
+                                        id="email"
                                         name="email"
                                         value={form.email}
                                         onChange={handleChange}
@@ -370,8 +374,9 @@ export default function RestbetalingPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Telefoon</label>
+                                    <label htmlFor="phone_number" className="block text-sm font-semibold text-gray-700 mb-2">Telefoon</label>
                                     <PhoneInput
+                                        id="phone_number"
                                         name="phone_number"
                                         value={form.phone_number}
                                         onChange={handleChange}
@@ -383,9 +388,10 @@ export default function RestbetalingPage() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Geboortedatum</label>
+                                    <label htmlFor="date_of_birth" className="block text-sm font-semibold text-gray-700 mb-2">Geboortedatum</label>
                                     <input
                                         type="date"
+                                        id="date_of_birth"
                                         name="date_of_birth"
                                         value={form.date_of_birth}
                                         onChange={handleChange}
@@ -393,8 +399,9 @@ export default function RestbetalingPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">ID Type</label>
+                                    <label htmlFor="id_document_type" className="block text-sm font-semibold text-gray-700 mb-2">ID Type</label>
                                     <select
+                                        id="id_document_type"
                                         name="id_document_type"
                                         value={form.id_document_type}
                                         onChange={handleChange}
@@ -406,9 +413,10 @@ export default function RestbetalingPage() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Document nummer</label>
+                                    <label htmlFor="document_number" className="block text-sm font-semibold text-gray-700 mb-2">Document nummer</label>
                                     <input
                                         type="text"
+                                        id="document_number"
                                         name="document_number"
                                         value={form.document_number || ''}
                                         onChange={handleChange}
@@ -418,8 +426,9 @@ export default function RestbetalingPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Allergieën</label>
+                                <label htmlFor="allergies" className="block text-sm font-semibold text-gray-700 mb-2">Allergieën</label>
                                 <textarea
+                                    id="allergies"
                                     name="allergies"
                                     value={form.allergies}
                                     onChange={handleChange}
@@ -429,8 +438,9 @@ export default function RestbetalingPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Bijzonderheden</label>
+                                <label htmlFor="special_notes" className="block text-sm font-semibold text-gray-700 mb-2">Bijzonderheden</label>
                                 <textarea
+                                    id="special_notes"
                                     name="special_notes"
                                     value={form.special_notes}
                                     onChange={handleChange}

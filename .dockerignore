@@ -1,0 +1,14 @@
+**/node_modules
+**/.git
+**/.next
+**/out
+**/dist
+**/build
+**/coverage
+**/*.log
+**/.env.local
+**/.DS_Store
+**/.agent
+**/tmp
+**/.vscode
+**/.idea

@@ -22,7 +22,7 @@ services:
       retries: 5
 
   directus:
-    build: ./directus # Assuming the directus setup is in ./directus
+    image: directus/directus:10.10
     restart: unless-stopped
     environment:
       DB_CLIENT: "pg"
@@ -52,9 +52,7 @@ services:
       - directus_uploads:/directus/uploads
 
   finance:
-    build:
-      context: .
-      dockerfile: ./services/finance/Dockerfile
+    build: ./services/finance
     restart: unless-stopped
     environment:
       SERVICE_SECRET: ${SERVICE_SECRET}
@@ -71,14 +69,16 @@ services:
       - data-plane
 
   identity:
-    build:
-      context: .
-      dockerfile: ./services/identity/Dockerfile
+    build: ./services/identity
     restart: unless-stopped
     environment:
       SERVICE_SECRET: ${SERVICE_SECRET}
       DIRECTUS_ADMIN_TOKEN: ${DIRECTUS_ADMIN_TOKEN}
       DIRECTUS_URL: ${INTERNAL_DIRECTUS_URL}
+      MS_GRAPH_TENANT_ID: ${MS_GRAPH_TENANT_ID}
+      MS_GRAPH_CLIENT_ID: ${MS_GRAPH_CLIENT_ID}
+      MS_GRAPH_CLIENT_SECRET: ${MS_GRAPH_CLIENT_SECRET}
+      MS_GRAPH_DOMAIN: ${MS_GRAPH_DOMAIN}
     logging:
       driver: "json-file"
       options:
@@ -89,9 +89,7 @@ services:
       - data-plane
 
   email:
-    build:
-      context: .
-      dockerfile: ./services/email/Dockerfile
+    build: ./services/email
     restart: unless-stopped
     environment:
       SERVICE_SECRET: ${SERVICE_SECRET}
@@ -105,10 +103,25 @@ services:
     networks:
       - service-mesh
 
+  notifications:
+    build: ./services/notifications
+    restart: unless-stopped
+    environment:
+      SERVICE_SECRET: ${SERVICE_SECRET}
+      DIRECTUS_NOTIFICATION_KEY: ${DIRECTUS_ADMIN_TOKEN}
+      DIRECTUS_URL: ${INTERNAL_DIRECTUS_URL}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - service-mesh
+
   web:
-    build:
-      context: .
-      dockerfile: ./apps/web/Dockerfile
+    build: ./apps/web
     restart: unless-stopped
     environment:
       NEXT_PUBLIC_DIRECTUS_URL: ${NEXT_PUBLIC_DIRECTUS_URL}

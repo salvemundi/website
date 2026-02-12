@@ -22,7 +22,7 @@ RUN chown -R appuser:appgroup /usr/src/app
 
 USER appuser
 
-ENV PORT=3001
-EXPOSE 3001
+ENV PORT=3003
+EXPOSE 3003
 
 CMD ["node", "server.js"]

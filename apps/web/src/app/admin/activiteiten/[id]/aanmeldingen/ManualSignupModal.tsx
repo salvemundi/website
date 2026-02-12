@@ -224,6 +224,9 @@ export default function ManualSignupModal({ isOpen, onClose, onSuccess, eventId,
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-admin-muted" />
                                         <input
                                             type="text"
+                                            id="member-search"
+                                            name="member-search"
+                                            autoComplete="off"
                                             placeholder="Zoek op naam..."
                                             value={memberQuery}
                                             onChange={(e) => setMemberQuery(e.target.value)}
@@ -265,6 +268,9 @@ export default function ManualSignupModal({ isOpen, onClose, onSuccess, eventId,
                                     <label className="block text-sm font-medium text-admin-muted mb-1">Naam *</label>
                                     <input
                                         type="text"
+                                        id="guest-name"
+                                        name="name"
+                                        autoComplete="name"
                                         required
                                         value={guestName}
                                         onChange={(e) => setGuestName(e.target.value)}
@@ -275,6 +281,9 @@ export default function ManualSignupModal({ isOpen, onClose, onSuccess, eventId,
                                     <label className="block text-sm font-medium text-admin-muted mb-1">Email *</label>
                                     <input
                                         type="email"
+                                        id="guest-email"
+                                        name="email"
+                                        autoComplete="email"
                                         required
                                         value={guestEmail}
                                         onChange={(e) => setGuestEmail(e.target.value)}
@@ -285,6 +294,9 @@ export default function ManualSignupModal({ isOpen, onClose, onSuccess, eventId,
                                     <label className="block text-sm font-medium text-admin-muted mb-1">Telefoon</label>
                                     <input
                                         type="tel"
+                                        id="guest-phone"
+                                        name="phone_number"
+                                        autoComplete="tel"
                                         value={guestPhone}
                                         onChange={(e) => setGuestPhone(e.target.value)}
                                         className="w-full px-3 py-2 rounded-lg border border-admin bg-transparent text-admin focus:border-theme-purple focus:ring-1 focus:ring-theme-purple outline-none"

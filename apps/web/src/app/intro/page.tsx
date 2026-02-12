@@ -317,8 +317,9 @@ export default function IntroPage() {
                             </p>
                           </div>
                           <div>
-                            <label className="form-label">Telefoonnummer *</label>
+                            <label htmlFor="telefoonnummer-ouder" className="form-label">Telefoonnummer *</label>
                             <PhoneInput
+                              id="telefoonnummer-ouder"
                               name="telefoonnummer"
                               value={form.telefoonnummer}
                               onChange={handleChange}
@@ -329,8 +330,9 @@ export default function IntroPage() {
                             {phoneError && <p className="text-red-200 text-xs lg:text-sm mt-1">{phoneError}</p>}
                           </div>
                           <div>
-                            <label className="form-label">Motivatie *</label>
+                            <label htmlFor="motivation" className="form-label">Motivatie *</label>
                             <textarea
+                              id="motivation"
                               name="motivation"
                               value={(parentForm as any).motivation}
                               onChange={handleParentChange}
@@ -370,8 +372,9 @@ export default function IntroPage() {
                           <h3 className="text-xl lg:text-2xl font-bold text-theme-purple">Meld je aan!</h3>
                         </div>
                         <div>
-                          <label className="form-label">Voornaam *</label>
+                          <label htmlFor="voornaam" className="form-label">Voornaam *</label>
                           <input
+                            id="voornaam"
                             type="text"
                             name="voornaam"
                             value={form.voornaam}
@@ -381,8 +384,9 @@ export default function IntroPage() {
                           />
                         </div>
                         <div>
-                          <label className="form-label">Tussenvoegsel</label>
+                          <label htmlFor="tussenvoegsel" className="form-label">Tussenvoegsel</label>
                           <input
+                            id="tussenvoegsel"
                             type="text"
                             name="tussenvoegsel"
                             value={form.tussenvoegsel}
@@ -391,8 +395,9 @@ export default function IntroPage() {
                           />
                         </div>
                         <div>
-                          <label className="form-label">Achternaam *</label>
+                          <label htmlFor="achternaam" className="form-label">Achternaam *</label>
                           <input
+                            id="achternaam"
                             type="text"
                             name="achternaam"
                             value={form.achternaam}
@@ -402,8 +407,9 @@ export default function IntroPage() {
                           />
                         </div>
                         <div>
-                          <label className="form-label">Geboortedatum *</label>
+                          <label htmlFor="geboortedatum" className="form-label">Geboortedatum *</label>
                           <input
+                            id="geboortedatum"
                             type="date"
                             name="geboortedatum"
                             value={form.geboortedatum}
@@ -413,8 +419,9 @@ export default function IntroPage() {
                           />
                         </div>
                         <div>
-                          <label className="form-label">Email *</label>
+                          <label htmlFor="email" className="form-label">Email *</label>
                           <input
+                            id="email"
                             type="email"
                             name="email"
                             value={form.email}
@@ -424,8 +431,9 @@ export default function IntroPage() {
                           />
                         </div>
                         <div>
-                          <label className="form-label">Telefoonnummer *</label>
+                          <label htmlFor="telefoonnummer" className="form-label">Telefoonnummer *</label>
                           <PhoneInput
+                            id="telefoonnummer"
                             name="telefoonnummer"
                             value={form.telefoonnummer}
                             onChange={handleChange}
@@ -435,8 +443,9 @@ export default function IntroPage() {
                           {phoneError && <p className="text-red-200 text-xs lg:text-sm mt-1">{phoneError}</p>}
                         </div>
                         <div>
-                          <label className="form-label">Favoriete GIF URL (optioneel)</label>
+                          <label htmlFor="favorieteGif" className="form-label">Favoriete GIF URL (optioneel)</label>
                           <input
+                            id="favorieteGif"
                             type="url"
                             name="favorieteGif"
                             value={form.favorieteGif}

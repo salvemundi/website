@@ -441,10 +441,11 @@ export default function ReisPage() {
 
                                         <div className="flex flex-col gap-4">
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                <label className="form-label">
+                                                <label htmlFor="first_name" className="form-label">
                                                     Voornaam
                                                     <input
                                                         type="text"
+                                                        id="first_name"
                                                         name="first_name"
                                                         value={form.first_name}
                                                         onChange={handleChange}
@@ -457,10 +458,11 @@ export default function ReisPage() {
                                                     </span>
                                                 </label>
 
-                                                <label className="form-label">
+                                                <label htmlFor="middle_name" className="form-label">
                                                     Tussenvoegsel
                                                     <input
                                                         type="text"
+                                                        id="middle_name"
                                                         name="middle_name"
                                                         value={form.middle_name}
                                                         onChange={handleChange}
@@ -470,10 +472,11 @@ export default function ReisPage() {
                                                 </label>
                                             </div>
 
-                                            <label className="form-label">
+                                            <label htmlFor="last_name" className="form-label">
                                                 Achternaam
                                                 <input
                                                     type="text"
+                                                    id="last_name"
                                                     name="last_name"
                                                     value={form.last_name}
                                                     onChange={handleChange}
@@ -483,10 +486,11 @@ export default function ReisPage() {
                                                 />
                                             </label>
 
-                                            <label className="form-label">
+                                            <label htmlFor="email" className="form-label">
                                                 E-mailadres
                                                 <input
                                                     type="email"
+                                                    id="email"
                                                     name="email"
                                                     value={form.email}
                                                     onChange={handleChange}
@@ -496,10 +500,11 @@ export default function ReisPage() {
                                                 />
                                             </label>
 
-                                            <label className="form-label">
+                                            <label htmlFor="date_of_birth" className="form-label">
                                                 Geboortedatum
                                                 <input
                                                     type="date"
+                                                    id="date_of_birth"
                                                     name="date_of_birth"
                                                     value={form.date_of_birth}
                                                     onChange={handleChange}
@@ -508,9 +513,10 @@ export default function ReisPage() {
                                                 />
                                             </label>
 
-                                            <label className="form-label">
+                                            <label htmlFor="phone_number" className="form-label">
                                                 Telefoonnummer
                                                 <PhoneInput
+                                                    id="phone_number"
                                                     name="phone_number"
                                                     value={form.phone_number}
                                                     onChange={handleChange}
@@ -521,9 +527,10 @@ export default function ReisPage() {
                                         </div>
 
                                         {/* Terms */}
-                                        <label className="flex items-start gap-2 text-theme-text dark:text-white mt-2">
+                                        <label htmlFor="terms_accepted" className="flex items-start gap-2 text-theme-text dark:text-white mt-2">
                                             <input
                                                 type="checkbox"
+                                                id="terms_accepted"
                                                 name="terms_accepted"
                                                 checked={form.terms_accepted}
                                                 onChange={handleChange}
