@@ -517,6 +517,21 @@ async function handleMutation(
             return NextResponse.json({ error: 'Forbidden', message: 'Unauthorized path' }, { status: 403 });
         }
 
+        // [ZERO TRUST] Server Actions Enforcement
+        // Consistent with the goal of using Server Actions for all mutations,
+        // we block authenticated users from performing direct mutations via the proxy.
+        // This ensures all state changes are mediated by server-side logic (Server Actions).
+        const isAuthUser = !!(authHeader || cookie);
+        const isAuthEndpoint = path.includes('/auth/') || path.startsWith('auth/');
+        if (isAuthUser && !canBypass && !isAuthEndpoint) {
+            console.warn(`[ZeroTrust] BLOCKED direct ${method} to ${path} by authenticated user. Force using Server Action.`);
+            return NextResponse.json({
+                error: 'Forbidden',
+                message: 'Deze actie moet via een Server Action worden uitgevoerd (beveiligingsbeleid).',
+                code: 'USE_SERVER_ACTION'
+            }, { status: 403 });
+        }
+
         // Special Guards
         if (path.startsWith('items/events') && authHeader && !canBypass) {
             console.log(`[Directus Proxy] Event creation guard triggered. canBypass=${canBypass}, hasAuth=${!!authHeader}`);
