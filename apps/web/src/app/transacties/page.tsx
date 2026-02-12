@@ -1,17 +1,42 @@
 'use client';
 
-import { Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import { useSalvemundiTransactions } from '@/shared/lib/hooks/useSalvemundiApi';
+import { getTransactionsAction, Transaction } from '@/shared/api/transaction-actions';
 import { format } from 'date-fns';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { Transaction } from '@/shared/lib/api/salvemundi';
 
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 function TransactionsContent() {
     const { user, isLoading: authLoading } = useAuth();
-    const { data: transactions = [], isLoading: transactionsLoading, error, refetch } = useSalvemundiTransactions(user?.id);
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [transactionsLoading, setTransactionsLoading] = useState(true);
+    const [error, setError] = useState(false);
+
+    const fetchTransactions = async () => {
+        if (!user?.id) return;
+        setTransactionsLoading(true);
+        setError(false);
+        try {
+            const data = await getTransactionsAction(user.id);
+            setTransactions(data);
+        } catch (err) {
+            setError(true);
+        } finally {
+            setTransactionsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (user?.id) {
+            fetchTransactions();
+        } else if (!authLoading) {
+            setTransactionsLoading(false);
+        }
+    }, [user, authLoading]);
+
+    const refetch = fetchTransactions;
 
 
     const getInferredTransactionType = (t: Transaction) => {

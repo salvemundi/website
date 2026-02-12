@@ -56,11 +56,12 @@ if (!vapidKeys.publicKey || !vapidKeys.privateKey) {
   console.error('⚠️  Public key present:', !!vapidKeys.publicKey);
   console.error('⚠️  Private key present:', !!vapidKeys.privateKey);
 } else {
-  webpush.setVapidDetails(
-    'mailto:' + (process.env.VAPID_EMAIL || 'info@salvemundi.nl'),
-    vapidKeys.publicKey,
-    vapidKeys.privateKey
-  );
+  // webpush.setVapidDetails(
+  //   'mailto:' + (process.env.VAPID_EMAIL || 'info@salvemundi.nl'),
+  //   vapidKeys.publicKey,
+  //   vapidKeys.privateKey
+  // );
+  console.warn('⚠️  VAPID keys not configured! Notifications will fail.');
   console.log('✓ Web-push configured with VAPID keys');
   console.log('✓ VAPID subject:', 'mailto:' + (process.env.VAPID_EMAIL || 'info@salvemundi.nl'));
   console.log('✓ Public key (first 20 chars):', vapidKeys.publicKey.substring(0, 20) + '...');

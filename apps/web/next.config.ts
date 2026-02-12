@@ -91,6 +91,8 @@ const nextConfig: NextConfig = {
     // Environment variables that should be available client-side
     env: {
         NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
+        NEXT_PUBLIC_ENTRA_CLIENT_ID: process.env.NEXT_PUBLIC_ENTRA_CLIENT_ID,
+        NEXT_PUBLIC_ENTRA_TENANT_ID: process.env.NEXT_PUBLIC_ENTRA_TENANT_ID,
     },
 
     // Webpack configuration for compatibility
@@ -137,14 +139,7 @@ const nextConfig: NextConfig = {
                         key: 'Permissions-Policy',
                         value: 'camera=(), microphone=(), geolocation=(self), payment=()',
                     },
-                    {
-                        key: 'Cross-Origin-Opener-Policy',
-                        value: 'same-origin',
-                    },
-                    {
-                        key: 'Cross-Origin-Embedder-Policy',
-                        value: 'credentialless',
-                    },
+
                     {
                         key: 'Content-Security-Policy',
                         value: [
@@ -154,7 +149,7 @@ const nextConfig: NextConfig = {
                             "font-src 'self' data: https://fonts.gstatic.com",
                             "img-src 'self' data: blob: https: http:",
                             "media-src 'self' blob: https:",
-                            "connect-src 'self' https://login.microsoftonline.com https://graph.microsoft.com https://admin.salvemundi.nl https://data.imagination.platour.net https://www.google-analytics.com https://analytics.google.com wss:",
+                            "connect-src 'self' https://login.microsoftonline.com https://graph.microsoft.com https://admin.salvemundi.nl https://data.imagination.platour.net https://www.google-analytics.com https://analytics.google.com wss: https://*.cartocdn.com",
                             "frame-src 'self' https://login.microsoftonline.com https://www.google.com",
                             "worker-src 'self' blob:",
                             "object-src 'none'",

@@ -1,7 +1,11 @@
-// payment-api/services/directus-service.js
+const instance = axios.create({
+    timeout: 10000 // 10 second timeout for all Directus calls
+});
 
-const axios = require('axios');
-
+// Diagnostic: Log proxy settings
+if (process.env.HTTP_PROXY || process.env.HTTPS_PROXY) {
+    console.warn(`[DirectusService] Proxy detected: HTTP=${process.env.HTTP_PROXY}, HTTPS=${process.env.HTTPS_PROXY}`);
+}
 
 function getAuthConfig(directusToken) {
     return {
@@ -15,7 +19,7 @@ function getAuthConfig(directusToken) {
 
 async function createDirectusTransaction(directusUrl, directusToken, data) {
     try {
-        const response = await axios.post(`${directusUrl}/items/transactions`, data, getAuthConfig(directusToken));
+        const response = await instance.post(`${directusUrl}/items/transactions`, data, getAuthConfig(directusToken));
         return response.data.data.id;
     } catch (error) {
         const maskedToken = directusToken
@@ -38,7 +42,7 @@ async function createDirectusUser(directusUrl, directusToken, userData) {
             status: userData.status || 'active'
         };
 
-        const response = await axios.post(`${directusUrl}/users`, payload, getAuthConfig(directusToken));
+        const response = await instance.post(`${directusUrl}/users`, payload, getAuthConfig(directusToken));
         // Return full created object when possible
         return response.data.data;
     } catch (error) {
@@ -50,7 +54,7 @@ async function createDirectusUser(directusUrl, directusToken, userData) {
 
 async function updateDirectusTransaction(directusUrl, directusToken, id, data) {
     try {
-        await axios.patch(`${directusUrl}/items/transactions/${id}`, data, getAuthConfig(directusToken));
+        await instance.patch(`${directusUrl}/items/transactions/${id}`, data, getAuthConfig(directusToken));
     } catch (error) {
         console.error(`Failed to update transaction ${id}:`, error.message);
         throw error;
@@ -60,7 +64,7 @@ async function updateDirectusTransaction(directusUrl, directusToken, id, data) {
 
 async function updateDirectusRegistration(directusUrl, directusToken, id, data) {
     try {
-        await axios.patch(`${directusUrl}/items/event_signups/${id}`, data, getAuthConfig(directusToken));
+        await instance.patch(`${directusUrl}/items/event_signups/${id}`, data, getAuthConfig(directusToken));
     } catch (error) {
         console.error(`Failed to update registration ${id}:`, error.message);
         throw error;
@@ -72,7 +76,7 @@ async function createDirectusItem(directusUrl, directusToken, collection, data) 
     try {
         console.log(`[DirectusService] Creating item in ${collection} with data:`, JSON.stringify(data));
         const endpoint = collection === 'users' ? `${directusUrl}/users` : `${directusUrl}/items/${collection}`;
-        const response = await axios.post(endpoint, data, getAuthConfig(directusToken));
+        const response = await instance.post(endpoint, data, getAuthConfig(directusToken));
         const createdId = response.data.data.id;
         console.log(`[DirectusService] ✅ Successfully created ${collection}/${createdId}`);
         return response.data.data;
@@ -91,7 +95,7 @@ async function updateDirectusItem(directusUrl, directusToken, collection, id, da
     try {
         console.log(`[DirectusService] Updating ${collection}/${id} with data:`, JSON.stringify(data));
         const endpoint = collection === 'users' ? `${directusUrl}/users/${id}` : `${directusUrl}/items/${collection}/${id}`;
-        const response = await axios.patch(endpoint, data, getAuthConfig(directusToken));
+        const response = await instance.patch(endpoint, data, getAuthConfig(directusToken));
         console.log(`[DirectusService] ✅ Successfully updated ${collection}/${id}`);
         return response.data;
     } catch (error) {
@@ -107,7 +111,7 @@ async function updateDirectusItem(directusUrl, directusToken, collection, id, da
 
 async function getDirectusRegistration(directusUrl, directusToken, id) {
     try {
-        const response = await axios.get(`${directusUrl}/items/event_signups/${id}?fields=qr_token,participant_name`, getAuthConfig(directusToken));
+        const response = await instance.get(`${directusUrl}/items/event_signups/${id}?fields=qr_token,participant_name`, getAuthConfig(directusToken));
         return response.data.data;
     } catch (error) {
         console.error(`Failed to fetch registration ${id}:`, error.message);
@@ -118,7 +122,7 @@ async function getDirectusRegistration(directusUrl, directusToken, id) {
 
 async function getDirectusItem(directusUrl, directusToken, collection, id, fields = '*') {
     try {
-        const response = await axios.get(`${directusUrl}/items/${collection}/${id}?fields=${fields}`, getAuthConfig(directusToken));
+        const response = await instance.get(`${directusUrl}/items/${collection}/${id}?fields=${fields}`, getAuthConfig(directusToken));
         return response.data.data;
     } catch (error) {
         console.error(`Failed to fetch ${collection} ${id}:`, error.message);
@@ -133,7 +137,7 @@ async function getDirectusItem(directusUrl, directusToken, collection, id, field
 
 async function getUser(directusUrl, directusToken, userId, fields = '*') {
     try {
-        const response = await axios.get(`${directusUrl}/users/${userId}?fields=${fields}`, getAuthConfig(directusToken));
+        const response = await instance.get(`${directusUrl}/users/${userId}?fields=${fields}`, getAuthConfig(directusToken));
         return response.data.data;
     } catch (error) {
         console.error(`Failed to fetch user ${userId}:`, error.message);
@@ -148,7 +152,7 @@ async function getUserByEmail(directusUrl, directusToken, email) {
             'filter[email][_eq]': email,
             'fields': 'id,email'
         }).toString();
-        const response = await axios.get(`${directusUrl}/users?${query}`, getAuthConfig(directusToken));
+        const response = await instance.get(`${directusUrl}/users?${query}`, getAuthConfig(directusToken));
         return response.data.data?.[0] || null;
     } catch (error) {
         console.error(`Failed to fetch user by email ${email}:`, error.message);
@@ -159,7 +163,7 @@ async function getUserByEmail(directusUrl, directusToken, email) {
 
 async function getTransaction(directusUrl, directusToken, id) {
     try {
-        const response = await axios.get(
+        const response = await instance.get(
             `${directusUrl}/items/transactions/${id}`,
             getAuthConfig(directusToken)
         );
@@ -177,7 +181,7 @@ async function getTransactionByMollieId(directusUrl, directusToken, mollieId) {
             'filter[transaction_id][_eq]': mollieId,
             'limit': '1'
         }).toString();
-        const response = await axios.get(
+        const response = await instance.get(
             `${directusUrl}/items/transactions?${query}`,
             getAuthConfig(directusToken)
         );
@@ -198,7 +202,7 @@ async function getTripSignupActivities(directusUrl, directusToken, signupId) {
         params.append('fields', 'id,selected_options,trip_activity_id.*');
 
         const url = `${directusUrl}/items/trip_signup_activities?${params.toString()}`;
-        const response = await axios.get(url, getAuthConfig(directusToken));
+        const response = await instance.get(url, getAuthConfig(directusToken));
         return response.data.data;
     } catch (error) {
         console.error(`Failed to fetch trip_signup_activities for ${signupId}:`, error.response?.data || error.message);
@@ -218,7 +222,7 @@ async function getCoupon(directusUrl, directusToken, code, traceId = 'no-trace')
         const url = `${directusUrl}/items/coupons?${query}`;
         console.warn(`[Coupon][${traceId}] Directus Fetch URL: ${url}`);
 
-        const response = await axios.get(url, getAuthConfig(directusToken));
+        const response = await instance.get(url, getAuthConfig(directusToken));
         const results = response.data.data;
 
         if (results && results.length > 0) {
@@ -240,7 +244,7 @@ async function getCoupon(directusUrl, directusToken, code, traceId = 'no-trace')
  */
 async function updateCouponUsage(directusUrl, directusToken, id, newCount) {
     try {
-        await axios.patch(
+        await instance.patch(
             `${directusUrl}/items/coupons/${id}`,
             { usage_count: newCount },
             getAuthConfig(directusToken)
@@ -276,7 +280,7 @@ async function checkUserCommittee(directusUrl, directusToken, userId, committeeN
 
         const query = params.toString();
 
-        const response = await axios.get(
+        const response = await instance.get(
             `${directusUrl}/items/committee_members?${query}`,
             getAuthConfig(directusToken)
         );
@@ -313,7 +317,7 @@ module.exports = {
                 'limit': '1'
             }).toString();
 
-            const response = await axios.get(`${directusUrl}/items/site_settings?${query}`, getAuthConfig(token));
+            const response = await instance.get(`${directusUrl}/items/site_settings?${query}`, getAuthConfig(token));
 
             const data = response.data;
             if (data.data && data.data.length > 0) {
@@ -346,7 +350,7 @@ module.exports = {
 
             let existingId = null;
             try {
-                const getRes = await axios.get(`${directusUrl}/items/site_settings?${query}`, getAuthConfig(token));
+                const getRes = await instance.get(`${directusUrl}/items/site_settings?${query}`, getAuthConfig(token));
                 const getData = getRes.data;
                 existingId = (getData.data && getData.data.length > 0) ? getData.data[0].id : null;
             } catch (err) {
@@ -360,9 +364,9 @@ module.exports = {
             };
 
             if (existingId) {
-                await axios.patch(`${directusUrl}/items/site_settings/${existingId}`, payload, getAuthConfig(token));
+                await instance.patch(`${directusUrl}/items/site_settings/${existingId}`, payload, getAuthConfig(token));
             } else {
-                await axios.post(`${directusUrl}/items/site_settings`, payload, getAuthConfig(token));
+                await instance.post(`${directusUrl}/items/site_settings`, payload, getAuthConfig(token));
             }
             return settings;
         } catch (error) {

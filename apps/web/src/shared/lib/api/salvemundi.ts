@@ -1,5 +1,6 @@
 import { directusFetch, API_SERVICE_TOKEN } from '../directus';
 import { COLLECTIONS, FIELDS } from '@/shared/lib/constants/collections';
+import { getSafeHavens } from '@/shared/api/safe-haven-actions';
 
 // --- Types ---
 export interface SiteSettings {
@@ -479,25 +480,26 @@ export const committeesApi = {
     getAllWithMembers: async () => {
         try {
             const committees = await directusFetch<any[]>(`/items/committees?fields=id,name,email,image.id,is_visible,short_description,created_at,updated_at&sort=name`);
-            const visibleCommittees = committees.filter(c => c.is_visible !== false);
+            const visibleCommittees = (committees || []).filter(c => c.is_visible !== false);
 
             const committeesWithMembers = await Promise.all(
                 visibleCommittees.map(async (committee) => {
                     const members = await directusFetch<any[]>(
-                        `/items/committee_members?filter[committee_id][_eq]=${committee.id}&fields=*,user_id.*`
+                        `/items/committee_members?filter[committee_id][_eq]=${committee.id}&fields=*,user_id.first_name,user_id.last_name,user_id.avatar`
                     );
-                    return { ...committee, committee_members: members };
+                    return { ...committee, committee_members: members || [] };
                 })
             );
             return committeesWithMembers;
         } catch (error) {
             const committees = await directusFetch<any[]>(`/items/committees?fields=id,name,email,image.id,created_at,updated_at&sort=name`);
+            const committeeList = Array.isArray(committees) ? committees : [];
             const committeesWithMembers = await Promise.all(
-                committees.map(async (committee) => {
+                committeeList.map(async (committee) => {
                     const members = await directusFetch<any[]>(
-                        `/items/committee_members?filter[committee_id][_eq]=${committee.id}&fields=*,user_id.*`
+                        `/items/committee_members?filter[committee_id][_eq]=${committee.id}&fields=*,user_id.first_name,user_id.last_name,user_id.avatar`
                     );
-                    return { ...committee, committee_members: members };
+                    return { ...committee, committee_members: members || [] };
                 })
             );
             return committeesWithMembers;
@@ -677,36 +679,8 @@ export interface SafeHavenAvailability {
 
 export const safeHavensApi = {
     getAll: async () => {
-        const baseFields = ['id', 'user_id.id', 'user_id.first_name', 'user_id.last_name', 'contact_name', 'image', 'created_at'];
-
-        const getSafeHavensAction = async (includeContactDetails: boolean) => {
-            const fields = [...baseFields];
-            if (includeContactDetails) {
-                fields.push('phone_number', 'email');
-            }
-
-            const query = buildQueryString({
-                fields: fields,
-                sort: ['contact_name']
-            });
-            return directusFetch<SafeHaven[]>(`/items/safe_havens?${query}`);
-        };
-
-        let safeHavens: SafeHaven[];
-        // Check if we should try to get contact details (if logged in)
-        const shouldTryContactDetails = typeof window !== 'undefined' && !!localStorage.getItem('auth_token');
-
-        try {
-            safeHavens = await getSafeHavensAction(shouldTryContactDetails);
-        } catch (error: any) {
-            // If it failed with 403 and we tried to include contact details, retry without them
-            if (error?.status === 403 && shouldTryContactDetails) {
-                safeHavens = await getSafeHavensAction(false);
-            } else {
-                throw error;
-            }
-        }
-        return safeHavens;
+        // Use Server Action to fetch data with Admin Token, bypassing client-side user permissions
+        return await getSafeHavens();
     },
     getByUserId: async (userId: string) => {
         const query = buildQueryString({

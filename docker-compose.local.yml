@@ -1,0 +1,71 @@
+services:
+  # Base Infrastructure
+  db:
+    ports:
+      - "5432:5432"
+
+  directus:
+    ports:
+      - "8055:8055"
+
+  # Microservices
+  # Mapping based on apps/web/.env expectations vs Dockerfile internal ports
+
+  # Secure Outbound Proxy
+  secure-proxy:
+    image: ubuntu/squid
+    volumes:
+      - ./infra/proxy/squid.conf:/etc/squid/squid.conf
+    ports:
+      - "3128:3128"
+    networks:
+      - public-ingress
+      - service-mesh
+
+  # Identity Service
+  identity:
+    ports:
+      - "3002:3002"
+    environment:
+      - HTTP_PROXY=http://secure-proxy:3128
+      - HTTPS_PROXY=http://secure-proxy:3128
+      - NO_PROXY=localhost,127.0.0.1,db,directus,finance,email,notifications,identity
+    networks:
+      - service-mesh
+      - data-plane
+      - public-ingress
+
+  # Finance Service
+  finance:
+    ports:
+      - "3001:3001"
+    environment:
+      - HTTP_PROXY=http://secure-proxy:3128
+      - HTTPS_PROXY=http://secure-proxy:3128
+      - NO_PROXY=localhost,127.0.0.1,db,directus,finance,email,notifications,identity
+    networks:
+      - service-mesh
+      - data-plane
+      - public-ingress
+
+  # Email Service
+  email:
+    ports:
+      - "3003:3003"
+    environment:
+      - HTTP_PROXY=http://secure-proxy:3128
+      - HTTPS_PROXY=http://secure-proxy:3128
+      - NO_PROXY=localhost,127.0.0.1,db,directus,finance,email,notifications,identity
+    networks:
+      - service-mesh
+
+  # Notifications Service
+  notifications:
+    ports:
+      - "3004:3004"
+    environment:
+      - HTTP_PROXY=http://secure-proxy:3128
+      - HTTPS_PROXY=http://secure-proxy:3128
+      - NO_PROXY=localhost,127.0.0.1,db,directus,finance,email,notifications,identity
+    networks:
+      - service-mesh

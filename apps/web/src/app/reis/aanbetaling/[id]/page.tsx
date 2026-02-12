@@ -413,10 +413,11 @@ export default function AanbetalingPage() {
                                 <div className="space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">
+                                            <label htmlFor="first_name" className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">
                                                 Voornaam <span className="text-red-500">*</span>
                                             </label>
                                             <input
+                                                id="first_name"
                                                 type="text"
                                                 name="first_name"
                                                 value={form.first_name}
@@ -426,10 +427,11 @@ export default function AanbetalingPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">
+                                            <label htmlFor="middle_name" className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">
                                                 Tussenvoegsel
                                             </label>
                                             <input
+                                                id="middle_name"
                                                 type="text"
                                                 name="middle_name"
                                                 value={form.middle_name}
@@ -438,10 +440,11 @@ export default function AanbetalingPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">
+                                            <label htmlFor="last_name" className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">
                                                 Achternaam <span className="text-red-500">*</span>
                                             </label>
                                             <input
+                                                id="last_name"
                                                 type="text"
                                                 name="last_name"
                                                 value={form.last_name}
@@ -453,10 +456,11 @@ export default function AanbetalingPage() {
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">
+                                            <label htmlFor="date_of_birth" className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">
                                                 Geboortedatum <span className="text-red-500">*</span>
                                             </label>
                                             <input
+                                                id="date_of_birth"
                                                 type="date"
                                                 name="date_of_birth"
                                                 value={form.date_of_birth}
@@ -467,10 +471,11 @@ export default function AanbetalingPage() {
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            <label htmlFor="id_document_type" className="block text-sm font-semibold text-gray-700 mb-2">
                                                 ID Document Type <span className="text-red-500">*</span>
                                             </label>
                                             <select
+                                                id="id_document_type"
                                                 name="id_document_type"
                                                 value={form.id_document_type}
                                                 onChange={handleChange}
@@ -484,10 +489,11 @@ export default function AanbetalingPage() {
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">
+                                            <label htmlFor="document_number" className="block text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">
                                                 Document nummer {form.id_document_type && <span className="text-red-500">*</span>}
                                             </label>
                                             <input
+                                                id="document_number"
                                                 type="text"
                                                 name="document_number"
                                                 value={form.document_number}
@@ -500,10 +506,11 @@ export default function AanbetalingPage() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        <label htmlFor="allergies" className="block text-sm font-semibold text-gray-700 mb-2">
                                             Allergieën
                                         </label>
                                         <textarea
+                                            id="allergies"
                                             name="allergies"
                                             value={form.allergies}
                                             onChange={handleChange}
@@ -514,10 +521,11 @@ export default function AanbetalingPage() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        <label htmlFor="special_notes" className="block text-sm font-semibold text-gray-700 mb-2">
                                             Bijzonderheden
                                         </label>
                                         <textarea
+                                            id="special_notes"
                                             name="special_notes"
                                             value={form.special_notes}
                                             onChange={handleChange}
@@ -530,13 +538,14 @@ export default function AanbetalingPage() {
                                     {trip.is_bus_trip && (
                                         <div className="flex items-start pt-4 bg-blue-50 dark:bg-[var(--bg-card-dark)] p-4 rounded-lg">
                                             <input
+                                                id="willing_to_drive"
                                                 type="checkbox"
                                                 name="willing_to_drive"
                                                 checked={form.willing_to_drive}
                                                 onChange={handleChange}
                                                 className="mt-1 h-5 w-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                                             />
-                                            <label className="ml-3">
+                                            <label htmlFor="willing_to_drive" className="ml-3">
                                                 <div className="flex items-center text-sm font-semibold text-gray-700 mb-1">
                                                     <Bus className="h-5 w-5 mr-2 text-blue-600" />
                                                     Ik wil vrijwillig rijden tijdens de busjesreis
@@ -575,6 +584,8 @@ export default function AanbetalingPage() {
                                             >
                                                 <div className="flex items-start">
                                                     <input
+                                                        id={`activity-${activity.id}`}
+                                                        name="activity"
                                                         type="checkbox"
                                                         checked={selectedActivities.includes(activity.id)}
                                                         onChange={() => { }}

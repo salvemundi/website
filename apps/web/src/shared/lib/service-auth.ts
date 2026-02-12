@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import { sign, verify } from 'jsonwebtoken';
 
 const SERVICE_SECRET = process.env.SERVICE_SECRET;
 
@@ -11,11 +11,12 @@ if (!SERVICE_SECRET) {
  * @param payload Data to include in the token (e.g., { iss: 'frontend' })
  * @param expiresIn Expiration time (default 1 hour)
  */
-export function createServiceToken(payload: object = { iss: 'frontend' }, expiresIn: string = '1h'): string {
+export function createServiceToken(payload: any = { iss: 'frontend' }, expiresIn: string = '1h'): string {
     if (!SERVICE_SECRET) {
         throw new Error('SERVICE_SECRET is required to sign service tokens');
     }
-    return jwt.sign(payload, SERVICE_SECRET, { expiresIn });
+    // @ts-ignore
+    return sign(payload, SERVICE_SECRET, { expiresIn });
 }
 
 /**
@@ -27,7 +28,8 @@ export function verifyServiceToken(token: string): any {
         throw new Error('SERVICE_SECRET is required to verify service tokens');
     }
     try {
-        return jwt.verify(token, SERVICE_SECRET);
+        // @ts-ignore
+        return verify(token, SERVICE_SECRET);
     } catch (error) {
         return null;
     }

@@ -1,13 +1,12 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import { useSalvemundiWhatsAppGroups } from '@/shared/lib/hooks/useSalvemundiApi';
-import { useQuery } from '@tanstack/react-query';
-import { documentsApi } from '@/shared/lib/api/salvemundi';
+import { getWhatsAppGroupsAction, WhatsAppGroup } from '@/shared/api/whatsapp-actions';
+import { getDocumentsAction, Document } from '@/shared/api/document-actions';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { stripHtml } from '@/shared/lib/text';
-import { WhatsAppGroup } from '@/shared/lib/api/salvemundi';
 import { directusUrl } from '@/shared/lib/directus';
 
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -23,9 +22,36 @@ export default function WhatsAppGroupsPage() {
 function WhatsAppGroupsContent() {
     const router = useRouter();
     const { user, isLoading: authLoading } = useAuth();
-    const { data: groups = [], isLoading: groupsLoading, error, refetch } = useSalvemundiWhatsAppGroups(true);
 
-    const { data: documents } = useQuery({ queryKey: ['documents'], queryFn: documentsApi.getAll });
+    const [groups, setGroups] = useState<WhatsAppGroup[]>([]);
+    const [groupsLoading, setGroupsLoading] = useState(true);
+    const [error, setError] = useState<boolean>(false);
+    const [documents, setDocuments] = useState<Document[]>([]);
+
+    const fetchData = async () => {
+        setGroupsLoading(true);
+        setError(false);
+        try {
+            const [groupsData, docsData] = await Promise.all([
+                getWhatsAppGroupsAction(true),
+                getDocumentsAction()
+            ]);
+            setGroups(groupsData);
+            setDocuments(docsData);
+        } catch (err) {
+            setError(true);
+        } finally {
+            setGroupsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (user && user.membership_status === 'active') {
+            fetchData();
+        } else if (user) {
+            setGroupsLoading(false);
+        }
+    }, [user]);
 
     const chatRegelsDoc = (documents || []).find((d: any) => (d.title || '').toLowerCase().trim() === 'chat regels');
     const gedragscodeUrl = chatRegelsDoc ? `${directusUrl}/assets/${chatRegelsDoc.file}` : 'https://salvemundi.nl/gedragscode';
@@ -114,7 +140,7 @@ function WhatsAppGroupsContent() {
                             <div className="text-center py-12">
                                 <div className="text-paars mb-4">Er is een fout opgetreden bij het laden van de groepen.</div>
                                 <button
-                                    onClick={() => refetch()}
+                                    onClick={() => fetchData()}
                                     className="px-6 py-3 bg-gradient-to-r from-oranje to-paars text-white rounded-full font-semibold shadow-lg shadow-oranje/30 transition-transform hover:-translate-y-0.5 hover:shadow-xl"
                                 >
                                     Probeer Opnieuw

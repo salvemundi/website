@@ -3,7 +3,7 @@ name: Deploy Development
 on:
   push:
     branches:
-      - develop
+      - Development
 
 jobs:
   deploy:
@@ -25,7 +25,7 @@ jobs:
             cd /opt/salvemundi/dev
 
             # Update code
-            git pull origin develop
+            git pull origin Development
 
             # Generate .env file dynamically from GitHub Secrets and Variables
             echo "DB_USER=${{ secrets.DB_USER }}" > .env

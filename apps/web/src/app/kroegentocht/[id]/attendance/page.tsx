@@ -435,6 +435,8 @@ function PubCrawlAttendanceContent() {
                     <div className="relative group">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-theme-purple transition-colors" />
                         <input
+                            id="search-name"
+                            name="search-name"
                             type="text"
                             placeholder="Zoek op naam..."
                             value={searchQuery}
@@ -445,6 +447,8 @@ function PubCrawlAttendanceContent() {
                     <div className="relative group">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-theme-purple transition-colors" />
                         <input
+                            id="search-email"
+                            name="search-email"
                             type="text"
                             placeholder="Zoek op email..."
                             value={emailQuery}

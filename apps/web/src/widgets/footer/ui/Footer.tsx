@@ -1,63 +1,36 @@
-'use client';
 
-import React from "react";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
 import { Instagram, Facebook, Linkedin } from "lucide-react";
-import { documentsApi, committeesApi } from "@/shared/lib/api/salvemundi";
 import { slugify } from "@/shared/lib/utils/slug";
-import { useAuth } from "@/features/auth/providers/auth-provider";
-import { useSalvemundiSiteSettings } from "@/shared/lib/hooks/useSalvemundiApi";
 import { ROUTES } from "@/shared/lib/routes";
-import { directusUrl } from "@/shared/lib/directus";
-
-interface Document {
-    id: number;
-    title: string;
-    description?: string;
-    file: string;
-    category: string;
-    display_order: number;
-}
+import { FooterDocuments, FooterWhatsAppLink } from "./FooterClientElements";
+import { getFooterCommittees, getFooterSettings } from "@/shared/api/footer-actions";
+import { getDocumentsAction } from "@/shared/api/document-actions";
 
 function cleanCommitteeName(name: string): string {
     return name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim();
 }
 
-export default function Footer() {
-    const { isAuthenticated } = useAuth();
+export default async function Footer() {
+    // Fetch data on the server - much safer and avoids Entra hits on the client
+    const [committeesData, settings, documents] = await Promise.all([
+        getFooterCommittees(),
+        getFooterSettings(),
+        getDocumentsAction()
+    ]);
 
-    const { data: documents } = useQuery({
-        queryKey: ['documents'],
-        queryFn: documentsApi.getAll,
-        enabled: isAuthenticated,
+    const introEnabled = settings.find(s => s.page === 'intro')?.show ?? true;
+    const kroegentochtEnabled = settings.find(s => s.page === 'kroegentocht')?.show ?? true;
+    const reisEnabled = settings.find(s => s.page === 'reis')?.show ?? true;
+
+    const committees = [...committeesData].sort((a, b) => {
+        const aIsBestuur = cleanCommitteeName(a.name).toLowerCase().includes('bestuur');
+        const bIsBestuur = cleanCommitteeName(b.name).toLowerCase().includes('bestuur');
+
+        if (aIsBestuur && !bIsBestuur) return -1;
+        if (!aIsBestuur && bIsBestuur) return 1;
+        return 0;
     });
-
-    const { data: committeesData = [] } = useQuery<any[]>({
-        queryKey: ['committees-with-members'],
-        queryFn: () => committeesApi.getAllWithMembers(),
-        staleTime: 5 * 60 * 1000
-    });
-
-    const { data: introSettings } = useSalvemundiSiteSettings('intro');
-    const introEnabled = introSettings?.show ?? true;
-    const { data: kroegentochtSettings } = useSalvemundiSiteSettings('kroegentocht');
-    const kroegentochtEnabled = kroegentochtSettings?.show ?? true;
-    const { data: reisSettings } = useSalvemundiSiteSettings('reis');
-    const reisEnabled = reisSettings?.show ?? true;
-
-    const committees = React.useMemo(() => {
-        return [...committeesData].sort((a, b) => {
-            const aIsBestuur = cleanCommitteeName(a.name).toLowerCase().includes('bestuur');
-            const bIsBestuur = cleanCommitteeName(b.name).toLowerCase().includes('bestuur');
-
-            if (aIsBestuur && !bIsBestuur) return -1;
-            if (!aIsBestuur && bIsBestuur) return 1;
-            return 0;
-        });
-    }, [committeesData]);
-
-
 
     return (
         <footer className="relative overflow-hidden bg-gradient-theme text-theme-text dark:text-theme-white">
@@ -72,24 +45,8 @@ export default function Footer() {
                             <li>Rachelsmolen 1</li>
                             <li>5612 MA Eindhoven</li>
                             <li>KvK nr. 70280606</li>
-                            {documents && documents.length > 0 && (
-                                documents.map((doc: Document) => {
-                                    const fileUrl = `${directusUrl}/assets/${doc.file}`;
-                                    return (
-                                        <li key={doc.id}>
-                                            <a
-                                                href={fileUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-1 rounded-full px-2 py-1 bg-white/10  transition hover:bg-white/20 hover:text-theme-purple-lighter"
-                                                title={doc.description || doc.title}
-                                            >
-                                                {doc.title}
-                                            </a>
-                                        </li>
-                                    );
-                                })
-                            )}
+                            {/* Auth-dependent Documents are handled by a client component */}
+                            <FooterDocuments initialDocuments={documents} />
                         </ul>
                     </div>
 
@@ -124,20 +81,16 @@ export default function Footer() {
                     <div>
                         <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-title mb-4">Commissies</h3>
                         <ul className="space-y-2 text-sm">
-                            {committees.length > 0 ? (
-                                committees.map((committee) => (
-                                    <li key={committee.id}>
-                                        <Link
-                                            href={`${ROUTES.COMMITTEES}/${slugify(cleanCommitteeName(committee.name))}`}
-                                            className="inline-flex items-center gap-1 rounded-full px-2 py-1 transition hover:bg-theme-purple/10 dark:hover:bg-white/10 hover:text-theme-purple dark:hover:text-theme-purple-lighter"
-                                        >
-                                            {cleanCommitteeName(committee.name)}
-                                        </Link>
-                                    </li>
-                                ))
-                            ) : (
-                                <li className="text-theme-text-light dark:text-theme-text-light">Laden...</li>
-                            )}
+                            {committees.map((committee) => (
+                                <li key={committee.id}>
+                                    <Link
+                                        href={`${ROUTES.COMMITTEES}/${slugify(cleanCommitteeName(committee.name))}`}
+                                        className="inline-flex items-center gap-1 rounded-full px-2 py-1 transition hover:bg-theme-purple/10 dark:hover:bg-white/10 hover:text-theme-purple dark:hover:text-theme-purple-lighter"
+                                    >
+                                        {cleanCommitteeName(committee.name)}
+                                    </Link>
+                                </li>
+                            ))}
                         </ul>
                     </div>
 
@@ -160,22 +113,12 @@ export default function Footer() {
                                     +31 6 24827777
                                 </a>
                             </li>
-                            {isAuthenticated && (
-                                <li>
-                                    <a
-                                        href="https://wa.me/31624827777"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-1 rounded-full px-2 py-1 transition hover:bg-theme-purple/10 dark:hover:bg-white/10 hover:text-theme-purple dark:hover:text-theme-purple-lighter"
-                                    >
-                                        WhatsApp
-                                    </a>
-                                </li>
-                            )}
+                            {/* Auth-dependent WhatsApp Link handles its own visibility */}
+                            <FooterWhatsAppLink />
                             <li>
                                 <Link
                                     href={ROUTES.SAFE_HAVENS}
-                                    className="inline-flex items-center gap-1 rounded-full px-2 py-1 bg-theme-purple-light/20  font-semibold transition hover:bg-theme-purple-light/30 hover:text-theme-text"
+                                    className="inline-flex items-center gap-1 rounded-full px-2 py-1 bg-theme-purple-light/20 font-semibold transition hover:bg-theme-purple-light/30 hover:text-theme-text"
                                 >
                                     Safe Havens
                                 </Link>

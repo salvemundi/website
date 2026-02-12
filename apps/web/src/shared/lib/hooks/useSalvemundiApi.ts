@@ -23,7 +23,7 @@ import {
 } from '@/shared/lib/api/salvemundi';
 
 // Events (Activities) Hooks
-export function useSalvemundiEvents(options?: UseQueryOptions<any[]>) {
+export function useSalvemundiEvents(options?: Omit<UseQueryOptions<any[]>, 'queryKey' | 'queryFn'>) {
     return useQuery({
         queryKey: ['events'],
         queryFn: eventsApi.getAll,
@@ -32,7 +32,7 @@ export function useSalvemundiEvents(options?: UseQueryOptions<any[]>) {
     });
 }
 
-export function useSalvemundiEvent(id: string, options?: UseQueryOptions<any>) {
+export function useSalvemundiEvent(id: string, options?: Omit<UseQueryOptions<any>, 'queryKey' | 'queryFn'>) {
     return useQuery({
         queryKey: ['events', id],
         queryFn: () => eventsApi.getById(id),
@@ -52,7 +52,7 @@ export function useSalvemundiEventsByCommittee(committeeId: number | undefined) 
 }
 
 // Committees Hooks
-export function useSalvemundiCommittees(options?: UseQueryOptions<any[]>) {
+export function useSalvemundiCommittees(options?: Omit<UseQueryOptions<any[]>, 'queryKey' | 'queryFn'>) {
     return useQuery({
         queryKey: ['committees'],
         queryFn: committeesApi.getAll,
@@ -61,7 +61,7 @@ export function useSalvemundiCommittees(options?: UseQueryOptions<any[]>) {
     });
 }
 
-export function useSalvemundiCommitteesWithMembers(options?: UseQueryOptions<any[]>) {
+export function useSalvemundiCommitteesWithMembers(options?: Omit<UseQueryOptions<any[]>, 'queryKey' | 'queryFn'>) {
     return useQuery({
         queryKey: ['committees', 'with-members'],
         queryFn: committeesApi.getAllWithMembers,

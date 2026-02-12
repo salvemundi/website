@@ -6,9 +6,9 @@ const getRedirectUri = () => {
     // Check if we are on localhost/IP
     const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)/i.test(window.location.origin);
 
-    // If on localhost, ALWAYS use the current origin to avoid being redirected to prod
+    // If on localhost, ALWAYS use the hardcoded origin to avoid trailing slash mismatches
     if (isLocalhost) {
-        return window.location.origin;
+        return 'http://localhost:5173/';
     }
 
     // Dynamic redirect for our known environments
@@ -20,14 +20,17 @@ const getRedirectUri = () => {
         hostname === 'dev.salvemundi.nl' ||
         hostname === 'preprod.salvemundi.nl'
     ) {
-        return window.location.origin;
+        return `${window.location.origin}/`;
     }
 
     // Otherwise use the env var or the current origin as fallback
-    return process.env.NEXT_PUBLIC_AUTH_REDIRECT_URI || window.location.origin;
+    // Ensure we always have a trailing slash if that's what Azure expects
+    const base = process.env.NEXT_PUBLIC_AUTH_REDIRECT_URI || window.location.origin;
+    return base.endsWith('/') ? base : `${base}/`;
 };
 
 const redirectUri = getRedirectUri();
+console.log('[msalConfig] Resolved Redirect URI:', redirectUri);
 const postLogoutRedirectUri = redirectUri;
 
 // Helpful hint for LAN/IP testing where Microsoft requires HTTPS
@@ -39,10 +42,19 @@ if (typeof window !== 'undefined') {
 }
 
 // MSAL configuration
+console.log('[msalConfig] Loading configuration...');
+console.log('[msalConfig] Env NEXT_PUBLIC_ENTRA_CLIENT_ID:', process.env.NEXT_PUBLIC_ENTRA_CLIENT_ID);
+
+const clientId = process.env.NEXT_PUBLIC_ENTRA_CLIENT_ID || 'YOUR_CLIENT_ID';
+console.log('[msalConfig] Resolved Client ID:', clientId);
+
+const tenantId = process.env.NEXT_PUBLIC_ENTRA_TENANT_ID || 'common';
+
+
 export const msalConfig: Configuration = {
     auth: {
-        clientId: process.env.NEXT_PUBLIC_ENTRA_CLIENT_ID || 'YOUR_CLIENT_ID', // Replace with your Entra ID client ID
-        authority: `https://login.microsoftonline.com/${process.env.NEXT_PUBLIC_ENTRA_TENANT_ID || 'common'}`,
+        clientId,
+        authority: `https://login.microsoftonline.com/${tenantId}`,
         redirectUri,
         postLogoutRedirectUri,
     },

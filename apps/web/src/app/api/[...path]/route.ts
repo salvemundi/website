@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isRateLimited, getClientIp } from '@/shared/lib/rate-limit';
+import { AUTH_COOKIES } from '@/shared/config/auth-config';
 
 const DIRECTUS_URL = process.env.INTERNAL_DIRECTUS_URL || process.env.NEXT_PUBLIC_DIRECTUS_URL || 'http://directus:8055';
 
@@ -9,13 +10,11 @@ const TEST_TOKEN_COOKIE = 'directus_test_token';
 let API_BYPASS_USER_ID = process.env.DIRECTUS_API_USER_ID ?? null;
 
 // Detect a Directus API token used by server-side services or the frontend build.
-// SECURITY: Only use server-side environment variables. NEVER allow NEXT_PUBLIC_ variables here.
-const DIRECTUS_FRONTEND_FRONTEND_TOKEN = process.env.DIRECTUS_FRONTEND_FRONTEND_TOKEN ?? null;
+// SECURITY: Only use server-side environment variables.
+const INTERNAL_TOKEN = process.env.DIRECTUS_ADMIN_TOKEN ?? null;
 
-// No-op - removed security risk check for NEXT_PUBLIC_DIRECTUS_API_KEY
-
-if (!DIRECTUS_FRONTEND_FRONTEND_TOKEN) {
-    console.warn('[Directus Proxy] WARNING: DIRECTUS_FRONTEND_FRONTEND_TOKEN is not set. Public data access via proxy may fail.');
+if (!INTERNAL_TOKEN) {
+    console.warn('[Directus Proxy] WARNING: DIRECTUS_ADMIN_TOKEN is not set. Public data access via proxy may fail.');
 }
 
 const allowedCollections = [
@@ -26,22 +25,39 @@ const allowedCollections = [
     'partners', 'FAQ', 'news', 'hero_banners', 'trips', 'trip_activities',
     'site_settings', 'boards', 'Board', 'history', 'attendance_officers',
     'whats_app_groups', 'whatsapp_groups', 'transactions', 'feedback',
-    'members', 'clubs', 'pub_crawl_events', 'pub_crawl_tickets', 'jobs', 'safe_havens',
+    'members', 'clubs', 'pub_crawl_events', 'pub_crawl_tickets', 'jobs',
+    'safe_havens',
     'documents', 'files', 'assets',
 ];
 
+function isPathAllowed(path: string): boolean {
+    const p = path.toLowerCase().replace(/^items\//, '');
+    return allowedCollections.some(c => {
+        const lowerC = c.toLowerCase();
+        return p === lowerC || p.startsWith(`${lowerC}/`);
+    });
+}
+
+
 function getAuthToken(request: NextRequest, url: URL): string | null {
+    const cookieHeader = request.headers.get('Cookie') || '';
+
     // 1. Priority: User Impersonation Token from Cookie
-    const cookies = request.headers.get('Cookie') || '';
-    const testTokenMatch = cookies.match(new RegExp(`${TEST_TOKEN_COOKIE}=([^;]+)`));
+    const testTokenMatch = cookieHeader.match(new RegExp(`${TEST_TOKEN_COOKIE}=([^;]+)`));
     if (testTokenMatch && testTokenMatch[1]) {
         return `Bearer ${testTokenMatch[1]}`;
     }
 
-    // 2. Standard Authorization Header
+    // 2. Priority: Formal Session Token from HTTP-only Cookie
+    const sessionTokenMatch = cookieHeader.match(new RegExp(`${AUTH_COOKIES.SESSION}=([^;]+)`));
+    if (sessionTokenMatch && sessionTokenMatch[1]) {
+        return `Bearer ${sessionTokenMatch[1]}`;
+    }
+
+    // 3. Standard Authorization Header
     let auth = request.headers.get('Authorization') || request.headers.get('authorization');
 
-    // 3. Last Resort: Query Parameter
+    // 4. Last Resort: Query Parameter
     if (!auth && url.searchParams.has('access_token')) {
         auth = `Bearer ${url.searchParams.get('access_token')}`;
     }
@@ -54,7 +70,7 @@ async function isApiBypass(auth: string | null, options?: { cookie?: string | nu
     const token = auth?.startsWith('Bearer ') ? auth.slice(7) : auth;
 
     // 1. Immediate match with service token (fastest)
-    if (DIRECTUS_FRONTEND_FRONTEND_TOKEN && token === String(DIRECTUS_FRONTEND_FRONTEND_TOKEN)) {
+    if (INTERNAL_TOKEN && token === String(INTERNAL_TOKEN)) {
         return true;
     }
 
@@ -78,10 +94,10 @@ async function isApiBypass(auth: string | null, options?: { cookie?: string | nu
     }
 
     // 3. One-time discovery of the service user's ID
-    if (DIRECTUS_FRONTEND_FRONTEND_TOKEN) {
+    if (INTERNAL_TOKEN) {
         try {
             const svcResp = await fetch(`${DIRECTUS_URL}/users/me`, {
-                headers: { Authorization: `Bearer ${DIRECTUS_FRONTEND_FRONTEND_TOKEN}` },
+                headers: { Authorization: `Bearer ${INTERNAL_TOKEN}` },
                 cache: 'no-store'
             });
             if (svcResp.ok) {
@@ -149,10 +165,7 @@ export async function GET(
     const auth = getAuthToken(request, url);
 
     try {
-        const isAllowed = allowedCollections.some(c =>
-            path === `items/${c}` || path.startsWith(`items/${c}/`) ||
-            path === c || path.startsWith(`${c}/`)
-        );
+        const isAllowed = isPathAllowed(path);
         const isAuthPath =
             path.startsWith('auth/') ||
             path.startsWith('users/me') ||
@@ -164,7 +177,7 @@ export async function GET(
         let isUserTokenValid = true;
         let userData: any = null;
 
-        const needsSpecialGuardCheck = path.startsWith('items/events') || path.startsWith('items/event_signups') || path.includes('site_settings') || path.startsWith('items/committees') || path.startsWith('items/committee_members') || path.startsWith('items/pub_crawl_');
+        const needsSpecialGuardCheck = path.startsWith('items/events') || path.startsWith('items/event_signups') || path.includes('site_settings') || path.startsWith('items/pub_crawl_');
 
         const cookie = request.headers.get('Cookie');
         if (auth || cookie) {
@@ -175,8 +188,13 @@ export async function GET(
             try {
                 const headers = getProxyHeaders(request);
                 headers['Cache-Control'] = 'no-cache';
-                if (auth) headers['Authorization'] = auth;
-                if (cookie) headers['Cookie'] = cookie;
+
+                // Prioritize Auth header over cookies to avoid 400 "Multiple authentication methods" error
+                if (auth) {
+                    headers['Authorization'] = auth;
+                } else if (cookie) {
+                    headers['Cookie'] = cookie;
+                }
 
                 const meResp = await fetch(`${DIRECTUS_URL}/users/me`, { headers, cache: 'no-store' });
                 if (meResp.ok) {
@@ -184,6 +202,8 @@ export async function GET(
                     userData = meJson?.data || meJson;
 
                     if (userData?.id) {
+                        // User info successfully fetched, now check for committee memberships
+                        // We use the same header priority here too
                         const membershipsResp = await fetch(
                             `${DIRECTUS_URL}/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(userData.id)}&fields=committee_id.id,committee_id.name,is_leader&limit=-1`,
                             { headers, cache: 'no-store' }
@@ -193,9 +213,13 @@ export async function GET(
                     }
                 } else if (meResp.status === 401 || meResp.status === 403) {
                     isUserTokenValid = false;
+                } else if (meResp.status === 400) {
+                    console.warn(`[Directus Proxy] Diagnostic users/me failed with 400 (Multiple Auth). Auth=${!!auth}, Cookie=${!!cookie}`);
+                    isUserTokenValid = false;
                 }
             } catch (e) {
                 // Auth check failed, proceed with caution
+                console.warn('[Directus Proxy] Diagnostic check exception:', e);
             }
         }
 
@@ -211,8 +235,12 @@ export async function GET(
 
         let targetSearch = url.search;
 
-        if (canBypass && DIRECTUS_FRONTEND_FRONTEND_TOKEN) {
-            forwardHeaders['Authorization'] = `Bearer ${DIRECTUS_FRONTEND_FRONTEND_TOKEN}`;
+        if (path.includes('safe_havens')) {
+            console.log(`[DEBUG_SAFE_HAVENS] Path: ${path} | Auth present: ${!!auth} | IsAllowed: ${isAllowed} | HasInternalToken: ${!!INTERNAL_TOKEN}`);
+        }
+
+        if (canBypass && INTERNAL_TOKEN) {
+            forwardHeaders['Authorization'] = `Bearer ${INTERNAL_TOKEN}`;
             // If we are bypassing, and original request had access_token in URL, remove it so Directus uses our Service Token header
             if (url.searchParams.has('access_token')) {
                 const newParams = new URLSearchParams(url.searchParams);
@@ -248,11 +276,12 @@ export async function GET(
         } else if (auth && !isUserTokenValid && isAllowed && !needsSpecialGuardCheck) {
             console.log(`[Directus Proxy] Stripping invalid token for public path: ${path}`);
             // Header is not added, effectively making it anonymous
-        } else if (!auth && isAllowed && !needsSpecialGuardCheck && DIRECTUS_FRONTEND_FRONTEND_TOKEN) {
+        } else if (!auth && isAllowed && !needsSpecialGuardCheck && INTERNAL_TOKEN) {
+            if (path.includes('safe_havens')) console.log(`[DEBUG_SAFE_HAVENS] Injecting Service Token`);
             // Use service token for public requests to allowed collections
             // We ignore cookies here because for public assets/endpoints, the Service Token is preferred
             // unless the user explicitly provided an Auth header.
-            forwardHeaders['Authorization'] = `Bearer ${DIRECTUS_FRONTEND_FRONTEND_TOKEN}`;
+            forwardHeaders['Authorization'] = `Bearer ${INTERNAL_TOKEN}`;
 
             // CRITICAL: Remove cookies to prevent "Multiple authentication methods" error from Directus
             // (It complains if it sees both Bearer token and Cookies)
@@ -286,7 +315,7 @@ export async function GET(
 
         const pathParts = path.split('/');
         const isItemsPath = pathParts[0] === 'items';
-        const isPublicToken = !auth || (DIRECTUS_FRONTEND_FRONTEND_TOKEN && (auth.startsWith('Bearer ') ? auth.slice(7) : auth) === String(DIRECTUS_FRONTEND_FRONTEND_TOKEN));
+        const isPublicToken = !auth || (INTERNAL_TOKEN && (auth.startsWith('Bearer ') ? auth.slice(7) : auth) === String(INTERNAL_TOKEN));
         const shouldCache = isItemsPath && (isPublicToken || canBypass);
 
         const tags: string[] = [];
@@ -320,7 +349,9 @@ export async function GET(
 
         if (!response.ok) {
             // Check if this is a benign 403 error that we should silence
-            const isIgnorableError = response.status === 403 && (isAllowed || path.startsWith('permissions'));
+            // We ONLY silence site_settings/permissions here. Real data collections (like safe_havens) 
+            // SHOULD return 403 so the frontend can handle fallbacks.
+            const isIgnorableError = response.status === 403 && (path.toLowerCase().includes('site_settings') || path.toLowerCase().includes('permissions'));
 
             // Detailed logging for impersonation errors as requested
             // ONLY log if it is NOT an ignorable error
@@ -427,10 +458,7 @@ async function handleMutation(
         }
 
 
-        const isAllowed = allowedCollections.some(c =>
-            path === `items/${c}` || path.startsWith(`items/${c}/`) ||
-            path === c || path.startsWith(`${c}/`)
-        );
+        const isAllowed = isPathAllowed(path);
 
         const isAuthPath =
             path.startsWith('auth/') ||
@@ -631,8 +659,8 @@ async function handleMutation(
         let targetSearch = url.search;
 
         // Auto-auth for specific public forms (Intro, Event Signups, etc.)
-        if (!authHeader && isAllowed && !needsSpecialGuardCheck && DIRECTUS_FRONTEND_FRONTEND_TOKEN) {
-            forwardHeaders['Authorization'] = `Bearer ${DIRECTUS_FRONTEND_FRONTEND_TOKEN}`;
+        if (!authHeader && isAllowed && !needsSpecialGuardCheck && INTERNAL_TOKEN) {
+            forwardHeaders['Authorization'] = `Bearer ${INTERNAL_TOKEN}`;
 
             // CRITICAL: Remove cookies to prevent "Multiple authentication methods" error
             if (forwardHeaders['Cookie']) {
@@ -640,8 +668,8 @@ async function handleMutation(
             }
         }
 
-        if (canBypass && DIRECTUS_FRONTEND_FRONTEND_TOKEN) {
-            forwardHeaders['Authorization'] = `Bearer ${DIRECTUS_FRONTEND_FRONTEND_TOKEN}`;
+        if (canBypass && INTERNAL_TOKEN) {
+            forwardHeaders['Authorization'] = `Bearer ${INTERNAL_TOKEN}`;
         } else if (authHeader && (isUserTokenValid || isAuthPath || needsSpecialGuardCheck || isAllowed)) {
             const isIdentityPath = path.startsWith('users/me');
             const isStrictAuthPath = (path.includes('auth/') || path.startsWith('auth/')) && !isIdentityPath;

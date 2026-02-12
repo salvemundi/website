@@ -104,8 +104,12 @@ export const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
                     numberInputProps={{
                         required: required,
                         maxLength: 20,
-                        className: "bg-transparent border-none outline-none w-full h-full text-current placeholder:text-gray-400 focus:ring-0"
-                    }}
+                        className: "bg-transparent border-none outline-none w-full h-full text-current placeholder:text-gray-400 focus:ring-0",
+                        suppressHydrationWarning: true
+                    } as any}
+                    countrySelectProps={{
+                        suppressHydrationWarning: true
+                    } as any}
                 />
             </div>
             {displayError && <p className="text-red-300 text-sm mt-1 font-medium animate-in slide-in-from-top-1 fade-in duration-200">{displayError}</p>}

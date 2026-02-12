@@ -1,8 +1,4 @@
-// Server-side Directus fetch met Next.js caching support
-// Alleen voor Server Components - client components gebruiken directusFetch uit directus.ts
-
-const directusApiUrl = process.env.DIRECTUS_API_URL || 'http://localhost:8055';
-const apiKey = process.env.DIRECTUS_API_KEY || '';
+// Note: Environment variables are read inside the function to ensure they are available at call time
 
 export interface FetchOptions extends RequestInit {
     revalidate?: number | false;
@@ -10,17 +6,28 @@ export interface FetchOptions extends RequestInit {
 }
 
 export async function serverDirectusFetch<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
+    const directusApiUrl = process.env.INTERNAL_DIRECTUS_URL || process.env.NEXT_PUBLIC_DIRECTUS_URL || 'http://localhost:8055';
+    const apiKey = process.env.DIRECTUS_ADMIN_TOKEN || '';
+
     const { revalidate = 120, tags = [], ...fetchOptions } = options;
     const url = `${directusApiUrl}${endpoint}`;
 
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+        ...(apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {}),
         ...(fetchOptions.headers as Record<string, string> || {}),
     };
 
-    // Next.js fetch met automatische caching via revalidate en tags
-    // Tags maken on-demand invalidation mogelijk via webhooks
+    console.log('[serverDirectusFetch] Requesting:', {
+        url,
+        hasAuth: !!apiKey,
+        tokenPrefix: apiKey ? `${apiKey.substring(0, 5)}...` : 'NONE'
+    });
+
+    if (!apiKey) {
+        console.warn('[serverDirectusFetch] No DIRECTUS_ADMIN_TOKEN found in environment variables.');
+    }
+
     const nextFetchOptions: RequestInit = {
         ...fetchOptions,
         headers,
@@ -35,7 +42,13 @@ export async function serverDirectusFetch<T>(endpoint: string, options: FetchOpt
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('[serverDirectusFetch] Error:', { url, status: response.status, body: errorText });
+            console.error('[serverDirectusFetch] API Error:', {
+                url,
+                status: response.status,
+                statusText: response.statusText,
+                body: errorText,
+                hasAuth: !!headers['Authorization']
+            });
             throw new Error(`Directus API error: ${response.status} ${response.statusText} - ${errorText}`);
         }
 
@@ -46,7 +59,7 @@ export async function serverDirectusFetch<T>(endpoint: string, options: FetchOpt
         const json = await response.json();
         return json.data as T;
     } catch (error) {
-        console.error('[serverDirectusFetch] Network error:', { url, error: error instanceof Error ? error.message : error });
+        console.error('[serverDirectusFetch] Request failed:', { url, error: error instanceof Error ? error.message : error });
         throw error;
     }
 }
@@ -76,4 +89,6 @@ export const COLLECTION_TAGS = {
     TRIPS: 'trips',
     STICKERS: 'stickers',
     SITE_SETTINGS: 'site_settings',
+    DOCUMENTS: 'documents',
+    TRANSACTIONS: 'transactions',
 } as const;

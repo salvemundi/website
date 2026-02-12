@@ -1,4 +1,6 @@
-import React from "react";
+'use client';
+
+import { useEffect, useRef, useMemo, useState, Fragment, type FC, type ReactNode } from "react";
 import Image from 'next/image';
 import { stripHtml } from '@/shared/lib/text';
 
@@ -9,17 +11,17 @@ interface PageHeaderProps {
     imageFilter?: string;
     className?: string;
     titleClassName?: string;
-    children?: React.ReactNode;
+    children?: ReactNode;
     variant?: 'centered' | 'split';
-    description?: React.ReactNode;
+    description?: ReactNode;
     // Tailwind padding classes applied to the inner content wrapper (e.g. 'py-20' or 'py-12')
     contentPadding?: string;
     backLink?: string;
 }
 
-import { useEffect, useRef, useMemo, useState } from 'react';
 
-const PageHeader: React.FC<PageHeaderProps> = ({
+
+const PageHeader: FC<PageHeaderProps> = ({
     title,
     backgroundImage = "",
     backgroundPosition = 'center',
@@ -88,10 +90,10 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                         {/* Back link intentionally removed site-wide */}
                         <h1 className={`text-theme-purple dark:!text-white font-bold leading-tight drop-shadow-lg shadow-black/50 ${titleClassName}`} style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)', color: isDark ? '#ffffff' : undefined }}>
                             {title.split('\n').map((line, index) => (
-                                <React.Fragment key={index}>
+                                <Fragment key={index}>
                                     {line}
                                     {index < title.split('\n').length - 1 && <br />}
-                                </React.Fragment>
+                                </Fragment>
                             ))}
                         </h1>
                         {description && <div className="mt-4 text-center mx-auto">{typeof description === 'string' ? stripHtml(description) : description}</div>}
@@ -102,10 +104,10 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                         <div className="flex-1 text-center lg:text-left">
                             <h1 className={`text-theme-purple dark:!text-white font-bold leading-tight drop-shadow-lg whitespace-normal break-words ${titleClassName}`} style={{ color: isDark ? '#ffffff' : undefined }}>
                                 {title.split('\n').map((line, index) => (
-                                    <React.Fragment key={index}>
+                                    <Fragment key={index}>
                                         {line}
                                         {index < title.split('\n').length - 1 && <br />}
-                                    </React.Fragment>
+                                    </Fragment>
                                 ))}
                             </h1>
                             {description && <div className="mt-4">{typeof description === 'string' ? stripHtml(description) : description}</div>}
