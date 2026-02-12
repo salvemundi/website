@@ -751,22 +751,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const refreshUser = async () => {
-        const token = localStorage.getItem('auth_token');
-        if (token) {
-            try {
-                const userData = await authApi.fetchUserDetails(token);
-                if (userData) {
-                    try {
-                        const committees = await authApi.fetchAndPersistUserCommittees(userData.id, token);
-                        setUser({ ...userData, committees });
-                    } catch (e) {
-                        setUser(userData);
-                    }
+        try {
+            const userData = await getCurrentUserAction();
+            if (userData) {
+                // Fetch committees (can still be cache-checked from localStorage if we want)
+                try {
+                    const committees = await authApi.fetchAndPersistUserCommittees(userData.id);
+                    setUser({ ...userData, committees });
+                } catch (e) {
+                    setUser(userData);
                 }
-            } catch (error) {
-                console.error('Failed to refresh user:', error);
+            } else {
                 logout();
             }
+        } catch (error) {
+            console.error('Failed to refresh user:', error);
+            logout();
         }
     };
 

@@ -4,7 +4,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useAuth } from "@/features/auth/providers/auth-provider";
-import { getUserEventSignups } from "@/shared/lib/auth";
+import { updateCurrentUserAction, getUserEventSignupsAction } from "@/shared/api/account-actions";
+import { uploadFileAction } from "@/shared/api/file-actions";
 import { getImageUrl } from "@/shared/lib/api/salvemundi";
 import { slugify } from "@/shared/lib/utils/slug";
 import { format, startOfDay, isBefore } from "date-fns";
@@ -207,8 +208,7 @@ function AccountPageContent() {
   }, [user]);
 
   useEffect(() => {
-    if (user?.id) loadEventSignups();
-    else setIsLoading(false);
+    loadEventSignups();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
@@ -230,11 +230,9 @@ function AccountPageContent() {
   }, [eventSignups, showPastEvents]);
 
   const loadEventSignups = async () => {
-    if (!user?.id) return;
-
     try {
       setIsLoading(true);
-      const signups = await getUserEventSignups(user.id);
+      const signups = await getUserEventSignupsAction();
       setEventSignups(signups);
     } catch (error) {
       console.error("Failed to load event signups:", error);
@@ -267,18 +265,14 @@ function AccountPageContent() {
   const handleSaveMinecraftUsername = async () => {
     setIsSavingMinecraft(true);
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/user/update-minecraft', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ minecraft_username: minecraftUsername }),
-      });
-      if (!response.ok) throw new Error('Failed to update');
+      const res = await updateCurrentUserAction({ minecraft_username: minecraftUsername });
+      if (!res.success) throw new Error(res.error);
+
       await refreshUser();
       setIsEditingMinecraft(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update Minecraft username:', error);
-      alert('Fout bij opslaan');
+      alert(error.message || 'Fout bij opslaan');
     } finally {
       setIsSavingMinecraft(false);
     }
@@ -291,19 +285,15 @@ function AccountPageContent() {
     }
     setIsSavingDateOfBirth(true);
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/user/update-date-of-birth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ date_of_birth: dateOfBirth }),
-      });
-      if (!response.ok) throw new Error('Failed to update');
+      const res = await updateCurrentUserAction({ date_of_birth: dateOfBirth });
+      if (!res.success) throw new Error(res.error);
+
       await refreshUser();
       setIsEditingDateOfBirth(false);
       alert('Geboortedatum opgeslagen!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update date of birth:', error);
-      alert('Fout bij opslaan');
+      alert(error.message || 'Fout bij opslaan');
     } finally {
       setIsSavingDateOfBirth(false);
     }
@@ -316,19 +306,15 @@ function AccountPageContent() {
     }
     setIsSavingPhoneNumber(true);
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/user/update-phone-number', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ phone_number: phoneNumber }),
-      });
-      if (!response.ok) throw new Error('Failed to update');
+      const res = await updateCurrentUserAction({ phone_number: phoneNumber });
+      if (!res.success) throw new Error(res.error);
+
       await refreshUser();
       setIsEditingPhoneNumber(false);
       alert('Telefoonnummer opgeslagen!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update phone number:', error);
-      alert('Fout bij opslaan');
+      alert(error.message || 'Fout bij opslaan');
     } finally {
       setIsSavingPhoneNumber(false);
     }
@@ -359,44 +345,26 @@ function AccountPageContent() {
 
     setIsUploadingAvatar(true);
     try {
-      const token = localStorage.getItem("auth_token");
       const fd = new FormData();
       fd.append("file", selectedFile);
 
-      const headers: Record<string, string> = {};
-      if (token) headers["Authorization"] = `Bearer ${token}`;
+      // 1. Upload the file via Server Action
+      const uploadRes = await uploadFileAction(fd);
+      if (!uploadRes.success) throw new Error(uploadRes.error);
 
-      // 1. Upload the file to Directus
-      const uploadResp = await fetch(`${window.location.origin}/api/files`, {
-        method: "POST",
-        body: fd,
-        headers,
-      });
-
-      if (!uploadResp.ok) throw new Error("Upload failed");
-      const uploadJson = await uploadResp.json();
-      const fileId = uploadJson?.data?.id || uploadJson?.data;
-
+      const fileId = uploadRes.data?.id || uploadRes.data;
       if (!fileId) throw new Error("No file ID returned");
 
-      // 2. Update the user's avatar in Directus
-      const updateResp = await fetch(`${window.location.origin}/api/users/me`, {
-        method: "PATCH",
-        headers: {
-          ...headers,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ avatar: fileId }),
-      });
-
-      if (!updateResp.ok) throw new Error("Failed to update user profile");
+      // 2. Update the user's avatar via Server Action
+      const updateRes = await updateCurrentUserAction({ avatar: fileId });
+      if (!updateRes.success) throw new Error(updateRes.error);
 
       // 3. Refresh user data to show the new avatar
       await refreshUser();
       handleCancelAvatar(); // Cleanup
-    } catch (error) {
+    } catch (error: any) {
       console.error("Avatar upload failed:", error);
-      alert("Kon profielfoto niet bijwerken. Probeer het opnieuw.");
+      alert(error.message || "Kon profielfoto niet bijwerken. Probeer het opnieuw.");
     } finally {
       setIsUploadingAvatar(false);
     }

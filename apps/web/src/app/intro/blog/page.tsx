@@ -13,6 +13,7 @@ import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider
 import { directusFetch } from '@/shared/lib/directus';
 import { toast } from 'sonner';
 import { sanitizeHtml } from '@/shared/lib/utils/sanitize';
+import { likeBlogAction, unlikeBlogAction, sendIntroUpdateAction } from '@/shared/api/blog-actions';
 
 interface IntroBlog {
     id: number | string;
@@ -190,41 +191,21 @@ export default function IntroBlogPage() {
         const toastId = toast.loading('Email versturen naar alle intro deelnemers...');
 
         try {
-            // Use the new API route that fetches subscribers from Directus
-            const resp = await fetch('/api/send-intro-update', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    blogTitle: blog.title,
-                    blogExcerpt: blog.excerpt || (blog.content ?? '').substring(0, 200),
-                    blogUrl: `${window.location.origin}/intro/blog`,
-                    blogImage: blog.image ? getImageUrl(blog.image) : null,
-                }),
+            const res = await sendIntroUpdateAction({
+                blogTitle: blog.title,
+                blogExcerpt: blog.excerpt || (blog.content ?? '').substring(0, 200),
+                blogUrl: `${window.location.origin}/intro/blog`,
+                blogImage: blog.image ? getImageUrl(blog.image) : null,
             });
 
-            if (!resp.ok) {
-                // Try to parse JSON error body, otherwise read text
-                let details: string | undefined;
-                try {
-                    const body = await resp.json();
-                    details = JSON.stringify(body);
-                } catch (e) {
-                    try {
-                        details = await resp.text();
-                    } catch (e2) {
-                        details = undefined;
-                    }
-                }
-                const errMsg = `Email API error: ${resp.status} ${resp.statusText}${details ? ' - ' + details : ''}`;
-                console.error(errMsg);
+            if (!res.success) {
+                const errMsg = res.error || 'Email versturen mislukt';
                 toast.error(errMsg, { id: toastId });
                 throw new Error(errMsg);
             }
 
-            const result = await resp.json();
-            toast.success(`Email verzonden naar ${result.sentCount || 0} deelnemers!`, { id: toastId });
+            const result = res.data;
+            toast.success(`Email verzonden naar ${result?.sentCount || 0} deelnemers!`, { id: toastId });
         } catch (error: unknown) {
             const errString =
                 typeof error === 'string'
@@ -418,21 +399,18 @@ export default function IntroBlogPage() {
                                                                         return old.map((b) => b.id === blog.id ? { ...b, likes: (b.likes || 0) + (isLiked ? -1 : 1) } : b);
                                                                     });
 
-                                                                    const resp = await fetch(isLiked ? '/api/blog-unlike' : '/api/blog-like', {
-                                                                        method: 'POST',
-                                                                        headers: { 'Content-Type': 'application/json' },
-                                                                        body: JSON.stringify({ blogId: blog.id, userId: user?.id }),
-                                                                    });
+                                                                    const res = isLiked
+                                                                        ? await unlikeBlogAction(blog.id, user?.id!)
+                                                                        : await likeBlogAction(blog.id, user?.id!);
 
-                                                                    if (resp.ok) {
-                                                                        const json = await resp.json();
+                                                                    if (res.success) {
                                                                         // Reconcile with server value
                                                                         queryClient.setQueryData(['intro-blogs'], (old: IntroBlog[] | undefined) => {
                                                                             if (!old) return old;
-                                                                            return old.map((b) => b.id === blog.id ? { ...b, likes: json.likes ?? (b.likes || 0) } : b);
+                                                                            return old.map((b) => b.id === blog.id ? { ...b, likes: res.likes ?? (b.likes || 0) } : b);
                                                                         });
                                                                         if (selectedBlog && selectedBlog.id === blog.id) {
-                                                                            setSelectedBlog({ ...selectedBlog, likes: json.likes ?? (selectedBlog.likes || 0) });
+                                                                            setSelectedBlog({ ...selectedBlog, likes: res.likes ?? (selectedBlog.likes || 0) });
                                                                         }
 
                                                                         let next: Array<number | string>;
@@ -448,9 +426,7 @@ export default function IntroBlogPage() {
                                                                     } else {
                                                                         // rollback
                                                                         if (previous) queryClient.setQueryData(['intro-blogs'], previous as IntroBlog[] | undefined);
-                                                                        const txt = await resp.text().catch(() => undefined);
-                                                                        toast.error('Kon like niet registreren');
-                                                                        console.error('Like API error', resp.status, txt);
+                                                                        toast.error(res.error || 'Kon like niet registreren');
                                                                     }
                                                                 } catch (err) {
                                                                     if (previous) queryClient.setQueryData(['intro-blogs'], previous as IntroBlog[] | undefined);
@@ -644,20 +620,17 @@ export default function IntroBlogPage() {
                                                             return old.map((b) => b.id === selectedBlog.id ? { ...b, likes: (b.likes || 0) + (isLiked ? -1 : 1) } : b);
                                                         });
 
-                                                        const resp = await fetch(isLiked ? '/api/blog-unlike' : '/api/blog-like', {
-                                                            method: 'POST',
-                                                            headers: { 'Content-Type': 'application/json' },
-                                                            body: JSON.stringify({ blogId: selectedBlog.id, userId: user?.id }),
-                                                        });
+                                                        const res = isLiked
+                                                            ? await unlikeBlogAction(selectedBlog.id, user?.id!)
+                                                            : await likeBlogAction(selectedBlog.id, user?.id!);
 
-                                                        if (resp.ok) {
-                                                            const json = await resp.json();
+                                                        if (res.success) {
                                                             queryClient.setQueryData(['intro-blogs'], (old: IntroBlog[] | undefined) => {
                                                                 if (!old) return old;
-                                                                return old.map((b) => b.id === selectedBlog.id ? { ...b, likes: json.likes ?? (b.likes || 0) } : b);
+                                                                return old.map((b) => b.id === selectedBlog.id ? { ...b, likes: res.likes ?? (b.likes || 0) } : b);
                                                             });
 
-                                                            setSelectedBlog({ ...selectedBlog, likes: json.likes ?? (selectedBlog.likes || 0) });
+                                                            setSelectedBlog({ ...selectedBlog, likes: res.likes ?? (selectedBlog.likes || 0) });
 
                                                             let next: Array<number | string>;
                                                             if (isLiked) {
@@ -671,9 +644,7 @@ export default function IntroBlogPage() {
                                                             toast.success(isLiked ? 'Like verwijderd' : 'Bedankt voor je like!');
                                                         } else {
                                                             if (previous) queryClient.setQueryData(['intro-blogs'], previous as IntroBlog[] | undefined);
-                                                            const txt = await resp.text().catch(() => undefined);
-                                                            toast.error('Kon like niet registreren');
-                                                            console.error('Like API error', resp.status, txt);
+                                                            toast.error(res.error || 'Kon like niet registreren');
                                                         }
                                                     } catch (err) {
                                                         if (previous) queryClient.setQueryData(['intro-blogs'], previous as IntroBlog[] | undefined);
