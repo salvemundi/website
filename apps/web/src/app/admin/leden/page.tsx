@@ -77,6 +77,12 @@ export default function LedenOverzichtPage() {
         try {
             // Fetch all users with relevant fields
             const data = await directusFetch<Member[]>('/users?fields=id,first_name,last_name,email,date_of_birth,membership_expiry,status&limit=-1');
+            console.log('Fetched members data:', data);
+            if (!Array.isArray(data)) {
+                console.error('Data is not an array:', data);
+                setMembers([]);
+                return;
+            }
             setMembers(data.filter(isRealUser));
         } catch (error) {
             console.error('Failed to load members:', error);
