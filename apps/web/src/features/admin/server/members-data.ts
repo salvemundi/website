@@ -2,6 +2,7 @@
 
 import { serverDirectusFetch } from '@/shared/lib/server-directus';
 import { verifyUserPermissions } from './secure-check';
+import { COMMITTEE_TOKENS } from '@/shared/config/committee-tokens';
 
 export interface Member {
     id: string;
@@ -52,7 +53,12 @@ export async function getMembersAction(): Promise<Member[]> {
 
     // Privileged committees that can see sensitive data
     // Includes: Bestuur, ICT, Kandidaatsbestuur, Kascommissie
-    const privilegedTokens = ['bestuur', 'ict', 'ict-commissie', 'ka', 'kandidaatsbestuur', 'kascommissie'];
+    const privilegedTokens = [
+        COMMITTEE_TOKENS.BESTUUR,
+        COMMITTEE_TOKENS.ICT,
+        COMMITTEE_TOKENS.KANDI,
+        COMMITTEE_TOKENS.KAS
+    ];
     const isPrivileged = isAdmin || committees.some(c => privilegedTokens.includes(c.token.toLowerCase()));
 
     // Basic access check: Must be in at least one committee or be an admin
