@@ -4,6 +4,8 @@ import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
 import { directusFetch } from '@/shared/lib/directus';
+import { getMembersAction } from '@/features/admin/server/members-data';
+import { sendMembershipReminderAction } from '@/features/admin/server/members-actions';
 import {
     Users,
     Search,
@@ -76,14 +78,9 @@ export default function LedenOverzichtPage() {
         setIsLoading(true);
         try {
             // Fetch all users with relevant fields
-            const data = await directusFetch<Member[]>('/users?fields=id,first_name,last_name,email,date_of_birth,membership_expiry,status&limit=-1');
+            const data = await getMembersAction();
             console.log('Fetched members data:', data);
-            if (!Array.isArray(data)) {
-                console.error('Data is not an array:', data);
-                setMembers([]);
-                return;
-            }
-            setMembers(data.filter(isRealUser));
+            setMembers(data);
         } catch (error) {
             console.error('Failed to load members:', error);
         } finally {
@@ -140,18 +137,7 @@ export default function LedenOverzichtPage() {
 
         setIsSendingMembershipReminder(true);
         try {
-            const response = await fetch('/api/notifications/send-membership-reminder', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ daysBeforeExpiry: 30 })
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to send reminders');
-            }
-
-            const result = await response.json();
+            const result = await sendMembershipReminderAction(30);
 
             if (result.sent === 0) {
                 alert('Geen leden gevonden die binnen 30 dagen hun lidmaatschap moeten verlengen.');
