@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
-import { directusFetch } from '@/shared/lib/directus';
+import { getMemberDetailAction } from '@/features/admin/server/members-data';
 import {
     ChevronLeft,
     Calendar,
@@ -63,15 +63,19 @@ export default function MemberDetailPage() {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            const [memberData, committeesData] = await Promise.all([
-                directusFetch<Member>(`/users/${id}?fields=id,first_name,last_name,email,date_of_birth,membership_expiry,status,phone_number,avatar`),
-                directusFetch<CommitteeMembership[]>(`/items/committee_members?filter[user_id][_eq]=${id}&fields=id,is_leader,committee_id.id,committee_id.name,committee_id.is_visible`)
-            ]);
-
-            setMember(memberData);
-            setCommittees(committeesData);
+            const result = await getMemberDetailAction(id);
+            if (result) {
+                setMember(result.member);
+                // Ensure committees is always an array
+                setCommittees(Array.isArray(result.committees) ? result.committees : []);
+            } else {
+                setMember(null);
+                setCommittees([]);
+            }
         } catch (error) {
             console.error('Failed to load member data:', error);
+            setMember(null);
+            setCommittees([]);
         } finally {
             setIsLoading(false);
         }
