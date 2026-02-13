@@ -12,6 +12,23 @@ export interface Member {
     date_of_birth: string | null;
     membership_expiry: string | null;
     status: string;
+    phone_number?: string | null; // Added optional fields for details
+    avatar?: string | null;
+}
+
+export interface CommitteeMembership {
+    id: string;
+    is_leader: boolean;
+    committee_id: {
+        id: string;
+        name: string;
+        is_visible: boolean;
+    };
+}
+
+export interface MemberDetail {
+    member: Member;
+    committees: CommitteeMembership[];
 }
 
 const EXCLUDED_EMAILS = [
@@ -37,6 +54,14 @@ function isRealUser(member: Member) {
     return true;
 }
 
+// Privileged roles definition
+const PRIVILEGED_TOKENS = [
+    COMMITTEE_TOKENS.BESTUUR,
+    COMMITTEE_TOKENS.ICT,
+    COMMITTEE_TOKENS.KANDI,
+    COMMITTEE_TOKENS.KAS
+];
+
 export async function getMembersAction(): Promise<Member[]> {
     // 1. Authenticate & Verify Permissions
     let userContext;
@@ -52,14 +77,7 @@ export async function getMembersAction(): Promise<Member[]> {
     const isAdmin = role && role.toLowerCase() === 'administrator';
 
     // Privileged committees that can see sensitive data
-    // Includes: Bestuur, ICT, Kandidaatsbestuur, Kascommissie
-    const privilegedTokens = [
-        COMMITTEE_TOKENS.BESTUUR,
-        COMMITTEE_TOKENS.ICT,
-        COMMITTEE_TOKENS.KANDI,
-        COMMITTEE_TOKENS.KAS
-    ];
-    const isPrivileged = isAdmin || committees.some(c => privilegedTokens.includes(c.token.toLowerCase()));
+    const isPrivileged = isAdmin || committees.some(c => PRIVILEGED_TOKENS.includes(c.token ? c.token.toLowerCase() : ''));
 
     // Basic access check: Must be in at least one committee or be an admin
     const hasBasicAccess = committees.length > 0 || isAdmin;
@@ -101,5 +119,56 @@ export async function getMembersAction(): Promise<Member[]> {
     } catch (error) {
         console.error('[getMembersAction] Failed to fetch members:', error);
         throw new Error('Failed to load members data');
+    }
+}
+
+export async function getMemberDetailAction(id: string): Promise<MemberDetail | null> {
+    // 1. Authenticate & Verify Permissions
+    let userContext;
+    try {
+        userContext = await verifyUserPermissions({});
+    } catch (e) {
+        throw new Error('Unauthorized');
+    }
+
+    const { committees, role } = userContext;
+    const isAdmin = role && role.toLowerCase() === 'administrator';
+    const isPrivileged = isAdmin || committees.some(c => PRIVILEGED_TOKENS.includes(c.token ? c.token.toLowerCase() : ''));
+
+    const hasBasicAccess = committees.length > 0 || isAdmin;
+    if (!hasBasicAccess) throw new Error('Unauthorized: Must be a committee member');
+
+    // 2. Fetch Data
+    try {
+        const [memberData, committeesData] = await Promise.all([
+            serverDirectusFetch<Member>(`/users/${id}?fields=id,first_name,last_name,email,date_of_birth,membership_expiry,status,phone_number,avatar`),
+            serverDirectusFetch<CommitteeMembership[]>(`/items/committee_members?filter[user_id][_eq]=${id}&fields=id,is_leader,committee_id.id,committee_id.name,committee_id.is_visible`)
+        ]);
+
+        if (!memberData) return null;
+
+        // 3. Redact if not privileged
+        let safeMember = memberData;
+        if (!isPrivileged) {
+            safeMember = {
+                ...memberData,
+                email: 'Afgeschermd',
+                date_of_birth: null,
+                phone_number: 'Alleen zichtbaar voor bevoegden', // Redact phone number too
+                // Keep name and avatar visible as they are somewhat public internally
+            };
+        }
+
+        // Ensure committeesData is an array to avoid crashes
+        const safeCommittees = Array.isArray(committeesData) ? committeesData : [];
+
+        return {
+            member: safeMember,
+            committees: safeCommittees
+        };
+
+    } catch (error) {
+        console.error('[getMemberDetailAction] Failed to fetch member detail:', error);
+        return null;
     }
 }
