@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
+import PhoneInput from 'react-phone-number-input';
 import nl from 'react-phone-number-input/locale/nl';
 import 'react-phone-number-input/style.css';
+import { isValidPhoneNumber } from '@/shared/lib/phone';
 
 interface PhoneNumberInputProps {
     value: string | undefined;
@@ -69,6 +70,16 @@ export const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
     const displayError = externalError || internalError;
     const hasError = !!displayError;
 
+    const handleCountryChange = (country: string | undefined) => {
+        if (country === 'NL' && !value) {
+            // Pre-fill with +316 so it shows as '06' in national format
+            onChange('+316');
+        } else if (value === '+316' && country !== 'NL') {
+            // Clear the pre-fill if they switch away from NL
+            onChange(undefined);
+        }
+    };
+
     return (
         <div className={`w-full ${className}`}>
             <div className={`
@@ -97,7 +108,9 @@ export const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
                     value={value}
                     onChange={handleInternalChange}
                     onBlur={handleBlur}
+                    onCountryChange={handleCountryChange}
                     defaultCountry="NL"
+                    international={false} // Switch to national format display (hides +31)
                     labels={nl}
                     disabled={disabled}
                     className={`form-input !flex items-center gap-2 ${className}`}
