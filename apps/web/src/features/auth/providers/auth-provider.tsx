@@ -692,7 +692,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             localStorage.setItem('auth_token', response.access_token);
             localStorage.setItem('refresh_token', response.refresh_token);
             try {
-                const committees = await authApi.fetchAndPersistUserCommittees(response.user.id, response.access_token);
+                const committees = await authApi.fetchAndPersistUserCommittees(response.user.id);
                 setUser({ ...response.user, committees });
             } catch (e) {
                 setUser(response.user);

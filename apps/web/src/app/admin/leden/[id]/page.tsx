@@ -25,8 +25,8 @@ interface Member {
     date_of_birth: string | null;
     membership_expiry: string | null;
     status: string;
-    phone_number: string | null;
-    avatar: string | null;
+    phone_number?: string | null;
+    avatar?: string | null;
 }
 
 interface CommitteeMembership {

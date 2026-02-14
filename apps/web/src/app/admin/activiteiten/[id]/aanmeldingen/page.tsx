@@ -2,30 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { directusFetch } from '@/shared/lib/directus';
-import { sendActivityCancellationEmail } from '@/shared/lib/services/email-service';
-import { eventsApi } from '@/shared/lib/api/salvemundi';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Search, Download, Mail, Phone, CheckCircle, XCircle, Clock, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import ManualSignupModal from './ManualSignupModal';
+import {
+    getEventSignupsAction,
+    deleteEventSignupAction,
+    getEventByIdAction,
+    Signup
+} from '@/features/admin/server/activities-actions';
 
-interface Signup {
-    id: number;
-    participant_name?: string;
-    participant_email?: string;
-    participant_phone?: string;
-    payment_status: string;
-    created_at: string;
-    directus_relations?: {
-        id: string;
-        first_name?: string;
-        last_name?: string;
-        email?: string;
-        phone_number?: string;
-    };
-}
 
 export default function AanmeldingenPage() {
     const router = useRouter();
@@ -35,7 +23,6 @@ export default function AanmeldingenPage() {
     const [signups, setSignups] = useState<Signup[]>([]);
     const [filteredSignups, setFilteredSignups] = useState<Signup[]>([]);
     const [eventName, setEventName] = useState<string>('');
-    const [eventData, setEventData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [isManualModalOpen, setIsManualModalOpen] = useState(false);
@@ -51,15 +38,12 @@ export default function AanmeldingenPage() {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            // Load event name and details (including committee info via eventsApi)
-            const event = await eventsApi.getById(eventId);
+            // Load event name
+            const event = await getEventByIdAction(Number(eventId));
             setEventName(event.name);
-            setEventData(event);
 
             // Load signups
-            const signupsData = await directusFetch<Signup[]>(
-                `/items/event_signups?filter[event_id][_eq]=${eventId}&fields=id,participant_name,participant_email,participant_phone,payment_status,created_at,directus_relations.id,directus_relations.first_name,directus_relations.last_name,directus_relations.email,directus_relations.phone_number&sort=-created_at`
-            );
+            const signupsData = await getEventSignupsAction(Number(eventId));
             setSignups(signupsData);
         } catch (error) {
             console.error('Failed to load data:', error);
@@ -69,30 +53,14 @@ export default function AanmeldingenPage() {
     };
 
     const handleDelete = async (signupId: number) => {
-        if (!confirm('Weet je zeker dat je deze aanmelding wilt verwijderen? Dit kan niet ongedaan worden gemaakt.')) {
+        if (!confirm('Weet je zeker dat je deze aanmelding wilt verwijderen? Dit kan een annuleringsmail sturen indien geselecteerd.')) {
             return;
         }
 
-        const signup = signups.find(s => s.id === signupId);
+        const sendEmail = confirm('Wil je een annuleringsmail sturen naar de deelnemer?');
 
         try {
-            // Send cancellation email if signup found
-            if (signup) {
-                const email = getEmail(signup);
-                if (email && email !== '-') {
-                    await sendActivityCancellationEmail({
-                        recipientEmail: email,
-                        recipientName: getName(signup),
-                        eventName: eventName,
-                        committeeName: eventData?.committee_name,
-                        committeeEmail: eventData?.committee_email
-                    });
-                }
-            }
-
-            await directusFetch(`/items/event_signups/${signupId}`, {
-                method: 'DELETE',
-            });
+            await deleteEventSignupAction(signupId, Number(eventId), { sendEmail });
             // Update local state
             setSignups(prev => prev.filter(s => s.id !== signupId));
         } catch (error) {
@@ -254,8 +222,6 @@ export default function AanmeldingenPage() {
                     onClose={() => setIsManualModalOpen(false)}
                     onSuccess={loadData}
                     eventId={eventId}
-                    eventName={eventName}
-                    eventPrice={eventData?.price_members || 0} // Assuming member price for now, logic inside modal handles payment status
                 />
 
                 {/* Signups Table */}

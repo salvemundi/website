@@ -45,6 +45,24 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 app.use(express.json());
 
+// API Key Middleware
+const SERVICE_SECRET = process.env.SERVICE_SECRET;
+const authenticate = (req, res, next) => {
+  // Allow VAPID public key and health check without API key
+  if (req.path === '/vapid-public-key' || req.path === '/health') {
+    return next();
+  }
+
+  const apiKey = req.headers['x-api-key'] || req.headers['x-internal-api-secret'];
+  if (SERVICE_SECRET && apiKey !== SERVICE_SECRET) {
+    console.warn(`[Auth] Unauthorized request to ${req.path} from ${req.ip}`);
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next();
+};
+
+app.use(authenticate);
+
 // Configure web-push with VAPID keys
 const vapidKeys = {
   publicKey: process.env.VAPID_PUBLIC_KEY,
@@ -165,8 +183,11 @@ app.post('/subscribe', async (req, res) => {
 
     res.status(201).json({ success: true, message: 'Subscription saved' });
   } catch (error) {
-    console.error('Subscribe error:', error);
-    res.status(500).json({ error: 'Failed to save subscription' });
+    console.error('[Subscribe] Error:', error.response?.data || error.message);
+    res.status(500).json({
+      error: 'Failed to save subscription',
+      details: process.env.NODE_ENV !== 'production' ? (error.response?.data || error.message) : undefined
+    });
   }
 });
 

@@ -1,6 +1,38 @@
-import { directusFetch, API_SERVICE_TOKEN } from '../directus';
-import { COLLECTIONS, FIELDS } from '@/shared/lib/constants/collections';
+import { API_SERVICE_TOKEN } from '../directus';
+import {
+    getEventsAction, getEventByIdAction, getEventsByCommitteeAction, createEventSignupAction,
+    getCommitteesAction, getCommitteesWithMembersAction, getCommitteeByIdAction,
+    getMembersAction, getMemberByIdAction,
+    getClubsAction, getClubByIdAction,
+    getSponsorsAction,
+    getJobsAction, getJobByIdAction,
+    getPubCrawlEventsAction, getPubCrawlEventByIdAction, createPubCrawlEventAction, updatePubCrawlEventAction, deletePubCrawlEventAction,
+    getPubCrawlSignupsAction, getPubCrawlSignupsByEventIdAction, getPubCrawlSignupByIdAction, createPubCrawlSignupAction, updatePubCrawlSignupAction, deletePubCrawlSignupAction,
+    getPubCrawlTicketsAction, getPubCrawlTicketsBySignupIdAction, getPubCrawlTicketsByEventIdAction,
+    getStickersAction, createStickerAction, deleteStickerAction,
+    getWhatsappGroupsAction,
+    getDocumentsAction,
+    getHeroBannersAction,
+    getSiteSettingsAction, createSiteSettingsAction, updateSiteSettingsAction, upsertSiteSettingsByPageAction,
+    searchUsersAction,
+    getTransactionsAction, getTransactionByIdAction,
+    getSafeHavenByUserIdAction,
+    getIntroSignupsAction, createIntroSignupAction, updateIntroSignupAction, deleteIntroSignupAction,
+    getIntroBlogsAction, getIntroBlogsAdminAction, getIntroBlogByIdAction, getIntroBlogsByTypeAction,
+    createIntroBlogAction, updateIntroBlogAction, deleteIntroBlogAction,
+    getIntroPlanningAction, getIntroPlanningAdminAction,
+    createIntroPlanningAction, updateIntroPlanningAction, deleteIntroPlanningAction,
+    getIntroParentSignupsAction, getIntroParentSignupsByUserIdAction,
+    createIntroParentSignupAction, updateIntroParentSignupAction, deleteIntroParentSignupAction,
+    getTripsAction, getTripByIdAction, createTripAction, updateTripAction, deleteTripAction,
+    getTripActivitiesByTripIdAction, getAllTripActivitiesByTripIdAction,
+    createTripActivityAction, updateTripActivityAction, deleteTripActivityAction,
+    getTripSignupsByTripIdAction, getTripSignupByIdAction, createTripSignupAction, updateTripSignupAction,
+    createTripSignupActivityAction, deleteTripSignupActivityAction,
+    getTripSignupActivitiesBySignupIdAction, getTripSignupActivitiesByActivityIdAction,
+} from '@/shared/api/data-actions';
 import { getSafeHavens } from '@/shared/api/safe-haven-actions';
+import { getBoards } from '@/shared/api/board-actions';
 
 // --- Types ---
 export interface SiteSettings {
@@ -92,28 +124,8 @@ export interface PaymentResponse {
 }
 
 // --- Helper Functions ---
-function buildQueryString(params: { fields?: string[]; sort?: string[]; filter?: unknown; limit?: number; search?: string }): string {
-    const queryParams = new URLSearchParams();
-    if (params.fields) queryParams.append('fields', params.fields.join(','));
-    if (params.sort) queryParams.append('sort', params.sort.join(','));
-    if (params.filter) queryParams.append('filter', JSON.stringify(params.filter));
-    if (params.limit) queryParams.append('limit', String(params.limit));
-    if (params.search) queryParams.append('search', params.search);
-    return queryParams.toString();
-}
-
-// Clean committee names coming from Directus to remove internal suffixes
-function cleanCommitteeName(name?: string | null): string | undefined {
-    if (!name) return undefined;
-    // Remove any trailing '|| ... Salvemundi' or similar suffixes that include 'salvemundi'
-    // Also remove stray pipes and excessive whitespace.
-    let s = String(name);
-    // Remove patterns like '|| Salve Mundi', '||Salvemundi', '|| Salve Mundi - some'
-    s = s.replace(/\|\|.*salvemundi.*$/i, '');
-    // Remove any remaining trailing pipes
-    s = s.replace(/\|+$/g, '');
-    return s.trim();
-}
+// buildQueryString and cleanCommitteeName are no longer needed client-side
+// All data fetching now goes through server actions in data-actions.ts
 
 // --- API Collecties ---
 
@@ -153,503 +165,119 @@ export const paymentApi = {
 
 export const eventsApi = {
     getAll: async () => {
-        const now = new Date().toISOString();
-        const baseFields = ['id', 'name', 'event_date', 'event_time', 'inschrijf_deadline', 'description', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact', 'status', 'publish_date'];
-
-        const getEventsAction = async (includeDescription: boolean) => {
-            const fields = [...baseFields];
-            if (includeDescription) fields.push('description_logged_in');
-
-            const q = buildQueryString({
-                fields: fields,
-                sort: ['-event_date'],
-                filter: {
-                    _or: [
-                        { status: { _eq: 'published' }, publish_date: { _null: true } },
-                        { status: { _eq: 'published' }, publish_date: { _lte: now } }
-                    ]
-                }
-            });
-            return directusFetch<any[]>(`/items/events?${q}`);
-        };
-
-        let events: any[];
-        const shouldTryDescription = typeof window !== 'undefined' && !!localStorage.getItem('auth_token');
-
-        try {
-            events = await getEventsAction(shouldTryDescription);
-        } catch (error: any) {
-            // If it failed with 403 and we tried to include the description, retry without it
-            if (error?.status === 403 && shouldTryDescription) {
-                events = await getEventsAction(false);
-            } else {
-                throw error;
-            }
-        }
-
-        if (!Array.isArray(events)) {
-            console.warn('[eventsApi.getAll] Expected array response for events, received:', events);
-            events = [];
-        }
-
-        const eventsWithDetails = await Promise.all(
-            events.map(async (event) => {
-                if (event.committee_id) {
-                    try {
-                        const committee = await directusFetch<any>(`/items/committees/${event.committee_id}?fields=id,name,email`);
-                        if (committee) {
-                            event.committee_name = cleanCommitteeName(committee.name);
-                            event.committee_email = committee.email || undefined;
-                        }
-                    } catch (error) {
-                        console.error('eventsApi.getAll: failed to fetch committee for event', { eventId: event.id, committeeId: event.committee_id, error });
-                    }
-                }
-
-                if (!event.contact && event.committee_id) {
-                    try {
-                        const leaderQuery = buildQueryString({
-                            filter: { committee_id: { _eq: event.committee_id }, is_leader: { _eq: true } },
-                            fields: ['user_id.first_name', 'user_id.last_name'],
-                            limit: 1
-                        });
-                        const leaders = await directusFetch<any[]>(`/items/committee_members?${leaderQuery}`);
-                        if (leaders && leaders.length > 0) {
-                            event.contact_name = `${leaders[0].user_id.first_name || ''} ${leaders[0].user_id.last_name || ''}`.trim();
-                        }
-                    } catch (error) {
-                        console.error('eventsApi.getAll: failed to fetch leaders for event', { eventId: event.id, committeeId: event.committee_id, error });
-                    }
-                } else if (event.contact) {
-                    // Directus 'contact' field may contain either a phone number or an email address.
-                    if (typeof event.contact === 'string' && event.contact.includes('@')) {
-                        event.contact_email = event.contact;
-                    } else {
-                        event.contact_phone = event.contact;
-                    }
-                }
-                return event;
-            })
-        );
-
-        return eventsWithDetails;
+        return await getEventsAction();
     },
-
     getById: async (id: string) => {
-        const baseFields = ['id', 'name', 'event_date', 'event_time', 'inschrijf_deadline', 'description', 'price_members', 'price_non_members', 'max_sign_ups', 'only_members', 'image', 'committee_id', 'contact'];
-
-        const getEventAction = async (includeDescription: boolean) => {
-            const fields = [...baseFields];
-            if (includeDescription) fields.push('description_logged_in');
-            const q = buildQueryString({ fields });
-            return directusFetch<any>(`/items/events/${id}?${q}`);
-        };
-
-        let event: any;
-        const shouldTryDescription = typeof window !== 'undefined' && !!localStorage.getItem('auth_token');
-
-        try {
-            event = await getEventAction(shouldTryDescription);
-        } catch (error: any) {
-            if (error?.status === 403 && shouldTryDescription) {
-                event = await getEventAction(false);
-            } else {
-                throw error;
-            }
-        }
-
-        if (event.committee_id) {
-            try {
-                const committee = await directusFetch<any>(`/items/committees/${event.committee_id}?fields=id,name,email`);
-                if (committee) {
-                    event.committee_name = cleanCommitteeName(committee.name);
-                    event.committee_email = committee.email || undefined;
-                }
-            } catch (error) {
-                console.error('eventsApi.getById: failed to fetch committee for event', { eventId: id, committeeId: event.committee_id, error });
-            }
-        }
-
-        if (!event.contact && event.committee_id) {
-            try {
-                const leaderQuery = buildQueryString({
-                    filter: { committee_id: { _eq: event.committee_id }, is_leader: { _eq: true } },
-                    fields: ['user_id.first_name', 'user_id.last_name'],
-                    limit: 1
-                });
-                const leaders = await directusFetch<any[]>(`/items/committee_members?${leaderQuery}`);
-                if (leaders && leaders.length > 0) {
-                    event.contact_name = `${leaders[0].user_id.first_name || ''} ${leaders[0].user_id.last_name || ''}`.trim();
-                }
-            } catch (error) {
-                console.error('eventsApi.getById: failed to fetch leaders for event', { eventId: id, committeeId: event.committee_id, error });
-            }
-        } else if (event.contact) {
-            if (typeof event.contact === 'string' && event.contact.includes('@')) {
-                event.contact_email = event.contact;
-            } else {
-                event.contact_phone = event.contact;
-            }
-        }
-
-        return event;
+        return await getEventByIdAction(id);
     },
-
     getByCommittee: async (committeeId: number) => {
-        const query = buildQueryString({
-            filter: { committee_id: { _eq: committeeId } },
-            fields: ['id', 'name', 'event_date', 'event_time', 'event_time_end', 'location', 'description', 'price_members', 'price_non_members', 'image'],
-            sort: ['-event_date']
-        });
-        const res = await directusFetch<any[]>(`/items/events?${query}`);
-        if (!Array.isArray(res)) {
-            console.warn('[eventsApi.getByCommittee] Expected array response for events by committee, received:', res);
-            return [];
-        }
-        return res;
+        return await getEventsByCommitteeAction(committeeId);
     },
-
     createSignup: async (signupData: { event_id: number; email: string; name: string; phone_number?: string; user_id?: string; event_name?: string; event_date?: string; event_price?: number; payment_status?: string }) => {
-        // 1. Check bestaande inschrijving (Alleen voor ingelogde leden)
-        if (signupData.user_id) {
-            const existingQuery = buildQueryString({
-                filter: {
-                    event_id: { _eq: signupData.event_id },
-                    directus_relations: { _eq: signupData.user_id }
-                },
-                fields: ['id', 'payment_status', 'qr_token'] // We halen de status op
-            });
-
-            const existingSignups = await directusFetch<any[]>(`/items/event_signups?${existingQuery}`);
-
-            if (existingSignups && existingSignups.length > 0) {
-                const existing = existingSignups[0];
-
-                // Check de betalingsstatus
-                if (existing.payment_status === 'paid') {
-                    // Echt al ingeschreven en betaald -> Blokkeren
-                    throw new Error('Je bent al ingeschreven (en betaald) voor deze activiteit');
-                }
-
-                // Als status 'open' (of null) is, recyclen we de inschrijving
-                // Dit zorgt ervoor dat de gebruiker opnieuw kan proberen te betalen
-                return existing;
-            }
-        } else if (signupData.email) {
-            // Check bestaande inschrijving op basis van email (voor gasten)
-            const existingQuery = buildQueryString({
-                filter: {
-                    event_id: { _eq: signupData.event_id },
-                    participant_email: { _eq: signupData.email }
-                },
-                fields: ['id', 'payment_status', 'qr_token']
-            });
-
-            const existingSignups = await directusFetch<any[]>(`/items/event_signups?${existingQuery}`);
-
-            if (existingSignups && existingSignups.length > 0) {
-                const existing = existingSignups[0];
-
-                if (existing.payment_status === 'paid') {
-                    throw new Error('Er is al een inschrijving met dit emailadres voor deze activiteit.');
-                }
-                return existing;
-            }
-        }
-
-        // 2. Nieuwe inschrijving maken
-        const payload: any = {
-            event_id: signupData.event_id,
-            directus_relations: signupData.user_id || null,
-            participant_name: signupData.name || null,
-            participant_email: signupData.email || null,
-            participant_phone: signupData.phone_number ?? null,
-            payment_status: signupData.payment_status || 'open' // Zet expliciet op open of meegegeven status
-        };
-
-        const signup = await directusFetch<any>(`/items/event_signups`, {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        });
-
-        // Try to generate a QR token, image and send confirmation email. Failures here should not break signup.
-        try {
-            const { default: qrService } = await import('@/shared/lib/qr-service');
-            const { sendEventSignupEmail } = await import('@/shared/lib/services/email-service');
-
-            if (signup && signup.id) {
-                const token = qrService.generateQRToken(signup.id, signupData.event_id);
-                await qrService.updateSignupWithQRToken(signup.id, token);
-
-                // If this is a free event OR manually marked as paid, mark the signup as paid so downstream
-                // consumers (UI, admin pages, email flows) see the correct state.
-                if (signupData.event_price === 0 || signupData.payment_status === 'paid') {
-                    try {
-                        await directusFetch(`/items/event_signups/${signup.id}`, {
-                            method: 'PATCH',
-                            body: JSON.stringify({ payment_status: 'paid' })
-                        });
-                        console.log(`eventsApi.createSignup: marked free signup ${signup.id} as paid`);
-                    } catch (e) {
-                        console.error('eventsApi.createSignup: failed to mark free signup as paid', { signupId: signup.id, error: e });
-                    }
-                }
-                // generate image
-                let qrDataUrl: string | undefined = undefined;
-                try {
-                    qrDataUrl = await qrService.generateQRCode(token);
-                } catch (e) {
-                    console.error('eventsApi.createSignup: failed to generate QR code', { signupId: signup.id, error: e });
-                }
-
-                // send email (best-effort)
-                try {
-                    // Try to fetch additional event details so we can include committee/contact info
-                    let committeeName: string | undefined = undefined;
-                    let committeeEmail: string | undefined = undefined;
-                    let contactName: string | undefined = undefined;
-                    let contactPhone: string | undefined = undefined;
-
-                    try {
-                        const eventDetails = await eventsApi.getById(String(signupData.event_id));
-                        if (eventDetails) {
-                            committeeName = eventDetails.committee_name || undefined;
-                            committeeEmail = eventDetails.committee_email || undefined;
-
-                            if (eventDetails.contact) {
-                                if (typeof eventDetails.contact === 'string' && eventDetails.contact.includes('@')) {
-                                    // Prefer explicit committee email (from committee record). Use event contact only as fallback.
-                                    if (!committeeEmail) committeeEmail = eventDetails.contact;
-                                } else if (typeof eventDetails.contact === 'string') {
-                                    contactPhone = eventDetails.contact;
-                                }
-                            }
-
-                            // If no contactName found, try to get a leader name
-                            if (!contactName && eventDetails.contact_name) {
-                                contactName = eventDetails.contact_name;
-                            }
-                        }
-                    } catch (e) {
-                        console.error('eventsApi.createSignup: failed to fetch event details for contact info', { eventId: signupData.event_id, error: e });
-                    }
-
-                    if (signupData.event_price === 0 || signupData.payment_status === 'paid') {
-                        await sendEventSignupEmail({
-                            recipientEmail: signupData.email,
-                            recipientName: signupData.name,
-                            eventName: signupData.event_name || '',
-                            eventDate: signupData.event_date || '',
-                            eventPrice: signupData.event_price || 0,
-                            phoneNumber: signupData.phone_number,
-                            userName: signupData.user_id || 'Gast',
-                            qrCodeDataUrl: qrDataUrl,
-                            committeeName,
-                            committeeEmail,
-                            contactName,
-                            contactPhone,
-                        });
-                    } else {
-                        // Email will be sent upon payment confirmation
-                    }
-                } catch (e) {
-                    console.error('eventsApi.createSignup: failed to send signup email', { signupId: signup.id, error: e });
-                }
-                // Update the local signup object with the QR token instead of refetching
-                signup.qr_token = token;
-                return signup;
-            }
-
-        } catch (err) {
-            console.error('eventsApi.createSignup: unexpected error during post-signup processing', { signupData, error: err });
-        }
-
-        return signup;
-    }
+        return await createEventSignupAction(signupData);
+    },
 };
 
 export const committeesApi = {
     getAll: async () => {
-        const query = buildQueryString({
-            fields: ['id', 'name', 'email', 'image.id', 'is_visible', 'short_description', 'created_at', 'updated_at'],
-            sort: ['name']
-        });
-        return directusFetch<any[]>(`/items/committees?${query}`);
+        return await getCommitteesAction();
     },
-
     getAllWithMembers: async () => {
-        try {
-            const committees = await directusFetch<any[]>(`/items/committees?fields=id,name,email,image.id,is_visible,short_description,created_at,updated_at&sort=name`);
-            const visibleCommittees = (committees || []).filter(c => c.is_visible !== false);
-
-            const committeesWithMembers = await Promise.all(
-                visibleCommittees.map(async (committee) => {
-                    const members = await directusFetch<any[]>(
-                        `/items/committee_members?filter[committee_id][_eq]=${committee.id}&fields=*,user_id.first_name,user_id.last_name,user_id.avatar`
-                    );
-                    return { ...committee, committee_members: members || [] };
-                })
-            );
-            return committeesWithMembers;
-        } catch (error) {
-            const committees = await directusFetch<any[]>(`/items/committees?fields=id,name,email,image.id,created_at,updated_at&sort=name`);
-            const committeeList = Array.isArray(committees) ? committees : [];
-            const committeesWithMembers = await Promise.all(
-                committeeList.map(async (committee) => {
-                    const members = await directusFetch<any[]>(
-                        `/items/committee_members?filter[committee_id][_eq]=${committee.id}&fields=*,user_id.first_name,user_id.last_name,user_id.avatar`
-                    );
-                    return { ...committee, committee_members: members || [] };
-                })
-            );
-            return committeesWithMembers;
-        }
+        return await getCommitteesWithMembersAction();
     },
-
     getById: async (id: number) => {
-        try {
-            const committee = await directusFetch<any>(`/items/committees/${id}?fields=id,name,email,image.id,is_visible,short_description,description,created_at,updated_at`);
-            const members = await directusFetch<any[]>(
-                `/items/committee_members?filter[committee_id][_eq]=${id}&fields=*,user_id.*`
-            );
-            committee.committee_members = members;
-            return committee;
-        } catch (error) {
-            const committee = await directusFetch<any>(`/items/committees/${id}?fields=id,name,email,image.id,created_at,updated_at`);
-            const members = await directusFetch<any[]>(
-                `/items/committee_members?filter[committee_id][_eq]=${id}&fields=*,user_id.*`
-            );
-            committee.committee_members = members;
-            return committee;
-        }
+        return await getCommitteeByIdAction(id);
     }
 };
 
 export const membersApi = {
     getAll: async () => {
-        const query = buildQueryString({
-            fields: ['id', 'first_name', 'last_name', 'email', 'picture', 'is_current_student'],
-            sort: ['last_name', 'first_name']
-        });
-        return directusFetch<any[]>(`/items/members?${query}`);
+        return await getMembersAction();
     },
     getById: async (id: number) => {
-        const query = buildQueryString({
-            fields: ['id', 'first_name', 'last_name', 'email', 'picture', 'phone_number', 'date_of_birth', 'is_current_student']
-        });
-        return directusFetch<any>(`/items/members/${id}?${query}`);
+        return await getMemberByIdAction(id);
     }
 };
 
 export const boardApi = {
     getAll: async () => {
-        const query = buildQueryString({
-            // Request full member relation and nested user relation fields to ensure names/pictures are populated
-            // Note: the API returns user relation as `user_id` on committee/board member rows.
-            // include year so UI can show the year on historical boards
-            fields: ['id', 'naam', 'image', 'year', 'members.*', 'members.user_id.*', 'members.functie'],
-            sort: ['naam']
-        });
-        return directusFetch<any[]>(`/items/Board?${query}`);
+        // Use Server Action to fetch data with Admin Token, bypassing client-side user permissions
+        return await getBoards();
     }
 };
 
 export const clubsApi = {
     getAll: async () => {
-        const query = buildQueryString({
-            fields: ['id', 'name', 'description', 'image', 'whatsapp_link', 'discord_link', 'website_link'],
-            sort: ['name']
-        });
-        return directusFetch<any[]>(`/items/clubs?${query}`);
+        return await getClubsAction();
     },
     getById: async (id: number) => {
-        const query = buildQueryString({
-            fields: ['id', 'name', 'description', 'image', 'whatsapp_link', 'discord_link', 'website_link', 'created_at']
-        });
-        return directusFetch<any>(`/items/clubs/${id}?${query}`);
+        return await getClubByIdAction(id);
     }
 };
 
 export const pubCrawlEventsApi = {
     getAll: async () => {
-        const query = buildQueryString({
-            fields: ['id', 'name', 'email', 'date', 'description', 'image', 'created_at'],
-            sort: ['-date']
-        });
-        return directusFetch<any[]>(`/items/pub_crawl_events?${query}`);
+        return await getPubCrawlEventsAction();
     },
     getById: async (id: number | string) => {
-        return directusFetch<any>(`/items/pub_crawl_events/${id}?fields=*`);
+        return await getPubCrawlEventByIdAction(id);
+    },
+    create: async (data: any) => {
+        return await createPubCrawlEventAction(data);
     },
     update: async (id: number | string, data: any) => {
-        return directusFetch<any>(`/items/pub_crawl_events/${id}`, {
-            method: 'PATCH',
-            body: JSON.stringify(data)
-        });
+        return await updatePubCrawlEventAction(id, data);
     },
     delete: async (id: number | string) => {
-        return directusFetch<void>(`/items/pub_crawl_events/${id}`, {
-            method: 'DELETE'
-        });
+        return await deletePubCrawlEventAction(id);
     }
 };
 
 export const pubCrawlSignupsApi = {
     getAll: async () => {
-        const query = buildQueryString({
-            fields: [
-                FIELDS.SIGNUPS.ID,
-                FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID,
-                FIELDS.SIGNUPS.NAME,
-                FIELDS.SIGNUPS.EMAIL,
-                FIELDS.SIGNUPS.ASSOCIATION,
-                FIELDS.SIGNUPS.AMOUNT_TICKETS,
-                FIELDS.SIGNUPS.CREATED_AT,
-                FIELDS.SIGNUPS.UPDATED_AT
-            ],
-            sort: [`-${FIELDS.SIGNUPS.CREATED_AT}`]
-        });
-        return directusFetch<any[]>(`/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}?${query}`);
+        return await getPubCrawlSignupsAction();
+    },
+    getByEventId: async (eventId: number) => {
+        return await getPubCrawlSignupsByEventIdAction(eventId);
     },
     create: async (data: any) => {
-        return directusFetch<any>(`/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}`, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
+        return await createPubCrawlSignupAction(data);
     },
     getById: async (id: number | string) => {
-        return directusFetch<any>(`/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}/${id}?fields=*`);
+        return await getPubCrawlSignupByIdAction(id);
     },
-    delete: async (id: number) => {
-        return directusFetch<void>(`/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}/${id}`, {
-            method: 'DELETE'
-        });
+    update: async (id: number | string, data: any) => {
+        return await updatePubCrawlSignupAction(id, data);
+    },
+    delete: async (id: number | string) => {
+        return await deletePubCrawlSignupAction(id);
+    }
+};
+
+export const pubCrawlTicketsApi = {
+    getAll: async () => {
+        return await getPubCrawlTicketsAction();
+    },
+    getBySignupId: async (signupId: number | string) => {
+        return await getPubCrawlTicketsBySignupIdAction(signupId);
+    },
+    getByEventId: async (eventId: number | string) => {
+        return await getPubCrawlTicketsByEventIdAction(eventId);
     }
 };
 
 export const sponsorsApi = {
     getAll: async () => {
-        const query = buildQueryString({
-            fields: ['sponsor_id', 'image', 'website_url'],
-            sort: ['sponsor_id']
-        });
-        return directusFetch<any[]>(`/items/sponsors?${query}`);
+        return await getSponsorsAction();
     }
 };
 
 export const jobsApi = {
     getAll: async () => {
-        const query = buildQueryString({
-            fields: ['job_id', 'name', 'description', 'pay', 'location', 'skills', 'profile_description', 'created_at'],
-            sort: ['-created_at']
-        });
-        return directusFetch<any[]>(`/items/jobs?${query}`);
+        return await getJobsAction();
     },
     getById: async (id: number) => {
-        const query = buildQueryString({
-            fields: ['job_id', 'name', 'description', 'pay', 'location', 'skills', 'profile_description', 'created_at']
-        });
-        return directusFetch<any>(`/items/jobs/${id}?${query}`);
+        return await getJobByIdAction(id);
     }
 };
 
@@ -683,66 +311,34 @@ export const safeHavensApi = {
         return await getSafeHavens();
     },
     getByUserId: async (userId: string) => {
-        const query = buildQueryString({
-            // availability fields removed from Directus schema -- do not request them
-            fields: ['id', 'user_id.id', 'user_id.first_name', 'user_id.last_name', 'contact_name', 'phone_number', 'email', 'image', 'created_at'],
-            filter: { 'user_id': { _eq: userId } }
-        });
-        const results = await directusFetch<SafeHaven[]>(`/items/safe_havens?${query}`);
-        return results && results.length > 0 ? results[0] : null;
+        return await getSafeHavenByUserIdAction(userId);
     }
 };
 
 export const stickersApi = {
     getAll: async () => {
-        const query = buildQueryString({
-            fields: ['*', 'user_created.*', 'created_by.*'],
-            sort: ['-date_created'],
-            // Request all stickers (Directus defaults to 100 items per page)
-            // Use -1 to disable pagination and return all records
-            limit: -1
-        });
-        return directusFetch<any[]>(`/items/Stickers?${query}`);
+        return await getStickersAction();
     },
-
     create: async (data: CreateStickerData) => {
-        return directusFetch<any>(`/items/Stickers`, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
+        return await createStickerAction(data);
     },
-
     delete: async (id: number) => {
-        return directusFetch<void>(`/items/Stickers/${id}`, {
-            method: 'DELETE'
-        });
+        return await deleteStickerAction(id);
     }
 };
 
 export const transactionsApi = {
     getAll: async (userId: string) => {
-        const query = buildQueryString({
-            filter: { user_id: { _eq: userId } },
-            sort: ['-created_at']
-        });
-        return directusFetch<Transaction[]>(`/items/transactions?${query}`);
+        return await getTransactionsAction(userId);
     },
     getById: async (id: number | string) => {
-        return directusFetch<any>(`/items/transactions/${id}?fields=*`);
+        return await getTransactionByIdAction(id);
     }
 };
 
 export const whatsappGroupsApi = {
     getAll: async (memberOnly: boolean = false) => {
-        const filter = memberOnly
-            ? { is_active: { _eq: true }, requires_membership: { _eq: true } }
-            : { is_active: { _eq: true } };
-
-        const query = buildQueryString({
-            filter: filter,
-            sort: ['name']
-        });
-        return directusFetch<WhatsAppGroup[]>(`/items/whatsapp_groups?${query}`);
+        return await getWhatsappGroupsAction(memberOnly);
     }
 };
 
@@ -828,92 +424,31 @@ export async function reverseGeocode(lat: number, lon: number): Promise<{
 
 export const documentsApi = {
     getAll: async () => {
-        const query = buildQueryString({
-            fields: ['id', 'title', 'description', 'file', 'category', 'display_order'],
-            filter: { is_active: { _eq: true } },
-            sort: ['display_order', 'title']
-        });
-        return directusFetch<any[]>(`/items/documents?${query}`);
+        return await getDocumentsAction();
     }
 };
 
 export const usersApi = {
     search: async (searchQuery: string) => {
-        const query = buildQueryString({
-            fields: ['id', 'first_name', 'last_name', 'email'],
-            search: searchQuery,
-            limit: 10
-        });
-        return directusFetch<any[]>(`/users?${query}`);
-
+        return await searchUsersAction(searchQuery);
     }
 };
 
 export const siteSettingsApi = {
-    // If `page` is provided, will filter settings for that page.
-    // If `includeAuthorizedTokens` is true, will attempt to fetch the authorized_tokens field (admin only)
     get: async (page?: string, includeAuthorizedTokens: boolean = false): Promise<SiteSettings | null> => {
-        try {
-            // By default, fetch without authorized_tokens since most users won't have access to it
-            // This prevents 403 errors for regular users
-            const fields = includeAuthorizedTokens
-                ? ['id', 'page', 'show', 'disabled_message', 'authorized_tokens']
-                : ['id', 'page', 'show', 'disabled_message'];
-
-            const params: any = {
-                fields,
-                limit: 1
-            };
-
-            if (page) {
-                params.filter = { page: { _eq: page } };
-            }
-
-            const query = buildQueryString(params);
-            const data = await directusFetch<SiteSettings | SiteSettings[] | null>(
-                `/items/site_settings?${query}`,
-                { headers: { 'X-Suppress-Log': 'true' } }
-            );
-
-            if (Array.isArray(data)) {
-                return data[0] || null;
-            }
-            return data ?? null;
-        } catch (error) {
-            // Silently handle errors - site_settings is optional
-            // This prevents console errors when the collection doesn't exist or is inaccessible
-            return null;
-        }
+        return await getSiteSettingsAction(page, includeAuthorizedTokens);
     }
 };
 
-// Add create/update helper for site settings (client code will use this for toggles)
 export const siteSettingsMutations = {
-    // Create a new site_settings record for a page
     create: async (data: { page: string; show?: boolean; disabled_message?: string; authorized_tokens?: string }) => {
-        return directusFetch<any>(`/items/site_settings`, {
-            method: 'POST',
-            body: JSON.stringify(data),
-        });
+        return await createSiteSettingsAction(data);
     },
-
-    // Update an existing site_settings record by id
     update: async (id: number, data: { show?: boolean; disabled_message?: string; authorized_tokens?: string }) => {
-        return directusFetch<any>(`/items/site_settings/${id}`, {
-            method: 'PATCH',
-            body: JSON.stringify(data),
-        });
+        return await updateSiteSettingsAction(id, data);
     },
-
-    // Upsert: if a settings row exists update it, otherwise create
     upsertByPage: async (page: string, data: { show?: boolean; disabled_message?: string; authorized_tokens?: string }) => {
-        // Try to fetch existing
-        const existing = await siteSettingsApi.get(page);
-        if (existing && existing.id) {
-            return siteSettingsMutations.update(existing.id, data);
-        }
-        // Create new
-        return siteSettingsMutations.create({ page, ...data });
+        return await upsertSiteSettingsByPageAction(page, data);
     }
 };
 
@@ -930,35 +465,17 @@ export interface IntroSignup {
 }
 
 export const introSignupsApi = {
-    create: async (data: {
-        first_name: string;
-        middle_name?: string;
-        last_name: string;
-        date_of_birth: string;
-        email: string;
-        phone_number: string;
-        favorite_gif?: string;
-    }) => {
-        return directusFetch<any>(`/items/intro_signups`, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
+    create: async (data: any) => {
+        return await createIntroSignupAction(data);
     },
     getAll: async (): Promise<IntroSignup[]> => {
-        return directusFetch<IntroSignup[]>(
-            `/items/intro_signups?fields=*&sort=-created_at`
-        );
+        return await getIntroSignupsAction();
     },
     update: async (id: number, data: Partial<IntroSignup>) => {
-        return directusFetch<IntroSignup>(`/items/intro_signups/${id}`, {
-            method: 'PATCH',
-            body: JSON.stringify(data)
-        });
+        return await updateIntroSignupAction(id, data);
     },
     delete: async (id: number) => {
-        return directusFetch(`/items/intro_signups/${id}`, {
-            method: 'DELETE'
-        });
+        return await deleteIntroSignupAction(id);
     }
 };
 
@@ -978,71 +495,25 @@ export interface IntroBlog {
 
 export const introBlogsApi = {
     getAll: async (): Promise<IntroBlog[]> => {
-        const rows = await directusFetch<IntroBlog[]>(
-            `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,likes,updated_at,is_published,blog_type,created_at&filter[is_published][_eq]=true&sort=-updated_at`
-        );
-        return (rows || []).map((r) => {
-            const raw = (r as any).likes;
-            let likes = 0;
-            if (raw !== undefined && raw !== null) {
-                likes = typeof raw === 'number' ? raw : parseInt(String(raw), 10) || 0;
-            }
-            return { ...r, likes };
-        });
+        return await getIntroBlogsAction();
     },
     getAllAdmin: async (): Promise<IntroBlog[]> => {
-        const rows = await directusFetch<IntroBlog[]>(
-            `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,likes,updated_at,is_published,blog_type,created_at&sort=-updated_at`
-        );
-        return (rows || []).map((r) => {
-            const raw = (r as any).likes;
-            let likes = 0;
-            if (raw !== undefined && raw !== null) {
-                likes = typeof raw === 'number' ? raw : parseInt(String(raw), 10) || 0;
-            }
-            return { ...r, likes };
-        });
+        return await getIntroBlogsAdminAction();
     },
     getById: async (id: number): Promise<IntroBlog> => {
-        const row = await directusFetch<IntroBlog>(
-            `/items/intro_blogs/${id}?fields=id,title,slug,content,excerpt,image.id,likes,updated_at,is_published,blog_type,created_at`
-        );
-        const raw = (row as any)?.likes;
-        let likes = 0;
-        if (raw !== undefined && raw !== null) {
-            likes = typeof raw === 'number' ? raw : parseInt(String(raw), 10) || 0;
-        }
-        return { ...(row as any), likes } as IntroBlog;
+        return await getIntroBlogByIdAction(id);
     },
     getByType: async (type: 'update' | 'pictures' | 'event' | 'announcement'): Promise<IntroBlog[]> => {
-        const rows = await directusFetch<IntroBlog[]>(
-            `/items/intro_blogs?fields=id,title,slug,content,excerpt,image.id,likes,updated_at,is_published,blog_type,created_at&filter[is_published][_eq]=true&filter[blog_type][_eq]=${type}&sort=-updated_at`
-        );
-        return (rows || []).map((r) => {
-            const raw = (r as any).likes;
-            let likes = 0;
-            if (raw !== undefined && raw !== null) {
-                likes = typeof raw === 'number' ? raw : parseInt(String(raw), 10) || 0;
-            }
-            return { ...r, likes };
-        });
+        return await getIntroBlogsByTypeAction(type);
     },
     create: async (data: Partial<IntroBlog>) => {
-        return directusFetch<IntroBlog>(`/items/intro_blogs`, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
+        return await createIntroBlogAction(data);
     },
     update: async (id: number, data: Partial<IntroBlog>) => {
-        return directusFetch<IntroBlog>(`/items/intro_blogs/${id}`, {
-            method: 'PATCH',
-            body: JSON.stringify(data)
-        });
+        return await updateIntroBlogAction(id, data);
     },
     delete: async (id: number) => {
-        return directusFetch(`/items/intro_blogs/${id}`, {
-            method: 'DELETE'
-        });
+        return await deleteIntroBlogAction(id);
     }
 };
 
@@ -1064,31 +535,19 @@ export interface IntroPlanningItem {
 
 export const introPlanningApi = {
     getAll: async (): Promise<IntroPlanningItem[]> => {
-        return directusFetch<IntroPlanningItem[]>(
-            `/items/intro_planning?fields=id,day,date,time_start,time_end,title,description,location,is_mandatory,icon,sort_order&filter[status][_eq]=published&sort=sort_order`
-        );
+        return await getIntroPlanningAction();
     },
     getAllAdmin: async (): Promise<IntroPlanningItem[]> => {
-        return directusFetch<IntroPlanningItem[]>(
-            `/items/intro_planning?fields=id,day,date,time_start,time_end,title,description,location,is_mandatory,icon,sort_order,status&sort=sort_order`
-        );
+        return await getIntroPlanningAdminAction();
     },
     create: async (data: Partial<IntroPlanningItem>) => {
-        return directusFetch<IntroPlanningItem>(`/items/intro_planning`, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
+        return await createIntroPlanningAction(data);
     },
     update: async (id: number, data: Partial<IntroPlanningItem>) => {
-        return directusFetch<IntroPlanningItem>(`/items/intro_planning/${id}`, {
-            method: 'PATCH',
-            body: JSON.stringify(data)
-        });
+        return await updateIntroPlanningAction(id, data);
     },
     delete: async (id: number) => {
-        return directusFetch(`/items/intro_planning/${id}`, {
-            method: 'DELETE'
-        });
+        return await deleteIntroPlanningAction(id);
     }
 };
 
@@ -1106,31 +565,19 @@ export interface IntroParentSignup {
 
 export const introParentSignupsApi = {
     create: async (data: IntroParentSignup) => {
-        return directusFetch<any>(`/items/intro_parent_signups`, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
+        return await createIntroParentSignupAction(data);
     },
     getByUserId: async (userId: string): Promise<IntroParentSignup[]> => {
-        return directusFetch<IntroParentSignup[]>(
-            `/items/intro_parent_signups?fields=*&filter[user_id][_eq]=${userId}`
-        );
+        return await getIntroParentSignupsByUserIdAction(userId);
     },
     getAll: async (): Promise<IntroParentSignup[]> => {
-        return directusFetch<IntroParentSignup[]>(
-            `/items/intro_parent_signups?fields=*&sort=-created_at`
-        );
+        return await getIntroParentSignupsAction();
     },
     update: async (id: number, data: Partial<IntroParentSignup>) => {
-        return directusFetch<IntroParentSignup>(`/items/intro_parent_signups/${id}`, {
-            method: 'PATCH',
-            body: JSON.stringify(data)
-        });
+        return await updateIntroParentSignupAction(id, data);
     },
     delete: async (id: number) => {
-        return directusFetch(`/items/intro_parent_signups/${id}`, {
-            method: 'DELETE'
-        });
+        return await deleteIntroParentSignupAction(id);
     }
 };
 
@@ -1206,11 +653,7 @@ export interface HeroBanner {
 
 export const heroBannersApi = {
     getAll: async () => {
-        const query = buildQueryString({
-            fields: ['id', 'image', 'title', 'sort'],
-            sort: ['sort', '-date_created']
-        });
-        return directusFetch<HeroBanner[]>(`/items/hero_banners?${query}`);
+        return await getHeroBannersAction();
     }
 };
 
@@ -1292,121 +735,67 @@ export interface TripSignup {
 
 export const tripsApi = {
     getAll: async () => {
-        const query = buildQueryString({
-            fields: ['id', 'name', 'description', 'image', 'event_date', 'start_date', 'end_date', 'registration_start_date', 'registration_open', 'max_participants', 'max_crew', 'base_price', 'crew_discount', 'deposit_amount', 'is_bus_trip', 'allow_final_payments', 'created_at', 'updated_at'],
-            sort: ['-event_date']
-        });
-        return directusFetch<Trip[]>(`/items/trips?${query}`);
+        return await getTripsAction();
     },
     getById: async (id: number) => {
-        return directusFetch<Trip>(`/items/trips/${id}?fields=*`);
+        return await getTripByIdAction(id);
     },
     create: async (data: Partial<Trip>) => {
-        return directusFetch<Trip>(`/items/trips`, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
+        return await createTripAction(data);
     },
     update: async (id: number, data: Partial<Trip>) => {
-        return directusFetch<Trip>(`/items/trips/${id}`, {
-            method: 'PATCH',
-            body: JSON.stringify(data)
-        });
+        return await updateTripAction(id, data);
     },
     delete: async (id: number) => {
-        return directusFetch(`/items/trips/${id}`, {
-            method: 'DELETE'
-        });
+        return await deleteTripAction(id);
     },
 };
 
 export const tripActivitiesApi = {
     getByTripId: async (tripId: number) => {
-        const query = buildQueryString({
-            filter: { trip_id: { _eq: tripId }, is_active: { _eq: true } },
-            sort: ['display_order', 'name'],
-            fields: ['*', 'options', 'max_selections']
-        });
-        return directusFetch<TripActivity[]>(`/items/trip_activities?${query}`);
+        return await getTripActivitiesByTripIdAction(tripId);
     },
     getAllByTripId: async (tripId: number) => {
-        // Get all activities including inactive ones for admin purposes
-        const query = buildQueryString({
-            filter: { trip_id: { _eq: tripId } },
-            sort: ['display_order', 'name'],
-            fields: ['*', 'options', 'max_selections']
-        });
-        return directusFetch<TripActivity[]>(`/items/trip_activities?${query}`);
+        return await getAllTripActivitiesByTripIdAction(tripId);
     },
     create: async (data: Partial<TripActivity>) => {
-        return directusFetch<TripActivity>(`/items/trip_activities`, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
+        return await createTripActivityAction(data);
     },
     update: async (id: number, data: Partial<TripActivity>) => {
-        return directusFetch<TripActivity>(`/items/trip_activities/${id}`, {
-            method: 'PATCH',
-            body: JSON.stringify(data)
-        });
+        return await updateTripActivityAction(id, data);
     },
     delete: async (id: number) => {
-        return directusFetch(`/items/trip_activities/${id}`, {
-            method: 'DELETE'
-        });
+        return await deleteTripActivityAction(id);
     },
 };
 
 export const tripSignupsApi = {
     create: async (data: Partial<TripSignup>) => {
-        return directusFetch<TripSignup>(`/items/trip_signups`, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
+        return await createTripSignupAction(data);
     },
     getById: async (id: number) => {
-        return directusFetch<TripSignup>(`/items/trip_signups/${id}?fields=*`);
+        return await getTripSignupByIdAction(id);
     },
     update: async (id: number, data: Partial<TripSignup>) => {
-        return directusFetch<TripSignup>(`/items/trip_signups/${id}`, {
-            method: 'PATCH',
-            body: JSON.stringify(data)
-        });
+        return await updateTripSignupAction(id, data);
     },
     getByTripId: async (tripId: number) => {
-        const query = buildQueryString({
-            filter: { trip_id: { _eq: tripId } },
-            sort: ['-created_at']
-        });
-        return directusFetch<TripSignup[]>(`/items/trip_signups?${query}`);
+        return await getTripSignupsByTripIdAction(tripId);
     },
 };
 
 export const tripSignupActivitiesApi = {
     create: async (data: { trip_signup_id: number; trip_activity_id: number; selected_options?: any }) => {
-        return directusFetch<any>(`/items/trip_signup_activities`, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
+        return await createTripSignupActivityAction(data);
     },
     delete: async (id: number) => {
-        return directusFetch<void>(`/items/trip_signup_activities/${id}`, {
-            method: 'DELETE'
-        });
+        return await deleteTripSignupActivityAction(id);
     },
     getBySignupId: async (signupId: number) => {
-        const query = buildQueryString({
-            filter: { trip_signup_id: { _eq: signupId } },
-            fields: ['id', 'selected_options', 'trip_activity_id.*']
-        });
-        return directusFetch<any[]>(`/items/trip_signup_activities?${query}`);
+        return await getTripSignupActivitiesBySignupIdAction(signupId);
     },
     getByActivityId: async (activityId: number) => {
-        const query = buildQueryString({
-            filter: { trip_activity_id: { _eq: activityId } },
-            fields: ['id', 'selected_options', 'trip_signup_id.*']
-        });
-        return directusFetch<any[]>(`/items/trip_signup_activities?${query}`);
+        return await getTripSignupActivitiesByActivityIdAction(activityId);
     },
 };
 

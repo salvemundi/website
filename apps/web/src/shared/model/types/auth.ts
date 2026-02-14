@@ -17,6 +17,7 @@ export interface User {
     role?: string; // Optional Directus role id or name
     committees?: Array<{ id: string; name: string; is_leader?: boolean }>;
     is_safe_haven?: boolean; // Flag to indicate if user is a safe haven
+    admin_access?: boolean; // Directus admin access flag
 }
 
 export interface SignupData {

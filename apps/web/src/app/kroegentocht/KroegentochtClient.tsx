@@ -5,21 +5,15 @@ import Link from 'next/link';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import { directusFetch } from '@/shared/lib/directus'; // Keep for ticket fetching for now, or use server action?
-// Better to use server action for consistency, but ticket fetching for *display* might be fine via directusFetch if we have a read-only token or public.
-// However, the previous code used directusFetch client-side.
-// We can use checkExistingTicketsAction for the *count*, but for the list of tickets to download we might need a new action or keep directusFetch.
-// Let's keep directusFetch for the ticket list for now to minimize changes, as it requires a specific query.
-// But wait, directusFetch client side requires public access or static token. 
-// The original code used directusFetch. 
+
 import qrService from '@/shared/lib/qr-service';
 import QRDisplay from '@/entities/activity/ui/QRDisplay';
 
-import { COLLECTIONS, FIELDS } from '@/shared/lib/constants/collections';
+import { FIELDS } from '@/shared/lib/constants/collections';
 import { format } from 'date-fns';
 import { CheckCircle2, Download } from 'lucide-react';
 import { sanitizeHtml } from '@/shared/lib/utils/sanitize';
-import { checkExistingTicketsAction, createPubCrawlSignupAction, PubCrawlEvent } from '@/shared/api/kroegentocht-actions';
+import { checkExistingTicketsAction, createPubCrawlSignupAction, PubCrawlEvent, getMyPubCrawlTicketsAction } from '@/shared/api/kroegentocht-actions';
 import { createPaymentAction } from '@/shared/api/finance-actions';
 
 const ASSOCIATIONS = [
@@ -125,10 +119,7 @@ export default function KroegentochtClient({ initialEvents, initialSettings }: K
             if (isAuthenticated && user?.email && nextEvent) {
                 try {
                     // Fetch all tickets for this user via signup email
-                    // We keep directusFetch here for the LIST of tickets, assuming public read or user-token read is enough.
-                    // If this fails due to permissions, we'd need a specific server action "getMyTickets".
-                    // For now, let's assume directusFetch works as it did in the original file.
-                    const tickets = await directusFetch<any[]>(`/items/${COLLECTIONS.PUB_CRAWL_TICKETS}?filter[${FIELDS.TICKETS.SIGNUP_ID}][${FIELDS.SIGNUPS.EMAIL}][_eq]=${encodeURIComponent(user.email)}&filter[${FIELDS.TICKETS.SIGNUP_ID}][${FIELDS.SIGNUPS.PAYMENT_STATUS}][_eq]=paid&fields=*,${FIELDS.TICKETS.SIGNUP_ID}.${FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID}.name&sort=-created_at`);
+                    const tickets = await getMyPubCrawlTicketsAction(user.email);
                     setExistingSignups(tickets || []);
                     await checkExistingTickets(user.email);
                 } catch (e) {

@@ -217,7 +217,7 @@ export default function ReisPage() {
                     setCurrentUser(user as User);
 
                     // Fetch committees separately since fetchUserDetails returns empty committees
-                    const committees = await fetchAndPersistUserCommittees(user.id, token);
+                    const committees = await fetchAndPersistUserCommittees(user.id);
                     const userWithCommittees = { ...user, committees };
                     console.log('[ReisPage] User committees:', committees);
                     setIsCommitteeMember(isUserInReisCommittee(userWithCommittees));

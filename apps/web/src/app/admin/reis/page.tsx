@@ -1,59 +1,40 @@
 'use client';
 
-import { useEffect, useState, Fragment } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import * as XLSX from 'xlsx';
-import { directusFetch } from '@/shared/lib/directus';
-import NoAccessPage from '@/app/admin/no-access/page';
-import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { siteSettingsMutations } from '@/shared/lib/api/salvemundi';
+import {
+    getTripsAction,
+    getTripSignupsAction,
+    getTripSignupActivitiesAction,
+    updateTripSignupStatusAction,
+    deleteTripSignupAction,
+    sendTripPaymentEmailAction,
+    sendTripStatusUpdateEmailAction,
+    Trip,
+    TripSignup
+} from '@/features/admin/server/trips-actions';
+import { usePagePermission } from '@/shared/lib/hooks/usePermissions';
 import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
-import { Search, Download, Users, Plane, Edit, Trash2, Loader2, AlertCircle, UserCheck, UserX, Send } from 'lucide-react';
+import { siteSettingsMutations } from '@/shared/lib/api/salvemundi';
+import { formatDateToLocalISO } from '@/shared/lib/utils/date';
+import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import NoAccessPage from '@/app/admin/no-access/page';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { tripSignupActivitiesApi } from '@/shared/lib/api/salvemundi';
-import { formatDateToLocalISO } from '@/shared/lib/utils/date';
-import { usePagePermission } from '@/shared/lib/hooks/usePermissions';
-
-interface Trip {
-    id: number;
-    name: string;
-    event_date: string;
-    start_date?: string;
-    end_date?: string;
-    registration_open: boolean;
-    max_participants: number;
-    base_price: number;
-    crew_discount: number;
-    deposit_amount: number;
-    is_bus_trip: boolean;
-    allow_final_payments?: boolean;
-}
-
-interface TripSignup {
-    id: number;
-    first_name: string;
-    middle_name: string | null;
-    last_name: string;
-    email: string;
-    phone_number: string;
-    date_of_birth: string | null;
-    id_document_type: string | null;
-    document_number: string | null;
-    allergies: string | null;
-    alergies: string | null;
-    special_notes: string | null;
-    willing_to_drive: boolean | null;
-    role: string;
-    status: string;
-    deposit_paid: boolean;
-    deposit_paid_at: string | null;
-    full_payment_paid: boolean;
-    full_payment_paid_at: string | null;
-    deposit_email_sent?: boolean;
-    final_email_sent?: boolean;
-    created_at: string;
-}
+import * as XLSX from 'xlsx';
+import {
+    Users,
+    Search,
+    Download,
+    Trash2,
+    AlertCircle,
+    Loader2,
+    Edit,
+    UserCheck,
+    UserX,
+    Plane,
+    Send
+} from 'lucide-react';
 
 export default function ReisAanmeldingenPage() {
     const router = useRouter();
@@ -96,9 +77,7 @@ export default function ReisAanmeldingenPage() {
     const loadTrips = async () => {
         setIsLoading(true);
         try {
-            const tripsData = await directusFetch<Trip[]>(
-                '/items/trips?fields=id,name,event_date,start_date,end_date,registration_open,max_participants,base_price,crew_discount,deposit_amount,is_bus_trip,allow_final_payments&sort=-event_date'
-            );
+            const tripsData = await getTripsAction();
             setTrips(tripsData);
 
             // Select the most recent upcoming trip
@@ -125,9 +104,7 @@ export default function ReisAanmeldingenPage() {
     const loadSignups = async (tripId: number) => {
         setIsLoading(true);
         try {
-            const signupsData = await directusFetch<TripSignup[]>(
-                `/items/trip_signups?filter[trip_id][_eq]=${tripId}&fields=*&sort=-created_at`
-            );
+            const signupsData = await getTripSignupsAction(tripId);
             setSignups(signupsData);
         } catch (error) {
             console.error('Failed to load signups:', error);
@@ -194,37 +171,12 @@ export default function ReisAanmeldingenPage() {
 
         if (missingIds.length > 0) {
             try {
-                // Fetch all activities for missing signups in one go
-                const allActivities = await directusFetch<any[]>(
-                    `/items/trip_signup_activities?filter[trip_signup_id][_in]=${missingIds.join(',')}&fields=trip_signup_id,trip_activity_id.*,selected_options`
-                );
-
-                allActivities.forEach(it => {
-                    const signupId = it.trip_signup_id;
-                    if (!currentMap[signupId]) currentMap[signupId] = [];
-
-                    const a = it.trip_activity_id;
-                    if (!a) return;
-
-                    let activityName = a.name || a.title || '';
-                    let activityPrice = Number(a.price) || 0;
-
-                    const selectedOptions = it.selected_options;
-                    if (selectedOptions && Array.isArray(selectedOptions) && a.options) {
-                        const addedOptions: string[] = [];
-                        selectedOptions.forEach((optName: string) => {
-                            const optDef = a.options.find((o: any) => o.name === optName);
-                            if (optDef) {
-                                activityPrice += Number(optDef.price) || 0;
-                                addedOptions.push(optName);
-                            }
-                        });
-                        if (addedOptions.length > 0) {
-                            activityName += ` (+ ${addedOptions.join(', ')})`;
-                        }
-                    }
-                    currentMap[signupId].push({ id: a.id, name: activityName, price: activityPrice });
-                });
+                // Fetch all activities for missing signups in one go (Note: we use a simplified version here for Excel)
+                // In a future refactor, we might want a bulk activities getter server-side.
+                for (const signupId of missingIds) {
+                    const activities = await getTripSignupActivitiesAction(signupId);
+                    currentMap[signupId] = activities;
+                }
 
                 // Update state for future use
                 setSignupActivitiesMap(currentMap);
@@ -281,7 +233,7 @@ export default function ReisAanmeldingenPage() {
         if (!confirm('Weet je zeker dat je deze aanmelding wilt verwijderen?')) return;
 
         try {
-            await directusFetch(`/items/trip_signups/${id}`, { method: 'DELETE' });
+            await deleteTripSignupAction(id);
             setSignups(signups.filter(s => s.id !== id));
         } catch (error) {
             console.error('Failed to delete signup:', error);
@@ -316,21 +268,7 @@ export default function ReisAanmeldingenPage() {
         setSendingEmailTo({ signupId, type: paymentType });
 
         try {
-            const response = await fetch('/api/trip-email/payment-request', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    signupId: signupId,
-                    tripId: selectedTrip.id,
-                    paymentType: paymentType
-                })
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to send email');
-            }
-
+            await sendTripPaymentEmailAction(signupId, selectedTrip.id, paymentType);
             alert(`${paymentType === 'deposit' ? 'Aanbetaling' : 'Restbetaling'}sverzoek is succesvol verzonden naar ${signup.email}`);
 
             // Update local state to reflect email sent
@@ -359,40 +297,19 @@ export default function ReisAanmeldingenPage() {
         try {
             const oldStatus = signup?.status;
 
-            await directusFetch(`/items/trip_signups/${id}`, {
-                method: 'PATCH',
-                body: JSON.stringify({ status: newStatus })
-            });
-
+            await updateTripSignupStatusAction(id, newStatus);
             setSignups(signups.map(s => s.id === id ? { ...s, status: newStatus } : s));
 
             // Send email notification to participant
             if (signup && selectedTrip && oldStatus !== newStatus) {
                 try {
                     // Always send status update email
-                    await fetch('/api/trip-email/status-update', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            signupId: id,
-                            tripId: selectedTrip.id,
-                            newStatus,
-                            oldStatus
-                        })
-                    });
+                    await sendTripStatusUpdateEmailAction(id, selectedTrip.id, newStatus, oldStatus || '');
 
                     // If changed to confirmed, ALSO send the deposit payment request
                     if (newStatus === 'confirmed' && !signup.deposit_paid) {
                         console.log('[handleStatusChange] Auto-triggering deposit payment request email');
-                        await fetch('/api/trip-email/payment-request', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                signupId: id,
-                                tripId: selectedTrip.id,
-                                paymentType: 'deposit'
-                            })
-                        });
+                        await sendTripPaymentEmailAction(id, selectedTrip.id, 'deposit');
                         // Update local state to reflect email sent
                         setSignups(prev => prev.map(s => s.id === id ? { ...s, deposit_email_sent: true } : s));
                     }
@@ -427,29 +344,7 @@ export default function ReisAanmeldingenPage() {
         // load activities for this signup if not loaded yet
         if (!signupActivitiesMap[signup.id]) {
             try {
-                const items = await tripSignupActivitiesApi.getBySignupId(signup.id);
-                const activities = items.map((it: any) => {
-                    const a = it.trip_activity_id && it.trip_activity_id.id ? it.trip_activity_id : it.trip_activity_id;
-                    let activityName = a.name || '';
-                    let activityPrice = Number(a.price) || 0;
-
-                    const selectedOptions = it.selected_options;
-                    if (selectedOptions && Array.isArray(selectedOptions) && a.options) {
-                        const addedOptions: string[] = [];
-                        selectedOptions.forEach((optName: string) => {
-                            const optDef = a.options.find((o: any) => o.name === optName);
-                            if (optDef) {
-                                activityPrice += Number(optDef.price) || 0;
-                                addedOptions.push(optName);
-                            }
-                        });
-                        if (addedOptions.length > 0) {
-                            activityName += ` (+ ${addedOptions.join(', ')})`;
-                        }
-                    }
-
-                    return { id: a.id || a, name: activityName, price: activityPrice };
-                });
+                const activities = await getTripSignupActivitiesAction(signup.id);
                 setSignupActivitiesMap(prev => ({ ...prev, [signup.id]: activities }));
             } catch (err) {
                 console.error('Failed to load signup activities:', err);

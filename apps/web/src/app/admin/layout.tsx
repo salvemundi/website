@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuthUser } from '@/features/auth/providers/auth-provider';
-import { directusFetch } from '@/shared/lib/directus';
+import { getUserCommitteesAction } from '@/shared/api/data-actions';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import NoAccessOverlay from '@/components/AuthOverlay/NoAccessOverlay';
 
@@ -45,6 +45,13 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
             }
 
             try {
+                // If user has directus admin access, allow
+                if (user.admin_access) {
+                    setIsAuthorized(true);
+                    setIsChecking(false);
+                    return;
+                }
+
                 // Check if user is member of any committee
                 const committees = (user as any).committees;
 
@@ -65,10 +72,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                     // Fallback: Check if user is member of any visible committee via API
                     // console.log('[AdminLayout] Committees not loaded, checking via API');
 
-                    // Get user's committee memberships with committee details
-                    const memberships = await directusFetch<any[]>(
-                        `/items/committee_members?filter[user_id][_eq]=${user.id}&fields=committee_id.id,committee_id.is_visible`
-                    );
+                    // Get user's committee memberships with committee details via Server Action
+                    const memberships = await getUserCommitteesAction(user.id);
                     // console.log('[AdminLayout] API response:', memberships);
 
                     // Check if user is member of at least one visible committee

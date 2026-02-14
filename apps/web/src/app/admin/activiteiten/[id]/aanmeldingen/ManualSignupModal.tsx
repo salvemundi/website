@@ -1,18 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { usersApi, eventsApi } from '@/shared/lib/api/salvemundi';
 import { X, Search, Check, Loader2 } from 'lucide-react';
-
 import { useDebounce } from '@/shared/lib/hooks/useDebounce';
+import { searchUsersAction, createEventSignupAction } from '@/features/admin/server/activities-actions';
 
 interface ManualSignupModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess: () => void;
     eventId: string | number;
-    eventName: string;
-    eventPrice: number;
 }
 
 interface UserResult {
@@ -22,7 +19,7 @@ interface UserResult {
     email: string;
 }
 
-export default function ManualSignupModal({ isOpen, onClose, onSuccess, eventId, eventName, eventPrice }: ManualSignupModalProps) {
+export default function ManualSignupModal({ isOpen, onClose, onSuccess, eventId }: ManualSignupModalProps) {
     const [activeTab, setActiveTab] = useState<'member' | 'guest'>('member');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -56,7 +53,7 @@ export default function ManualSignupModal({ isOpen, onClose, onSuccess, eventId,
 
             setIsSearchingMember(true);
             try {
-                const results = await usersApi.search(debouncedMemberQuery);
+                const results = await searchUsersAction(debouncedMemberQuery);
                 setMemberResults(results);
             } catch (err) {
                 console.error('Error searching members:', err);
@@ -97,38 +94,36 @@ export default function ManualSignupModal({ isOpen, onClose, onSuccess, eventId,
         try {
             const commonData = {
                 event_id: Number(eventId),
-                event_name: eventName,
-                event_price: eventPrice,
                 payment_status: 'paid' // Handmatige inschrijvingen zijn altijd direct 'betaald'
             };
 
-            let signupData;
+            let signupPayload;
 
             if (activeTab === 'member') {
                 if (!selectedMember) {
                     throw new Error('Selecteer een lid');
                 }
-                signupData = {
+                signupPayload = {
                     ...commonData,
-                    user_id: selectedMember.id,
-                    name: `${selectedMember.first_name} ${selectedMember.last_name}`,
-                    email: selectedMember.email
+                    directus_relations: selectedMember.id,
+                    participant_name: `${selectedMember.first_name} ${selectedMember.last_name}`,
+                    participant_email: selectedMember.email
                 };
             } else {
                 if (!guestName || !guestEmail) {
                     throw new Error('Naam en email zijn verplicht');
                 }
-                signupData = {
+                signupPayload = {
                     ...commonData,
-                    name: guestName,
-                    email: guestEmail,
-                    phone_number: guestPhone
+                    participant_name: guestName,
+                    participant_email: guestEmail,
+                    participant_phone: guestPhone
                 };
             }
 
-            await eventsApi.createSignup(signupData);
+            await createEventSignupAction(signupPayload);
 
-            setSuccessMessage(`Succesvol ingeschreven: ${signupData.name}`);
+            setSuccessMessage(`Succesvol ingeschreven: ${signupPayload.participant_name}`);
             setTimeout(() => {
                 onSuccess();
                 onClose();
@@ -136,9 +131,8 @@ export default function ManualSignupModal({ isOpen, onClose, onSuccess, eventId,
 
         } catch (err: any) {
             console.error('Signup error:', err);
-            // Check for specific duplicate error messages from API or generic fallback
             const msg = err.message || 'Er is een fout opgetreden bij het inschrijven.';
-            if (msg.includes('al ingeschreven') || msg.toLowerCase().includes('duplicate')) {
+            if (msg.toLowerCase().includes('duplicate') || msg.includes('al ingeschreven')) {
                 setError('Deze gebruiker is al ingeschreven voor dit evenement.');
             } else {
                 setError(msg);

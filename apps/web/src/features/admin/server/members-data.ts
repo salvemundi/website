@@ -77,7 +77,7 @@ export async function getMembersAction(): Promise<Member[]> {
     const isAdmin = role && role.toLowerCase() === 'administrator';
 
     // Privileged committees that can see sensitive data
-    const isPrivileged = isAdmin || committees.some(c => PRIVILEGED_TOKENS.includes(c.token ? c.token.toLowerCase() : ''));
+    const isPrivileged = isAdmin || committees.some(c => PRIVILEGED_TOKENS.includes((c.token ? c.token.toLowerCase() : '') as any));
 
     // Basic access check: Must be in at least one committee or be an admin
     const hasBasicAccess = committees.length > 0 || isAdmin;
@@ -133,7 +133,7 @@ export async function getMemberDetailAction(id: string): Promise<MemberDetail | 
 
     const { committees, role } = userContext;
     const isAdmin = role && role.toLowerCase() === 'administrator';
-    const isPrivileged = isAdmin || committees.some(c => PRIVILEGED_TOKENS.includes(c.token ? c.token.toLowerCase() : ''));
+    const isPrivileged = isAdmin || committees.some(c => PRIVILEGED_TOKENS.includes((c.token ? c.token.toLowerCase() : '') as any));
 
     const hasBasicAccess = committees.length > 0 || isAdmin;
     if (!hasBasicAccess) throw new Error('Unauthorized: Must be a committee member');
@@ -170,5 +170,34 @@ export async function getMemberDetailAction(id: string): Promise<MemberDetail | 
     } catch (error) {
         console.error('[getMemberDetailAction] Failed to fetch member detail:', error);
         return null;
+    }
+}
+
+export async function getMembersByCommitteeAction(committeeToken: string): Promise<Member[]> {
+    // 1. Authenticate & Verify Permissions
+    await verifyUserPermissions({});
+
+    // 2. Fetch members by committee token
+    try {
+        const data = await serverDirectusFetch<any[]>(
+            `/items/committee_members?filter[committee_id][commissie_token][_eq]=${committeeToken.toLowerCase()}&fields=user_id.id,user_id.first_name,user_id.last_name,user_id.email,user_id.status&limit=-1`
+        );
+
+        if (!Array.isArray(data)) return [];
+
+        return data
+            .filter(m => m.user_id)
+            .map(m => ({
+                id: m.user_id.id,
+                first_name: m.user_id.first_name,
+                last_name: m.user_id.last_name,
+                email: m.user_id.email,
+                status: m.user_id.status,
+                date_of_birth: null,
+                membership_expiry: null
+            }));
+    } catch (error) {
+        console.error('[getMembersByCommitteeAction] Failed:', error);
+        return [];
     }
 }

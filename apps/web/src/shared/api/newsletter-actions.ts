@@ -1,6 +1,6 @@
 'use server';
 
-import { directusFetch } from '@/shared/lib/directus';
+import { mutateDirectus } from '@/shared/lib/server-directus';
 
 /**
  * Server Action to subscribe an email to the newsletter.
@@ -18,11 +18,7 @@ export async function subscribeToNewsletterAction(email: string) {
 
     try {
         // Use the intro_newsletter_subscribers collection
-        // We use directusFetch which on the server uses the DIRECTUS_ADMIN_TOKEN
-        await directusFetch('/items/intro_newsletter_subscribers', {
-            method: 'POST',
-            body: JSON.stringify({ email }),
-        });
+        await mutateDirectus('/items/intro_newsletter_subscribers', 'POST', { email });
 
         return { success: true };
     } catch (error: any) {

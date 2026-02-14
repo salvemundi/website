@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import { directusFetch } from '@/shared/lib/directus';
+import { getAllCouponsAction, deleteCouponAction } from '@/shared/api/coupon-actions';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Ticket, Plus, Percent, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 import { isUserAuthorized, getMergedTokens, normalizeCommitteeName } from '@/shared/lib/committee-utils';
@@ -45,7 +45,7 @@ export default function AdminCouponsPage() {
     const loadCoupons = async () => {
         setIsLoading(true);
         try {
-            const data = await directusFetch<Coupon[]>('/items/coupons?sort=-id&fields=*');
+            const data = await getAllCouponsAction();
             setCoupons(data);
         } catch (error) {
             console.error('Failed to load coupons:', error);
@@ -58,7 +58,7 @@ export default function AdminCouponsPage() {
     const handleDelete = async (id: number) => {
         if (!confirm('Weet je zeker dat je deze coupon wilt verwijderen?')) return;
         try {
-            await directusFetch(`/items/coupons/${id}`, { method: 'DELETE' });
+            await deleteCouponAction(id);
             loadCoupons();
         } catch (e: any) {
             console.error(e);

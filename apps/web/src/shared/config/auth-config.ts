@@ -1,6 +1,7 @@
 export const AUTH_COOKIES = {
     SESSION: 'directus_session_token',
     REFRESH: 'directus_refresh_token',
+    TEST_TOKEN: 'directus_test_token',
 };
 
 export const AUTH_COOKIE_OPTIONS = {

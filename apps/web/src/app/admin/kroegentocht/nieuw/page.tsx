@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { directusFetch } from '@/shared/lib/directus';
+import { pubCrawlEventsApi } from '@/shared/lib/api/salvemundi';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Save, ArrowLeft, Upload, X } from 'lucide-react';
 
@@ -113,10 +113,7 @@ export default function NieuweKroegentochtPage() {
                 image: imageId,
             };
 
-            await directusFetch('/items/pub_crawl_events', {
-                method: 'POST',
-                body: JSON.stringify(eventData)
-            });
+            await pubCrawlEventsApi.create(eventData);
 
             showToast('Kroegentocht event succesvol aangemaakt!', 'success');
             setTimeout(() => router.push('/admin/kroegentocht'), 1500);

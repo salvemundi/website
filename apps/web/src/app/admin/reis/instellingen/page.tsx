@@ -1,11 +1,30 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+    getTripsFullAction,
+    createTripAction,
+    updateTripAction,
+    deleteTripAction,
+    Trip
+} from '@/features/admin/server/trips-actions';
+import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { getMembersByCommitteeAction } from '@/features/admin/server/members-data';
+import { uploadFileAction } from '@/features/admin/server/file-actions';
+import {
+    Calendar,
+    Plus,
+    Trash2,
+    Edit2,
+    Save,
+    X,
+    Upload,
+    DollarSign,
+    Loader2,
+    Users
+} from 'lucide-react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { tripsApi, getImageUrl, committeesApi } from '@/shared/lib/api/salvemundi';
-import { directusUrl } from '@/shared/lib/directus';
-import { Loader2, Plus, Edit2, Trash2, Save, X, Upload, Calendar, Users, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
@@ -44,7 +63,7 @@ export default function ReisInstellingenPage() {
         setLoading(true);
         setError(null);
         try {
-            const data = await tripsApi.getAll();
+            const data = await getTripsFullAction();
             setTrips(data);
         } catch (err) {
             console.error('Error loading trips:', err);
@@ -60,15 +79,9 @@ export default function ReisInstellingenPage() {
 
         let crewCount = 0;
         try {
-            const committees = await committeesApi.getAllWithMembers();
-            // Try to find the trip committee ('Reis' or 'Reiscommissie')
-            const reisCie = committees.find((c: any) =>
-                c.name.toLowerCase().includes('reis') &&
-                c.name.toLowerCase().includes('commissie')
-            );
-            if (reisCie && reisCie.committee_members) {
-                crewCount = reisCie.committee_members.length;
-            }
+            // Find members of the Reiscommissie
+            const members = await getMembersByCommitteeAction('reiscommissie');
+            crewCount = members.length;
         } catch (e) {
             console.warn('Could not fetch committee members for default crew size', e);
         }
@@ -157,13 +170,13 @@ export default function ReisInstellingenPage() {
         try {
             const payload = {
                 name: form.name,
-                description: form.description || undefined,
-                image: form.image || undefined,
+                description: form.description || null,
+                image: form.image || null,
                 // Prefer explicit start/end dates for multi-day events.
-                start_date: form.start_date || undefined,
-                end_date: form.end_date || undefined,
+                start_date: form.start_date || null,
+                end_date: form.end_date || null,
                 // Keep event_date for backward compatibility when present
-                event_date: form.event_date || undefined,
+                event_date: form.event_date || null,
                 registration_start_date: form.registration_start_date ? form.registration_start_date.toISOString() : null,
                 registration_open: form.registration_open,
                 max_participants: form.max_participants,
@@ -176,9 +189,9 @@ export default function ReisInstellingenPage() {
             };
 
             if (addingNew) {
-                await tripsApi.create(payload);
+                await createTripAction(payload as Partial<Trip>);
             } else if (editingId) {
-                await tripsApi.update(editingId, payload);
+                await updateTripAction(editingId, payload as Partial<Trip>);
             }
 
             await loadTrips();
@@ -195,7 +208,7 @@ export default function ReisInstellingenPage() {
         if (!confirm('Weet je zeker dat je deze reis wilt verwijderen? Dit verwijdert ook alle aanmeldingen!')) return;
 
         try {
-            await tripsApi.delete(id);
+            await deleteTripAction(id);
             await loadTrips();
         } catch (err) {
             console.error('Error deleting trip:', err);
@@ -207,26 +220,12 @@ export default function ReisInstellingenPage() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-
         const formData = new FormData();
         formData.append('file', file);
 
-        const headers: Record<string, string> = {};
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-
         try {
-            const response = await fetch(`${directusUrl}/files`, {
-                method: 'POST',
-                body: formData,
-                headers
-            });
-
-            if (!response.ok) throw new Error('Upload failed');
-            const json = await response.json();
-            const fileId = json?.data?.id || json?.data;
-
-            setForm({ ...form, image: fileId });
+            const { id } = await uploadFileAction(formData);
+            setForm({ ...form, image: id });
         } catch (err) {
             console.error('Error uploading image:', err);
             setError('Fout bij het uploaden van afbeelding');
@@ -437,7 +436,7 @@ export default function ReisInstellingenPage() {
                                     </p>
                                     <input
                                         type="datetime-local"
-                                        value={form.registration_start_date ? new Date(form.registration_start_date).toISOString().slice(0,16) : ''}
+                                        value={form.registration_start_date ? new Date(form.registration_start_date).toISOString().slice(0, 16) : ''}
                                         onChange={(e) => setForm({ ...form, registration_start_date: e.target.value ? new Date(e.target.value) : null })}
                                         className="w-full px-4 py-2 border border-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent bg-admin-card text-admin"
                                         placeholder="Selecteer startdatum en tijd..."

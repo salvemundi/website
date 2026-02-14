@@ -2,8 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
+import {
+    getTripsAction,
+    getTripSignupsAction,
+    sendTripBulkEmailAction,
+    sendTripPaymentEmailAction
+} from '@/features/admin/server/trips-actions';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { directusFetch } from '@/shared/lib/directus';
 import { Loader2, Mail, Send, Users, CheckCircle2, XCircle, Filter } from 'lucide-react';
 
 interface TripSignup {
@@ -65,8 +70,8 @@ export default function ReisMailPage() {
 
     const loadTrips = async () => {
         try {
-            const response = await directusFetch('/items/trips?fields=id,name&sort=-event_date') as Trip[];
-            setTrips(response);
+            const response = await getTripsAction();
+            setTrips(response as any);
             if (response.length > 0 && !selectedTripId) {
                 setSelectedTripId(response[0].id);
             }
@@ -82,10 +87,8 @@ export default function ReisMailPage() {
         setLoading(true);
         setError(null);
         try {
-            const response = await directusFetch(
-                `/items/trip_signups?filter[trip_id][_eq]=${selectedTripId}&fields=id,first_name,middle_name,last_name,email,role,status,deposit_paid,full_payment_paid&sort=last_name,first_name`
-            ) as TripSignup[];
-            setSignups(response);
+            const response = await getTripSignupsAction(selectedTripId);
+            setSignups(response as any);
         } catch (err) {
             console.error('Error loading signups:', err);
             setError('Fout bij het laden van aanmeldingen');
@@ -139,22 +142,8 @@ export default function ReisMailPage() {
 
                 for (const recipient of recipients) {
                     try {
-                        const response = await fetch('/api/trip-email/payment-request', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                signupId: recipient.id,
-                                tripId: selectedTripId,
-                                paymentType
-                            })
-                        });
-
-                        if (response.ok) {
-                            successCount++;
-                        } else {
-                            failCount++;
-                            console.error(`Failed to send payment request to ${recipient.email}`);
-                        }
+                        await sendTripPaymentEmailAction(recipient.id, selectedTripId, paymentType);
+                        successCount++;
                     } catch (err) {
                         failCount++;
                         console.error(`Error sending payment request to ${recipient.email}:`, err);
@@ -197,22 +186,13 @@ export default function ReisMailPage() {
             if (!trip) throw new Error('Trip not found');
 
             // Call backend to send bulk email
-            const response = await fetch('https://api.salvemundi.nl/trip-email/send-bulk', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    tripId: selectedTripId,
-                    tripName: trip.name,
-                    recipients: recipients.map(r => ({ email: r.email, name: `${r.first_name} ${r.last_name}` })),
-                    subject,
-                    message
-                })
+            await sendTripBulkEmailAction({
+                tripId: selectedTripId,
+                tripName: trip.name,
+                recipients: recipients.map(r => ({ email: r.email, name: `${r.first_name} ${r.last_name}` })),
+                subject,
+                message
             });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to send email');
-            }
 
             setSuccess(true);
             setSubject('');

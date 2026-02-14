@@ -110,3 +110,27 @@ export async function createPubCrawlSignupAction(data: PubCrawlSignupData) {
         return { success: false, error: 'Kon inschrijving niet aanmaken.' };
     }
 }
+
+export async function getMyPubCrawlTicketsAction(email: string) {
+    if (!email) return [];
+
+    try {
+        const query = new URLSearchParams({
+            filter: JSON.stringify({
+                [FIELDS.TICKETS.SIGNUP_ID]: {
+                    [FIELDS.SIGNUPS.EMAIL]: { _eq: email },
+                    [FIELDS.SIGNUPS.PAYMENT_STATUS]: { _eq: 'paid' }
+                }
+            }),
+            fields: `*,${FIELDS.TICKETS.SIGNUP_ID}.${FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID}.name`,
+            sort: '-created_at'
+        }).toString();
+
+        return await serverDirectusFetch<any[]>(`/items/${COLLECTIONS.PUB_CRAWL_TICKETS}?${query}`, {
+            revalidate: 0
+        });
+    } catch (error) {
+        console.error('[Action] Failed to fetch member pub crawl tickets:', error);
+        return [];
+    }
+}

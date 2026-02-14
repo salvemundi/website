@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { directusFetch } from '@/shared/lib/directus';
+import { createCouponAction } from '@/shared/api/coupon-actions';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Ticket, Save, Calendar, Euro, Percent, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/features/auth/providers/auth-provider';
@@ -93,10 +93,11 @@ export default function NewCouponPage() {
 
             console.log('[NewCoupon] Sending payload:', payload);
 
-            await directusFetch('/items/coupons', {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            });
+            const result = await createCouponAction(payload);
+
+            if (!result.success) {
+                throw new Error(result.error);
+            }
 
             router.push('/admin/coupons');
         } catch (err: any) {
