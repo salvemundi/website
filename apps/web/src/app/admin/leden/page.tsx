@@ -3,7 +3,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
-import { directusFetch } from '@/shared/lib/directus';
 import { getMembersAction } from '@/features/admin/server/members-data';
 import { sendMembershipReminderAction } from '@/features/admin/server/members-actions';
 import {
@@ -31,28 +30,6 @@ interface Member {
     status: string;
 }
 
-const EXCLUDED_EMAILS = [
-    'youtube@salvemundi.nl',
-    'github@salvemundi.nl',
-    'intern@salvemundi.nl',
-    'ik.ben.de.website@salvemundi.nl',
-    'voorzitter@salvemundi.nl',
-    'twitch@salvemundi.nl',
-    'secretaris@salvemundi.nl',
-    'penningmeester@salvemundi.nl',
-    'noreply@salvemundi.nl',
-    'extern@salvemundi.nl',
-    'commissaris.administratie@salvemundi.nl',
-    'apibot@salvemundi.nl'
-];
-
-function isRealUser(member: Member) {
-    if (!member.email) return false;
-    const lowerEmail = member.email.toLowerCase();
-    if (EXCLUDED_EMAILS.includes(lowerEmail)) return false;
-    if (lowerEmail.startsWith('test-')) return false;
-    return true;
-}
 
 export default function LedenOverzichtPage() {
     const router = useRouter();

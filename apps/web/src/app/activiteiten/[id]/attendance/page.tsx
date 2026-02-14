@@ -8,6 +8,8 @@ import exportEventSignups from '@/shared/lib/exportSignups';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Search, Camera, Download, RefreshCw, X, CheckCircle, XCircle, Clock } from 'lucide-react';
 import NoAccessOverlay from '@/components/AuthOverlay/NoAccessOverlay';
+import { getEventByIdAction } from '@/shared/api/data-actions';
+import { toggleCheckInAction } from '@/shared/api/attendance-actions';
 
 import ProtectedRoute from '@/components/ProtectedRoute';
 
@@ -64,9 +66,8 @@ function AttendanceContent() {
     useEffect(() => {
         const loadTitle = async () => {
             try {
-                const { directusFetch } = await import('@/shared/lib/directus');
-                const data = await directusFetch(`/items/events/${eventId}?fields=id,name`);
-                const title = (data as any)?.name || null;
+                const data = await getEventByIdAction(String(eventId));
+                const title = data?.name || null;
                 if (title) setEventTitle(title);
             } catch (err) {
                 console.warn('Could not load event title', err);
@@ -87,14 +88,7 @@ function AttendanceContent() {
         setSignups(prev => prev.map(s => s.id === row.id ? { ...s, checked_in: target, checked_in_at: target ? new Date().toISOString() : null, _justToggled: true } : s));
 
         try {
-            const { directusFetch } = await import('@/shared/lib/directus');
-            await directusFetch(`/items/event_signups/${row.id}`, {
-                method: 'PATCH',
-                body: JSON.stringify({
-                    checked_in: target,
-                    checked_in_at: target ? new Date().toISOString() : null
-                })
-            });
+            await toggleCheckInAction(row.id, target);
 
             showMessage(`${row.participant_name || 'Deelnemer'} is nu ${target ? 'ingecheckt' : 'uitgecheckt'}`, 'success');
         } catch (err) {

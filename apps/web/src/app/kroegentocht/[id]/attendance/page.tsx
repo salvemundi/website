@@ -9,8 +9,11 @@ import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { Search, Camera, RefreshCw, X, CheckCircle, XCircle, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { format } from 'date-fns';
-import { COLLECTIONS, FIELDS } from '@/shared/lib/constants/collections';
-import { directusFetch } from '@/shared/lib/directus';
+import { FIELDS } from '@/shared/lib/constants/collections';
+import {
+    getPubCrawlEventByIdAction,
+    togglePubCrawlTicketCheckInAction
+} from '@/shared/api/attendance-actions';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import NoAccessOverlay from '@/components/AuthOverlay/NoAccessOverlay';
 
@@ -145,7 +148,7 @@ function PubCrawlAttendanceContent() {
     useEffect(() => {
         const loadTitle = async () => {
             try {
-                const data = await directusFetch<any>(`/items/pub_crawl_events/${eventId}?fields=id,name,image`);
+                const data = await getPubCrawlEventByIdAction(eventId);
                 const title = data?.name || null;
                 const img = data?.image || null;
                 const imageUrl = img ? getImageUrl(img) : null;
@@ -171,13 +174,7 @@ function PubCrawlAttendanceContent() {
             const newStatus = !ticket[FIELDS.TICKETS.CHECKED_IN];
             const checkedInAt = newStatus ? new Date().toISOString() : null;
 
-            await directusFetch(`/items/${COLLECTIONS.PUB_CRAWL_TICKETS}/${ticket.id}`, {
-                method: 'PATCH',
-                body: JSON.stringify({
-                    [FIELDS.TICKETS.CHECKED_IN]: newStatus,
-                    [FIELDS.TICKETS.CHECKED_IN_AT]: checkedInAt
-                })
-            });
+            await togglePubCrawlTicketCheckInAction(ticket.id, newStatus);
 
             // Optimistic update
             setParticipants(prev => prev.map(p =>

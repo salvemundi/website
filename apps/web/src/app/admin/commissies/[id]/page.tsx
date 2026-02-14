@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { directusFetch, directusUrl } from '@/shared/lib/directus';
+import { getCommitteeByIdAction, updateCommitteeAction, uploadFileAction } from '@/shared/api/data-actions';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 
 export default function AdminCommitteeEditPage() {
@@ -23,7 +23,7 @@ export default function AdminCommitteeEditPage() {
         if (!id) return;
         (async () => {
             try {
-                const data = await directusFetch<any>(`/items/committees/${id}`);
+                const data = await getCommitteeByIdAction(Number(id));
                 setCommittee(data || null);
                 setShortDescription(data?.short_description || '');
                 setDescription(data?.description || '');
@@ -40,17 +40,12 @@ export default function AdminCommitteeEditPage() {
     const canEdit = !!stored?.find((c: any) => String(c.id) === String(id) && c.is_leader);
 
     const uploadFile = async (file: File) => {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
         const fd = new FormData();
         fd.append('file', file);
 
-        const headers: Record<string, string> = {};
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-
-        const resp = await fetch(`${directusUrl}/files`, { method: 'POST', body: fd, headers });
-        if (!resp.ok) throw new Error('Upload failed');
-        const json = await resp.json();
-        return json?.data?.id || json?.data;
+        const result = await uploadFileAction(fd);
+        if (!result.success) throw new Error(result.error);
+        return result.file?.id || result.file;
     };
 
     const handleSave = async () => {
@@ -63,7 +58,8 @@ export default function AdminCommitteeEditPage() {
                 payload.image = fileId;
             }
 
-            await directusFetch(`/items/committees/${id}`, { method: 'PATCH', body: JSON.stringify(payload) });
+            const result = await updateCommitteeAction(id as string, payload);
+            if (!result.success) throw new Error(result.error);
             router.push(`/commissies/${committee ? encodeURIComponent((committee.name || '').replace(/\|\|\s*SALVE MUNDI/g, '').trim().replace(/\s+/g, '-').toLowerCase()) : '/commissies'}`);
         } catch (e) {
             console.error(e);

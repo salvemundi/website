@@ -59,6 +59,12 @@ const Header: React.FC<HeaderProps> = ({ initialSettings }) => {
             return;
         }
 
+        // Allow explicit admin access users to see the button
+        if (user.admin_access) {
+            setIsCommitteeMember(true);
+            return;
+        }
+
         // Use committees that were fetched during auth
         const committees = (user as any).committees;
 

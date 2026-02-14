@@ -3,7 +3,7 @@
 import { serverDirectusFetch } from '@/shared/lib/server-directus';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
-import { AUTH_COOKIES } from '@/features/auth/constants';
+import { AUTH_COOKIES } from '@/shared/config/auth-config';
 
 /**
  * Handle liking a blog post
@@ -104,7 +104,7 @@ export async function unlikeBlogAction(blogId: string | number, userId: string):
 /**
  * Send intro update email
  */
-export async function sendIntroUpdateAction(blogData: any) {
+export async function sendIntroUpdateAction(blogData: any): Promise<{ success: boolean; data?: { sentCount?: number }; error?: string }> {
     try {
         const cookieStore = await cookies();
         const token = cookieStore.get(AUTH_COOKIES.SESSION)?.value;
@@ -116,7 +116,7 @@ export async function sendIntroUpdateAction(blogData: any) {
             body: JSON.stringify(blogData)
         });
 
-        return { success: true, data: response };
+        return { success: true, data: response as { sentCount?: number } };
     } catch (error: any) {
         console.error('sendIntroUpdateAction error:', error);
         return { success: false, error: 'Kon email niet versturen.' };

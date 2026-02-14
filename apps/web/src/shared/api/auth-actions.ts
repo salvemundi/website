@@ -69,6 +69,8 @@ function mapDirectusUserToUser(rawUser: any): User {
         membership_expiry: rawUser.membership_expiry,
         minecraft_username: rawUser.minecraft_username,
         is_safe_haven: isSafeHaven,
+        admin_access: rawUser.admin_access === true,
+        role: rawUser.role,
     };
 }
 

@@ -10,8 +10,9 @@ type TimelineProps = {
     getMemberFullName?: (m: any) => string;
 };
 
-export default function Timeline({ boards, getImageUrl, getMemberFullName }: TimelineProps) {
-    if (!boards || boards.length === 0) return null;
+export default function Timeline({ boards: rawBoards, getImageUrl, getMemberFullName }: TimelineProps) {
+    const boards = Array.isArray(rawBoards) ? rawBoards : [];
+    if (boards.length === 0) return null;
 
     // Sort by year descending (newest to oldest).
     // Boards may have year as a range string like '2017-2018', so extract the

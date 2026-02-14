@@ -16,7 +16,10 @@ self.addEventListener('install', (event) => {
     caches.open(STATIC_CACHE)
       .then((cache) => {
         console.log('[Service Worker] Caching static assets');
-        return cache.addAll(STATIC_ASSETS);
+        // Use allSettled so one missing asset doesn't break the entire service worker activation
+        return Promise.allSettled(
+          STATIC_ASSETS.map(url => cache.add(url))
+        );
       })
       .then(() => self.skipWaiting())
   );

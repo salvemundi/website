@@ -17,9 +17,17 @@ import {
     ExternalLink
 } from 'lucide-react';
 import { usePagePermission } from '@/shared/lib/hooks/usePermissions';
-import { directusFetch } from '@/shared/lib/directus';
 import { slugify } from '@/shared/lib/utils/slug';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import {
+    getAdminCommitteesAction,
+    getCommitteeMembersAction,
+    addCommitteeMemberAction,
+    removeCommitteeMemberAction,
+    toggleCommitteeLeaderAction,
+    updateCommitteeDetailsAction
+} from '@/features/admin/server/committees-actions';
+import { uploadFileAction } from '@/features/admin/server/file-actions';
 
 interface AzureMember {
     id: string;
@@ -152,14 +160,8 @@ export default function CommitteeManagementPage() {
     const loadCommittees = async () => {
         setLoading(true);
         try {
-            const token = localStorage.getItem('auth_token');
-            const res = await fetch('/api/admin/committees/list', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setCommittees(data);
-            }
+            const data = await getAdminCommitteesAction();
+            setCommittees(data as Committee[]);
         } catch (error) {
             console.error('Failed to load committees:', error);
         } finally {
@@ -173,43 +175,21 @@ export default function CommitteeManagementPage() {
         setNewUserEmail('');
         setIsEditingDetail(false);
 
+        // Pre-populate edit fields from the selected committee object
+        setEditShortDescription(committee.short_description || '');
+        setEditDescription(committee.description || '');
+
         try {
-            const token = localStorage.getItem('auth_token');
-
-            try {
-                const committeeData = await directusFetch<Committee>(`/items/committees/${committee.id}`, {
-                    headers: { 'X-Suppress-Log': 'true' }
-                });
-                if (committeeData) {
-                    setSelectedCommittee(committeeData);
-                    setEditShortDescription(committeeData.short_description || '');
-                    setEditDescription(committeeData.description || '');
-                }
-            } catch (detailError: any) {
-                console.warn(`[Admin] Could not fetch Directus details for committee ${committee.id} (likely hidden). Falling back to basic info.`);
-                // We keep the current committee info but clear the edit fields as we can't save them anyway
-                setEditShortDescription(committee.short_description || '');
-                setEditDescription(committee.description || '');
-            }
-
             if (committee.azureGroupId) {
-                // 2. Load Azure Members
-                const azureRes = await fetch(`/api/admin/groups/${committee.azureGroupId}/members`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const azureData = await azureRes.json();
-                setAzureMembers(Array.isArray(azureData) ? azureData : []);
+                const { azureMembers, directusMembers } = await getCommitteeMembersAction(committee.azureGroupId, committee.id);
+                setAzureMembers(azureMembers);
+                setDirectusMembers(directusMembers);
             } else {
                 setAzureMembers([]);
+                // Still load Directus members to see if any exist (though unlikely without Azure group)
+                const { directusMembers } = await getCommitteeMembersAction('', committee.id);
+                setDirectusMembers(directusMembers);
             }
-
-            // 3. Load Directus Committee Members (to check leader status)
-            const directusData = await directusFetch<any[]>(
-                `/items/committee_members?filter[committee_id][_eq]=${committee.id}&fields=id,user_id.id,user_id.entra_id,is_leader`,
-                { headers: { 'X-Suppress-Log': 'true' } }
-            );
-            setDirectusMembers(directusData || []);
-
         } catch (error) {
             console.error('Failed to load members:', error);
         } finally {
@@ -223,26 +203,13 @@ export default function CommitteeManagementPage() {
 
         setActionLoading('add');
         try {
-            const token = localStorage.getItem('auth_token');
-            const res = await fetch(`/api/admin/groups/${selectedCommittee.azureGroupId}/members`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email: newUserEmail })
-            });
-
-            if (res.ok) {
-                setNewUserEmail('');
-                // Wait for sync propagation
-                setTimeout(() => loadCommitteeMembers(selectedCommittee), 1000);
-            } else {
-                const err = await res.json();
-                alert(`Fout bij toevoegen: ${err.error || 'Onbekende fout'}`);
-            }
-        } catch (error) {
+            await addCommitteeMemberAction(selectedCommittee.azureGroupId, newUserEmail);
+            setNewUserEmail('');
+            // Wait for sync propagation
+            setTimeout(() => loadCommitteeMembers(selectedCommittee), 1000);
+        } catch (error: any) {
             console.error('Add member failed:', error);
+            alert(`Fout bij toevoegen: ${error.message || 'Onbekende fout'}`);
         } finally {
             setTimeout(() => setActionLoading(null), 1000);
         }
@@ -254,17 +221,11 @@ export default function CommitteeManagementPage() {
 
         setActionLoading(`remove-${azureId}`);
         try {
-            const token = localStorage.getItem('auth_token');
-            const res = await fetch(`/api/admin/groups/${selectedCommittee.azureGroupId}/members/${azureId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (res.ok) {
-                await loadCommitteeMembers(selectedCommittee);
-            }
+            await removeCommitteeMemberAction(selectedCommittee.azureGroupId, azureId);
+            await loadCommitteeMembers(selectedCommittee);
         } catch (error) {
             console.error('Remove member failed:', error);
+            alert('Fout bij verwijderen lid.');
         } finally {
             setActionLoading(null);
         }
@@ -280,21 +241,11 @@ export default function CommitteeManagementPage() {
                 return;
             }
 
-            const token = localStorage.getItem('auth_token');
-            const res = await fetch(`/api/admin/committees/members/${membership.id}`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ is_leader: !membership.is_leader })
-            });
-
-            if (res.ok) {
-                await loadCommitteeMembers(selectedCommittee!);
-            }
+            await toggleCommitteeLeaderAction(membership.id, membership.is_leader);
+            await loadCommitteeMembers(selectedCommittee!);
         } catch (error) {
             console.error('Toggle leader failed:', error);
+            alert('Fout bij wijzigen leiderstatus.');
         } finally {
             setActionLoading(null);
         }
@@ -314,29 +265,26 @@ export default function CommitteeManagementPage() {
             };
 
             if (editImageFile) {
-                const token = localStorage.getItem('auth_token');
                 const fd = new FormData();
                 fd.append('file', editImageFile);
-                const upRes = await fetch('/api/assets', { // Proxying files through /api/assets if available, or directus
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` },
-                    body: fd
-                });
-                if (upRes.ok) {
-                    const upData = await upRes.json();
-                    payload.image = upData.data.id;
-                }
+                const { id: fileId } = await uploadFileAction(fd);
+                payload.image = fileId;
             }
 
-            await directusFetch(`/items/committees/${selectedCommittee.id}`, {
-                method: 'PATCH',
-                body: JSON.stringify(payload)
-            });
+            await updateCommitteeDetailsAction(selectedCommittee.id, payload);
 
             alert('Details opgeslagen!');
             setIsEditingDetail(false);
             setEditImageFile(null);
-            loadCommitteeMembers(selectedCommittee);
+
+            // Reload committee data to get the updated fields
+            const updatedCommittees = await getAdminCommitteesAction();
+            setCommittees(updatedCommittees as Committee[]);
+
+            const refreshed = (updatedCommittees as Committee[]).find(c => c.id === selectedCommittee.id);
+            if (refreshed) {
+                setSelectedCommittee(refreshed);
+            }
         } catch (error) {
             console.error('Failed to save details:', error);
             alert('Fout bij opslaan details.');

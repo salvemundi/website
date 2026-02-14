@@ -1,13 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { directusFetch } from '@/shared/lib/directus';
 import {
-    tripActivitiesApi,
-    tripSignupActivitiesApi
-} from '@/shared/lib/api/salvemundi';
+    getTripSignupByIdAction,
+    getTripActivitiesByTripIdAction,
+    getTripSignupActivitiesRawAction,
+    updateTripSignupAction,
+    createTripSignupActivityAction,
+    deleteTripSignupActivityAction,
+    deleteTripSignupAction,
+    TripSignup
+} from '@/features/admin/server/trips-actions';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
@@ -24,30 +29,6 @@ import {
     Utensils,
     Trash2
 } from 'lucide-react';
-
-interface TripSignup {
-    id: number;
-    trip_id: number;
-    first_name: string;
-    middle_name?: string;
-    last_name: string;
-    email: string;
-    phone_number: string;
-    date_of_birth?: string;
-    id_document_type?: 'passport' | 'id_card';
-    document_number?: string;
-    allergies?: string;
-    alergies?: string;
-    special_notes?: string;
-    willing_to_drive?: boolean;
-    role: 'participant' | 'crew';
-    status: 'registered' | 'waitlist' | 'confirmed' | 'cancelled';
-    deposit_paid: boolean;
-    deposit_paid_at?: string;
-    full_payment_paid: boolean;
-    full_payment_paid_at?: string;
-    created_at: string;
-}
 
 interface TripActivity {
     id: number;
@@ -94,15 +75,19 @@ export default function DeelnemerDetailPage() {
         setLoading(true);
         try {
             // Load signup
-            const signupData = await directusFetch<TripSignup>(`/items/trip_signups/${signupId}?fields=*`);
+            const signupData = await getTripSignupByIdAction(signupId);
+            if (!signupData) {
+                setError('Deelnemer niet gevonden.');
+                return;
+            }
             setSignup(signupData);
 
             // Load all activities for this trip
-            const activities = await tripActivitiesApi.getByTripId(signupData.trip_id);
+            const activities = await getTripActivitiesByTripIdAction(signupData.trip_id);
             setAllActivities(activities);
 
             // Load selected activities
-            const signupActivities = await tripSignupActivitiesApi.getBySignupId(signupId);
+            const signupActivities = await getTripSignupActivitiesRawAction(signupId);
             setSelectedActivities(signupActivities.map((a: any) => a.trip_activity_id.id || a.trip_activity_id));
 
             // Pre-fill form
@@ -118,8 +103,8 @@ export default function DeelnemerDetailPage() {
                 allergies: signupData.allergies || signupData.alergies || '',
                 special_notes: signupData.special_notes || '',
                 willing_to_drive: signupData.willing_to_drive || false,
-                role: signupData.role,
-                status: signupData.status,
+                role: signupData.role as any,
+                status: signupData.status as any,
                 deposit_paid: signupData.deposit_paid,
                 full_payment_paid: signupData.full_payment_paid,
             });
@@ -157,43 +142,40 @@ export default function DeelnemerDetailPage() {
 
         try {
             // Update signup
-            await directusFetch(`/items/trip_signups/${signupId}`, {
-                method: 'PATCH',
-                body: JSON.stringify({
-                    first_name: form.first_name,
-                    middle_name: form.middle_name || undefined,
-                    last_name: form.last_name,
-                    email: form.email,
-                    phone_number: form.phone_number,
-                    date_of_birth: form.date_of_birth || undefined,
-                    id_document_type: form.id_document_type || undefined,
-                    document_number: form.document_number || undefined,
-                    allergies: form.allergies || undefined,
-                    special_notes: form.special_notes || undefined,
-                    willing_to_drive: form.willing_to_drive,
-                    role: form.role,
-                    status: form.status,
-                    deposit_paid: form.deposit_paid,
-                    full_payment_paid: form.full_payment_paid,
-                })
+            await updateTripSignupAction(signupId, {
+                first_name: form.first_name,
+                middle_name: form.middle_name || null,
+                last_name: form.last_name,
+                email: form.email,
+                phone_number: form.phone_number,
+                date_of_birth: form.date_of_birth || null,
+                id_document_type: form.id_document_type || null,
+                document_number: form.document_number || null,
+                allergies: form.allergies || null,
+                special_notes: form.special_notes || null,
+                willing_to_drive: form.willing_to_drive,
+                role: form.role,
+                status: form.status,
+                deposit_paid: form.deposit_paid,
+                full_payment_paid: form.full_payment_paid,
             });
 
             // Update activities
-            const existingActivities = await tripSignupActivitiesApi.getBySignupId(signupId);
+            const existingActivities = await getTripSignupActivitiesRawAction(signupId);
             const existingActivityIds = existingActivities.map((a: any) => a.trip_activity_id.id || a.trip_activity_id);
 
             // Remove deselected activities
             for (const existing of existingActivities) {
                 const activityId = existing.trip_activity_id.id || existing.trip_activity_id;
                 if (!selectedActivities.includes(activityId)) {
-                    await tripSignupActivitiesApi.delete(existing.id);
+                    await deleteTripSignupActivityAction(existing.id);
                 }
             }
 
             // Add newly selected activities
             for (const activityId of selectedActivities) {
                 if (!existingActivityIds.includes(activityId)) {
-                    await tripSignupActivitiesApi.create({
+                    await createTripSignupActivityAction({
                         trip_signup_id: signupId,
                         trip_activity_id: activityId,
                     });
@@ -218,7 +200,7 @@ export default function DeelnemerDetailPage() {
         }
 
         try {
-            await directusFetch(`/items/trip_signups/${signupId}`, { method: 'DELETE' });
+            await deleteTripSignupAction(signupId);
             router.push('/admin/reis');
         } catch (err: any) {
             console.error('Error deleting:', err);

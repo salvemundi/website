@@ -10,8 +10,8 @@ import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { Calendar, Newspaper, Image as ImageIcon, Megaphone, PartyPopper, X, Filter, Heart, Mail } from 'lucide-react';
 import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
-import { directusFetch } from '@/shared/lib/directus';
 import { toast } from 'sonner';
+import { getUserCommitteesAction } from '@/shared/api/data-actions';
 import { sanitizeHtml } from '@/shared/lib/utils/sanitize';
 import { likeBlogAction, unlikeBlogAction, sendIntroUpdateAction } from '@/shared/api/blog-actions';
 
@@ -113,11 +113,8 @@ export default function IntroBlogPage() {
         queryFn: async () => {
             if (!user?.id) return [];
             try {
-                // Query committee_members table for the current user
-                // This matches the pattern used in qr-service.ts and salvemundi.ts
-                return await directusFetch<CommitteeRow[]>(
-                    `/items/committee_members?filter[user_id][_eq]=${encodeURIComponent(user.id)}&fields=*,committee_id.id,committee_id.name`
-                );
+                // Query committee_members table for the current user via Server Action
+                return await getUserCommitteesAction(user.id);
             } catch (e) {
                 // suppressed non-error log
                 return [];

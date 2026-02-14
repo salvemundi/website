@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import SmartImage from '@/shared/ui/SmartImage';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import { directusFetch } from '@/shared/lib/directus';
+import { deleteCommitteeMemberAction, updateCommitteeMemberAction } from '@/shared/api/data-actions';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { Mail, Calendar, Users2, History, Edit, ArrowLeft, Trash2, ShieldCheck } from 'lucide-react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
@@ -79,7 +79,7 @@ export default function CommitteeClient({ committee, committeeDetail, events, co
     const removeMember = async (memberRowId: number) => {
         try {
             if (!confirm('Weet je zeker dat je dit lid wilt verwijderen uit de commissie?')) return;
-            await directusFetch(`/items/committee_members/${memberRowId}`, { method: 'DELETE' });
+            await deleteCommitteeMemberAction(memberRowId);
             window.location.reload();
         } catch (error) {
             console.error('Failed to remove member:', error);
@@ -89,10 +89,7 @@ export default function CommitteeClient({ committee, committeeDetail, events, co
 
     const toggleLeader = async (memberRowId: number, makeLeader: boolean) => {
         try {
-            await directusFetch(`/items/committee_members/${memberRowId}`, {
-                method: 'PATCH',
-                body: JSON.stringify({ is_leader: makeLeader }),
-            });
+            await updateCommitteeMemberAction(memberRowId, { is_leader: makeLeader });
             window.location.reload();
         } catch (error) {
             console.error('Failed to toggle leader:', error);

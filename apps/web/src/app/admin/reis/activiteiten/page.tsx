@@ -2,7 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { tripActivitiesApi, tripsApi, getImageUrl, TripActivity, tripSignupActivitiesApi } from '@/shared/lib/api/salvemundi';
+import {
+    getTripsAction,
+    getTripActivitiesFullByTripIdAction,
+    createTripActivityAction,
+    updateTripActivityAction,
+    deleteTripActivityAction,
+    getTripActivitySignupsAction,
+    TripActivity
+} from '@/features/admin/server/trips-actions';
+import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { uploadFileAction } from '@/features/admin/server/file-actions';
 import { Loader2, Plus, Edit2, Trash2, Save, X, Image as ImageIcon, Upload, Users } from 'lucide-react';
 
 export default function ActiviteitenBeheerPage() {
@@ -41,7 +51,7 @@ export default function ActiviteitenBeheerPage() {
 
     const loadTrips = async () => {
         try {
-            const data = await tripsApi.getAll();
+            const data = await getTripsAction();
             setTrips(data);
             if (data.length > 0 && !selectedTripId) {
                 setSelectedTripId(data[0].id);
@@ -56,7 +66,7 @@ export default function ActiviteitenBeheerPage() {
         setLoading(true);
         setError(null);
         try {
-            const data = await tripActivitiesApi.getAllByTripId(tripId);
+            const data = await getTripActivitiesFullByTripIdAction(tripId);
             setActivities(data);
         } catch (err) {
             console.error('Error loading activities:', err);
@@ -91,9 +101,9 @@ export default function ActiviteitenBeheerPage() {
             price: activity.price,
             image: activity.image || '',
             max_participants: activity.max_participants || null,
-            is_active: activity.is_active,
-            display_order: activity.display_order,
-            options: activity.options?.map(o => ({ ...o, price: o.price || 0 })) || [],
+            is_active: activity.is_active ?? true,
+            display_order: activity.display_order ?? 0,
+            options: activity.options?.map((o: any) => ({ ...o, price: o.price || 0 })) || [],
             max_selections: activity.max_selections || null,
         });
     };
@@ -133,8 +143,8 @@ export default function ActiviteitenBeheerPage() {
                 image: form.image || undefined,
                 max_participants: form.max_participants ? (typeof form.max_participants === 'string' ? parseInt(form.max_participants) || undefined : form.max_participants) : undefined,
                 is_active: form.is_active,
-                display_order: form.display_order,
-                options: form.options.map(o => ({
+                display_order: form.display_order as number,
+                options: form.options.map((o: any) => ({
                     ...o,
                     price: typeof o.price === 'string' ? parseFloat(o.price) || 0 : o.price
                 })),
@@ -142,9 +152,9 @@ export default function ActiviteitenBeheerPage() {
             };
 
             if (addingNew) {
-                await tripActivitiesApi.create(payload);
+                await createTripActivityAction(payload);
             } else if (editingId) {
-                await tripActivitiesApi.update(editingId, payload);
+                await updateTripActivityAction(editingId, payload);
             }
 
             await loadActivities(selectedTripId);
@@ -161,7 +171,7 @@ export default function ActiviteitenBeheerPage() {
         if (!confirm('Weet je zeker dat je deze activiteit wilt verwijderen?')) return;
 
         try {
-            await tripActivitiesApi.delete(id);
+            await deleteTripActivityAction(id);
 
             if (selectedTripId) {
                 await loadActivities(selectedTripId);
@@ -176,27 +186,12 @@ export default function ActiviteitenBeheerPage() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-
-
         const formData = new FormData();
         formData.append('file', file);
 
-        const headers: Record<string, string> = {};
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-
         try {
-            const response = await fetch('/api/files', {
-                method: 'POST',
-                body: formData,
-                headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
-            });
-
-            if (!response.ok) throw new Error('Upload failed');
-            const json = await response.json();
-            const fileId = json?.data?.id || json?.data;
-
-            setForm({ ...form, image: fileId });
+            const { id } = await uploadFileAction(formData);
+            setForm({ ...form, image: id });
         } catch (err) {
             console.error('Error uploading image:', err);
             setError('Fout bij het uploaden van afbeelding');
@@ -207,7 +202,7 @@ export default function ActiviteitenBeheerPage() {
         setViewingSignupsId(activityId);
         setLoadingSignups(true);
         try {
-            const data = await tripSignupActivitiesApi.getByActivityId(activityId);
+            const data = await getTripActivitySignupsAction(activityId);
             setActivitySignups(data);
         } catch (err) {
             console.error('Error loading activity signups:', err);

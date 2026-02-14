@@ -1,36 +1,26 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/features/auth/providers/auth-provider';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { directusFetch, directusUrl } from '@/shared/lib/directus';
+import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Calendar, Users, Edit, Trash2, Eye, Plus, Search, Bell, Send } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
+import {
+    getEventsAction,
+    deleteEventAction,
+    sendEventReminderAction,
+    sendCustomNotificationAction,
+    Event
+} from '@/features/admin/server/activities-actions';
+import { verifyUserPermissions } from '@/features/admin/server/secure-check';
 
-interface Event {
-    id: number;
-    name: string;
-    event_date: string;
-    event_date_end?: string;
-    description: string;
-    location?: string;
-    max_sign_ups?: number;
-    contact?: string;
-    price_members?: number;
-    price_non_members?: number;
-    inschrijf_deadline?: string;
-    signup_count?: number;
-    image?: { id: string } | string;
-    status?: 'published' | 'draft' | 'archived';
-    publish_date?: string;
-}
 
 export default function AdminActiviteitenPage() {
     const router = useRouter();
-    const auth = useAuth();
+    const [userContext, setUserContext] = useState<any>(null);
     const [events, setEvents] = useState<Event[]>([]);
     const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -43,7 +33,17 @@ export default function AdminActiviteitenPage() {
 
     useEffect(() => {
         loadEvents();
+        loadUserContext();
     }, []);
+
+    const loadUserContext = async () => {
+        try {
+            const context = await verifyUserPermissions({});
+            setUserContext(context);
+        } catch (e) {
+            console.error('Failed to load user context:', e);
+        }
+    };
 
     useEffect(() => {
         filterEvents();
@@ -52,29 +52,8 @@ export default function AdminActiviteitenPage() {
     const loadEvents = async () => {
         setIsLoading(true);
         try {
-            // Fetch all events with signup counts (including drafts for admin)
-            const eventsData = await directusFetch<Event[]>(
-                '/items/events?fields=id,name,event_date,event_date_end,description,location,max_sign_ups,price_members,price_non_members,inschrijf_deadline,contact,image.id,committee_id,status,publish_date&sort=-event_date&limit=-1'
-            );
-
-            // Get signup counts for each event
-            const eventsWithCounts = await Promise.all(
-                eventsData.map(async (event) => {
-                    try {
-                        const signups = await directusFetch<any>(
-                            `/items/event_signups?aggregate[count]=*&filter[event_id][_eq]=${event.id}`
-                        );
-                        return {
-                            ...event,
-                            signup_count: signups?.[0]?.count || 0
-                        };
-                    } catch (error) {
-                        return { ...event, signup_count: 0 };
-                    }
-                })
-            );
-
-            setEvents(eventsWithCounts);
+            const data = await getEventsAction();
+            setEvents(data);
         } catch (error) {
             console.error('Failed to load events:', error);
         } finally {
@@ -135,9 +114,7 @@ export default function AdminActiviteitenPage() {
         }
 
         try {
-            await directusFetch(`/items/events/${eventId}`, {
-                method: 'DELETE'
-            });
+            await deleteEventAction(eventId);
 
             // Refresh events list
             await loadEvents();
@@ -155,24 +132,11 @@ export default function AdminActiviteitenPage() {
 
         setIsSendingNotification(true);
         try {
-            // Use the Next.js API route as a proxy to avoid CORS issues
-            const response = await fetch('/api/notifications/send-reminder', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ eventId })
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Error response:', errorData);
-                throw new Error(errorData.details || errorData.error || 'Failed to send reminder');
-            }
-
-            const result = await response.json();
+            const result = await sendEventReminderAction(eventId);
             alert(`Herinnering verstuurd naar ${result.sent} gebruiker(s)!`);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to send reminder:', error);
-            alert(`Fout bij versturen van herinnering: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            alert(`Fout bij versturen van herinnering: ${error.message}`);
         } finally {
             setIsSendingNotification(false);
         }
@@ -186,26 +150,16 @@ export default function AdminActiviteitenPage() {
 
         setIsSendingNotification(true);
         try {
-            // Use the Next.js API route as a proxy to avoid CORS issues
-            const response = await fetch('/api/notifications/send-custom', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    title: customNotification.title,
-                    body: customNotification.body,
-                    data: {
-                        url: `/activiteit/${customNotification.eventId}`,
-                        eventId: customNotification.eventId
-                    },
-                    tag: `custom-${customNotification.eventId}`
-                })
+            const result = await sendCustomNotificationAction({
+                title: customNotification.title,
+                body: customNotification.body,
+                data: {
+                    url: `/activiteit/${customNotification.eventId}`,
+                    eventId: customNotification.eventId
+                },
+                tag: `custom-${customNotification.eventId}`
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to send notification');
-            }
-
-            const result = await response.json();
             alert(`Notificatie verstuurd naar ${result.sent} gebruiker(s)!`);
             setShowCustomNotificationModal(false);
             setCustomNotification({ title: '', body: '', eventId: 0 });
@@ -229,11 +183,7 @@ export default function AdminActiviteitenPage() {
         return new Date(dateString) < new Date();
     };
 
-    const getImageUrl = (image?: { id: string } | string) => {
-        if (!image) return '';
-        const imageId = typeof image === 'object' ? image.id : image;
-        return `${directusUrl}/assets/${imageId}`;
-    };
+    // Helper getImageUrl is already imported from salvemundi.ts now
 
     return (
         <>
@@ -504,14 +454,17 @@ export default function AdminActiviteitenPage() {
                                         )}
 
                                         {(() => {
-                                            const eventCommitteeId = (event as any).committee_id ? String((event as any).committee_id) : null;
-                                            const memberships = auth.user?.committees || [];
-                                            const isMember = memberships.some((c: any) => String(c.id) === eventCommitteeId);
-                                            const hasPriv = memberships.some((c: any) => {
-                                                const name = (c?.name || '').toString().toLowerCase();
-                                                return name.includes('bestuur') || name.includes('ict') || name.includes('kandi');
+                                            if (!userContext) return null;
+                                            const memberships = userContext.committees || [];
+                                            const userRole = userContext.role;
+
+                                            const isMember = memberships.some((c: any) => String(c.token).toLowerCase() === String((event as any).committee_id?.commissie_token || '').toLowerCase());
+                                            const isGlobalAdmin = userRole === 'Administrator' || memberships.some((c: any) => {
+                                                const token = String(c.token).toLowerCase();
+                                                return token === 'ict' || token === 'bestuur' || token === 'kandi';
                                             });
-                                            if (isMember || hasPriv) {
+
+                                            if (isMember || isGlobalAdmin) {
                                                 return (
                                                     <>
                                                         <button

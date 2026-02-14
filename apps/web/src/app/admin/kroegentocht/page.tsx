@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { directusFetch } from '@/shared/lib/directus';
-import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { siteSettingsMutations } from '@/shared/lib/api/salvemundi';
+import { pubCrawlEventsApi, pubCrawlSignupsApi, pubCrawlTicketsApi, siteSettingsMutations } from '@/shared/lib/api/salvemundi';
 import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { Search, Download, Users, Beer, AlertCircle, Trash2, Loader2, Edit } from 'lucide-react';
 import { useAuth } from '@/features/auth/providers/auth-provider';
@@ -13,7 +11,8 @@ import qrService from '@/shared/lib/qr-service';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
-import { COLLECTIONS, FIELDS } from '@/shared/lib/constants/collections';
+import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import { FIELDS } from '@/shared/lib/constants/collections';
 
 interface PubCrawlEvent {
     id: number;
@@ -84,9 +83,7 @@ export default function KroegentochtAanmeldingenPage() {
     const loadEvents = async () => {
         setIsLoading(true);
         try {
-            const eventsData = await directusFetch<PubCrawlEvent[]>(
-                '/items/pub_crawl_events?fields=id,name,date,email&sort=-date'
-            );
+            const eventsData = await pubCrawlEventsApi.getAll();
             setEvents(eventsData);
 
             // Select the most recent upcoming event
@@ -130,14 +127,10 @@ export default function KroegentochtAanmeldingenPage() {
         setIsLoading(true);
         try {
             // Fetch signups
-            const signupsData = await directusFetch<any[]>(
-                `/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}?filter[${FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID}][_eq]=${eventId}&fields=id,name,email,association,amount_tickets,payment_status,created_at&sort=-created_at`
-            );
+            const signupsData = await pubCrawlSignupsApi.getByEventId(eventId);
 
             // Fetch all tickets for this event
-            const ticketsData = await directusFetch<any[]>(
-                `/items/${COLLECTIONS.PUB_CRAWL_TICKETS}?filter[${FIELDS.TICKETS.SIGNUP_ID}][${FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID}][_eq]=${eventId}&fields=id,name,initial,signup_id`
-            );
+            const ticketsData = await pubCrawlTicketsApi.getByEventId(eventId);
 
             // Enhance signups with their tickets
             const enhancedSignups = signupsData.map(signup => ({
@@ -186,9 +179,7 @@ export default function KroegentochtAanmeldingenPage() {
         if (!confirm('Weet je zeker dat je deze inschrijving wilt verwijderen?')) return;
 
         try {
-            await directusFetch(`/items/pub_crawl_signups/${id}`, {
-                method: 'DELETE'
-            });
+            await pubCrawlSignupsApi.delete(id);
             // Update local state
             setSignups(prev => prev.filter(s => s.id !== id));
         } catch (error) {

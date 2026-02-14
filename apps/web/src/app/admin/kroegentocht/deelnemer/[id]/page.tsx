@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { directusFetch } from '@/shared/lib/directus';
+import { pubCrawlSignupsApi, pubCrawlTicketsApi } from '@/shared/lib/api/salvemundi';
 import { Loader2, AlertCircle, Save, ArrowLeft, Trash2, Tag, CheckCircle } from 'lucide-react';
-import { COLLECTIONS, FIELDS } from '@/shared/lib/constants/collections';
+import { FIELDS } from '@/shared/lib/constants/collections';
 
 export default function PubCrawlSignupEditPage() {
     const params = useParams();
@@ -33,7 +33,7 @@ export default function PubCrawlSignupEditPage() {
     const loadData = async () => {
         setLoading(true);
         try {
-            const data = await directusFetch<any>(`/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}/${signupId}?fields=id,name,email,association,amount_tickets,payment_status`);
+            const data = await pubCrawlSignupsApi.getById(signupId);
             setSignup(data);
             setForm({
                 name: data.name || '',
@@ -43,7 +43,7 @@ export default function PubCrawlSignupEditPage() {
                 payment_status: data.payment_status || 'open'
             });
 
-            const ticketsData = await directusFetch<any[]>(`/items/${COLLECTIONS.PUB_CRAWL_TICKETS}?filter[${FIELDS.TICKETS.SIGNUP_ID}][_eq]=${signupId}&fields=*`);
+            const ticketsData = await pubCrawlTicketsApi.getBySignupId(signupId);
             setTickets(ticketsData);
         } catch (err) {
             console.error('Failed to load pub crawl signup:', err);
@@ -66,15 +66,12 @@ export default function PubCrawlSignupEditPage() {
         setSaving(true);
 
         try {
-            await directusFetch(`/items/${COLLECTIONS.PUB_CRAWL_SIGNUPS}/${signupId}`, {
-                method: 'PATCH',
-                body: JSON.stringify({
-                    [FIELDS.SIGNUPS.NAME]: form.name || undefined,
-                    [FIELDS.SIGNUPS.EMAIL]: form.email || undefined,
-                    [FIELDS.SIGNUPS.ASSOCIATION]: form.association || undefined,
-                    [FIELDS.SIGNUPS.AMOUNT_TICKETS]: form.amount_tickets,
-                    [FIELDS.SIGNUPS.PAYMENT_STATUS]: form.payment_status || undefined
-                })
+            await pubCrawlSignupsApi.update(signupId, {
+                [FIELDS.SIGNUPS.NAME]: form.name || undefined,
+                [FIELDS.SIGNUPS.EMAIL]: form.email || undefined,
+                [FIELDS.SIGNUPS.ASSOCIATION]: form.association || undefined,
+                [FIELDS.SIGNUPS.AMOUNT_TICKETS]: form.amount_tickets,
+                [FIELDS.SIGNUPS.PAYMENT_STATUS]: form.payment_status || undefined
             });
 
             setSuccess(true);
@@ -91,7 +88,7 @@ export default function PubCrawlSignupEditPage() {
     const handleDelete = async () => {
         if (!confirm('Weet je zeker dat je deze inschrijving wilt verwijderen?')) return;
         try {
-            await directusFetch(`/items/pub_crawl_signups/${signupId}`, { method: 'DELETE' });
+            await pubCrawlSignupsApi.delete(signupId);
             router.push('/admin/kroegentocht');
         } catch (err) {
             console.error('Failed to delete:', err);

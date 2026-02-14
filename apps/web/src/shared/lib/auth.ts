@@ -1,5 +1,10 @@
-import { directusFetch, directusUrl } from './directus';
-import { User, SignupData, EventSignup } from '@/shared/model/types/auth';
+import { directusUrl } from './directus';
+import { User, SignupData } from '@/shared/model/types/auth'; // Removed EventSignup since it's only used in orphan code
+import {
+    registerUserAction,
+    getUserCommitteesAction,
+    getSafeHavenByUserIdAction
+} from '@/shared/api/data-actions';
 
 export interface LoginResponse {
     access_token: string;
@@ -48,23 +53,11 @@ async function mapDirectusUserToUser(rawUser: any): Promise<User> {
         membershipStatus = fallbackMember ? 'active' : 'none';
     }
 
-    // Check if user is a safe haven by querying safe_havens collection
     let isSafeHaven = false;
-    try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-        if (token) {
-            const safeHavensResponse = await directusFetch<any[]>(
-                `/items/safe_havens?filter[user_id][_eq]=${rawUser.id}&limit=1`,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    }
-                }
-            );
-            isSafeHaven = safeHavensResponse && safeHavensResponse.length > 0;
-        }
-    } catch (e) {
-        // Silently fail - user is just not a safe haven
+    // Check if user is a safe haven by querying safe_havens collection
+    if (rawUser.id) {
+        const safeHaven = await getSafeHavenByUserIdAction(rawUser.id);
+        isSafeHaven = !!safeHaven;
     }
 
     return {
@@ -85,6 +78,8 @@ async function mapDirectusUserToUser(rawUser: any): Promise<User> {
         membership_expiry: rawUser.membership_expiry,
         minecraft_username: rawUser.minecraft_username,
         is_safe_haven: isSafeHaven,
+        admin_access: rawUser.admin_access === true,
+        role: rawUser.role,
     };
 }
 
@@ -206,20 +201,13 @@ export async function loginWithEntraId(entraIdToken: string, userEmail: string):
 // Signup for non-members
 export async function signupWithPassword(userData: SignupData): Promise<LoginResponse> {
     try {
-        const roleId = process.env.NEXT_PUBLIC_DEFAULT_USER_ROLE_ID;
-
-        // Create the Directus user directly
-        await directusFetch<Record<string, unknown>>('/users', {
-            method: 'POST',
-            body: JSON.stringify({
-                email: userData.email,
-                password: userData.password,
-                first_name: userData.first_name,
-                last_name: userData.last_name,
-                phone_number: userData.phone_number,
-                role: roleId || null, // Set a default user role or null
-                status: 'active',
-            }),
+        // Create the Directus user via Server Action (uses Admin Token)
+        await registerUserAction({
+            email: userData.email,
+            password: userData.password,
+            first_name: userData.first_name,
+            last_name: userData.last_name,
+            phone_number: userData.phone_number,
         });
 
         // Now login with the new credentials
@@ -291,37 +279,12 @@ export async function fetchUserDetails(token: string): Promise<User | null> {
 }
 
 // Fetch committees (commissions) that a user belongs to and persist to localStorage
-export async function fetchAndPersistUserCommittees(userId: string, token?: string): Promise<Array<{ id: string; name: string }>> {
+export async function fetchAndPersistUserCommittees(userId: string): Promise<Array<{ id: string; name: string }>> {
     try {
         // Build a query to get committee info via committee_members relation
         // We prefer using the Directus JWT when available for private collections
         // Also fetch is_visible to filter out hidden committees
-        const base = '/items/committee_members?';
-        const params = new URLSearchParams({
-            'filter[user_id][_eq]': userId,
-            'fields': 'committee_id.id,committee_id.name,committee_id.is_visible,is_leader',
-        }).toString();
-
-        const url = `${base}${params}`;
-
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-
-        const resp = await fetch(`${directusUrl}${url}`, { headers });
-
-        let rows: any[] = [];
-        if (resp.ok) {
-            const payload = await resp.json().catch(() => ({}));
-            rows = payload?.data || payload || [];
-        } else {
-            // fallback to directusFetch if available
-            try {
-                const { directusFetch } = await import('./directus');
-                rows = await directusFetch<any[]>(`/items/committee_members?${params}`);
-            } catch (e) {
-                rows = [];
-            }
-        }
+        const rows = await getUserCommitteesAction(userId);
 
         const committees: Array<{ id: string; name: string; is_leader?: boolean }> = [];
         for (const r of rows) {
@@ -405,163 +368,4 @@ export async function logout(refreshToken: string): Promise<void> {
         // console.error('Logout error:', error);
         // Don't throw - logout should succeed even if API call fails
     }
-}
-
-// Get user's event signups
-export async function getUserEventSignups(userId: string): Promise<EventSignup[]> {
-    const query = new URLSearchParams({
-        'filter[directus_relations][_eq]': userId,
-        'fields': 'id,event_id.id,event_id.name,event_id.event_date,event_id.image,event_id.description,event_id.contact,event_id.committee_id,created_at',
-        'sort': '-created_at',
-    }).toString();
-
-    const signups = await directusFetch<Record<string, unknown>[]>(`/items/event_signups?${query}`);
-
-    // For each signup, fetch committee leader contact if no direct contact is provided
-    const signupsWithContact = await Promise.all(
-        signups.map(async (signup: any) => {
-            if (signup.event_id && !signup.event_id.contact && signup.event_id.committee_id) {
-                try {
-                    // Fetch committee leader's contact info
-                    const leaderQuery = new URLSearchParams({
-                        'filter[committee_id][_eq]': signup.event_id.committee_id.toString(),
-                        'filter[is_leader][_eq]': 'true',
-                        'fields': 'user_id.first_name,user_id.last_name',
-                        'limit': '1'
-                    }).toString();
-
-                    const leaders = await directusFetch<Record<string, unknown>[]>(`/items/committee_members?${leaderQuery}`) as any[];
-                    if (leaders && leaders.length > 0) {
-                        // Do NOT copy phone numbers from Directus user profiles into the event data.
-                        // Only set the contact name so the UI can show who to contact without exposing phone numbers.
-                        signup.event_id.contact_name = `${leaders[0].user_id.first_name || ''} ${leaders[0].user_id.last_name || ''}`.trim();
-                    }
-                } catch (error) {
-                    // log removed
-                }
-            } else if (signup.event_id?.contact) {
-                signup.event_id.contact_phone = signup.event_id.contact;
-            }
-            return signup;
-        })
-    );
-
-    // Map to typed EventSignup[] for callers
-    const mapped: EventSignup[] = (signupsWithContact as any[]).map((s) => ({
-        id: Number(s.id),
-        created_at: String(s.created_at || ''),
-        event_id: {
-            id: Number(s.event_id?.id ?? s.event_id ?? 0),
-            name: String(s.event_id?.name || ''),
-            event_date: String(s.event_id?.event_date || ''),
-            description: String(s.event_id?.description || ''),
-            image: s.event_id?.image ? String(s.event_id.image) : undefined,
-            contact_phone: s.event_id?.contact_phone ? String(s.event_id.contact_phone) : (s.event_id?.contact ? String(s.event_id.contact) : undefined),
-            contact_name: s.event_id?.contact_name ? String(s.event_id.contact_name) : undefined,
-        }
-    }));
-
-    return mapped;
-}
-
-// Create event signup
-export async function createEventSignup(eventId: number, userId: string, submissionFileUrl?: string) {
-    // First check if user has already signed up for this event
-    const existingQuery = new URLSearchParams({
-        'filter[event_id][_eq]': eventId.toString(),
-        'filter[directus_relations][_eq]': userId,
-        'fields': 'id',
-    }).toString();
-
-    const existingSignups = await directusFetch<Record<string, unknown>[]>(`/items/event_signups?${existingQuery}`);
-
-    if (existingSignups && existingSignups.length > 0) {
-        throw new Error('Je bent al ingeschreven voor deze activiteit');
-    }
-
-    return directusFetch<Record<string, unknown>>('/items/event_signups', {
-        method: 'POST',
-        body: JSON.stringify({
-            event_id: eventId,
-            directus_relations: userId,
-            submission_file_url: submissionFileUrl,
-        }),
-    });
-
-}
-
-// Update minecraft username
-export async function updateMinecraftUsername(userId: string, minecraftUsername: string, token: string) {
-    const response = await fetch(`${directusUrl}/users/${userId}`, {
-        method: 'PATCH',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            minecraft_username: minecraftUsername,
-        }),
-    });
-
-    if (!response.ok) {
-        throw new Error('Failed to update minecraft username');
-    }
-
-    return response.json();
-}
-
-// Get user transactions
-export async function getUserTransactions(userId: string, token: string) {
-    const query = new URLSearchParams({
-        'filter[user_id][_eq]': userId,
-        'sort': '-created_at',
-    }).toString();
-
-    const response = await fetch(`${directusUrl}/items/transactions?${query}`, {
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        },
-    });
-
-    if (!response.ok) {
-        // If 403, the collection might not exist or user doesn't have permission
-        if (response.status === 403) {
-            return [];
-        }
-        throw new Error('Failed to fetch transactions');
-    }
-
-    const data = await response.json();
-    return data.data || [];
-}
-
-// Get WhatsApp groups
-export async function getWhatsAppGroups(token: string, memberOnly: boolean = false) {
-    const filter = memberOnly
-        ? { is_active: { _eq: true }, requires_membership: { _eq: true } }
-        : { is_active: { _eq: true } };
-
-    const query = new URLSearchParams({
-        'filter': JSON.stringify(filter),
-        'sort': 'name',
-    }).toString();
-
-    const response = await fetch(`${directusUrl}/items/whatsapp_groups?${query}`, {
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        },
-    });
-
-    if (!response.ok) {
-        // If 403, the collection might not exist or user doesn't have permission
-        if (response.status === 403) {
-            return [];
-        }
-        throw new Error('Failed to fetch WhatsApp groups');
-    }
-
-    const data = await response.json();
-    return data.data || [];
 }

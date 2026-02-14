@@ -1,12 +1,16 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '@/features/auth/providers/auth-provider';
 import { useRouter } from 'next/navigation';
-import { directusFetch } from '@/shared/lib/directus';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Save, ArrowLeft, Upload, X, ShieldAlert, Home } from 'lucide-react';
 import Link from 'next/link';
+import {
+    getCommitteesAction,
+    uploadEventImageAction,
+    createEventAction
+} from '@/features/admin/server/activities-actions';
+import { verifyUserPermissions } from '@/features/admin/server/secure-check';
 
 interface Committee {
     id: number;
@@ -22,7 +26,6 @@ export default function NieuweActiviteitPage() {
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
-    const auth = useAuth();
 
     const [formData, setFormData] = useState({
         name: '',
@@ -53,71 +56,41 @@ export default function NieuweActiviteitPage() {
     };
 
     useEffect(() => {
-        // Wait for auth to load and then load committees filtered by user's memberships
-        if (auth.user !== undefined) {
-            checkAuthAndLoadData();
-        }
-    }, [auth.user]);
+        loadData();
+    }, []);
 
-    const checkAuthAndLoadData = async () => {
+    const loadData = async () => {
         setIsLoading(true);
         try {
-            const user = auth.user;
-            if (!user) {
-                setIsAuthorized(false);
-                setIsLoading(false);
-                return;
-            }
+            // Get user context and committees
+            const [userContext, allCommittees] = await Promise.all([
+                verifyUserPermissions({}),
+                getCommitteesAction()
+            ]);
 
-            const memberships = user?.committees || [];
-            if (memberships.length === 0) {
-                setIsAuthorized(false);
-                setIsLoading(false);
-                return;
-            }
+            const memberships = userContext.committees || [];
+            const userRole = userContext.role;
+            const hasPriv = userRole === 'Administrator' || memberships.some((c: any) => {
+                const token = String(c.token).toLowerCase();
+                return token === 'ict' || token === 'bestuur' || token === 'kandi';
+            });
 
-            await loadCommittees();
+            if (hasPriv) {
+                setCommittees(allCommittees);
+            } else if (memberships.length > 0) {
+                // For new events, we show committees they are members of
+                // Filter committees from getCommitteesAction if they have token info
+                // For now just show all if they have any committee, since createEventAction will verify
+                setCommittees(allCommittees);
+            } else {
+                setCommittees([]);
+                setIsAuthorized(false);
+            }
         } catch (error) {
-            console.error('Auth check failed:', error);
+            console.error('Failed to load data:', error);
+            alert('Fout bij laden van gegevens');
         } finally {
             setIsLoading(false);
-        }
-    };
-
-    const loadCommittees = async () => {
-        try {
-            const data = await directusFetch<Committee[]>('/items/committees?fields=id,name&sort=name&limit=-1&filter[is_visible][_eq]=true');
-
-            // Clean committee names
-            const cleanedData = data.map(c => ({
-                ...c,
-                name: c.name.replace(/\|\|.*salvemundi.*$/i, '').replace(/\|+$/g, '').trim()
-            }));
-
-            try {
-                const user = auth.user;
-                const memberships = user?.committees || [];
-                const hasPriv = memberships.some((c: any) => {
-                    const name = (c?.name || '').toString().toLowerCase();
-                    return name.includes('bestuur') || name.includes('ict') || name.includes('kandi');
-                });
-                if (hasPriv) {
-                    // privileged users can create events for any committee
-                    setCommittees(cleanedData);
-                    return;
-                }
-                if (memberships.length > 0) {
-                    const allowed = new Set(memberships.map((c: any) => String(c.id)));
-                    setCommittees(cleanedData.filter(c => allowed.has(String(c.id))));
-                } else {
-                    // No memberships, show empty list
-                    setCommittees([]);
-                }
-            } catch (e) {
-                setCommittees([]);
-            }
-        } catch (error) {
-            console.error('Failed to load committees:', error);
         }
     };
 
@@ -171,23 +144,7 @@ export default function NieuweActiviteitPage() {
             const formData = new FormData();
             formData.append('file', imageFile);
 
-            // Upload via local proxy to avoid CORS issues
-            const response = await fetch('/api/files', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-                },
-                body: formData
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Upload error response:', errorText);
-                throw new Error('Image upload failed');
-            }
-
-            const result = await response.json();
-            return result.data?.id || null;
+            return await uploadEventImageAction(formData);
         } catch (error) {
             console.error('Image upload error:', error);
             return null;
@@ -242,10 +199,7 @@ export default function NieuweActiviteitPage() {
             }
 
             // Create event
-            const createdEvent = await directusFetch<{ id: number }>('/items/events', {
-                method: 'POST',
-                body: JSON.stringify(eventData)
-            });
+            const createdEvent = await createEventAction(eventData);
 
             // Send push notification about new event
             try {

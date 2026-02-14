@@ -46,7 +46,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Apply tracing/logging globally
-app.use(requestLogger);
+// app.use(requestLogger);
 
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
@@ -67,6 +67,8 @@ const apiKeyAuth = (req, res, next) => {
     }
     next();
 };
+
+app.use(apiKeyAuth);
 
 // Apply auth to admin and internal trip email routes
 // Updated to use Service-to-Service JWT Auth
