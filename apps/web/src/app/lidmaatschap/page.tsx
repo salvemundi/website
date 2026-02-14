@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { PhoneNumberInput, isValidPhoneNumber } from '@/shared/components/PhoneNumberInput';
+import { PhoneNumberInput } from '@/shared/components/PhoneNumberInput';
+import { isValidPhoneNumber } from '@/shared/lib/phone';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { User } from '@/shared/model/types/auth';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';

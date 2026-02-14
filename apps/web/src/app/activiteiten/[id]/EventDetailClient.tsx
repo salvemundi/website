@@ -7,7 +7,7 @@ import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { sanitizeHtml } from '@/shared/lib/utils/sanitize';
 import AttendanceButton from '@/entities/activity/ui/AttendanceButton';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { PhoneInput } from '@/shared/ui/PhoneInput';
+import { PhoneNumberInput } from '@/shared/components/PhoneNumberInput';
 import QRDisplay from '@/entities/activity/ui/QRDisplay';
 import {
     CalendarClock,
@@ -570,20 +570,15 @@ export default function EventDetailClient({ initialEvent: event }: EventDetailCl
                                             {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                                         </div>
 
-                                        <div>
-                                            <label htmlFor="phone" className="block text-sm font-semibold text-theme-purple dark:text-white mb-1">Telefoonnummer *</label>
-                                            <PhoneInput
-                                                id="phone"
-                                                name="phoneNumber"
-                                                value={formData.phoneNumber}
-                                                onChange={handleInputChange}
-                                                required
-                                                className={`w-full px-4 py-3 rounded-xl dark:!bg-white/10 dark:!border-white/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-paars focus:border-paars transition-all ${errors.phoneNumber ? "ring-2 ring-red-500 !border-red-500" : ""}`}
-                                                placeholder="0612345678"
-                                                suppressHydrationWarning
-                                            />
-                                            {errors.phoneNumber && <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>}
-                                        </div>
+                                        <PhoneNumberInput
+                                            value={formData.phoneNumber}
+                                            onChange={(val) => {
+                                                setFormData(prev => ({ ...prev, phoneNumber: val || '' }));
+                                                if (errors.phoneNumber) setErrors(prev => ({ ...prev, phoneNumber: "" }));
+                                            }}
+                                            required
+                                            error={errors.phoneNumber}
+                                        />
 
                                         <div className="pt-6">
                                             <button

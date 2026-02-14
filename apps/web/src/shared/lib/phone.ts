@@ -1,25 +1,32 @@
+import { parsePhoneNumberFromString, isValidNumber } from 'libphonenumber-js';
+
+/**
+ * Validates a phone number using libphonenumber-js.
+ * Defaults to NL (Netherlands) if no country code is provided.
+ */
 export function isValidPhoneNumber(input: string | undefined | null): boolean {
   if (!input) return false;
-  const phone = String(input).trim();
-
-  // Remove common separators and parentheses
-  const cleaned = phone.replace(/[\s-.()]/g, '');
-
-  // Must contain at least 6 digits and at most 15 (reasonable international range)
-  const digits = cleaned.replace(/[^0-9+]/g, '');
-
-  // If starts with +, ensure rest are digits and reasonable length
-  if (digits.startsWith('+')) {
-    const rest = digits.slice(1);
-    return /^[0-9]{6,15}$/.test(rest);
+  try {
+    const phoneNumber = parsePhoneNumberFromString(input, 'NL');
+    return phoneNumber ? phoneNumber.isValid() : false;
+  } catch (error) {
+    return false;
   }
+}
 
-  // If starts with 0 (local format), require 8-12 digits after leading zeros removed
-  if (/^0[0-9]+$/.test(digits)) {
-    const num = digits.replace(/^0+/, '');
-    return /^[0-9]{6,12}$/.test(num);
+/**
+ * Formats a phone number to the official international format (+31 6 ...).
+ * If the number is not valid, returns the original input.
+ */
+export function formatPhoneNumber(input: string | undefined | null): string {
+  if (!input) return '';
+  try {
+    const phoneNumber = parsePhoneNumberFromString(input, 'NL');
+    if (phoneNumber && phoneNumber.isValid()) {
+      return phoneNumber.formatInternational();
+    }
+  } catch (error) {
+    // Fallback to original
   }
-
-  // Otherwise accept 6-15 digit numbers
-  return /^[0-9]{6,15}$/.test(digits);
+  return String(input);
 }

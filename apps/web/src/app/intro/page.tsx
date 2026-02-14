@@ -6,8 +6,8 @@ import { introSignupsApi, introParentSignupsApi } from '@/shared/lib/api/salvemu
 import { sendIntroSignupEmail } from '@/shared/lib/services/email-service';
 import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import { PhoneInput } from '@/shared/ui/PhoneInput';
-import { isValidPhoneNumber } from '@/shared/components/PhoneNumberInput';
+import { PhoneNumberInput } from '@/shared/components/PhoneNumberInput';
+import { isValidPhoneNumber } from '@/shared/lib/phone';
 import { Users, Heart, CheckCircle2 } from 'lucide-react';
 // react-datepicker removed to prefer native date inputs
 
@@ -117,18 +117,9 @@ export default function IntroPage() {
     // determine phone to validate (for authenticated parent we allow user phone fallback)
     const phoneToValidate = isAuthenticated && user ? (form.telefoonnummer || user.phone_number || '') : form.telefoonnummer;
 
-    if (isAuthenticated && user) {
-      // Lenient validation for Intro Ouder (matching Reis page)
-      if (!phoneToValidate || phoneToValidate.length < 10) {
-        setPhoneError('Ongeldig telefoonnummer');
-        return;
-      }
-    } else {
-      // Strict validation for general signups
-      if (!isValidPhoneNumber(phoneToValidate)) {
-        setPhoneError('Ongeldig telefoonnummer');
-        return;
-      }
+    if (!isValidPhoneNumber(phoneToValidate)) {
+      setPhoneError('Ongeldig telefoonnummer');
+      return;
     }
 
     setIsSubmitting(true);
@@ -317,15 +308,11 @@ export default function IntroPage() {
                             </p>
                           </div>
                           <div>
-                            <label htmlFor="telefoonnummer-ouder" className="form-label">Telefoonnummer *</label>
-                            <PhoneInput
-                              id="telefoonnummer-ouder"
-                              name="telefoonnummer"
+                            <PhoneNumberInput
                               value={form.telefoonnummer}
-                              onChange={handleChange}
+                              onChange={(val) => setForm(prev => ({ ...prev, telefoonnummer: val || '' }))}
                               required
-                              placeholder="06 12345678"
-                              className="form-input"
+                              error={phoneError || undefined}
                             />
                             {phoneError && <p className="text-red-200 text-xs lg:text-sm mt-1">{phoneError}</p>}
                           </div>
@@ -431,14 +418,11 @@ export default function IntroPage() {
                           />
                         </div>
                         <div>
-                          <label htmlFor="telefoonnummer" className="form-label">Telefoonnummer *</label>
-                          <PhoneInput
-                            id="telefoonnummer"
-                            name="telefoonnummer"
+                          <PhoneNumberInput
                             value={form.telefoonnummer}
-                            onChange={handleChange}
+                            onChange={(val) => setForm(prev => ({ ...prev, telefoonnummer: val || '' }))}
                             required
-                            className="form-input"
+                            error={phoneError || undefined}
                           />
                           {phoneError && <p className="text-red-200 text-xs lg:text-sm mt-1">{phoneError}</p>}
                         </div>
