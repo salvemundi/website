@@ -69,6 +69,11 @@ export default function EventDetailClient({ initialEvent: event }: EventDetailCl
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [hasMounted, setHasMounted] = useState(false);
+
+    useEffect(() => {
+        setHasMounted(true);
+    }, []);
 
     // 1. Check for existing signup or payment return from URL
     useEffect(() => {
@@ -207,8 +212,9 @@ export default function EventDetailClient({ initialEvent: event }: EventDetailCl
         return `€${price.toFixed(2).replace('.', ',')}`;
     }, [event, applicablePrice]);
 
-    const isPast = event ? isEventPast(event.event_date) : false;
-    const isDeadlinePassed = event?.inschrijf_deadline ? new Date(event.inschrijf_deadline) < new Date() : false;
+    // Use hasMounted to avoid hydration mismatch for time-dependent values
+    const isPast = (event && hasMounted) ? isEventPast(event.event_date) : false;
+    const isDeadlinePassed = (event?.inschrijf_deadline && hasMounted) ? new Date(event.inschrijf_deadline) < new Date() : false;
     const isPaidAndHasQR = signupStatus.isSignedUp && signupStatus.paymentStatus === 'paid' && !!signupStatus.qrToken;
 
     // Form logic
@@ -269,7 +275,9 @@ export default function EventDetailClient({ initialEvent: event }: EventDetailCl
             });
 
             if (!signupResult.success || !signupResult.signup) {
-                throw new Error(signupResult.error || 'Kon inschrijving niet aanmaken.');
+                setSubmitError(signupResult.error || 'Kon inschrijving niet aanmaken.');
+                setIsSubmitting(false);
+                return;
             }
 
             const signup = signupResult.signup;
@@ -294,7 +302,9 @@ export default function EventDetailClient({ initialEvent: event }: EventDetailCl
                 const paymentRes = await createPaymentAction(paymentPayload);
 
                 if (!paymentRes.success) {
-                    throw new Error(paymentRes.error || 'Fout bij het aanmaken van de betaling.');
+                    setSubmitError(paymentRes.error || 'Fout bij het aanmaken van de betaling.');
+                    setIsSubmitting(false);
+                    return;
                 }
 
                 if (paymentRes.checkoutUrl) {
@@ -359,7 +369,9 @@ export default function EventDetailClient({ initialEvent: event }: EventDetailCl
             const paymentRes = await createPaymentAction(paymentPayload);
 
             if (!paymentRes.success) {
-                throw new Error(paymentRes.error || 'Fout bij het herstarten van de betaling.');
+                setSubmitError(paymentRes.error || 'Fout bij het herstarten van de betaling.');
+                setIsSubmitting(false);
+                return;
             }
 
             if (paymentRes.checkoutUrl) {
@@ -522,6 +534,7 @@ export default function EventDetailClient({ initialEvent: event }: EventDetailCl
                                                 onChange={handleInputChange}
                                                 tabIndex={-1}
                                                 autoComplete="off"
+                                                suppressHydrationWarning
                                             />
                                         </div>
 
@@ -536,6 +549,7 @@ export default function EventDetailClient({ initialEvent: event }: EventDetailCl
                                                 required
                                                 className={`w-full px-4 py-3 rounded-xl dark:!bg-white/10 dark:!border-white/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-paars focus:border-paars transition-all ${errors.name ? "ring-2 ring-red-500 !border-red-500" : ""}`}
                                                 placeholder="Jouw naam"
+                                                suppressHydrationWarning
                                             />
                                             {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                                         </div>
@@ -551,6 +565,7 @@ export default function EventDetailClient({ initialEvent: event }: EventDetailCl
                                                 required
                                                 className={`w-full px-4 py-3 rounded-xl dark:!bg-white/10 dark:!border-white/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-paars focus:border-paars transition-all ${errors.email ? "ring-2 ring-red-500 !border-red-500" : ""}`}
                                                 placeholder="naam.achternaam@salvemundi.nl"
+                                                suppressHydrationWarning
                                             />
                                             {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                                         </div>
@@ -565,6 +580,7 @@ export default function EventDetailClient({ initialEvent: event }: EventDetailCl
                                                 required
                                                 className={`w-full px-4 py-3 rounded-xl dark:!bg-white/10 dark:!border-white/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-paars focus:border-paars transition-all ${errors.phoneNumber ? "ring-2 ring-red-500 !border-red-500" : ""}`}
                                                 placeholder="0612345678"
+                                                suppressHydrationWarning
                                             />
                                             {errors.phoneNumber && <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>}
                                         </div>
