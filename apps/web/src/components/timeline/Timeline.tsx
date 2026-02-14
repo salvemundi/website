@@ -156,7 +156,7 @@ export default function Timeline({ boards: rawBoards, getImageUrl, getMemberFull
                 enableOutline={false}
                 //@ts-expect-error Chrono types
                 disableAutoScrollOnClick={true}
-                cardPositionHorizontal="TOP"
+                cardpositionhorizontal="TOP"
                 mediaHeight={200}
                 fontSizes={{
                     cardSubtitle: '0.875rem',
