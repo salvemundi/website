@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { clubsApi, sponsorsApi } from '../api/salvemundi';
+import { clubsApi } from '../api/clubs';
+import { sponsorsApi } from '../api/sponsors';
 
 interface Club {
     id: number;
