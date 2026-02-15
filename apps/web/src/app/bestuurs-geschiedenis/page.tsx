@@ -3,7 +3,7 @@
 import Link from "next/link";
 import PageHeader from "@/widgets/page-header/ui/PageHeader";
 import { useSalvemundiBoard } from "@/shared/lib/hooks/useSalvemundiApi";
-import { getImageUrl } from "@/shared/lib/api/salvemundi";
+import { getImageUrl } from "@/shared/lib/api/image";
 import { ArrowLeft } from "lucide-react";
 import Timeline from "@/components/timeline/Timeline";
 

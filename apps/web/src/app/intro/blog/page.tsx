@@ -4,7 +4,8 @@ import { useState, useMemo, useEffect } from 'react';
 import HeroBanner from '@/components/HeroBanner';
 import AuthorCard from '@/components/AuthorCard';
 import TagList from '@/components/TagList';
-import { introBlogsApi, getImageUrl } from '@/shared/lib/api/salvemundi';
+import { introBlogsApi } from '@/shared/lib/api/intro';
+import { getImageUrl } from '@/shared/lib/api/image';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
@@ -15,17 +16,7 @@ import { getUserCommitteesAction } from '@/shared/api/data-actions';
 import { sanitizeHtml } from '@/shared/lib/utils/sanitize';
 import { likeBlogAction, unlikeBlogAction, sendIntroUpdateAction } from '@/shared/api/blog-actions';
 
-interface IntroBlog {
-    id: number | string;
-    title: string;
-    excerpt?: string;
-    content?: string;
-    image?: string | { id: number; filename?: string } | null;
-    blog_type?: string;
-    updated_at?: string;
-    gallery?: string[];
-    likes?: number;
-}
+import type { IntroBlog } from '@/shared/lib/api/types';
 
 interface CommitteeRow {
     id: number;
@@ -44,8 +35,8 @@ export default function IntroBlogPage() {
     const [sendingEmail, setSendingEmail] = useState<string | null>(null);
     const { user, isAuthenticated, isLoading: authLoading } = useAuth();
     const { loginWithMicrosoft } = useAuthActions();
-    const [likedBlogs, setLikedBlogs] = useState<(number | string)[]>([]);
-    const [likeLoadingId, setLikeLoadingId] = useState<number | string | null>(null);
+    const [likedBlogs, setLikedBlogs] = useState<number[]>([]);
+    const [likeLoadingId, setLikeLoadingId] = useState<number | null>(null);
 
     useEffect(() => {
         try {
@@ -72,7 +63,7 @@ export default function IntroBlogPage() {
                 const resp = await fetch(`/api/blog-liked?userId=${encodeURIComponent(user.id)}`, { signal: ctrl.signal });
                 if (!resp.ok) return;
                 const data = await resp.json();
-                const ids: Array<number | string> = data?.likedBlogIds || [];
+                const ids: number[] = data?.likedBlogIds || [];
                 setLikedBlogs(ids);
                 try { localStorage.setItem('likedBlogs', JSON.stringify(ids)); } catch (e) { }
             } catch (err) {
@@ -151,8 +142,8 @@ export default function IntroBlogPage() {
 
     // Get unique blog types for filtering
     const blogTypes = useMemo(() => {
-        if (!introBlogs) return [] as string[];
-        const types = [...new Set(introBlogs.map(blog => blog.blog_type).filter(Boolean))] as string[];
+        if (!introBlogs) return [] as Array<IntroBlog['blog_type']>;
+        const types = [...new Set(introBlogs.map(blog => blog.blog_type).filter(Boolean))] as Array<IntroBlog['blog_type']>;
         return types;
     }, [introBlogs]);
 
@@ -163,7 +154,7 @@ export default function IntroBlogPage() {
         return introBlogs.filter(blog => blog.blog_type === selectedFilter);
     }, [introBlogs, selectedFilter]);
 
-    const getBlogTypeConfig = (type: string) => {
+    const getBlogTypeConfig = (type: IntroBlog['blog_type']) => {
         switch (type) {
             case 'pictures':
                 return { label: 'Foto\'s', color: 'bg-blue-500', icon: ImageIcon };
@@ -309,7 +300,7 @@ export default function IntroBlogPage() {
                                         <Newspaper className="w-16 h-16 text-theme-purple/30 mx-auto mb-4" />
                                         <p className="text-theme-muted text-lg">
                                             {selectedFilter
-                                                ? `Geen ${getBlogTypeConfig(selectedFilter).label.toLowerCase()} updates gevonden.`
+                                                ? `Geen ${getBlogTypeConfig(selectedFilter as IntroBlog['blog_type']).label.toLowerCase()} updates gevonden.`
                                                 : 'Er zijn nog geen updates beschikbaar. Check later terug!'}
                                         </p>
                                     </div>
@@ -396,9 +387,10 @@ export default function IntroBlogPage() {
                                                                         return old.map((b) => b.id === blog.id ? { ...b, likes: (b.likes || 0) + (isLiked ? -1 : 1) } : b);
                                                                     });
 
+                                                                    const userId = user?.id ? String(user.id) : '';
                                                                     const res = isLiked
-                                                                        ? await unlikeBlogAction(blog.id, user?.id!)
-                                                                        : await likeBlogAction(blog.id, user?.id!);
+                                                                        ? await unlikeBlogAction(blog.id, userId)
+                                                                        : await likeBlogAction(blog.id, userId);
 
                                                                     if (res.success) {
                                                                         // Reconcile with server value
@@ -410,7 +402,7 @@ export default function IntroBlogPage() {
                                                                             setSelectedBlog({ ...selectedBlog, likes: res.likes ?? (selectedBlog.likes || 0) });
                                                                         }
 
-                                                                        let next: Array<number | string>;
+                                                                        let next: number[];
                                                                         if (isLiked) {
                                                                             next = likedBlogs.filter(id => id !== blog.id);
                                                                         } else {
@@ -492,7 +484,7 @@ export default function IntroBlogPage() {
                                 {blogTypes.length > 0 && (
                                     <TagList
                                         tags={blogTypes.map(type => getBlogTypeConfig(type).label)}
-                                        selectedTags={selectedFilter ? [getBlogTypeConfig(selectedFilter).label] : []}
+                                        selectedTags={selectedFilter ? [getBlogTypeConfig(selectedFilter as IntroBlog['blog_type']).label] : []}
                                         onClick={(tag) => {
                                             const type = blogTypes.find(t => getBlogTypeConfig(t).label === tag);
                                             setSelectedFilter(type || null);
@@ -617,9 +609,10 @@ export default function IntroBlogPage() {
                                                             return old.map((b) => b.id === selectedBlog.id ? { ...b, likes: (b.likes || 0) + (isLiked ? -1 : 1) } : b);
                                                         });
 
+                                                        const userId = user?.id ? String(user.id) : '';
                                                         const res = isLiked
-                                                            ? await unlikeBlogAction(selectedBlog.id, user?.id!)
-                                                            : await likeBlogAction(selectedBlog.id, user?.id!);
+                                                            ? await unlikeBlogAction(selectedBlog.id, userId)
+                                                            : await likeBlogAction(selectedBlog.id, userId);
 
                                                         if (res.success) {
                                                             queryClient.setQueryData(['intro-blogs'], (old: IntroBlog[] | undefined) => {
@@ -629,7 +622,7 @@ export default function IntroBlogPage() {
 
                                                             setSelectedBlog({ ...selectedBlog, likes: res.likes ?? (selectedBlog.likes || 0) });
 
-                                                            let next: Array<number | string>;
+                                                            let next: number[];
                                                             if (isLiked) {
                                                                 next = likedBlogs.filter(id => id !== selectedBlog.id);
                                                             } else {

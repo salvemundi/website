@@ -522,13 +522,52 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 if (notContribution === "false" || !registrationId) {
                     console.log(`Triggering provisioning for User ID: ${userId || 'Guest'}`);
 
-                    // The membershipService.provisionMember handles JWT signing internally
-                    // as configured in Task 3.
-                    await membershipService.provisionMember(
-                        MEMBERSHIP_API_URL,
-                        userId,
-                        req.id // Pass Correlation ID for tracing
-                    );
+                    if (userId) {
+                        // Regular flow: Extend membership and sync existing Azure user to Directus
+                        await membershipService.provisionMember(
+                            MEMBERSHIP_API_URL,
+                            userId,
+                            req.id
+                        );
+                        // Trigger sync to Directus (via Identity Service)
+                        if (GRAPH_SYNC_URL) {
+                            await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, userId, req.id);
+                        }
+                    } else {
+                        // Guest flow: Create new user in Azure AD first, then sync
+                        console.log(`Guest payment recognized for ${email}. Creating Azure account...`);
+                        try {
+                            const newUser = await membershipService.createMember(
+                                MEMBERSHIP_API_URL,
+                                firstName,
+                                lastName,
+                                email,
+                                phoneNumber,
+                                dateOfBirth,
+                                req.id
+                            );
+
+                            console.log(`Azure Account created for guest: ${newUser.user_id}. triggering initial sync...`);
+
+                            // Trigger sync to Directus (to create the Directus user record)
+                            if (GRAPH_SYNC_URL) {
+                                await membershipService.syncUserToDirectus(GRAPH_SYNC_URL, newUser.user_id, req.id);
+                            }
+
+                            // Update transaction in Directus with the new user_id
+                            if (transactionRecordId) {
+                                await directusService.updateDirectusTransaction(
+                                    DIRECTUS_URL,
+                                    DIRECTUS_API_TOKEN,
+                                    transactionRecordId,
+                                    { user_id: newUser.user_id }
+                                );
+                            }
+                        } catch (guestErr) {
+                            console.error(`FAILED to provision guest user ${email}:`, guestErr.message);
+                            // We don't fail the whole webhook but we log it
+                        }
+                    }
                 }
 
                 // Step C: Send Confirmation Email

@@ -10,7 +10,7 @@ import Image from 'next/image';
 import { ChevronRight } from '@/shared/ui/icons/ChevronRight';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { Event, HeroBanner } from '@/shared/model/types/directus';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { getImageUrl } from '@/shared/lib/api/image';
 
 
 interface HeroClientProps {

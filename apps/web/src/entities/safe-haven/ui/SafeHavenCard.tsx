@@ -1,9 +1,9 @@
 'use client';
 
 import Image from 'next/image';
-import { Mail, Phone} from 'lucide-react';
+import { Mail, Phone } from 'lucide-react';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { getImageUrl } from '@/shared/lib/api/image';
 
 interface SafeHaven {
     id: number;

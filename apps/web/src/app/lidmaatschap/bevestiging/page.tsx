@@ -5,7 +5,7 @@ import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { motion } from 'framer-motion';
 import { CheckCircle, Home, User, XCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { useEffect, useState, Suspense } from 'react';
-import { transactionsApi } from '@/shared/lib/api/salvemundi';
+import { transactionsApi } from '@/shared/lib/api/transactions';
 
 function SignUpConfirmationContent() {
     const router = useRouter();

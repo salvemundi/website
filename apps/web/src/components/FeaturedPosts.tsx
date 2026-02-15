@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Calendar, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { getImageUrl } from "@/shared/lib/api/image";
 
 export interface PostPreview {
   id: number;
@@ -122,3 +122,4 @@ export default function FeaturedPosts({
     </div>
   );
 }
+

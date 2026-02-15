@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { getImageUrl } from "@/shared/lib/api/image";
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Calendar, Users, Edit, Trash2, Eye, Plus, Search, Bell, Send } from 'lucide-react';
 import { format } from 'date-fns';
@@ -557,3 +557,4 @@ export default function AdminActiviteitenPage() {
         </>
     );
 }
+

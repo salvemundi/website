@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { Calendar, Clock, MapPin } from 'lucide-react';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { getImageUrl } from '@/shared/lib/api/image';
 
 interface FeaturedEventProps {
     event: any;

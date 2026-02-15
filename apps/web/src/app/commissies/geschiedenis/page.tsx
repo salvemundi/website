@@ -2,7 +2,7 @@
 
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { useSalvemundiBoard } from '@/shared/lib/hooks/useSalvemundiApi';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { getImageUrl } from "@/shared/lib/api/image";
 import { Clock } from 'lucide-react';
 import Timeline from '@/components/timeline/Timeline';
 import { CardSkeleton } from '@/shared/ui/skeletons';
@@ -89,3 +89,4 @@ export default function BoardHistoryPage() {
         </div>
     );
 }
+

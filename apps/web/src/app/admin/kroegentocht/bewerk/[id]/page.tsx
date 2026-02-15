@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { pubCrawlEventsApi } from '@/shared/lib/api/salvemundi';
+import { pubCrawlEventsApi } from '@/shared/lib/api/pub-crawl';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Save, ArrowLeft, Upload, X, Loader2, Trash2 } from 'lucide-react';
 

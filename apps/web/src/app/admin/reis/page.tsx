@@ -15,7 +15,7 @@ import {
 } from '@/features/admin/server/trips-actions';
 import { usePagePermission } from '@/shared/lib/hooks/usePermissions';
 import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
-import { siteSettingsMutations } from '@/shared/lib/api/salvemundi';
+import { siteSettingsMutations } from '@/shared/lib/api/site-settings';
 import { formatDateToLocalISO } from '@/shared/lib/utils/date';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import NoAccessPage from '@/app/admin/no-access/page';

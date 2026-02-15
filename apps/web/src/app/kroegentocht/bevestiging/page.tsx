@@ -6,7 +6,8 @@ import QRDisplay from '@/entities/activity/ui/QRDisplay';
 import { motion } from 'framer-motion';
 import { CheckCircle, Home, XCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { useEffect, useState, Suspense, useRef } from 'react';
-import { pubCrawlSignupsApi, transactionsApi } from '@/shared/lib/api/salvemundi';
+import { pubCrawlSignupsApi } from '@/shared/lib/api/pub-crawl';
+import { transactionsApi } from '@/shared/lib/api/transactions';
 import { FIELDS } from '@/shared/lib/constants/collections';
 import qrService from '@/shared/lib/qr-service';
 

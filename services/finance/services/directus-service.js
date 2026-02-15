@@ -1,3 +1,5 @@
+const axios = require('axios');
+
 const instance = axios.create({
     timeout: 10000 // 10 second timeout for all Directus calls
 });

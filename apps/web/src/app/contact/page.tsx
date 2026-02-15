@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { documentsApi } from '@/shared/lib/api/salvemundi';
+import { documentsApi } from '@/shared/lib/api/documents';
 import { directusUrl } from '@/shared/lib/directus';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';

@@ -1,6 +1,6 @@
 'use server';
 
-import { SafeHaven } from '@/shared/lib/api/salvemundi';
+import type { SafeHaven } from '@/shared/lib/api/types';
 
 import { fetchDirectus, buildQuery } from '@/shared/lib/server-directus';
 

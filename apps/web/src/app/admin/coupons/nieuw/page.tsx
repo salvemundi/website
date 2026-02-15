@@ -7,7 +7,7 @@ import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Ticket, Save, Calendar, Euro, Percent, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { isUserAuthorized, getMergedTokens, normalizeCommitteeName } from '@/shared/lib/committee-utils';
-import { siteSettingsApi } from '@/shared/lib/api/salvemundi';
+import { siteSettingsApi } from '@/shared/lib/api/site-settings';
 import NoAccessPage from '../../no-access/page';
 import { useEffect } from 'react';
 
