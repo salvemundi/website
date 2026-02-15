@@ -1,4 +1,4 @@
-import { parsePhoneNumberFromString, isValidNumber } from 'libphonenumber-js';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 
 /**
  * Validates a phone number using libphonenumber-js.

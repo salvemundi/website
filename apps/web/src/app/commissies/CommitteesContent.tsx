@@ -4,7 +4,7 @@ import Link from 'next/link';
 import SmartImage from '@/shared/ui/SmartImage';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { useSalvemundiCommitteesWithMembers } from '@/shared/lib/hooks/useSalvemundiApi';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { getImageUrl } from '@/shared/lib/api/image';
 import { Committee } from '@/shared/model/types/directus';
 import { slugify } from '@/shared/lib/utils/slug';
 import { Users } from 'lucide-react';
@@ -165,3 +165,4 @@ export default function CommitteesContent({ initialCommittees }: { initialCommit
         </>
     );
 }
+

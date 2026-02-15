@@ -9,7 +9,7 @@ import {
     deleteTripAction,
     Trip
 } from '@/features/admin/server/trips-actions';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { getImageUrl } from "@/shared/lib/api/image";
 import { getMembersByCommitteeAction } from '@/features/admin/server/members-data';
 import { uploadFileAction } from '@/features/admin/server/file-actions';
 import {
@@ -633,3 +633,4 @@ export default function ReisInstellingenPage() {
         </>
     );
 }
+

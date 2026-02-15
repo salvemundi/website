@@ -7,7 +7,7 @@ import { getAllCouponsAction, deleteCouponAction } from '@/shared/api/coupon-act
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { Ticket, Plus, Percent, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 import { isUserAuthorized, getMergedTokens, normalizeCommitteeName } from '@/shared/lib/committee-utils';
-import { siteSettingsApi } from '@/shared/lib/api/salvemundi';
+import { siteSettingsApi } from '@/shared/lib/api/site-settings';
 import NoAccessPage from '../no-access/page';
 import { getComputedCouponStatus, type Coupon } from '@/shared/lib/coupon-utils';
 

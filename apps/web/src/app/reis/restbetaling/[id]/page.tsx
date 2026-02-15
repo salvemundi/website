@@ -7,10 +7,10 @@ import {
     tripSignupsApi,
     tripActivitiesApi,
     tripSignupActivitiesApi,
-    tripsApi,
-    getImageUrl
-} from '@/shared/lib/api/salvemundi';
-import type { Trip, TripActivity, TripSignup } from '@/shared/lib/api/salvemundi';
+    tripsApi
+} from '@/shared/lib/api/trips';
+import { getImageUrl } from '@/shared/lib/api/image';
+import type { Trip, TripActivity, TripSignup } from '@/shared/lib/api/types';
 import { updateTripSignup } from '../../actions';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';

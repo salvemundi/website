@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import HeroBanner from '@/components/HeroBanner';
-import { introPlanningApi } from '@/shared/lib/api/salvemundi';
+import { introPlanningApi } from '@/shared/lib/api/intro';
 import { useQuery } from '@tanstack/react-query';
 import { format, parse } from 'date-fns';
 import { nl } from 'date-fns/locale';

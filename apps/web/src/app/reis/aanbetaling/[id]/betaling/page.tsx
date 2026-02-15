@@ -3,7 +3,9 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { tripSignupsApi, tripsApi, paymentApi, getImageUrl } from '@/shared/lib/api/salvemundi';
+import { tripSignupsApi, tripsApi } from '@/shared/lib/api/trips';
+import { paymentApi } from '@/shared/lib/api/payment';
+import { getImageUrl } from '@/shared/lib/api/image';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { CheckCircle2, Loader2, AlertCircle, CreditCard, XCircle } from 'lucide-react';

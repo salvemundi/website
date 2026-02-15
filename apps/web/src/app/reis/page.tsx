@@ -3,7 +3,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { getImageUrl, tripSignupsApi } from '@/shared/lib/api/salvemundi';
+import { tripSignupsApi } from '@/shared/lib/api/trips';
+import { getImageUrl } from '@/shared/lib/api/image';
 import { useSalvemundiTrips, useSalvemundiSiteSettings, useSalvemundiTripSignups } from '@/shared/lib/hooks/useSalvemundiApi';
 import { fetchUserDetails, fetchAndPersistUserCommittees } from '@/shared/lib/auth';
 import { format } from 'date-fns';
@@ -11,7 +12,7 @@ import { nl } from 'date-fns/locale';
 import { splitDutchLastName } from '@/shared/lib/utils/dutch-name';
 import { isUserInReisCommittee } from '@/shared/lib/committee-utils';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
-import { TripSignup } from '@/shared/lib/api/salvemundi';
+import type { TripSignup } from '@/shared/lib/api/types';
 import { User } from '@/shared/model/types/auth';
 import { CheckCircle2, Calendar, CreditCard, Loader2, Utensils } from 'lucide-react';
 import { formatDateToLocalISO } from '@/shared/lib/utils/date';

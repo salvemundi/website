@@ -2,12 +2,12 @@
 
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import { useSalvemundiWhatsAppGroups } from '@/shared/lib/hooks/useSalvemundiApi';
+import { useSalvemundiWhatsappGroups } from '@/shared/lib/hooks/useSalvemundiApi';
 import { useQuery } from '@tanstack/react-query';
-import { documentsApi } from '@/shared/lib/api/salvemundi';
+import { documentsApi } from '@/shared/lib/api/documents';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { stripHtml } from '@/shared/lib/text';
-import { WhatsAppGroup } from '@/shared/lib/api/salvemundi';
+import { WhatsAppGroup } from '@/shared/lib/api/types';
 import { directusUrl } from '@/shared/lib/directus';
 import Card from '@/shared/ui/Card';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -27,7 +27,7 @@ export default function WhatsAppGroupsPage() {
 function WhatsAppGroupsContent() {
     const router = useRouter();
     const { user, isLoading: authLoading } = useAuth();
-    const { data: groups = [], isLoading: groupsLoading, error, refetch } = useSalvemundiWhatsAppGroups(true);
+    const { data: groups = [], isLoading: groupsLoading, error, refetch } = useSalvemundiWhatsappGroups(true);
 
     const { data: documents } = useQuery({ queryKey: ['documents'], queryFn: documentsApi.getAll });
 

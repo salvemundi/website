@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { getImageUrl } from "@/shared/lib/api/image";
 import { useAuth } from '@/features/auth/providers/auth-provider';
 
 import qrService from '@/shared/lib/qr-service';
@@ -814,3 +814,4 @@ export default function KroegentochtClient({ initialEvents, initialSettings }: K
         </>
     );
 }
+

@@ -8,9 +8,6 @@ services:
     ports:
       - "127.0.0.1:8055:8055"
 
-  # Microservices
-  # Mapping based on apps/web/.env expectations vs Dockerfile internal ports
-
   # Secure Outbound Proxy
   secure-proxy:
     image: ubuntu/squid
@@ -19,8 +16,9 @@ services:
     ports:
       - "3128:3128"
     networks:
-      - public-ingress
-      - service-mesh
+      public-ingress:
+        aliases:
+          - secure-proxy
 
   # Identity Service
   identity:
@@ -30,6 +28,7 @@ services:
       - HTTP_PROXY=http://secure-proxy:3128
       - HTTPS_PROXY=http://secure-proxy:3128
       - NO_PROXY=localhost,127.0.0.1,db,directus,finance,email,notifications,identity
+      - DIRECTUS_URL=https://admin.salvemundi.nl
     networks:
       - service-mesh
       - data-plane
@@ -37,12 +36,16 @@ services:
 
   # Finance Service
   finance:
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     ports:
       - "127.0.0.1:3001:3001"
     environment:
       - HTTP_PROXY=http://secure-proxy:3128
       - HTTPS_PROXY=http://secure-proxy:3128
       - NO_PROXY=localhost,127.0.0.1,db,directus,finance,email,notifications,identity
+      - DIRECTUS_URL=https://admin.salvemundi.nl
     networks:
       - service-mesh
       - data-plane
@@ -56,9 +59,10 @@ services:
       - HTTP_PROXY=http://secure-proxy:3128
       - HTTPS_PROXY=http://secure-proxy:3128
       - NO_PROXY=localhost,127.0.0.1,db,directus,finance,email,notifications,identity
+      - DIRECTUS_URL=https://admin.salvemundi.nl
     networks:
       - service-mesh
-      
+      - public-ingress
 
   # Notifications Service
   notifications:
@@ -68,9 +72,19 @@ services:
       - HTTP_PROXY=http://secure-proxy:3128
       - HTTPS_PROXY=http://secure-proxy:3128
       - NO_PROXY=localhost,127.0.0.1,db,directus,finance,email,notifications,identity
+      - DIRECTUS_URL=https://admin.salvemundi.nl
     networks:
       - service-mesh
-      
+      - public-ingress
 
-
-
+  # Web/Frontend
+  web:
+    environment:
+      - FINANCE_SERVICE_URL=http://finance:3001
+      - IDENTITY_SERVICE_URL=http://identity:3002
+      - EMAIL_SERVICE_URL=http://email:3003
+      - NOTIFICATION_SERVICE_URL=http://notifications:3004
+      - INTERNAL_DIRECTUS_URL=https://admin.salvemundi.nl
+    networks:
+      - service-mesh
+      - public-ingress

@@ -6,7 +6,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, X, Sparkles, Shield, MapPin, LogOut, Home, User, CalendarDays, Users, Beer, Map, Mail } from "lucide-react";
 import { useAuth, useAuthActions } from "@/features/auth/providers/auth-provider";
-import { getImageUrl } from "@/shared/lib/api/salvemundi";
+import { getImageUrl } from "@/shared/lib/api/image";
 import { ROUTES } from "@/shared/lib/routes";
 import { ThemeToggle } from "@/features/theme/ui/ThemeToggle";
 

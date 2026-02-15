@@ -5,7 +5,7 @@ import { useAuth } from '@/features/auth/providers/auth-provider';
 import { useSalvemundiTransactions } from '@/shared/lib/hooks/useSalvemundiApi';
 import { format } from 'date-fns';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { Transaction } from '@/shared/lib/api/salvemundi';
+import { Transaction } from '@/shared/lib/api/types';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { CreditCard, Clock, Tag, CheckCircle } from 'lucide-react';
 

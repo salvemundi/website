@@ -77,7 +77,7 @@ async function syncUserToDirectus(graphSyncUrl, azureUserId, correlationId = nul
     try {
         console.log(`[MembershipService] Triggering graph-sync for user: ${azureUserId}`);
         await axios.post(`${graphSyncUrl}/sync/user`, {
-            userId: azureUserId
+            user_id: azureUserId
         }, {
             headers: getInternalHeaders(correlationId),
             timeout: 10000

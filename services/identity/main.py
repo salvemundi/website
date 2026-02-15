@@ -34,6 +34,8 @@ TENANT_ID = os.getenv("MS_GRAPH_TENANT_ID")
 CLIENT_ID = os.getenv("MS_GRAPH_CLIENT_ID")
 CLIENT_SECRET = os.getenv("MS_GRAPH_CLIENT_SECRET")
 DOMAIN = os.getenv("MS_GRAPH_DOMAIN")
+DIRECTUS_URL = os.getenv("DIRECTUS_URL")
+DIRECTUS_ADMIN_TOKEN = os.getenv("DIRECTUS_ADMIN_TOKEN")
 
 def validate_env():
     missing = []
@@ -42,7 +44,10 @@ def validate_env():
         "MS_GRAPH_TENANT_ID": TENANT_ID,
         "MS_GRAPH_CLIENT_ID": CLIENT_ID,
         "MS_GRAPH_CLIENT_SECRET": CLIENT_SECRET,
-        "MS_GRAPH_DOMAIN": DOMAIN
+        "MS_GRAPH_DOMAIN": DOMAIN,
+        "DIRECTUS_URL": DIRECTUS_URL,
+        "DIRECTUS_ADMIN_TOKEN": DIRECTUS_ADMIN_TOKEN,
+        "DIRECTUS_MEMBER_ROLE_ID": os.getenv("DIRECTUS_MEMBER_ROLE_ID")
     }
     
     for name, val in required_vars.items():
@@ -111,6 +116,71 @@ async def get_graph_token():
             # Return more explicit detail to callers so admin-api logs are actionable
             raise HTTPException(status_code=500, detail=f"Graph Auth Failed: status={response.status_code} body={error_message}")
         return response.json().get("access_token")
+
+async def get_azure_user(user_id: str, token: str):
+    url = f"https://graph.microsoft.com/v1.0/users/{user_id}"
+    headers = {"Authorization": f"Bearer {token}"}
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
+        if response.status_code != 200:
+            logger.error(f"Failed to fetch Azure user {user_id}: {response.text}")
+            return None
+        return response.json()
+
+async def sync_to_directus(azure_user: dict):
+    if not DIRECTUS_URL or not DIRECTUS_ADMIN_TOKEN:
+        logger.error("Directus configuration missing for sync")
+        return False
+    
+    email = azure_user.get("mail") or azure_user.get("userPrincipalName")
+    if not email:
+        logger.error("User missing email for sync")
+        return False
+
+    headers = {
+        "Authorization": f"Bearer {DIRECTUS_ADMIN_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    async with httpx.AsyncClient() as client:
+        # 1. Check if user exists in Directus
+        # We assume users are in the system users collection or a custom one?
+        # Typically lidmaatschap uses a 'users' table or custom 'members' table.
+        # Based on previous context, we might be updating the 'users' directly.
+        
+        # Let's try to find user by email
+        search_url = f"{DIRECTUS_URL}/users?filter[email][_eq]={email}"
+        search_res = await client.get(search_url, headers=headers)
+        
+        user_id = None
+        if search_res.status_code == 200:
+            data = search_res.json().get("data", [])
+            if data:
+                user_id = data[0]["id"]
+
+        payload = {
+            "first_name": azure_user.get("givenName"),
+            "last_name": azure_user.get("surname"),
+            "email": email,
+            "external_identifier": azure_user.get("id"),
+            "status": "active",
+            "role": os.getenv("DIRECTUS_MEMBER_ROLE_ID", "0401a4e1-2248-4cb9-92b4-e3c32e92c578")
+        }
+
+        if user_id:
+            # Update
+            res = await client.patch(f"{DIRECTUS_URL}/users/{user_id}", json=payload, headers=headers)
+        else:
+            # Create
+            payload["password"] = generate_password(16) # Random password for Directus
+            res = await client.post(f"{DIRECTUS_URL}/users", json=payload, headers=headers)
+
+        if res.status_code not in [200, 204, 201]:
+            logger.error(f"Directus Sync Failed: {res.status_code} - {res.text}")
+            return False
+        
+        logger.info(f"Directus Sync Success for {email}")
+        return True
 
 def generate_password(length=12):
     alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
@@ -261,6 +331,7 @@ async def create_user_endpoint(request: CreateMemberRequest, background_tasks: B
     new_user_data = await create_azure_user(request, token)
     # Wacht even zodat user gepropageerd is
     await update_user_attributes(new_user_data["id"], date_of_birth=request.date_of_birth)
+    background_tasks.add_task(sync_azure_to_directus_task, new_user_data["id"])
     return {
         "status": "created",
         "user_id": new_user_data["id"],
@@ -272,7 +343,23 @@ async def create_user_endpoint(request: CreateMemberRequest, background_tasks: B
 async def register_member(request: MembershipRequest, background_tasks: BackgroundTasks):
     if not request.user_id: raise HTTPException(status_code=400, detail="Missing user_id")
     await update_user_attributes(request.user_id)
+    background_tasks.add_task(sync_azure_to_directus_task, request.user_id)
     return {"status": "processing"}
+
+async def sync_azure_to_directus_task(user_id: str):
+    try:
+        token = await get_graph_token()
+        azure_user = await get_azure_user(user_id, token)
+        if azure_user:
+            await sync_to_directus(azure_user)
+    except Exception as e:
+        logger.error(f"Background sync failed for {user_id}: {str(e)}")
+
+@router.post("/sync/user")
+async def sync_user_endpoint(request: MembershipRequest, background_tasks: BackgroundTasks):
+    if not request.user_id: raise HTTPException(status_code=400, detail="Missing user_id")
+    background_tasks.add_task(sync_azure_to_directus_task, request.user_id)
+    return {"status": "sync_started"}
 
 # --- Group Management ---
 

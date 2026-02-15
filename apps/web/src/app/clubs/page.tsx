@@ -4,7 +4,7 @@
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import Image from 'next/image';
 import { useSalvemundiClubs } from '@/shared/lib/hooks/useSalvemundiApi';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { getImageUrl } from "@/shared/lib/api/image";
 import { MessageSquare, Globe, Users } from 'lucide-react';
 import { stripHtml } from '@/shared/lib/text';
 import { CardSkeleton } from '@/shared/ui/skeletons';
@@ -156,5 +156,6 @@ export default function ClubsPage() {
         </>
     );
 }
+
 
 

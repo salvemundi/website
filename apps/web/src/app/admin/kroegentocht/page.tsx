@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { pubCrawlEventsApi, pubCrawlSignupsApi, pubCrawlTicketsApi, siteSettingsMutations } from '@/shared/lib/api/salvemundi';
+import { pubCrawlEventsApi, pubCrawlSignupsApi, pubCrawlTicketsApi } from '@/shared/lib/api/pub-crawl';
+import { siteSettingsMutations } from '@/shared/lib/api/site-settings';
 import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { Search, Download, Users, Beer, AlertCircle, Trash2, Loader2, Edit } from 'lucide-react';
 import { useAuth } from '@/features/auth/providers/auth-provider';

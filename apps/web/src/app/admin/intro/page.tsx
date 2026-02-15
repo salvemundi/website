@@ -9,13 +9,9 @@ import {
     introSignupsApi,
     introParentSignupsApi,
     introBlogsApi,
-    introPlanningApi,
-    IntroSignup,
-    IntroParentSignup,
-    IntroBlog,
-    IntroPlanningItem
-    , getImageUrl
-} from '@/shared/lib/api/salvemundi';
+    introPlanningApi
+} from '@/shared/lib/api/intro';
+import { getImageUrl } from '@/shared/lib/api/image';
 import {
     Users,
     Heart,
@@ -34,8 +30,9 @@ import {
     Bell,
     Mail
 } from 'lucide-react';
-import { siteSettingsMutations } from '@/shared/lib/api/salvemundi';
+import { siteSettingsMutations } from '@/shared/lib/api/site-settings';
 import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
+import { IntroSignup, IntroParentSignup, IntroBlog, IntroPlanningItem } from '@/shared/lib/api/types';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { formatDateToLocalISO } from '@/shared/lib/utils/date';

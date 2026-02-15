@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import Map, { Marker, Popup, NavigationControl, GeolocateControl } from 'react-map-gl/maplibre';
-import { Sticker, getImageUrl } from '@/shared/lib/api/salvemundi';
+import { Sticker } from '@/shared/lib/api/types';
+import { getImageUrl } from '@/shared/lib/api/image';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 interface StickerMapProps {
@@ -167,9 +168,9 @@ const StickerMap: React.FC<StickerMapProps> = ({
                                 <div className="map-popup__image-section">
                                     {showImage ? (
                                         <div className="relative">
-                                            <img 
-                                                src={getImageUrl(popupInfo.image, { width: 600, quality: 85 })} 
-                                                alt="Sticker proof" 
+                                            <img
+                                                src={getImageUrl(popupInfo.image, { width: 600, quality: 85 })}
+                                                alt="Sticker proof"
                                                 className="map-popup__image-full"
                                                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                                             />

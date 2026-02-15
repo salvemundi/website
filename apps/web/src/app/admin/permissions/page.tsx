@@ -6,7 +6,7 @@ import { useAuth } from '@/features/auth/providers/auth-provider';
 import NoAccessPage from '@/app/admin/no-access/page';
 import { isUserInIct, isUserAuthorized, getMergedTokens } from '@/shared/lib/committee-utils';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { siteSettingsApi, siteSettingsMutations } from '@/shared/lib/api/salvemundi';
+import { siteSettingsApi, siteSettingsMutations } from '@/shared/lib/api/site-settings';
 import { useSalvemundiCommittees } from '@/shared/lib/hooks/useSalvemundiApi';
 import { Shield, Save, Loader2, Check, X, AlertCircle, Eye, EyeOff } from 'lucide-react';
 

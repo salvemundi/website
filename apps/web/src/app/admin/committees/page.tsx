@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { usePagePermission } from '@/shared/lib/hooks/usePermissions';
 import { slugify } from '@/shared/lib/utils/slug';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { getImageUrl } from "@/shared/lib/api/image";
 import {
     getAdminCommitteesAction,
     getCommitteeMembersAction,
@@ -595,3 +595,4 @@ export default function CommitteeManagementPage() {
         </div>
     );
 }
+

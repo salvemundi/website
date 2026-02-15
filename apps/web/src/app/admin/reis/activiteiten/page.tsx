@@ -11,7 +11,7 @@ import {
     getTripActivitySignupsAction,
     TripActivity
 } from '@/features/admin/server/trips-actions';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { getImageUrl } from "@/shared/lib/api/image";
 import { uploadFileAction } from '@/features/admin/server/file-actions';
 import { Loader2, Plus, Edit2, Trash2, Save, X, Image as ImageIcon, Upload, Users } from 'lucide-react';
 
@@ -655,3 +655,4 @@ export default function ActiviteitenBeheerPage() {
         </>
     );
 }
+

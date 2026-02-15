@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { introSignupsApi, introParentSignupsApi } from '@/shared/lib/api/salvemundi';
+import { introSignupsApi, introParentSignupsApi } from '@/shared/lib/api/intro';
 import { sendIntroSignupEmail } from '@/shared/lib/services/email-service';
 import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { useAuth } from '@/features/auth/providers/auth-provider';

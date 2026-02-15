@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { pubCrawlSignupsApi, pubCrawlTicketsApi } from '@/shared/lib/api/salvemundi';
+import { pubCrawlSignupsApi, pubCrawlTicketsApi } from '@/shared/lib/api/pub-crawl';
 import { Loader2, AlertCircle, Save, ArrowLeft, Trash2, Tag, CheckCircle } from 'lucide-react';
 import { FIELDS } from '@/shared/lib/constants/collections';
 

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import SmartImage from '@/shared/ui/SmartImage';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { deleteCommitteeMemberAction, updateCommitteeMemberAction } from '@/shared/api/data-actions';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { getImageUrl } from '@/shared/lib/api/image';
 import { Mail, Calendar, Users2, History, Edit, ArrowLeft, Trash2, ShieldCheck } from 'lucide-react';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { sanitizeHtml } from '@/shared/lib/utils/sanitize';

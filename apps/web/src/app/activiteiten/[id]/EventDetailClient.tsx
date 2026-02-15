@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { getImageUrl } from '@/shared/lib/api/image';
 import { sanitizeHtml } from '@/shared/lib/utils/sanitize';
 import AttendanceButton from '@/entities/activity/ui/AttendanceButton';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';

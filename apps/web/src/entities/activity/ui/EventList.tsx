@@ -2,7 +2,7 @@
 
 import { stripHtml } from '@/shared/lib/text';
 import ActiviteitCard from './ActiviteitCard';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { getImageUrl } from "@/shared/lib/api/image";
 import { isEventPast } from '@/shared/lib/utils/date';
 
 import { useAuth } from '@/features/auth/providers/auth-provider';
@@ -86,3 +86,4 @@ export default function EventList({ events, onEventClick, variant = 'list' }: Ev
         </div>
     );
 }
+

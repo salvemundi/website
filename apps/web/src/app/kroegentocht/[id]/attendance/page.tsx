@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import qrService from '@/shared/lib/qr-service';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { getImageUrl } from '@/shared/lib/api/image';
 import { Search, Camera, RefreshCw, X, CheckCircle, XCircle, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { format } from 'date-fns';

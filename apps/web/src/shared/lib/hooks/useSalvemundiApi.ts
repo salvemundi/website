@@ -1,26 +1,28 @@
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
+import { eventsApi } from '../api/activities';
+import { committeesApi } from '../api/committees';
+import { membersApi } from '../api/members';
+import { boardApi } from '../api/board';
+import { clubsApi } from '../api/clubs';
+import { pubCrawlEventsApi } from '../api/pub-crawl';
+import { sponsorsApi } from '../api/sponsors';
+import { jobsApi } from '../api/jobs';
+import { safeHavensApi } from '../api/safe-haven';
+import { stickersApi } from '../api/stickers';
+import { transactionsApi } from '../api/transactions';
+import { whatsappGroupsApi } from '../api/whatsapp';
+import { siteSettingsApi } from '../api/site-settings';
 import {
-    eventsApi,
-    committeesApi,
-    membersApi,
-    boardApi,
-    clubsApi,
-    pubCrawlEventsApi,
-    sponsorsApi,
-    jobsApi,
-    safeHavensApi,
-    stickersApi,
-    transactionsApi,
-    whatsappGroupsApi,
-    siteSettingsApi,
-    SiteSettings,
     tripsApi,
     tripActivitiesApi,
-    tripSignupsApi,
+    tripSignupsApi
+} from '../api/trips';
+
+import type {
     Trip,
     TripActivity,
     TripSignup
-} from '@/shared/lib/api/salvemundi';
+} from '../api/types';
 
 // Events (Activities) Hooks
 export function useSalvemundiEvents(options?: Omit<UseQueryOptions<any[]>, 'queryKey' | 'queryFn'>) {
@@ -127,18 +129,27 @@ export function useSalvemundiClub(id: number | undefined) {
 // Pub Crawl Hooks
 export function useSalvemundiPubCrawlEvents() {
     return useQuery({
-        queryKey: ['pubCrawlEvents'],
+        queryKey: ['pub-crawl', 'events'],
         queryFn: pubCrawlEventsApi.getAll,
         staleTime: 5 * 60 * 1000
     });
 }
 
-// Sponsors Hook
+export function useSalvemundiPubCrawlEvent(id: number | string | undefined) {
+    return useQuery({
+        queryKey: ['pub-crawl', 'events', id],
+        queryFn: () => pubCrawlEventsApi.getById(id!),
+        enabled: !!id,
+        staleTime: 5 * 60 * 1000
+    });
+}
+
+// Sponsors Hooks
 export function useSalvemundiSponsors() {
     return useQuery({
         queryKey: ['sponsors'],
         queryFn: sponsorsApi.getAll,
-        staleTime: 5 * 60 * 1000
+        staleTime: 10 * 60 * 1000
     });
 }
 
@@ -151,25 +162,16 @@ export function useSalvemundiJobs() {
     });
 }
 
-export function useSalvemundiJob(id: number | undefined) {
-    return useQuery({
-        queryKey: ['jobs', id],
-        queryFn: () => jobsApi.getById(id!),
-        enabled: !!id,
-        staleTime: 5 * 60 * 1000
-    });
-}
-
-// Safe Havens Hook
+// Safe Havens Hooks
 export function useSalvemundiSafeHavens() {
     return useQuery({
-        queryKey: ['safeHavens'],
+        queryKey: ['safe-havens'],
         queryFn: safeHavensApi.getAll,
-        staleTime: 5 * 60 * 1000
+        staleTime: 10 * 60 * 1000
     });
 }
 
-// Stickers Hook
+// Stickers Hooks
 export function useSalvemundiStickers() {
     return useQuery({
         queryKey: ['stickers'],
@@ -178,7 +180,7 @@ export function useSalvemundiStickers() {
     });
 }
 
-// Transactions Hook
+// Transactions Hooks
 export function useSalvemundiTransactions(userId: string | undefined) {
     return useQuery({
         queryKey: ['transactions', userId],
@@ -188,54 +190,35 @@ export function useSalvemundiTransactions(userId: string | undefined) {
     });
 }
 
-// WhatsApp Groups Hook
-export function useSalvemundiWhatsAppGroups(memberOnly: boolean = false) {
+// Whatsapp Groups Hooks
+export function useSalvemundiWhatsappGroups(memberOnly: boolean = false) {
     return useQuery({
-        queryKey: ['whatsapp_groups', memberOnly],
+        queryKey: ['whatsapp-groups', memberOnly],
         queryFn: () => whatsappGroupsApi.getAll(memberOnly),
+        staleTime: 10 * 60 * 1000
+    });
+}
+
+// Site Settings Hooks
+export function useSalvemundiSiteSettings(page?: string) {
+    return useQuery({
+        queryKey: ['site-settings', page],
+        queryFn: () => siteSettingsApi.get(page),
         staleTime: 5 * 60 * 1000
     });
 }
 
-// Site Settings Hook
-export function useSalvemundiSiteSettings(page?: string, options?: UseQueryOptions<SiteSettings | null>) {
-    return useQuery({
-        queryKey: page ? ['siteSettings', page] : ['siteSettings'],
-        queryFn: () => siteSettingsApi.get(page),
-        staleTime: 5 * 60 * 1000,
-        retry: 2, // Retry a few times to handle container startup race conditions
-        meta: {
-            errorMessage: null, // Suppress error toasts for site_settings
-        },
-        ...options
-    });
-}
-
-// Site Settings Hook with authorized_tokens (for admin/permission checks)
-export function useSalvemundiSiteSettingsWithTokens(page?: string, options?: UseQueryOptions<SiteSettings | null>) {
-    return useQuery({
-        queryKey: page ? ['siteSettings', page, 'withTokens'] : ['siteSettings', 'withTokens'],
-        queryFn: () => siteSettingsApi.get(page, true),
-        staleTime: 5 * 60 * 1000,
-        retry: false, // Don't retry on failure - site settings are optional
-        meta: {
-            errorMessage: null, // Suppress error toasts for site_settings
-        },
-        ...options
-    });
-}
-
 // Trip Hooks
-export function useSalvemundiTrips(options?: UseQueryOptions<Trip[]>) {
+export function useSalvemundiTrips(options?: Omit<UseQueryOptions<Trip[]>, 'queryKey' | 'queryFn'>) {
     return useQuery({
         queryKey: ['trips'],
-        queryFn: () => tripsApi.getAll(),
+        queryFn: tripsApi.getAll,
         staleTime: 5 * 60 * 1000,
         ...options
     });
 }
 
-export function useSalvemundiTrip(id: number | undefined, options?: UseQueryOptions<Trip>) {
+export function useSalvemundiTrip(id: number | undefined, options?: Omit<UseQueryOptions<Trip>, 'queryKey' | 'queryFn'>) {
     return useQuery({
         queryKey: ['trips', id],
         queryFn: () => tripsApi.getById(id!),
@@ -245,9 +228,9 @@ export function useSalvemundiTrip(id: number | undefined, options?: UseQueryOpti
     });
 }
 
-export function useSalvemundiTripActivities(tripId: number | undefined, options?: UseQueryOptions<TripActivity[]>) {
+export function useSalvemundiTripActivities(tripId: number | undefined, options?: Omit<UseQueryOptions<TripActivity[]>, 'queryKey' | 'queryFn'>) {
     return useQuery({
-        queryKey: ['trip_activities', tripId],
+        queryKey: ['trip-activities', tripId],
         queryFn: () => tripActivitiesApi.getByTripId(tripId!),
         enabled: !!tripId,
         staleTime: 5 * 60 * 1000,
@@ -255,12 +238,12 @@ export function useSalvemundiTripActivities(tripId: number | undefined, options?
     });
 }
 
-export function useSalvemundiTripSignups(tripId: number | undefined, options?: UseQueryOptions<TripSignup[]>) {
+export function useSalvemundiTripSignups(tripId: number | undefined, options?: Omit<UseQueryOptions<TripSignup[]>, 'queryKey' | 'queryFn'>) {
     return useQuery({
-        queryKey: ['trip_signups', tripId],
+        queryKey: ['trip-signups', tripId],
         queryFn: () => tripSignupsApi.getByTripId(tripId!),
         enabled: !!tripId,
-        staleTime: 1 * 60 * 1000, // 1 minute for more frequent updates
+        staleTime: 5 * 60 * 1000,
         ...options
     });
 }
