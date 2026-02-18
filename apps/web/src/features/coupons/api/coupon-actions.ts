@@ -1,7 +1,14 @@
 'use server';
 
-const FINANCE_SERVICE_URL = process.env.FINANCE_SERVICE_URL || 'http://localhost:3001';
+const FINANCE_SERVICE_URL = process.env.FINANCE_SERVICE_URL;
 const SERVICE_SECRET = process.env.SERVICE_SECRET;
+
+if (!FINANCE_SERVICE_URL) {
+    throw new Error('Server configuration error: FINANCE_SERVICE_URL is not defined in environment variables.');
+}
+if (!SERVICE_SECRET) {
+    throw new Error('Server configuration error: SERVICE_SECRET is not defined in environment variables.');
+}
 
 export interface CouponValidationResult {
     valid: boolean;
@@ -17,7 +24,10 @@ export interface CouponValidationResult {
 export async function validateCouponAction(couponCode: string, traceId?: string): Promise<CouponValidationResult> {
     const activeTraceId = traceId || Math.random().toString(36).substring(7);
 
-    console.info(`[Action][${activeTraceId}] Validating coupon: ${couponCode}`);
+    // Normalize code to uppercase for case-insensitive matching
+    const normalizedCode = couponCode.toUpperCase().trim();
+
+    console.info(`[Action][${activeTraceId}] Validating coupon: ${normalizedCode}`);
 
     if (!SERVICE_SECRET) {
         console.error(`[Action][${activeTraceId}] SERVICE_SECRET is not set!`);
@@ -35,7 +45,7 @@ export async function validateCouponAction(couponCode: string, traceId?: string)
                 'X-API-Key': SERVICE_SECRET,
                 'X-Trace-Id': activeTraceId
             },
-            body: JSON.stringify({ couponCode }),
+            body: JSON.stringify({ couponCode: normalizedCode }),
             cache: 'no-store',
             signal: controller.signal
         });

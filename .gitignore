@@ -44,3 +44,4 @@ Thumbs.db
 config.prod.yaml
 .deployment-trigger
 docker-compose.override.yml
+.vscode/

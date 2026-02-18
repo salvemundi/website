@@ -217,8 +217,10 @@ async function getTripSignupActivities(directusUrl, directusToken, signupId) {
  */
 async function getCoupon(directusUrl, directusToken, code, traceId = 'no-trace') {
     try {
+        // Normalize code to uppercase for case-insensitive matching
+        const normalizedCode = code.toUpperCase().trim();
         const query = new URLSearchParams({
-            'filter[coupon_code][_eq]': code
+            'filter[coupon_code][_eq]': normalizedCode
         }).toString();
 
         const url = `${directusUrl}/items/coupons?${query}`;
@@ -233,7 +235,7 @@ async function getCoupon(directusUrl, directusToken, code, traceId = 'no-trace')
             return coupon;
         }
 
-        console.warn(`[Coupon][${traceId}] Coupon "${code}" NOT FOUND in Directus.`);
+        console.warn(`[Coupon][${traceId}] Coupon "${normalizedCode}" NOT FOUND in Directus.`);
         return null;
     } catch (error) {
         console.error(`[Coupon][${traceId}] Directus Fetch Failed:`, error.response?.data || error.message);
@@ -291,6 +293,58 @@ async function checkUserCommittee(directusUrl, directusToken, userId, committeeN
     } catch (error) {
         console.error(`Failed to check committee for user ${userId}:`, error.message);
         return false;
+    }
+}
+
+/**
+ * Fetch pending signups from transactions collection.
+ */
+async function getPendingSignups(directusUrl, directusToken, filters = {}) {
+    try {
+        const params = new URLSearchParams();
+
+        if (filters.status && filters.status !== 'all') {
+            params.append('filter[approval_status][_eq]', filters.status);
+        } else if (!filters.status || filters.status === 'pending') {
+            // Default to pending if not specified
+            params.append('filter[approval_status][_eq]', 'pending');
+        }
+
+        if (filters.show_failed === 'false' || filters.show_failed === false) {
+            params.append('filter[payment_status][_neq]', 'failed');
+        }
+
+        if (filters.type && filters.type !== 'all') {
+            params.append('filter[product_type][_eq]', filters.type);
+        }
+
+        params.append('sort', '-created_at');
+        params.append('fields', '*');
+        params.append('limit', '100');
+
+        const url = `${directusUrl}/items/transactions?${params.toString()}`;
+        console.log(`[DirectusService] Calling URL: ${url}`);
+        const response = await instance.get(
+            url,
+            getAuthConfig(directusToken)
+        );
+
+        // Map to the format expected by the frontend
+        return response.data.data.map(t => ({
+            id: String(t.id),
+            created_at: t.created_at,
+            email: t.email,
+            first_name: t.first_name,
+            last_name: t.last_name,
+            product_name: t.product_name || t.description,
+            amount: parseFloat(t.amount),
+            approval_status: t.approval_status,
+            payment_status: t.payment_status,
+            coupon_code: t.coupon_code
+        }));
+    } catch (error) {
+        console.error(`Failed to fetch pending signups:`, error.message);
+        throw error;
     }
 }
 
@@ -379,5 +433,6 @@ module.exports = {
 
     checkUserCommittee,
     getUser,
-    getUserByEmail
+    getUserByEmail,
+    getPendingSignups
 };

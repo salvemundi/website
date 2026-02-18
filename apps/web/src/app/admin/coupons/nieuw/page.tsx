@@ -69,7 +69,7 @@ export default function NewCouponPage() {
 
             // Create a clean payload with only valid values
             const payload: any = {
-                coupon_code: formData.coupon_code,
+                coupon_code: formData.coupon_code.toUpperCase().trim(),
                 discount_type: formData.discount_type,
                 discount_value: discountValue,
                 is_active: formData.is_active,

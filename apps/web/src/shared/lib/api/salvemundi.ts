@@ -1,44 +1,36 @@
-export * from './types';
-export * from './utils';
-export { getImageUrl } from './image';
+/**
+ * @deprecated Use specialized barrel exports instead for better tree-shaking and HMR performance
+ * 
+ * MIGRATION GUIDE:
+ * - Use './models' for types/interfaces
+ * - Use './utilities' for helper functions (getImageUrl, utils)
+ * - Use './activities.barrel' for events/activities APIs
+ * - Use './organization.barrel' for organization-related APIs (committees, members, jobs, board)
+ * - Use './social.barrel' for social/community APIs (clubs, pub-crawl, sponsors, whatsapp, safe-havens)
+ * - Use './experiences.barrel' for trips and intro programs
+ * - Use './user-data.barrel' for user management (payments, stickers, transactions, documents, settings)
+ * 
+ * This file is kept for backward compatibility but creates a large dependency graph.
+ * It's recommended to import from specific barrel files or individual modules directly.
+ */
 
-export { paymentApi } from './payment';
-export { eventsApi } from './activities';
-export { committeesApi } from './committees';
-export { membersApi } from './members';
-export { boardApi } from './board';
-export { clubsApi } from './clubs';
-export {
-    pubCrawlEventsApi,
-    pubCrawlSignupsApi,
-    pubCrawlTicketsApi
-} from './pub-crawl';
-export { sponsorsApi } from './sponsors';
-export { jobsApi } from './jobs';
-export {
-    safeHavensApi,
-    getSafeHavenAvailability,
-    updateSafeHavenAvailability
-} from './safe-haven';
-export { stickersApi } from './stickers';
-export { transactionsApi } from './transactions';
-export { whatsappGroupsApi } from './whatsapp';
-export { documentsApi } from './documents';
-export { usersApi } from './users';
-export {
-    siteSettingsApi,
-    siteSettingsMutations
-} from './site-settings';
-export {
-    introSignupsApi,
-    introBlogsApi,
-    introPlanningApi,
-    introParentSignupsApi
-} from './intro';
-export { heroBannersApi } from './hero';
-export {
-    tripsApi,
-    tripActivitiesApi,
-    tripSignupsApi,
-    tripSignupActivitiesApi
-} from './trips';
+// Models and types
+export * from './models';
+
+// Utilities
+export * from './utilities';
+
+// Activities and Events
+export * from './activities.barrel';
+
+// Organization
+export * from './organization.barrel';
+
+// Social and Community
+export * from './social.barrel';
+
+// Experiences and Trips
+export * from './experiences.barrel';
+
+// User Data and Management
+export * from './user-data.barrel';

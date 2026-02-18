@@ -7,7 +7,7 @@ import {
 import type { SiteSettings } from './types';
 
 export const siteSettingsApi = {
-    get: async (page?: string, includeAuthorizedTokens: boolean = false): Promise<SiteSettings | null> => {
+    get: async (page?: string, includeAuthorizedTokens: boolean = false): Promise<SiteSettings | SiteSettings[] | null> => {
         return await getSiteSettingsAction(page, includeAuthorizedTokens);
     }
 };

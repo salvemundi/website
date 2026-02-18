@@ -6,6 +6,13 @@ import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider
 import { usePagePermission } from '@/shared/lib/hooks/usePermissions';
 import { format } from 'date-fns';
 import { Shield, CheckCircle, XCircle, RefreshCw, Clock, CheckSquare, Square, Tag } from 'lucide-react';
+import {
+    getPendingSignupsAction,
+    getPaymentSettingsAction,
+    updatePaymentSettingsAction,
+    approveSignupAction,
+    rejectSignupAction
+} from '@/shared/api/admin-logging-actions';
 
 interface Signup {
     id: string;
@@ -145,18 +152,8 @@ export default function LoggingPage() {
 
     const loadSettings = async () => {
         try {
-            const token = localStorage.getItem('auth_token');
-            if (!token) return;
-
-            const res = await fetch('/api/admin/payment-settings', {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setPaymentSettings(data);
-            }
+            const data = await getPaymentSettingsAction();
+            setPaymentSettings(data);
         } catch (error) {
             console.error('Failed to load settings:', error);
         }
@@ -167,21 +164,7 @@ export default function LoggingPage() {
         setPaymentSettings({ ...paymentSettings, manual_approval: newValue });
 
         try {
-            const token = localStorage.getItem('auth_token');
-            if (!token) throw new Error('No auth token');
-
-            const response = await fetch('/api/admin/payment-settings', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({ manual_approval: newValue })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to update settings');
-            }
+            await updatePaymentSettingsAction({ manual_approval: newValue });
         } catch (error) {
             console.error('Failed to update settings:', error);
             setPaymentSettings({ ...paymentSettings, manual_approval: !newValue });
@@ -199,27 +182,11 @@ export default function LoggingPage() {
     const loadSignups = async () => {
         setIsLoading(true);
         try {
-            const token = localStorage.getItem('auth_token');
-            if (!token) throw new Error('No auth token');
-
-            const params = new URLSearchParams({
+            const data = await getPendingSignupsAction({
                 status: filterStatus,
                 type: filterType,
-                show_failed: showFailed.toString()
+                show_failed: showFailed
             });
-
-            const response = await fetch(`/api/admin/pending-signups?${params}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-
-            if (!response.ok) {
-                const errData = await response.json().catch(() => ({}));
-                throw new Error(errData.message || errData.error || 'Failed to fetch signups');
-            }
-
-            const data = await response.json();
             setSignups(data.signups || []);
             setSelectedIds(new Set());
         } catch (error: any) {
@@ -255,19 +222,7 @@ export default function LoggingPage() {
 
         setIsProcessing(signupId);
         try {
-            const token = localStorage.getItem('auth_token');
-            if (!token) throw new Error('No auth token');
-
-            const response = await fetch(`/api/admin/approve-signup/${signupId}`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` },
-            });
-
-            if (!response.ok) {
-                const error = await response.json().catch(() => ({}));
-                const msg = error.details || error.error || error.message || 'Failed to approve';
-                throw new Error(msg);
-            }
+            await approveSignupAction(signupId);
             if (!silent) {
                 alert('Inschrijving goedgekeurd!');
                 await loadSignups();
@@ -292,19 +247,7 @@ export default function LoggingPage() {
 
         setIsProcessing(signupId);
         try {
-            const token = localStorage.getItem('auth_token');
-            if (!token) throw new Error('No auth token');
-
-            const response = await fetch(`/api/admin/reject-signup/${signupId}`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` },
-            });
-
-            if (!response.ok) {
-                const error = await response.json().catch(() => ({}));
-                const msg = error.error || error.message || 'Failed to reject';
-                throw new Error(msg);
-            }
+            await rejectSignupAction(signupId);
 
             if (!silent) {
                 alert('Inschrijving afgewezen.');

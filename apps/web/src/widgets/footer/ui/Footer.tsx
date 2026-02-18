@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Instagram, Facebook, Linkedin } from "lucide-react";
 import { slugify } from "@/shared/lib/utils/slug";
 import { ROUTES } from "@/shared/lib/routes";
-import { FooterDocuments, FooterWhatsAppLink } from "./FooterClientElements";
+import { FooterDocuments, FooterWhatsAppLink, FooterLinks } from "./FooterClientElements";
 import { getFooterCommittees, getFooterSettings } from "@/shared/api/footer-actions";
 import { getDocumentsAction } from "@/shared/api/document-actions";
 
@@ -52,30 +52,7 @@ export default async function Footer() {
 
                     <div>
                         <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-title mb-4">Pagina's</h3>
-                        <ul className="space-y-2 text-sm">
-                            {[
-                                { label: "Home", href: ROUTES.HOME },
-                                ...(introEnabled ? [{ label: "Intro", href: ROUTES.INTRO }] : []),
-                                { label: "Activiteiten", href: ROUTES.ACTIVITIES },
-                                { label: "Commissies", href: ROUTES.COMMITTEES },
-                                { label: "Clubs", href: ROUTES.CLUBS },
-                                { label: "Contact", href: ROUTES.CONTACT },
-                                { label: "Safe Havens", href: ROUTES.SAFE_HAVENS },
-                                { label: "Lidmaatschap", href: ROUTES.MEMBERSHIP },
-                                ...(kroegentochtEnabled ? [{ label: "Kroegentocht", href: ROUTES.PUB_CRAWL }] : []),
-                                ...(reisEnabled ? [{ label: "Reis", href: ROUTES.TRIP }] : []),
-                                { label: "Stickers", href: ROUTES.STICKERS },
-                            ].map((link) => (
-                                <li key={link.href}>
-                                    <Link
-                                        href={link.href}
-                                        className="inline-flex items-center gap-1 rounded-full px-2 py-1 transition hover:bg-theme-purple/10 dark:hover:bg-white/10 hover:text-theme-purple dark:hover:text-theme-purple-lighter"
-                                    >
-                                        {link.label}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
+                        <FooterLinks initialSettings={settings} />
                     </div>
 
                     <div>

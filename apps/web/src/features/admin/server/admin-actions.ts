@@ -3,6 +3,7 @@
 import { verifyUserPermissions } from './secure-check';
 import { serverDirectusFetch } from '@/shared/lib/server-directus';
 import { revalidatePath } from 'next/cache';
+import { COMMITTEE_TOKENS } from '@/shared/config/committee-tokens';
 
 /**
  * Example Action: Delete a committee member.
@@ -16,7 +17,7 @@ export async function deleteCommitteeMemberAction(membershipId: number | string)
     // 1. SECURITY CHECK (The Gatekeeper)
     // This runs strictly on the server. The user cannot manipulate this.
     await verifyUserPermissions({
-        commissie_tokens: ['ictcommissie', 'bestuur']
+        commissie_tokens: [COMMITTEE_TOKENS.ICT, COMMITTEE_TOKENS.BESTUUR]
     });
 
     console.log(`[AdminAction] User authorized. Deleting committee member ${membershipId}`);
@@ -46,7 +47,7 @@ export async function deleteCommitteeMemberAction(membershipId: number | string)
  */
 export async function updateIntroBlogAction(blogId: string, data: any) {
     await verifyUserPermissions({
-        commissie_tokens: ['introcommissie', 'ictcommissie', 'bestuur']
+        commissie_tokens: [COMMITTEE_TOKENS.INTRO, COMMITTEE_TOKENS.ICT, COMMITTEE_TOKENS.BESTUUR]
     });
 
     try {
@@ -72,7 +73,7 @@ export async function updateIntroBlogAction(blogId: string, data: any) {
  */
 export async function clearSystemLogsAction() {
     await verifyUserPermissions({
-        commissie_tokens: ['ictcommissie']
+        commissie_tokens: [COMMITTEE_TOKENS.ICT]
     });
 
     // ... logic to clear logs ...

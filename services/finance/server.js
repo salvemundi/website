@@ -120,7 +120,11 @@ app.use(
     adminRoutes(
         DIRECTUS_URL,
         DIRECTUS_API_TOKEN,
-        directusService
+        directusService,
+        membershipService,
+        notificationService,
+        EMAIL_SERVICE_URL,
+        MEMBERSHIP_API_URL
     )
 );
 
@@ -293,7 +297,13 @@ app.listen(PORT, () => {
     const maskedToken = DIRECTUS_API_TOKEN
         ? `${DIRECTUS_API_TOKEN.substring(0, 4)}...${DIRECTUS_API_TOKEN.slice(-4)}`
         : 'MISSING';
+
+    const maskedMollie = MOLLIE_API_KEY
+        ? `${MOLLIE_API_KEY.substring(0, 8)}...${MOLLIE_API_KEY.slice(-4)} (Length: ${MOLLIE_API_KEY.length})`
+        : 'MISSING';
+
     console.log(`[PaymentAPI] Environment: DIRECTUS_URL=${DIRECTUS_URL ? 'Set' : 'Unset'}, Token=${maskedToken}, MEMBERSHIP=${MEMBERSHIP_API_URL}`);
+    console.log(`[PaymentAPI] Mollie Key: ${maskedMollie}`);
     console.log(`[PaymentAPI] CORS origins configured:`, allowedOrigins);
 });
 

@@ -1,6 +1,10 @@
-
 const directusApiUrl = 'https://admin.salvemundi.nl';
-const apiKey = 'wnislwHHiFbg5CuDkhahIcgO1v8FNUAw';
+const apiKey = process.env.DIRECTUS_ADMIN_TOKEN;
+
+if (!apiKey) {
+    console.error('❌ DIRECTUS_ADMIN_TOKEN environment variable is not set!');
+    process.exit(1);
+}
 
 async function debugUser() {
     console.log('--- DEBUG USER PERMISSIONS ---');

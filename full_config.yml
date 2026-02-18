@@ -74,7 +74,7 @@ services:
       context: C:\Users\Roan\Documents\website\services\email
       dockerfile: Dockerfile
     environment:
-      DIRECTUS_ADMIN_TOKEN: wnislwHHiFbg5CuDkhahIcgO1v8FNUAw
+      DIRECTUS_ADMIN_TOKEN: tnDrdaB_OkA5u3GrLTUt_CJqLzTUy_TN
       DIRECTUS_URL: https://admin.salvemundi.nl
       HTTP_PROXY: http://secure-proxy:3128
       HTTPS_PROXY: http://secure-proxy:3128
@@ -98,7 +98,7 @@ services:
       context: C:\Users\Roan\Documents\website\services\finance
       dockerfile: Dockerfile
     environment:
-      DIRECTUS_ADMIN_TOKEN: wnislwHHiFbg5CuDkhahIcgO1v8FNUAw
+      DIRECTUS_ADMIN_TOKEN: tnDrdaB_OkA5u3GrLTUt_CJqLzTUy_TN
       DIRECTUS_URL: https://admin.salvemundi.nl
       HTTP_PROXY: http://secure-proxy:3128
       HTTPS_PROXY: http://secure-proxy:3128
@@ -125,7 +125,7 @@ services:
       context: C:\Users\Roan\Documents\website\services\identity
       dockerfile: Dockerfile
     environment:
-      DIRECTUS_ADMIN_TOKEN: wnislwHHiFbg5CuDkhahIcgO1v8FNUAw
+      DIRECTUS_ADMIN_TOKEN: tnDrdaB_OkA5u3GrLTUt_CJqLzTUy_TN
       DIRECTUS_URL: https://admin.salvemundi.nl
       HTTP_PROXY: http://secure-proxy:3128
       HTTPS_PROXY: http://secure-proxy:3128
@@ -155,7 +155,7 @@ services:
       context: C:\Users\Roan\Documents\website\services\notifications
       dockerfile: Dockerfile
     environment:
-      DIRECTUS_NOTIFICATION_KEY: wnislwHHiFbg5CuDkhahIcgO1v8FNUAw
+      DIRECTUS_NOTIFICATION_KEY: tnDrdaB_OkA5u3GrLTUt_CJqLzTUy_TN
       DIRECTUS_URL: https://admin.salvemundi.nl
       HTTP_PROXY: http://secure-proxy:3128
       HTTPS_PROXY: http://secure-proxy:3128
@@ -196,7 +196,7 @@ services:
       context: C:\Users\Roan\Documents\website\apps\web
       dockerfile: Dockerfile
     environment:
-      DIRECTUS_ADMIN_TOKEN: wnislwHHiFbg5CuDkhahIcgO1v8FNUAw
+      DIRECTUS_ADMIN_TOKEN: tnDrdaB_OkA5u3GrLTUt_CJqLzTUy_TN
       NEXT_PUBLIC_DIRECTUS_URL: https://admin.salvemundi.nl
       SERVICE_SECRET: dev-service-secret-123
     logging:

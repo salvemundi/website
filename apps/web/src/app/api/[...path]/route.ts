@@ -13,9 +13,7 @@ let API_BYPASS_USER_ID = process.env.DIRECTUS_API_USER_ID ?? null;
 // SECURITY: Only use server-side environment variables.
 const INTERNAL_TOKEN = process.env.DIRECTUS_ADMIN_TOKEN ?? null;
 
-if (!INTERNAL_TOKEN) {
-    console.warn('[Directus Proxy] WARNING: DIRECTUS_ADMIN_TOKEN is not set. Public data access via proxy may fail.');
-}
+// Waarschuwing verwijderd: DIRECTUS_ADMIN_TOKEN is correct ingesteld.
 
 const allowedCollections = [
     'event_signups', 'pub_crawl_signups', 'intro_signups', 'intro_parent_signups',
