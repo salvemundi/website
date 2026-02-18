@@ -9,6 +9,7 @@ import { useAuth, useAuthActions } from "@/features/auth/providers/auth-provider
 import { getImageUrl } from "@/shared/lib/api/image";
 import { ROUTES } from "@/shared/lib/routes";
 import { ThemeToggle } from "@/features/theme/ui/ThemeToggle";
+import { useSalvemundiSiteSettings } from "@/shared/lib/hooks/useSalvemundiApi";
 
 import { usePWAContext } from "@/features/pwa/lib/PWAContext";
 
@@ -26,10 +27,19 @@ const Header: React.FC<HeaderProps> = ({ initialSettings }) => {
     const [isCommitteeMember, setIsCommitteeMember] = useState(false);
     const headerRef = useRef<HTMLElement | null>(null);
 
-    // Use initial settings from server props
-    const introEnabled = initialSettings?.['intro']?.show ?? true;
-    const kroegentochtEnabled = initialSettings?.['kroegentocht']?.show ?? true;
-    const reisEnabled = initialSettings?.['reis']?.show ?? true;
+    // Fetch reactive settings client-side
+    const { data: reactiveSettings } = useSalvemundiSiteSettings();
+
+    // Use initial settings from server props, but override with reactive data when available
+    const getSetting = (page: string) => {
+        const reactive = Array.isArray(reactiveSettings) ? (reactiveSettings as any[]).find((s: any) => s.page === page) : null;
+        if (reactive) return reactive.show;
+        return initialSettings?.[page]?.show ?? true;
+    };
+
+    const introEnabled = getSetting('intro');
+    const kroegentochtEnabled = getSetting('kroegentocht');
+    const reisEnabled = getSetting('reis');
 
     const { loginWithMicrosoft } = useAuthActions();
 

@@ -142,22 +142,30 @@ const nextConfig: NextConfig = {
 
                     {
                         key: 'Content-Security-Policy',
-                        value: [
-                            "default-src 'self'",
-                            "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://login.microsoftonline.com https://alcdn.msauth.net https://www.googletagmanager.com https://www.google-analytics.com https://*.cloudflare.com",
-                            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-                            "font-src 'self' data: https://fonts.gstatic.com",
-                            "img-src 'self' data: blob: https: http:",
-                            "media-src 'self' blob: https:",
-                            "connect-src 'self' https://login.microsoftonline.com https://graph.microsoft.com https://admin.salvemundi.nl https://notifications.salvemundi.nl https://data.imagination.platour.net https://www.google-analytics.com https://analytics.google.com wss: https://*.cartocdn.com",
-                            "frame-src 'self' https://login.microsoftonline.com https://www.google.com",
-                            "worker-src 'self' blob:",
-                            "object-src 'none'",
-                            "base-uri 'self'",
-                            "form-action 'self'",
-                            "frame-ancestors 'self'",
-                            "upgrade-insecure-requests",
-                        ].join('; '),
+                        value: (() => {
+                            const isDev = process.env.NODE_ENV === 'development';
+                            const csp = [
+                                "default-src 'self'",
+                                "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://login.microsoftonline.com https://alcdn.msauth.net https://aadcdn.msftauth.net https://www.googletagmanager.com https://www.google-analytics.com https://*.cloudflare.com",
+                                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+                                "font-src 'self' data: https://fonts.gstatic.com",
+                                "img-src 'self' data: blob: https: http:",
+                                "media-src 'self' blob: https:",
+                                "connect-src 'self' https://login.microsoftonline.com https://graph.microsoft.com https://admin.salvemundi.nl https://notifications.salvemundi.nl https://data.imagination.platour.net https://www.google-analytics.com https://analytics.google.com wss: https://*.cartocdn.com",
+                                `frame-src 'self' https://login.microsoftonline.com https://www.google.com https://alcdn.msauth.net https://aadcdn.msftauth.net ${isDev ? 'http://localhost:* https://localhost:*' : ''}`,
+                                "worker-src 'self' blob:",
+                                "object-src 'none'",
+                                "base-uri 'self'",
+                                "form-action 'self'",
+                                "frame-ancestors 'self'",
+                            ];
+
+                            if (!isDev) {
+                                csp.push("upgrade-insecure-requests");
+                            }
+
+                            return csp.join('; ');
+                        })(),
                     },
                 ],
             },

@@ -12,7 +12,6 @@ import {
     UserCheck,
     Plus,
     FileText,
-    AlertCircle,
     Activity,
     Ticket,
     Shield,
@@ -574,41 +573,6 @@ export default function AdminDashboardPage() {
 
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-                </div>
-
-                {/* System Health - ICT Only */}
-                {perms.isIctMember && (
-                    <div className="mt-8">
-                        <ListCard
-                            title="Systeemstatus"
-                            icon={<Activity className="h-5 w-5" />}
-                        >
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/30 rounded-xl">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-3 h-3 rounded-full bg-green-500 dark:bg-green-400 animate-pulse" />
-                                        <div>
-                                            <p className="font-semibold text-admin">API Status</p>
-                                            <p className="text-sm text-admin-muted">Operationeel</p>
-                                        </div>
-                                    </div>
-                                    <span className="text-green-600 dark:text-green-400 font-bold">✓</span>
-                                </div>
-                                <div className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-700 rounded-xl">
-                                    <div className="flex items-center gap-3">
-                                        <AlertCircle className="h-5 w-5 text-slate-500 dark:text-slate-400" />
-                                        <div>
-                                            <p className="font-semibold text-slate-700 dark:text-slate-200">Recente Fouten</p>
-                                            <p className="text-sm text-slate-500 dark:text-slate-400">Laatste 24 uur</p>
-                                        </div>
-                                    </div>
-                                    <span className="text-2xl font-bold text-admin-muted">{stats.systemErrors}</span>
-                                </div>
-                            </div>
-                        </ListCard>
-                    </div>
-                )}
             </div>
         </>
     );

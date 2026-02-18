@@ -4,8 +4,13 @@ import { verifyUserPermissions } from './secure-check';
 import { serverDirectusFetch, COLLECTION_TAGS } from '@/shared/lib/server-directus';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { sendActivityCancellationEmail } from '@/shared/lib/services/email-service';
+import { COMMITTEE_TOKENS } from '@/shared/config/committee-tokens';
 
-const ADMIN_TOKENS = ['ict', 'bestuur', 'kandi'];
+const ADMIN_TOKENS = [
+    COMMITTEE_TOKENS.ICT,
+    COMMITTEE_TOKENS.BESTUUR,
+    COMMITTEE_TOKENS.KANDI
+];
 
 interface Committee {
     id: number;

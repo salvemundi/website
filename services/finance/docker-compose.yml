@@ -13,9 +13,9 @@ services:
       - DIRECTUS_API_TOKEN=${DIRECTUS_API_TOKEN}
       - INTERNAL_API_KEY=${INTERNAL_API_KEY}
       - EMAIL_SERVICE_URL=http://email-api-${TAG:-dev}:3001
-      - MEMBERSHIP_API_URL=http://membership-api-${TAG:-dev}:8000/api/membership
-      - GRAPH_SYNC_URL=http://graph-sync:3001
-      - ADMIN_API_URL=http://admin-api-${TAG:-dev}:3005
+      # - MEMBERSHIP_API_URL=http://membership-api-${TAG:-dev}:8000/api/membership
+      # - GRAPH_SYNC_URL=http://graph-sync:3001
+      # - ADMIN_API_URL=http://admin-api-${TAG:-dev}:3005
       - NODE_ENV=${NODE_ENV:-development}
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:3002/health', (res) => { if (res.statusCode === 200) { process.exit(0); } else { process.exit(1); } }).on('error', (e) => { process.exit(1); });"]

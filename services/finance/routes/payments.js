@@ -167,6 +167,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 const coupon = await directusService.getCoupon(DIRECTUS_URL, DIRECTUS_API_TOKEN, couponCode, traceId);
 
                 if (coupon) {
+                    let isValid = true;
                     console.warn(`[Payment][${traceId}] Coupon found: ${coupon.id}. Checking constraints...`);
                     // 1. Check if manually active
                     const isManuallyActive = String(coupon.is_active) === 'true';
@@ -260,6 +261,21 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 effectiveEnvironment = 'development';
             }
 
+            let productType = 'attention_required';
+            if (isContribution) {
+                productType = userId ? 'membership_renewal' : 'membership_new';
+            } else if (registrationType === 'pub_crawl_signup') {
+                productType = 'pub_crawl';
+            } else if (registrationType === 'trip_signup') {
+                productType = 'trip';
+            } else if (registrationType === 'event_signup') {
+                productType = 'event';
+            }
+
+            if (productType === 'attention_required') {
+                console.warn(`[Payment][${traceId}] 🚨 CRITICAL: Could not determine product_type for registrationType: ${registrationType}, isContribution: ${isContribution}`);
+            }
+
             const transactionPayload = {
                 amount: formattedAmount,
                 product_name: description,
@@ -273,6 +289,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 environment: effectiveEnvironment,
                 approval_status: approvalStatus,
                 coupon_code: couponCode || null,
+                product_type: productType,
             };
 
             if (userId) {

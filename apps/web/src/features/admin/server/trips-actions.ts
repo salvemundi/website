@@ -3,6 +3,8 @@
 import { verifyUserPermissions } from './secure-check';
 import { serverDirectusFetch } from '@/shared/lib/server-directus';
 import { revalidatePath } from 'next/cache';
+import { createServiceToken } from '@/shared/lib/service-auth';
+import { COMMITTEE_TOKENS } from '@/shared/config/committee-tokens';
 
 // --- Types ---
 
@@ -73,7 +75,12 @@ export interface TripActivity {
 
 // Permissions for Reis Admin
 const REIS_PERMISSIONS = {
-    commissie_tokens: ['reiscommissie', 'reis', 'ictcommissie', 'ict', 'bestuur', 'kandi', 'kandidaat'],
+    commissie_tokens: [
+        COMMITTEE_TOKENS.REIS,
+        COMMITTEE_TOKENS.ICT,
+        COMMITTEE_TOKENS.BESTUUR,
+        COMMITTEE_TOKENS.KANDI
+    ],
     roles: ['Administrator']
 };
 
@@ -453,15 +460,23 @@ export async function sendTripBulkEmailAction(data: {
 }): Promise<{ success: boolean; count?: number }> {
     await verifyUserPermissions(REIS_PERMISSIONS);
 
-    const serviceSecret = process.env.SERVICE_SECRET || '';
-    const financeApiUrl = process.env.INTERNAL_FINANCE_URL || 'http://localhost:3001';
+    const financeApiUrl = process.env.FINANCE_SERVICE_URL;
+    const serviceSecret = process.env.SERVICE_SECRET;
+
+    if (!financeApiUrl) {
+        throw new Error('Server configuration error: FINANCE_SERVICE_URL is not defined in environment variables.');
+    }
+    if (!serviceSecret) {
+        throw new Error('Server configuration error: SERVICE_SECRET is not defined in environment variables.');
+    }
 
     try {
         const response = await fetch(`${financeApiUrl}/trip-email/send-bulk`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-internal-api-secret': serviceSecret
+                'X-API-Key': serviceSecret,
+                'Authorization': `Bearer ${createServiceToken({ iss: 'frontend' }, '5m')}`
             },
             body: JSON.stringify(data)
         });
@@ -483,11 +498,14 @@ export async function sendTripBulkEmailAction(data: {
 export async function sendTripPaymentEmailAction(signupId: number, tripId: number, paymentType: 'deposit' | 'final'): Promise<{ success: boolean; message?: string }> {
     await verifyUserPermissions(REIS_PERMISSIONS);
 
-    const financeApiUrl = process.env.INTERNAL_FINANCE_URL || 'http://finance:3002';
+    const financeApiUrl = process.env.FINANCE_SERVICE_URL;
     const serviceSecret = process.env.SERVICE_SECRET;
 
+    if (!financeApiUrl) {
+        throw new Error('Server configuration error: FINANCE_SERVICE_URL is not defined in environment variables.');
+    }
     if (!serviceSecret) {
-        throw new Error('Internal Error: Service Secret not configured');
+        throw new Error('Server configuration error: SERVICE_SECRET is not defined in environment variables.');
     }
 
     try {
@@ -495,7 +513,8 @@ export async function sendTripPaymentEmailAction(signupId: number, tripId: numbe
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-internal-api-secret': serviceSecret
+                'X-API-Key': serviceSecret,
+                'Authorization': `Bearer ${createServiceToken({ iss: 'frontend' }, '5m')}`
             },
             body: JSON.stringify({
                 signupId,
@@ -522,11 +541,14 @@ export async function sendTripPaymentEmailAction(signupId: number, tripId: numbe
 export async function sendTripStatusUpdateEmailAction(signupId: number, tripId: number, newStatus: string, oldStatus: string): Promise<{ success: boolean }> {
     await verifyUserPermissions(REIS_PERMISSIONS);
 
-    const financeApiUrl = process.env.INTERNAL_FINANCE_URL || 'http://finance:3002';
+    const financeApiUrl = process.env.FINANCE_SERVICE_URL;
     const serviceSecret = process.env.SERVICE_SECRET;
 
+    if (!financeApiUrl) {
+        throw new Error('Server configuration error: FINANCE_SERVICE_URL is not defined in environment variables.');
+    }
     if (!serviceSecret) {
-        throw new Error('Internal Error: Service Secret not configured');
+        throw new Error('Server configuration error: SERVICE_SECRET is not defined in environment variables.');
     }
 
     try {
@@ -534,7 +556,8 @@ export async function sendTripStatusUpdateEmailAction(signupId: number, tripId: 
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-internal-api-secret': serviceSecret
+                'X-API-Key': serviceSecret,
+                'Authorization': `Bearer ${createServiceToken({ iss: 'frontend' }, '5m')}`
             },
             body: JSON.stringify({
                 signupId,

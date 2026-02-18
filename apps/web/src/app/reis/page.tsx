@@ -6,7 +6,7 @@ import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { tripSignupsApi } from '@/shared/lib/api/trips';
 import { getImageUrl } from '@/shared/lib/api/image';
 import { useSalvemundiTrips, useSalvemundiSiteSettings, useSalvemundiTripSignups } from '@/shared/lib/hooks/useSalvemundiApi';
-import { fetchUserDetails, fetchAndPersistUserCommittees } from '@/shared/lib/auth';
+import { useAuth } from '@/features/auth/providers/auth-provider';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { splitDutchLastName } from '@/shared/lib/utils/dutch-name';
@@ -31,8 +31,8 @@ export default function ReisPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isCommitteeMember, setIsCommitteeMember] = useState(false);
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [lightboxOpen, setLightboxOpen] = useState(false);
+    const { user: currentUser, isAuthenticated } = useAuth();
     const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
     const { data: trips, isLoading: tripsLoading } = useSalvemundiTrips();
@@ -183,54 +183,35 @@ export default function ReisPage() {
         if (error) setError(null);
     };
 
-    // Prefill form when user is logged in (session token in localStorage)
+    // Prefill form when user is logged in
     useEffect(() => {
-        try {
-            if (typeof window === 'undefined') return;
-            const token = localStorage.getItem('auth_token');
-            if (!token) return;
+        if (!currentUser) return;
 
-            // fetchUserDetails will throw or return null if token invalid
-            fetchUserDetails(token)
-                .then(async (user) => {
-                    if (!user) return;
-
-                    // Extract middle name from last name if not set
-                    let middleName = user.middle_name || '';
-                    let lastName = user.last_name || '';
-                    if (!middleName && lastName) {
-                        const split = splitDutchLastName(lastName);
-                        if (split.prefix) {
-                            middleName = split.prefix;
-                            lastName = split.lastName;
-                        }
-                    }
-
-                    setForm((prev) => ({
-                        ...prev,
-                        // Only first_name is NOT auto-filled - user must enter legal first name as on ID
-                        middle_name: prev.middle_name || middleName,
-                        last_name: prev.last_name || lastName,
-                        email: prev.email || user.email || '',
-                        phone_number: prev.phone_number || user.phone_number || '',
-                        date_of_birth: prev.date_of_birth || (user.date_of_birth ? formatDateToLocalISO(user.date_of_birth) : ''),
-                    }));
-                    setCurrentUser(user as User);
-
-                    // Fetch committees separately since fetchUserDetails returns empty committees
-                    const committees = await fetchAndPersistUserCommittees(user.id);
-                    const userWithCommittees = { ...user, committees };
-                    console.log('[ReisPage] User committees:', committees);
-                    setIsCommitteeMember(isUserInReisCommittee(userWithCommittees));
-                })
-                .catch(() => {
-                    // ignore failures - user may not be logged in
-                    // console.debug('No logged-in user to prefill signup form', e);
-                });
-        } catch (e) {
-            // ignore
+        // Extract middle name from last name if not set
+        let middleName = currentUser.middle_name || '';
+        let lastName = currentUser.last_name || '';
+        if (!middleName && lastName) {
+            const split = splitDutchLastName(lastName);
+            if (split.prefix) {
+                middleName = split.prefix;
+                lastName = split.lastName;
+            }
         }
-    }, []);
+
+        setForm((prev) => ({
+            ...prev,
+            middle_name: prev.middle_name || middleName,
+            last_name: prev.last_name || lastName,
+            email: prev.email || currentUser.email || '',
+            phone_number: prev.phone_number || currentUser.phone_number || '',
+            date_of_birth: prev.date_of_birth || (currentUser.date_of_birth ? formatDateToLocalISO(currentUser.date_of_birth) : ''),
+        }));
+
+        const committees = (currentUser as any).committees;
+        if (committees) {
+            setIsCommitteeMember(isUserInReisCommittee(currentUser));
+        }
+    }, [currentUser]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

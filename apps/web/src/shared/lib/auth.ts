@@ -286,15 +286,18 @@ export async function fetchAndPersistUserCommittees(userId: string): Promise<Arr
         // Also fetch is_visible to filter out hidden committees
         const rows = await getUserCommitteesAction(userId);
 
-        const committees: Array<{ id: string; name: string; is_leader?: boolean }> = [];
+        const committees: Array<{ id: string; name: string; is_leader?: boolean; commissie_token?: string }> = [];
         for (const r of rows) {
             const c = r?.committee_id;
             // Only include visible committees (is_visible !== false)
             if (c && c.id && c.is_visible !== false) {
                 const id = String(c.id);
                 const name = String(c.name || '');
+                const commissie_token = c.commissie_token || undefined;
                 const isLeader = !!r?.is_leader;
-                if (!committees.find((x) => x.id === id)) committees.push({ id, name, is_leader: isLeader });
+                if (!committees.find((x) => x.id === id)) {
+                    committees.push({ id, name, is_leader: isLeader, commissie_token });
+                }
             }
         }
 

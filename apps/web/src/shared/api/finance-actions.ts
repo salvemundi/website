@@ -1,7 +1,14 @@
 'use server';
 
-const FINANCE_SERVICE_URL = process.env.FINANCE_SERVICE_URL || 'http://localhost:3001';
+const FINANCE_SERVICE_URL = process.env.FINANCE_SERVICE_URL;
 const SERVICE_SECRET = process.env.SERVICE_SECRET;
+
+if (!FINANCE_SERVICE_URL) {
+    throw new Error('Server configuration error: FINANCE_SERVICE_URL is not defined in environment variables.');
+}
+if (!SERVICE_SECRET) {
+    throw new Error('Server configuration error: SERVICE_SECRET is not defined in environment variables.');
+}
 
 export interface PaymentPayload {
     amount: string | number;

@@ -1,59 +1,61 @@
 services:
-  db:
-    image: postgres:15
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_DATABASE}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - data-plane
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_DATABASE}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  # db:
+  #   image: postgres:15
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_USER: ${DB_USER}
+  #     POSTGRES_PASSWORD: ${DB_PASSWORD}
+  #     POSTGRES_DB: ${DB_DATABASE}
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - data-plane
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_DATABASE}"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
 
-  directus:
-    image: directus/directus:10.10
-    restart: unless-stopped
-    environment:
-      DB_CLIENT: "pg"
-      DB_HOST: "db"
-      DB_PORT: "5432"
-      DB_DATABASE: ${DB_DATABASE}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      KEY: ${DIRECTUS_KEY}
-      SECRET: ${DIRECTUS_SECRET}
-      ADMIN_EMAIL: ${ADMIN_EMAIL}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-      PUBLIC_URL: ${PUBLIC_URL}
-    networks:
-      - public-ingress
-      - service-mesh
-      - data-plane
-    depends_on:
-      db:
-        condition: service_healthy
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    volumes:
-      - directus_uploads:/directus/uploads
+  # directus:
+  #   image: directus/directus:10.10
+  #   restart: unless-stopped
+  #   environment:
+  #     DB_CLIENT: "pg"
+  #     DB_HOST: "db"
+  #     DB_PORT: "5432"
+  #     DB_DATABASE: ${DB_DATABASE}
+  #     DB_USER: ${DB_USER}
+  #     DB_PASSWORD: ${DB_PASSWORD}
+  #     KEY: ${DIRECTUS_KEY}
+  #     SECRET: ${DIRECTUS_SECRET}
+  #     ADMIN_EMAIL: ${ADMIN_EMAIL}
+  #     ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+  #     PUBLIC_URL: ${PUBLIC_URL}
+  #   networks:
+  #     - public-ingress
+  #     - service-mesh
+  #     - data-plane
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
+  #   volumes:
+  #     - directus_uploads:/directus/uploads
 
   finance:
     build: ./services/finance
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:3001:3001"
     environment:
       SERVICE_SECRET: ${SERVICE_SECRET}
       DIRECTUS_ADMIN_TOKEN: ${DIRECTUS_ADMIN_TOKEN}
@@ -67,12 +69,15 @@ services:
         max-size: "10m"
         max-file: "3"
     networks:
+      - proxy-network
       - service-mesh
       - data-plane
 
   identity:
     build: ./services/identity
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:3002:3002"
     environment:
       SERVICE_SECRET: ${SERVICE_SECRET}
       DIRECTUS_ADMIN_TOKEN: ${DIRECTUS_ADMIN_TOKEN}
@@ -88,12 +93,15 @@ services:
         max-size: "10m"
         max-file: "3"
     networks:
+      - proxy-network
       - service-mesh
       - data-plane
 
   email:
     build: ./services/email
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:3003:3003"
     environment:
       SERVICE_SECRET: ${SERVICE_SECRET}
       DIRECTUS_ADMIN_TOKEN: ${DIRECTUS_ADMIN_TOKEN}
@@ -104,11 +112,14 @@ services:
         max-size: "10m"
         max-file: "3"
     networks:
+      - proxy-network
       - service-mesh
 
   notifications:
     build: ./services/notifications
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:3004:3004"
     environment:
       SERVICE_SECRET: ${SERVICE_SECRET}
       DIRECTUS_NOTIFICATION_KEY: ${DIRECTUS_ADMIN_TOKEN}
@@ -121,11 +132,14 @@ services:
         max-size: "10m"
         max-file: "3"
     networks:
+      - proxy-network
       - service-mesh
 
   web:
     build: ./apps/web
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:5173:5173"
     environment:
       NEXT_PUBLIC_DIRECTUS_URL: ${NEXT_PUBLIC_DIRECTUS_URL}
       DIRECTUS_ADMIN_TOKEN: ${DIRECTUS_ADMIN_TOKEN}
@@ -139,7 +153,29 @@ services:
       - public-ingress
       - service-mesh
 
+  secure-proxy:
+    image: nginx:latest
+    container_name: secure-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infra/proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - proxy-network
+      - public-ingress
+      - service-mesh
+      - data-plane
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
 networks:
+  proxy-network:
+    external: true
   public-ingress:
     driver: bridge
   service-mesh:

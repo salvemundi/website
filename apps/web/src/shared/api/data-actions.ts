@@ -540,22 +540,31 @@ export async function getHeroBannersAction(): Promise<any[]> {
 // =====================
 // SITE SETTINGS
 // =====================
-export async function getSiteSettingsAction(page?: string, includeAuthorizedTokens: boolean = false): Promise<any | null> {
+export async function getSiteSettingsAction(page?: string, includeAuthorizedTokens: boolean = false): Promise<any[] | any | null> {
     try {
         const fields = includeAuthorizedTokens
             ? 'id,page,show,disabled_message,authorized_tokens'
             : 'id,page,show,disabled_message';
 
-        const params: Record<string, any> = { fields, limit: '1' };
-        if (page) params.filter = { page: { _eq: page } };
+        const params: Record<string, any> = { fields };
+        if (page) {
+            params.filter = { page: { _eq: page } };
+            params.limit = '1';
+        } else {
+            params.limit = '-1';
+        }
 
         const query = buildQuery(params);
         const data = await fetchDirectus<any[] | any>(`/items/site_settings?${query}`, 3600);
 
-        if (Array.isArray(data)) return data[0] || null;
-        return data ?? null;
+        if (page) {
+            if (Array.isArray(data)) return data[0] || null;
+            return data ?? null;
+        }
+
+        return Array.isArray(data) ? data : [];
     } catch {
-        return null;
+        return page ? null : [];
     }
 }
 
@@ -841,7 +850,7 @@ export async function getUserCommitteesAction(userId: string): Promise<any[]> {
     try {
         const query = buildQuery({
             filter: { user_id: { _eq: userId } },
-            fields: 'committee_id.id,committee_id.name,committee_id.is_visible,is_leader',
+            fields: 'committee_id.id,committee_id.name,committee_id.is_visible,committee_id.commissie_token,is_leader',
             limit: '-1'
         });
         const res = await fetchDirectus<any[]>(`/items/committee_members?${query}`, 0);
