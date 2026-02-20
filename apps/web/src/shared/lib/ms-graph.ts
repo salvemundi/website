@@ -3,11 +3,12 @@
 /**
  * Utility for server-side interaction with Microsoft Graph API
  * Uses the OAuth 2.0 Client Credentials Grant to act as the application.
+ * Specifically uses a dedicated Provisioning App Registration for write operations.
  */
 
-const CLIENT_ID = process.env.NEXT_PUBLIC_ENTRA_CLIENT_ID;
+const PROVISIONING_CLIENT_ID = process.env.ENTRA_PROVISIONING_CLIENT_ID;
 const TENANT_ID = process.env.NEXT_PUBLIC_ENTRA_TENANT_ID;
-const CLIENT_SECRET = process.env.ENTRA_CLIENT_SECRET;
+const PROVISIONING_CLIENT_SECRET = process.env.ENTRA_PROVISIONING_CLIENT_SECRET;
 
 let accessToken: string | null = null;
 let tokenExpiresAt: number | null = null;
@@ -18,16 +19,16 @@ async function getGraphAccessToken(): Promise<string> {
         return accessToken;
     }
 
-    if (!CLIENT_ID || !TENANT_ID || !CLIENT_SECRET) {
-        throw new Error('Missing Entra ID environment variables for MS Graph authentication');
+    if (!PROVISIONING_CLIENT_ID || !TENANT_ID || !PROVISIONING_CLIENT_SECRET) {
+        throw new Error('Missing Entra ID Provisioning environment variables for MS Graph authentication');
     }
 
     const tokenUrl = `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token`;
 
     const params = new URLSearchParams({
-        client_id: CLIENT_ID,
+        client_id: PROVISIONING_CLIENT_ID,
         scope: 'https://graph.microsoft.com/.default',
-        client_secret: CLIENT_SECRET,
+        client_secret: PROVISIONING_CLIENT_SECRET,
         grant_type: 'client_credentials'
     });
 
@@ -56,6 +57,7 @@ async function getGraphAccessToken(): Promise<string> {
  * Updates a user's phone number in Entra ID.
  */
 export async function updateUserPhoneInEntra(entraId: string, phoneNumber: string): Promise<void> {
+    console.log(`[ms-graph] Explicitly using Provisioning Identity (User.ReadWrite.All scope) to update phone for user ${entraId}`);
     const token = await getGraphAccessToken();
 
     const response = await fetch(`https://graph.microsoft.com/v1.0/users/${entraId}`, {
@@ -81,6 +83,7 @@ export async function updateUserPhoneInEntra(entraId: string, phoneNumber: strin
  * Updates a user's Date of Birth via Custom Security Attributes in Entra ID.
  */
 export async function updateUserDobInEntra(entraId: string, dob: string): Promise<void> {
+    console.log(`[ms-graph] Explicitly using Provisioning Identity (CustomSecAttributeAssignment.ReadWrite.All scope) to update Custom Security Attribute for user ${entraId}`);
     const token = await getGraphAccessToken();
 
     const attributeSetName = "SalveMundiLidmaatschap";

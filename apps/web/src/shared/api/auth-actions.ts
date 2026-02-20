@@ -219,13 +219,13 @@ export async function signupWithPasswordAction(userData: SignupData): Promise<Lo
 }
 
 /**
- * getCurrentUserAction - Securely retrieves the current user session from cookies.
+ * getCurrentUserAction - Securely retrieves the current user session.
  * This replaces the need for the client to store and send tokens manually.
  */
 export async function getCurrentUserAction(): Promise<User | null> {
     try {
-        const cookieStore = await cookies();
-        const sessionToken = cookieStore.get(AUTH_COOKIES.SESSION)?.value;
+        const { getServerSessionToken } = await import('@/shared/lib/auth-server');
+        const sessionToken = await getServerSessionToken();
 
         if (!sessionToken) return null;
 
@@ -269,4 +269,14 @@ export async function logoutAction(): Promise<void> {
 
     cookieStore.delete(AUTH_COOKIES.SESSION);
     cookieStore.delete(AUTH_COOKIES.REFRESH);
+    cookieStore.delete(AUTH_COOKIES.TEST_TOKEN); // Also clear test token on full logout
+}
+
+/**
+ * clearImpersonationAction - Clears the active impersonation test cookie.
+ */
+export async function clearImpersonationAction(): Promise<{ success: boolean }> {
+    const cookieStore = await cookies();
+    cookieStore.delete(AUTH_COOKIES.TEST_TOKEN);
+    return { success: true };
 }

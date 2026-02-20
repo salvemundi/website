@@ -7,6 +7,7 @@ import Header from '@/widgets/header/ui/HeaderWrapper';
 import Footer from '@/widgets/footer/ui/Footer';
 import { ServiceWorkerRegistration } from './ServiceWorkerRegistration';
 import { PreventZoom } from '@/components/PreventZoom';
+import { ImpersonationBanner } from '@/widgets/header/ui/ImpersonationBanner';
 
 
 const getBaseUrl = () => {
@@ -93,6 +94,7 @@ export default function RootLayout({
             </head>
             <body className="min-h-screen bg-background dark:bg-background-darker text-ink dark:text-white relative transition-colors duration-300">
                 <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-oranje/10/80 via-transparent to-oranje/20/60 dark:from-oranje/5/40 dark:to-paars/10/40" aria-hidden="true" />
+                <ImpersonationBanner />
                 <RootProviders>
                     {/* Client-only: prints ASCII art + GitHub link to browser console on page load */}
                     <ConsoleArt />
