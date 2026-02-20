@@ -1,4 +1,5 @@
-import { getCommitteesWithMembers, getCommittee, getEventsByCommittee } from '@/shared/api/salvemundi-server';
+import { getCommittee, getEventsByCommittee } from '@/shared/api/salvemundi-server';
+import { getCommitteesAction } from '@/shared/api/data-actions';
 import { slugify } from '@/shared/lib/utils/slug';
 
 import CommitteeClient from './CommitteeClient';
@@ -13,8 +14,8 @@ export default async function CommitteeDetailPage(props: { params: Promise<{ slu
     const slug = params.slug;
 
     // Fetch all committees to find the ID by slug
-    // Note: getCommitteesWithMembers is cached, so this is efficient
-    const committeesData = await getCommitteesWithMembers();
+    // Note: getCommitteesAction avoids fetching members for all committees (resolving N+1 waterfall)
+    const committeesData = await getCommitteesAction();
 
     // Find committee by slug
     const committeeSummary = committeesData.find(
@@ -51,7 +52,7 @@ export default async function CommitteeDetailPage(props: { params: Promise<{ slu
 }
 
 export async function generateStaticParams() {
-    const committees = await getCommitteesWithMembers();
+    const committees = await getCommitteesAction();
     const committeeList = Array.isArray(committees) ? committees : [];
     return committeeList.map((c) => ({
         slug: slugify(cleanCommitteeName(c.name)),
