@@ -53,7 +53,7 @@ const authenticate = (req, res, next) => {
     return next();
   }
 
-  const apiKey = req.headers['x-api-key'] || req.headers['x-internal-api-secret'];
+  const apiKey = req.headers['x-api-key'];
   if (SERVICE_SECRET && apiKey !== SERVICE_SECRET) {
     console.warn(`[Auth] Unauthorized request to ${req.path} from ${req.ip}`);
     return res.status(401).json({ error: 'Unauthorized' });

@@ -67,7 +67,7 @@ async function verifyEventManagementPermission(eventId: number | null) {
     const userTokens = context.committees.map(c => c.token);
 
     // Admin/Board/ICT/Kandi always has access
-    if (userRole === 'Administrator' || userTokens.some(t => ADMIN_TOKENS.includes(t))) {
+    if (userRole === 'Administrator' || userTokens.some(t => (ADMIN_TOKENS as string[]).includes(t))) {
         return context;
     }
 
@@ -144,7 +144,7 @@ export async function createEventAction(data: Partial<Event>): Promise<{ success
     // Since creation requires a committee_id, we should verify the user is in that committee
     const context = await verifyUserPermissions({});
     const userTokens = context.committees.map(c => c.token);
-    const isGlobalAdmin = context.role === 'Administrator' || userTokens.some(t => ADMIN_TOKENS.includes(t));
+    const isGlobalAdmin = context.role === 'Administrator' || userTokens.some(t => (ADMIN_TOKENS as string[]).includes(t));
 
     if (!isGlobalAdmin && data.committee_id) {
         // Need to fetch committee token to verify
@@ -387,7 +387,7 @@ export async function sendEventReminderAction(eventId: number): Promise<{ succes
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-internal-api-secret': serviceSecret
+                'X-API-Key': serviceSecret
             },
             body: JSON.stringify({ eventId })
         });
@@ -424,7 +424,7 @@ export async function sendCustomNotificationAction(data: {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-internal-api-secret': serviceSecret
+                'X-API-Key': serviceSecret
             },
             body: JSON.stringify(data)
         });

@@ -248,7 +248,7 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
                     </div>
                 `,
                 attachments: attachments
-            }, { headers: { 'x-api-key': process.env.INTERNAL_API_KEY }, timeout: 10000 });
+            }, { headers: { 'X-API-Key': process.env.SERVICE_SECRET }, timeout: 10000 });
 
             console.log(`[NotificationService] ✅ Confirmation email sent to ${metadata.email} for ${activityName}`);
         } else {
@@ -273,7 +273,7 @@ async function sendConfirmationEmail(directusUrl, directusToken, emailServiceUrl
                         </div>
                     </div>
                 `
-            }, { headers: { 'x-api-key': process.env.INTERNAL_API_KEY }, timeout: 10000 });
+            }, { headers: { 'X-API-Key': process.env.SERVICE_SECRET }, timeout: 10000 });
             console.log(`[NotificationService] Organization notified for ${activityName}`);
         } catch (orgErr) {
             console.warn("[NotificationService] Failed to notify organization:", orgErr.message);
@@ -308,7 +308,7 @@ async function sendWelcomeEmail(emailServiceUrl, email, firstName, credentials) 
                     <p style="margin-top: 0;"><strong>S.A. Salve Mundi</strong></p>
                 </div>
             `
-        }, { headers: { 'x-api-key': process.env.INTERNAL_API_KEY }, timeout: 10000 });
+        }, { headers: { 'X-API-Key': process.env.SERVICE_SECRET }, timeout: 10000 });
         console.log(`[NotificationService] ✅ Welcome email sent to ${email}`);
 
     } catch (error) {
@@ -350,8 +350,8 @@ async function sendTripSignupConfirmation(emailServiceUrl, tripSignup, trip) {
                         <h3 style="margin-top: 0; color: #2E7D32;">Reisdetails:</h3>
                         <p style="margin: 5px 0;"><strong>Reis:</strong> ${trip.name}</p>
                         <p style="margin: 5px 0;"><strong>Datum:</strong> ${formatTripDate(trip)}</p>
-                        <p style="margin: 5px 0;"><strong>Totaalprijs:</strong> €${trip.base_price.toFixed(2)}${tripSignup.role === 'crew' ? ` (excl. crew korting van €${trip.crew_discount.toFixed(2)})` : ''}</p>
-                        <p style="margin: 5px 0;"><strong>Aanbetaling:</strong> €${trip.deposit_amount.toFixed(2)}</p>
+                        <p style="margin: 5px 0;"><strong>Totaalprijs:</strong> €${Number(trip.base_price).toFixed(2)}${tripSignup.role === 'crew' ? ` (excl. crew korting van €${Number(trip.crew_discount).toFixed(2)})` : ''}</p>
+                        <p style="margin: 5px 0;"><strong>Aanbetaling:</strong> €${Number(trip.deposit_amount).toFixed(2)}</p>
                     </div>
 
                     <p style="color: #666; font-size: 14px; margin-top: 30px;">
@@ -362,7 +362,7 @@ async function sendTripSignupConfirmation(emailServiceUrl, tripSignup, trip) {
                     <p style="margin-top: 10px;"><strong>De ReisCommissie</strong></p>
                 </div>
             `
-        }, { headers: { 'x-api-key': process.env.INTERNAL_API_KEY }, timeout: 10000 });
+        }, { headers: { 'X-API-Key': process.env.SERVICE_SECRET }, timeout: 10000 });
 
         console.log(`✅ Trip signup confirmation sent to ${tripSignup.email}`);
     } catch (error) {
@@ -370,11 +370,23 @@ async function sendTripSignupConfirmation(emailServiceUrl, tripSignup, trip) {
     }
 }
 
+const crypto = require('crypto');
+
+function signSignupAccess(signupId) {
+    const secret = process.env.SERVICE_SECRET;
+    if (!secret) return '';
+    const data = String(signupId);
+    const signature = crypto.createHmac('sha256', secret).update(data).digest('hex');
+    return `${data}.${signature}`;
+}
+
 async function sendTripPaymentRequest(emailServiceUrl, tripSignup, trip, paymentType = 'deposit') {
     try {
         const fullName = `${tripSignup.first_name} ${tripSignup.middle_name ? tripSignup.middle_name + ' ' : ''}${tripSignup.last_name}`;
-        const amount = paymentType === 'deposit' ? trip.deposit_amount : 0; // Final amount calculated on frontend
-        const paymentUrl = `${process.env.FRONTEND_URL || 'https://salvemundi.nl'}/reis/${paymentType === 'deposit' ? 'aanbetaling' : 'restbetaling'}/${tripSignup.id}`;
+        const amount = paymentType === 'deposit' ? Number(trip.deposit_amount) : 0; // Final amount calculated on frontend
+
+        const token = signSignupAccess(tripSignup.id);
+        const paymentUrl = `${process.env.FRONTEND_URL || 'https://salvemundi.nl'}/reis/${paymentType === 'deposit' ? 'aanbetaling' : 'restbetaling'}/${tripSignup.id}?token=${token}`;
 
         await axios.post(`${emailServiceUrl}/send-email`, {
             to: tripSignup.email,
@@ -418,7 +430,7 @@ async function sendTripPaymentRequest(emailServiceUrl, tripSignup, trip, payment
                     <p style="margin-top: 10px;"><strong>De ReisCommissie</strong></p>
                 </div>
             `
-        }, { headers: { 'x-api-key': process.env.INTERNAL_API_KEY }, timeout: 10000 });
+        }, { headers: { 'X-API-Key': process.env.SERVICE_SECRET }, timeout: 10000 });
 
         console.log(`✅ Trip payment request (${paymentType}) sent to ${tripSignup.email}`);
     } catch (error) {
@@ -514,7 +526,7 @@ async function sendTripPaymentConfirmation(emailServiceUrl, tripSignup, trip, pa
                     <p style="margin-top: 10px;"><strong>De ReisCommissie</strong></p>
                 </div>
             `
-        }, { headers: { 'x-api-key': process.env.INTERNAL_API_KEY }, timeout: 10000 });
+        }, { headers: { 'X-API-Key': process.env.SERVICE_SECRET }, timeout: 10000 });
 
         console.log(`✅ [NotificationService] Trip payment confirmation (${paymentType}) sent successfully to ${tripSignup.email}`);
     } catch (error) {
@@ -558,7 +570,7 @@ async function sendTripStatusUpdate(emailServiceUrl, tripSignup, trip, newStatus
                     <p style="margin-top: 10px;"><strong>De ReisCommissie</strong></p>
                 </div>
             `
-        }, { headers: { 'x-api-key': process.env.INTERNAL_API_KEY }, timeout: 10000 });
+        }, { headers: { 'X-API-Key': process.env.SERVICE_SECRET }, timeout: 10000 });
 
         console.log(`✅ Trip status update sent to ${tripSignup.email}: ${oldStatus} → ${newStatus}`);
     } catch (error) {
@@ -593,7 +605,7 @@ async function sendTripBulkEmail(emailServiceUrl, recipients, subject, message, 
                     <p style="margin-top: 10px;"><strong>De ReisCommissie</strong></p>
                 </div>
             `
-        }, { headers: { 'x-api-key': process.env.INTERNAL_API_KEY }, timeout: 30000 });
+        }, { headers: { 'X-API-Key': process.env.SERVICE_SECRET }, timeout: 30000 });
 
         console.log(`✅ Bulk email sent to ${recipientEmails.length} recipients for trip: ${tripName}`);
         return { success: true, count: recipientEmails.length };

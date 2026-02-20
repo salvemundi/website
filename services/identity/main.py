@@ -71,7 +71,7 @@ async def api_key_middleware(request: Request, call_next):
     if request.url.path == "/health" or request.url.path == "/api/membership/health":
         return await call_next(request)
     
-    api_key = request.headers.get("x-api-key") or request.headers.get("x-internal-api-secret")
+    api_key = request.headers.get("x-api-key")
     if api_key != SERVICE_SECRET:
         logger.warning(f"Unauthorized access attempt from {request.client.host} to {request.url.path}")
         raise HTTPException(status_code=401, detail="Unauthorized")

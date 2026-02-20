@@ -9,6 +9,11 @@ import type { SiteSettings } from './types';
 export const siteSettingsApi = {
     get: async (page?: string, includeAuthorizedTokens: boolean = false): Promise<SiteSettings | SiteSettings[] | null> => {
         return await getSiteSettingsAction(page, includeAuthorizedTokens);
+    },
+    getSingle: async (page: string, includeAuthorizedTokens: boolean = false): Promise<SiteSettings | null> => {
+        const result = await getSiteSettingsAction(page, includeAuthorizedTokens);
+        if (Array.isArray(result)) return result[0] || null;
+        return result;
     }
 };
 

@@ -366,10 +366,22 @@ export async function updateTripSignupAction(id: number, data: Partial<TripSignu
     await verifyUserPermissions(REIS_PERMISSIONS);
 
     try {
+        let currentSignup: TripSignup | null = null;
+        if (data.status) {
+            currentSignup = await getTripSignupByIdAction(id);
+        }
+
         await serverDirectusFetch(`/items/trip_signups/${id}`, {
             method: 'PATCH',
             body: JSON.stringify(data)
         });
+
+        if (data.status && currentSignup && currentSignup.status !== data.status) {
+            // Trigger email after successful update
+            // We don't await this to keep the UI snappy, but we log errors
+            sendTripStatusUpdateEmailAction(id, currentSignup.trip_id, data.status, currentSignup.status)
+                .catch(err => console.error('Failed to send status update email:', err));
+        }
 
         revalidatePath('/admin/reis');
         revalidatePath(`/admin/reis/deelnemer/${id}`);

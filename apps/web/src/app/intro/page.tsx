@@ -80,7 +80,9 @@ export default function IntroPage() {
     return () => window.removeEventListener('keydown', onKey);
   }, [lightboxOpen]);
 
-  const { data: siteSettings, isLoading: isSettingsLoading } = useSalvemundiSiteSettings('intro');
+  const { data: rawSiteSettings, isLoading: isSettingsLoading } = useSalvemundiSiteSettings('intro');
+  const siteSettings = Array.isArray(rawSiteSettings) ? rawSiteSettings[0] : rawSiteSettings;
+
   // Default to false (closed) if settings are missing or loading error, to prevent accidental signups
   const isIntroEnabled = siteSettings?.show ?? false;
   const introDisabledMessage = siteSettings?.disabled_message || 'De inschrijvingen voor de introweek zijn momenteel gesloten.';

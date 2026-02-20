@@ -161,7 +161,7 @@ const limiter = rateLimit({
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   skip: (req) => {
     // Skip rate limiting for internal services that provide a valid API key
-    const apiKey = req.headers['x-api-key'] || req.headers['x-internal-api-secret'];
+    const apiKey = req.headers['x-api-key'];
     return apiKey && apiKey === process.env.SERVICE_SECRET;
   },
   message: { error: 'Too many requests, please try again later.' }
@@ -196,7 +196,7 @@ const apiKeyAuth = (req, res, next) => {
   }
 
   // Check for API key - support both standard and internal header names
-  const apiKey = req.headers['x-api-key'] || req.headers['x-internal-api-secret'];
+  const apiKey = req.headers['x-api-key'];
   const validApiKey = process.env.SERVICE_SECRET;
 
   if (!validApiKey) {

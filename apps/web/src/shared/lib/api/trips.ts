@@ -16,7 +16,9 @@ import {
     createTripSignupActivityAction,
     deleteTripSignupActivityAction,
     getTripSignupActivitiesBySignupIdAction,
-    getTripSignupActivitiesByActivityIdAction
+    getTripSignupActivitiesByActivityIdAction,
+    getTripParticipantsCountAction,
+    getMyTripSignupAction
 } from '@/shared/api/data-actions';
 import type { Trip, TripActivity, TripSignup } from './types';
 
@@ -68,6 +70,12 @@ export const tripSignupsApi = {
     },
     getByTripId: async (tripId: number) => {
         return await getTripSignupsByTripIdAction(tripId);
+    },
+    getParticipantsCount: async (tripId: number) => {
+        return await getTripParticipantsCountAction(tripId);
+    },
+    getMySignup: async (tripId: number) => {
+        return await getMyTripSignupAction(tripId);
     },
 };
 

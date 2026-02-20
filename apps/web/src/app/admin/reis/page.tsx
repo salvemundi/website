@@ -9,13 +9,12 @@ import {
     updateTripSignupStatusAction,
     deleteTripSignupAction,
     sendTripPaymentEmailAction,
-    sendTripStatusUpdateEmailAction,
     Trip,
     TripSignup
 } from '@/features/admin/server/trips-actions';
+import { generateMagicLink } from '@/app/reis/actions';
 import { usePagePermission } from '@/shared/lib/hooks/usePermissions';
-import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
-import { siteSettingsMutations } from '@/shared/lib/api/site-settings';
+import { siteSettingsApi, siteSettingsMutations } from '@/shared/lib/api/site-settings';
 import { formatDateToLocalISO } from '@/shared/lib/utils/date';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import NoAccessPage from '@/app/admin/no-access/page';
@@ -33,7 +32,9 @@ import {
     UserCheck,
     UserX,
     Plane,
-    Send
+    Send,
+    Link as LinkIcon,
+    Check
 } from 'lucide-react';
 
 export default function ReisAanmeldingenPage() {
@@ -44,6 +45,7 @@ export default function ReisAanmeldingenPage() {
     useEffect(() => {
         setIsAuthorized(permissionAuthorized);
     }, [permissionAuthorized]);
+
     const [trips, setTrips] = useState<Trip[]>([]);
     const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
     const [signups, setSignups] = useState<TripSignup[]>([]);
@@ -55,12 +57,26 @@ export default function ReisAanmeldingenPage() {
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [roleFilter, setRoleFilter] = useState<string>('all');
     const [sendingEmailTo, setSendingEmailTo] = useState<{ signupId: number; type: string } | null>(null);
+    const [copiedLinkId, setCopiedLinkId] = useState<number | null>(null);
+
     // Site visibility settings for Reis
-    const { data: reisSettings, refetch: refetchReisSettings } = useSalvemundiSiteSettings('reis');
+    const [reisSettings, setReisSettings] = useState<any>(null);
+
+    const loadReisSettings = async () => {
+        try {
+            const setting = await siteSettingsApi.getSingle('reis');
+            setReisSettings(setting);
+        } catch (error) {
+            console.error('Failed to load Reis settings:', error);
+        }
+    };
 
     useEffect(() => {
+        loadReisSettings();
         loadTrips();
     }, []);
+
+    const refetchReisSettings = loadReisSettings;
 
     // Authorization handled by usePagePermission hook above
 
@@ -100,6 +116,7 @@ export default function ReisAanmeldingenPage() {
             setIsLoading(false);
         }
     };
+
 
     const loadSignups = async (tripId: number) => {
         setIsLoading(true);
@@ -300,22 +317,10 @@ export default function ReisAanmeldingenPage() {
             await updateTripSignupStatusAction(id, newStatus);
             setSignups(signups.map(s => s.id === id ? { ...s, status: newStatus } : s));
 
-            // Send email notification to participant
-            if (signup && selectedTrip && oldStatus !== newStatus) {
-                try {
-                    // Always send status update email
-                    await sendTripStatusUpdateEmailAction(id, selectedTrip.id, newStatus, oldStatus || '');
-
-                    // If changed to confirmed, ALSO send the deposit payment request
-                    if (newStatus === 'confirmed' && !signup.deposit_paid) {
-                        console.log('[handleStatusChange] Auto-triggering deposit payment request email');
-                        await sendTripPaymentEmailAction(id, selectedTrip.id, 'deposit');
-                        // Update local state to reflect email sent
-                        setSignups(prev => prev.map(s => s.id === id ? { ...s, deposit_email_sent: true } : s));
-                    }
-                } catch (emailErr) {
-                    console.warn('Failed to send status update or payment request email:', emailErr);
-                }
+            // Email notifications are now handled automatically by the server action
+            if (signup && selectedTrip && oldStatus !== newStatus && newStatus === 'confirmed' && !signup.deposit_paid) {
+                // Update local state to reflect email sent (optimistic UI update)
+                setSignups(prev => prev.map(s => s.id === id ? { ...s, deposit_email_sent: true } : s));
             }
         } catch (error) {
             console.error('Failed to update status:', error);
@@ -350,6 +355,22 @@ export default function ReisAanmeldingenPage() {
                 console.error('Failed to load signup activities:', err);
                 setSignupActivitiesMap(prev => ({ ...prev, [signup.id]: [] }));
             }
+        }
+    }
+
+    const handleCopyMagicLink = async (signupId: number) => {
+        try {
+            const link = await generateMagicLink(signupId);
+            if (link) {
+                await navigator.clipboard.writeText(link);
+                setCopiedLinkId(signupId);
+                setTimeout(() => setCopiedLinkId(null), 2000);
+            } else {
+                alert('Kon geen link genereren');
+            }
+        } catch (err) {
+            console.error('Failed to copy magic link:', err);
+            alert('Fout bij kopiëren van link');
         }
     };
 
@@ -519,7 +540,8 @@ export default function ReisAanmeldingenPage() {
                             <label className="text-sm font-medium">Reis zichtbaar</label>
                             <button
                                 onClick={async () => {
-                                    const current = reisSettings?.show ?? true;
+                                    const setting = await siteSettingsApi.getSingle('reis');
+                                    const current = setting?.show ?? true;
                                     try {
                                         await siteSettingsMutations.upsertByPage('reis', { show: !current });
                                         await refetchReisSettings();
@@ -528,10 +550,10 @@ export default function ReisAanmeldingenPage() {
                                         alert('Fout bij het bijwerken van de zichtbaarheid voor Reis');
                                     }
                                 }}
-                                className={`w-12 h-6 rounded-full p-0.5 transition ${reisSettings?.show ? 'bg-green-500' : 'bg-gray-300'}`}
-                                aria-pressed={reisSettings?.show ?? true}
+                                className={`w-12 h-6 rounded-full p-0.5 transition ${(Array.isArray(reisSettings) ? reisSettings[0] : reisSettings)?.show ? 'bg-green-500' : 'bg-gray-300'}`}
+                                aria-pressed={(Array.isArray(reisSettings) ? reisSettings[0] : reisSettings)?.show ?? true}
                             >
-                                <span className={`block w-5 h-5 bg-white rounded-full transform transition ${reisSettings?.show ? 'translate-x-6' : 'translate-x-0'}`} />
+                                <span className={`block w-5 h-5 bg-white rounded-full transform transition ${(Array.isArray(reisSettings) ? reisSettings[0] : reisSettings)?.show ? 'translate-x-6' : 'translate-x-0'}`} />
                             </button>
                         </div>
 
@@ -729,6 +751,23 @@ export default function ReisAanmeldingenPage() {
                                                                             Restbetaling {signup.final_email_sent && <span className="ml-1 text-[10px] font-bold uppercase opacity-60">(Verzonden)</span>}
                                                                         </button>
                                                                         {!selectedTrip?.allow_final_payments && <span className="text-[10px] text-red-500 italic mt-1 leading-tight">Restbetalingen nog niet geopend</span>}
+                                                                    </div>
+                                                                    <div className="flex flex-col gap-1 items-start">
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                handleCopyMagicLink(signup.id);
+                                                                            }}
+                                                                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:opacity-80 transition"
+                                                                            title="Kopieer directe betaallink (Magic Link)"
+                                                                        >
+                                                                            {copiedLinkId === signup.id ? (
+                                                                                <Check className="h-4 w-4" />
+                                                                            ) : (
+                                                                                <LinkIcon className="h-4 w-4" />
+                                                                            )}
+                                                                            {copiedLinkId === signup.id ? 'Gekopieerd!' : 'Kopieer Link'}
+                                                                        </button>
                                                                     </div>
                                                                 </div>
                                                             </div>

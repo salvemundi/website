@@ -20,8 +20,7 @@ import {
 
 import type {
     Trip,
-    TripActivity,
-    TripSignup
+    TripActivity
 } from '../api/types';
 
 // Events (Activities) Hooks
@@ -238,12 +237,22 @@ export function useSalvemundiTripActivities(tripId: number | undefined, options?
     });
 }
 
-export function useSalvemundiTripSignups(tripId: number | undefined, options?: Omit<UseQueryOptions<TripSignup[]>, 'queryKey' | 'queryFn'>) {
+
+
+export function useTripParticipantsCount(tripId: number | undefined) {
     return useQuery({
-        queryKey: ['trip-signups', tripId],
-        queryFn: () => tripSignupsApi.getByTripId(tripId!),
+        queryKey: ['trip-participants-count', tripId],
+        queryFn: () => tripSignupsApi.getParticipantsCount(tripId!),
         enabled: !!tripId,
         staleTime: 5 * 60 * 1000,
-        ...options
+    });
+}
+
+export function useMyTripSignup(tripId: number | undefined) {
+    return useQuery({
+        queryKey: ['my-trip-signup', tripId],
+        queryFn: () => tripSignupsApi.getMySignup(tripId!),
+        enabled: !!tripId,
+        staleTime: 0, // Always fetch fresh to ensure status is up to date
     });
 }

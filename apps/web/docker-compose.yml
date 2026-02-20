@@ -13,7 +13,7 @@ services:
       # Public notification API URL - used by both client and server
       # All environments (dev, preprod, prod) use the same centralized notification service
       - NEXT_PUBLIC_NOTIFICATION_API_URL=${NEXT_PUBLIC_NOTIFICATION_API_URL:-https://notifications.salvemundi.nl}
-      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+      - SERVICE_SECRET=${SERVICE_SECRET}
       # Membership API URL for server-side communication with membership-api
       - MEMBERSHIP_API_URL=${MEMBERSHIP_API_URL:-http://membership-api-${TAG:-dev}:8000/api/membership}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}

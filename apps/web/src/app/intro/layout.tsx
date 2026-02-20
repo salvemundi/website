@@ -27,7 +27,9 @@ export default function IntroLayout({ children }: { children: React.ReactNode })
         return pathname?.startsWith(href);
     };
 
-    const { data: siteSettings, isLoading: isSettingsLoading } = useSalvemundiSiteSettings('intro');
+    const { data: rawSiteSettings, isLoading: isSettingsLoading } = useSalvemundiSiteSettings('intro');
+    const siteSettings = Array.isArray(rawSiteSettings) ? rawSiteSettings[0] : rawSiteSettings;
+
     const isIntroEnabled = siteSettings?.show ?? true;
     const introDisabledMessage = siteSettings?.disabled_message || 'De inschrijvingen voor de introweek zijn momenteel gesloten.';
 
@@ -43,7 +45,7 @@ export default function IntroLayout({ children }: { children: React.ReactNode })
                     <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
-                   
+
                 </Link>
             )}
 
@@ -80,8 +82,8 @@ export default function IntroLayout({ children }: { children: React.ReactNode })
                                         key={item.href}
                                         href={item.href}
                                         className={`flex items-center gap-2 px-2 py-2.5 rounded-lg font-semibold transition-all duration-300 group ${active
-                                                ? 'bg-gradient-theme text-white shadow-lg'
-                                                : 'text-theme hover:bg-theme-purple/10'
+                                            ? 'bg-gradient-theme text-white shadow-lg'
+                                            : 'text-theme hover:bg-theme-purple/10'
                                             }`}
                                     >
                                         <Icon className={`w-5 h-5 flex-shrink-0 ${active ? '' : 'group-hover:scale-110 transition-transform'
@@ -114,8 +116,8 @@ export default function IntroLayout({ children }: { children: React.ReactNode })
                                             key={item.href}
                                             href={item.href}
                                             className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-all duration-300 whitespace-nowrap text-sm ${active
-                                                    ? 'bg-gradient-theme text-white shadow-lg'
-                                                    : 'bg-theme-purple/10 text-theme'
+                                                ? 'bg-gradient-theme text-white shadow-lg'
+                                                : 'bg-theme-purple/10 text-theme'
                                                 }`}
                                         >
                                             <Icon className="w-4 h-4" />

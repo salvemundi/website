@@ -59,6 +59,10 @@ async function updateDirectusTransaction(directusUrl, directusToken, id, data) {
         await instance.patch(`${directusUrl}/items/transactions/${id}`, data, getAuthConfig(directusToken));
     } catch (error) {
         console.error(`Failed to update transaction ${id}:`, error.message);
+        if (error.response) {
+            console.error(`Status: ${error.response.status}`);
+            console.error(`Data:`, JSON.stringify(error.response.data));
+        }
         throw error;
     }
 }
@@ -69,6 +73,10 @@ async function updateDirectusRegistration(directusUrl, directusToken, id, data) 
         await instance.patch(`${directusUrl}/items/event_signups/${id}`, data, getAuthConfig(directusToken));
     } catch (error) {
         console.error(`Failed to update registration ${id}:`, error.message);
+        if (error.response) {
+            console.error(`Status: ${error.response.status}`);
+            console.error(`Data:`, JSON.stringify(error.response.data));
+        }
         throw error;
     }
 }

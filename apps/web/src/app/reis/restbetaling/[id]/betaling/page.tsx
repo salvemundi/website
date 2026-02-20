@@ -4,11 +4,8 @@ import { useEffect, useState, Suspense } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import { tripSignupsApi, tripsApi, tripSignupActivitiesApi, tripActivitiesApi } from '@/shared/lib/api/trips';
-import { paymentApi } from '@/shared/lib/api/payment';
 import { getImageUrl } from '@/shared/lib/api/image';
-import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
-import { CheckCircle2, Loader2, AlertCircle, CreditCard, XCircle } from 'lucide-react';
+import { CheckCircle2, Loader2, AlertCircle, CreditCard, XCircle, ArrowLeft } from 'lucide-react';
 
 function BetalingContent() {
     const params = useParams();
@@ -16,12 +13,12 @@ function BetalingContent() {
     const signupId = parseInt(params.id as string);
 
     const [loading, setLoading] = useState(true);
-    const [paying, setPaying] = useState(false);
+    // const [paying, setPaying] = useState(false); // Unused
     const [signup, setSignup] = useState<any>(null);
     const [trip, setTrip] = useState<any>(null);
-    const [selectedActivities, setSelectedActivities] = useState<any[]>([]);
-    const [selectedActivityOptions, setSelectedActivityOptions] = useState<Record<number, string[]>>({});
-    const [error, setError] = useState<string | null>(null);
+    // const [selectedActivities, setSelectedActivities] = useState<any[]>([]); // Unused
+    // const [selectedActivityOptions, setSelectedActivityOptions] = useState<Record<number, string[]>>({}); // Unused
+    // const [error, setError] = useState<string | null>(null); // Unused
     const [paymentStatus, setPaymentStatus] = useState<'pending' | 'success' | 'failed' | 'checking'>('pending');
     const [checkingPayment, setCheckingPayment] = useState(false);
     const [showManualRefresh, setShowManualRefresh] = useState(false);
@@ -104,7 +101,7 @@ function BetalingContent() {
             }
         } catch (err) {
             console.error('[restbetaling] Error during manual refresh:', err);
-            setError('Er ging iets fout bij het controleren van de betaling');
+            // setError('Er ging iets fout bij het controleren van de betaling');
         } finally {
             setCheckingPayment(false);
         }
@@ -130,7 +127,7 @@ function BetalingContent() {
                     optionsMap[id] = Array.isArray(sa.selected_options) ? sa.selected_options : [];
                 }
             });
-            setSelectedActivityOptions(optionsMap);
+            // setSelectedActivityOptions(optionsMap);
 
             // Support different shapes returned by API
             const activityIds = signupActivities
@@ -138,7 +135,7 @@ function BetalingContent() {
                 .filter(Boolean);
             const activities = await tripActivitiesApi.getByTripId(signupData.trip_id);
             const selected = activities.filter((a: any) => activityIds.includes(a.id));
-            setSelectedActivities(selected);
+            // setSelectedActivities(selected);
 
             // Calculate costs
             const basePrice = Number(tripData.base_price) || 0;
@@ -175,54 +172,12 @@ function BetalingContent() {
             }
         } catch (err: any) {
             console.error('Error loading data:', err);
-            setError('Er is een fout opgetreden bij het laden van de gegevens.');
+            // setError('Er is een fout opgetreden bij het laden van de gegevens.');
         } finally {
             setLoading(false);
         }
     };
 
-    const handlePayment = async () => {
-        if (!signup || !trip || costs.remaining <= 0) {
-            console.warn('[restbetaling] Cannot initiate payment:', { hasSignup: !!signup, hasTrip: !!trip, remaining: costs.remaining });
-            return;
-        }
-
-        setPaying(true);
-        setError(null);
-
-        try {
-            const amount = costs.remaining;
-            const description = `Restbetaling ${trip.name} - ${signup.first_name}${signup.middle_name ? ' ' + signup.middle_name : ''} ${signup.last_name}`;
-            const redirectUrl = `${window.location.origin}/reis/restbetaling/${signupId}/betaling`;
-
-            console.log('[restbetaling] Initiating payment API call...', {
-                amount,
-                registrationId: signupId,
-                email: signup.email
-            });
-
-            const paymentResponse = await paymentApi.create({
-                amount,
-                description,
-                redirectUrl,
-                userId: undefined,
-                email: signup.email,
-                registrationId: signupId,
-                registrationType: 'trip_signup',
-                firstName: signup.first_name,
-                lastName: signup.last_name,
-            });
-
-            console.log('[restbetaling] Payment API success, redirecting to Mollie:', paymentResponse.checkoutUrl);
-
-            // Redirect to Mollie checkout
-            window.location.href = paymentResponse.checkoutUrl;
-        } catch (err: any) {
-            console.error('[restbetaling] Error creating payment:', err);
-            setError(err?.message || 'Er is een fout opgetreden bij het aanmaken van de betaling.');
-            setPaying(false);
-        }
-    };
 
     if (loading) {
         return (
@@ -379,7 +334,7 @@ function BetalingContent() {
         );
     }
 
-    // Pending / Initial payment state
+    // Pending / Initial payment state (Modified to be "Not Paid" state)
     return (
         <>
             <PageHeader
@@ -387,160 +342,41 @@ function BetalingContent() {
                 backgroundImage={trip.image ? getImageUrl(trip.image) : '/img/placeholder.svg'}
             />
             <div className="container mx-auto px-4 py-12 max-w-2xl">
-                <div className="bg-white dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border border-[var(--border-color)] dark:border-white/10 mb-8 relative overflow-hidden">
+                <div className="bg-white dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border-t-4 border-purple-600 dark:border-white/10 mb-8 relative overflow-hidden">
                     <div className="text-center mb-8">
-                        <div className="w-24 h-24 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <div className="w-24 h-24 bg-purple-50 dark:bg-purple-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
                             <CreditCard className="h-12 w-12 text-purple-600 dark:text-purple-400" />
                         </div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Restbetaling</h1>
-                        <p className="text-lg text-gray-700 dark:text-[var(--text-muted-dark)]">
-                            Je staat op het punt om de restbetaling te doen voor <strong>{trip.name}</strong>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Restbetaling Openstaand</h1>
+                        <p className="text-lg text-gray-700 dark:text-[var(--text-muted-dark)] mb-6">
+                            De restbetaling voor <strong>{trip.name}</strong> is nog niet voldaan of wordt nog verwerkt.
                         </p>
-                    </div>
-
-                    {error && (
-                        <div className="mb-6 bg-red-50 dark:bg-red-900/10 border-l-4 border-red-400 dark:border-red-600 p-4 rounded">
-                            <div className="flex items-start">
-                                <AlertCircle className="h-6 w-6 text-red-600 mr-3 flex-shrink-0 mt-0.5" />
-                                <p className="text-red-700 dark:text-red-300">{error}</p>
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="bg-gray-50 dark:bg-white/5 rounded-lg p-6 mb-8 border border-gray-100 dark:border-white/5">
-                        <div className="flex justify-between items-center mb-4">
-                            <span className="text-gray-700 dark:text-[var(--text-muted-dark)]">Naam</span>
-                            <span className="font-semibold text-gray-900 dark:text-white">
-                                {signup.first_name} {signup.middle_name} {signup.last_name}
-                            </span>
-                        </div>
-                        <div className="flex justify-between items-center mb-4">
-                            <span className="text-gray-700 dark:text-[var(--text-muted-dark)]">Email</span>
-                            <span className="font-semibold text-gray-900 dark:text-white">{signup.email}</span>
-                        </div>
-                        <div className="flex justify-between items-center mb-4">
-                            <span className="text-gray-700 dark:text-[var(--text-muted-dark)]">Reis</span>
-                            <span className="font-semibold text-gray-900 dark:text-white">{trip.name}</span>
-                        </div>
-                        <div className="flex justify-between items-center mb-4">
-                            <span className="text-gray-700 dark:text-[var(--text-muted-dark)]">Datum</span>
-                            <span className="font-semibold text-gray-900 dark:text-white">
-                                {trip.event_date ? format(new Date(trip.event_date), 'd MMMM yyyy', { locale: nl }) : (trip.start_date ? format(new Date(trip.start_date), 'd MMMM yyyy', { locale: nl }) : 'N.t.b.')}
-                            </span>
-                        </div>
-
-                        <div className="border-t border-gray-300 dark:border-white/10 my-4"></div>
-
-                        {/* Cost Breakdown */}
-                        <div className="space-y-3">
-                            <div className="flex justify-between items-center">
-                                <span className="text-gray-700 dark:text-[var(--text-muted-dark)]">Basisprijs</span>
-                                <span className="text-gray-900 dark:text-white">€{costs.base.toFixed(2)}</span>
-                            </div>
-
-                            {selectedActivities.length > 0 && (
-                                <div>
-                                    <div className="flex justify-between items-center mb-2">
-                                        <span className="text-gray-700 dark:text-[var(--text-muted-dark)]">Activiteiten:</span>
-                                        <span className="text-gray-900 dark:text-white">€{costs.activities.toFixed(2)}</span>
-                                    </div>
-                                    {selectedActivities.map((activity) => {
-                                        let activityPrice = Number(activity.price) || 0;
-                                        const options = selectedActivityOptions[activity.id] || [];
-                                        let optionText = '';
-
-                                        if (activity.options && options.length > 0) {
-                                            options.forEach(optName => {
-                                                const opt = activity.options.find((o: any) => o.name === optName);
-                                                if (opt) {
-                                                    activityPrice += Number(opt.price) || 0;
-                                                    optionText += ` (+ ${optName})`;
-                                                }
-                                            });
-                                        }
-
-                                        return (
-                                            <div key={activity.id} className="flex justify-between items-center text-sm pl-4">
-                                                <span className="text-gray-600 dark:text-gray-400">
-                                                    • {activity.name}
-                                                    {optionText && <span className="text-xs block text-gray-500 dark:text-gray-500">{optionText}</span>}
-                                                </span>
-                                                <span className="text-gray-600 dark:text-gray-400">€{activityPrice.toFixed(2)}</span>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-
-                            {costs.crewDiscount > 0 && (
-                                <div className="flex justify-between items-center text-green-600 dark:text-green-400">
-                                    <span>Crew korting</span>
-                                    <span>-€{costs.crewDiscount.toFixed(2)}</span>
-                                </div>
-                            )}
-
-                            {costs.deposit > 0 && (
-                                <div className="flex justify-between items-center text-green-600 dark:text-green-400">
-                                    <span>Reeds betaalde aanbetaling</span>
-                                    <span>-€{costs.deposit.toFixed(2)}</span>
-                                </div>
-                            )}
-
-                            <div className="border-t border-gray-300 dark:border-white/10 pt-3 mt-3">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-xl font-bold text-gray-900 dark:text-white">Te betalen</span>
-                                    <span className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-                                        €{costs.remaining.toFixed(2)}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
                     <div className="bg-blue-50 dark:bg-blue-900/10 border-l-4 border-blue-400 dark:border-blue-500 p-4 rounded mb-8">
                         <p className="text-sm text-blue-700 dark:text-blue-300">
-                            <strong>Let op:</strong> Dit is de restbetaling voor je reis. Na het voltooien van deze betaling
-                            ben je volledig ingeschreven en ontvang je een bevestigingsmail.
+                            <strong>Status:</strong> We hebben nog geen bevestiging van de betaling ontvangen.
+                            Als je net betaald hebt, kan het enkele minuten duren. Blijf op deze pagina om te controleren.
                         </p>
                     </div>
 
-                    {costs.remaining > 0 ? (
+                    <div className="space-y-3">
                         <button
-                            onClick={handlePayment}
-                            disabled={paying}
-                            className="w-full py-4 bg-gradient-to-r from-purple-600 to-purple-700 text-white font-bold rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                            onClick={manualRefresh}
+                            className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium flex items-center justify-center"
                         >
-                            {paying ? (
-                                <>
-                                    <Loader2 className="animate-spin h-6 w-6 mr-3" />
-                                    Bezig met betaling...
-                                </>
-                            ) : (
-                                <>
-                                    <CreditCard className="mr-3 h-6 w-6" />
-                                    Doorgaan naar betaling
-                                </>
-                            )}
+                            <Loader2 className={`w-5 h-5 mr-2 ${checkingPayment ? 'animate-spin' : ''}`} />
+                            Status controleren
                         </button>
-                    ) : (
-                        <div className="bg-green-50 dark:bg-green-900/10 border-l-4 border-green-400 dark:border-green-600 p-4 rounded">
-                            <div className="flex items-start">
-                                <CheckCircle2 className="h-6 w-6 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
-                                <div>
-                                    <p className="font-semibold text-green-700 dark:text-green-300 mb-1">Betaling voltooid</p>
-                                    <p className="text-sm text-green-600 dark:text-green-300/80">
-                                        Je hebt alle kosten voor deze reis al betaald. Er is geen restbetaling meer nodig.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
 
-                    {paying && (
-                        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
-                            Je wordt doorgestuurd naar een beveiligde betaalomgeving
-                        </p>
-                    )}
+                        <button
+                            onClick={() => router.push(`/reis/restbetaling/${signupId}`)}
+                            className="w-full px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium flex items-center justify-center"
+                        >
+                            <ArrowLeft className="w-5 h-5 mr-2" />
+                            Terug naar betalen
+                        </button>
+                    </div>
                 </div>
             </div>
         </>

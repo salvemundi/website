@@ -104,7 +104,11 @@ export async function createPubCrawlSignupAction(data: PubCrawlSignupData) {
             revalidate: 0
         });
 
-        return { success: true, signup: result };
+        // 3. Generate secure access token for the return URL
+        const { signSignupAccess } = await import('@/shared/lib/utils/security');
+        const token = result.payment_access_token || signSignupAccess(result.id);
+
+        return { success: true, signup: result, token };
     } catch (error: any) {
         console.error('[Action] Failed to create pub crawl signup:', error);
         return { success: false, error: 'Kon inschrijving niet aanmaken.' };

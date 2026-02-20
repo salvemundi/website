@@ -30,7 +30,7 @@ import {
     Bell,
     Mail
 } from 'lucide-react';
-import { siteSettingsMutations } from '@/shared/lib/api/site-settings';
+import { siteSettingsApi, siteSettingsMutations } from '@/shared/lib/api/site-settings';
 import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { IntroSignup, IntroParentSignup, IntroBlog, IntroPlanningItem } from '@/shared/lib/api/types';
 import { format } from 'date-fns';
@@ -578,7 +578,8 @@ export default function IntroAdminPage() {
                     <label className="text-sm font-medium">Intro zichtbaar</label>
                     <button
                         onClick={async () => {
-                            const current = introSettings?.show ?? false;
+                            const setting = await siteSettingsApi.getSingle('intro');
+                            const current = setting?.show ?? false;
                             try {
                                 await siteSettingsMutations.upsertByPage('intro', { show: !current });
                                 await refetchIntroSettings();
@@ -589,10 +590,10 @@ export default function IntroAdminPage() {
                                 alert('Fout bij het bijwerken van de zichtbaarheid voor Intro');
                             }
                         }}
-                        className={`w-12 h-6 rounded-full p-0.5 transition ${introSettings?.show ? 'bg-green-500' : 'bg-gray-300'}`}
-                        aria-pressed={introSettings?.show ?? false}
+                        className={`w-12 h-6 rounded-full p-0.5 transition ${(Array.isArray(introSettings) ? introSettings[0] : introSettings)?.show ? 'bg-green-500' : 'bg-gray-300'}`}
+                        aria-pressed={(Array.isArray(introSettings) ? introSettings[0] : introSettings)?.show ?? false}
                     >
-                        <span className={`block w-5 h-5 bg-white rounded-full transform transition ${introSettings?.show ? 'translate-x-6' : 'translate-x-0'}`} />
+                        <span className={`block w-5 h-5 bg-white rounded-full transform transition ${(Array.isArray(introSettings) ? introSettings[0] : introSettings)?.show ? 'translate-x-6' : 'translate-x-0'}`} />
                     </button>
                 </div>
 

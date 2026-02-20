@@ -13,7 +13,7 @@ services:
       - DIRECTUS_URL=${DIRECTUS_URL}
       - DIRECTUS_NOTIFICATION_KEY=${DIRECTUS_NOTIFICATION_KEY}
       - NODE_ENV=${NODE_ENV:-development}
-      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+      - SERVICE_SECRET=${SERVICE_SECRET}
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3003/health"]
       interval: 30s

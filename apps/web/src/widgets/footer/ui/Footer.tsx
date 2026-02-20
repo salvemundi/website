@@ -19,9 +19,6 @@ export default async function Footer() {
         getDocumentsAction()
     ]);
 
-    const introEnabled = settings.find(s => s.page === 'intro')?.show ?? true;
-    const kroegentochtEnabled = settings.find(s => s.page === 'kroegentocht')?.show ?? true;
-    const reisEnabled = settings.find(s => s.page === 'reis')?.show ?? true;
 
     const committees = [...committeesData].sort((a, b) => {
         const aIsBestuur = cleanCommitteeName(a.name).toLowerCase().includes('bestuur');

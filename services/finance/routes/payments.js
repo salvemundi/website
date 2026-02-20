@@ -23,7 +23,7 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
             console.warn(`[Payment][${traceId}] 👑 Delegating provisioning to Admin API...`);
             const response = await axios.post(`${ADMIN_API_URL}/api/internal/provision-member`, data, {
                 headers: {
-                    'x-api-key': process.env.INTERNAL_API_KEY,
+                    'X-API-Key': process.env.SERVICE_SECRET,
                     'Content-Type': 'application/json',
                     'x-trace-id': traceId
                 },
@@ -107,51 +107,61 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
                 console.warn(`[Payment][${traceId}] Contribution enforced amount: ${finalAmount}`);
             }
 
-            // --- Server-side safety: if this is a trip final/rest payment, re-calc final amount
-            // from authoritative Directus data so the deposit cannot be accidentally subtracted
-            // by a client. We detect by registrationType and description containing 'restbetaling'.
+            // --- Server-side safety: if this is a trip payment, re-calc final amount
+            // from authoritative Directus data.
             try {
-                if (registrationType === 'trip_signup' && description && description.toLowerCase().includes('rest')) {
-                    console.warn(`[Payment][${traceId}] Detected trip restpayment request - recalculating authoritative final amount`);
-                    // Fetch trip signup and trip data
-                    const tripSignup = registrationId ? await directusService.getDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'trip_signups', registrationId, 'id,trip_id,role,deposit_paid,full_payment_paid') : null;
-                    if (tripSignup) {
-                        const trip = await directusService.getDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'trips', tripSignup.trip_id, 'id,base_price,crew_discount,deposit_amount');
-                        if (trip) {
-                            // Get selected activities for signup
-                            const signupActivities = await directusService.getTripSignupActivities(DIRECTUS_URL, DIRECTUS_API_TOKEN, registrationId);
-                            let activitiesTotal = 0;
-                            for (const sa of signupActivities) {
-                                const act = sa.trip_activity_id;
-                                if (!act) continue;
+                if (registrationType === 'trip_signup' && description) {
+                    const descLower = description.toLowerCase();
+                    const isRestPayment = descLower.includes('rest');
+                    const isDepositPayment = descLower.includes('aanbetaling');
 
-                                // Base price of activity
-                                activitiesTotal += Number(act.price) || 0;
+                    if (isRestPayment || isDepositPayment) {
+                        console.warn(`[Payment][${traceId}] Detected trip ${isRestPayment ? 'rest' : 'deposit'} payment - recalculating authoritative amount`);
+                        // Fetch trip signup and trip data
+                        const tripSignup = registrationId ? await directusService.getDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'trip_signups', registrationId, 'id,trip_id,role,deposit_paid,full_payment_paid') : null;
+                        if (tripSignup) {
+                            const trip = await directusService.getDirectusItem(DIRECTUS_URL, DIRECTUS_API_TOKEN, 'trips', tripSignup.trip_id, 'id,base_price,crew_discount,deposit_amount');
+                            if (trip) {
+                                if (isRestPayment) {
+                                    // Get selected activities for signup
+                                    const signupActivities = await directusService.getTripSignupActivities(DIRECTUS_URL, DIRECTUS_API_TOKEN, registrationId);
+                                    let activitiesTotal = 0;
+                                    for (const sa of signupActivities) {
+                                        const act = sa.trip_activity_id;
+                                        if (!act) continue;
 
-                                // Add prices for selected options
-                                try {
-                                    const opts = sa.selected_options;
-                                    const selectedOptions = Array.isArray(opts) ? opts : (typeof opts === 'string' ? JSON.parse(opts) : []);
+                                        // Base price of activity
+                                        activitiesTotal += Number(act.price) || 0;
 
-                                    if (Array.isArray(selectedOptions) && act.options) {
-                                        selectedOptions.forEach(optName => {
-                                            const optDef = act.options.find(o => o.name === optName);
-                                            if (optDef) {
-                                                activitiesTotal += Number(optDef.price) || 0;
+                                        // Add prices for selected options
+                                        try {
+                                            const opts = sa.selected_options;
+                                            const selectedOptions = Array.isArray(opts) ? opts : (typeof opts === 'string' ? JSON.parse(opts) : []);
+
+                                            if (Array.isArray(selectedOptions) && act.options) {
+                                                selectedOptions.forEach(optName => {
+                                                    const optDef = act.options.find(o => o.name === optName);
+                                                    if (optDef) {
+                                                        activitiesTotal += Number(optDef.price) || 0;
+                                                    }
+                                                });
                                             }
-                                        });
+                                        } catch (e) {
+                                            console.warn(`[Payment][${traceId}] Failed to parse/process options for activity ${act.id}:`, e.message);
+                                        }
                                     }
-                                } catch (e) {
-                                    console.warn(`[Payment][${traceId}] Failed to parse/process options for activity ${act.id}:`, e.message);
-                                }
-                            }
 
-                            const base = Number(trip.base_price) || 0;
-                            const discount = tripSignup.role === 'crew' ? (Number(trip.crew_discount) || 0) : 0;
-                            const deposit = Number(trip.deposit_amount) || 0;
-                            const authoritativeTotal = base + activitiesTotal - discount - deposit;
-                            finalAmount = Math.max(0, authoritativeTotal);
-                            console.warn(`[Payment][${traceId}] Recalculated authoritative amount (with deposit correction): ${finalAmount}`);
+                                    const base = Number(trip.base_price) || 0;
+                                    const discount = tripSignup.role === 'crew' ? (Number(trip.crew_discount) || 0) : 0;
+                                    const deposit = Number(trip.deposit_amount) || 0;
+                                    const authoritativeTotal = base + activitiesTotal - discount - deposit;
+                                    finalAmount = Math.max(0, authoritativeTotal);
+                                } else if (isDepositPayment) {
+                                    // For deposits, it's just the deposit_amount
+                                    finalAmount = Number(trip.deposit_amount) || 0;
+                                }
+                                console.warn(`[Payment][${traceId}] Recalculated authoritative amount: ${finalAmount}`);
+                            }
                         }
                     }
                 }
@@ -421,16 +431,28 @@ module.exports = function (mollieClient, DIRECTUS_URL, DIRECTUS_API_TOKEN, EMAIL
             const finalRedirectUrl = new URL(redirectUrl);
             finalRedirectUrl.searchParams.append('transaction_id', transactionRecordId);
 
-            const payment = await mollieClient.payments.create({
+            const webhookUrl = process.env.MOLLIE_WEBHOOK_URL;
+            const isDevelopment = (process.env.NODE_ENV || 'development') !== 'production';
+            const isLocal = webhookUrl && (webhookUrl.includes('localhost') || webhookUrl.includes('127.0.0.1'));
+
+            const paymentPayload = {
                 amount: {
                     currency: 'EUR',
                     value: formattedAmount,
                 },
                 description: description,
                 redirectUrl: finalRedirectUrl.toString(),
-                webhookUrl: process.env.MOLLIE_WEBHOOK_URL,
                 metadata: metadata
-            });
+            };
+
+            // Only add webhookUrl if it's not a local address in dev, or if it's explicitly valid
+            if (webhookUrl && (!isLocal || !isDevelopment)) {
+                paymentPayload.webhookUrl = webhookUrl;
+            } else if (isLocal && isDevelopment) {
+                console.warn(`[Payment][${traceId}] ⚠️ Local development detected with localhost webhook. OMITTING webhookUrl to prevent Mollie rejection.`);
+            }
+
+            const payment = await mollieClient.payments.create(paymentPayload);
 
             console.warn(`[Payment][${traceId}] Mollie Payment Created: ${payment.id}`);
             // Log what Mollie reports back for the amount and the checkout URL to verify the transmitted value

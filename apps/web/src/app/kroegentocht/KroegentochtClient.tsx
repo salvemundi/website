@@ -355,7 +355,7 @@ export default function KroegentochtClient({ initialEvents, initialSettings }: K
             const paymentPayload = {
                 amount: totalPrice.toFixed(2),
                 description: `Kroegentocht Tickets - ${finalAmount}x`,
-                redirectUrl: window.location.origin + `/kroegentocht/bevestiging?id=${signupResult.signup.id}`,
+                redirectUrl: window.location.origin + `/kroegentocht/bevestiging?id=${signupResult.signup.id}&token=${signupResult.token}`,
                 registrationId: signupResult.signup.id,
                 registrationType: 'pub_crawl_signup',
                 email: email,

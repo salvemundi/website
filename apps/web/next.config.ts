@@ -205,27 +205,27 @@ const nextConfig: NextConfig = {
     async rewrites() {
         return {
             beforeFiles: [
-                // Finance Service (Port 3002) - Keep prefixes
+                // Finance Service (Port 3001) - Keep prefixes
                 {
                     source: '/api/payments/:path*',
-                    destination: 'http://finance:3002/api/payments/:path*',
+                    destination: 'http://finance:3001/api/payments/:path*',
                 },
                 {
                     source: '/api/coupons/:path*',
-                    destination: 'http://finance:3002/api/coupons/:path*',
+                    destination: 'http://finance:3001/api/coupons/:path*',
                 },
                 {
                     source: '/api/admin/:path*',
-                    destination: 'http://finance:3002/api/admin/:path*',
+                    destination: 'http://finance:3001/api/admin/:path*',
                 },
-                // Email Service (Port 3001) - Strip prefix for API, keep for calendar
+                // Email Service (Port 3003) - Strip prefix for API, keep for calendar
                 {
                     source: '/api/email/:path*',
-                    destination: 'http://email:3001/:path*',
+                    destination: 'http://email:3003/:path*',
                 },
                 {
                     source: '/calendar',
-                    destination: 'http://email:3001/calendar',
+                    destination: 'http://email:3003/calendar',
                 },
             ],
             afterFiles: [],

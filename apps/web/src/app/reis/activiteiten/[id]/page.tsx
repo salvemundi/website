@@ -1,442 +1,126 @@
-'use client';
 
-import { useEffect, useState, useMemo } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import {
-    tripSignupsApi,
-    tripActivitiesApi,
-    tripSignupActivitiesApi,
-    tripsApi
-} from '@/shared/lib/api/trips';
+import { getPaymentPageData } from '@/app/reis/actions';
 import { getImageUrl } from '@/shared/lib/api/image';
-import type { Trip, TripActivity, TripSignup } from '@/shared/lib/api/types';
-import {
-    CheckCircle2,
-    Loader2,
-    AlertCircle,
-    Utensils,
-    Save,
-    ArrowLeft
-} from 'lucide-react';
-import Image from 'next/image';
+import ActivitySelectionForm from '@/widgets/reis/ActivitySelectionForm';
+import PageHeader from '@/widgets/page-header/ui/PageHeader';
+import { AlertCircle, ArrowLeft, Utensils } from 'lucide-react';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
-export default function ActiviteitenAanpassenPage() {
-    const params = useParams();
-    const router = useRouter();
-    const signupId = parseInt(params.id as string);
+export const dynamic = 'force-dynamic';
 
-    const [loading, setLoading] = useState(true);
-    const [submitting, setSubmitting] = useState(false);
-    const [signup, setSignup] = useState<TripSignup | null>(null);
-    const [trip, setTrip] = useState<Trip | null>(null);
-    const [activities, setActivities] = useState<TripActivity[]>([]);
-    const [selectedActivities, setSelectedActivities] = useState<number[]>([]);
-    const [originalActivities, setOriginalActivities] = useState<number[]>([]);
-    const [selectedActivityOptions, setSelectedActivityOptions] = useState<Record<number, string[]>>({});
-    const [originalActivityOptions, setOriginalActivityOptions] = useState<Record<number, string[]>>({});
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState(false);
+interface PageProps {
+    params: Promise<{ id: string }>;
+    searchParams: Promise<{ [key: string]: string | undefined }>;
+}
 
-    useEffect(() => {
-        loadData();
-    }, [signupId]);
+export default async function ActiviteitenAanpassenPage({ params, searchParams }: PageProps) {
+    const { id } = await params;
+    const { token } = await searchParams;
 
-    const loadData = async () => {
-        setLoading(true);
-        try {
-            // Load signup
-            const signupData = await tripSignupsApi.getById(signupId);
-            setSignup(signupData);
+    const signupId = parseInt(id);
 
-            // Check if allowed to edit activities
-            if (!signupData.deposit_paid) {
-                // Not yet paid deposit, redirect to aanbetaling
-                router.push(`/reis/aanbetaling/${signupId}`);
-                return;
-            }
-
-            if (signupData.full_payment_paid) {
-                // Already paid full amount, cannot edit anymore
-                setError('Je hebt de restbetaling al voldaan. Activiteiten kunnen niet meer worden aangepast. Neem contact op met de reiscommissie als je wijzigingen wilt doorvoeren.');
-                setLoading(false);
-                return;
-            }
-
-            // Load trip
-            const tripData = await tripsApi.getById(signupData.trip_id);
-            setTrip(tripData);
-
-            // Load activities
-            const activitiesData = await tripActivitiesApi.getByTripId(signupData.trip_id);
-            setActivities(activitiesData.filter(a => a.is_active));
-
-            // Load existing selected activities
-            const existingActivities = await tripSignupActivitiesApi.getBySignupId(signupId);
-            const existingIds = existingActivities.map((a: any) => a.trip_activity_id.id || a.trip_activity_id);
-            setSelectedActivities(existingIds);
-            setOriginalActivities(existingIds);
-
-            const optionsMap: Record<number, string[]> = {};
-            existingActivities.forEach((a: any) => {
-                const actId = a.trip_activity_id.id || a.trip_activity_id;
-                if (a.selected_options) {
-                    optionsMap[actId] = a.selected_options;
-                }
-            });
-            setSelectedActivityOptions(optionsMap);
-            setOriginalActivityOptions(optionsMap);
-
-        } catch (err: any) {
-            console.error('Error loading data:', err);
-            setError('Er is een fout opgetreden bij het laden van de gegevens.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const toggleActivity = (activityId: number) => {
-        setSelectedActivities(prev =>
-            prev.includes(activityId)
-                ? prev.filter(id => id !== activityId)
-                : [...prev, activityId]
-        );
-        if (error) setError(null);
-    };
-
-    const toggleOption = (activityId: number, optionName: string, maxSelections?: number) => {
-        setSelectedActivityOptions(prev => {
-            const current = prev[activityId] || [];
-            if (maxSelections === 1) {
-                // Radio: replace all with clicked
-                return { ...prev, [activityId]: [optionName] };
-            } else {
-                // Checkbox
-                if (current.includes(optionName)) {
-                    return { ...prev, [activityId]: current.filter(o => o !== optionName) };
-                } else {
-                    return { ...prev, [activityId]: [...current, optionName] };
-                }
-            }
-        });
-    };
-
-    const handleSave = async () => {
-        setError(null);
-        setSubmitting(true);
-
-        try {
-            // Get current activities from DB
-            const existingActivities = await tripSignupActivitiesApi.getBySignupId(signupId);
-
-
-            // Save Logic (Optimized for options)
-            const existingMap = new Map(existingActivities.map((a: any) => [a.trip_activity_id.id || a.trip_activity_id, a]));
-
-            // Process selected
-            for (const actId of selectedActivities) {
-                const existing = existingMap.get(actId);
-                const newOptions = selectedActivityOptions[actId] || [];
-
-                if (existing) {
-                    const oldOptions = existing.selected_options || [];
-                    const isSame = JSON.stringify(newOptions.slice().sort()) === JSON.stringify(oldOptions.slice().sort());
-
-                    if (!isSame) {
-                        // Options changed: Re-create
-                        await tripSignupActivitiesApi.delete(existing.id);
-                        await tripSignupActivitiesApi.create({
-                            trip_signup_id: signupId,
-                            trip_activity_id: actId,
-                            selected_options: newOptions
-                        });
-                    }
-                    existingMap.delete(actId);
-                } else {
-                    // New activity
-                    await tripSignupActivitiesApi.create({
-                        trip_signup_id: signupId,
-                        trip_activity_id: actId,
-                        selected_options: newOptions
-                    });
-                }
-            }
-
-            // Delete remaining (deselected)
-            for (const [_, existing] of existingMap) {
-                await tripSignupActivitiesApi.delete(existing.id);
-            }
-
-            setSuccess(true);
-            setOriginalActivities(selectedActivities);
-            setOriginalActivityOptions(selectedActivityOptions);
-
-            // Redirect back after a short delay
-            setTimeout(() => {
-                router.push(`/reis/restbetaling/${signupId}`);
-            }, 2000);
-
-        } catch (err: any) {
-            console.error('Error saving activities:', err);
-            setError(err?.message || 'Er is een fout opgetreden bij het opslaan van je activiteiten.');
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
-    // Calculate hasChanges roughly. 
-    // For arrays, stringify includes order, so sort first. For optionsMap, sort option arrays.
-    const hasChanges = useMemo(() => {
-        // Use slice() to avoid mutating the original arrays
-        const selectedSorted = selectedActivities.slice().sort((a, b) => a - b);
-        const originalSorted = originalActivities.slice().sort((a, b) => a - b);
-
-        if (JSON.stringify(selectedSorted) !== JSON.stringify(originalSorted)) return true;
-
-        // Compare options for selected activities
-        for (const actId of selectedActivities) {
-            const opts1 = (selectedActivityOptions[actId] || []).slice().sort();
-            const opts2 = (originalActivityOptions[actId] || []).slice().sort();
-            if (JSON.stringify(opts1) !== JSON.stringify(opts2)) return true;
-        }
-        return false;
-    }, [selectedActivities, selectedActivityOptions, originalActivities, originalActivityOptions]);
-
-    const totalActivitiesPrice = activities
-        .filter(a => selectedActivities.includes(a.id))
-        .reduce((sum, a) => {
-            let price = Number(a.price) || 0;
-            const options = selectedActivityOptions[a.id] || [];
-            if (a.options) {
-                options.forEach(optName => {
-                    const opt = a.options?.find(o => o.name === optName);
-                    if (opt) price += Number(opt.price);
-                });
-            }
-            return sum + price;
-        }, 0);
-
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-50 to-white dark:from-[var(--bg-soft-dark)] dark:to-[var(--bg-main-dark)]">
-                <div className="text-center">
-                    <Loader2 className="h-16 w-16 animate-spin text-purple-600 mx-auto mb-4" />
-                    <p className="text-gray-600 dark:text-[var(--text-muted-dark)]">Gegevens laden...</p>
-                </div>
-            </div>
-        );
+    if (isNaN(signupId)) {
+        redirect('/reis');
     }
 
-    if (!signup || !trip) {
+    const result = await getPaymentPageData(signupId, token);
+
+    if (!result.success || !result.data) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-50 to-white dark:from-[var(--bg-soft-dark)] dark:to-[var(--bg-main-dark)]">
-                <div className="text-center">
-                    <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Aanmelding niet gevonden</h1>
-                    <p className="text-gray-600 dark:text-[var(--text-muted-dark)] mb-6">De opgegeven aanmelding bestaat niet of je hebt geen toegang.</p>
-                    <button
-                        onClick={() => router.push('/reis')}
-                        className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
-                    >
-                        Terug naar reis pagina
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <>
-            <PageHeader
-                title={`Activiteiten Aanpassen - ${trip.name}`}
-                backgroundImage={trip.image ? getImageUrl(trip.image) : '/img/placeholder.svg'}
-            />
-
-            <div className="container mx-auto px-4 py-12 max-w-3xl">
-                {/* Back link */}
-                <Link
-                    href={`/reis/restbetaling/${signupId}`}
-                    className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-800 mb-6 transition"
-                >
-                    <ArrowLeft className="h-5 w-5" />
-                    Terug naar restbetaling
-                </Link>
-
-                {/* Success message */}
-                {success && (
-                    <div className="mb-8 bg-green-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-green-400 p-6 rounded-lg">
-                        <div className="flex items-start">
-                            <CheckCircle2 className="h-6 w-6 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
-                            <div>
-                                <h3 className="text-green-800 dark:text-green-300 font-bold text-lg mb-2">Activiteiten opgeslagen!</h3>
-                                <p className="text-green-700 dark:text-green-200">
-                                    Je activiteiten zijn succesvol bijgewerkt. Je wordt doorgestuurd naar de restbetalingspagina...
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Error message */}
-                {error && (
-                    <div className="mb-8 bg-red-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-red-400 p-6 rounded-lg">
-                        <div className="flex items-start">
-                            <AlertCircle className="h-6 w-6 text-red-600 mr-3 flex-shrink-0 mt-0.5" />
-                            <p className="text-red-700 dark:text-red-300">{error}</p>
-                        </div>
-                    </div>
-                )}
-
-                {/* Info message */}
-                {!signup.full_payment_paid && (
-                    <div className="mb-8 bg-blue-50 dark:bg-[var(--bg-card-dark)] border-l-4 border-blue-400 p-6 rounded-lg">
-                        <div className="flex items-start">
-                            <Utensils className="h-6 w-6 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />
-                            <div>
-                                <h3 className="text-blue-800 dark:text-blue-300 font-bold text-lg mb-2">Activiteiten aanpassen</h3>
-                                <p className="text-blue-700 dark:text-blue-200">
-                                    Je kunt je activiteiten aanpassen tot je de restbetaling hebt voldaan.
-                                    De kosten voor activiteiten worden meegenomen in de restbetaling.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Activities selection */}
-                {activities.length > 0 && !signup.full_payment_paid && (
-                    <div className="bg-white dark:bg-[var(--bg-card-dark)] rounded-xl shadow-lg p-8 border-t-4 border-blue-600 mb-8">
-                        <div className="flex items-center mb-6">
-                            <Utensils className="h-6 w-6 text-blue-600 mr-3" />
-                            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white break-words">Beschikbare Activiteiten</h2>
-                        </div>
-
-                        <div className="space-y-4">
-                            {activities.map(activity => (
-                                <div
-                                    key={activity.id}
-                                    onClick={() => toggleActivity(activity.id)}
-                                    className={`flex items-start gap-4 p-4 rounded-lg cursor-pointer transition-all ${selectedActivities.includes(activity.id)
-                                        ? 'bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-500'
-                                        : 'bg-gray-50 dark:bg-[var(--bg-soft-dark)] border-2 border-transparent hover:border-gray-300'
-                                        }`}
-                                >
-                                    <div className="flex-shrink-0 mt-1">
-                                        <div className={`w-6 h-6 rounded-md flex items-center justify-center ${selectedActivities.includes(activity.id)
-                                            ? 'bg-blue-500 text-white'
-                                            : 'bg-white border-2 border-gray-300'
-                                            }`}>
-                                            {selectedActivities.includes(activity.id) && (
-                                                <CheckCircle2 className="h-4 w-4" />
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {activity.image && (
-                                        <Image
-                                            src={getImageUrl(activity.image)}
-                                            alt={activity.name}
-                                            width={80}
-                                            height={80}
-                                            className="rounded-lg object-cover flex-shrink-0"
-                                        />
-                                    )}
-
-                                    <div className="flex-1">
-                                        <h3 className="font-bold text-gray-900 dark:text-white break-words">{activity.name}</h3>
-                                        <p className="text-sm text-gray-600 dark:text-[var(--text-muted-dark)]">{activity.description}</p>
-                                        {activity.options && activity.options.length > 0 && selectedActivities.includes(activity.id) && (
-                                            <div className="mt-2 pt-2 border-t border-gray-100 dark:border-white/5" onClick={(e) => e.stopPropagation()}>
-                                                <p className="text-sm font-semibold text-gray-700 dark:text-[var(--text-muted-dark)] mb-2">Opties:</p>
-                                                <div className="space-y-2">
-                                                    {activity.options.map((option: any) => (
-                                                        <label key={option.name} className="flex items-center gap-2 cursor-pointer">
-                                                            <input
-                                                                type={activity.max_selections === 1 ? "radio" : "checkbox"}
-                                                                name={`activity-options-${activity.id}`}
-                                                                checked={selectedActivityOptions[activity.id]?.includes(option.name) || false}
-                                                                onChange={() => toggleOption(activity.id, option.name, activity.max_selections)}
-                                                                className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-                                                            />
-                                                            <span className="text-sm text-gray-700 dark:text-[var(--text-muted-dark)]">
-                                                                {option.name} {Number(option.price) > 0 && `(+€${Number(option.price).toFixed(2)})`}
-                                                            </span>
-                                                        </label>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="text-right flex-shrink-0">
-                                        <p className="text-lg font-bold text-blue-600">€{Number(activity.price).toFixed(2)}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Total */}
-                        <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg">
-                            <div className="flex justify-between items-center">
-                                <span className="font-semibold text-gray-700 dark:text-[var(--text-muted-dark)]">Totaal activiteiten:</span>
-                                <span className="text-xl font-bold text-blue-600">€{totalActivitiesPrice.toFixed(2)}</span>
-                            </div>
-                        </div>
-
-                        {/* Save button */}
-                        <div className="mt-6 flex gap-4">
-                            <Link
-                                href={`/reis/restbetaling/${signupId}`}
-                                className="flex-1 py-3 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-[var(--text-muted-dark)] rounded-lg hover:bg-gray-50 dark:hover:bg-[var(--bg-soft-dark)] transition text-center font-semibold"
-                            >
-                                Annuleren
-                            </Link>
-                            <button
-                                onClick={handleSave}
-                                disabled={submitting || !hasChanges || success}
-                                className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                            >
-                                {submitting ? (
-                                    <>
-                                        <Loader2 className="animate-spin h-5 w-5" />
-                                        Opslaan...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Save className="h-5 w-5" />
-                                        Wijzigingen opslaan
-                                    </>
-                                )}
-                            </button>
-                        </div>
-
-                        {!hasChanges && !success && (
-                            <p className="text-center text-sm text-gray-500 mt-4">
-                                Je hebt nog geen wijzigingen gemaakt.
-                            </p>
-                        )}
-                    </div>
-                )}
-
-                {/* No activities available */}
-                {activities.length === 0 && !error && (
-                    <div className="bg-gray-50 dark:bg-[var(--bg-card-dark)] rounded-xl p-8 text-center">
-                        <Utensils className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-700 dark:text-white mb-2">Geen activiteiten beschikbaar</h3>
-                        <p className="text-gray-500 dark:text-[var(--text-muted-dark)]">
-                            Er zijn geen activiteiten beschikbaar voor deze reis.
-                        </p>
+            <main className="min-h-screen bg-background">
+                <PageHeader
+                    title="Activiteiten"
+                    backgroundImage="/img/placeholder.svg"
+                    variant="centered"
+                />
+                <div className="flex items-center justify-center px-4 py-12">
+                    <div className="text-center max-w-md bg-white dark:bg-[var(--bg-card-dark)] p-8 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800">
+                        <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Toegang geweigerd</h1>
+                        <p className="text-gray-600 dark:text-gray-400 mb-6">{result.error || 'Je hebt geen toegang tot deze aanmelding of de aanmelding bestaat niet.'}</p>
                         <Link
-                            href={`/reis/restbetaling/${signupId}`}
-                            className="inline-flex items-center gap-2 mt-6 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                            href="/reis"
+                            className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
                         >
-                            <ArrowLeft className="h-5 w-5" />
-                            Terug naar restbetaling
+                            Terug naar reis pagina
                         </Link>
                     </div>
+                </div>
+            </main>
+        );
+    }
+
+    const { signup, trip, activities, selectedActivities: initialSelected, activityOptions: initialOptions } = result.data;
+
+    // Check logical constraints
+    if (!signup.deposit_paid) {
+        redirect(token ? `/reis/aanbetaling/${signupId}?token=${token}` : `/reis/aanbetaling/${signupId}`);
+    }
+
+    const isReadOnly = signup.full_payment_paid;
+
+    return (
+        <main className="min-h-screen bg-background pb-12">
+            <PageHeader
+                title={`Activiteiten - ${trip?.name || 'Reis'}`}
+                backgroundImage={trip?.image ? getImageUrl(trip.image) : '/img/placeholder.svg'}
+                variant="centered"
+            />
+
+            <div className="container mx-auto px-4 -mt-8 relative z-10 max-w-4xl">
+                {/* Back Link */}
+                <div className="mb-6">
+                    <Link
+                        href={token ? `/reis/restbetaling/${signupId}?token=${token}` : `/reis/restbetaling/${signupId}`}
+                        className="inline-flex items-center gap-2 text-white/90 hover:text-white bg-black/30 hover:bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full transition-all text-sm font-medium shadow-sm"
+                    >
+                        <ArrowLeft className="h-4 w-4" />
+                        Terug naar overzicht
+                    </Link>
+                </div>
+
+                {isReadOnly ? (
+                    <div className="bg-white dark:bg-[var(--bg-card-dark)] border border-blue-200 dark:border-blue-900/30 rounded-2xl p-8 shadow-lg text-center">
+                        <Utensils className="h-12 w-12 text-blue-500 mx-auto mb-4" />
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Activiteiten staan vast</h2>
+                        <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-lg mx-auto leading-relaxed">
+                            Omdat de volledige betaling is voldaan, kunnen de activiteiten niet meer worden gewijzigd via de website.
+                            Neem contact op met de reiscommissie als je toch nog iets wilt wijzigen.
+                        </p>
+                        <Link
+                            href={token ? `/reis/restbetaling/${signupId}?token=${token}` : `/reis/restbetaling/${signupId}`}
+                            className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-md shadow-blue-600/20"
+                        >
+                            Terug naar overzicht
+                        </Link>
+                    </div>
+                ) : (
+                    <>
+                        <div className="bg-blue-50 dark:bg-blue-900/10 border-l-4 border-blue-500 p-4 rounded-r-xl mb-8 shadow-sm">
+                            <div className="flex items-start">
+                                <Utensils className="h-6 w-6 text-blue-600 dark:text-blue-400 mr-3 flex-shrink-0 mt-0.5" />
+                                <div>
+                                    <h3 className="text-blue-800 dark:text-blue-300 font-bold text-lg mb-1">Activiteiten aanpassen</h3>
+                                    <p className="text-blue-700 dark:text-blue-200 text-sm leading-relaxed">
+                                        De kosten voor extra activiteiten worden automatisch toegevoegd aan je restbedrag.
+                                        Je kunt activiteiten blijven aanpassen tot je de definitieve betaling voldoet.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <ActivitySelectionForm
+                            signupId={signupId}
+                            trip={trip}
+                            activities={activities}
+                            initialSelectedActivities={initialSelected}
+                            initialActivityOptions={initialOptions}
+                            token={token}
+                        />
+                    </>
                 )}
             </div>
-        </>
+        </main>
     );
 }

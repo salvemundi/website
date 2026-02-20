@@ -30,7 +30,7 @@ const getRedirectUri = () => {
 };
 
 const redirectUri = getRedirectUri();
-console.log('[msalConfig] Resolved Redirect URI:', redirectUri);
+// console.log('[msalConfig] Resolved Redirect URI:', redirectUri);
 const postLogoutRedirectUri = redirectUri;
 
 // Helpful hint for LAN/IP testing where Microsoft requires HTTPS
@@ -42,11 +42,11 @@ if (typeof window !== 'undefined') {
 }
 
 // MSAL configuration
-console.log('[msalConfig] Loading configuration...');
-console.log('[msalConfig] Env NEXT_PUBLIC_ENTRA_CLIENT_ID:', process.env.NEXT_PUBLIC_ENTRA_CLIENT_ID);
+// console.log('[msalConfig] Loading configuration...');
+// console.log('[msalConfig] Env NEXT_PUBLIC_ENTRA_CLIENT_ID:', process.env.NEXT_PUBLIC_ENTRA_CLIENT_ID);
 
 const clientId = process.env.NEXT_PUBLIC_ENTRA_CLIENT_ID || 'YOUR_CLIENT_ID';
-console.log('[msalConfig] Resolved Client ID:', clientId);
+// console.log('[msalConfig] Resolved Client ID:', clientId);
 
 const tenantId = process.env.NEXT_PUBLIC_ENTRA_TENANT_ID || 'common';
 

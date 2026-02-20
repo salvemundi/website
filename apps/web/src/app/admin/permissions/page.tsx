@@ -75,8 +75,8 @@ export default function PermissionsPage() {
 
         const checkAccess = async () => {
             try {
-                const setting = await siteSettingsApi.get('admin_permissions', true);
-                const tokens = getMergedTokens(setting?.authorized_tokens, ['ictcommissie', 'bestuur']);
+                const setting = await siteSettingsApi.getSingle('admin_coupons', true);
+                const tokens = getMergedTokens(setting?.authorized_tokens, ['ictcommissie', 'bestuur', 'kascommissie', 'kandidaatbestuur']);
                 setIsAuthorized(isUserAuthorized(user, tokens));
             } catch (error) {
                 setIsAuthorized(isUserInIct(user));
@@ -98,14 +98,11 @@ export default function PermissionsPage() {
 
         try {
             await Promise.all(PERMISSION_PAGES.map(async (page) => {
-                const setting = await siteSettingsApi.get(page.pageKey, true); // Fetch with authorized_tokens
-                // Deduplicate and normalize tokens from DB
+                const setting = await siteSettingsApi.getSingle(page.pageKey, true);
                 const rawTokensField = setting?.authorized_tokens;
                 let rawTokens: string[] = [];
 
-                if (Array.isArray(rawTokensField)) {
-                    rawTokens = rawTokensField.map(t => String(t));
-                } else if (typeof rawTokensField === 'string') {
+                if (typeof rawTokensField === 'string') {
                     rawTokens = rawTokensField.split(',');
                 }
 

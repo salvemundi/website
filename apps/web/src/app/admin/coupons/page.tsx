@@ -28,10 +28,9 @@ export default function AdminCouponsPage() {
             setIsAuthorized(false);
             return;
         }
-
         try {
-            const setting = await siteSettingsApi.get('admin_coupons', true);
-            const tokens = getMergedTokens(setting?.authorized_tokens, ['ictcommissie', 'bestuur', 'kascommissie', 'kandidaatbestuur']);
+            const setting = await siteSettingsApi.getSingle('admin_permissions', true);
+            const tokens = getMergedTokens(setting?.authorized_tokens, ['ictcommissie', 'bestuur']);
             setIsAuthorized(isUserAuthorized(user, tokens));
         } catch (error) {
             // Fallback for static check
