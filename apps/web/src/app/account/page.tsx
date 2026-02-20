@@ -184,6 +184,12 @@ function AccountPageContent() {
   const [eventSignups, setEventSignups] = useState<EventSignup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Easter egg state (hydration safe)
+  const [showEasterEgg, setShowEasterEgg] = useState(false);
+  useEffect(() => {
+    setShowEasterEgg(Math.random() < 0.5); // Temporarily 50% for testing
+  }, []);
+
   // Show past events toggle (default: hide past events)
   const [showPastEvents, setShowPastEvents] = useState(false);
 
@@ -342,6 +348,9 @@ function AccountPageContent() {
     );
   }
 
+  // Determine display name for the easter egg
+  const displayName = showEasterEgg ? "Vouw een bak!" : user.first_name;
+
   return (
     <div className="min-h-screen bg-[var(--bg-main)]">
       <PageHeader
@@ -469,9 +478,11 @@ function AccountPageContent() {
                 {/* Info */}
                 <div className="min-w-0 w-full">
                   <h2 className="text-xl sm:text-2xl font-extrabold text-theme-purple dark:text-white break-words">
-                    {user.first_name && user.last_name
-                      ? `${user.first_name} ${user.last_name}`
-                      : user.email || "User"}
+                    {showEasterEgg
+                      ? displayName
+                      : (user.first_name && user.last_name
+                        ? `${user.first_name} ${user.last_name}`
+                        : user.email || "User")}
                   </h2>
 
                   <div className="mt-4 flex flex-wrap justify-center">
