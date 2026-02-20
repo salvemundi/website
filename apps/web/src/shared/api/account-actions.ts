@@ -1,25 +1,23 @@
 'use server';
 
-import { serverDirectusFetch } from '@/shared/lib/server-directus';
+import { mutateDirectus, serverDirectusFetch } from '@/shared/lib/server-directus';
 import { User, EventSignup } from '@/shared/model/types/auth';
-import { cookies } from 'next/headers';
-import { AUTH_COOKIES } from '@/shared/config/auth-config';
-import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { isValidPhoneNumber, formatPhoneNumber } from '@/shared/lib/phone';
 import { getCurrentUserAction } from '@/shared/api/auth-actions';
 import { updateUserPhoneInEntra, updateUserDobInEntra } from '@/shared/lib/ms-graph';
+import { getServerSessionToken } from '@/shared/lib/auth-server';
 
 /**
- * Updates the current user's profile information.
+ * Updates the given user's profile information using an elevated Admin Token.
+ * Enforces strict authorization by checking that the acting user matches the target.
  */
 export async function updateCurrentUserAction(data: Partial<User>) {
     try {
-        const cookieStore = await cookies();
-        const sessionToken = cookieStore.get(AUTH_COOKIES.SESSION)?.value;
+        const currentUser = await getCurrentUserAction();
 
-        if (!sessionToken) {
-            throw new Error('Niet ingelogd');
+        if (!currentUser?.id) {
+            throw new Error('Niet ingelogd of ongeldige sessie');
         }
 
         // We only allow updating specific fields for security
@@ -41,19 +39,19 @@ export async function updateCurrentUserAction(data: Partial<User>) {
             return { success: true };
         }
 
-        const response = await serverDirectusFetch<any>('/users/me', {
-            method: 'PATCH',
-            headers: {
-                'Authorization': `Bearer ${sessionToken}`,
-            },
-            body: JSON.stringify(allowedUpdates),
-            revalidate: 0
-        });
+        // Elevate Privileges: Call Directus with the STATIC_TOKEN (Admin Token)
+        // This bypasses user role limits while our manual check ensures safety.
+        const response = await mutateDirectus<any>(
+            `/users/${currentUser.id}`,
+            'PATCH',
+            allowedUpdates
+        );
 
         if (!response) {
             throw new Error('Update mislukt');
         }
 
+        const { revalidatePath } = await import('next/cache');
         revalidatePath('/account');
         return { success: true, data: response };
     } catch (error: any) {
@@ -67,8 +65,7 @@ export async function updateCurrentUserAction(data: Partial<User>) {
  */
 export async function getUserEventSignupsAction(): Promise<EventSignup[]> {
     try {
-        const cookieStore = await cookies();
-        const sessionToken = cookieStore.get(AUTH_COOKIES.SESSION)?.value;
+        const sessionToken = await getServerSessionToken();
 
         if (!sessionToken) return [];
 
@@ -162,9 +159,14 @@ export async function updatePhoneAction(_prevState: any, formData: FormData) {
     // Format to standard international format before saving
     const formatted = formatPhoneNumber(validation.data);
 
-    // Sync to MS Entra ID first (Source of Truth)
+    // Identity check: get the explicitly resolved active user (impersonated or real)
     const currentUser = await getCurrentUserAction();
-    if (currentUser?.entra_id) {
+    if (!currentUser?.id) {
+        return { success: false, error: 'Niet geautoriseerd' };
+    }
+
+    // Sync to MS Entra ID first (Source of Truth) using the resolved user's context
+    if (currentUser.entra_id) {
         try {
             await updateUserPhoneInEntra(currentUser.entra_id, formatted);
         } catch (error: any) {
@@ -172,7 +174,8 @@ export async function updatePhoneAction(_prevState: any, formData: FormData) {
         }
     }
 
-    // Sync to Directus
+    // Sync to Directus via the Privileged Server-Side Function
+    // Passes ONLY the single explicitly allowed field.
     const result = await updateCurrentUserAction({ phone_number: formatted });
     if (!result.success) return { success: false, error: result.error };
 
@@ -191,9 +194,14 @@ export async function updateDateOfBirthAction(_prevState: any, formData: FormDat
         return { success: false, error: validation.error.issues[0]?.message || 'Ongeldige datum' };
     }
 
-    // Sync to MS Entra ID first (Source of Truth) via Custom Security Attributes
+    // Identity check: get the explicitly resolved active user (impersonated or real)
     const currentUser = await getCurrentUserAction();
-    if (currentUser?.entra_id) {
+    if (!currentUser?.id) {
+        return { success: false, error: 'Niet geautoriseerd' };
+    }
+
+    // Sync to MS Entra ID first (Source of Truth) using the resolved user's context
+    if (currentUser.entra_id) {
         try {
             await updateUserDobInEntra(currentUser.entra_id, validation.data);
         } catch (error: any) {
@@ -201,7 +209,8 @@ export async function updateDateOfBirthAction(_prevState: any, formData: FormDat
         }
     }
 
-    // Sync to Directus
+    // Sync to Directus via the Privileged Server-Side Function
+    // Passes ONLY the single explicitly allowed field.
     const result = await updateCurrentUserAction({ date_of_birth: validation.data });
     if (!result.success) return { success: false, error: result.error };
 
@@ -220,6 +229,14 @@ export async function updateMinecraftAction(_prevState: any, formData: FormData)
         return { success: false, error: validation.error.issues[0]?.message || 'Ongeldige gebruikersnaam' };
     }
 
+    // Identity check: get the explicitly resolved active user (impersonated or real)
+    const currentUser = await getCurrentUserAction();
+    if (!currentUser?.id) {
+        return { success: false, error: 'Niet geautoriseerd' };
+    }
+
+    // Sync to Directus via the Privileged Server-Side Function
+    // Passes ONLY the single explicitly allowed field.
     const result = await updateCurrentUserAction({ minecraft_username: validation.data });
     if (!result.success) return { success: false, error: result.error };
 
