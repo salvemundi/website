@@ -387,10 +387,9 @@ export default function IntroBlogPage() {
                                                                         return old.map((b) => b.id === blog.id ? { ...b, likes: (b.likes || 0) + (isLiked ? -1 : 1) } : b);
                                                                     });
 
-                                                                    const userId = user?.id ? String(user.id) : '';
                                                                     const res = isLiked
-                                                                        ? await unlikeBlogAction(blog.id, userId)
-                                                                        : await likeBlogAction(blog.id, userId);
+                                                                        ? await unlikeBlogAction(blog.id)
+                                                                        : await likeBlogAction(blog.id);
 
                                                                     if (res.success) {
                                                                         // Reconcile with server value
@@ -609,10 +608,9 @@ export default function IntroBlogPage() {
                                                             return old.map((b) => b.id === selectedBlog.id ? { ...b, likes: (b.likes || 0) + (isLiked ? -1 : 1) } : b);
                                                         });
 
-                                                        const userId = user?.id ? String(user.id) : '';
                                                         const res = isLiked
-                                                            ? await unlikeBlogAction(selectedBlog.id, userId)
-                                                            : await likeBlogAction(selectedBlog.id, userId);
+                                                            ? await unlikeBlogAction(selectedBlog.id)
+                                                            : await likeBlogAction(selectedBlog.id);
 
                                                         if (res.success) {
                                                             queryClient.setQueryData(['intro-blogs'], (old: IntroBlog[] | undefined) => {

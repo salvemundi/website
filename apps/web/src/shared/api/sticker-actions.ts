@@ -1,7 +1,9 @@
 'use server';
 
-import { serverDirectusFetch, CACHE_PRESETS, COLLECTION_TAGS } from '@/shared/lib/server-directus';
+import { serverDirectusFetch, mutateDirectus, CACHE_PRESETS, COLLECTION_TAGS } from '@/shared/lib/server-directus';
 import { revalidatePath } from 'next/cache';
+import { getCurrentUserAction } from '@/shared/api/auth-actions';
+import { z } from 'zod';
 
 export type CreateStickerData = {
     latitude: number;
@@ -13,6 +15,18 @@ export type CreateStickerData = {
     country?: string;
     image?: string;
 };
+
+// Strict Zod Validation Schema for CreateStickerData
+const createStickerSchema = z.object({
+    latitude: z.number().min(-90).max(90),
+    longitude: z.number().min(-180).max(180),
+    location_name: z.string().min(1, 'Naam van locatie is verplicht.'),
+    description: z.string().optional(),
+    address: z.string().optional(),
+    city: z.string().optional(),
+    country: z.string().optional(),
+    image: z.string().optional()
+});
 
 export type Sticker = {
     id: number;
@@ -54,13 +68,25 @@ export async function getStickersAction() {
  */
 export async function createStickerAction(data: CreateStickerData) {
     try {
-        const result = await serverDirectusFetch<Sticker>(
+        // Secure Auth Guard enforcing real user context
+        const user = await getCurrentUserAction();
+        if (!user || !user.id) {
+            return { success: false, error: 'Je moet ingelogd zijn om een sticker toe te voegen.' };
+        }
+
+        // Validate payload using explicit schema
+        const validatedData = createStickerSchema.parse(data);
+
+        // Mutate securely binding user_created to the authenticated identifier
+        const payload = {
+            ...validatedData,
+            user_created: user.id
+        };
+
+        const result = await mutateDirectus<Sticker>(
             '/items/stickers',
-            {
-                method: 'POST',
-                body: JSON.stringify(data),
-                revalidate: 0
-            }
+            'POST',
+            payload
         );
 
         // Revalidate the stickers tag to update the map/list
@@ -69,6 +95,9 @@ export async function createStickerAction(data: CreateStickerData) {
         return { success: true, data: result };
     } catch (error: any) {
         console.error('[StickerAction] Failed to create sticker:', error.message);
+        if (error instanceof z.ZodError) {
+            return { success: false, error: (error as any).errors.map((e: any) => e.message).join(', ') };
+        }
         return { success: false, error: error.message || 'Kon stickerlocatie niet opslaan.' };
     }
 }
