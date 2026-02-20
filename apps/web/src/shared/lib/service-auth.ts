@@ -11,11 +11,12 @@ if (!SERVICE_SECRET) {
  * @param payload Data to include in the token (e.g., { iss: 'frontend' })
  * @param expiresIn Expiration time (default 1 hour)
  */
-export function createServiceToken(payload: any = { iss: 'frontend' }, expiresIn: string = '1h'): string {
+export function createServiceToken(payload: any = { iss: 'frontend' }, expiresIn: string | number = '1h'): string {
     if (!SERVICE_SECRET) {
         throw new Error('SERVICE_SECRET is required to sign service tokens');
     }
-    const token = sign(payload, SERVICE_SECRET, { expiresIn });
+    // Typecast to avoid TS error: jsonwebtoken package typings for 'expiresIn' allows string and number.
+    const token = sign(payload, SERVICE_SECRET, { expiresIn: expiresIn as any });
     console.log(`[service-auth] Created token for ${payload.iss || 'unknown'}. Secret defined: ${!!SERVICE_SECRET}, Secret start: ${SERVICE_SECRET.substring(0, 3)}...`);
     // @ts-ignore
     return token;
