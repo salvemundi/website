@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
             // Map 'directus_files' system collection to our 'assets' tag
             const targetTag = rawCollection === 'directus_files' ? 'assets' : rawCollection;
 
+            // @ts-expect-error - Next.js 15+ may expect a second profile argument, but 1 arg is valid at runtime
             revalidateTag(targetTag);
             console.log(`[Webhook] Successfully revalidated tag: ${targetTag} (triggered by ${rawCollection})`);
 

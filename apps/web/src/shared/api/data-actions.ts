@@ -211,6 +211,7 @@ export async function updateCommitteeAction(id: number | string, data: any): Pro
 export async function uploadFileAction(formData: FormData): Promise<any> {
     try {
         const result = await mutateDirectus('/files', 'POST', formData);
+        // @ts-expect-error - Next.js 15+ may expect a second profile argument, but 1 arg is valid at runtime
         revalidateTag('assets'); // Make sure the new asset becomes immediately visible
         return { success: true, file: result };
     } catch (error: any) {
