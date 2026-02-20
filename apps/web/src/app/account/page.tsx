@@ -10,10 +10,8 @@ import { getImageUrl } from "@/shared/lib/api/image";
 import { slugify } from "@/shared/lib/utils/slug";
 import { format, startOfDay, isBefore } from "date-fns";
 import PageHeader from "@/widgets/page-header/ui/PageHeader";
-import { PhoneNumberInput } from "@/shared/components/PhoneNumberInput";
-import { formatPhoneNumber } from "@/shared/lib/phone";
 import NotificationToggle from "@/components/NotificationToggle";
-import { formatDateToLocalISO } from "@/shared/lib/utils/date";
+import { PhoneNumberForm, DateOfBirthForm, MinecraftForm } from "./profile-forms";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import {
   LogOut,
@@ -21,7 +19,6 @@ import {
   MessageCircle,
   FileText,
   Mail,
-  Phone,
   Gamepad2,
   Users2,
   Calendar,
@@ -190,24 +187,6 @@ function AccountPageContent() {
   // Show past events toggle (default: hide past events)
   const [showPastEvents, setShowPastEvents] = useState(false);
 
-  const [minecraftUsername, setMinecraftUsername] = useState("");
-  const [isEditingMinecraft, setIsEditingMinecraft] = useState(false);
-  const [isSavingMinecraft, setIsSavingMinecraft] = useState(false);
-
-  const [dateOfBirth, setDateOfBirth] = useState("");
-  const [isEditingDateOfBirth, setIsEditingDateOfBirth] = useState(false);
-  const [isSavingDateOfBirth, setIsSavingDateOfBirth] = useState(false);
-
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [isEditingPhoneNumber, setIsEditingPhoneNumber] = useState(false);
-  const [isSavingPhoneNumber, setIsSavingPhoneNumber] = useState(false);
-
-  useEffect(() => {
-    if (user?.minecraft_username) setMinecraftUsername(user.minecraft_username);
-    if (user?.date_of_birth) setDateOfBirth(formatDateToLocalISO(user.date_of_birth));
-    if (user?.phone_number) setPhoneNumber(user.phone_number);
-  }, [user]);
-
   useEffect(() => {
     loadEventSignups();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -260,66 +239,6 @@ function AccountPageContent() {
     // Full reload ensures MSAL internal state is completely reset.
     if (typeof window !== 'undefined') {
       window.location.href = "/?noAuto=true";
-    }
-  };
-
-  const handleSaveMinecraftUsername = async () => {
-    setIsSavingMinecraft(true);
-    try {
-      const res = await updateCurrentUserAction({ minecraft_username: minecraftUsername });
-      if (!res.success) throw new Error(res.error);
-
-      await refreshUser();
-      setIsEditingMinecraft(false);
-    } catch (error: any) {
-      console.error('Failed to update Minecraft username:', error);
-      alert(error.message || 'Fout bij opslaan');
-    } finally {
-      setIsSavingMinecraft(false);
-    }
-  };
-
-  const handleSaveDateOfBirth = async () => {
-    if (!dateOfBirth) {
-      alert('Voer een geldige geboortedatum in');
-      return;
-    }
-    setIsSavingDateOfBirth(true);
-    try {
-      const res = await updateCurrentUserAction({ date_of_birth: dateOfBirth });
-      if (!res.success) throw new Error(res.error);
-
-      await refreshUser();
-      setIsEditingDateOfBirth(false);
-      alert('Geboortedatum opgeslagen!');
-    } catch (error: any) {
-      console.error('Failed to update date of birth:', error);
-      alert(error.message || 'Fout bij opslaan');
-    } finally {
-      setIsSavingDateOfBirth(false);
-    }
-  };
-
-  const handleSavePhoneNumber = async () => {
-    if (!phoneNumber) {
-      alert('Voer een geldig telefoonnummer in');
-      return;
-    }
-    setIsSavingPhoneNumber(true);
-    try {
-      const formattedPhone = formatPhoneNumber(phoneNumber);
-      const res = await updateCurrentUserAction({ phone_number: formattedPhone });
-      if (!res.success) throw new Error(res.error);
-
-      await refreshUser();
-      setPhoneNumber(formattedPhone);
-      setIsEditingPhoneNumber(false);
-      alert('Telefoonnummer opgeslagen!');
-    } catch (error: any) {
-      console.error('Failed to update phone number:', error);
-      alert(error.message || 'Fout bij opslaan');
-    } finally {
-      setIsSavingPhoneNumber(false);
     }
   };
 
@@ -614,57 +533,7 @@ function AccountPageContent() {
               className="h-fit"
             >
               <div className="rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <p className="text-[11px] font-bold uppercase text-theme-purple/70 dark:text-white/50 tracking-wide text-left">
-                    <label htmlFor="minecraft_username">Minecraft Username</label>
-                  </p>
-                  {!isEditingMinecraft && (
-                    <button
-                      onClick={() => setIsEditingMinecraft(true)}
-                      className="shrink-0 rounded-xl bg-theme-purple px-3 py-1.5 text-[10px] font-bold uppercase text-white hover:bg-theme-purple-light transition shadow-md"
-                    >
-                      {user.minecraft_username ? "Wijzig" : "Instellen"}
-                    </button>
-                  )}
-                </div>
-
-                {isEditingMinecraft ? (
-                  <div className="flex flex-wrap gap-2">
-                    <input
-                      type="text"
-                      id="minecraft_username"
-                      name="minecraft_username"
-                      autoComplete="nickname"
-                      value={minecraftUsername}
-                      onChange={(e) => setMinecraftUsername(e.target.value)}
-                      className="flex-1 min-w-0 rounded-xl bg-white dark:bg-black/40 px-3.5 py-2 text-sm text-theme-purple dark:text-white outline-none focus:ring-2 focus:ring-theme-purple shadow-inner"
-                      placeholder="Username"
-                    />
-                    <button
-                      onClick={handleSaveMinecraftUsername}
-                      disabled={isSavingMinecraft}
-                      className="shrink-0 rounded-xl bg-theme-purple px-4 py-2 text-sm font-bold text-white hover:bg-theme-purple-light transition disabled:opacity-50 shadow-md"
-                    >
-                      {isSavingMinecraft ? "..." : "Save"}
-                    </button>
-                    <button
-                      onClick={() => setIsEditingMinecraft(false)}
-                      className="shrink-0 rounded-xl bg-theme-purple/5 px-3 py-2 text-sm font-bold text-theme-purple dark:text-white border border-theme-purple/10"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-3 min-w-0">
-                    <Gamepad2 className="h-5 w-5 text-theme-purple/40" />
-                    <p
-                      className="break-words font-bold text-theme-purple dark:text-white"
-                      style={{ fontSize: 'var(--font-size-base)' }}
-                    >
-                      {user.minecraft_username || "Niet ingesteld"}
-                    </p>
-                  </div>
-                )}
+                <MinecraftForm user={user} refreshUser={refreshUser} />
               </div>
             </Tile>
           </div>
@@ -714,117 +583,12 @@ function AccountPageContent() {
                 ) : null}
 
                 <div className="rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <p className="text-[11px] font-bold uppercase text-theme-purple/70 dark:text-white/50 tracking-wide text-left">
-                      <label htmlFor="phone_number">Telefoonnummer</label>
-                    </p>
-                    {!isEditingPhoneNumber && (
-                      <button
-                        onClick={() => setIsEditingPhoneNumber(true)}
-                        className="shrink-0 rounded-xl bg-theme-purple px-3 py-1.5 text-[10px] font-bold uppercase text-white hover:bg-theme-purple-light transition shadow-md"
-                      >
-                        {user.phone_number ? "Wijzig" : "Instellen"}
-                      </button>
-                    )}
-                  </div>
-
-                  {isEditingPhoneNumber ? (
-                    <>
-                      <PhoneNumberInput
-                        value={phoneNumber}
-                        onChange={(val) => setPhoneNumber(val || "")}
-                        disabled={isSavingPhoneNumber}
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          onClick={handleSavePhoneNumber}
-                          disabled={isSavingPhoneNumber}
-                          className="flex-1 rounded-xl bg-theme-purple px-4 py-2 text-sm font-bold text-white hover:bg-theme-purple-light transition disabled:opacity-50"
-                        >
-                          {isSavingPhoneNumber ? 'Opslaan...' : 'Opslaan'}
-                        </button>
-                        <button
-                          onClick={() => {
-                            setIsEditingPhoneNumber(false);
-                            setPhoneNumber(user.phone_number || "");
-                          }}
-                          disabled={isSavingPhoneNumber}
-                          className="flex-1 rounded-xl border border-theme-purple/20 px-4 py-2 text-sm font-bold text-theme-purple dark:text-white hover:bg-theme-purple/10 transition disabled:opacity-50"
-                        >
-                          Annuleren
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex items-center gap-4">
-                      <div className="shrink-0 rounded-xl bg-theme-purple/10 dark:bg-white/10 p-3 text-theme-purple dark:text-white shadow-sm">
-                        <Phone className="h-5 w-5" />
-                      </div>
-                      <p className="font-bold text-theme-purple dark:text-white text-sm">
-                        {user.phone_number || "Niet ingesteld"}
-                      </p>
-                    </div>
-                  )}
+                  <PhoneNumberForm user={user} refreshUser={refreshUser} />
                 </div>
               </div>
 
               <div className="rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <p className="text-[11px] font-bold uppercase text-theme-purple/70 dark:text-white/50 tracking-wide text-left">
-                    <label htmlFor="date_of_birth">Geboortedatum</label>
-                  </p>
-                  {!isEditingDateOfBirth && (
-                    <button
-                      onClick={() => setIsEditingDateOfBirth(true)}
-                      className="shrink-0 rounded-xl bg-theme-purple px-3 py-1.5 text-[10px] font-bold uppercase text-white hover:bg-theme-purple-light transition shadow-md"
-                    >
-                      {user.date_of_birth ? "Wijzig" : "Instellen"}
-                    </button>
-                  )}
-                </div>
-
-                {isEditingDateOfBirth ? (
-                  <div className="space-y-3">
-                    <input
-                      type="date"
-                      id="date_of_birth"
-                      name="date_of_birth"
-                      autoComplete="bday"
-                      value={dateOfBirth}
-                      onChange={(e) => setDateOfBirth(e.target.value)}
-                      className="w-full rounded-xl border border-theme-purple/20 bg-white dark:bg-surface-dark px-4 py-2.5 text-theme-purple dark:text-white focus:outline-none focus:ring-2 focus:ring-theme-purple/50 transition"
-                      disabled={isSavingDateOfBirth}
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        onClick={handleSaveDateOfBirth}
-                        disabled={isSavingDateOfBirth}
-                        className="flex-1 rounded-xl bg-theme-purple px-4 py-2 text-sm font-bold text-white hover:bg-theme-purple-light transition disabled:opacity-50"
-                      >
-                        {isSavingDateOfBirth ? 'Opslaan...' : 'Opslaan'}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setIsEditingDateOfBirth(false);
-                          setDateOfBirth(user.date_of_birth || "");
-                        }}
-                        disabled={isSavingDateOfBirth}
-                        className="flex-1 rounded-xl border border-theme-purple/20 px-4 py-2 text-sm font-bold text-theme-purple dark:text-white hover:bg-theme-purple/10 transition disabled:opacity-50"
-                      >
-                        Annuleren
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-4">
-                    <div className="shrink-0 rounded-xl bg-theme-purple/10 dark:bg-white/10 p-3 text-theme-purple dark:text-white shadow-sm">
-                      <Calendar className="h-5 w-5" />
-                    </div>
-                    <p className="font-bold text-theme-purple dark:text-white text-sm">
-                      {user.date_of_birth ? format(new Date(`${formatDateToLocalISO(user.date_of_birth)}T12:00:00`), "d MMMM yyyy") : "Niet ingesteld"}
-                    </p>
-                  </div>
-                )}
+                <DateOfBirthForm user={user} refreshUser={refreshUser} />
               </div>
 
               {/* Push Notifications */}
