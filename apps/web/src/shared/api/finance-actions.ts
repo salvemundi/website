@@ -1,5 +1,7 @@
 'use server';
 
+import { createServiceToken } from '@/shared/lib/service-auth';
+
 const FINANCE_SERVICE_URL = process.env.FINANCE_SERVICE_URL;
 const SERVICE_SECRET = process.env.SERVICE_SECRET;
 
@@ -51,12 +53,16 @@ export async function createPaymentAction(payload: PaymentPayload, traceId?: str
     const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout for payments (slightly longer than coupons)
 
     try {
+        const serviceToken = createServiceToken({ iss: 'frontend' }, '5m');
+        console.log(`[finance-actions][${activeTraceId}] Sending request to ${FINANCE_SERVICE_URL}. API Key set: ${!!SERVICE_SECRET}, Token start: ${serviceToken.substring(0, 10)}...`);
+
         const response = await fetch(`${FINANCE_SERVICE_URL}/api/payments/create`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-API-Key': SERVICE_SECRET,
-                'X-Trace-Id': activeTraceId
+                'X-Trace-Id': activeTraceId,
+                'Authorization': `Bearer ${serviceToken}`
             },
             body: JSON.stringify(payload),
             cache: 'no-store',

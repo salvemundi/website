@@ -7,6 +7,7 @@
  */
 
 import { fetchDirectus, mutateDirectus, buildQuery } from '@/shared/lib/server-directus';
+import { getCurrentUserAction } from '@/shared/api/auth-actions';
 
 
 // =====================
@@ -956,17 +957,67 @@ export async function deleteTripActivityAction(id: number): Promise<void> {
 // =====================
 // TRIP SIGNUPS
 // =====================
+// [SECURITY] Deprecated for public use. Only used for admin checks or strictly protected contexts.
+// Do NOT use this for client-side lists where users can see others.
 export async function getTripSignupsByTripIdAction(tripId: number): Promise<any[]> {
     try {
         const query = buildQuery({
             filter: { trip_id: { _eq: tripId } },
-            sort: '-created_at'
+            sort: '-created_at',
+            fields: 'id,status,created_at,is_crew' // Reduced fields for safety if acccidentally usage
         });
         const res = await fetchDirectus<any[]>(`/items/trip_signups?${query}`, 0);
         return Array.isArray(res) ? res : [];
     } catch (error) {
         console.error('[data-actions] getTripSignupsByTripIdAction error:', error);
         return [];
+    }
+}
+
+export async function getTripParticipantsCountAction(tripId: number): Promise<number> {
+    try {
+        const query = buildQuery({
+            filter: {
+                trip_id: { _eq: tripId },
+                status: { _in: ['registered', 'confirmed', 'waitlist'] }
+            },
+            fields: 'id',
+            limit: -1
+        });
+        const res = await fetchDirectus<any[]>(`/items/trip_signups?${query}`, 0);
+        return Array.isArray(res) ? res.length : 0;
+    } catch (error) {
+        console.error('[data-actions] getTripParticipantsCountAction error:', error);
+        return 0;
+    }
+}
+
+export async function getMyTripSignupAction(tripId: number): Promise<any | null> {
+    const user = await getCurrentUserAction();
+    if (!user) return null;
+
+    try {
+        const query = buildQuery({
+            filter: {
+                trip_id: { _eq: tripId },
+                status: { _neq: 'cancelled' },
+                _or: [
+                    { email: { _eq: user.email } }
+                ]
+            },
+            fields: '*'
+        });
+
+        console.log(`[getMyTripSignupAction] Checking signup for Trip: ${tripId}, User: ${user.id} (${user.email})`);
+
+        const res = await fetchDirectus<any[]>(`/items/trip_signups?${query}`, 0);
+
+        console.log(`[getMyTripSignupAction] Found ${Array.isArray(res) ? res.length : 0} signups.`);
+
+        return (Array.isArray(res) && res.length > 0) ? res[0] : null;
+    } catch (error) {
+        console.error('[data-actions] getMyTripSignupAction error:', error);
+        return null;
     }
 }
 

@@ -15,8 +15,10 @@ export function createServiceToken(payload: any = { iss: 'frontend' }, expiresIn
     if (!SERVICE_SECRET) {
         throw new Error('SERVICE_SECRET is required to sign service tokens');
     }
+    const token = sign(payload, SERVICE_SECRET, { expiresIn });
+    console.log(`[service-auth] Created token for ${payload.iss || 'unknown'}. Secret defined: ${!!SERVICE_SECRET}, Secret start: ${SERVICE_SECRET.substring(0, 3)}...`);
     // @ts-ignore
-    return sign(payload, SERVICE_SECRET, { expiresIn });
+    return token;
 }
 
 /**

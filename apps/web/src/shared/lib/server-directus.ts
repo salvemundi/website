@@ -12,6 +12,10 @@ export async function serverDirectusFetch<T>(endpoint: string, options: FetchOpt
     const directusApiUrl = getDirectusUrl();
     const apiKey = getAdminToken();
 
+    if (!apiKey) {
+        console.error('[serverDirectusFetch] CRITICAL: DIRECTUS_ADMIN_TOKEN is missing! Request to ' + endpoint + ' will likely fail.');
+    }
+
     const { revalidate = 120, tags = [], ...fetchOptions } = options;
     const url = `${directusApiUrl}${endpoint}`;
 

@@ -30,8 +30,8 @@ const GRAPH_SYNC_URL = process.env.GRAPH_SYNC_URL;
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-if (!PORT || !DIRECTUS_URL || !DIRECTUS_API_TOKEN) {
-    console.error('FATAL ERROR: Missing critical environment variables (PORT, DIRECTUS_URL, DIRECTUS_ADMIN_TOKEN)');
+if (!PORT || !DIRECTUS_URL || !DIRECTUS_API_TOKEN || !process.env.SERVICE_SECRET) {
+    console.error('FATAL ERROR: Missing critical environment variables (PORT, DIRECTUS_URL, DIRECTUS_ADMIN_TOKEN, SERVICE_SECRET)');
     process.exit(1);
 }
 
@@ -53,13 +53,8 @@ app.get('/health', (req, res) => res.json({ status: 'ok', time: new Date().toISO
 
 // API Key Middleware
 const apiKeyAuth = (req, res, next) => {
-    const apiKey = req.headers['x-api-key'] || req.headers['x-internal-api-secret'];
+    const apiKey = req.headers['x-api-key'];
     const validApiKey = process.env.SERVICE_SECRET;
-
-    if (!validApiKey) {
-        console.error('❌ [payment-api] SERVICE_SECRET is not set!');
-        return res.status(500).json({ error: 'Server configuration error' });
-    }
 
     if (!apiKey || apiKey !== validApiKey) {
         console.warn(`⚠️ [payment-api] Unauthorized access attempt from ${req.ip} to ${req.path}`);

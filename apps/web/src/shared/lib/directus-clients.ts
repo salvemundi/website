@@ -2,6 +2,8 @@ import 'server-only';
 import { createDirectus, rest, staticToken, authentication } from '@directus/sdk';
 import { cookies } from 'next/headers';
 
+import { AUTH_COOKIES } from '../config/auth-config';
+
 const DIRECTUS_URL = process.env.INTERNAL_DIRECTUS_URL || process.env.NEXT_PUBLIC_DIRECTUS_URL || 'http://directus:8055';
 
 /**
@@ -13,12 +15,11 @@ export const getPublicClient = () => {
 
 /**
  * User Client: Authenticated as the currently logged-in user.
- * Reads the session token from cookies.
+ * Reads the session token from cookies (HttpOnly, secure).
  */
 export const getUserClient = async () => {
     const cookieStore = await cookies();
-    const token = cookieStore.get('next-auth.session-token')?.value
-        || cookieStore.get('__Secure-next-auth.session-token')?.value;
+    const token = cookieStore.get(AUTH_COOKIES.SESSION)?.value;
 
     if (!token) return null;
 

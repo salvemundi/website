@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { pubCrawlEventsApi, pubCrawlSignupsApi, pubCrawlTicketsApi } from '@/shared/lib/api/pub-crawl';
-import { siteSettingsMutations } from '@/shared/lib/api/site-settings';
+import { siteSettingsApi, siteSettingsMutations } from '@/shared/lib/api/site-settings';
 import { useSalvemundiSiteSettings } from '@/shared/lib/hooks/useSalvemundiApi';
 import { Search, Download, Users, Beer, AlertCircle, Trash2, Loader2, Edit } from 'lucide-react';
 import { useAuth } from '@/features/auth/providers/auth-provider';
@@ -389,12 +389,12 @@ export default function KroegentochtAanmeldingenPage() {
                                             {showAllSignups ? 'Verberg onbetaald' : 'Toon ook onbetaald'}
                                         </button>
 
-                                        {/* Visibility toggle for Kroegentocht (ICT/admin only) */}
                                         <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
                                             <label className="text-sm font-medium">Kroegentocht zichtbaar</label>
                                             <button
                                                 onClick={async () => {
-                                                    const current = kroegentochtSettings?.show ?? true;
+                                                    const setting = await siteSettingsApi.getSingle('kroegentocht');
+                                                    const current = setting?.show ?? true;
                                                     try {
                                                         await siteSettingsMutations.upsertByPage('kroegentocht', { show: !current });
                                                         await refetchKroegSettings();
@@ -403,10 +403,10 @@ export default function KroegentochtAanmeldingenPage() {
                                                         alert('Fout bij het bijwerken van de zichtbaarheid voor Kroegentocht');
                                                     }
                                                 }}
-                                                className={`w-12 h-6 rounded-full p-0.5 transition ${kroegentochtSettings?.show ? 'bg-green-500' : 'bg-gray-300'}`}
-                                                aria-pressed={kroegentochtSettings?.show ?? true}
+                                                className={`w-12 h-6 rounded-full p-0.5 transition ${(Array.isArray(kroegentochtSettings) ? kroegentochtSettings[0] : kroegentochtSettings)?.show ? 'bg-green-500' : 'bg-gray-300'}`}
+                                                aria-pressed={(Array.isArray(kroegentochtSettings) ? kroegentochtSettings[0] : kroegentochtSettings)?.show ?? true}
                                             >
-                                                <span className={`block w-5 h-5 bg-white rounded-full transform transition ${kroegentochtSettings?.show ? 'translate-x-6' : 'translate-x-0'}`} />
+                                                <span className={`block w-5 h-5 bg-white rounded-full transform transition ${(Array.isArray(kroegentochtSettings) ? kroegentochtSettings[0] : kroegentochtSettings)?.show ? 'translate-x-6' : 'translate-x-0'}`} />
                                             </button>
                                         </div>
 

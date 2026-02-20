@@ -27,6 +27,7 @@ build/
 dist/
 standalone/
 *.log
+*.txt
 
 # Python
 __pycache__/

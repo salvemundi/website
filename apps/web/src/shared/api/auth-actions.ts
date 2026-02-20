@@ -12,6 +12,10 @@ export interface LoginResponse {
     user: User;
 }
 
+export type LoginActionResult =
+    | (LoginResponse & { success?: true })
+    | { success: false; error: string };
+
 // Logic replicated from auth.ts but safe for server-side execution
 function mapDirectusUserToUser(rawUser: any): User {
     if (!rawUser || !rawUser.id) {
@@ -88,7 +92,7 @@ async function fetchUserDetailsWithToken(accessToken: string): Promise<User> {
     return mapDirectusUserToUser(rawUser);
 }
 
-export async function loginWithEntraIdAction(entraIdToken: string, userEmail: string): Promise<LoginResponse> {
+export async function loginWithEntraIdAction(entraIdToken: string, userEmail: string): Promise<LoginActionResult> {
     try {
         const response = await serverDirectusFetch<any>('/directus-extension-entra-auth/auth/login/entra', {
             method: 'POST',
@@ -129,8 +133,12 @@ export async function loginWithEntraIdAction(entraIdToken: string, userEmail: st
         };
 
     } catch (error: any) {
-        console.error('[auth-actions] Entra Login Error:', error);
-        throw new Error(error.message || 'Authentication failed');
+        console.error('[auth-actions] Entra Login Error:', error.message || error);
+
+        return {
+            success: false,
+            error: 'Sessie is verlopen of ongeldig. Log opnieuw in.'
+        };
     }
 }
 

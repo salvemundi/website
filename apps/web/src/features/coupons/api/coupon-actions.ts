@@ -1,5 +1,7 @@
 'use server';
 
+import { createServiceToken } from '@/shared/lib/service-auth';
+
 const FINANCE_SERVICE_URL = process.env.FINANCE_SERVICE_URL;
 const SERVICE_SECRET = process.env.SERVICE_SECRET;
 
@@ -43,7 +45,8 @@ export async function validateCouponAction(couponCode: string, traceId?: string)
             headers: {
                 'Content-Type': 'application/json',
                 'X-API-Key': SERVICE_SECRET,
-                'X-Trace-Id': activeTraceId
+                'X-Trace-Id': activeTraceId,
+                'Authorization': `Bearer ${createServiceToken({ iss: 'frontend' }, '5m')}`
             },
             body: JSON.stringify({ couponCode: normalizedCode }),
             cache: 'no-store',

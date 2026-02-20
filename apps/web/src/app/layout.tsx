@@ -3,7 +3,7 @@ import './globals.css';
 import '@/shared/lib/silence-dev-logs';
 import ConsoleArt from '@/shared/lib/console-art';
 import { RootProviders } from './providers';
-import { Header } from '@/widgets/header';
+import Header from '@/widgets/header/ui/HeaderWrapper';
 import Footer from '@/widgets/footer/ui/Footer';
 import { ServiceWorkerRegistration } from './ServiceWorkerRegistration';
 import { PreventZoom } from '@/components/PreventZoom';

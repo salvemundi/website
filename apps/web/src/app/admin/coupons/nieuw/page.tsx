@@ -29,7 +29,7 @@ export default function NewCouponPage() {
         }
 
         try {
-            const setting = await siteSettingsApi.get('admin_coupons', true);
+            const setting = await siteSettingsApi.getSingle('admin_coupons', true);
             const tokens = getMergedTokens(setting?.authorized_tokens, ['ictcommissie', 'bestuur', 'kascommissie', 'kandidaatbestuur']);
             setIsAuthorized(isUserAuthorized(user, tokens));
         } catch (error) {
