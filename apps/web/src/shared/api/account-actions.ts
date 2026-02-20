@@ -5,6 +5,10 @@ import { User, EventSignup } from '@/shared/model/types/auth';
 import { cookies } from 'next/headers';
 import { AUTH_COOKIES } from '@/shared/config/auth-config';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
+import { isValidPhoneNumber, formatPhoneNumber } from '@/shared/lib/phone';
+import { getCurrentUserAction } from '@/shared/api/auth-actions';
+import { updateUserPhoneInEntra, updateUserDobInEntra } from '@/shared/lib/ms-graph';
 
 /**
  * Updates the current user's profile information.
@@ -136,5 +140,89 @@ export async function getUserEventSignupsAction(): Promise<EventSignup[]> {
         console.error('[account-actions] Fetch Signups Error:', error);
         return [];
     }
+}
+
+// Validation schemas for profile edits
+const phoneSchema = z.string().refine(isValidPhoneNumber, "Vul een geldig telefoonnummer in (bijv. +31 6 12345678)");
+const dobSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Vul een geldige datum in (YYYY-MM-DD)");
+const minecraftSchema = z.string().max(16, "Minecraft gebruikersnaam mag maximaal 16 tekens zijn").optional().or(z.literal(''));
+
+/**
+ * Server action to update the user's phone number using standard HTML form submission.
+ */
+export async function updatePhoneAction(_prevState: any, formData: FormData) {
+    const rawValue = formData.get('phone_number') as string;
+    if (!rawValue) return { success: false, error: 'Telefoonnummer is vereist' };
+
+    const validation = phoneSchema.safeParse(rawValue);
+    if (!validation.success) {
+        return { success: false, error: validation.error.issues[0]?.message || 'Ongeldig telefoonnummer' };
+    }
+
+    // Format to standard international format before saving
+    const formatted = formatPhoneNumber(validation.data);
+
+    // Sync to MS Entra ID first (Source of Truth)
+    const currentUser = await getCurrentUserAction();
+    if (currentUser?.entra_id) {
+        try {
+            await updateUserPhoneInEntra(currentUser.entra_id, formatted);
+        } catch (error: any) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Sync to Directus
+    const result = await updateCurrentUserAction({ phone_number: formatted });
+    if (!result.success) return { success: false, error: result.error };
+
+    return { success: true, data: result.data };
+}
+
+/**
+ * Server action to update the user's date of birth using standard HTML form submission.
+ */
+export async function updateDateOfBirthAction(_prevState: any, formData: FormData) {
+    const rawValue = formData.get('date_of_birth') as string;
+    if (!rawValue) return { success: false, error: 'Geboortedatum is vereist' };
+
+    const validation = dobSchema.safeParse(rawValue);
+    if (!validation.success) {
+        return { success: false, error: validation.error.issues[0]?.message || 'Ongeldige datum' };
+    }
+
+    // Sync to MS Entra ID first (Source of Truth) via Custom Security Attributes
+    const currentUser = await getCurrentUserAction();
+    if (currentUser?.entra_id) {
+        try {
+            await updateUserDobInEntra(currentUser.entra_id, validation.data);
+        } catch (error: any) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Sync to Directus
+    const result = await updateCurrentUserAction({ date_of_birth: validation.data });
+    if (!result.success) return { success: false, error: result.error };
+
+    return { success: true, data: result.data };
+}
+
+/**
+ * Server action to update the user's Minecraft username using standard HTML form submission.
+ */
+export async function updateMinecraftAction(_prevState: any, formData: FormData) {
+    const rawValue = formData.get('minecraft_username') as string | null;
+    const value = rawValue?.trim() || '';
+
+    const validation = minecraftSchema.safeParse(value);
+    if (!validation.success) {
+        return { success: false, error: validation.error.issues[0]?.message || 'Ongeldige gebruikersnaam' };
+    }
+
+    const result = await updateCurrentUserAction({ minecraft_username: validation.data });
+    if (!result.success) return { success: false, error: result.error };
+
+    return { success: true, data: result.data };
 }
 
