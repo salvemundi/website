@@ -15,21 +15,27 @@ export async function likeBlogAction(blogId: string | number): Promise<{ success
             return { success: false, error: 'Je moet ingelogd zijn om te liken.' };
         }
 
+        // 0. Idempotency Check: Verify if user already liked it
+        const query = new URLSearchParams({
+            'filter[blog_id][_eq]': String(blogId),
+            'filter[user_id][_eq]': String(user.id)
+        }).toString();
+        const existingLike = await serverDirectusFetch<any[]>(`/items/blog_likes?${query}`);
+
         // 1. Get current likes
         const blog = await serverDirectusFetch<any>(`/items/intro_blogs/${blogId}?fields=likes`);
         if (!blog) return { success: false, error: 'Blog niet gevonden.' };
 
         const currentLikes = blog.likes || 0;
+
+        if (existingLike && existingLike.length > 0) {
+            // ALREADY LIKED: Return success without mutating
+            return { success: true, likes: currentLikes };
+        }
+
         const newLikes = currentLikes + 1;
 
-        // 2. Update likes in blog securely using mutatedirectus via patch
-        await mutateDirectus(
-            `/items/intro_blogs/${blogId}`,
-            'PATCH',
-            { likes: newLikes }
-        );
-
-        // 3. Track that THIS user liked it
+        // 2. Track that THIS user liked it FIRST (so if it fails, we don't increment)
         try {
             await mutateDirectus(
                 '/items/blog_likes',
@@ -40,8 +46,16 @@ export async function likeBlogAction(blogId: string | number): Promise<{ success
                 }
             );
         } catch (e) {
-            // Might already exist or table doesn't exist, ignore for now as primary goal is the count
+            // If the insert failed (e.g., race condition unique constraint), it's likely already liked
+            return { success: true, likes: currentLikes };
         }
+
+        // 3. Update likes in blog securely using mutatedirectus via patch
+        await mutateDirectus(
+            `/items/intro_blogs/${blogId}`,
+            'PATCH',
+            { likes: newLikes }
+        );
 
         revalidatePath('/intro/blog');
         return { success: true, likes: newLikes };
@@ -60,10 +74,33 @@ export async function unlikeBlogAction(blogId: string | number): Promise<{ succe
         const user = await getCurrentUserAction();
         if (!user) return { success: false, error: 'Niet geautoriseerd.' };
 
+        // 0. Idempotency Check: Verify if the user like actually exists
+        const query = new URLSearchParams({
+            'filter[blog_id][_eq]': String(blogId),
+            'filter[user_id][_eq]': String(user.id)
+        }).toString();
+        const existingLike = await serverDirectusFetch<any[]>(`/items/blog_likes?${query}`);
+
         const blog = await serverDirectusFetch<any>(`/items/intro_blogs/${blogId}?fields=likes`);
         if (!blog) return { success: false, error: 'Blog niet gevonden.' };
 
         const currentLikes = blog.likes || 0;
+
+        if (!existingLike || existingLike.length === 0) {
+            // ALREADY UNLIKED: Return success without mutating
+            return { success: true, likes: currentLikes };
+        }
+
+        // Remove from tracking FIRST
+        try {
+            await mutateDirectus(
+                `/items/blog_likes/${existingLike[0].id}`,
+                'DELETE'
+            );
+        } catch (e) {
+            // assume it's already deleted if it fails
+        }
+
         const newLikes = Math.max(0, currentLikes - 1);
 
         // Update likes securely
@@ -72,25 +109,6 @@ export async function unlikeBlogAction(blogId: string | number): Promise<{ succe
             'PATCH',
             { likes: newLikes }
         );
-
-        // Remove from tracking
-        try {
-            const query = new URLSearchParams({
-                'filter[blog_id][_eq]': String(blogId),
-                'filter[user_id][_eq]': user.id
-            }).toString();
-
-            const existing = await serverDirectusFetch<any[]>(`/items/blog_likes?${query}`);
-            if (existing && existing.length > 0) {
-                // Delete the like securely
-                await mutateDirectus(
-                    `/items/blog_likes/${existing[0].id}`,
-                    'DELETE'
-                );
-            }
-        } catch (e) {
-            // ignore
-        }
 
         revalidatePath('/intro/blog');
         return { success: true, likes: newLikes };

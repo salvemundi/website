@@ -71,7 +71,7 @@ export async function createStickerAction(data: CreateStickerData) {
         // Secure Auth Guard enforcing real user context
         const user = await getCurrentUserAction();
         if (!user || !user.id) {
-            return { success: false, error: 'Je moet ingelogd zijn om een sticker toe te voegen.' };
+            return { success: false, error: 'Je moet ingelogd zijn om een sticker toe te voegen. Gasten kunnen de kaart alleen bekijken.' };
         }
 
         // Validate payload using explicit schema
