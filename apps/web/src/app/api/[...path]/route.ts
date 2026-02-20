@@ -313,15 +313,21 @@ export async function GET(
 
         const pathParts = path.split('/');
         const isItemsPath = pathParts[0] === 'items';
+        const isAssetsPath = pathParts[0] === 'assets';
+        const isCacheablePath = isItemsPath || isAssetsPath;
         const isPublicToken = !auth || (INTERNAL_TOKEN && (auth.startsWith('Bearer ') ? auth.slice(7) : auth) === String(INTERNAL_TOKEN));
-        const shouldCache = isItemsPath && (isPublicToken || canBypass);
+        const shouldCache = isCacheablePath && (isPublicToken || canBypass);
 
         const tags: string[] = [];
         if (isItemsPath && pathParts[1]) {
             tags.push(pathParts[1]);
         }
-
-        // DIAGNOSTIC logs removed
+        if (isAssetsPath) {
+            tags.push('assets');
+            if (pathParts[1]) {
+                tags.push(`assets_${pathParts[1]}`);
+            }
+        }
 
         const fetchOptions: RequestInit = {
             method: 'GET',
@@ -387,15 +393,41 @@ export async function GET(
         }
 
         const responseContentType = response.headers.get('Content-Type');
+
+        const isImage = responseContentType?.startsWith('image/') || responseContentType?.startsWith('video/');
+        let cacheControl = 'no-store';
+
+        if (shouldCache) {
+            if (isAssetsPath && isImage) {
+                // Background update check every hour, cache keeps serving stale up to 1 day
+                cacheControl = 'public, max-age=3600, stale-while-revalidate=86400';
+            } else if (isAssetsPath && !isImage) {
+                // Ensure PDFs and documents are always the latest
+                cacheControl = 'no-cache, must-revalidate';
+            } else {
+                // Short cache for collections
+                cacheControl = 'public, max-age=120, stale-while-revalidate=60';
+            }
+        }
+
         if (responseContentType && responseContentType.includes('application/json')) {
             const data = await response.json().catch(() => null);
             const safe = data === null ? {} : data;
-            return NextResponse.json(safe, { status: response.status });
+            const res = NextResponse.json(safe, { status: response.status });
+            if (shouldCache) {
+                res.headers.set('Cache-Control', cacheControl);
+            }
+            return res;
         } else {
             const buffer = await response.arrayBuffer().catch(() => new ArrayBuffer(0));
+            const headers = new Headers();
+            headers.set('Content-Type', responseContentType || 'application/octet-stream');
+            if (shouldCache) {
+                headers.set('Cache-Control', cacheControl);
+            }
             return new Response(buffer, {
                 status: response.status,
-                headers: { 'Content-Type': responseContentType || 'application/octet-stream' }
+                headers
             });
         }
 

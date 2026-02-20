@@ -8,6 +8,7 @@
 
 import { fetchDirectus, mutateDirectus, buildQuery } from '@/shared/lib/server-directus';
 import { getCurrentUserAction } from '@/shared/api/auth-actions';
+import { revalidateTag } from 'next/cache';
 
 
 // =====================
@@ -210,6 +211,7 @@ export async function updateCommitteeAction(id: number | string, data: any): Pro
 export async function uploadFileAction(formData: FormData): Promise<any> {
     try {
         const result = await mutateDirectus('/files', 'POST', formData);
+        revalidateTag('assets'); // Make sure the new asset becomes immediately visible
         return { success: true, file: result };
     } catch (error: any) {
         console.error('[data-actions] uploadFileAction error:', error);
