@@ -11,7 +11,7 @@ export async function getBoards(): Promise<any[]> {
     try {
         // Start with a simpler query to verify basic connectivity and collection existence
         const query = buildQuery({
-            fields: 'id,naam,image,year,members.user_id.first_name,members.user_id.last_name,members.user_id.avatar',
+            fields: 'id,naam,image,year,members.functie,members.name,members.user_id.first_name,members.user_id.last_name,members.user_id.avatar',
             sort: '-year',
             limit: '-1',
         });

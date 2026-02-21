@@ -7,10 +7,11 @@ interface CommitteeImageProps {
     src: string;
     alt: string;
     className?: string;
+    sizes?: string;
     onError?: (e: React.SyntheticEvent<HTMLImageElement, Event>) => void;
 }
 
-export default function CommitteeImage({ src, alt, className, onError }: CommitteeImageProps) {
+export default function CommitteeImage({ src, alt, className, onError, sizes = "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 400px" }: CommitteeImageProps) {
     const [isHovered, setIsHovered] = useState(false);
 
     // Check if the source is a GIF
@@ -21,21 +22,23 @@ export default function CommitteeImage({ src, alt, className, onError }: Committ
     // Otherwise (static image or hovered GIF), show the actual source
     const displaySrc = isGif && !isHovered ? '/img/newlogo.png' : src;
 
-    const isExternal = /^https?:\/\//i.test(displaySrc) || displaySrc.includes('access_token=');
+    const isLocalAsset = displaySrc.startsWith('/api/assets/');
+    const isExternal = /^https?:\/\//i.test(displaySrc) || displaySrc.includes('access_token=') || isLocalAsset;
 
     // When the image is external or contains an access token, avoid Next.js image optimization
     // which proxies the request via /_next/image (can trigger 403 for protected Directus assets).
     if (isExternal) {
         return (
             <div
-                className={`relative h-full w-full ${className || ''}`}
+                className={`relative h-full w-full bg-[var(--bg-main)] ${className || ''}`}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
                 <img
                     src={displaySrc}
                     alt={alt}
-                    className={`${isGif && !isHovered ? 'object-contain p-8 bg-white/50' : 'object-cover'} h-full w-full`}
+                    className={`${isGif && !isHovered ? 'object-contain p-8 bg-white/50' : 'object-contain'} h-full w-full bg-transparent transform-gpu transition-transform duration-500 will-change-transform`}
+                    style={{ backfaceVisibility: 'hidden' }}
                     loading="lazy"
                     onError={(e) => {
                         if (onError) onError(e as unknown as React.SyntheticEvent<HTMLImageElement, Event>);
@@ -49,7 +52,7 @@ export default function CommitteeImage({ src, alt, className, onError }: Committ
 
     return (
         <div
-            className="relative h-full w-full"
+            className="relative h-full w-full bg-[var(--bg-main)]"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
@@ -57,8 +60,9 @@ export default function CommitteeImage({ src, alt, className, onError }: Committ
                 src={displaySrc}
                 alt={alt}
                 fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 400px"
-                className={`${className} ${isGif && !isHovered ? 'object-contain p-8 bg-white/50' : 'object-cover'}`}
+                sizes={sizes}
+                className={`${className} ${isGif && !isHovered ? 'object-contain p-8 bg-white/50' : 'object-contain'} bg-transparent transform-gpu transition-transform duration-500 will-change-transform`}
+                style={{ backfaceVisibility: 'hidden' }}
                 loading="lazy"
                 placeholder="blur"
                 blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI1MCIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
