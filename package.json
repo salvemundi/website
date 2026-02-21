@@ -1,0 +1,34 @@
+{
+  "name": "salve-mundi-v7",
+  "version": "7.0.0",
+  "private": true,
+  "description": "Salve Mundi V7 Platform — Monorepo with Next.js frontend and Fastify microservices",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:finance\" \"npm run dev:mail\" \"npm run dev:sync\"",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:finance": "npm run dev --workspace=services/finance-service",
+    "dev:mail": "npm run dev --workspace=services/mail-service",
+    "dev:sync": "npm run dev --workspace=services/sync-service",
+    "build": "npm run build --workspace=frontend",
+    "build:frontend": "npm run build --workspace=frontend",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:build": "docker compose build"
+  },
+  "workspaces": [
+    "frontend",
+    "services/finance-service",
+    "services/mail-service",
+    "services/sync-service"
+  ],
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "typescript": "5.7.3"
+  }
+}
