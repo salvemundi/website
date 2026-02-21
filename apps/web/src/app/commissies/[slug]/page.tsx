@@ -44,6 +44,21 @@ function getMemberEmail(member: any) {
     return member?.user_id?.email || member?.email || '';
 }
 
+function getMemberTitle(member: any, slug: string) {
+    const specificTitle = member?.user_id?.title || member?.title || member?.member_id?.title || member?.functie;
+    if (specificTitle) {
+        return specificTitle;
+    }
+
+    const isBestuur = slug === 'bestuur';
+
+    if (member?.is_leader) {
+        return isBestuur ? 'Voorzitter' : 'Commissie Leider';
+    }
+
+    return isBestuur ? 'Bestuurslid' : 'Commissielid';
+}
+
 function resolveMemberAvatar(member: any) {
     const candidates = [
         member?.user_id?.avatar,
@@ -229,7 +244,7 @@ export default async function CommitteeDetailPage(props: { params: Promise<{ slu
                                     </div>
                                     <div className="min-w-0">
                                         <p className="truncate font-bold text-[var(--text-main)]">{getMemberFullName(leader)}</p>
-                                        <p className="text-xs font-medium text-theme-purple">{isBestuur ? 'Huidig voorzitter' : 'Commissie Leider'}</p>
+                                        <p className="text-xs font-medium text-theme-purple uppercase tracking-wider">{getMemberTitle(leader, slug)}</p>
                                     </div>
                                 </div>
                                 {getMemberEmail(leader) && (
@@ -269,15 +284,9 @@ export default async function CommitteeDetailPage(props: { params: Promise<{ slu
                                             </div>
                                             <div className="min-w-0 flex-1">
                                                 <p className="truncate font-bold text-[var(--text-main)] text-lg">{getMemberFullName(member)}</p>
-                                                {isBestuur ? (
-                                                    <p className="text-xs font-medium text-theme-purple uppercase tracking-wider">
-                                                        {member.title || member.user_id?.title || member.member_id?.title || member.functie || 'Bestuurslid'}
-                                                    </p>
-                                                ) : (
-                                                    member.is_leader ? (
-                                                        <p className="text-xs font-medium text-theme-purple uppercase tracking-wider">Commissie Leider</p>
-                                                    ) : null
-                                                )}
+                                                <p className="text-xs font-medium text-theme-purple uppercase tracking-wider">
+                                                    {getMemberTitle(member, slug)}
+                                                </p>
                                             </div>
                                         </div>
                                     ))}
