@@ -86,7 +86,7 @@ export async function getCommitteesWithMembers() {
                 try {
                     const query = new URLSearchParams({
                         filter: JSON.stringify({ committee_id: { _eq: committee.id } }),
-                        fields: '*,user_id.first_name,user_id.last_name,user_id.avatar'
+                        fields: '*,user_id.first_name,user_id.last_name,user_id.avatar,user_id.title'
                     }).toString();
                     const members = await serverDirectusFetch<any[]>(`/items/committee_members?${query}`, {
                         ...CACHE_PRESETS.STATIC
@@ -124,7 +124,7 @@ export async function getCommittee(id: number) {
 
         const query = new URLSearchParams({
             filter: JSON.stringify({ committee_id: { _eq: id } }),
-            fields: '*,user_id.first_name,user_id.last_name,user_id.avatar'
+            fields: '*,user_id.first_name,user_id.last_name,user_id.avatar,user_id.title'
         }).toString();
 
         const members = await serverDirectusFetch<any[]>(`/items/committee_members?${query}`, {
