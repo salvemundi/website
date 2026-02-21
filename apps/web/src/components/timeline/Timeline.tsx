@@ -2,15 +2,14 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { Chrono } from 'react-chrono';
+import BoardImage from './BoardImage';
 import { GraduationCap } from 'lucide-react';
 
 type TimelineProps = {
     boards: any[];
-    getImageUrl?: (id: any, options?: { quality?: number; width?: number; height?: number; format?: string }) => string;
-    getMemberFullName?: (m: any) => string;
 };
 
-export default function Timeline({ boards: rawBoards, getImageUrl, getMemberFullName }: TimelineProps) {
+export default function Timeline({ boards: rawBoards }: TimelineProps) {
     const boards = Array.isArray(rawBoards) ? rawBoards : [];
     if (boards.length === 0) return null;
 
@@ -120,30 +119,6 @@ export default function Timeline({ boards: rawBoards, getImageUrl, getMemberFull
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    const resolvePicture = (m: any) => {
-        const candidates = [
-            m?.member_id?.picture,
-            m?.member_id?.picture_id,
-            m?.member_id?.picture?.id,
-            m?.member_id?.user?.picture,
-            m?.member_id?.user?.avatar,
-            m?.member_id?.user?.avatar?.id,
-            m?.user_id?.picture,
-            m?.user_id?.picture?.id,
-            m?.user_id?.avatar,
-            m?.user_id?.avatar?.id,
-            m?.picture,
-            m?.picture?.id,
-            m?.avatar,
-            m?.avatar?.id,
-        ];
-        for (const c of candidates) {
-            if (!c) continue;
-            return c;
-        }
-        return null;
-    };
-
     return (
         <div className="w-full [&_.chrono-toolbar-wrapper]:!hidden [&_.SelecterLabel]:!hidden [&_.timeline-card-content]:!max-h-none [&_.timeline-card-content]:!overflow-visible [&_.card-content-wrapper]:!max-h-none [&_.card-content-wrapper]:!overflow-visible [&_.card-description]:!line-clamp-none dark:[&_.timeline-card-content]:bg-[var(--bg-card)] dark:[&_.timeline-card-content]:!text-white dark:[&_.card-title]:!text-white dark:[&_.card-subtitle]:!text-white dark:[&_.card-description]:!text-white dark:[&_.title]:!text-white dark:[&_.timeline-card-title]:!text-white dark:[&_.timeline-title]:!text-white">
             <Chrono
@@ -168,20 +143,11 @@ export default function Timeline({ boards: rawBoards, getImageUrl, getMemberFull
                     <div key={board.id || `board-${index}`} className="p-6 space-y-6 rounded-3xl bg-[var(--bg-card)] shadow-lg dark:border dark:border-white/5 overflow-visible" data-testid={`timeline-item-${index}`}>
                         {/* Board image */}
                         {board.image && (
-                            <div className="group relative w-full overflow-hidden rounded-2xl bg-[var(--bg-main)] shadow-inner">
-                                <img
-                                    src={
-                                        (typeof board.image === 'string' && (board.image.startsWith('http') || board.image.startsWith('/')))
-                                            ? board.image
-                                            : (getImageUrl ? getImageUrl(board.image, { width: 1200 }) : '/img/group-jump.gif')
-                                    }
+                            <div className="group relative w-full overflow-hidden rounded-2xl bg-[var(--bg-main)] shadow-inner flex items-center justify-center p-4">
+                                <BoardImage
+                                    src={board.computedImageUrl || '/img/group-jump.gif'}
                                     alt={board.naam}
-                                    className={`w-full transition duration-500 group-hover:scale-105 ${index === 0 ? "h-auto object-contain" : "aspect-video object-cover"}`}
-                                    loading="lazy"
-                                    onError={(e) => {
-                                        const t = e.target as HTMLImageElement;
-                                        t.src = '/img/group-jump.gif';
-                                    }}
+                                    className="w-full h-auto"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                             </div>
@@ -204,49 +170,19 @@ export default function Timeline({ boards: rawBoards, getImageUrl, getMemberFull
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {board.members.map((member: any) => {
-                                        const avatarRef = resolvePicture(member);
-                                        let avatarSrc = '/img/placeholder.svg';
-                                        if (avatarRef) {
-                                            if (typeof avatarRef === 'string' && (avatarRef.startsWith('http://') || avatarRef.startsWith('https://') || avatarRef.startsWith('/'))) {
-                                                avatarSrc = avatarRef;
-                                            } else if (getImageUrl) {
-                                                avatarSrc = getImageUrl(avatarRef, { width: 200, height: 200 });
-                                            } else if (typeof avatarRef === 'string') {
-                                                avatarSrc = avatarRef;
-                                            }
-                                        }
-
-                                        const fullName = getMemberFullName
-                                            ? getMemberFullName(member)
-                                            : (member.member_id?.first_name && member.member_id?.last_name
-                                                ? `${member.member_id.first_name} ${member.member_id.last_name}`
-                                                : member.member_id?.name ?? 'Onbekend');
+                                        const fullName = member.computedFullName || 'Onbekend';
 
                                         return (
                                             <div
                                                 key={member.id ?? `${board.id}-${Math.random()}`}
-                                                className="flex items-center gap-3 rounded-2xl bg-[var(--bg-main)] border border-[var(--border-color)] p-3 shadow-sm hover:shadow-md transition-all hover:border-theme-purple"
+                                                className="flex flex-col rounded-2xl bg-[var(--bg-main)] border border-[var(--border-color)] p-4 shadow-sm hover:shadow-md transition-all hover:border-theme-purple"
                                             >
-                                                <div className="relative h-12 w-12 flex-shrink-0">
-                                                    <img
-                                                        src={avatarSrc}
-                                                        alt={fullName}
-                                                        className="h-full w-full rounded-full object-cover ring-2 ring-white dark:ring-white/10"
-                                                        loading="lazy"
-                                                        onError={(e) => {
-                                                            const t = e.target as HTMLImageElement;
-                                                            t.src = '/img/placeholder.svg';
-                                                        }}
-                                                    />
-                                                </div>
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="font-bold text-[var(--text-main)] text-sm whitespace-normal break-words">
-                                                        {fullName}
-                                                    </p>
-                                                    {member.functie && (
-                                                        <p className="text-[10px] uppercase font-black text-theme-purple whitespace-normal break-words">{member.functie}</p>
-                                                    )}
-                                                </div>
+                                                <p className="font-bold text-[var(--text-main)] text-sm whitespace-normal break-words">
+                                                    {fullName}
+                                                </p>
+                                                {member.functie && (
+                                                    <p className="text-[10px] uppercase font-black text-theme-purple whitespace-normal break-words mt-1">{member.functie}</p>
+                                                )}
                                             </div>
                                         );
                                     })}

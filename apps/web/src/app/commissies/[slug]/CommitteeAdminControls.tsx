@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Edit, Users2, ArrowLeft, Trash2 } from 'lucide-react';
-import SmartImage from '@/shared/ui/SmartImage';
 import { getImageUrl } from '@/shared/lib/api/image';
 import { deleteCommitteeMemberAction, updateCommitteeMemberAction } from '@/shared/api/data-actions';
+import SmartImage from '@/shared/ui/SmartImage';
+import { getMemberFullName, resolveMemberAvatar, getMemberEmail } from '@/entities/committee/lib/member-helpers';
 
 interface CommitteeAdminControlsProps {
     committeeId: number;
@@ -17,46 +18,6 @@ export default function CommitteeAdminControls({ committeeId, cleanName, members
     const router = useRouter();
     const [membersModalOpen, setMembersModalOpen] = useState(false);
 
-    function getMemberFullName(member: any) {
-        if (member?.member_id) {
-            const m = member.member_id;
-            const first = m.first_name || m.firstname || m.name || m.display_name;
-            const last = m.last_name || m.lastname || m.surname || '';
-            const combined = `${first || ''} ${last || ''}`.trim();
-            if (combined) return combined;
-        }
-
-        if (member?.user_id) {
-            const u = member.user_id;
-            const first = u.first_name || u.firstname || u.name || u.display_name;
-            const last = u.last_name || u.lastname || u.surname || '';
-            const combined = `${first || ''} ${last || ''}`.trim();
-            if (combined) return combined;
-        }
-
-        if (member?.name) return member.name;
-        if (member?.full_name) return member.full_name;
-        if (member?.first_name || member?.last_name) return `${member.first_name || ''} ${member.last_name || ''}`.trim();
-
-        return 'Onbekend';
-    }
-
-    function getMemberEmail(member: any) {
-        return member?.user_id?.email || member?.email || '';
-    }
-
-    function resolveMemberAvatar(member: any) {
-        const candidates = [
-            member?.user_id?.avatar,
-            member?.user_id?.picture,
-            member?.member_id?.avatar,
-            member?.member_id?.picture,
-            member?.picture,
-            member?.avatar
-        ];
-        for (const c of candidates) if (c) return c;
-        return null;
-    }
 
     const removeMember = async (memberRowId: number) => {
         try {
@@ -121,12 +82,19 @@ export default function CommitteeAdminControls({ committeeId, cleanName, members
                                 <div key={member.id} className="flex items-center justify-between gap-4 rounded-2xl bg-[var(--bg-main)] p-4 transition-colors hover:bg-[var(--bg-card)] border border-transparent hover:border-[var(--border-color)]">
                                     <div className="flex items-center gap-4">
                                         <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full ring-2 ring-theme-purple/20">
-                                            <SmartImage
-                                                src={getImageUrl(resolveMemberAvatar(member))}
-                                                alt={getMemberFullName(member)}
-                                                fill
-                                                className="object-cover"
-                                            />
+                                            {resolveMemberAvatar(member) ? (
+                                                <SmartImage
+                                                    src={getImageUrl(resolveMemberAvatar(member), { width: 200, height: 200 })}
+                                                    alt={getMemberFullName(member)}
+                                                    className="h-full w-full object-cover transform-gpu transition-transform duration-500"
+                                                    fill
+                                                    sizes="48px"
+                                                />
+                                            ) : (
+                                                <div className="flex h-full w-full items-center justify-center bg-theme-purple/10 text-lg font-black text-theme-purple">
+                                                    {getMemberFullName(member).charAt(0)}
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="min-w-0">
                                             <p className="truncate font-bold text-[var(--text-main)]">{getMemberFullName(member)}</p>

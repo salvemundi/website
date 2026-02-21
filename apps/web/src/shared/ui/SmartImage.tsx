@@ -22,8 +22,9 @@ interface SmartImageProps {
 export default function SmartImage({ src, alt = '', className, fill, sizes, width, height, loading, placeholder, blurDataURL, priority, quality, onError }: SmartImageProps) {
     const isTokenized = typeof src === 'string' && src.includes('access_token=');
     const isExternal = typeof src === 'string' && /^https?:\/\//i.test(src);
+    const isLocalAsset = typeof src === 'string' && src.startsWith('/api/assets/');
 
-    const useNative = isTokenized || isExternal;
+    const useNative = isTokenized || isExternal || isLocalAsset;
 
     if (useNative) {
         // Use native <img> to avoid Next.js optimizer proxying tokenized URLs

@@ -11,16 +11,6 @@ export default function BoardHistoryPage() {
   const { data: boards = [], isLoading, error } = useSalvemundiBoard();
 
   function getMemberFullName(member: any) {
-    // Try nested relation first (legacy naming)
-    if (member?.member_id) {
-      const m = member.member_id;
-      const first = m.first_name || m.firstname || m.name || m.display_name;
-      const last = m.last_name || m.lastname || m.surname || '';
-      const combined = `${first || ''} ${last || ''}`.trim();
-      if (combined) return combined;
-    }
-
-    // Direct user relation preferred (current payload uses `user_id`)
     if (member?.user_id) {
       const u = member.user_id;
       const first = u.first_name || u.firstname || u.name || u.display_name || u.given_name;
@@ -29,17 +19,32 @@ export default function BoardHistoryPage() {
       if (combined) return combined;
     }
 
-    // Try direct fields on the member object
-    const firstDirect = member.first_name || member.firstname || member.given_name;
-    const lastDirect = member.last_name || member.lastname || member.family_name;
+    if (member?.name) return member.name;
+    const firstDirect = member?.first_name || member?.firstname || member?.given_name;
+    const lastDirect = member?.last_name || member?.lastname || member?.family_name;
     if (firstDirect || lastDirect) return `${firstDirect || ''} ${lastDirect || ''}`.trim();
 
-    // Try alternative names
-    if (member.name) return member.name;
-    if (member.full_name) return member.full_name;
+    if (member?.full_name) return member.full_name;
 
     return 'Onbekend';
   }
+
+  const flatMappedBoards = boards?.map((board: any) => {
+    return {
+      ...board,
+      computedImageUrl: board.image
+        ? (typeof board.image === 'string' && (board.image.startsWith('http') || board.image.startsWith('/')))
+          ? board.image
+          : getImageUrl(board.image, { width: 1200 })
+        : '/img/group-jump.gif',
+      members: board.members?.map((member: any) => {
+        return {
+          ...member,
+          computedFullName: getMemberFullName(member)
+        };
+      }) || []
+    };
+  }) || [];
 
   return (
     <>
@@ -82,11 +87,7 @@ export default function BoardHistoryPage() {
               </p>
             </div>
           ) : (
-            <Timeline
-              boards={boards}
-              getImageUrl={getImageUrl}
-              getMemberFullName={getMemberFullName}
-            />
+            <Timeline boards={flatMappedBoards} />
           )}
         </main>
       </div>

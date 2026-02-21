@@ -7,70 +7,16 @@ import { sanitizeHtml } from '@/shared/lib/utils/sanitize';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Mail, Calendar, Users2, History, ShieldCheck, ArrowLeft } from 'lucide-react';
-import SmartImage from '@/shared/ui/SmartImage';
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
 import CommitteeAdminControls from './CommitteeAdminControls';
 import CommitteeImageModal from './CommitteeImageModal';
+import SmartImage from '@/shared/ui/SmartImage';
+import { getMemberFullName, resolveMemberAvatar, getMemberEmail, getMemberTitle } from '@/entities/committee/lib/member-helpers';
 
 function cleanCommitteeName(name: string): string {
     return name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim();
 }
 
-function getMemberFullName(member: any) {
-    if (member?.member_id) {
-        const m = member.member_id;
-        const first = m.first_name || m.firstname || m.name || m.display_name;
-        const last = m.last_name || m.lastname || m.surname || '';
-        const combined = `${first || ''} ${last || ''}`.trim();
-        if (combined) return combined;
-    }
-
-    if (member?.user_id) {
-        const u = member.user_id;
-        const first = u.first_name || u.firstname || u.name || u.display_name;
-        const last = u.last_name || u.lastname || u.surname || '';
-        const combined = `${first || ''} ${last || ''}`.trim();
-        if (combined) return combined;
-    }
-
-    if (member?.name) return member.name;
-    if (member?.full_name) return member.full_name;
-    if (member?.first_name || member?.last_name) return `${member.first_name || ''} ${member.last_name || ''}`.trim();
-
-    return 'Onbekend';
-}
-
-function getMemberEmail(member: any) {
-    return member?.user_id?.email || member?.email || '';
-}
-
-function getMemberTitle(member: any, slug: string) {
-    const specificTitle = member?.user_id?.title || member?.title || member?.member_id?.title || member?.functie;
-    if (specificTitle) {
-        return specificTitle;
-    }
-
-    const isBestuur = slug === 'bestuur';
-
-    if (member?.is_leader) {
-        return isBestuur ? 'Voorzitter' : 'Commissie Leider';
-    }
-
-    return isBestuur ? 'Bestuurslid' : 'Commissielid';
-}
-
-function resolveMemberAvatar(member: any) {
-    const candidates = [
-        member?.user_id?.avatar,
-        member?.user_id?.picture,
-        member?.member_id?.avatar,
-        member?.member_id?.picture,
-        member?.picture,
-        member?.avatar
-    ];
-    for (const c of candidates) if (c) return c;
-    return null;
-}
 
 export default async function CommitteeDetailPage(props: { params: Promise<{ slug: string }> }) {
     const params = await props.params;
@@ -146,6 +92,7 @@ export default async function CommitteeDetailPage(props: { params: Promise<{ slu
                                 imageUrl={getImageUrl(committee.image)}
                                 cleanName={cleanName}
                                 isBestuur={isBestuur}
+                                committeeId={committeeId}
                             />
                         )}
 
@@ -231,10 +178,12 @@ export default async function CommitteeDetailPage(props: { params: Promise<{ slu
                                     <div className="relative h-16 w-16 overflow-hidden rounded-full ring-4 ring-theme-purple/10 shrink-0">
                                         {resolveMemberAvatar(leader) ? (
                                             <SmartImage
-                                                src={getImageUrl(resolveMemberAvatar(leader))}
+                                                src={getImageUrl(resolveMemberAvatar(leader), { width: 200, height: 200 })}
                                                 alt={getMemberFullName(leader)}
+                                                className="h-full w-full object-cover transform-gpu transition-transform duration-500"
                                                 fill
-                                                className="object-cover"
+                                                sizes="64px"
+                                                loading="lazy"
                                             />
                                         ) : (
                                             <div className="flex h-full w-full items-center justify-center bg-theme-purple/20 text-xl font-black text-theme-purple">
@@ -271,10 +220,12 @@ export default async function CommitteeDetailPage(props: { params: Promise<{ slu
                                             <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full ring-4 ring-theme-purple/5">
                                                 {resolveMemberAvatar(member) ? (
                                                     <SmartImage
-                                                        src={getImageUrl(resolveMemberAvatar(member))}
+                                                        src={getImageUrl(resolveMemberAvatar(member), { width: 200, height: 200 })}
                                                         alt={getMemberFullName(member)}
+                                                        className="h-full w-full object-cover transform-gpu transition-transform duration-500"
                                                         fill
-                                                        className="object-cover"
+                                                        sizes="64px"
+                                                        loading="lazy"
                                                     />
                                                 ) : (
                                                     <div className="flex h-full w-full items-center justify-center bg-theme-purple/10 text-xl font-black text-theme-purple">

@@ -15,14 +15,6 @@ export default async function BoardHistoryPage() {
     }
 
     function getMemberFullName(member: any) {
-        if (member?.member_id) {
-            const m = member.member_id;
-            const first = m.first_name || m.firstname || m.name || m.display_name;
-            const last = m.last_name || m.lastname || m.surname || '';
-            const combined = `${first || ''} ${last || ''}`.trim();
-            if (combined) return combined;
-        }
-
         if (member?.user_id) {
             const u = member.user_id;
             const first = u.first_name || u.firstname || u.name || u.display_name || u.given_name;
@@ -31,15 +23,32 @@ export default async function BoardHistoryPage() {
             if (combined) return combined;
         }
 
-        const firstDirect = member.first_name || member.firstname || member.given_name;
-        const lastDirect = member.last_name || member.lastname || member.family_name;
+        if (member?.name) return member.name;
+        const firstDirect = member?.first_name || member?.firstname || member?.given_name;
+        const lastDirect = member?.last_name || member?.lastname || member?.family_name;
         if (firstDirect || lastDirect) return `${firstDirect || ''} ${lastDirect || ''}`.trim();
 
-        if (member.name) return member.name;
-        if (member.full_name) return member.full_name;
+        if (member?.full_name) return member.full_name;
 
         return 'Onbekend';
     }
+
+    const flatMappedBoards = boards?.map((board: any) => {
+        return {
+            ...board,
+            computedImageUrl: board.image
+                ? (typeof board.image === 'string' && (board.image.startsWith('http') || board.image.startsWith('/')))
+                    ? board.image
+                    : getImageUrl(board.image, { width: 1200 })
+                : '/img/group-jump.gif',
+            members: board.members?.map((member: any) => {
+                return {
+                    ...member,
+                    computedFullName: getMemberFullName(member)
+                };
+            }) || []
+        };
+    }) || [];
 
     return (
         <div className="bg-[var(--bg-main)] min-h-screen">
@@ -64,7 +73,7 @@ export default async function BoardHistoryPage() {
                         <p className="mb-2 text-xl font-bold text-theme-purple">Oeps! Er ging iets mis</p>
                         <p className="text-[var(--text-muted)]">{String(error)}</p>
                     </div>
-                ) : !boards || boards.length === 0 ? (
+                ) : !flatMappedBoards || flatMappedBoards.length === 0 ? (
                     <div className="rounded-3xl bg-[var(--bg-card)] p-12 text-center shadow-lg dark:border dark:border-white/10">
                         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-theme-purple/10 text-theme-purple">
                             <Clock className="h-8 w-8" />
@@ -74,7 +83,7 @@ export default async function BoardHistoryPage() {
                     </div>
                 ) : (
                     <div className="fade-in">
-                        <Timeline boards={boards} getImageUrl={getImageUrl} getMemberFullName={getMemberFullName} />
+                        <Timeline boards={flatMappedBoards} />
                     </div>
                 )}
             </main>

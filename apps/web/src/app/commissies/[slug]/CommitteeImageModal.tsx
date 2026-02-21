@@ -2,34 +2,33 @@
 
 import { useState } from 'react';
 import { ArrowLeft, Users2 } from 'lucide-react';
-import SmartImage from '@/shared/ui/SmartImage';
+import CommitteeImage from '@/entities/committee/ui/CommitteeImage';
 
 interface CommitteeImageModalProps {
     imageUrl: string;
     cleanName: string;
     isBestuur: boolean;
+    committeeId: number;
 }
 
-export default function CommitteeImageModal({ imageUrl, cleanName, isBestuur }: CommitteeImageModalProps) {
+export default function CommitteeImageModal({ imageUrl, cleanName, isBestuur, committeeId }: CommitteeImageModalProps) {
     const [imageModalOpen, setImageModalOpen] = useState(false);
 
     return (
         <>
-            <div className={`group relative overflow-hidden rounded-3xl bg-[var(--bg-card)] shadow-lg dark:border dark:border-white/10 ${isBestuur ? "h-auto min-h-[400px]" : "h-96"}`}>
+            <div className={`group relative overflow-hidden rounded-3xl bg-[var(--bg-card)] shadow-lg dark:border dark:border-white/10 ${isBestuur ? "h-[500px] md:h-[600px]" : "h-96"}`}>
                 <button
                     onClick={() => setImageModalOpen(true)}
-                    className={`relative w-full outline-none ${isBestuur ? "h-auto" : "h-full"}`}
+                    className="relative w-full h-full outline-none"
                     aria-label="Vergroot afbeelding"
                 >
-                    <div className={`relative w-full ${isBestuur ? "aspect-auto" : "h-full"}`}>
-                        <SmartImage
+                    <div className={`relative h-full w-full`}>
+                        <CommitteeImage
                             src={imageUrl}
                             alt={cleanName}
-                            fill={!isBestuur}
-                            width={isBestuur ? 1200 : undefined}
-                            height={isBestuur ? 800 : undefined}
-                            className={`${isBestuur ? "relative h-auto w-full object-contain" : "object-cover"} transition duration-700 group-hover:scale-105`}
-                            priority
+                            committeeId={committeeId}
+                            className={isBestuur ? "object-contain" : "object-cover"}
+                            sizes="(max-width: 1280px) 100vw, 1200px"
                         />
                     </div>
                     <div className="absolute inset-0 bg-black/0 transition duration-300 group-hover:bg-black/20 flex items-center justify-center pointer-events-none">
@@ -52,12 +51,12 @@ export default function CommitteeImageModal({ imageUrl, cleanName, isBestuur }: 
                             <div className="rounded-full bg-white/10 p-2"><ArrowLeft className="h-5 w-5 rotate-90" /></div>
                         </button>
                         <div className="relative h-[85vh] w-screen max-w-5xl">
-                            <SmartImage
+                            <CommitteeImage
                                 src={imageUrl}
                                 alt={cleanName}
-                                fill
+                                committeeId={committeeId}
                                 className="object-contain"
-                                priority
+                                sizes="100vw"
                             />
                         </div>
                     </div>
