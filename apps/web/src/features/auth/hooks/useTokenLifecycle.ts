@@ -2,7 +2,6 @@
 
 import { useEffect, useCallback } from 'react';
 import { isInternalAuthWindow } from '../providers/msal-client';
-import * as authApi from '@/shared/lib/auth';
 
 interface UseTokenLifecycleProps {
     canAttemptAuth: () => boolean;

@@ -116,3 +116,96 @@ export async function updateUserDobInEntra(entraId: string, dob: string): Promis
         throw new Error('Kon geboortedatum niet synchroniseren met Microsoft Entra ID');
     }
 }
+
+/**
+ * Adds a user to an Entra ID group (Committee).
+ */
+export async function addMemberToEntraGroup(groupId: string, userId: string): Promise<void> {
+    console.log(`[ms-graph] Adding user ${userId} to group ${groupId}`);
+    const token = await getGraphAccessToken();
+
+    const response = await fetch(`https://graph.microsoft.com/v1.0/groups/${groupId}/members/$ref`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            "@odata.id": `https://graph.microsoft.com/v1.0/directoryObjects/${userId}`
+        })
+    });
+
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        console.error(`[ms-graph] Failed to add member to group ${groupId}:`, error);
+        throw new Error('Kon lid niet toevoegen aan Microsoft Entra groep');
+    }
+}
+
+/**
+ * Removes a user from an Entra ID group (Committee).
+ */
+export async function removeMemberFromEntraGroup(groupId: string, userId: string): Promise<void> {
+    console.log(`[ms-graph] Removing user ${userId} from group ${groupId}`);
+    const token = await getGraphAccessToken();
+
+    const response = await fetch(`https://graph.microsoft.com/v1.0/groups/${groupId}/members/${userId}/$ref`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+
+    if (!response.ok) {
+        // If they are already not a member, Azure might return 404, which we can safely ignore
+        if (response.status === 404) return;
+        const error = await response.json().catch(() => ({}));
+        console.error(`[ms-graph] Failed to remove member from group ${groupId}:`, error);
+        throw new Error('Kon lid niet verwijderen uit Microsoft Entra groep');
+    }
+}
+
+/**
+ * Modifies an Entra ID group owner (Committee Leader)
+ */
+export async function updateEntraGroupOwner(groupId: string, userId: string, isOwner: boolean): Promise<void> {
+    console.log(`[ms-graph] Setting owner status to ${isOwner} for user ${userId} in group ${groupId}`);
+    const token = await getGraphAccessToken();
+
+    if (isOwner) {
+        // Add as owner
+        const response = await fetch(`https://graph.microsoft.com/v1.0/groups/${groupId}/owners/$ref`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "@odata.id": `https://graph.microsoft.com/v1.0/directoryObjects/${userId}`
+            })
+        });
+
+        if (!response.ok) {
+            // Might already be an owner (400 Bad Request)
+            if (response.status === 400) return;
+            const error = await response.json().catch(() => ({}));
+            console.error(`[ms-graph] Failed to add owner to group ${groupId}:`, error);
+            throw new Error('Kon leider niet instellen als Microsoft Entra groep eigenaar');
+        }
+    } else {
+        // Remove owner status
+        const response = await fetch(`https://graph.microsoft.com/v1.0/groups/${groupId}/owners/${userId}/$ref`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            if (response.status === 404) return;
+            const error = await response.json().catch(() => ({}));
+            console.error(`[ms-graph] Failed to remove owner from group ${groupId}:`, error);
+            throw new Error('Kon leiderschap niet verwijderen uit Microsoft Entra groep');
+        }
+    }
+}

@@ -297,6 +297,35 @@ export async function GET(
             targetSearch = newSanitySearch ? `?${newSanitySearch}` : '';
         }
 
+        const pathParts = path.split('/');
+        const isItemsPath = pathParts[0] === 'items';
+        const isAssetsPath = pathParts[0] === 'assets';
+        const isCacheablePath = isItemsPath || isAssetsPath;
+        const isPublicToken = !auth || (INTERNAL_TOKEN && (auth.startsWith('Bearer ') ? auth.slice(7) : auth) === String(INTERNAL_TOKEN));
+        const shouldCache = isCacheablePath && (isPublicToken || canBypass);
+
+        // SMART ASSET COMPRESSION: Inject Directus image transforms for common image formats
+        // This shrinks 3-4MB originals to ~200-400KB WebP, fitting within the 2MB Next.js cache limit.
+        const IMAGE_EXTENSIONS = /\.(jpe?g|png|webp)$/i;
+        if (isAssetsPath && pathParts[1]) {
+            const assetId = pathParts[1].split('?')[0]; // strip any query noise from the id segment
+            const currentParams = new URLSearchParams(targetSearch.replace(/^\?/, ''));
+            const hasTransformParams = currentParams.has('width') || currentParams.has('format') || currentParams.has('quality') || currentParams.has('height');
+
+            // Only inject if the asset ID looks like an image extension OR has no extension at all
+            // (Directus UUIDs typically have no extension — these are almost always images)
+            const hasExtension = /\.[a-zA-Z0-9]+$/.test(assetId);
+            const isImageExtension = IMAGE_EXTENSIONS.test(assetId);
+            const shouldTransform = !hasTransformParams && (!hasExtension || isImageExtension);
+
+            if (shouldTransform) {
+                currentParams.set('format', 'webp');
+                currentParams.set('quality', '80');
+                currentParams.set('width', '2400');
+                targetSearch = `?${currentParams.toString()}`;
+            }
+        }
+
         const targetUrl = `${DIRECTUS_URL}/${path}${targetSearch}`;
 
 
@@ -311,12 +340,6 @@ export async function GET(
             forwardHeaders['Cookie'] = cookie;
         }
 
-        const pathParts = path.split('/');
-        const isItemsPath = pathParts[0] === 'items';
-        const isAssetsPath = pathParts[0] === 'assets';
-        const isCacheablePath = isItemsPath || isAssetsPath;
-        const isPublicToken = !auth || (INTERNAL_TOKEN && (auth.startsWith('Bearer ') ? auth.slice(7) : auth) === String(INTERNAL_TOKEN));
-        const shouldCache = isCacheablePath && (isPublicToken || canBypass);
 
         const tags: string[] = [];
         if (isItemsPath && pathParts[1]) {
@@ -399,8 +422,8 @@ export async function GET(
 
         if (shouldCache) {
             if (isAssetsPath && isImage) {
-                // Background update check every hour, cache keeps serving stale up to 1 day
-                cacheControl = 'public, max-age=3600, stale-while-revalidate=86400';
+                // Directus asset UUIDs are content-addressed (new upload = new UUID), so 1-year cache is safe
+                cacheControl = 'public, max-age=31536000, stale-while-revalidate=31536000';
             } else if (isAssetsPath && !isImage) {
                 // Ensure PDFs and documents are always the latest
                 cacheControl = 'no-cache, must-revalidate';

@@ -97,8 +97,7 @@ const SlotUnit = ({ value, label }: { value: string | number; label: string }) =
                     {/* Inner Shadow (Curved Reel Effect) */}
                     <div className="absolute inset-0 pointer-events-none z-20 shadow-[inset_0_10px_10px_rgba(0,0,0,0.4),inset_0_-10px_10px_rgba(0,0,0,0.4)] sm:shadow-[inset_0_15px_15px_rgba(0,0,0,0.4),inset_0_-15px_15px_rgba(0,0,0,0.4)] rounded-lg"></div>
 
-                    {/* Glass Reflection Overlay */}
-                    <div className="absolute inset-0 pointer-events-none z-30 bg-gradient-to-b from-white/10 via-transparent to-white/5 opacity-50 rounded-lg"></div>
+                    {/* Glass Reflection Overlay (Removed) */}
 
                     {/* Digits Container */}
                     <div className="flex items-center justify-center gap-[1px] sm:gap-[2px] z-10 h-full px-0.5 sm:px-1">

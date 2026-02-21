@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function AccountHeader({
     firstName,
@@ -15,7 +15,7 @@ export default function AccountHeader({
 
     useEffect(() => {
         // Temporarily 50% for testing
-        setShowEasterEgg(Math.random() < 0.5);
+        setShowEasterEgg(Math.random() < 0.0001);
     }, []);
 
     const displayName = showEasterEgg ? "Vouw een bak!" : firstName;

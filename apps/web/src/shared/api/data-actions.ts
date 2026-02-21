@@ -865,11 +865,32 @@ export async function getUserCommitteesAction(userId: string): Promise<any[]> {
     }
 }
 
+
 /**
  * Delete a committee member.
  */
 export async function deleteCommitteeMemberAction(id: number | string) {
     try {
+        const user = await getCurrentUserAction();
+        if (!user) {
+            return { success: false, error: 'Ongeautoriseerd' };
+        }
+
+        // Fetch the committee member to get its committee_id
+        const memberInfo = await fetchDirectus<any>(`/items/committee_members/${id}?fields=committee_id`, 0);
+        if (!memberInfo) {
+            return { success: false, error: 'Lid niet gevonden' };
+        }
+
+        // Check if current user is leader of that committee or admin
+        const isAdmin = user.admin_access || (typeof user.role === 'object' && (user.role as any)?.name?.toLowerCase().includes('admin'));
+        const userCommittees = await getUserCommitteesAction(user.id);
+        const isLeader = userCommittees.some((c: any) => String(c.committee_id.id) === String(memberInfo.committee_id) && c.is_leader);
+
+        if (!isLeader && !isAdmin) {
+            return { success: false, error: 'Je hebt geen rechten om dit lid te verwijderen.' };
+        }
+
         await mutateDirectus(`/items/committee_members/${id}`, 'DELETE');
         return { success: true };
     } catch (error: any) {
@@ -883,6 +904,26 @@ export async function deleteCommitteeMemberAction(id: number | string) {
  */
 export async function updateCommitteeMemberAction(id: number | string, payload: any) {
     try {
+        const user = await getCurrentUserAction();
+        if (!user) {
+            return { success: false, error: 'Ongeautoriseerd' };
+        }
+
+        // Fetch the committee member to get its committee_id
+        const memberInfo = await fetchDirectus<any>(`/items/committee_members/${id}?fields=committee_id`, 0);
+        if (!memberInfo) {
+            return { success: false, error: 'Lid niet gevonden' };
+        }
+
+        // Check if current user is leader of that committee or admin
+        const isAdmin = user.admin_access || (typeof user.role === 'object' && (user.role as any)?.name?.toLowerCase().includes('admin'));
+        const userCommittees = await getUserCommitteesAction(user.id);
+        const isLeader = userCommittees.some((c: any) => String(c.committee_id.id) === String(memberInfo.committee_id) && c.is_leader);
+
+        if (!isLeader && !isAdmin) {
+            return { success: false, error: 'Je hebt geen rechten om dit lid bij te werken.' };
+        }
+
         const result = await mutateDirectus(`/items/committee_members/${id}`, 'PATCH', payload);
         return { success: true, member: result };
     } catch (error: any) {
@@ -1134,9 +1175,8 @@ export async function getUserEventSignupsAction(userId: string): Promise<any[]> 
     }
 }
 
-/**
- * Admin action to search for users.
- */
+// =====================
+// Admin action to search for users.
 export async function registerUserAction(userData: any): Promise<any> {
     // Inject default role if not provided
     const roleId = process.env.NEXT_PUBLIC_DEFAULT_USER_ROLE_ID;

@@ -71,13 +71,14 @@ export default function FeaturedEvent({ event, onEventClick }: FeaturedEventProp
                 onClick={() => onEventClick(event)}
                 className="group cursor-pointer space-y-4"
             >
-                <div className="overflow-hidden rounded-2xl relative h-48">
+                <div className="overflow-hidden rounded-2xl relative">
                     <Image
-                        src={getImageUrl(event.image)}
+                        src={getImageUrl(event.image, { format: 'webp', width: 800, quality: 80 })}
                         alt={event.name}
-                        fill
+                        width={800}
+                        height={1200}
                         sizes="(max-width: 768px) 100vw, 400px"
-                        className="object-cover transition duration-500 group-hover:scale-105"
+                        className="w-full h-auto object-contain rounded-2xl transition duration-500 group-hover:scale-105 bg-slate-900/5 dark:bg-white/5"
                         loading="lazy"
                         placeholder="blur"
                         blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjE5MiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjE5MiIgZmlsbD0iI2VlZSIvPjwvc3ZnPg=="

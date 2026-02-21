@@ -4,6 +4,7 @@ import { serverDirectusFetch, CACHE_PRESETS } from '@/shared/lib/server-directus
 import { verifyUserPermissions } from './secure-check';
 import { COMMITTEE_TOKENS } from '@/shared/config/committee-tokens';
 import { revalidatePath } from 'next/cache';
+import { addMemberToEntraGroup, removeMemberFromEntraGroup, updateEntraGroupOwner } from '@/shared/lib/ms-graph';
 
 const ADMIN_TOKENS = [COMMITTEE_TOKENS.ICT, COMMITTEE_TOKENS.BESTUUR];
 const SERVICE_SECRET = process.env.SERVICE_SECRET;
@@ -76,22 +77,29 @@ export async function getCommitteeMembersAction(azureGroupId: string, committeeI
 /**
  * Add a member to a committee's Azure AD group.
  */
-export async function addCommitteeMemberAction(azureGroupId: string, email: string) {
+export async function addCommitteeMemberAction(azureGroupId: string, entraUserId: string, directusCommitteeId: number) {
     await verifyCommitteeAdmin();
 
-    const res = await fetch(`${IDENTITY_SERVICE_URL}/api/membership/groups/${azureGroupId}/members`, {
-        method: 'POST',
-        headers: {
-            'x-api-key': SERVICE_SECRET || '',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email })
-    });
+    // 1. Sync to Entra ID first (Single Source of Truth)
+    await addMemberToEntraGroup(azureGroupId, entraUserId);
 
-    if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || err.error || 'Failed to add member to Azure group');
+    // 2. Fetch Directus equivalent user account to get the UUID required for the junction table
+    const users = await serverDirectusFetch<any[]>(`/items/directus_users?filter[entra_id][_eq]=${entraUserId}&fields=id`);
+    if (!users || users.length === 0) {
+        throw new Error('Gebruiker niet gevonden in de database.');
     }
+    const directusUserId = users[0].id;
+
+    // 3. Write to Directus
+    await serverDirectusFetch('/items/committee_members', {
+        method: 'POST',
+        body: JSON.stringify({
+            committee_id: directusCommitteeId,
+            user_id: directusUserId,
+            is_leader: false,
+            is_visible: true
+        })
+    });
 
     revalidatePath('/admin/committees');
     return { success: true };
@@ -100,34 +108,37 @@ export async function addCommitteeMemberAction(azureGroupId: string, email: stri
 /**
  * Remove a member from a committee's Azure AD group.
  */
-export async function removeCommitteeMemberAction(azureGroupId: string, azureId: string) {
+export async function removeCommitteeMemberAction(azureGroupId: string, entraUserId: string, membershipId: number) {
     await verifyCommitteeAdmin();
 
-    const res = await fetch(`${IDENTITY_SERVICE_URL}/api/membership/groups/${azureGroupId}/members/${azureId}`, {
-        method: 'DELETE',
-        headers: {
-            'x-api-key': SERVICE_SECRET || '',
-        }
-    });
+    // 1. Remove from Entra ID Members and Owners
+    await removeMemberFromEntraGroup(azureGroupId, entraUserId);
+    await updateEntraGroupOwner(azureGroupId, entraUserId, false);
 
-    if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || err.error || 'Failed to remove member from Azure group');
-    }
+    // 2. Delete the record from Directus junction table
+    await serverDirectusFetch(`/items/committee_members/${membershipId}`, {
+        method: 'DELETE'
+    });
 
     revalidatePath('/admin/committees');
     return { success: true };
 }
 
 /**
- * Toggle the 'is_leader' flag for a committee membership in Directus.
+ * Toggle the 'is_leader' flag for a committee membership in Directus and sync owner status to Entra.
  */
-export async function toggleCommitteeLeaderAction(membershipId: number, currentStatus: boolean) {
+export async function toggleCommitteeLeaderAction(azureGroupId: string, entraUserId: string, membershipId: number, currentStatus: boolean) {
     await verifyCommitteeAdmin();
 
+    const newLeaderStatus = !currentStatus;
+
+    // 1. Sync owner status to Entra ID First
+    await updateEntraGroupOwner(azureGroupId, entraUserId, newLeaderStatus);
+
+    // 2. Update Directus Database
     await serverDirectusFetch(`/items/committee_members/${membershipId}`, {
         method: 'PATCH',
-        body: JSON.stringify({ is_leader: !currentStatus })
+        body: JSON.stringify({ is_leader: newLeaderStatus })
     });
 
     revalidatePath('/admin/committees');

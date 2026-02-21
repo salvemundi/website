@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { getMsalInstance, isInternalAuthWindow } from '../providers/msal-client';
 import { loginRequest } from '@/shared/config/msalConfig';
-import { AuthenticationResult, EventType, EventMessage } from '@azure/msal-browser';
+import { AuthenticationResult } from '@azure/msal-browser';
 
 interface UseMsalAuthResult {
     isInitializing: boolean;
@@ -25,7 +25,7 @@ export function useMsalAuth(canAttemptAuth: () => boolean): UseMsalAuthResult {
 
         const init = async () => {
             try {
-                const instance = await getMsalInstance();
+                await getMsalInstance();
                 if (isMounted) {
                     setIsInitializing(false);
                 }
