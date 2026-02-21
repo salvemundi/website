@@ -203,7 +203,7 @@ export default function CommitteeManagementPage() {
 
         setActionLoading('add');
         try {
-            await addCommitteeMemberAction(selectedCommittee.azureGroupId, newUserEmail);
+            await addCommitteeMemberAction(selectedCommittee.azureGroupId, newUserEmail, parseInt(selectedCommittee.id));
             setNewUserEmail('');
             // Wait for sync propagation
             setTimeout(() => loadCommitteeMembers(selectedCommittee), 1000);
@@ -221,7 +221,10 @@ export default function CommitteeManagementPage() {
 
         setActionLoading(`remove-${azureId}`);
         try {
-            await removeCommitteeMemberAction(selectedCommittee.azureGroupId, azureId);
+            const membership = directusMembers.find(m => m.user_id?.entra_id === azureId);
+            if (!membership) throw new Error('Membership not found in Directus');
+
+            await removeCommitteeMemberAction(selectedCommittee.azureGroupId, azureId, membership.id);
             await loadCommitteeMembers(selectedCommittee);
         } catch (error) {
             console.error('Remove member failed:', error);
@@ -241,7 +244,7 @@ export default function CommitteeManagementPage() {
                 return;
             }
 
-            await toggleCommitteeLeaderAction(membership.id, membership.is_leader);
+            await toggleCommitteeLeaderAction(selectedCommittee!.azureGroupId!, azureId, membership.id, membership.is_leader);
             await loadCommitteeMembers(selectedCommittee!);
         } catch (error) {
             console.error('Toggle leader failed:', error);

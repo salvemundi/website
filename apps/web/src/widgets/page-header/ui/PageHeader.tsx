@@ -14,9 +14,9 @@ interface PageHeaderProps {
     children?: ReactNode;
     variant?: 'centered' | 'split';
     description?: ReactNode;
-    // Tailwind padding classes applied to the inner content wrapper (e.g. 'py-20' or 'py-12')
     contentPadding?: string;
     backLink?: string;
+    overlayClassName?: string;
 }
 
 
@@ -32,7 +32,8 @@ const PageHeader: FC<PageHeaderProps> = ({
     children,
     variant = 'centered',
     description,
-    contentPadding = 'py-20'
+    contentPadding = 'py-20',
+    overlayClassName = "bg-black/10"
 }) => {
     const headerRef = useRef<HTMLElement | null>(null);
 
@@ -82,7 +83,7 @@ const PageHeader: FC<PageHeaderProps> = ({
                 <div className="absolute inset-0 bg-gradient-theme-page-alt transition-colors duration-500 z-0" />
             )}
             {/* Subtle overlay for better text contrast if needed */}
-            <div className="absolute inset-0 bg-black/10 z-0" />
+            <div className={`absolute inset-0 z-10 ${overlayClassName}`} />
 
             <div className={`relative z-20 w-full max-w-app px-4 ${contentPadding} ${variant === 'centered' ? 'text-center' : ''}`}>
                 {variant === 'centered' ? (

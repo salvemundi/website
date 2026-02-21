@@ -1,16 +1,27 @@
+import { Suspense } from 'react';
 import Hero from '@/widgets/hero/ui/Hero';
+import HeroSkeleton from '@/widgets/hero/ui/HeroSkeleton';
 import EventsSection from '@/widgets/events-section/ui/EventsSection';
+import EventsSectionSkeleton from '@/widgets/events-section/ui/EventsSectionSkeleton';
 import { ScrollTriggerWrapper } from '@/shared/ui/ScrollTriggerWrapper';
 import SponsorsSection from '@/widgets/sponsors-section/ui/SponsorsSection';
+import SponsorsSectionSkeleton from '@/widgets/sponsors-section/ui/SponsorsSectionSkeleton';
 import JoinSection from '@/widgets/join-section/ui/JoinSection';
 
 export default function HomePage() {
     return (
         <main>
-            <Hero />
-            <EventsSection />
+            {/* Hero — streams in once banners are fetched */}
+            <Suspense fallback={<HeroSkeleton />}>
+                <Hero />
+            </Suspense>
 
-            {/* Why Salve Mundi Section */}
+            {/* Events — streams independently, fetches its own data */}
+            <Suspense fallback={<EventsSectionSkeleton />}>
+                <EventsSection />
+            </Suspense>
+
+            {/* Why Salve Mundi Section — pure static HTML, renders instantly */}
             <section className="px-6 py-8 sm:py-10 md:py-12 bg-[var(--bg-main)]">
                 <div className="mx-auto max-w-app">
                     <ScrollTriggerWrapper animation="slide-up" duration={0.6} triggerStart="top 98%" once={true}>
@@ -65,8 +76,11 @@ export default function HomePage() {
 
             <JoinSection />
 
-            {/* Sponsors Section */}
-            <SponsorsSection />
+            {/* Sponsors — streams independently */}
+            <Suspense fallback={<SponsorsSectionSkeleton />}>
+                <SponsorsSection />
+            </Suspense>
         </main>
     );
 }
+

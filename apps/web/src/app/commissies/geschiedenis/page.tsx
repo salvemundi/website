@@ -1,14 +1,18 @@
-'use client';
-
 import PageHeader from '@/widgets/page-header/ui/PageHeader';
-import { useSalvemundiBoard } from '@/shared/lib/hooks/useSalvemundiApi';
+import { getBoards } from '@/shared/api/board-actions';
 import { getImageUrl } from "@/shared/lib/api/image";
 import { Clock } from 'lucide-react';
 import Timeline from '@/components/timeline/Timeline';
-import { CardSkeleton } from '@/shared/ui/skeletons';
 
-export default function BoardHistoryPage() {
-    const { data: boards = [], isLoading, error } = useSalvemundiBoard();
+export default async function BoardHistoryPage() {
+    let boards = [];
+    let error = null;
+
+    try {
+        boards = await getBoards();
+    } catch (e: any) {
+        error = e;
+    }
 
     function getMemberFullName(member: any) {
         if (member?.member_id) {
@@ -52,27 +56,15 @@ export default function BoardHistoryPage() {
             </PageHeader>
 
             <main className="mx-auto max-w-app px-4 py-12 sm:px-6 lg:px-8">
-                {isLoading ? (
-                    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                        {[1, 2, 3, 4, 5, 6].map((i) => (
-                            <CardSkeleton key={i} />
-                        ))}
-                    </div>
-                ) : error ? (
+                {error ? (
                     <div className="rounded-3xl bg-[var(--bg-card)] p-12 text-center shadow-lg dark:border dark:border-white/10">
                         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10 text-red-500">
                             <Clock className="h-8 w-8" />
                         </div>
                         <p className="mb-2 text-xl font-bold text-theme-purple">Oeps! Er ging iets mis</p>
                         <p className="text-[var(--text-muted)]">{String(error)}</p>
-                        <button
-                            onClick={() => window.location.reload()}
-                            className="mt-6 rounded-full bg-theme-purple px-6 py-2 font-bold text-white transition hover:scale-105"
-                        >
-                            Opnieuw proberen
-                        </button>
                     </div>
-                ) : boards.length === 0 ? (
+                ) : !boards || boards.length === 0 ? (
                     <div className="rounded-3xl bg-[var(--bg-card)] p-12 text-center shadow-lg dark:border dark:border-white/10">
                         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-theme-purple/10 text-theme-purple">
                             <Clock className="h-8 w-8" />
@@ -89,4 +81,3 @@ export default function BoardHistoryPage() {
         </div>
     );
 }
-

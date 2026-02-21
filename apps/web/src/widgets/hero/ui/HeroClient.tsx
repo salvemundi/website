@@ -9,19 +9,17 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight } from '@/shared/ui/icons/ChevronRight';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import { Event, HeroBanner } from '@/shared/model/types/directus';
+import { HeroBanner } from '@/shared/model/types/directus';
 import { getImageUrl } from '@/shared/lib/api/image';
 
 
 interface HeroClientProps {
     heroBanners: HeroBanner[];
-    nextEvent: Event | null;
 }
 
-export default function HeroClient({ heroBanners, nextEvent }: HeroClientProps) {
+export default function HeroClient({ heroBanners }: HeroClientProps) {
     const { isAuthenticated, isLoading: authLoading } = useAuth();
-    const [hoverWordLid, setHoverWordLid] = useState(false);
-    const [hoverNextEvent, setHoverNextEvent] = useState(false);
+    const [hoverCta, setHoverCta] = useState(false);
 
     // Refs for GSAP animations
     const heroRef = useRef<HTMLElement>(null);
@@ -107,20 +105,7 @@ export default function HeroClient({ heroBanners, nextEvent }: HeroClientProps) 
         return () => ctx.revert();
     }, [isMounted]);
 
-    const formatEventDate = (dateString: string) => {
-        try {
-            const date = new Date(dateString);
-            if (isNaN(date.getTime())) {
-                return 'Datum volgt';
-            }
-            return date.toLocaleDateString('nl-NL', {
-                day: 'numeric',
-                month: 'long'
-            });
-        } catch (error) {
-            return 'Datum volgt';
-        }
-    };
+
 
     const defaultBanners = ["/logo_purple.svg"];
 
@@ -179,7 +164,7 @@ export default function HeroClient({ heroBanners, nextEvent }: HeroClientProps) 
                                     ) : showMembershipLink ? (
                                         <Link
                                             href="/lidmaatschap"
-                                            className="block w-full transition-transform hover:scale-[1.02] group/lid"
+                                            className="block w-full transition-transform hover:scale-[1.02] group/cta"
                                         >
                                             <div className="w-full max-w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-3 sm:p-4 md:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-3 sm:gap-4 min-h-[90px] sm:min-h-[100px] overflow-hidden">
                                                 <div className="flex-1 min-w-0 overflow-hidden">
@@ -193,51 +178,39 @@ export default function HeroClient({ heroBanners, nextEvent }: HeroClientProps) 
                                                         Ontdek alle voordelen van een lidmaatschap!
                                                     </p>
                                                 </div>
-                                                <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-theme-purple/10 dark:bg-white/10 text-theme-purple dark:text-theme-white flex items-center justify-center shadow-md transition-all group-hover/lid:bg-gradient-theme group-hover/lid:text-white"
-                                                    onMouseEnter={() => setHoverWordLid(true)}
-                                                    onMouseLeave={() => setHoverWordLid(false)}
+                                                <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-theme-purple/10 dark:bg-white/10 text-theme-purple dark:text-theme-white flex items-center justify-center shadow-md transition-all group-hover/cta:bg-gradient-theme group-hover/cta:text-white"
+                                                    onMouseEnter={() => setHoverCta(true)}
+                                                    onMouseLeave={() => setHoverCta(false)}
                                                 >
-                                                    <ChevronRight width={20} height={20} strokeWidth={2} __active={hoverWordLid} />
-                                                </div>
-                                            </div>
-                                        </Link>
-                                    ) : nextEvent ? (
-                                        <Link
-                                            href={`/activiteiten/${nextEvent.id}`}
-                                            className="block w-full transition-transform hover:scale-[1.02] group/event"
-                                        >
-                                            <div className="w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4 min-h-[90px] sm:min-h-[100px]">
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-purple/60 dark:text-theme-white/60">
-                                                        Volgende evenement
-                                                    </p>
-                                                    <p className="mt-2 text-base sm:text-lg font-bold text-theme-purple dark:text-theme-white truncate">
-                                                        {nextEvent.name} • {formatEventDate(nextEvent.event_date)}
-                                                    </p>
-                                                    <p className="mt-1 text-xs sm:text-sm text-theme-text-muted dark:text-theme-text-muted line-clamp-2">
-                                                        {nextEvent.description || "Kom gezellig langs bij ons volgende evenement!"}
-                                                    </p>
-                                                </div>
-                                                <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-theme-purple/10 dark:bg-white/10 text-theme-purple dark:text-theme-white flex items-center justify-center shadow-md transition-all group-hover/event:bg-gradient-theme group-hover/event:text-white"
-                                                    onMouseEnter={() => setHoverNextEvent(true)}
-                                                    onMouseLeave={() => setHoverNextEvent(false)}
-                                                >
-                                                    <ChevronRight width={20} height={20} strokeWidth={2} __active={hoverNextEvent} />
+                                                    <ChevronRight width={20} height={20} strokeWidth={2} __active={hoverCta} />
                                                 </div>
                                             </div>
                                         </Link>
                                     ) : (
-                                        <div className="w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-4 sm:p-6 shadow-lg backdrop-blur min-h-[90px] sm:min-h-[100px]">
-                                            <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-theme-purple/60 dark:text-theme-white/60">
-                                                Volgende evenement
-                                            </p>
-                                            <p className="mt-2 text-base sm:text-lg font-bold text-theme-purple dark:text-theme-white">
-                                                Binnenkort meer activiteiten
-                                            </p>
-                                            <p className="mt-1 text-xs sm:text-sm text-theme-text-muted dark:text-theme-text-muted line-clamp-2">
-                                                Check regelmatig onze agenda voor nieuwe evenementen en activiteiten.
-                                            </p>
-                                        </div>
+                                        <Link
+                                            href="/account"
+                                            className="block w-full transition-transform hover:scale-[1.02] group/cta"
+                                        >
+                                            <div className="w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-3 sm:p-4 md:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-3 sm:gap-4 min-h-[90px] sm:min-h-[100px] overflow-hidden">
+                                                <div className="flex-1 min-w-0 overflow-hidden">
+                                                    <p className="text-[0.6rem] sm:text-xs font-semibold uppercase tracking-wide text-theme-purple/60 dark:text-theme-white/60">
+                                                        Welkom terug
+                                                    </p>
+                                                    <p className="mt-1 sm:mt-2 text-sm sm:text-base md:text-lg font-bold text-theme-purple dark:text-theme-white truncate">
+                                                        Naar mijn account
+                                                    </p>
+                                                    <p className="mt-0.5 sm:mt-1 text-[0.7rem] sm:text-xs md:text-sm text-theme-text-muted dark:text-theme-text-muted line-clamp-2">
+                                                        Bekijk je profiel, inschrijvingen en meer.
+                                                    </p>
+                                                </div>
+                                                <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-theme-purple/10 dark:bg-white/10 text-theme-purple dark:text-theme-white flex items-center justify-center shadow-md transition-all group-hover/cta:bg-gradient-theme group-hover/cta:text-white"
+                                                    onMouseEnter={() => setHoverCta(true)}
+                                                    onMouseLeave={() => setHoverCta(false)}
+                                                >
+                                                    <ChevronRight width={20} height={20} strokeWidth={2} __active={hoverCta} />
+                                                </div>
+                                            </div>
+                                        </Link>
                                     )}
                                 </div>
                             </div>
@@ -253,7 +226,6 @@ export default function HeroClient({ heroBanners, nextEvent }: HeroClientProps) 
                                                 alt="Salve Mundi"
                                                 fill
                                                 priority
-                                                unoptimized={true}
                                                 fetchPriority="high"
                                                 sizes="(max-width: 640px) 100vw, 0px"
                                                 className="object-cover object-center"
@@ -278,7 +250,6 @@ export default function HeroClient({ heroBanners, nextEvent }: HeroClientProps) 
                                                             alt="Salve Mundi sfeerimpressie"
                                                             fill
                                                             priority={index === 0}
-                                                            unoptimized={true}
                                                             sizes="(min-width: 640px) 50vw, 0px"
                                                             className="object-cover object-center"
                                                         />

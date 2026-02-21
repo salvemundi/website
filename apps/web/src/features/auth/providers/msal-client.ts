@@ -32,7 +32,6 @@ export const isInternalAuthWindow = () => {
 
 // Internal reference to the singleton instance
 let msalInstance: PublicClientApplication | null = null;
-let isInitializing = false;
 let initPromise: Promise<PublicClientApplication | null> | null = null;
 
 /**
@@ -55,7 +54,6 @@ export const getMsalInstance = async (): Promise<PublicClientApplication | null>
         return initPromise;
     }
 
-    isInitializing = true;
     initPromise = (async () => {
         try {
             const clientId = msalConfig.auth.clientId;
@@ -71,8 +69,6 @@ export const getMsalInstance = async (): Promise<PublicClientApplication | null>
         } catch (error) {
             console.error('[MSAL Client] Initialization failed:', error);
             return null;
-        } finally {
-            isInitializing = false;
         }
     })();
 
