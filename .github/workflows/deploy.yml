@@ -1,6 +1,7 @@
-name: Deploy V7 Stack
+name: "CI/CD: Build & Deploy V7 Stack"
 
 on:
+  workflow_dispatch:
   push:
     branches: [main, acceptance]
 
