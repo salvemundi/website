@@ -50,41 +50,42 @@ services:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - MOLLIE_API_KEY=${MOLLIE_API_KEY}
       - DB_URL=postgresql://${DB_USER:-directus}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-directus}
+    container_name: ${FINANCE_DNS:-finance-prod}
     depends_on:
       - postgres
       - redis
 
   sync-service:
     image: ghcr.io/salvemundi/v7-sync:${IMAGE_TAG:-latest}
-    container_name: sync-${ENV:-prod}
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_TENANT_ID=${AZURE_WEBSITEV7_TENANT_ID}
       - AZURE_SYNC_CLIENT_ID=${AZURE_WEBSITEV7_SYNC_CLIENT_ID}
       - AZURE_SYNC_CLIENT_SECRET=${AZURE_WEBSITEV7_SYNC_CLIENT_SECRET}
+    container_name: ${SYNC_DNS:-sync-prod}
     depends_on:
       - redis
 
   mail-service:
     image: ghcr.io/salvemundi/v7-mail:${IMAGE_TAG:-latest}
-    container_name: mail-${ENV:-prod}
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_MAIL_CLIENT_ID=${AZURE_WEBSITEV7_MAIL_CLIENT_ID}
       - AZURE_MAIL_CLIENT_SECRET=${AZURE_WEBSITEV7_MAIL_CLIENT_SECRET}
+    container_name: ${MAIL_DNS:-mail-prod}
 
   frontend:
     image: ghcr.io/salvemundi/v7-app:${IMAGE_TAG:-latest}
-    container_name: frontend-${ENV:-prod}
+    container_name: ${FRONTEND_DNS:-frontend-prod}
     restart: always
     ports:
       - "3000:3000"
     environment:
       - PUBLIC_URL=${PUBLIC_URL:-http://localhost:3000}
-      - INTERNAL_FINANCE_URL=http://finance-service:3001
-      - INTERNAL_SYNC_URL=http://sync-service:3002
-      - INTERNAL_MAIL_URL=http://mail-service:3003
-      - INTERNAL_DIRECTUS_URL=http://directus:8055
+      - INTERNAL_FINANCE_URL=${INTERNAL_FINANCE_URL}
+      - INTERNAL_SYNC_URL=${INTERNAL_SYNC_URL}
+      - INTERNAL_MAIL_URL=${INTERNAL_MAIL_URL}
+      - INTERNAL_DIRECTUS_URL=${INTERNAL_DIRECTUS_URL}
     depends_on:
       - directus
       - finance-service

@@ -86,6 +86,25 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd /opt/salve-mundi-v7
+            
+            # Determine Environment Suffix
+            if [[ ${{ github.ref }} == 'refs/heads/main' ]]; then
+              ENV_SUFFIX="prod"
+            else
+              ENV_SUFFIX="acc"
+            fi
+            
+            # Set Docker DNS and Internal URLs according to V7 Manifest
+            export FINANCE_DNS="finance-$ENV_SUFFIX"
+            export SYNC_DNS="sync-$ENV_SUFFIX"
+            export MAIL_DNS="mail-$ENV_SUFFIX"
+            export FRONTEND_DNS="frontend-$ENV_SUFFIX"
+            
+            export INTERNAL_FINANCE_URL="http://$FINANCE_DNS:3001"
+            export INTERNAL_SYNC_URL="http://$SYNC_DNS:3002"
+            export INTERNAL_MAIL_URL="http://$MAIL_DNS:3003"
+            export INTERNAL_DIRECTUS_URL="http://directus:8055"
+            
             export IMAGE_TAG=${{ github.sha }}
             export PUBLIC_URL=${{ vars.PUBLIC_URL }}
             export MOLLIE_API_KEY=${{ secrets.MOLLIE_API_KEY }}
@@ -98,5 +117,6 @@ jobs:
             export AZURE_WEBSITEV7_SYNC_CLIENT_SECRET=${{ secrets.AZURE_WEBSITEV7_SYNC_CLIENT_SECRET }}
             export AZURE_WEBSITEV7_MAIL_CLIENT_ID=${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_ID }}
             export AZURE_WEBSITEV7_MAIL_CLIENT_SECRET=${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_SECRET }}
+            
             docker compose pull
             docker compose up -d
