@@ -1,0 +1,35 @@
+# 1. Base Stage
+FROM node:22-alpine AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable && corepack prepare pnpm@latest --activate
+WORKDIR /app
+
+# 2. Prune Stage (Extract only frontend and its dependencies)
+FROM base AS pruner
+COPY . .
+RUN pnpm deploy --filter=@salvemundi/frontend --prod /pruned
+
+# 3. Build Stage
+FROM pruner AS builder
+WORKDIR /pruned
+# Mount cache to prevent redownloading unchanged packages
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN pnpm build
+
+# 4. Runner Stage (Production)
+FROM alpine:latest AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Install node runtime in Alpine
+RUN apk add --no-cache nodejs
+
+# Copy standalone output from builder
+COPY --from=builder /pruned/.next/standalone ./
+COPY --from=builder /pruned/.next/static ./.next/static
+COPY --from=builder /pruned/public ./public
+
+EXPOSE 3000
+CMD ["node", "server.js"]

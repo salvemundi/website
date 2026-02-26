@@ -1,0 +1,13 @@
+@import "tailwindcss";
+@source "../../src";
+
+@theme {
+  --color-brand-primary: #003056;
+  --color-brand-secondary: #00A3E0;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  padding: 0;
+}

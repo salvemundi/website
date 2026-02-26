@@ -1,0 +1,19 @@
+{
+    "name": "@salvemundi/finance-service",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "dev": "fastify start -w -l info src/server.ts",
+        "build": "tsc",
+        "start": "fastify start -l info dist/server.js"
+    },
+    "dependencies": {
+        "fastify": "5.1.0",
+        "@mollie/api-client": "^4.0.1",
+        "@salvemundi/validations": "workspace:*"
+    },
+    "devDependencies": {
+        "typescript": "5.7.3",
+        "@types/node": "^22.0.0"
+    }
+}
