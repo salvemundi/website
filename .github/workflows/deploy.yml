@@ -3,7 +3,13 @@ name: "CI/CD: Build & Deploy V7 Stack"
 on:
   workflow_dispatch:
   push:
-    branches: [main, acceptance]
+    branches:
+      - main
+      - acceptance
+  pull_request:
+    branches:
+      - main
+      - acceptance
 
 jobs:
   deploy:
