@@ -14,7 +14,7 @@ RUN pnpm deploy --filter=@salvemundi/frontend --prod /pruned
 FROM pruner AS builder
 WORKDIR /pruned
 # Mount cache to prevent redownloading unchanged packages
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile
 RUN pnpm build
 
 # 4. Runner Stage (Production)
