@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16.6-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER:-directus}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-directus}
+      POSTGRES_DB: ${DB_NAME:-directus}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7.4-alpine
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+
+  directus:
+    image: directus/directus:11.1.1
+    ports:
+      - "8055:8055"
+    environment:
+      KEY: ${DIRECTUS_KEY}
+      SECRET: ${DIRECTUS_SECRET}
+      DB_CLIENT: 'pg'
+      DB_HOST: 'postgres'
+      DB_PORT: '5432'
+      DB_DATABASE: ${DB_NAME:-directus}
+      DB_USER: ${DB_USER:-directus}
+      DB_PASSWORD: ${DB_PASSWORD:-directus}
+      CACHE_ENABLED: "true"
+      CACHE_STORE: "redis"
+      CACHE_REDIS: "redis://redis:6379"
+    volumes:
+      - directus_uploads:/directus/uploads
+    depends_on:
+      - postgres
+      - redis
+
+  frontend:
+    image: ghcr.io/salvemundi/v7-app:${IMAGE_TAG:-latest}
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - PUBLIC_URL=${PUBLIC_URL:-http://localhost:3000}
+    depends_on:
+      - directus
+
+volumes:
+  postgres_data:
+  redis_data:
+  directus_uploads:

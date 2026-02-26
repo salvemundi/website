@@ -1,0 +1,64 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Next.js
+.next/
+out/
+build/
+
+# IDE / OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.vscode/
+.idea/
+
+# Environment Variables
+.env
+.env.test
+.env.production
+.env.local
+.env.*.local
+!.env.example
+
+# Typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# Misc tool configs
+.eslintcache
+.stylelintcache
+.prettiercache
+
+# Temporary local test files and scripts
+docs_content.txt
+read_docs.py
+convert_docs.py
+test-pipeline.ps1
+Docs
+
+# Optional: if you don't want the original docx binaries in git, uncomment below
+# Docs/*.docx
