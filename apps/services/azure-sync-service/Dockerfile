@@ -13,7 +13,7 @@ RUN pnpm deploy --filter=@salvemundi/azure-sync-service --prod /pruned
 # 3. Build Stage
 FROM pruner AS builder
 WORKDIR /pruned
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile
 RUN pnpm build
 
 # 4. Runner Stage (Production)
