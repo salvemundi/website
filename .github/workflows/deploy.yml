@@ -30,11 +30,47 @@ jobs:
           context: .
           file: apps/frontend/Dockerfile
           push: true
-          tags: ghcr.io/salvemundi/v7-app:${{ github.sha }}
+          tags: |
+            ghcr.io/salvemundi/v7-app:${{ github.sha }}
+            ghcr.io/salvemundi/v7-app:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: |
-            BUILDKIT_INLINE_CACHE=1
+
+      - name: Build & Push Finance Service
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/services/finance-service/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/salvemundi/v7-finance:${{ github.sha }}
+            ghcr.io/salvemundi/v7-finance:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build & Push Sync Service
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/services/azure-sync-service/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/salvemundi/v7-sync:${{ github.sha }}
+            ghcr.io/salvemundi/v7-sync:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build & Push Mail Service
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/services/mail-service/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/salvemundi/v7-mail:${{ github.sha }}
+            ghcr.io/salvemundi/v7-mail:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Deploy to VPS via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -44,7 +80,17 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd /opt/salve-mundi-v7
+            export IMAGE_TAG=${{ github.sha }}
             export PUBLIC_URL=${{ vars.PUBLIC_URL }}
             export MOLLIE_API_KEY=${{ secrets.MOLLIE_API_KEY }}
+            export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            export DIRECTUS_KEY=${{ secrets.DIRECTUS_KEY }}
+            export DIRECTUS_SECRET=${{ secrets.DIRECTUS_SECRET }}
+            export INTERNAL_SERVICE_TOKEN=${{ secrets.INTERNAL_SERVICE_TOKEN }}
+            export AZURE_WEBSITEV7_TENANT_ID=${{ secrets.AZURE_WEBSITEV7_TENANT_ID }}
+            export AZURE_WEBSITEV7_SYNC_CLIENT_ID=${{ secrets.AZURE_WEBSITEV7_SYNC_CLIENT_ID }}
+            export AZURE_WEBSITEV7_SYNC_CLIENT_SECRET=${{ secrets.AZURE_WEBSITEV7_SYNC_CLIENT_SECRET }}
+            export AZURE_WEBSITEV7_MAIL_CLIENT_ID=${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_ID }}
+            export AZURE_WEBSITEV7_MAIL_CLIENT_SECRET=${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_SECRET }}
             docker compose pull
             docker compose up -d
