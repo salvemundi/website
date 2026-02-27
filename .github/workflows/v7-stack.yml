@@ -254,10 +254,31 @@ jobs:
               COMPOSE_CMD="docker compose --profile core"
             fi
 
-            $COMPOSE_CMD pull
+            env \
+              IMAGE_TAG="$IMAGE_TAG" \
+              $COMPOSE_CMD pull
             
-            echo "Restarting services and removing old containers..."
-            $COMPOSE_CMD up -d --remove-orphans
+            echo "Starting services and removing old containers..."
+            # Pass ALL variables explicitly to docker compose to avoid shell-export issues
+            env \
+              FRONTEND_PORT="$FRONTEND_PORT" \
+              FRONTEND_DNS="$FRONTEND_DNS" \
+              FINANCE_DNS="$FINANCE_DNS" \
+              SYNC_DNS="$SYNC_DNS" \
+              MAIL_DNS="$MAIL_DNS" \
+              IMAGE_TAG="$IMAGE_TAG" \
+              PUBLIC_URL="$PUBLIC_URL" \
+              MOLLIE_API_KEY="$MOLLIE_API_KEY" \
+              DB_PASSWORD="$DB_PASSWORD" \
+              DIRECTUS_KEY="$DIRECTUS_KEY" \
+              DIRECTUS_SECRET="$DIRECTUS_SECRET" \
+              INTERNAL_SERVICE_TOKEN="$INTERNAL_SERVICE_TOKEN" \
+              AZURE_WEBSITEV7_TENANT_ID="$AZURE_WEBSITEV7_TENANT_ID" \
+              AZURE_WEBSITEV7_SYNC_CLIENT_ID="$AZURE_WEBSITEV7_SYNC_CLIENT_ID" \
+              AZURE_WEBSITEV7_SYNC_CLIENT_SECRET="$AZURE_WEBSITEV7_SYNC_CLIENT_SECRET" \
+              AZURE_WEBSITEV7_MAIL_CLIENT_ID="$AZURE_WEBSITEV7_MAIL_CLIENT_ID" \
+              AZURE_WEBSITEV7_MAIL_CLIENT_SECRET="$AZURE_WEBSITEV7_MAIL_CLIENT_SECRET" \
+              $COMPOSE_CMD up -d --remove-orphans
             
             echo "Deep cleaning unused Docker images..."
             docker image prune -af
