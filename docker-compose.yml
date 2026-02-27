@@ -39,6 +39,9 @@ services:
       ADMIN_EXTERNAL_URL: ${PUBLIC_URL:-http://localhost:3000}/admin
     volumes:
       - directus_uploads:/directus/uploads
+    networks:
+      - default
+      - proxy-network
 
   finance-service:
     image: ghcr.io/salvemundi/v7-finance:${IMAGE_TAG:-latest}
@@ -77,8 +80,17 @@ services:
       - INTERNAL_SYNC_URL=${INTERNAL_SYNC_URL}
       - INTERNAL_MAIL_URL=${INTERNAL_MAIL_URL}
       - INTERNAL_DIRECTUS_URL=${INTERNAL_DIRECTUS_URL}
+    networks:
+      - default
+      - proxy-network
     depends_on:
       - finance-service
+
+networks:
+  default:
+    name: salve-mundi-v7-internal
+  proxy-network:
+    external: true
 
 volumes:
   postgres_data:
