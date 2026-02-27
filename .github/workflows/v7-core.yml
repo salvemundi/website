@@ -1,0 +1,44 @@
+name: Deploy V7 Core Infrastructure
+
+on:
+  workflow_dispatch: # Handmatig triggeren
+  push:
+    paths:
+      - 'infrastructure/**' # Alleen bij wijzigingen in de infra map
+
+jobs:
+  deploy-core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy Infrastructure files to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "infrastructure/docker-compose.yml"
+          target: "/opt/salve-mundi-v7/infra"
+          strip_components: 1
+
+      - name: Deploy Core Stack via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /opt/salve-mundi-v7/infra
+            
+            # Ensure the shared network exists
+            docker network create salve-mundi-v7-shared || true
+            
+            # Deploy the core project
+            env \
+              DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
+              DIRECTUS_KEY="${{ secrets.DIRECTUS_KEY }}" \
+              DIRECTUS_SECRET="${{ secrets.DIRECTUS_SECRET }}" \
+              docker compose -p v7-core up -d --remove-orphans
+
+            echo "--- Core Infrastructure Deployed ---"
