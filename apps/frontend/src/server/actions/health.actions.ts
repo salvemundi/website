@@ -38,7 +38,7 @@ async function checkPort(host: string, port: number, name: string): Promise<Serv
 export async function checkServiceStatus(url: string, serviceName: string): Promise<ServiceStatusResult> {
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2500);
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
 
         const res = await fetch(url, { signal: controller.signal, cache: 'no-store' });
         clearTimeout(timeoutId);
@@ -56,7 +56,7 @@ export async function checkServiceStatus(url: string, serviceName: string): Prom
             target: url,
             isOnline: false,
             status: null,
-            error: error.name === 'AbortError' ? 'Timeout' : error.message
+            error: error.name === 'AbortError' ? 'Timeout (> 5s)' : error.message
         };
     }
 }
@@ -77,9 +77,9 @@ export async function getHealthStatuses() {
         checkPort('v7-core-redis', 6379, 'Core: Cache (Redis)'),
 
         // Application Stack
-        checkServiceStatus(`${financeUrl}/ping`, 'App: Finance Service'),
-        checkServiceStatus(`${syncUrl}/ping`, 'App: Sync Service'),
-        checkServiceStatus(`${mailUrl}/ping`, 'App: Mail Service')
+        checkServiceStatus(`${financeUrl}/`, 'App: Finance Service'),
+        checkServiceStatus(`${syncUrl}/`, 'App: Sync Service'),
+        checkServiceStatus(`${mailUrl}/`, 'App: Mail Service')
     ]);
 
     return results;
