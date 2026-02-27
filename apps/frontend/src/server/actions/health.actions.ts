@@ -77,9 +77,9 @@ export async function getHealthStatuses() {
         checkPort('v7-core-redis', 6379, 'Core: Cache (Redis)'),
 
         // Application Stack
-        checkServiceStatus(`${financeUrl}/`, 'App: Finance Service'),
-        checkServiceStatus(`${syncUrl}/`, 'App: Sync Service'),
-        checkServiceStatus(`${mailUrl}/`, 'App: Mail Service')
+        checkServiceStatus(`${financeUrl}/health`, 'App: Finance Service'),
+        checkServiceStatus(`${syncUrl}/health`, 'App: Sync Service'),
+        checkServiceStatus(`${mailUrl}/health`, 'App: Mail Service')
     ]);
 
     return results;
