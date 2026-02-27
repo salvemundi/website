@@ -19,12 +19,13 @@ export async function proxy(request: NextRequest) {
     const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith(`${route}/`));
 
     if (!isPublicRoute) {
-        // Placeholder: Surface-level Better Auth check
+        // Core Better Auth session check via cookie
         const sessionToken = request.cookies.get('better-auth.session-token');
 
         if (!sessionToken) {
-            // Redirect to login if no session token is found
-            const loginUrl = new URL('/api/auth/signin', request.url);
+            // Forced SSO Redirect: Sends user directly to Microsoft Login
+            const callbackUrl = encodeURIComponent(request.url);
+            const loginUrl = new URL(`/api/auth/login/social/microsoft?callbackURL=${callbackUrl}`, request.url);
             return NextResponse.redirect(loginUrl);
         }
     }
