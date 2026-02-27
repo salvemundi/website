@@ -38,6 +38,7 @@ services:
       - INTERNAL_SYNC_URL=http://sync-service:3002
       - INTERNAL_MAIL_URL=http://mail-service:3003
       - INTERNAL_DIRECTUS_URL=http://v7-core-directus:8055
+      - HOSTNAME=0.0.0.0
     networks:
       - default
       - proxy-network
