@@ -14,7 +14,7 @@ COPY packages/validations/package.json ./packages/validations/
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile
 
 COPY . .
-RUN pnpm run build --filter=@salvemundi/azure-sync-service
+RUN pnpm --filter=@salvemundi/azure-sync-service build
 
 # 3. Runner Stage
 FROM node:22.14.0-alpine AS runner
