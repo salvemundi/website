@@ -9,7 +9,6 @@ const fastify = Fastify({
     logger: true
 });
 
-// Hello World / Health Check as per Docs
 fastify.get('/health', async () => {
     return { status: 'ok', service: 'azure-sync-service' };
 });
