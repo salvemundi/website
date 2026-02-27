@@ -1,8 +1,7 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16.6-alpine
+    profiles: ["core"]
     environment:
       POSTGRES_USER: ${DB_USER:-directus}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-directus}
@@ -14,6 +13,7 @@ services:
 
   redis:
     image: redis:7.4-alpine
+    profiles: ["core"]
     volumes:
       - redis_data:/data
     ports:
@@ -21,14 +21,14 @@ services:
 
   directus:
     image: directus/directus:11.1.1
-    container_name: directus
+    profiles: ["core"]
     ports:
       - "8055:8055"
     environment:
       KEY: ${DIRECTUS_KEY}
       SECRET: ${DIRECTUS_SECRET}
       DB_CLIENT: 'pg'
-      DB_HOST: 'postgres'
+      DB_HOST: ${DB_HOST:-postgres}
       DB_PORT: '5432'
       DB_DATABASE: ${DB_NAME:-directus}
       DB_USER: ${DB_USER:-directus}
@@ -39,9 +39,6 @@ services:
       ADMIN_EXTERNAL_URL: ${PUBLIC_URL:-http://localhost:3000}/admin
     volumes:
       - directus_uploads:/directus/uploads
-    depends_on:
-      - postgres
-      - redis
 
   finance-service:
     image: ghcr.io/salvemundi/v7-finance:${IMAGE_TAG:-latest}
@@ -50,9 +47,6 @@ services:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - MOLLIE_API_KEY=${MOLLIE_API_KEY}
       - DB_URL=postgresql://${DB_USER:-directus}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-directus}
-    depends_on:
-      - postgres
-      - redis
 
   sync-service:
     image: ghcr.io/salvemundi/v7-sync:${IMAGE_TAG:-latest}
@@ -62,8 +56,6 @@ services:
       - AZURE_SYNC_CLIENT_ID=${AZURE_WEBSITEV7_SYNC_CLIENT_ID}
       - AZURE_SYNC_CLIENT_SECRET=${AZURE_WEBSITEV7_SYNC_CLIENT_SECRET}
     container_name: ${SYNC_DNS:-sync-prod}
-    depends_on:
-      - redis
 
   mail-service:
     image: ghcr.io/salvemundi/v7-mail:${IMAGE_TAG:-latest}
@@ -86,7 +78,6 @@ services:
       - INTERNAL_MAIL_URL=${INTERNAL_MAIL_URL}
       - INTERNAL_DIRECTUS_URL=${INTERNAL_DIRECTUS_URL}
     depends_on:
-      - directus
       - finance-service
 
 volumes:
