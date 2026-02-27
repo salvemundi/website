@@ -149,14 +149,25 @@ jobs:
       name: Acceptance
       url: ${{ vars.PUBLIC_URL }}
     steps:
-      - name: Pre-flight SSH Connectivity Check
+      - name: Network & SSH Diagnostics
         run: |
-          echo "Verifying SSH connection parameters..."
-          if [ -z "${{ secrets.SSH_HOST }}" ]; then echo "Error: SSH_HOST is empty"; exit 1; fi
-          if [ -z "${{ secrets.SSH_USER }}" ]; then echo "Error: SSH_USER is empty"; exit 1; fi
-          if [ -z "${{ secrets.SSH_KEY }}" ]; then echo "Error: SSH_KEY is empty"; exit 1; fi
-          echo "Host: ${{ secrets.SSH_HOST }}"
-          echo "User: ${{ secrets.SSH_USER }}"
+          echo "--- Starting Network Diagnostics ---"
+          echo "Checking if host is reachable on port 22..."
+          nc -zv -w 5 ${{ secrets.SSH_HOST }} 22 || echo "WARNING: Port 22 is NOT reachable. Is the SSH port different?"
+          
+          echo "--- Starting SSH Verbose Handshake Test ---"
+          # Create temporary key file
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          
+          # Try to connect with max verbosity (-vvv) to see the exact rejection reason
+          # We use -o StrictHostKeyChecking=no to avoid manual intervention
+          ssh -vvv -i ~/.ssh/deploy_key -p 22 -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=10 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "echo 'Handshake successful'" || true
+          
+          # Clean up
+          rm ~/.ssh/deploy_key
+          echo "--- Diagnostics Complete ---"
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
