@@ -27,7 +27,7 @@ services:
     image: directus/directus:11.1.1
     container_name: v7-core-directus
     command: >
-      sh -c "directus bootstrap && directus start"
+      sh -c "node /directus/cli.js bootstrap && node /directus/cli.js start"
     ports:
       - "8055:8055"
     environment:
