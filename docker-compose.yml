@@ -53,10 +53,17 @@ services:
   sync-service:
     image: ghcr.io/salvemundi/v7-sync:${IMAGE_TAG:-latest}
     environment:
+      - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
+      - AZURE_TENANT_ID=${AZURE_WEBSITEV7_TENANT_ID}
+      - AZURE_SYNC_CLIENT_ID=${AZURE_WEBSITEV7_SYNC_CLIENT_ID}
+      - AZURE_SYNC_CLIENT_SECRET=${AZURE_WEBSITEV7_SYNC_CLIENT_SECRET}
 
   mail-service:
     image: ghcr.io/salvemundi/v7-mail:${IMAGE_TAG:-latest}
     environment:
+      - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
+      - AZURE_MAIL_CLIENT_ID=${AZURE_WEBSITEV7_MAIL_CLIENT_ID}
+      - AZURE_MAIL_CLIENT_SECRET=${AZURE_WEBSITEV7_MAIL_CLIENT_SECRET}
 
   frontend:
     image: ghcr.io/salvemundi/v7-app:${IMAGE_TAG:-latest}
