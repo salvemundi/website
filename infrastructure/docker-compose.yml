@@ -45,6 +45,15 @@ services:
       REDIS: "redis://v7-core-redis:6379"
       PM2_HOME: "/tmp/pm2"
       ADMIN_EXTERNAL_URL: https://admin.salvemundi.nl
+      # SSO / Entra ID Config
+      AUTH_PROVIDERS: "microsoft"
+      AUTH_MICROSOFT_DRIVER: "openid"
+      AUTH_MICROSOFT_CLIENT_ID: ${AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID}
+      AUTH_MICROSOFT_CLIENT_SECRET: ${AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET}
+      AUTH_MICROSOFT_ISSUER_URL: "https://login.microsoftonline.com/${AZURE_WEBSITEV7_TENANT_ID}/v2.0"
+      AUTH_MICROSOFT_IDENTIFIER_KEY: "email"
+      AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION: "true"
+      AUTH_MICROSOFT_DEFAULT_ROLE_ID: "85750035-2d6e-4405-9f5b-6f069ce58a9e" # Optioneel: ID van een 'User' rol in Directus
     volumes:
       - v7_core_directus_uploads:/directus/uploads
     networks:
