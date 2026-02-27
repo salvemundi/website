@@ -175,7 +175,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          script: sudo mkdir -p /opt/salve-mundi-v7 && sudo chown ${{ secrets.SSH_USER }}:${{ secrets.SSH_USER }} /opt/salve-mundi-v7
+          script: mkdir -p /opt/salve-mundi-v7
 
       - name: Upload Docker Compose File
         uses: appleboy/scp-action@v0.1.7
