@@ -9,14 +9,12 @@ const fastify = Fastify({
     logger: true
 });
 
-// Hello World / Health Check as per Docs
 fastify.get('/health', async () => {
     return { status: 'ok', service: 'finance-service' };
 });
 
-// Placeholder for Mollie Webhook (Docs section 2.1)
+// Endpoint from Docs 2.1
 fastify.post('/api/finance/webhook/mollie', async (request, reply) => {
-    // Logic to be implemented: Verify Mollie-Signature and update transactions
     return { received: true };
 });
 
