@@ -202,6 +202,7 @@ jobs:
           script_stop: true
           script: |
             echo "--- Starting V7 Deployment on VPS ---"
+            mkdir -p /opt/salve-mundi-v7
             cd /opt/salve-mundi-v7
             echo "Working Directory: $(pwd)"
             
@@ -228,17 +229,17 @@ jobs:
             export IMAGE_TAG=${{ github.sha }}
             export PUBLIC_URL=${{ vars.PUBLIC_URL }}
             
-            # Secrets
-            export MOLLIE_API_KEY=${{ secrets.MOLLIE_API_KEY }}
-            export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            export DIRECTUS_KEY=${{ secrets.DIRECTUS_KEY }}
-            export DIRECTUS_SECRET=${{ secrets.DIRECTUS_SECRET }}
-            export INTERNAL_SERVICE_TOKEN=${{ secrets.INTERNAL_SERVICE_TOKEN }}
-            export AZURE_WEBSITEV7_TENANT_ID=${{ secrets.AZURE_WEBSITEV7_TENANT_ID }}
-            export AZURE_WEBSITEV7_SYNC_CLIENT_ID=${{ secrets.AZURE_WEBSITEV7_SYNC_CLIENT_ID }}
-            export AZURE_WEBSITEV7_SYNC_CLIENT_SECRET=${{ secrets.AZURE_WEBSITEV7_SYNC_CLIENT_SECRET }}
-            export AZURE_WEBSITEV7_MAIL_CLIENT_ID=${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_ID }}
-            export AZURE_WEBSITEV7_MAIL_CLIENT_SECRET=${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_SECRET }}
+            # Secrets (Wrapped in quotes to prevent injection/newline issues)
+            export MOLLIE_API_KEY="${{ secrets.MOLLIE_API_KEY }}"
+            export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+            export DIRECTUS_KEY="${{ secrets.DIRECTUS_KEY }}"
+            export DIRECTUS_SECRET="${{ secrets.DIRECTUS_SECRET }}"
+            export INTERNAL_SERVICE_TOKEN="${{ secrets.INTERNAL_SERVICE_TOKEN }}"
+            export AZURE_WEBSITEV7_TENANT_ID="${{ secrets.AZURE_WEBSITEV7_TENANT_ID }}"
+            export AZURE_WEBSITEV7_SYNC_CLIENT_ID="${{ secrets.AZURE_WEBSITEV7_SYNC_CLIENT_ID }}"
+            export AZURE_WEBSITEV7_SYNC_CLIENT_SECRET="${{ secrets.AZURE_WEBSITEV7_SYNC_CLIENT_SECRET }}"
+            export AZURE_WEBSITEV7_MAIL_CLIENT_ID="${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_ID }}"
+            export AZURE_WEBSITEV7_MAIL_CLIENT_SECRET="${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_SECRET }}"
             
             echo "Pulling images..."
             docker compose pull
