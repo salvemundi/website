@@ -12,7 +12,7 @@ async function ServiceStatusList() {
                 <div key={service.name} className="flex items-center justify-between p-4 bg-white rounded-lg shadow border border-gray-100">
                     <div className="flex flex-col">
                         <span className="font-semibold text-gray-800">{service.name}</span>
-                        <span className="text-sm text-gray-500 font-mono truncate max-w-[200px] sm:max-w-xs">{service.url}</span>
+                        <span className="text-sm text-gray-500 font-mono truncate max-w-[200px] sm:max-w-xs">{service.target}</span>
                     </div>
 
                     <div className="flex items-center gap-2">
