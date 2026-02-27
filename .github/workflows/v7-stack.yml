@@ -149,18 +149,29 @@ jobs:
       name: Acceptance
       url: ${{ vars.PUBLIC_URL }}
     steps:
+      - name: Pre-flight SSH Connectivity Check
+        run: |
+          echo "Verifying SSH connection parameters..."
+          if [ -z "${{ secrets.SSH_HOST }}" ]; then echo "Error: SSH_HOST is empty"; exit 1; fi
+          if [ -z "${{ secrets.SSH_USER }}" ]; then echo "Error: SSH_USER is empty"; exit 1; fi
+          if [ -z "${{ secrets.SSH_KEY }}" ]; then echo "Error: SSH_KEY is empty"; exit 1; fi
+          echo "Host: ${{ secrets.SSH_HOST }}"
+          echo "User: ${{ secrets.SSH_USER }}"
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          # Fix for handshake: ensure key is treated with proper newline/format if needed
-          # and use a larger timeout if the VPS is slow
+          port: 22
+          debug: true # Enable verbose logging for easier troubleshooting
           timeout: 60s
           command_timeout: 10m
+          script_stop: true # Stop execution on first error
           script: |
-            cd /opt/salve-mundi-v7
+            echo "--- Starting V7 Deployment on VPS ---"
+            cd /opt/salve-mundi-v7 || { echo "Directory /opt/salve-mundi-v7 not found!"; exit 1; }
             
             # Determine Environment Suffix
             if [[ ${{ github.ref }} == 'refs/heads/main' ]]; then
@@ -169,11 +180,17 @@ jobs:
               ENV_SUFFIX="acc"
             fi
             
+            echo "Deploying to environment: $ENV_SUFFIX"
+            
             # Set Docker DNS and Internal URLs according to V7 Manifest
             export FINANCE_DNS="finance-$ENV_SUFFIX"
             export SYNC_DNS="sync-$ENV_SUFFIX"
             export MAIL_DNS="mail-$ENV_SUFFIX"
             export FRONTEND_DNS="frontend-$ENV_SUFFIX"
+            
+            # Validate essential variables are passed (non-sensitive check)
+            echo "Checking environment context..."
+            [[ -z "$FINANCE_DNS" ]] && { echo "FINANCE_DNS missing"; exit 1; }
             
             export INTERNAL_FINANCE_URL="http://$FINANCE_DNS:3001"
             export INTERNAL_SYNC_URL="http://$SYNC_DNS:3002"
@@ -182,6 +199,8 @@ jobs:
             
             export IMAGE_TAG=${{ github.sha }}
             export PUBLIC_URL=${{ vars.PUBLIC_URL }}
+            
+            # Application Secrets Injection
             export MOLLIE_API_KEY=${{ secrets.MOLLIE_API_KEY }}
             export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             export DIRECTUS_KEY=${{ secrets.DIRECTUS_KEY }}
@@ -193,6 +212,14 @@ jobs:
             export AZURE_WEBSITEV7_MAIL_CLIENT_ID=${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_ID }}
             export AZURE_WEBSITEV7_MAIL_CLIENT_SECRET=${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_SECRET }}
             
-            docker compose pull
-            docker compose up -d
+            echo "Pulling latest images from GHCR..."
+            docker compose pull || { echo "Pull failed! Check GHCR permissions."; exit 1; }
+            
+            echo "Restarting service stack..."
+            docker compose up -d || { echo "Docker compose up failed!"; exit 1; }
+            
+            echo "Cleaning up dangling images..."
             docker image prune -f
+            
+            echo "--- Deployment Successful ---"
+
