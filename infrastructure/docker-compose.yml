@@ -2,6 +2,8 @@ services:
   v7-core-db:
     image: postgres:16.6-alpine
     container_name: v7-core-db
+    ports:
+      - "${INTERNAL_SERVER_IP:-127.0.0.1}:5432:5432"
     environment:
       POSTGRES_USER: ${DB_USER:-directus}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-directus}
@@ -14,6 +16,8 @@ services:
   v7-core-redis:
     image: redis:7.4-alpine
     container_name: v7-core-redis
+    ports:
+      - "${INTERNAL_SERVER_IP:-127.0.0.1}:6379:6379"
     volumes:
       - v7_core_redis_data:/data
     networks:
@@ -22,6 +26,8 @@ services:
   v7-core-directus:
     image: directus/directus:11.1.1
     container_name: v7-core-directus
+    command: >
+      sh -c "npx directus bootstrap && npx directus start"
     ports:
       - "8055:8055"
     environment:
@@ -48,6 +54,7 @@ services:
 networks:
   shared-network:
     name: salve-mundi-v7-shared
+    external: true
   proxy-network:
     external: true
 

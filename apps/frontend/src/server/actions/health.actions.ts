@@ -73,8 +73,8 @@ export async function getHealthStatuses() {
     const results = await Promise.all([
         // Shared Core Stack
         checkServiceStatus(`${directusUrl}/server/ping`, 'Core: Directus'),
-        checkPort('v7-core-db', 5432, 'Core: Database (Postgres)'),
-        checkPort('v7-core-redis', 6379, 'Core: Cache (Redis)'),
+        checkPort(process.env.INTERNAL_DB_HOST || 'v7-core-db', 5432, 'Core: Database (Postgres)'),
+        checkPort(process.env.INTERNAL_REDIS_HOST || 'v7-core-redis', 6379, 'Core: Cache (Redis)'),
 
         // Application Stack
         checkServiceStatus(`${financeUrl}/health`, 'App: Finance Service'),

@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { getHealthStatuses } from '@/server/actions/health.actions';
+import Link from 'next/link';
 
 // Force dynamic rendering so it checks status on every request instead of caching at build time
 
@@ -37,16 +38,50 @@ async function ServiceStatusList() {
     );
 }
 
+function PublicRoutes() {
+    return (
+        <div className="mt-16 w-full max-w-4xl text-left">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 border-b pb-2">Public Routes</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <Link href="/vereniging" className="p-4 bg-white border rounded shadow-sm hover:shadow-md transition">
+                    <h3 className="font-semibold text-blue-800">/vereniging</h3>
+                    <p className="text-sm text-gray-500 mt-1">Commissies & Bestuur</p>
+                </Link>
+                <Link href="/lidmaatschap" className="p-4 bg-white border rounded shadow-sm hover:shadow-md transition">
+                    <h3 className="font-semibold text-blue-800">/lidmaatschap</h3>
+                    <p className="text-sm text-gray-500 mt-1">Word Lid</p>
+                </Link>
+                <Link href="/activiteiten" className="p-4 bg-white border rounded shadow-sm hover:shadow-md transition">
+                    <h3 className="font-semibold text-blue-800">/activiteiten</h3>
+                    <p className="text-sm text-gray-500 mt-1">Kalender</p>
+                </Link>
+                <Link href="/intro" className="p-4 bg-white border rounded shadow-sm hover:shadow-md transition">
+                    <h3 className="font-semibold text-blue-800">/intro</h3>
+                    <p className="text-sm text-gray-500 mt-1">Introductieweek Info</p>
+                </Link>
+                <Link href="/kroegentocht" className="p-4 bg-white border rounded shadow-sm hover:shadow-md transition">
+                    <h3 className="font-semibold text-blue-800">/kroegentocht</h3>
+                    <p className="text-sm text-gray-500 mt-1">Kroegentocht Flow</p>
+                </Link>
+                <Link href="/reis" className="p-4 bg-white border rounded shadow-sm hover:shadow-md transition">
+                    <h3 className="font-semibold text-blue-800">/reis</h3>
+                    <p className="text-sm text-gray-500 mt-1">Grote Reis Info</p>
+                </Link>
+            </div>
+        </div>
+    );
+}
+
 export default function Home() {
     return (
         <main className="flex min-h-screen flex-col items-center p-8 bg-gray-50 text-gray-900">
-            <div className="flex flex-col items-center mt-20 max-w-3xl text-center">
+            <div className="flex flex-col items-center mt-8 max-w-4xl text-center w-full">
                 <h1 className="text-4xl sm:text-5xl font-extrabold mb-6 tracking-tight text-blue-900">
                     Hello <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-500">World</span>
                 </h1>
 
                 <p className="text-lg text-gray-600 mb-2 leading-relaxed">
-                    Netbird VPN Verbinding Test
+                    Netbird VPN Verbinding Test & Route Hub
                 </p>
 
                 <div className="inline-block mt-4 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
@@ -59,6 +94,8 @@ export default function Home() {
                 <Suspense fallback={<div className="mt-12 text-gray-400 animate-pulse">Checking connections...</div>}>
                     <ServiceStatusList />
                 </Suspense>
+
+                <PublicRoutes />
             </div>
         </main>
     );
