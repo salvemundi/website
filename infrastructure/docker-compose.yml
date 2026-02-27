@@ -37,6 +37,7 @@ services:
       CACHE_STORE: "redis"
       CACHE_REDIS: "redis://v7-core-redis:6379"
       REDIS: "redis://v7-core-redis:6379"
+      PM2_HOME: "/tmp/pm2"
       ADMIN_EXTERNAL_URL: https://admin.salvemundi.nl
     volumes:
       - v7_core_directus_uploads:/directus/uploads
