@@ -245,10 +245,19 @@ jobs:
             export AZURE_WEBSITEV7_MAIL_CLIENT_SECRET="${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_SECRET }}"
             
             echo "Pulling images..."
-            docker compose pull
+            # Check if directus is already running (under any name/project) to decide on profiles
+            if docker ps --format '{{.Names}}' | grep -q "directus"; then
+              echo "Detected existing Directus container. Deploying services ONLY."
+              COMPOSE_CMD="docker compose"
+            else
+              echo "No Directus detected. Deploying FULL stack with core infrastructure."
+              COMPOSE_CMD="docker compose --profile core"
+            fi
+
+            $COMPOSE_CMD pull
             
             echo "Starting services..."
-            docker compose up -d
+            $COMPOSE_CMD up -d
             
             echo "Cleanup..."
             docker image prune -f
