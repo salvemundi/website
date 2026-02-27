@@ -169,6 +169,23 @@ jobs:
           rm ~/.ssh/deploy_key
           echo "--- Diagnostics Complete ---"
 
+      - name: Create Target Directory
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: sudo mkdir -p /opt/salve-mundi-v7 && sudo chown ${{ secrets.SSH_USER }}:${{ secrets.SSH_USER }} /opt/salve-mundi-v7
+
+      - name: Upload Docker Compose File
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "docker-compose.yml"
+          target: "/opt/salve-mundi-v7"
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -176,13 +193,13 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           port: 22
-          debug: true # Enable verbose logging for easier troubleshooting
+          debug: true
           timeout: 60s
           command_timeout: 10m
-          script_stop: true # Stop execution on first error
+          script_stop: true
           script: |
             echo "--- Starting V7 Deployment on VPS ---"
-            cd /opt/salve-mundi-v7 || { echo "Directory /opt/salve-mundi-v7 not found!"; exit 1; }
+            cd /opt/salve-mundi-v7
             
             # Determine Environment Suffix
             if [[ ${{ github.ref }} == 'refs/heads/main' ]]; then
