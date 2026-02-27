@@ -8,8 +8,8 @@ WORKDIR /app
 # 2. Builder Stage
 FROM base AS builder
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
-COPY apps/services/azure-sync-service/package.json ./apps/services/azure-sync-service/
-COPY packages/validations/package.json ./packages/validations/
+COPY apps/services/azure-sync-service/package.json apps/services/azure-sync-service/tsconfig.json ./apps/services/azure-sync-service/
+COPY packages/validations/package.json packages/validations/tsconfig.json ./packages/validations/
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile
 
