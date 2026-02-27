@@ -149,6 +149,9 @@ jobs:
       name: Acceptance
       url: ${{ vars.PUBLIC_URL }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Network & SSH Diagnostics
         run: |
           echo "--- Starting Network Diagnostics ---"
