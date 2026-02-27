@@ -210,6 +210,9 @@ jobs:
             docker version || { echo "Docker not found or no permissions!"; exit 1; }
             docker compose version || { echo "Docker Compose not found!"; exit 1; }
 
+            echo "Logging into GHCR..."
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
             # Simplified Environment Check
             ENV_SUFFIX="acc"
             if [ "${{ github.ref }}" = "refs/heads/main" ]; then ENV_SUFFIX="prod"; fi
