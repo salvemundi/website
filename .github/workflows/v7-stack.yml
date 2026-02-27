@@ -202,32 +202,19 @@ jobs:
           script_stop: true
           script: |
             echo "--- Starting V7 Deployment on VPS ---"
-            
-            # Check if directory exists and show contents
-            if [ ! -d "/opt/salve-mundi-v7" ]; then
-              echo "ERROR: Directory /opt/salve-mundi-v7 does not exist!"
-              exit 1
-            fi
-            
             cd /opt/salve-mundi-v7
-            echo "Current directory: $(pwd)"
-            ls -la
+            echo "Working Directory: $(pwd)"
             
-            if [ ! -f "docker-compose.yml" ]; then
-              echo "ERROR: docker-compose.yml not found in $(pwd)"
-              exit 1
-            fi
+            echo "Checking Docker environment..."
+            docker version || { echo "Docker not found or no permissions!"; exit 1; }
+            docker compose version || { echo "Docker Compose not found!"; exit 1; }
 
-            # Determine Environment Suffix (Using POSIX [ instead of [[)
-            if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-              ENV_SUFFIX="prod"
-            else
-              ENV_SUFFIX="acc"
-            fi
+            # Simplified Environment Check
+            ENV_SUFFIX="acc"
+            if [ "${{ github.ref }}" = "refs/heads/main" ]; then ENV_SUFFIX="prod"; fi
+            echo "Target Environment: $ENV_SUFFIX"
             
-            echo "Deploying to environment: $ENV_SUFFIX"
-            
-            # Set Docker DNS and Internal URLs according to V7 Manifest
+            # Application Context
             export FINANCE_DNS="finance-$ENV_SUFFIX"
             export SYNC_DNS="sync-$ENV_SUFFIX"
             export MAIL_DNS="mail-$ENV_SUFFIX"
@@ -241,7 +228,7 @@ jobs:
             export IMAGE_TAG=${{ github.sha }}
             export PUBLIC_URL=${{ vars.PUBLIC_URL }}
             
-            # Application Secrets Injection
+            # Secrets
             export MOLLIE_API_KEY=${{ secrets.MOLLIE_API_KEY }}
             export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             export DIRECTUS_KEY=${{ secrets.DIRECTUS_KEY }}
@@ -253,13 +240,13 @@ jobs:
             export AZURE_WEBSITEV7_MAIL_CLIENT_ID=${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_ID }}
             export AZURE_WEBSITEV7_MAIL_CLIENT_SECRET=${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_SECRET }}
             
-            echo "Pulling latest images from GHCR..."
-            docker compose pull || { echo "Pull failed!"; exit 1; }
+            echo "Pulling images..."
+            docker compose pull
             
-            echo "Restarting service stack..."
-            docker compose up -d || { echo "Docker compose up failed!"; exit 1; }
+            echo "Starting services..."
+            docker compose up -d
             
-            echo "Cleaning up dangling images..."
+            echo "Cleanup..."
             docker image prune -f
             
             echo "--- Deployment Successful ---"
