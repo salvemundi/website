@@ -6,7 +6,7 @@ services:
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - MOLLIE_API_KEY=${MOLLIE_API_KEY}
-      - DB_URL=postgresql://${DB_USER:-directus}:${DB_PASSWORD}@v7-core-db:5432/${DB_NAME:-directus}
+      - DB_URL=postgresql://${DB_USER}:${DB_PASSWORD}@v7-core-db:5432/${DB_NAME}
 
   sync-service:
     image: ghcr.io/salvemundi/v7-sync:${IMAGE_TAG:-latest}
