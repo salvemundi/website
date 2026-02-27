@@ -33,6 +33,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 # Copy standalone output from builder
 # Next.js standalone includes all necessary node_modules (including workspace dependencies)
+# Ensure public directory exists before copying to avoid build failure
+RUN mkdir -p apps/frontend/public
 COPY --from=builder /app/apps/frontend/public ./apps/frontend/public
 COPY --from=builder /app/apps/frontend/.next/standalone ./
 COPY --from=builder /app/apps/frontend/.next/static ./apps/frontend/.next/static
