@@ -1,10 +1,10 @@
-export * from 'zod';
-
 import { z } from 'zod';
 
-export const userSchema = z.object({
-    id: z.string().uuid(),
-    email: z.string().email(),
-    firstName: z.string(),
-    lastName: z.string(),
-});
+export * from './schema/finance.zod.ts';
+export * from './schema/members.zod.ts';
+
+import { memberSchema } from './schema/members.zod.ts';
+import { mollieWebhookSchema } from './schema/finance.zod.ts';
+
+export type Member = z.infer<typeof memberSchema>;
+export type MollieWebhook = z.infer<typeof mollieWebhookSchema>;

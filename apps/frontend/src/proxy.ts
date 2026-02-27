@@ -19,9 +19,25 @@ export async function proxy(request: NextRequest) {
     const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith(`${route}/`));
 
     if (!isPublicRoute) {
-        // Surface-level Better Auth check
-        // If not authenticated, redirect to login
+        // Placeholder: Surface-level Better Auth check
+        const sessionToken = request.cookies.get('better-auth.session-token');
+
+        if (!sessionToken) {
+            // Redirect to login if no session token is found
+            const loginUrl = new URL('/api/auth/signin', request.url);
+            return NextResponse.redirect(loginUrl);
+        }
     }
 
     return NextResponse.next();
 }
+
+// Config to explicitly match routes and exclude assets, common in Next.js 16 proxy setups
+export const config = {
+    matcher: [
+        '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    ],
+};
+
+export default proxy;
+
