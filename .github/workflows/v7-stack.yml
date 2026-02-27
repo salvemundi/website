@@ -212,11 +212,13 @@ jobs:
             # Simplified Environment Check
             ENV_SUFFIX="acc"
             export FRONTEND_PORT="3000"
+            export COMPOSE_PROJECT_NAME="v7-acc"
             if [ "${{ github.ref }}" = "refs/heads/main" ]; then 
               ENV_SUFFIX="prod"
               export FRONTEND_PORT="4000"
+              export COMPOSE_PROJECT_NAME="v7-prod"
             fi
-            echo "Target Environment: $ENV_SUFFIX (Port: $FRONTEND_PORT)"
+            echo "Target Environment: $ENV_SUFFIX (Project: $COMPOSE_PROJECT_NAME, Port: $FRONTEND_PORT)"
             
             # Application Context
             export FINANCE_DNS="finance-$ENV_SUFFIX"
@@ -248,10 +250,10 @@ jobs:
             # Check if directus is already running (under any name/project) to decide on profiles
             if docker ps --format '{{.Names}}' | grep -q "directus"; then
               echo "Detected existing Directus container. Deploying services ONLY."
-              COMPOSE_CMD="docker compose"
+              COMPOSE_CMD="docker compose -p $COMPOSE_PROJECT_NAME"
             else
               echo "No Directus detected. Deploying FULL stack with core infrastructure."
-              COMPOSE_CMD="docker compose --profile core"
+              COMPOSE_CMD="docker compose -p $COMPOSE_PROJECT_NAME --profile core"
             fi
 
             env \
