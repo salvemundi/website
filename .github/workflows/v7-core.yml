@@ -41,6 +41,9 @@ jobs:
               DB_NAME="${{ secrets.DB_NAME }}" \
               DIRECTUS_KEY="${{ secrets.DIRECTUS_KEY }}" \
               DIRECTUS_SECRET="${{ secrets.DIRECTUS_SECRET }}" \
+              AZURE_WEBSITEV7_TENANT_ID="${{ secrets.AZURE_WEBSITEV7_TENANT_ID }}" \
+              AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID="${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID }}" \
+              AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET="${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET }}" \
               docker compose -p v7-core up -d --remove-orphans
 
             echo "--- Core Infrastructure Deployed ---"
