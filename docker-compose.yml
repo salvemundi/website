@@ -45,7 +45,6 @@ services:
 
   finance-service:
     image: ghcr.io/salvemundi/v7-finance:${IMAGE_TAG:-latest}
-    container_name: ${FINANCE_DNS:-finance-prod}
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - MOLLIE_API_KEY=${MOLLIE_API_KEY}
@@ -54,23 +53,13 @@ services:
   sync-service:
     image: ghcr.io/salvemundi/v7-sync:${IMAGE_TAG:-latest}
     environment:
-      - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
-      - AZURE_TENANT_ID=${AZURE_WEBSITEV7_TENANT_ID}
-      - AZURE_SYNC_CLIENT_ID=${AZURE_WEBSITEV7_SYNC_CLIENT_ID}
-      - AZURE_SYNC_CLIENT_SECRET=${AZURE_WEBSITEV7_SYNC_CLIENT_SECRET}
-    container_name: ${SYNC_DNS:-sync-prod}
 
   mail-service:
     image: ghcr.io/salvemundi/v7-mail:${IMAGE_TAG:-latest}
     environment:
-      - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
-      - AZURE_MAIL_CLIENT_ID=${AZURE_WEBSITEV7_MAIL_CLIENT_ID}
-      - AZURE_MAIL_CLIENT_SECRET=${AZURE_WEBSITEV7_MAIL_CLIENT_SECRET}
-    container_name: ${MAIL_DNS:-mail-prod}
 
   frontend:
     image: ghcr.io/salvemundi/v7-app:${IMAGE_TAG:-latest}
-    container_name: ${FRONTEND_DNS:-frontend-prod}
     restart: always
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
@@ -88,7 +77,6 @@ services:
 
 networks:
   default:
-    name: salve-mundi-v7-internal
   proxy-network:
     external: true
 
