@@ -215,8 +215,12 @@ jobs:
 
             # Simplified Environment Check
             ENV_SUFFIX="acc"
-            if [ "${{ github.ref }}" = "refs/heads/main" ]; then ENV_SUFFIX="prod"; fi
-            echo "Target Environment: $ENV_SUFFIX"
+            export FRONTEND_PORT="3000"
+            if [ "${{ github.ref }}" = "refs/heads/main" ]; then 
+              ENV_SUFFIX="prod"
+              export FRONTEND_PORT="4000"
+            fi
+            echo "Target Environment: $ENV_SUFFIX (Port: $FRONTEND_PORT)"
             
             # Application Context
             export FINANCE_DNS="finance-$ENV_SUFFIX"
@@ -229,8 +233,8 @@ jobs:
             export INTERNAL_MAIL_URL="http://$MAIL_DNS:3003"
             export INTERNAL_DIRECTUS_URL="http://directus:8055"
             
-            export IMAGE_TAG=${{ github.sha }}
-            export PUBLIC_URL=${{ vars.PUBLIC_URL }}
+            export IMAGE_TAG="${{ github.sha }}"
+            export PUBLIC_URL="${{ vars.PUBLIC_URL }}"
             
             # Secrets (Wrapped in quotes to prevent injection/newline issues)
             export MOLLIE_API_KEY="${{ secrets.MOLLIE_API_KEY }}"
@@ -256,8 +260,8 @@ jobs:
 
             $COMPOSE_CMD pull
             
-            echo "Starting services..."
-            $COMPOSE_CMD up -d
+            echo "Starting services and cleaning up orphans..."
+            $COMPOSE_CMD up -d --remove-orphans
             
             echo "Cleanup..."
             docker image prune -f
