@@ -1,6 +1,8 @@
 services:
   finance-service:
     image: ghcr.io/salvemundi/v7-finance:${IMAGE_TAG:-latest}
+    ports:
+      - "3001:3001"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - MOLLIE_API_KEY=${MOLLIE_API_KEY}
@@ -8,6 +10,8 @@ services:
 
   sync-service:
     image: ghcr.io/salvemundi/v7-sync:${IMAGE_TAG:-latest}
+    ports:
+      - "3002:3002"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_TENANT_ID=${AZURE_WEBSITEV7_TENANT_ID}
@@ -16,6 +20,8 @@ services:
 
   mail-service:
     image: ghcr.io/salvemundi/v7-mail:${IMAGE_TAG:-latest}
+    ports:
+      - "3003:3003"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_MAIL_CLIENT_ID=${AZURE_WEBSITEV7_MAIL_CLIENT_ID}
@@ -28,9 +34,9 @@ services:
       - "${FRONTEND_PORT:-3000}:3000"
     environment:
       - PUBLIC_URL=${PUBLIC_URL:-http://localhost:3000}
-      - INTERNAL_FINANCE_URL=${INTERNAL_FINANCE_URL}
-      - INTERNAL_SYNC_URL=${INTERNAL_SYNC_URL}
-      - INTERNAL_MAIL_URL=${INTERNAL_MAIL_URL}
+      - INTERNAL_FINANCE_URL=http://finance-service:3001
+      - INTERNAL_SYNC_URL=http://sync-service:3002
+      - INTERNAL_MAIL_URL=http://mail-service:3003
       - INTERNAL_DIRECTUS_URL=http://v7-core-directus:8055
     networks:
       - default
