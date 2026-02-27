@@ -5,9 +5,9 @@ services:
     ports:
       - "${INTERNAL_SERVER_IP:-127.0.0.1}:5432:5432"
     environment:
-      POSTGRES_USER: ${DB_USER:-directus}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-directus}
-      POSTGRES_DB: ${DB_NAME:-directus}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     volumes:
       - v7_core_postgres_data:/var/lib/postgresql/data
     networks:
@@ -36,9 +36,9 @@ services:
       DB_CLIENT: 'pg'
       DB_HOST: v7-core-db
       DB_PORT: '5432'
-      DB_DATABASE: ${DB_NAME:-directus}
-      DB_USER: ${DB_USER:-directus}
-      DB_PASSWORD: ${DB_PASSWORD:-directus}
+      DB_DATABASE: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
       CACHE_ENABLED: "true"
       CACHE_STORE: "redis"
       CACHE_REDIS: "redis://v7-core-redis:6379"

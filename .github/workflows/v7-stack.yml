@@ -236,7 +236,9 @@ jobs:
             
             # Secrets (Wrapped in quotes to prevent injection/newline issues)
             export MOLLIE_API_KEY="${{ secrets.MOLLIE_API_KEY }}"
+            export DB_USER="${{ secrets.DB_USER }}"
             export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+            export DB_NAME="${{ secrets.DB_NAME }}"
             export DIRECTUS_KEY="${{ secrets.DIRECTUS_KEY }}"
             export DIRECTUS_SECRET="${{ secrets.DIRECTUS_SECRET }}"
             export INTERNAL_SERVICE_TOKEN="${{ secrets.INTERNAL_SERVICE_TOKEN }}"
@@ -260,7 +262,9 @@ jobs:
               IMAGE_TAG="$IMAGE_TAG" \
               PUBLIC_URL="$PUBLIC_URL" \
               MOLLIE_API_KEY="$MOLLIE_API_KEY" \
+              DB_USER="$DB_USER" \
               DB_PASSWORD="$DB_PASSWORD" \
+              DB_NAME="$DB_NAME" \
               INTERNAL_SERVICE_TOKEN="$INTERNAL_SERVICE_TOKEN" \
               AZURE_WEBSITEV7_TENANT_ID="$AZURE_WEBSITEV7_TENANT_ID" \
               AZURE_WEBSITEV7_SYNC_CLIENT_ID="$AZURE_WEBSITEV7_SYNC_CLIENT_ID" \
