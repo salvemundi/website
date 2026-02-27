@@ -70,7 +70,7 @@ services:
     container_name: ${FRONTEND_DNS:-frontend-prod}
     restart: always
     ports:
-      - "3000:3000"
+      - "${FRONTEND_PORT:-3000}:3000"
     environment:
       - PUBLIC_URL=${PUBLIC_URL:-http://localhost:3000}
       - INTERNAL_FINANCE_URL=${INTERNAL_FINANCE_URL}
