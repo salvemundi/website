@@ -202,10 +202,24 @@ jobs:
           script_stop: true
           script: |
             echo "--- Starting V7 Deployment on VPS ---"
-            cd /opt/salve-mundi-v7
             
-            # Determine Environment Suffix
-            if [[ ${{ github.ref }} == 'refs/heads/main' ]]; then
+            # Check if directory exists and show contents
+            if [ ! -d "/opt/salve-mundi-v7" ]; then
+              echo "ERROR: Directory /opt/salve-mundi-v7 does not exist!"
+              exit 1
+            fi
+            
+            cd /opt/salve-mundi-v7
+            echo "Current directory: $(pwd)"
+            ls -la
+            
+            if [ ! -f "docker-compose.yml" ]; then
+              echo "ERROR: docker-compose.yml not found in $(pwd)"
+              exit 1
+            fi
+
+            # Determine Environment Suffix (Using POSIX [ instead of [[)
+            if [ "${{ github.ref }}" = "refs/heads/main" ]; then
               ENV_SUFFIX="prod"
             else
               ENV_SUFFIX="acc"
@@ -218,10 +232,6 @@ jobs:
             export SYNC_DNS="sync-$ENV_SUFFIX"
             export MAIL_DNS="mail-$ENV_SUFFIX"
             export FRONTEND_DNS="frontend-$ENV_SUFFIX"
-            
-            # Validate essential variables are passed (non-sensitive check)
-            echo "Checking environment context..."
-            [[ -z "$FINANCE_DNS" ]] && { echo "FINANCE_DNS missing"; exit 1; }
             
             export INTERNAL_FINANCE_URL="http://$FINANCE_DNS:3001"
             export INTERNAL_SYNC_URL="http://$SYNC_DNS:3002"
@@ -244,7 +254,7 @@ jobs:
             export AZURE_WEBSITEV7_MAIL_CLIENT_SECRET=${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_SECRET }}
             
             echo "Pulling latest images from GHCR..."
-            docker compose pull || { echo "Pull failed! Check GHCR permissions."; exit 1; }
+            docker compose pull || { echo "Pull failed!"; exit 1; }
             
             echo "Restarting service stack..."
             docker compose up -d || { echo "Docker compose up failed!"; exit 1; }
