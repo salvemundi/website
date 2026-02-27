@@ -22,7 +22,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockf
 COPY . .
 
 # Build the frontend
-RUN pnpm run build --filter=@salvemundi/frontend
+RUN pnpm --filter=@salvemundi/frontend build
 
 # 3. Runner Stage
 FROM node:22.14.0-alpine AS runner
