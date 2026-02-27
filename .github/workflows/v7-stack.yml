@@ -39,7 +39,6 @@ jobs:
           file: apps/frontend/Dockerfile
           push: true
           tags: |
-            ghcr.io/salvemundi/v7-app:${{ github.sha }}
             ghcr.io/salvemundi/v7-app:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -71,7 +70,6 @@ jobs:
           file: apps/services/finance-service/Dockerfile
           push: true
           tags: |
-            ghcr.io/salvemundi/v7-finance:${{ github.sha }}
             ghcr.io/salvemundi/v7-finance:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -103,7 +101,6 @@ jobs:
           file: apps/services/azure-sync-service/Dockerfile
           push: true
           tags: |
-            ghcr.io/salvemundi/v7-sync:${{ github.sha }}
             ghcr.io/salvemundi/v7-sync:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -135,7 +132,6 @@ jobs:
           file: apps/services/mail-service/Dockerfile
           push: true
           tags: |
-            ghcr.io/salvemundi/v7-mail:${{ github.sha }}
             ghcr.io/salvemundi/v7-mail:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -233,7 +229,7 @@ jobs:
             export INTERNAL_MAIL_URL="http://$MAIL_DNS:3003"
             export INTERNAL_DIRECTUS_URL="http://directus:8055"
             
-            export IMAGE_TAG="${{ github.sha }}"
+            export IMAGE_TAG="latest"
             export PUBLIC_URL="${{ vars.PUBLIC_URL }}"
             
             # Secrets (Wrapped in quotes to prevent injection/newline issues)
@@ -248,7 +244,7 @@ jobs:
             export AZURE_WEBSITEV7_MAIL_CLIENT_ID="${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_ID }}"
             export AZURE_WEBSITEV7_MAIL_CLIENT_SECRET="${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_SECRET }}"
             
-            echo "Pulling images..."
+            echo "Pulling latest images..."
             # Check if directus is already running (under any name/project) to decide on profiles
             if docker ps --format '{{.Names}}' | grep -q "directus"; then
               echo "Detected existing Directus container. Deploying services ONLY."
@@ -260,11 +256,11 @@ jobs:
 
             $COMPOSE_CMD pull
             
-            echo "Starting services and cleaning up orphans..."
+            echo "Restarting services and removing old containers..."
             $COMPOSE_CMD up -d --remove-orphans
             
-            echo "Cleanup..."
-            docker image prune -f
+            echo "Deep cleaning unused Docker images..."
+            docker image prune -af
             
             echo "--- Deployment Successful ---"
 
