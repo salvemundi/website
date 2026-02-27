@@ -246,34 +246,21 @@ jobs:
             export AZURE_WEBSITEV7_MAIL_CLIENT_ID="${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_ID }}"
             export AZURE_WEBSITEV7_MAIL_CLIENT_SECRET="${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_SECRET }}"
             
-            echo "Pulling latest images..."
-            # Check if directus is already running (under any name/project) to decide on profiles
-            if docker ps --format '{{.Names}}' | grep -q "directus"; then
-              echo "Detected existing Directus container. Deploying services ONLY."
-              COMPOSE_CMD="docker compose -p $COMPOSE_PROJECT_NAME"
-            else
-              echo "No Directus detected. Deploying FULL stack with core infrastructure."
-              COMPOSE_CMD="docker compose -p $COMPOSE_PROJECT_NAME --profile core"
-            fi
+            COMPOSE_CMD="docker compose -p $COMPOSE_PROJECT_NAME"
 
+            echo "Pulling latest images..."
             env \
               IMAGE_TAG="$IMAGE_TAG" \
               $COMPOSE_CMD pull
             
-            echo "Starting services and removing old containers..."
-            # Pass ALL variables explicitly to docker compose to avoid shell-export issues
+            echo "Restarting application stack..."
+            # Pass ALL variables explicitly to docker compose
             env \
               FRONTEND_PORT="$FRONTEND_PORT" \
-              FRONTEND_DNS="$FRONTEND_DNS" \
-              FINANCE_DNS="$FINANCE_DNS" \
-              SYNC_DNS="$SYNC_DNS" \
-              MAIL_DNS="$MAIL_DNS" \
               IMAGE_TAG="$IMAGE_TAG" \
               PUBLIC_URL="$PUBLIC_URL" \
               MOLLIE_API_KEY="$MOLLIE_API_KEY" \
               DB_PASSWORD="$DB_PASSWORD" \
-              DIRECTUS_KEY="$DIRECTUS_KEY" \
-              DIRECTUS_SECRET="$DIRECTUS_SECRET" \
               INTERNAL_SERVICE_TOKEN="$INTERNAL_SERVICE_TOKEN" \
               AZURE_WEBSITEV7_TENANT_ID="$AZURE_WEBSITEV7_TENANT_ID" \
               AZURE_WEBSITEV7_SYNC_CLIENT_ID="$AZURE_WEBSITEV7_SYNC_CLIENT_ID" \
