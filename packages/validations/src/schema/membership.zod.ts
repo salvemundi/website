@@ -19,9 +19,9 @@ export const signupSchema = z.object({
 export type SignupFormData = z.infer<typeof signupSchema>;
 
 /**
- * Schema for requesting a payment intent
+ * Schema for requesting a membership payment intent
  */
-export const paymentIntentSchema = z.object({
+export const membershipPaymentIntentSchema = z.object({
     amount: z.number().positive(),
     description: z.string(),
     metadata: z.record(z.string(), z.any()).optional(),

@@ -7,6 +7,14 @@ export const auth = betterAuth({
     }),
     user: {
         modelName: "directus_users",
+        additionalFields: {
+            first_name: { type: "string" },
+            last_name: { type: "string" },
+            is_member: { type: "boolean" },
+            membership_expiry: { type: "string" },
+            phone_number: { type: "string" },
+            date_of_birth: { type: "string" },
+        }
     },
     session: {
         modelName: "auth_sessions"

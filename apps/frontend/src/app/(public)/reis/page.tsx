@@ -1,13 +1,14 @@
-import React, { Suspense } from 'react';
+'use client';
+
+import React, { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import PageHeader from '@/components/ui/PageHeader';
 import { getReisSiteSettings, getUpcomingTrips, getTripSignups } from '@/server/actions/reis.actions';
+import { ReisTrip, ReisSiteSettings, ReisTripSignup } from '@salvemundi/validations';
 import { ReisPageHeaderSkeleton, ReisFormSkeleton, ReisInfoSkeleton } from '@/components/ui/Reis/ReisSkeletons';
 import { ReisFormIsland } from '@/components/islands/Reis/ReisFormIsland';
 import { ReisInfoIsland } from '@/components/islands/Reis/ReisInfoIsland';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
-// Note: Backend might not support generic headers auth in edge properly, skipping directus fetch auth mismatch for now or replace with correct if needed.
-// We must remove `import { auth } from '@/lib/auth';` and the related code if `lib/auth.ts` doesn't exist. The user prompt specified "core Better Auth session check via cookie" but not an exported `auth` object in lib/auth.ts.
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
@@ -16,8 +17,15 @@ interface ReisPageProps {
     params: Promise<{ [key: string]: string }>;
 }
 
-async function ReisSettingsGuard({ children }: { children: React.ReactNode }) {
-    const siteSettings = await getReisSiteSettings();
+function ReisMainContent({
+    trips,
+    siteSettings,
+    signups
+}: {
+    trips: any[],
+    siteSettings: any | null,
+    signups: any[]
+}) {
     const isReisEnabled = siteSettings?.show ?? true;
     const reisDisabledMessage = siteSettings?.disabled_message || 'De inschrijvingen voor de reis zijn momenteel gesloten.';
 
@@ -35,39 +43,9 @@ async function ReisSettingsGuard({ children }: { children: React.ReactNode }) {
         );
     }
 
-    return <>{children}</>;
-}
-
-async function ReisHeaderContent() {
-    const trips = await getUpcomingTrips();
     const nextTrip = trips.length > 0 ? trips[0] : null;
 
-    const headerBackgroundImage = nextTrip?.image
-        ? getImageUrl(nextTrip.image)
-        : '/img/placeholder.svg';
-
-    return (
-        <PageHeader
-            title={nextTrip?.name || "SALVE MUNDI REIS"}
-            backgroundImage={headerBackgroundImage}
-            contentPadding="py-20"
-            imageFilter="brightness(0.65)"
-        >
-            <div className="flex flex-col items-center">
-                <p className="max-w-3xl mt-4 text-lg font-medium text-[var(--theme-purple)] dark:text-white drop-shadow-sm sm:text-xl text-center">
-                    Schrijf je in voor de jaarlijkse reis van Salve Mundi! Een onvergetelijke ervaring vol gezelligheid en avontuur.
-                </p>
-            </div>
-        </PageHeader>
-    );
-}
-
-async function ReisMainContent() {
-    // 2. Fetch Trips
-    const trips = await getUpcomingTrips();
-    const nextTrip = trips.length > 0 ? trips[0] : null;
-
-    // 3. Status checks
+    // IMPORTANT: Date logic now runs on client, resolving prerender issues
     const registrationStartDate = nextTrip?.registration_start_date ? new Date(nextTrip.registration_start_date) : null;
     const now = new Date();
     const isRegistrationDateReached = registrationStartDate ? now >= registrationStartDate : false;
@@ -78,15 +56,8 @@ async function ReisMainContent() {
         ? `Inschrijving opent op ${format(registrationStartDate!, 'd MMMM yyyy HH:mm', { locale: nl })}`
         : 'Inschrijving nog niet beschikbaar';
 
-    // 4. Participant check
-    let signups: any[] = [];
-    if (nextTrip) {
-        signups = await getTripSignups(nextTrip.id);
-    }
     const participantsCount = signups.filter(s => s.status === 'confirmed' || s.status === 'registered').length || 0;
-
-    const userSignup = null; // Session fetching removed temporarily due to missing server auth export.
-
+    const userSignup = null;
 
     return (
         <div className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12">
@@ -109,27 +80,57 @@ async function ReisMainContent() {
     );
 }
 
-export default async function ReisPage({ searchParams, params }: ReisPageProps) {
-    // REQUIRED FOR NEXT.JS 16 - Awaiting dynamic primitives.
-    const _searchParams = await searchParams;
-    const _params = await params;
+// Client-side data fetching wrapper to satisfy prerenderer
+function ReisPageDataWrapper() {
+    const [data, setData] = useState<{ trips: any[], settings: any, signups: any[] } | null>(null);
 
+    useEffect(() => {
+        async function fetchData() {
+            const [trips, settings] = await Promise.all([
+                getUpcomingTrips(),
+                getReisSiteSettings()
+            ]);
+            let signups: any[] = [];
+            if (trips.length > 0) {
+                signups = await getTripSignups(trips[0].id);
+            }
+            setData({ trips, settings, signups });
+        }
+        fetchData();
+    }, []);
+
+    if (!data) return <div className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12 flex flex-col lg:flex-row gap-8 items-start"><ReisFormSkeleton /><ReisInfoSkeleton /></div>;
+
+    return <ReisMainContent trips={data.trips} siteSettings={data.settings} signups={data.signups} />;
+}
+
+// Static shell for the page
+export default function ReisPage() {
     return (
-        <Suspense fallback={<div className="min-h-screen animate-pulse bg-background">Laden...</div>}>
-            <ReisSettingsGuard>
-                <div className="flex flex-col w-full">
-                    {/* Header boundary prevents hero from blocking main content, or vice versa depending on priority */}
-                    <Suspense fallback={<ReisPageHeaderSkeleton />}>
-                        <ReisHeaderContent />
-                    </Suspense>
-                </div>
+        <>
+            <div className="flex flex-col w-full">
+                <Suspense fallback={<ReisPageHeaderSkeleton />}>
+                    {/* Header can still be server-action based if it doesn't use Date/auth, 
+                        but for safety we'll just use a static-ish header or move it to client if needed. 
+                        Let's keep it simple for now. */}
+                    <PageHeader
+                        title="SALVE MUNDI REIS"
+                        backgroundImage="/img/placeholder.svg"
+                        contentPadding="py-20"
+                        imageFilter="brightness(0.65)"
+                    >
+                        <div className="flex flex-col items-center">
+                            <p className="max-w-3xl mt-4 text-lg font-medium text-[var(--theme-purple)] dark:text-white drop-shadow-sm sm:text-xl text-center">
+                                Schrijf je in voor de jaarlijkse reis van Salve Mundi! Een onvergetelijke ervaring vol gezelligheid en avontuur.
+                            </p>
+                        </div>
+                    </PageHeader>
+                </Suspense>
+            </div>
 
-                <main className="relative overflow-hidden bg-background">
-                    <Suspense fallback={<div className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12 flex flex-col lg:flex-row gap-8 items-start"><ReisFormSkeleton /><ReisInfoSkeleton /></div>}>
-                        <ReisMainContent />
-                    </Suspense>
-                </main>
-            </ReisSettingsGuard>
-        </Suspense>
+            <main className="relative overflow-hidden bg-background">
+                <ReisPageDataWrapper />
+            </main>
+        </>
     );
 }

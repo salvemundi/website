@@ -18,6 +18,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+      actions: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -42,6 +44,8 @@ jobs:
             ghcr.io/salvemundi/v7-app:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
 
   build-finance:
     name: Build Finance Service
@@ -49,6 +53,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+      actions: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -73,6 +79,8 @@ jobs:
             ghcr.io/salvemundi/v7-finance:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
 
   build-sync:
     name: Build Sync Service
@@ -80,6 +88,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+      actions: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -104,6 +114,7 @@ jobs:
             ghcr.io/salvemundi/v7-sync:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   build-mail:
     name: Build Mail Service
@@ -111,6 +122,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      actions: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -135,6 +147,7 @@ jobs:
             ghcr.io/salvemundi/v7-mail:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   deploy:
     name: Deploy to VPS
