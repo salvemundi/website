@@ -1,0 +1,14 @@
+node_modules
+.git
+.github
+*.log
+dist
+.next
+.turbo
+.vercel
+*.tsbuildinfo
+infrastructure
+Docs
+README.md
+LICENSE
+pnpm-lock.yaml

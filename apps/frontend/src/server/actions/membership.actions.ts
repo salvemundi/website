@@ -149,7 +149,7 @@ export async function getTransactionStatusAction(transactionId: string) {
         if (transaction?.payment_status === 'paid') {
             // Revalidate user data if payment was successful
             if (transaction.user_id) {
-                revalidateTag(`user-${transaction.user_id}`);
+                revalidateTag(`user-${transaction.user_id}`, 'default');
             }
             return { status: 'paid' };
         } else if (['failed', 'canceled', 'expired'].includes(transaction?.payment_status)) {
