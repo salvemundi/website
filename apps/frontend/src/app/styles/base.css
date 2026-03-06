@@ -1,0 +1,117 @@
+/* ==========================================================================
+   BASE.CSS — Fonts, HTML/Body Defaults, Base Layer
+   ========================================================================== */
+
+@font-face {
+    font-family: "Poppins";
+    src: url("/fonts/poppins/Poppins-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: fallback;
+}
+
+@font-face {
+    font-family: "Poppins";
+    src: url("/fonts/poppins/Poppins-SemiBold.ttf") format("truetype");
+    font-weight: 600;
+    font-style: normal;
+    font-display: fallback;
+}
+
+@font-face {
+    font-family: "Poppins";
+    src: url("/fonts/poppins/Poppins-Bold.ttf") format("truetype");
+    font-weight: 700;
+    font-style: normal;
+    font-display: fallback;
+}
+
+@font-face {
+    font-family: "Poppins";
+    src: url("/fonts/poppins/Poppins-Italic.ttf") format("truetype");
+    font-weight: 400;
+    font-style: italic;
+    font-display: fallback;
+}
+
+@font-face {
+    font-family: "Poppins";
+    src: url("/fonts/poppins/Poppins-BoldItalic.ttf") format("truetype");
+    font-weight: 700;
+    font-style: italic;
+    font-display: fallback;
+}
+
+@font-face {
+    font-family: "Material Symbols Outlined";
+    src: url("/fonts/material-symbols/MaterialSymbolsOutlined.ttf") format("truetype");
+    font-weight: 100 700;
+    font-style: normal;
+    font-display: block;
+}
+
+/* ── Base Layer ────────────────────────────────────────────────────────────── */
+@layer base {
+    :root {
+        font-family: "Poppins", Arial, Helvetica, sans-serif;
+        line-height: 1.5;
+        font-weight: 400;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+
+        /* Offset anchor links below the fixed header on notch devices */
+        scroll-padding-top: calc(env(safe-area-inset-top, 0px) + var(--header-height));
+        -webkit-scroll-padding-top: calc(constant(safe-area-inset-top, 0px) + var(--header-height));
+    }
+
+    html {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+        min-height: 100vh;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior-x: none;
+        overscroll-behavior-y: auto;
+        -webkit-overflow-scrolling: touch;
+        background-color: var(--bg-main);
+        color: var(--text-main);
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Push anchor targets below the sticky header */
+    :target {
+        scroll-margin-top: calc(env(safe-area-inset-top, 0px) + var(--header-height));
+    }
+
+    a {
+        color: var(--theme-purple);
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    a:hover {
+        color: var(--theme-purple-light);
+    }
+
+    /* Mobile home page gradient — applied by a Client Island on the home route */
+    @media (max-width: 768px) {
+        body.mobile-home-theme {
+            background:
+                radial-gradient(circle at 15% 20%, rgba(102, 50, 101, 0.25), transparent 45%),
+                var(--bg-main);
+        }
+    }
+}

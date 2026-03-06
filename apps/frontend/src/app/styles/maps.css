@@ -1,0 +1,224 @@
+/* ==========================================================================
+   MAPS.CSS — Mapbox / MapLibre GL Popup, Marker & Card Styles
+   !important is justified throughout: mapbox-gl inlines all popup styles.
+   ========================================================================== */
+
+/* ── Google Places Autocomplete ─────────────────────────────────────────────── */
+.pac-container {
+    z-index: 9999 !important;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-card);
+}
+
+/* ── Mapbox Controls ────────────────────────────────────────────────────────── */
+.mapboxgl-ctrl,
+.mapboxgl-ctrl-top-right {
+    background: transparent !important;
+}
+
+/* ── Close Button ───────────────────────────────────────────────────────────── */
+.mapboxgl-popup-close-button {
+    color: var(--color-purple-700) !important;
+    font-size: 24px;
+    padding: 0 8px;
+}
+
+html.dark .mapboxgl-popup-close-button {
+    color: var(--text-main) !important;
+}
+
+.mapboxgl-popup-close-button:hover {
+    background-color: rgba(128, 128, 128, 0.2);
+}
+
+/* ── Popup: Light Mode ──────────────────────────────────────────────────────── */
+html:not(.dark) .mapboxgl-popup-content,
+html:not(.dark) .mapboxgl-popup-content * {
+    background: var(--bg-card) !important;
+    color: var(--color-purple-700) !important;
+}
+
+html:not(.dark) .mapboxgl-popup-content {
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.mapboxgl-popup-tip {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* ── Popup: Dark Mode ───────────────────────────────────────────────────────── */
+/* Outer popup shell — must be transparent so only the inner card is visible  */
+html.dark .mapboxgl-popup {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+/* Hide the tip/arrow — white edges are visible in dark mode */
+html.dark .mapboxgl-popup-tip {
+    display: none !important;
+}
+
+/* Clear anchor wrappers */
+html.dark :is(.mapboxgl-popup-anchor-top,
+    .mapboxgl-popup-anchor-bottom,
+    .mapboxgl-popup-anchor-left,
+    .mapboxgl-popup-anchor-right) {
+    background: transparent !important;
+    padding: 0 !important;
+}
+
+/* Strip default content wrapper so the inner .map-popup card is the surface */
+html.dark .mapboxgl-popup-content {
+    background: transparent !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    outline: none !important;
+}
+
+/* SVG tip — remove any stroke/fill remnants */
+html.dark .mapboxgl-popup-tip svg,
+html.dark .mapboxgl-popup-tip path,
+html.dark .mapboxgl-popup-tip polygon {
+    stroke: none !important;
+    fill: var(--bg-card) !important;
+}
+
+/* Inner custom card in dark mode */
+html.dark .map-popup-theme .map-popup {
+    background: var(--bg-card) !important;
+    padding: 12px !important;
+    border-radius: 0.5rem !important;
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Avatar border in dark mode */
+html.dark .map-popup__avatar {
+    border: 2px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+/* ── Custom Marker ──────────────────────────────────────────────────────────── */
+.samu-marker {
+    width: 48px;
+    height: 48px;
+    position: relative;
+    border-radius: 9999px;
+    overflow: visible;
+    display: inline-block;
+    transform-origin: center;
+}
+
+.samu-marker__img {
+    width: 48px;
+    height: 48px;
+    border-radius: 9999px;
+    object-fit: cover;
+    border: 3px solid var(--theme-white);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.samu-marker:hover .samu-marker__img {
+    transform: scale(1.12);
+}
+
+.samu-marker__dot {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 14px;
+    height: 14px;
+    border-radius: 9999px;
+    border: 2px solid var(--theme-white);
+    background: var(--color-primary-200);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.samu-marker__dot--mine {
+    background: var(--sticker-mine);
+}
+
+.samu-marker--mine .samu-marker__img {
+    box-shadow: 0 10px 22px rgba(37, 99, 235, 0.22);
+}
+
+.samu-marker--selected {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: var(--color-primary-500);
+    color: var(--color-white);
+    border: 3px solid var(--theme-white);
+}
+
+/* ── Popup Card Internals (.map-popup) ─────────────────────────────────────── */
+.map-popup {
+    display: block;
+    max-width: 320px;
+}
+
+.map-popup__head {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.map-popup__avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 9999px;
+    object-fit: cover;
+    border: 2px solid var(--theme-white);
+}
+
+.map-popup__title {
+    font-weight: 700;
+    color: var(--color-purple-700);
+}
+
+.map-popup__meta {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.map-popup__desc {
+    margin-top: 0.5rem;
+    color: var(--color-purple-700);
+}
+
+.map-popup__footer {
+    margin-top: 0.5rem;
+    display: flex;
+    gap: 0.75rem;
+    flex-direction: column;
+}
+
+.map-popup__footer>div {
+    color: var(--text-muted);
+}
+
+/* Dark mode popup text overrides */
+html.dark .map-popup__title {
+    color: var(--text-main) !important;
+}
+
+html.dark .map-popup__meta {
+    color: var(--text-muted) !important;
+}
+
+html.dark .map-popup__desc {
+    color: var(--text-main) !important;
+}
+
+html.dark .map-popup__footer>div {
+    color: var(--text-muted) !important;
+}

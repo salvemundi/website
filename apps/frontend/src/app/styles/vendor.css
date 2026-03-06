@@ -1,0 +1,119 @@
+/* ==========================================================================
+   VENDOR.CSS — Third-Party Library Overrides
+   Chrono timeline, signup form visibility fix, and other vendor patches.
+
+   Rule: Use @layer components for specificity control.
+   !important is permitted only where the library inlines styles.
+   ========================================================================== */
+
+@layer components {
+
+    /* ── Signup Form Visibility Fix ────────────────────────────────────────── */
+    /* Ensures inputs are always visible when a conflicting global rule hides them.
+     TODO: Remove once the root cause (the conflicting global) is resolved.    */
+    .signup-form-container :is(input, textarea, select, .PhoneInputInput) {
+        display: block;
+        visibility: visible;
+        width: 100%;
+        height: auto;
+        opacity: 1;
+    }
+
+    /* ── react-chrono Timeline Overrides ───────────────────────────────────── */
+    /* react-chrono inlines overflow:hidden and fixed heights on card containers.
+     These restore natural content flow. Scoped to avoid leaking to other cards. */
+
+    /* Remove height clip from card content wrappers */
+    .timeline-card-content,
+    .card-content-wrapper,
+    [class*="timeline"] [class*="card-content"] {
+        max-height: none;
+        overflow: visible;
+    }
+
+    /* Vertical flow containers */
+    .timeline-vertical-wrapper,
+    [class*="timeline-vertical"],
+    .timeline-main-wrapper,
+    [class*="timeline-main"],
+    [class*="chrono-wrapper"],
+    .timeline-items-container,
+    [class*="timeline-items"],
+    [class*="card-content-wrapper"] {
+        position: static;
+        overflow: visible;
+        height: auto;
+        max-height: none;
+    }
+
+    /* Card surface resets */
+    [class*="chrono"] :is(.card, .chrono-card),
+    .chrono-card,
+    .timeline-card,
+    .timeline-card-content,
+    .card-content-wrapper,
+    .card-description,
+    .chrono-card-content,
+    .card-contents,
+    [class*="card-content"] {
+        position: static;
+        display: block;
+        overflow: visible;
+        height: auto;
+        max-height: none;
+    }
+
+    [class*="scroll-container"] {
+        overflow: visible;
+    }
+
+    /* Custom width for the sm-timeline-wrapper card variant */
+    .sm-timeline-wrapper .timeline-vertical-circle>div {
+        width: 50vw;
+        min-width: 500px;
+        max-width: 650px;
+    }
+
+    @media (max-width: 768px) {
+        .sm-timeline-wrapper .timeline-vertical-circle>div {
+            width: 100%;
+            min-width: auto;
+            max-width: none;
+        }
+    }
+}
+
+/*
+  Hide Chrono toolbar controls.
+  !important is required here: react-chrono sets display:flex inline on these elements.
+  Scoped strictly to .chrono parent to avoid collateral matches.
+*/
+.chrono [class*="timeline-controls"],
+.chrono .timeline-controls,
+.chrono [class*="chrono-controls"],
+.chrono .chrono-timeline-toolbar,
+.chrono [class*="toolbar"][class*="timeline"],
+.chrono [class*="toolbar-wrapper"],
+.chrono .toolbar-wrapper,
+.chrono .toolbar,
+.chrono [class*="SelecterLabel"],
+.chrono [class*="label"],
+.chrono [class*="outline-"],
+.chrono [class*="timeline-outline"],
+.chrono .timeline-outline-wrapper,
+.chrono [class*="jump"],
+.chrono [class*="layout-switch"],
+.chrono [class*="mode-switch"],
+.chrono button[class*="outline"],
+.chrono button[class*="jump"],
+.chrono button[class*="mode"],
+.chrono button[class*="layout"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    pointer-events: none !important;
+}

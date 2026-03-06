@@ -1,0 +1,74 @@
+/* ==========================================================================
+   THEME.CSS — Dark Mode Overrides & Semantic Token Aliases
+   Only values that differ from the @theme light-mode defaults appear here.
+   ========================================================================== */
+
+/* ── Dark Mode ─────────────────────────────────────────────────────────────── */
+.dark {
+    --bg-main: #1a141b;
+    --bg-soft: #161116;
+    --bg-card: #241824;
+
+    --text-main: #ffffff;
+    --text-subtle: rgba(255, 255, 255, 0.96);
+    --text-muted: rgba(255, 255, 255, 0.88);
+    --text-light: rgba(255, 255, 255, 0.80);
+
+    --border-color: #4b3a4d;
+
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+    --shadow-card-elevated: 0 8px 20px rgba(6, 4, 10, 0.45);
+
+    --gradient-start: #805480;
+    --gradient-end: #905e8e;
+
+    --theme-success: #4ade80;
+    --theme-warning: #fbbf24;
+    --theme-error: #f87171;
+    --theme-info: #60a5fa;
+}
+
+/* ── Semantic Aliases ──────────────────────────────────────────────────────── */
+/* Maps atomic palette tokens onto role-named vars used throughout the app.
+   New code should use the --color-* and semantic vars directly.
+   Aliases here exist purely for backwards-compat with old components.        */
+:root {
+    --theme-purple: var(--color-purple-300);
+    --theme-purple-light: var(--color-purple-500);
+    --theme-purple-dark: var(--color-purple-800);
+    --theme-purple-darker: var(--color-purple-900);
+    --theme-purple-lighter: var(--color-purple-100);
+    --theme-white: var(--color-white);
+
+    /* Admin UI token layer */
+    --theme-admin-card: var(--bg-card);
+    --theme-admin-card-soft: var(--bg-soft);
+    --theme-admin-text: var(--text-main);
+    --theme-admin-text-muted: var(--text-muted);
+    --theme-admin-border: var(--border-color);
+    --theme-admin-hover: rgba(0, 0, 0, 0.02);
+
+    /* Marker / sticker tokens */
+    --color-primary-200: var(--color-purple-200);
+    --color-primary-500: var(--color-purple-500);
+    --sticker-mine: var(--color-purple-500);
+
+    /* Legacy aliases — kept for old components, do not use in new code */
+    --color-primary: var(--theme-purple);
+    --color-background: var(--bg-main);
+    --color-surface: var(--bg-card);
+    --color-ink: var(--text-main);
+    --color-ink-muted: var(--text-muted);
+    /* NOTE: --color-oranje intentionally omitted here.
+       The real value (#ff6542) is defined in @theme in globals.css.
+       Do not re-alias it to purple — that was a V6 mapping error.           */
+}
+
+.dark {
+    --theme-admin-card: var(--bg-card);
+    --theme-admin-card-soft: rgba(255, 255, 255, 0.02);
+    --theme-admin-text: var(--text-main);
+    --theme-admin-text-muted: var(--text-muted);
+    --theme-admin-border: rgba(255, 255, 255, 0.06);
+    --theme-admin-hover: rgba(255, 255, 255, 0.03);
+}

@@ -2,9 +2,8 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
     output: 'standalone',
-    // experimental: {
-    //     cacheComponents: true,
-    // },
+    // Vereist voor de 'use cache' directive conform V7 PPR-strategie
+    cacheComponents: true,
 };
 
 export default nextConfig;

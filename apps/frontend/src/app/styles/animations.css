@@ -1,0 +1,101 @@
+/* ==========================================================================
+   ANIMATIONS.CSS — Keyframes & Animation Utilities
+   ========================================================================== */
+
+/* ── Keyframes ─────────────────────────────────────────────────────────────── */
+@keyframes slide-up {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* ── Utilities ─────────────────────────────────────────────────────────────── */
+@layer utilities {
+    .animate-slide-up {
+        animation: slide-up 0.2s ease-out;
+    }
+
+    .fade-in {
+        animation: fadeIn 0.4s ease-out forwards;
+    }
+
+    /* Stagger animation helpers — apply to grid/list items */
+    .stagger-item {
+        opacity: 0;
+        animation: fadeIn 0.4s ease-out forwards;
+    }
+
+    .stagger-item:nth-child(1) {
+        animation-delay: 0.05s;
+    }
+
+    .stagger-item:nth-child(2) {
+        animation-delay: 0.1s;
+    }
+
+    .stagger-item:nth-child(3) {
+        animation-delay: 0.15s;
+    }
+
+    .stagger-item:nth-child(4) {
+        animation-delay: 0.2s;
+    }
+
+    /* Text gradient (static) — purple in light mode, animated gradient in dark */
+    .text-gradient {
+        color: var(--theme-purple);
+    }
+
+    .dark .text-gradient {
+        background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Animated gradient text — dark mode only */
+    .text-gradient-animated {
+        color: var(--theme-purple);
+    }
+
+    .dark .text-gradient-animated {
+        background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end), var(--gradient-start));
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: gradientShift 3s ease infinite;
+    }
+}
