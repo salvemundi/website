@@ -1,13 +1,144 @@
+/* ==========================================================================
+   GLOBAL STYLES ENTRY POINT (globals.css)
+   V7.9 Standard · Tailwind 4 CSS-First · No tailwind.config.js
+
+   This file is intentionally minimal: it owns @theme and orchestrates imports.
+   Add CSS to the appropriate domain file in ./styles/, not here.
+   ========================================================================== */
+
+/* 1. Tailwind 4 Core */
 @import "tailwindcss";
+
+/* Scan all frontend source files for utility usage */
 @source "../../src";
 
-@theme {
-  --color-brand-primary: #003056;
-  --color-brand-secondary: #00A3E0;
-}
+/* Class-based dark mode — dark: utilities activeren alleen via .dark op <html>.
+   Zonder dit gebruikt Tailwind 4 standaard @media (prefers-color-scheme: dark),
+   waardoor dark:text-white lekt naar light mode op systemen met OS-dark voorkeur. */
+@custom-variant dark (&:where(.dark, .dark *));
 
-body {
-  font-family: system-ui, sans-serif;
-  margin: 0;
-  padding: 0;
+/* 2. Domain stylesheets — order matters for cascade */
+@import "./styles/theme.css";
+/* Dark mode overrides & semantic aliases  */
+@import "./styles/base.css";
+/* Fonts, html/body, :root, links          */
+@import "./styles/animations.css";
+/* Keyframes & animation utilities         */
+@import "./styles/components.css";
+/* Forms, buttons, gradients, admin, cards */
+@import "./styles/vendor.css";
+/* Timeline / Chrono third-party overrides */
+@import "./styles/maps.css";
+/* Mapbox / MapLibre popup & marker styles */
+@import "./styles/sponsors.css";
+/* Infinite-scroll sponsor banner            */
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   3. @theme  — Static Design Tokens (Tailwind 4 CSS-First)
+   These tokens compile into Tailwind utilities AND CSS custom properties.
+   Components reference them via var(--token) or bg-[var(--bg-main)], etc.
+   ─────────────────────────────────────────────────────────────────────────── */
+@theme {
+   /* Brand colors for legacy components */
+   --color-purple-theme: #a4539b;
+   --color-purple-dark: #5e2b52;
+   --color-text-main: var(--text-main);
+
+   /* Semantic Aliases */
+   --theme-purple: var(--color-purple-theme);
+   --theme-text: var(--text-main);
+   --theme-bg: var(--bg-main);
+
+   /* Layout & Containers */
+   --max-w-app: 100%;
+   --header-padding: clamp(1rem, 4vw, 3rem);
+
+   /* Purple Palette */
+   --color-purple-50: #f4e9f3;
+   --color-purple-100: #e4cbe2;
+   --color-purple-200: #d4add0;
+   --color-purple-300: #c48fbe;
+   --color-purple-400: #b471ad;
+   --color-purple-500: #a4539b;
+   /* Base Brand Purple */
+   --color-purple-600: #8c4682;
+   --color-purple-700: #75386a;
+   --color-purple-800: #5e2b52;
+   --color-purple-900: #471e3b;
+
+   /* RGB companions for rgba() usage */
+   --color-purple-500-rgb: 164,
+      83,
+      155;
+   --color-purple-400-rgb: 180,
+      113,
+      173;
+
+   /* Whites */
+   --color-white: #ffffff;
+   --color-white-soft: #faf7fb;
+   --color-white-mute: #f0ebf0;
+
+   /* Brand */
+   --color-brand-primary: #003056;
+   --color-brand-secondary: #00a3e0;
+
+   /* Legacy V6 palette — kept for backwards-compat with old components */
+   --color-samu: #132a40;
+   --color-paars: #5a3761;
+   --color-oranje: #ff6542;
+   --color-geel: #ffce1b;
+   --color-beige: #f0ebd8;
+
+   /* Semantic Background — Light Mode defaults
+     Reference the palette tokens above; no duplicate hex values.             */
+   --bg-main: #f8f9fa;
+   --bg-soft: var(--color-white-soft);
+   /* #faf7fb */
+   --bg-card: var(--color-white);
+   /* #ffffff */
+
+   /* Semantic Text — Light Mode defaults */
+   --text-main: #5e2b52;
+   --text-subtle: #6a5068;
+   --text-muted: #6f5772;
+   --text-light: #8a7a8c;
+
+   /* Border */
+   --border-color: #d9c7db;
+
+   /* Shadows */
+   --shadow-card: 0 1px 3px rgba(16, 24, 40, 0.1),
+      0 1px 2px rgba(16, 24, 40, 0.06);
+   --shadow-card-elevated: 0 8px 20px rgba(6, 4, 10, 0.45);
+   --shadow-glow: 0 0 15px rgba(102, 50, 101, 0.3);
+
+   /* Gradients */
+   --gradient-start: #fdfbff;
+   --gradient-end: #f4eef5;
+
+   /* Status */
+   --theme-success: #16a34a;
+   --theme-warning: #d97706;
+   --theme-error: #dc2626;
+   --theme-info: #0284c7;
+
+   /* Radii */
+   --radius-xl: 0.75rem;
+   --radius-2xl: 1rem;
+
+   /* Layout */
+   --header-height: 72px;
+
+   /* Typography Scale & Family */
+   --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+   --font-size-xs: 0.75rem;
+   --font-size-sm: 0.875rem;
+   --font-size-base: 1rem;
+   --font-size-lg: 1.125rem;
+   --font-size-xl: 1.25rem;
+   --font-size-2xl: 1.5rem;
+   --font-size-3xl: 1.875rem;
+   --font-size-4xl: 2.25rem;
+   --font-size-5xl: 3rem;
 }

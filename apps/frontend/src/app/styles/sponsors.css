@@ -1,0 +1,125 @@
+/* ==========================================================================
+   SPONSORS.CSS — Infinite Scroll Sponsor Banner
+   Used on the homepage / sponsor section.
+   ========================================================================== */
+
+@keyframes scroll-sponsors {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-25%);
+    }
+}
+
+/* ── Scroll Container ────────────────────────────────────────────────────────
+   Fade edges via mask so the track scrolls "into nothing" on both sides.    */
+.sponsors-scroll-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    padding: 2rem 0;
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+.sponsors-scroll-track {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 4rem;
+    animation: scroll-sponsors 30s linear infinite;
+    will-change: transform;
+}
+
+.sponsors-scroll-track:hover {
+    animation-play-state: paused;
+}
+
+/* ── Sponsor Card ─────────────────────────────────────────────────────────── */
+.sponsor-item {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem 0.9rem;
+    background: var(--bg-card);
+    border-radius: 0.75rem;
+    box-shadow: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.sponsor-item:hover {
+    transform: translateY(-4px);
+}
+
+/* ── Logo ─────────────────────────────────────────────────────────────────── */
+.sponsor-logo {
+    max-height: 64px;
+    height: auto;
+    width: auto;
+    max-width: 220px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+    opacity: 1;
+    display: block;
+}
+
+.sponsor-item:hover .sponsor-logo {
+    transform: scale(1.02);
+}
+
+/* Dark mode: white halo so dark logos remain visible */
+.dark .sponsor-logo,
+html.dark .sponsor-logo {
+    filter: drop-shadow(0 2px 6px rgba(255, 255, 255, 0.65));
+}
+
+.dark .sponsor-item,
+html.dark .sponsor-item {
+    background: var(--bg-card-dark, rgba(255, 255, 255, 0.04));
+    box-shadow: none;
+}
+
+/* ── Per-sponsor Background Overrides ────────────────────────────────────── */
+/* Allow individual sponsors to force a light or dark card surface
+   regardless of the current site theme.                                      */
+.sponsor-dark-bg {
+    background: var(--bg-card-dark, #0f172a) !important;
+    box-shadow: none !important;
+}
+
+.sponsor-light-bg {
+    background: var(--color-white) !important;
+    box-shadow: none !important;
+}
+
+.sponsor-dark-bg .sponsor-logo {
+    filter: drop-shadow(0 2px 6px rgba(255, 255, 255, 0.8));
+}
+
+.sponsor-light-bg .sponsor-logo {
+    filter: none;
+}
+
+.sponsor-light-bg:hover {
+    box-shadow: none !important;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .sponsors-scroll-track {
+        gap: 2rem;
+        animation-duration: 20s;
+    }
+
+    .sponsor-item {
+        padding: 0.75rem 1.5rem;
+    }
+
+    .sponsor-logo {
+        height: 40px;
+        max-width: 120px;
+    }
+}

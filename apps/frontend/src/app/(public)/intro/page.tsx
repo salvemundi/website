@@ -1,28 +1,142 @@
+import React, { Suspense } from 'react';
 import Link from 'next/link';
+import PageHeader from '@/components/ui/PageHeader';
+import { hasParentSignup } from '@/server/actions/intro.actions';
+import { auth } from '@/server/auth/auth';
+import { headers } from 'next/headers';
 
-export default function Page() {
+import { IntroContentSkeleton } from '@/components/ui/IntroContentSkeleton';
+import { IntroStudentIsland } from '@/components/islands/IntroStudentIsland';
+import { IntroParentIsland } from '@/components/islands/IntroParentIsland';
+import { IntroLightboxIsland } from '@/components/islands/IntroLightboxIsland';
+
+export const metadata = {
+    title: 'Introductie | Salve Mundi',
+    description: 'Schrijf je in voor de gezelligste introductieweek bij Salve Mundi.',
+};
+
+const IntroInfoStudent = () => (
+    <>
+        <h2 className="text-2xl lg:text-3xl font-bold mb-4 text-theme dark:text-white">
+            Klaar om je studententijd met een knal te beginnen?
+        </h2>
+        <p className="text-base lg:text-lg leading-relaxed mb-4 text-theme dark:text-white">
+            Voordat de boeken opengaan en de eerste regels code geschreven worden, is er maar één plek waar je moet zijn: de Salve Mundi Introductie!
+        </p>
+
+        <h3 className="font-semibold mb-2 text-theme dark:text-white">Waarom je dit niet wilt missen</h3>
+        <ul className="list-disc list-inside mb-4 text-base lg:text-lg text-theme dark:text-white">
+            <li className="mb-1"><strong>Legendarische Feesten:</strong> Ontdek het Eindhovense nachtleven met mensen die dezelfde passie delen.</li>
+            <li className="mb-1"><strong>Connecties:</strong> Leer de ouderejaars kennen; zij weten precies hoe je die lastige vakken straks haalt.</li>
+            <li className="mb-1"><strong>Gezelligheid boven alles:</strong> Geen ontgroening, maar een warm welkom bij dè studievereniging van Fontys ICT.</li>
+        </ul>
+
+        <h3 className="font-semibold text-theme dark:text-white">Schrijf je nu in!</h3>
+        <p className="text-base lg:text-lg leading-relaxed mb-2 text-theme dark:text-white">
+            Ben jij erbij? Vul het onderstaande formulier in om je plek te reserveren voor de gezelligste week van het jaar.
+            Of je nu een hardcore gamer bent, een toekomstige developer of gewoon houdt van een goed feestje: bij Salve Mundi hoor je erbij.
+        </p>
+        <p className="text-sm text-theme-muted">Let op: De plaatsen zijn beperkt, dus wacht niet te lang met aanmelden!</p>
+    </>
+);
+
+const IntroInfoParent = () => (
+    <>
+        <h2 className="text-2xl lg:text-3xl font-bold mb-4 text-theme dark:text-white">
+            Word Intro Ouder — begeleid de nieuwe lichting
+        </h2>
+        <p className="text-base lg:text-lg leading-relaxed mb-4 text-theme dark:text-white">
+            Als ervaren Salve Mundi-lid kun je tijdens de Introweek het verschil maken. Als Intro Ouder begeleid je eerstejaars,
+            help je ze wegwijs te worden in studie en stad, en zorg je dat ze zich welkom voelen. Het is gezellig, laagdrempelig en
+            een mooie kans om jouw ervaring door te geven.
+        </p>
+
+        <h3 className="font-semibold mb-2 text-theme dark:text-white">Wat doet een Intro Ouder?</h3>
+        <ul className="list-disc list-inside mb-4 text-base lg:text-lg text-theme dark:text-white">
+            <li className="mb-1"><strong>Begeleiden:</strong> Help kleine groepjes nieuwe leden tijdens activiteiten en zorg voor een veilige sfeer.</li>
+            <li className="mb-1"><strong>Mentorschap:</strong> Geef tips over studie, rooster en het vinden van de weg in Eindhoven.</li>
+            <li className="mb-1"><strong>Gezelligheid:</strong> Organiseer leuke momenten binnen je groep — simpele spellen, gesprekken en samen eten doen wonderen.</li>
+        </ul>
+
+        <h3 className="font-semibold text-theme dark:text-white">Waarom meedoen?</h3>
+        <ul className="list-disc list-inside mb-4 text-base lg:text-lg text-theme dark:text-white">
+            <li className="mb-1"><strong>Impact:</strong> Je helpt nieuwe leden zich echt thuis te voelen.</li>
+            <li className="mb-1"><strong>Netwerk:</strong> Leer commissieleden en andere actieve leden kennen.</li>
+            <li className="mb-1"><strong>Fun:</strong> Gratis pizza, goede verhalen en herinneringen die je niet snel vergeet.</li>
+        </ul>
+
+        <p className="text-base lg:text-lg leading-relaxed mb-2 text-theme dark:text-white">
+            Wil je meedoen? Vul dan het formulier aan de rechterkant in en vertel kort waarom jij de perfecte Intro Ouder bent.
+        </p>
+        <p className="text-sm text-theme-muted">Heb je vragen? Neem contact op met de introcommissie.</p>
+    </>
+);
+
+/**
+ * Server component that retrieves dynamic auth data asynchronously,
+ * reducing Promise.all blocking per V7 standard.
+ */
+async function DynamicIntroContent() {
+    const sessionProm = auth.api.getSession({ headers: await headers() });
+    const parentCheckProm = hasParentSignup();
+
+    const session = await sessionProm;
+    const isAuthenticated = !!session;
+
+    // Conditionally await the check if authenticated
+    const isAlreadyParent = isAuthenticated ? await parentCheckProm : false;
+
     return (
-        <div className="flex min-h-[70vh] flex-col items-center justify-center p-8 text-center">
-            <h1 className="text-4xl font-bold mb-4 text-blue-900">Hello World</h1>
-            <p className="text-xl text-gray-600 mb-8">Route: /(public)/intro</p>
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 max-w-7xl mx-auto w-full">
+            <div className="flex-1">
+                {isAuthenticated ? <IntroInfoParent /> : <IntroInfoStudent />}
+                <IntroLightboxIsland />
+            </div>
 
-            <div className="mt-8 w-full max-w-2xl text-left">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4 border-b pb-2">Sub-Routes</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Link href="/intro/blogs" className="p-4 bg-white border rounded shadow-sm hover:shadow-md transition">
-                        <h3 className="font-semibold text-blue-800">/intro/blogs</h3>
-                        <p className="text-sm text-gray-500 mt-1">Intro Sfeerverslagen</p>
-                    </Link>
-                    <Link href="/intro/inschrijven" className="p-4 bg-white border rounded shadow-sm hover:shadow-md transition">
-                        <h3 className="font-semibold text-blue-800">/intro/inschrijven</h3>
-                        <p className="text-sm text-gray-500 mt-1">Intro Inschrijven</p>
-                    </Link>
-                    <Link href="/intro/ouders/inschrijven" className="p-4 bg-white border rounded shadow-sm hover:shadow-md transition">
-                        <h3 className="font-semibold text-blue-800">/intro/ouders/inschrijven</h3>
-                        <p className="text-sm text-gray-500 mt-1">Intro Ouderregistratie</p>
-                    </Link>
-                </div>
+            <div className="flex-1 w-full flex flex-col justify-start">
+                {isAuthenticated ? (
+                    isAlreadyParent ? (
+                        <div className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg text-center">
+                            <h3 className="text-xl lg:text-2xl font-bold text-white mb-4">Je hebt je al aangemeld als Intro Ouder</h3>
+                            <p className="text-theme-text-muted dark:text-theme-text-muted">
+                                Bedankt! Je inschrijving is ontvangen. Als je iets wilt aanpassen, neem contact op met de intro commissie.
+                            </p>
+                        </div>
+                    ) : (
+                        <IntroParentIsland
+                            userName={session.user.name}
+                            userEmail={session.user.email}
+                            initialPhone={''}
+                        />
+                    )
+                ) : (
+                    <IntroStudentIsland />
+                )}
             </div>
         </div>
+    );
+}
+
+export default async function IntroPage() {
+
+    return (
+        <>
+            <div className="flex flex-col w-full">
+                <PageHeader
+                    title="INTRO - AANMELDEN"
+                    backgroundImage="/img/backgrounds/intro-banner.jpg"
+                    contentPadding="py-20"
+                    imageFilter="brightness(0.65)"
+                />
+            </div>
+
+            <main>
+                <section className="px-4 sm:px-6 lg:px-10 py-8 lg:py-10">
+                    <Suspense fallback={<IntroContentSkeleton />}>
+                        <DynamicIntroContent />
+                    </Suspense>
+                </section>
+            </main>
+        </>
     );
 }

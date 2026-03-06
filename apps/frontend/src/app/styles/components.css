@@ -1,0 +1,219 @@
+/* ==========================================================================
+   COMPONENTS.CSS — Forms, Buttons, Gradients, Admin, Dark-Mode Card Fixes
+   ========================================================================== */
+
+@layer components {
+
+    /* ── Scrollbar Utilities ─────────────────────────────────────────────── */
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        background-color: var(--color-purple-300);
+        border-radius: 4px;
+    }
+
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* ── Gradient Backgrounds ──────────────────────────────────────────────── */
+    .bg-gradient-theme {
+        background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    }
+
+    .bg-gradient-theme :is(h1, h2, h3, h4, p, span, a, li, label, strong) {
+        color: var(--text-main);
+    }
+
+    .dark .bg-gradient-theme :is(h1, h2, h3, h4, p, span, a, li, label, strong) {
+        color: rgba(255, 255, 255, 0.95);
+    }
+
+    .bg-gradient-theme :is(.muted, .subtle, small) {
+        color: rgba(255, 255, 255, 0.82);
+    }
+
+    /* Page-header variant (no hero image) */
+    .bg-gradient-theme-page-alt {
+        background: linear-gradient(135deg, #f4e9f3, #e4cbe2);
+    }
+
+    .dark .bg-gradient-theme-page-alt {
+        background: linear-gradient(135deg, #a16ca1, #c47bbb);
+    }
+
+    /* ── Form Label ─────────────────────────────────────────────────────────── */
+    .form-label {
+        display: block;
+        font-size: var(--font-size-sm);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--theme-purple);
+    }
+
+    /* ── Form Input ─────────────────────────────────────────────────────────── */
+    .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius-xl);
+        background-color: var(--bg-soft);
+        border: 1.5px solid var(--border-color);
+        color: var(--text-main);
+        font-weight: 500;
+        font-size: var(--font-size-base);
+        transition: all 0.2s ease;
+        appearance: none;
+    }
+
+    .form-input::placeholder {
+        color: var(--text-light);
+    }
+
+    .form-input:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px var(--theme-purple);
+    }
+
+    .dark .form-input {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: var(--text-main);
+    }
+
+    /* ── Autofill Fix ──────────────────────────────────────────────────────── */
+    /* Prevents browsers from forcing a white/yellow background in dark mode */
+    .dark .form-input:-webkit-autofill,
+    .dark .form-input:-webkit-autofill:hover,
+    .dark .form-input:-webkit-autofill:focus {
+        -webkit-text-fill-color: var(--text-main);
+        -webkit-box-shadow: 0 0 0px 1000px #1a141b inset !important;
+        transition: background-color 5000s ease-in-out 0s;
+    }
+
+    textarea.form-input {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    /* Select — custom arrow via inline SVG (avoids OS-default arrow) */
+    select.form-input {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a4539b' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        background-position: right 1rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em;
+        padding-right: 2.5rem;
+    }
+
+    .dark select.form-input {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    }
+
+    .dark select.form-input option {
+        background-color: var(--bg-card);
+        color: var(--text-main);
+    }
+
+    /* ── Form Button ─────────────────────────────────────────────────────────── */
+    .form-button {
+        width: 100%;
+        padding: 1rem 1.5rem;
+        border-radius: var(--radius-xl);
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: none;
+        font-size: var(--font-size-base);
+        background-color: var(--theme-purple);
+        color: var(--color-white);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-button:hover:not(:disabled) {
+        transform: scale(1.02);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .form-button:active:not(:disabled) {
+        transform: scale(0.98);
+    }
+
+    .form-button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    /* Inverted variant for gradient-themed sections */
+    .bg-gradient-theme .form-button {
+        background-color: var(--color-white);
+        color: var(--color-purple-800);
+    }
+
+    .bg-gradient-theme .form-button:hover:not(:disabled) {
+        background-color: var(--color-white-soft);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    /* ── Admin Utilities ────────────────────────────────────────────────────── */
+    .bg-admin-card {
+        background-color: var(--theme-admin-card);
+    }
+
+    .bg-admin-card-soft {
+        background-color: var(--theme-admin-card-soft);
+    }
+
+    .text-admin {
+        color: var(--theme-admin-text);
+    }
+
+    .text-admin-muted {
+        color: var(--theme-admin-text-muted);
+    }
+
+    .border-admin {
+        border-color: var(--theme-admin-border);
+    }
+
+    .ring-admin-border {
+        box-shadow: 0 0 0 1px var(--theme-admin-border) inset;
+    }
+
+    .hover\:bg-admin-hover:hover {
+        background-color: var(--theme-admin-hover);
+    }
+
+    /* ── Dark Mode — Card Contrast Fix ─────────────────────────────────────── */
+    /* Cards need visual lift from the page background in dark mode.
+     Targeting both system preference and Tailwind's .dark class strategy.   */
+    @media (prefers-color-scheme: dark) {
+        :is(.activity-card, .card, .card-activity, .activity, .beheer-activiteit, .directus-card) {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            box-shadow: var(--shadow-card-elevated);
+            border-radius: 0.5rem;
+            backdrop-filter: blur(4px);
+        }
+    }
+
+    .dark :is(.activity-card, .card, .card-activity, .activity, .beheer-activiteit, .directus-card) {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+        box-shadow: var(--shadow-card-elevated);
+        border-radius: 0.5rem;
+        backdrop-filter: blur(4px);
+    }
+}
