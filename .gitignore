@@ -24,6 +24,7 @@ jspm_packages/
 .next/
 out/
 build/
+dist/
 
 # IDE / OS
 .DS_Store
@@ -58,8 +59,6 @@ docs_content.txt
 read_docs.py
 convert_docs.py
 test-pipeline.ps1
-Docs
-Docs
 
 # Optional: if you don't want the original docx binaries in git, uncomment below
 # Docs/*.docx
