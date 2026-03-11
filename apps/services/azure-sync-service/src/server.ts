@@ -1,13 +1,15 @@
 import Fastify from 'fastify';
+import dotenv from 'dotenv';
+import syncRoutes from './routes/sync.js';
 
-/**
- * Azure Sync Service - Salve Mundi V7
- * Manages Microsoft Graph API tokens and Entra ID synchronization.
- */
+dotenv.config();
 
 const fastify = Fastify({
     logger: true
 });
+
+// Register Routes
+fastify.register(syncRoutes, { prefix: '/api/sync' });
 
 fastify.get('/health', async () => {
     return { status: 'ok', service: 'azure-sync-service' };
@@ -15,8 +17,9 @@ fastify.get('/health', async () => {
 
 const start = async () => {
     try {
-        await fastify.listen({ port: 3002, host: '0.0.0.0' });
-        console.log('Azure Sync Service listening on port 3002');
+        const port = Number(process.env.PORT) || 3002;
+        await fastify.listen({ port, host: '0.0.0.0' });
+        console.log(`Azure Sync Service listening on port ${port}`);
     } catch (err) {
         fastify.log.error(err);
         process.exit(1);

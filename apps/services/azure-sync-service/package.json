@@ -7,13 +7,18 @@
         "build": "tsc"
     },
     "dependencies": {
-        "fastify": "5.1.0",
+        "@azure/identity": "^4.13.0",
+        "@directus/sdk": "^21.1.0",
         "@microsoft/microsoft-graph-client": "^3.0.7",
-        "redis": "^4.6.13",
-        "@salvemundi/validations": "workspace:*"
+        "@salvemundi/validations": "workspace:*",
+        "axios": "^1.13.6",
+        "dotenv": "^17.3.1",
+        "fastify": "5.1.0",
+        "isomorphic-fetch": "^3.0.0",
+        "redis": "^4.6.13"
     },
     "devDependencies": {
-        "typescript": "5.7.3",
-        "@types/node": "^22.0.0"
+        "@types/node": "^22.0.0",
+        "typescript": "5.7.3"
     }
 }

@@ -6,6 +6,8 @@ export * from './schema/website.zod';
 export * from './schema/home.zod';
 export * from './schema/safe-havens.zod';
 export * from './schema/activity.zod';
+export * from './schema/azure-sync.zod';
+
 
 import { memberSchema } from './schema/members.zod';
 import { mollieWebhookSchema } from './schema/finance.zod';

@@ -1,0 +1,10 @@
+{
+  "name": "@salvemundi/azure-management-service",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Administrative gateway for Azure AD writes (Provisioning)",
+  "scripts": {
+    "dev": "fastify start -w -l info src/server.ts",
+    "build": "tsc"
+  }
+}
