@@ -200,6 +200,19 @@ jobs:
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DIRECTUS_KEY: ${{ secrets.DIRECTUS_KEY }}
+          DIRECTUS_SECRET: ${{ secrets.DIRECTUS_SECRET }}
+          INTERNAL_SERVICE_TOKEN: ${{ secrets.INTERNAL_SERVICE_TOKEN }}
+          AZURE_WEBSITEV7_TENANT_ID: ${{ secrets.AZURE_WEBSITEV7_TENANT_ID }}
+          AZURE_WEBSITEV7_SYNC_CLIENT_ID: ${{ secrets.AZURE_WEBSITEV7_SYNC_CLIENT_ID }}
+          AZURE_WEBSITEV7_SYNC_CLIENT_SECRET: ${{ secrets.AZURE_WEBSITEV7_SYNC_CLIENT_SECRET }}
+          AZURE_WEBSITEV7_MAIL_CLIENT_ID: ${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_ID }}
+          AZURE_WEBSITEV7_MAIL_CLIENT_SECRET: ${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_SECRET }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
@@ -208,6 +221,7 @@ jobs:
           debug: true
           timeout: 60s
           command_timeout: 10m
+          envs: MOLLIE_API_KEY,DB_USER,DB_PASSWORD,DB_NAME,DIRECTUS_KEY,DIRECTUS_SECRET,INTERNAL_SERVICE_TOKEN,AZURE_WEBSITEV7_TENANT_ID,AZURE_WEBSITEV7_SYNC_CLIENT_ID,AZURE_WEBSITEV7_SYNC_CLIENT_SECRET,AZURE_WEBSITEV7_MAIL_CLIENT_ID,AZURE_WEBSITEV7_MAIL_CLIENT_SECRET
           script_stop: true
           script: |
             echo "--- Starting V7 Deployment on VPS ---"
@@ -247,19 +261,19 @@ jobs:
             export IMAGE_TAG="latest"
             export PUBLIC_URL="${{ vars.PUBLIC_URL }}"
             
-            # Secrets (Wrapped in quotes to prevent injection/newline issues)
-            export MOLLIE_API_KEY="${{ secrets.MOLLIE_API_KEY }}"
-            export DB_USER="${{ secrets.DB_USER }}"
-            export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
-            export DB_NAME="${{ secrets.DB_NAME }}"
-            export DIRECTUS_KEY="${{ secrets.DIRECTUS_KEY }}"
-            export DIRECTUS_SECRET="${{ secrets.DIRECTUS_SECRET }}"
-            export INTERNAL_SERVICE_TOKEN="${{ secrets.INTERNAL_SERVICE_TOKEN }}"
-            export AZURE_WEBSITEV7_TENANT_ID="${{ secrets.AZURE_WEBSITEV7_TENANT_ID }}"
-            export AZURE_WEBSITEV7_SYNC_CLIENT_ID="${{ secrets.AZURE_WEBSITEV7_SYNC_CLIENT_ID }}"
-            export AZURE_WEBSITEV7_SYNC_CLIENT_SECRET="${{ secrets.AZURE_WEBSITEV7_SYNC_CLIENT_SECRET }}"
-            export AZURE_WEBSITEV7_MAIL_CLIENT_ID="${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_ID }}"
-            export AZURE_WEBSITEV7_MAIL_CLIENT_SECRET="${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_SECRET }}"
+            # Sanitized Secrets (Stripping newlines/carriage returns from GitHub Secrets)
+            export MOLLIE_API_KEY="$(echo "$MOLLIE_API_KEY" | tr -d '\n\r')"
+            export DB_USER="$(echo "$DB_USER" | tr -d '\n\r')"
+            export DB_PASSWORD="$(echo "$DB_PASSWORD" | tr -d '\n\r')"
+            export DB_NAME="$(echo "$DB_NAME" | tr -d '\n\r')"
+            export DIRECTUS_KEY="$(echo "$DIRECTUS_KEY" | tr -d '\n\r')"
+            export DIRECTUS_SECRET="$(echo "$DIRECTUS_SECRET" | tr -d '\n\r')"
+            export INTERNAL_SERVICE_TOKEN="$(echo "$INTERNAL_SERVICE_TOKEN" | tr -d '\n\r')"
+            export AZURE_WEBSITEV7_TENANT_ID="$(echo "$AZURE_WEBSITEV7_TENANT_ID" | tr -d '\n\r')"
+            export AZURE_WEBSITEV7_SYNC_CLIENT_ID="$(echo "$AZURE_WEBSITEV7_SYNC_CLIENT_ID" | tr -d '\n\r')"
+            export AZURE_WEBSITEV7_SYNC_CLIENT_SECRET="$(echo "$AZURE_WEBSITEV7_SYNC_CLIENT_SECRET" | tr -d '\n\r')"
+            export AZURE_WEBSITEV7_MAIL_CLIENT_ID="$(echo "$AZURE_WEBSITEV7_MAIL_CLIENT_ID" | tr -d '\n\r')"
+            export AZURE_WEBSITEV7_MAIL_CLIENT_SECRET="$(echo "$AZURE_WEBSITEV7_MAIL_CLIENT_SECRET" | tr -d '\n\r')"
             
             COMPOSE_CMD="docker compose -p $COMPOSE_PROJECT_NAME"
 
