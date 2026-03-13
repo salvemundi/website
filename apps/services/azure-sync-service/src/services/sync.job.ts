@@ -90,7 +90,7 @@ export class SyncJob {
 
         // Add missing memberships
         for (const desired of desiredCommittees) {
-            const existing = currentMemberships.find(m => m.committee_id === desired.id);
+            const existing = currentMemberships.find((m: any) => m.committee_id === desired.id);
             if (!existing) {
                 await DirectusService.addMemberToCommittee(dUser.id, desired.id, desired.isLeader);
                 console.log(`[SYNC] Added ${email} to committee ${desired.id} (Leader: ${desired.isLeader})`);
