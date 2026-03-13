@@ -62,7 +62,7 @@ test-pipeline.ps1
 legacy_membership.js
 legacy_sync.js
 main_repo.txt
-Docs
+Docs/
 
 # Optional: if you don't want the original docx binaries in git, uncomment below
 # Docs/*.docx
