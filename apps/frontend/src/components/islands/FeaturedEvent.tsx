@@ -12,9 +12,12 @@ interface FeaturedEventProps {
 export default function FeaturedEvent({ event, onEventClick }: FeaturedEventProps) {
     if (!event) return null;
 
-    const eventDate = event.event_time
-        ? new Date(`${event.event_date}T${event.event_time}`)
-        : new Date(event.event_date);
+    const eventDateStr = event.datum_start || event.event_date;
+    const eventTimeStr = event.event_time;
+
+    const eventDate = eventTimeStr
+        ? new Date(`${eventDateStr}T${eventTimeStr}`)
+        : new Date(eventDateStr);
 
     const formattedDate = eventDate.toLocaleDateString('nl-NL', {
         weekday: 'long',
@@ -23,9 +26,9 @@ export default function FeaturedEvent({ event, onEventClick }: FeaturedEventProp
     });
 
     const formattedTime = (() => {
-        if (event.event_time) {
+        if (eventTimeStr) {
             try {
-                const t = new Date(`${event.event_date}T${event.event_time}`);
+                const t = new Date(`${eventDateStr}T${eventTimeStr}`);
                 if (!Number.isNaN(t.getTime())) {
                     return t.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
                 }
@@ -34,8 +37,8 @@ export default function FeaturedEvent({ event, onEventClick }: FeaturedEventProp
             }
         }
         try {
-            if (String(event.event_date).includes('T') || /\d{2}:\d{2}/.test(String(event.event_date))) {
-                const t = new Date(event.event_date);
+            if (String(eventDateStr).includes('T') || /\d{2}:\d{2}/.test(String(eventDateStr))) {
+                const t = new Date(eventDateStr);
                 if (!Number.isNaN(t.getTime())) return t.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
             }
         } catch {
@@ -68,8 +71,8 @@ export default function FeaturedEvent({ event, onEventClick }: FeaturedEventProp
             >
                 <div className="overflow-hidden rounded-2xl relative h-48">
                     <Image
-                        src={getImageUrl(event.image)}
-                        alt={event.name}
+                        src={getImageUrl(event.afbeelding_id || event.image) || '/img/newlogo.png'}
+                        alt={event.titel || event.name || 'Featured Event'}
                         fill
                         sizes="(max-width: 768px) 100vw, 400px"
                         className="object-cover transition duration-500 group-hover:scale-105"
@@ -78,24 +81,24 @@ export default function FeaturedEvent({ event, onEventClick }: FeaturedEventProp
                         blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjE5MiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjE5MiIgZmlsbD0iI2VlZSIvPjwvc3ZnPg=="
                         onError={(e) => {
                             const target = e.target as HTMLImageElement;
-                            target.src = '/img/placeholder.svg';
+                            target.src = '/img/newlogo.png';
                         }}
                     />
                 </div>
 
                 <div>
                     <h2 className="text-2xl font-bold text-[var(--theme-purple)] transition group-hover:opacity-80">
-                        {event.name}
+                        {event.titel || event.name}
                     </h2>
                     <div className="mt-3 space-y-2 text-sm text-[var(--text-muted)]">
                         <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4 text-[var(--theme-purple)]" />
                             <span>{formattedDate} om {formattedTime}</span>
                         </div>
-                        {event.location && (
+                        {(event.locatie || event.location) && (
                             <div className="flex items-center gap-2">
                                 <MapPin className="h-4 w-4 text-[var(--theme-purple)]" />
-                                <span>{event.location}</span>
+                                <span>{event.locatie || event.location}</span>
                             </div>
                         )}
                     </div>

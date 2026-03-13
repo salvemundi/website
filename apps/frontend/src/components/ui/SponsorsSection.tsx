@@ -44,7 +44,7 @@ export function SponsorsSection({ sponsors }: SponsorsSectionProps) {
                             // Afbeelding-URL via interne Directus asset-proxy
                             const src = sponsor.image
                                 ? `/api/assets/${sponsor.image}`
-                                : '/img/placeholder.png';
+                                : '/img/newlogo.png';
 
                             // Per-sponsor achtergrondvoorkeur (dark_bg al genormaliseerd via Zod)
                             const cls = `sponsor-item ${sponsor.dark_bg ? 'sponsor-dark-bg' : 'sponsor-light-bg'}`;

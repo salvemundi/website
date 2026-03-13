@@ -1,52 +1,72 @@
 'use server';
 
-import { z } from 'zod';
-import { activitiesResponseSchema } from '@salvemundi/validations';
+import { activiteitenSchema, type Activiteit } from '@salvemundi/validations';
 
-const DIRECTUS_STATIC_TOKEN = process.env.DIRECTUS_STATIC_TOKEN;
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.salvemundi.nl';
+// Intern Directus adres — nooit hardcoded, altijd via env
+const getDirectusUrl = () =>
+    process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
+
+// Service token voor interne Directus API-aanroepen.
+const getDirectusHeaders = (): HeadersInit | null => {
+    const token = process.env.DIRECTUS_STATIC_TOKEN;
+    if (!token) {
+        console.warn('[Activities] DIRECTUS_STATIC_TOKEN missing.');
+        return null;
+    }
+    return {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+    };
+};
 
 /**
  * Fetch all upcoming and past activities
  * Features 'use cache' to ensure static rendering & caching
  */
-export async function getActivities() {
-    'use cache';
+export async function getActivities(): Promise<Activiteit[]> {
+    // 'use cache'; // Temporarily disabled if causing issues with fetch
 
     try {
-        if (!DIRECTUS_STATIC_TOKEN) {
-            console.error('[Activities] DIRECTUS_STATIC_TOKEN is missing');
-            return [];
-        }
+        const directusUrl = getDirectusUrl();
+        const headers = getDirectusHeaders();
+        if (!headers) return [];
 
-        const url = new URL(`${API_URL}/items/activiteiten`);
-        // We want almost all activities. Maybe we can filter by status='published' but let's just get all for now
-        // according to the legacy logic all were fetched then filtered on the client
-        url.searchParams.append('limit', '-1');
-        url.searchParams.append('filter[status][_eq]', 'published');
+        // Collectie heet 'events' op de VPS.
+        const fields = 'id,name,description,location,event_date,event_date_end,image,status';
+        const url = `${directusUrl}/items/events?fields=${fields}&limit=-1&filter[status][_eq]=published`;
 
-        const response = await fetch(url.toString(), {
-            headers: {
-                Authorization: `Bearer ${DIRECTUS_STATIC_TOKEN}`,
-            },
+        const response = await fetch(url, {
+            headers,
         });
 
         if (!response.ok) {
-            console.error(`[Activities] Fetch failed with status: ${response.status}`);
+            console.error(`[Activities] Fetch failed with status: ${response.status} for ${url}`);
             return [];
         }
 
-        const rawData = await response.json();
+        const json = await response.json();
+        const rawData = json?.data ?? [];
 
-        // Zod validation (Zero-Trust)
-        const parsed = activitiesResponseSchema.safeParse(rawData);
+        // Mapping van DB velden ('events') naar Zod Schema velden ('Activiteit')
+        const mappedData = rawData.map((item: any) => ({
+            id: String(item.id),
+            titel: item.name,
+            beschrijving: item.description,
+            locatie: item.location,
+            datum_start: item.event_date ? new Date(item.event_date).toISOString() : new Date().toISOString(),
+            datum_eind: item.event_date_end ? new Date(item.event_date_end).toISOString() : null,
+            afbeelding_id: item.image,
+            status: item.status,
+        }));
+
+        const parsed = activiteitenSchema.safeParse(mappedData);
 
         if (!parsed.success) {
-            console.error('[Activities] Zod validation failed:', parsed.error);
+            console.error('[Activities] Zod validation failed:', parsed.error.flatten().fieldErrors);
             return [];
         }
 
-        return parsed.data.data;
+        return parsed.data;
     } catch (error) {
         console.error('[Activities] Error fetching activities:', error);
         return [];

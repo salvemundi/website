@@ -58,7 +58,7 @@ export default function MembershipPage() {
         <>
             <PageHeader
                 title="WORD LID!"
-                backgroundImage="/img/backgrounds/homepage-banner.jpg"
+                backgroundImage=""
                 contentPadding="py-20"
                 imageFilter="brightness(0.65)"
             />

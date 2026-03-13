@@ -24,7 +24,7 @@ export default function ContactPage() {
         <div>
             <PageHeader
                 title="CONTACT"
-                backgroundImage="/img/backgrounds/homepage-banner.jpg"
+                backgroundImage=""
                 contentPadding="py-20"
                 imageFilter="brightness(0.65)"
                 description="Neem contact met ons op voor vragen, suggesties of informatie"

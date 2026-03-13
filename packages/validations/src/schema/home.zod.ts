@@ -4,12 +4,12 @@ import { z } from 'zod';
 // Valideert records uit de 'hero_banners' collectie in Directus.
 // Kolommen zijn strict snake_case conform de Datamodel ERD.
 export const heroBannerSchema = z.object({
-    id: z.number().int(),
+    id: z.union([z.string(), z.number()]),
     title: z.string(),
     subtitle: z.string().nullable().optional(),
     // UUID van het achtergrondplaatje binnen Directus Files
     afbeelding_id: z.string().nullable().optional(),
-    status: z.enum(['draft', 'published', 'archived']),
+    status: z.enum(['draft', 'published', 'archived']).optional(),
     display_order: z.number().int().default(0),
 });
 
@@ -20,7 +20,7 @@ export type HeroBanner = z.infer<typeof heroBannerSchema>;
 // ─── Activiteiten ─────────────────────────────────────────────────────────────
 // Valideert records uit de 'activiteiten' collectie in Directus.
 export const activiteitSchema = z.object({
-    id: z.string().uuid(),
+    id: z.union([z.string(), z.number()]),
     titel: z.string(),
     beschrijving: z.string().nullable().optional(),
     locatie: z.string().nullable().optional(),
@@ -28,7 +28,7 @@ export const activiteitSchema = z.object({
     datum_eind: z.string().nullable().optional(),
     // UUID van het preview-plaatje binnen Directus Files
     afbeelding_id: z.string().nullable().optional(),
-    status: z.enum(['draft', 'published', 'archived']),
+    status: z.string().optional(),
 });
 
 export const activiteitenSchema = z.array(activiteitSchema);

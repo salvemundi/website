@@ -5,13 +5,13 @@ import { z } from 'zod';
  * Conform het [GEÜPDATE] Datamodel ERD.
  */
 export const safeHavenSchema = z.object({
-    id: z.string().uuid(),
+    id: z.union([z.string(), z.number()]),
     naam: z.string(),
     email: z.string().email().nullable().optional(),
     telefoon: z.string().nullable().optional(),
     beschrijving: z.string().nullable().optional(),
-    afbeelding_id: z.string().uuid().nullable().optional(),
-    status: z.string(),
+    afbeelding_id: z.string().nullable().optional(),
+    status: z.string().optional(),
     sort: z.number().int().nullable().optional(),
 });
 

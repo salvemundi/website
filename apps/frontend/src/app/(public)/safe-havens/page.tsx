@@ -90,7 +90,7 @@ export default function SafeHavensPage() {
         <div className="min-h-screen">
             <PageHeader
                 title="Safe Havens"
-                backgroundImage="/img/backgrounds/homepage-banner.jpg"
+                backgroundImage=""
                 contentPadding="py-20"
                 imageFilter="brightness(0.65)"
             >

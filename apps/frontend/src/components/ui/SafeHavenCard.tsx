@@ -11,12 +11,10 @@ interface SafeHavenCardProps {
  * Matcht de exacte legacy opmaak en styling.
  */
 export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
-    const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://admin.salvemundi.nl';
-
-    // Afbeeldings-URL opbouwen via Directus assets endpoint
+    // Afbeeldings-URL opbouwen via de interne asset-proxy
     const imageUrl = safeHaven.afbeelding_id
-        ? `${directusUrl}/assets/${safeHaven.afbeelding_id}?width=200&height=200&fit=cover`
-        : '/images/placeholder-avatar.png'; // Fallback indien geen afbeelding
+        ? `/api/assets/${safeHaven.afbeelding_id}?width=200&height=200&fit=cover`
+        : '/img/newlogo.png'; // Fallback indien geen afbeelding
 
     return (
         <div className="flex flex-col rounded-2xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/30 p-5 sm:p-6 transition-all duration-300 hover:border-slate-300 dark:hover:border-slate-600/50">
@@ -26,6 +24,7 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
                         src={imageUrl}
                         alt={safeHaven.naam}
                         fill
+                        unoptimized
                         className="object-cover"
                     />
                 </div>

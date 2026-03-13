@@ -13,7 +13,7 @@ export default function VerenigingPage() {
         <div className="min-h-screen bg-[var(--bg-main)]">
             <PageHeader
                 title="DE VERENIGING"
-                backgroundImage="/img/backgrounds/homepage-banner.jpg"
+                backgroundImage=""
                 contentPadding="py-20"
                 imageFilter="brightness(0.65)"
                 description="Salve Mundi is meer dan een studievereniging. Wij zijn een community van studenten die samen groeien, leren en plezier maken."

@@ -204,7 +204,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
 
             <div className="relative z-10 h-44 sm:h-48 mb-5 rounded-2xl overflow-hidden shadow-inner">
                 <Image
-                    src={image || '/img/placeholder.svg'}
+                    src={image || '/img/newlogo.png'}
                     alt={title}
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
@@ -214,7 +214,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                     blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjE5MiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjE5MiIgZmlsbD0iI2VlZSIvPjwvc3ZnPg=="
                     onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.src = '/img/placeholder.svg';
+                        target.src = '/img/newlogo.png';
                     }}
                 />
                 {!isPast && (
