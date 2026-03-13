@@ -29,22 +29,20 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd /opt/salve-mundi-v7/infra
-            
-            # Ensure the shared network exists
-            docker network create salve-mundi-v7-shared || true
-            
+            # Generate .env file from secrets
+            cat <<EOF > .env
+INTERNAL_SERVER_IP="${{ secrets.INTERNAL_SERVER_IP }}"
+DB_USER="${{ secrets.DB_USER }}"
+DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+DB_NAME="${{ secrets.DB_NAME }}"
+DIRECTUS_KEY="${{ secrets.DIRECTUS_KEY }}"
+DIRECTUS_SECRET="${{ secrets.DIRECTUS_SECRET }}"
+AZURE_WEBSITEV7_TENANT_ID="${{ secrets.AZURE_WEBSITEV7_TENANT_ID }}"
+AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID="${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID }}"
+AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET="${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET }}"
+EOF
+
             # Deploy the core project
-            env \
-              INTERNAL_SERVER_IP="${{ secrets.INTERNAL_SERVER_IP }}" \
-              DB_USER="${{ secrets.DB_USER }}" \
-              DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
-              DB_NAME="${{ secrets.DB_NAME }}" \
-              DIRECTUS_KEY="${{ secrets.DIRECTUS_KEY }}" \
-              DIRECTUS_SECRET="${{ secrets.DIRECTUS_SECRET }}" \
-              AZURE_WEBSITEV7_TENANT_ID="${{ secrets.AZURE_WEBSITEV7_TENANT_ID }}" \
-              AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID="${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID }}" \
-              AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET="${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET }}" \
-              docker compose -p v7-core up -d --remove-orphans
+            docker compose -p v7-core up -d --remove-orphans
 
             echo "--- Core Infrastructure Deployed ---"
