@@ -3,8 +3,12 @@ name: Deploy V7 Core Infrastructure
 on:
   workflow_dispatch: # Handmatig triggeren
   push:
+    branches:
+      - main
+      - acceptance
     paths:
-      - 'infrastructure/**' # Alleen bij wijzigingen in de infra map
+      - 'infrastructure/**'
+      - '.github/workflows/v7-core.yml'
 
 jobs:
   deploy-core:
@@ -31,8 +35,8 @@ jobs:
           script: |
             cd /opt/salve-mundi-v7/infra
             
-            # Generate .env file from secrets
-            cat <<EOF > .env
+            # Generate .env file from secrets and trim leading spaces
+            cat <<EOF | sed 's/^[[:space:]]*//' > .env
             INTERNAL_SERVER_IP="${{ secrets.INTERNAL_SERVER_IP }}"
             DB_USER="${{ secrets.DB_USER }}"
             DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
@@ -43,6 +47,9 @@ jobs:
             AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID="${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID }}"
             AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET="${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET }}"
             EOF
+
+            # Ensure the shared network exists
+            docker network create salve-mundi-v7-shared || true
 
             # Deploy the core project
             docker compose -p v7-core up -d --remove-orphans
