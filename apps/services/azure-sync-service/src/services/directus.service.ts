@@ -13,7 +13,7 @@ export class DirectusService {
     static async getUserByEmail(email: string) {
         const users = await getDirectusClient().request(readItems('directus_users', {
             filter: { email: { _eq: email.toLowerCase() } },
-            fields: ['id', 'email', 'entra_id']
+            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id']
         }));
         return users[0] || null;
     }
