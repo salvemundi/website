@@ -28,30 +28,44 @@ jobs:
 
       - name: Deploy Core Stack via SSH
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          INTERNAL_SERVER_IP: ${{ secrets.INTERNAL_SERVER_IP }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DIRECTUS_KEY: ${{ secrets.DIRECTUS_KEY }}
+          DIRECTUS_SECRET: ${{ secrets.DIRECTUS_SECRET }}
+          AZURE_WEBSITEV7_TENANT_ID: ${{ secrets.AZURE_WEBSITEV7_TENANT_ID }}
+          AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID: ${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID }}
+          AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET: ${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET }}
+          DIRECTUS_ALLOWED_REDIRECTS: ${{ secrets.DIRECTUS_ALLOWED_REDIRECTS }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
+          envs: INTERNAL_SERVER_IP,DB_USER,DB_PASSWORD,DB_NAME,DIRECTUS_KEY,DIRECTUS_SECRET,AZURE_WEBSITEV7_TENANT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET,DIRECTUS_ALLOWED_REDIRECTS
           script_stop: true
           script: |
             cd /opt/salve-mundi-v7/infra
             
-            # Generate .env file from secrets and trim leading spaces
-            cat <<EOF | sed 's/^[[:space:]]*//' > .env
-            INTERNAL_SERVER_IP="${{ secrets.INTERNAL_SERVER_IP }}"
-            DB_USER="${{ secrets.DB_USER }}"
-            DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
-            DB_NAME="${{ secrets.DB_NAME }}"
-            DIRECTUS_KEY="${{ secrets.DIRECTUS_KEY }}"
-            DIRECTUS_SECRET="${{ secrets.DIRECTUS_SECRET }}"
-            AZURE_WEBSITEV7_TENANT_ID="${{ secrets.AZURE_WEBSITEV7_TENANT_ID }}"
-            AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID="${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID }}"
-            AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET="${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET }}"
-            DIRECTUS_ALLOWED_REDIRECTS="${{ secrets.DIRECTUS_ALLOWED_REDIRECTS }}"
-            EOF
+            # Generate .env file from environment variables to handle multi-line secrets safely
+            printf "INTERNAL_SERVER_IP=\"%s\"\n" "$INTERNAL_SERVER_IP" > .env
+            printf "DB_USER=\"%s\"\n" "$DB_USER" >> .env
+            printf "DB_PASSWORD=\"%s\"\n" "$DB_PASSWORD" >> .env
+            printf "DB_NAME=\"%s\"\n" "$DB_NAME" >> .env
+            printf "DIRECTUS_KEY=\"%s\"\n" "$DIRECTUS_KEY" >> .env
+            printf "DIRECTUS_SECRET=\"%s\"\n" "$DIRECTUS_SECRET" >> .env
+            printf "AZURE_WEBSITEV7_TENANT_ID=\"%s\"\n" "$AZURE_WEBSITEV7_TENANT_ID" >> .env
+            printf "AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID=\"%s\"\n" "$AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID" >> .env
+            printf "AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET=\"%s\"\n" "$AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET" >> .env
+            printf "DIRECTUS_ALLOWED_REDIRECTS=\"%s\"\n" "$DIRECTUS_ALLOWED_REDIRECTS" >> .env
 
             # Ensure the shared network exists
             docker network create salve-mundi-v7-shared || true
+
+            # Force removal of containers that might conflict due to project name differences
+            # (e.g. if they were manually started vs. started via this workflow)
+            docker rm -f v7-core-directus v7-core-db v7-core-redis || true
 
             # Deploy the core project
             docker compose -p v7-core up -d --remove-orphans
