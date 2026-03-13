@@ -18,6 +18,7 @@ interface NavigationHeaderProps {
 const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = [] }) => {
     const pathname = usePathname();
     const router = useRouter();
+    const [mounted, setMounted] = useState(false);
 
     // Better Auth sessie — uitsluitend via useSession() conform V7-advies
     const { data: session } = authClient.useSession();
@@ -28,6 +29,11 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
     const [isScrolled, setIsScrolled] = useState(false);
     const [isCommitteeMember, setIsCommitteeMember] = useState(false);
     const headerRef = useRef<HTMLElement | null>(null);
+
+    // Hydratatie fix
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Scroll-effect: voegt schaduw toe na scrollen
     useEffect(() => {
@@ -218,51 +224,53 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                         )}
 
                         {/* Profielknop of inlogknop */}
-                        {isAuthenticated ? (
-                            <Link
-                                href={ROUTES.ACCOUNT}
-                                className="flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium text-[var(--text-main)] shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
-                            >
-                                <div className="relative h-8 w-8 rounded-full overflow-hidden">
-                                    <Image
-                                        src={
-                                            (user as Record<string, unknown>)?.image
-                                                ? String((user as Record<string, unknown>).image)
-                                                : '/img/newlogo.png'
+                        {mounted && (
+                            isAuthenticated ? (
+                                <Link
+                                    href={ROUTES.ACCOUNT}
+                                    className="flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium text-[var(--text-main)] shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+                                >
+                                    <div className="relative h-8 w-8 rounded-full overflow-hidden">
+                                        <Image
+                                            src={
+                                                (user as Record<string, unknown>)?.image
+                                                    ? String((user as Record<string, unknown>).image)
+                                                    : '/img/newlogo.png'
+                                            }
+                                            alt={(user as Record<string, unknown>)?.email
+                                                ? String((user as Record<string, unknown>).email)
+                                                : 'Profiel'}
+                                            fill
+                                            sizes="32px"
+                                            className="object-cover"
+                                            priority
+                                        />
+                                    </div>
+                                    <span className="hidden sm:inline">Mijn profiel</span>
+                                </Link>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={async () => {
+                                        try {
+                                            await authClient.signIn.social({ provider: 'microsoft', callbackURL: '/profiel' });
+                                        } catch (error) {
+                                            console.error('Fout bij inloggen:', error);
                                         }
-                                        alt={(user as Record<string, unknown>)?.email
-                                            ? String((user as Record<string, unknown>).email)
-                                            : 'Profiel'}
-                                        fill
-                                        sizes="32px"
-                                        className="object-cover"
-                                        priority
-                                    />
-                                </div>
-                                <span className="hidden sm:inline">Mijn profiel</span>
-                            </Link>
-                        ) : (
-                            <button
-                                type="button"
-                                onClick={async () => {
-                                    try {
-                                        await authClient.signIn.social({ provider: 'microsoft', callbackURL: '/profiel' });
-                                    } catch (error) {
-                                        console.error('Fout bij inloggen:', error);
-                                    }
-                                }}
-                                className="flex cursor-pointer items-center gap-2 rounded-full font-semibold px-3 py-1.5 text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
-                                style={{
-                                    backgroundColor: 'var(--color-purple-50)',
-                                    color: 'var(--color-purple-700)',
-                                }}
-                            >
-                                Inloggen
-                            </button>
+                                    }}
+                                    className="flex cursor-pointer items-center gap-2 rounded-full font-semibold px-3 py-1.5 text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+                                    style={{
+                                        backgroundColor: 'var(--color-purple-50)',
+                                        color: 'var(--color-purple-700)',
+                                    }}
+                                >
+                                    Inloggen
+                                </button>
+                            )
                         )}
 
                         {/* Word-lid-knop (niet ingelogd) */}
-                        {!isAuthenticated && (
+                        {mounted && !isAuthenticated && (
                             <Link
                                 href={ROUTES.MEMBERSHIP}
                                 className="hidden items-center gap-2 rounded-full px-4 py-2 text-sm font-bold shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl md:inline-flex"
@@ -380,7 +388,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                     </div>
 
                     {/* Word-lid-knop (niet ingelogd) */}
-                    {!isAuthenticated && (
+                    {mounted && !isAuthenticated && (
                         <Link
                             href={ROUTES.MEMBERSHIP}
                             onClick={() => setMenuOpen(false)}
@@ -409,34 +417,36 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                                 <span className="sr-only">Safe Havens</span>
                             </Link>
 
-                            {isAuthenticated ? (
-                                <button
-                                    type="button"
-                                    onClick={handleLogout}
-                                    className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-red-600 text-white shadow-sm"
-                                    aria-label="Uitloggen"
-                                >
-                                    <LogOut className="h-5 w-5" aria-hidden />
-                                    <span className="sr-only">Uitloggen</span>
-                                </button>
-                            ) : (
-                                <button
-                                    type="button"
-                                    onClick={async () => {
-                                        try {
-                                            await authClient.signIn.social({ provider: 'microsoft', callbackURL: '/profiel' });
-                                        } catch (error) {
-                                            console.error('Fout bij inloggen:', error);
-                                        }
-                                    }}
-                                    className="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-sm transition cursor-pointer"
-                                    style={{
-                                        backgroundColor: 'var(--color-purple-50)',
-                                        color: 'var(--color-purple-700)',
-                                    }}
-                                >
-                                    Inloggen
-                                </button>
+                            {mounted && (
+                                isAuthenticated ? (
+                                    <button
+                                        type="button"
+                                        onClick={handleLogout}
+                                        className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-red-600 text-white shadow-sm"
+                                        aria-label="Uitloggen"
+                                    >
+                                        <LogOut className="h-5 w-5" aria-hidden />
+                                        <span className="sr-only">Uitloggen</span>
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={async () => {
+                                            try {
+                                                await authClient.signIn.social({ provider: 'microsoft', callbackURL: '/profiel' });
+                                            } catch (error) {
+                                                console.error('Fout bij inloggen:', error);
+                                            }
+                                        }}
+                                        className="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-sm transition cursor-pointer"
+                                        style={{
+                                            backgroundColor: 'var(--color-purple-50)',
+                                            color: 'var(--color-purple-700)',
+                                        }}
+                                    >
+                                        Inloggen
+                                    </button>
+                                )
                             )}
                         </div>
                     </div>

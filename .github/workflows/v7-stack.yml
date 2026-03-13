@@ -242,7 +242,7 @@ jobs:
             export INTERNAL_FINANCE_URL="http://$FINANCE_DNS:3001"
             export INTERNAL_SYNC_URL="http://$SYNC_DNS:3002"
             export INTERNAL_MAIL_URL="http://$MAIL_DNS:3003"
-            export INTERNAL_DIRECTUS_URL="http://directus:8055"
+            export INTERNAL_DIRECTUS_URL="http://v7-core-directus:8055"
             
             export IMAGE_TAG="latest"
             export PUBLIC_URL="${{ vars.PUBLIC_URL }}"

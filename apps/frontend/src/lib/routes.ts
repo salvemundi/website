@@ -24,7 +24,8 @@ export const PUBLIC_ROUTES: string[] = [
     ROUTES.PUB_CRAWL,
     ROUTES.INTRO,
     ROUTES.TRIP,
-    '/vereniging/oud-besturen' // Sub-routes ook hier of via prefix-check in proxy
+    '/vereniging/oud-besturen', // Sub-routes ook hier of via prefix-check in proxy
+    '/404'
 ];
 
 export type Route = (typeof ROUTES)[keyof typeof ROUTES];

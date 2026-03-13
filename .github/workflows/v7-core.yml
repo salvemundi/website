@@ -47,6 +47,7 @@ jobs:
             AZURE_WEBSITEV7_TENANT_ID="${{ secrets.AZURE_WEBSITEV7_TENANT_ID }}"
             AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID="${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID }}"
             AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET="${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET }}"
+            DIRECTUS_ALLOWED_REDIRECTS="${{ secrets.DIRECTUS_ALLOWED_REDIRECTS }}"
             EOF
 
             # Ensure the shared network exists

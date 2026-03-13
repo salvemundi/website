@@ -54,6 +54,7 @@ services:
       AUTH_MICROSOFT_IDENTIFIER_KEY: "email"
       AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION: "true"
       AUTH_MICROSOFT_DEFAULT_ROLE_ID: "85750035-2d6e-4405-9f5b-6f069ce58a9e" # Optioneel: ID van een 'User' rol in Directus
+      AUTH_SAFE_REDIRECT_HOSTS: ${DIRECTUS_ALLOWED_REDIRECTS}
     volumes:
       - v7_core_directus_uploads:/directus/uploads
     networks:
