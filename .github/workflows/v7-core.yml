@@ -36,6 +36,7 @@ jobs:
             
             # Deploy the core project
             env \
+              INTERNAL_SERVER_IP="${{ secrets.INTERNAL_SERVER_IP }}" \
               DB_USER="${{ secrets.DB_USER }}" \
               DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
               DB_NAME="${{ secrets.DB_NAME }}" \

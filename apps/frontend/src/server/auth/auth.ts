@@ -3,7 +3,7 @@ import { Pool } from "pg";
 
 export const auth = betterAuth({
     database: new Pool({
-        connectionString: `postgres://directus:${process.env.DB_PASSWORD || 'directus'}@${process.env.INTERNAL_DB_HOST}:5432/directus`
+        connectionString: `postgres://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.INTERNAL_DB_HOST}:5432/${process.env.DB_NAME}`
     }),
     user: {
         modelName: "directus_users",

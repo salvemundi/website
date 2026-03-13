@@ -97,8 +97,8 @@ export async function getHeroBanners(): Promise<HeroBanner[]> {
 export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> {
     const directusUrl = getDirectusUrl();
     // Collectie op VPS heet 'events'. Vraag alleen op wat nodig is.
-    const fields = 'id,name,description,location,event_date,event_date_end,image,status';
-    const url = `${directusUrl}/items/events?fields=${fields}&filter[status][_eq]=published&sort=event_date&limit=${limit}`;
+    const fields = 'id,name,description,location,event_date,event_date_end,image,status,price_members,price_non_members,only_members,inschrijf_deadline,contact,event_time,event_time_end';
+    const url = `${directusUrl}/items/events?fields=${fields}&filter[status][_eq]=published&filter[event_date][_gte]=$NOW&sort=event_date&limit=${limit}`;
 
     const headers = getDirectusHeaders();
     if (!headers) {
@@ -139,6 +139,13 @@ export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> 
         datum_eind: item.event_date_end ? new Date(item.event_date_end).toISOString() : null,
         afbeelding_id: item.image,
         status: item.status,
+        price_members: item.price_members ? Number(item.price_members) : 0,
+        price_non_members: item.price_non_members ? Number(item.price_non_members) : 0,
+        only_members: item.only_members,
+        inschrijf_deadline: item.inschrijf_deadline,
+        contact: item.contact,
+        event_time: item.event_time,
+        event_time_end: item.event_time_end,
     }));
 
     const parsed = activiteitenSchema.safeParse(mappedData);

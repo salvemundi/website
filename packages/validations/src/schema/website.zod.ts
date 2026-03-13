@@ -14,4 +14,14 @@ export const documentSchema = z.object({
 
 export const documentenSchema = z.array(documentSchema);
 
+export const featureFlagSchema = z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    route_match: z.string(),
+    is_active: z.boolean(),
+});
+
+export const featureFlagsSchema = z.array(featureFlagSchema);
+
+export type FeatureFlag = z.infer<typeof featureFlagSchema>;
 export type Document = z.infer<typeof documentSchema>;

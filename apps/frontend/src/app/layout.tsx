@@ -5,7 +5,7 @@ import NavigationHeader from '@/components/islands/NavigationHeader';
 import NavigationHeaderSkeleton from '@/components/ui/NavigationHeaderSkeleton';
 import FooterIsland from '@/components/islands/FooterIsland';
 import FooterSkeleton from '@/components/ui/FooterSkeleton';
-import { getDocumenten } from '@/server/actions/website.actions';
+import { getDocumenten, getDisabledRoutes } from '@/server/actions/website.actions';
 
 export const metadata: Metadata = {
     title: 'Salve Mundi V7',
@@ -54,7 +54,7 @@ export default function RootLayout({
             </head>
             <body className="antialiased flex flex-col min-h-screen">
                 <Suspense fallback={<NavigationHeaderSkeleton />}>
-                    <NavigationHeader />
+                    <HeaderWrapper />
                 </Suspense>
 
                 {/* Compenseer de hoogte van de vaste navbar via de CSS-variabele */}
@@ -79,15 +79,33 @@ export default function RootLayout({
 
 
 /**
+ * Wrapper component voor de navigatie.
+ */
+async function HeaderWrapper() {
+    const disabledRoutes = await getDisabledRoutes();
+
+    return (
+        <NavigationHeader
+            disabledRoutes={disabledRoutes}
+        />
+    );
+}
+
+
+/**
  * Wrapper component voor de footer.
- * Haalt documenten parallel op.
+ * Haalt documenten en disabled routes parallel op.
  */
 async function FooterWrapper() {
-    const documents = await getDocumenten();
+    const [documents, disabledRoutes] = await Promise.all([
+        getDocumenten(),
+        getDisabledRoutes()
+    ]);
 
     return (
         <FooterIsland
             documents={documents}
+            disabledRoutes={disabledRoutes}
         />
     );
 }

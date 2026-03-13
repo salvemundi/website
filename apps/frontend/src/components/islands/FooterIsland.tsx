@@ -11,6 +11,7 @@ import type { Document } from '@salvemundi/validations';
 // Dit island is 'use client' uitsluitend vanwege de auth-gated WhatsApp-link.
 interface FooterIslandProps {
     documents: Document[];
+    disabledRoutes?: string[];
 }
 
 // Verwijdert het "|| SALVE MUNDI" achtervoegsel van commissienamen (legacy data-quirk)
@@ -44,7 +45,7 @@ const LINK_CLS =
 const MUTED_CLS = 'text-[var(--color-purple-800)] dark:text-[var(--text-light)]';
 
 // ─── Component ────────────────────────────────────────────────────────────────
-const FooterIsland: React.FC<FooterIslandProps> = ({ documents }) => {
+const FooterIsland: React.FC<FooterIslandProps> = ({ documents, disabledRoutes = [] }) => {
     // Better Auth sessie — uitsluitend via authClient.useSession() conform V7-advies
     const { data: session } = authClient.useSession();
     const isAuthenticated = !!session?.user;
@@ -53,7 +54,7 @@ const FooterIsland: React.FC<FooterIslandProps> = ({ documents }) => {
     const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL ?? 'https://admin.salvemundi.nl';
 
     // Navigatielinks conform de V7 Frontend Routes & Server Actions documentatie
-    const pageLinks = [
+    const allPageLinks = [
         { label: 'Home', href: ROUTES.HOME },
         { label: 'Intro', href: ROUTES.INTRO },
         { label: 'Activiteiten', href: ROUTES.ACTIVITIES },
@@ -64,6 +65,9 @@ const FooterIsland: React.FC<FooterIslandProps> = ({ documents }) => {
         { label: 'Kroegentocht', href: ROUTES.PUB_CRAWL },
         { label: 'Reis', href: ROUTES.TRIP },
     ];
+
+    // Filter links die op een Feature Flag staan
+    const pageLinks = allPageLinks.filter(link => !disabledRoutes.includes(link.href));
 
     return (
         <footer className="relative overflow-hidden bg-gradient-theme">
@@ -89,7 +93,7 @@ const FooterIsland: React.FC<FooterIslandProps> = ({ documents }) => {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className={`${LINK_CLS} bg-[var(--color-white)]/10`}
-                                        title={doc.description ?? doc.title}
+                                        title={doc.description !== null ? doc.description : undefined}
                                     >
                                         {doc.title}
                                     </a>

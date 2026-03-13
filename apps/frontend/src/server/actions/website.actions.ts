@@ -1,5 +1,6 @@
 'use server';
 
+import { connection } from 'next/server';
 import { documentenSchema, type Document } from '@salvemundi/validations';
 
 // Intern Directus adres — nooit hardcoded, altijd via env
@@ -65,4 +66,42 @@ export async function getDocumenten(): Promise<Document[]> {
     }
 
     return parsed.data;
+}
+
+/**
+ * Haalt alle momenteel uitgeschakelde routes op uit Directus (Feature Flags).
+ * Wordt gebruikt voor UI-synchronisatie (huiden van knoppen).
+ * We gebruiken cache-busting en no-store om altijd de meest actuele status te hebben.
+ */
+export async function getDisabledRoutes(): Promise<string[]> {
+    await connection();
+    const directusUrl = getDirectusUrl();
+    const url = `${directusUrl}/items/feature_flags?filter[is_active][_eq]=false&fields=route_match`;
+
+    const headers = getDirectusHeaders();
+    if (!headers) {
+        return [];
+    }
+
+    try {
+        const res = await fetch(url, {
+            headers: {
+                ...headers,
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0',
+            },
+            cache: 'no-store',
+        });
+
+        if (!res.ok) {
+            return [];
+        }
+
+        const json = await res.json();
+        return (json?.data ?? []).map((flag: any) => flag.route_match);
+    } catch (err) {
+        console.error('[website.actions#getDisabledRoutes] Fout:', err);
+        return [];
+    }
 }

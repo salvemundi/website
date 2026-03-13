@@ -29,6 +29,14 @@ export const activiteitSchema = z.object({
     // UUID van het preview-plaatje binnen Directus Files
     afbeelding_id: z.string().nullable().optional(),
     status: z.string().optional(),
+    price_members: z.number().nullable().optional(),
+    price_non_members: z.number().nullable().optional(),
+    only_members: z.boolean().nullable().optional(),
+    inschrijf_deadline: z.string().nullable().optional(),
+    contact: z.string().nullable().optional(),
+    committee_name: z.string().nullable().optional(),
+    event_time: z.string().nullable().optional(),
+    event_time_end: z.string().nullable().optional(),
 });
 
 export const activiteitenSchema = z.array(activiteitSchema);
