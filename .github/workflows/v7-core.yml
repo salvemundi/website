@@ -49,16 +49,17 @@ jobs:
             cd /opt/salve-mundi-v7/infra
             
             # Generate .env file from environment variables to handle multi-line secrets safely
-            printf "INTERNAL_SERVER_IP=\"%s\"\n" "$INTERNAL_SERVER_IP" > .env
-            printf "DB_USER=\"%s\"\n" "$DB_USER" >> .env
-            printf "DB_PASSWORD=\"%s\"\n" "$DB_PASSWORD" >> .env
-            printf "DB_NAME=\"%s\"\n" "$DB_NAME" >> .env
-            printf "DIRECTUS_KEY=\"%s\"\n" "$DIRECTUS_KEY" >> .env
-            printf "DIRECTUS_SECRET=\"%s\"\n" "$DIRECTUS_SECRET" >> .env
-            printf "AZURE_WEBSITEV7_TENANT_ID=\"%s\"\n" "$AZURE_WEBSITEV7_TENANT_ID" >> .env
-            printf "AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID=\"%s\"\n" "$AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID" >> .env
-            printf "AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET=\"%s\"\n" "$AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET" >> .env
-            printf "DIRECTUS_ALLOWED_REDIRECTS=\"%s\"\n" "$DIRECTUS_ALLOWED_REDIRECTS" >> .env
+            # We strip any newlines or carriage returns that might be present in the GitHub Secrets
+            printf "INTERNAL_SERVER_IP=\"%s\"\n" "$(echo "$INTERNAL_SERVER_IP" | tr -d '\n\r')" > .env
+            printf "DB_USER=\"%s\"\n" "$(echo "$DB_USER" | tr -d '\n\r')" >> .env
+            printf "DB_PASSWORD=\"%s\"\n" "$(echo "$DB_PASSWORD" | tr -d '\n\r')" >> .env
+            printf "DB_NAME=\"%s\"\n" "$(echo "$DB_NAME" | tr -d '\n\r')" >> .env
+            printf "DIRECTUS_KEY=\"%s\"\n" "$(echo "$DIRECTUS_KEY" | tr -d '\n\r')" >> .env
+            printf "DIRECTUS_SECRET=\"%s\"\n" "$(echo "$DIRECTUS_SECRET" | tr -d '\n\r')" >> .env
+            printf "AZURE_WEBSITEV7_TENANT_ID=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_TENANT_ID" | tr -d '\n\r')" >> .env
+            printf "AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID" | tr -d '\n\r')" >> .env
+            printf "AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET" | tr -d '\n\r')" >> .env
+            printf "DIRECTUS_ALLOWED_REDIRECTS=\"%s\"\n" "$(echo "$DIRECTUS_ALLOWED_REDIRECTS" | tr -d '\n\r')" >> .env
 
             # Ensure the shared network exists
             docker network create salve-mundi-v7-shared || true
