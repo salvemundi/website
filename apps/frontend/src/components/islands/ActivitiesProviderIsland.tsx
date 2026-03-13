@@ -28,19 +28,26 @@ export default function ActivitiesProviderIsland({ events }: ActivitiesProviderI
             const now = new Date();
             filtered = filtered.filter(event => {
                 const eventDate = event.datum_start || event.event_date;
-                const eventDateTime = event.event_time
-                    ? new Date(`${eventDate}T${event.event_time}`)
-                    : new Date(eventDate);
+                // De server actions sturen nu ISO strings (datum_start) of YYYY-MM-DD (event_date)
+                // Als we een ISO string hebben, gebruiken we die direct.
+                // Als we een event_time hebben, combineren we die alleen met de YYYY-MM-DD variant.
+                let eventDateTime;
+                if (event.event_time && eventDate.length <= 10) {
+                    eventDateTime = new Date(`${eventDate}T${event.event_time}`);
+                } else {
+                    eventDateTime = new Date(eventDate);
+                }
                 return eventDateTime >= now;
             });
         }
         return filtered.sort((a, b) => {
             const aDate = a.datum_start || a.event_date;
             const bDate = b.datum_start || b.event_date;
-            const aDateTime = a.event_time
+            
+            const aDateTime = (a.event_time && aDate.length <= 10)
                 ? new Date(`${aDate}T${a.event_time}`).getTime()
                 : new Date(aDate).getTime();
-            const bDateTime = b.event_time
+            const bDateTime = (b.event_time && bDate.length <= 10)
                 ? new Date(`${bDate}T${b.event_time}`).getTime()
                 : new Date(bDate).getTime();
             return aDateTime - bDateTime;

@@ -11,13 +11,14 @@ export * from './schema/azure-sync.zod';
 
 import { memberSchema } from './schema/members.zod';
 import { mollieWebhookSchema } from './schema/finance.zod';
-import { documentSchema } from './schema/website.zod';
+import { documentSchema, featureFlagSchema } from './schema/website.zod';
 import { heroBannerSchema, activiteitSchema, sponsorSchema } from './schema/home.zod';
 import { safeHavenSchema } from './schema/safe-havens.zod';
 
 export type Member = z.infer<typeof memberSchema>;
 export type MollieWebhook = z.infer<typeof mollieWebhookSchema>;
 export type Document = z.infer<typeof documentSchema>;
+export type FeatureFlag = z.infer<typeof featureFlagSchema>;
 export type HeroBanner = z.infer<typeof heroBannerSchema>;
 export type Activiteit = z.infer<typeof activiteitSchema>;
 export type Sponsor = z.infer<typeof sponsorSchema>;

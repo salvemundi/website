@@ -115,25 +115,15 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
         return startFormatted;
     };
 
-    const formatTime = (time?: string | null, fallbackDate?: string | undefined) => {
-        if (time) {
-            const parts = time.split(':');
-            if (parts.length >= 2) return `${parts[0]}:${parts[1]}`;
-            return time;
-        }
-
-        if (!fallbackDate) return null;
-        const raw = fallbackDate;
-        const hasTimeInDate = raw.includes('T') || /\d{2}:\d{2}/.test(raw);
-        if (!hasTimeInDate) return null;
-
-        const parsed = new Date(raw);
-        if (!Number.isNaN(parsed.getTime())) return parsed.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
-        return null;
+    const formatTime = (time?: string | null) => {
+        if (!time) return null;
+        const parts = time.split(':');
+        if (parts.length >= 2) return `${parts[0]}:${parts[1]}`;
+        return time;
     };
 
-    const start = formatTime(startTime, date);
-    const end = formatTime(endTime, date);
+    const start = formatTime(startTime);
+    const end = formatTime(endTime);
     const timeRange = start ? (end ? `${start} - ${end}` : start) : null;
 
     if (isListVariant) {

@@ -11,7 +11,11 @@ import {
 import { authClient } from '@/lib/auth-client';
 import { ThemeToggle } from '@/components/islands/ThemeToggle';
 import { ROUTES } from '@/lib/routes';
-const NavigationHeader: React.FC = () => {
+interface NavigationHeaderProps {
+    disabledRoutes?: string[];
+}
+
+const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = [] }) => {
     const pathname = usePathname();
     const router = useRouter();
 
@@ -88,7 +92,7 @@ const NavigationHeader: React.FC = () => {
         return null;
     }
 
-    const navItems = [
+    const allNavItems = [
         { name: 'Home', href: ROUTES.HOME, icon: Home },
         { name: 'Intro', href: ROUTES.INTRO, icon: Sparkles },
         { name: 'Lidmaatschap', href: ROUTES.MEMBERSHIP, icon: User },
@@ -99,6 +103,9 @@ const NavigationHeader: React.FC = () => {
         { name: 'Safe Havens', href: ROUTES.STICKERS, icon: MapPin },
         { name: 'Contact', href: ROUTES.CONTACT, icon: Mail },
     ];
+
+    // Filter items die expliciet zijn uitgeschakeld via Feature Flags
+    const navItems = allNavItems.filter(item => !disabledRoutes.includes(item.href));
 
     const getLinkClassName = (href: string) => {
         const isActive = pathname === href || (href !== '/' && pathname?.startsWith(href));
@@ -236,8 +243,15 @@ const NavigationHeader: React.FC = () => {
                             </Link>
                         ) : (
                             <button
-                                onClick={() => authClient.signIn.social({ provider: 'microsoft', callbackURL: '/' })}
-                                className="flex items-center gap-2 rounded-full font-semibold px-3 py-1.5 text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+                                type="button"
+                                onClick={async () => {
+                                    try {
+                                        await authClient.signIn.social({ provider: 'microsoft', callbackURL: '/profiel' });
+                                    } catch (error) {
+                                        console.error('Fout bij inloggen:', error);
+                                    }
+                                }}
+                                className="flex cursor-pointer items-center gap-2 rounded-full font-semibold px-3 py-1.5 text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                                 style={{
                                     backgroundColor: 'var(--color-purple-50)',
                                     color: 'var(--color-purple-700)',
@@ -406,8 +420,23 @@ const NavigationHeader: React.FC = () => {
                                     <span className="sr-only">Uitloggen</span>
                                 </button>
                             ) : (
-                                // Lege placeholder om de uitlijning te bewaren
-                                <div className="h-12 w-12" aria-hidden />
+                                <button
+                                    type="button"
+                                    onClick={async () => {
+                                        try {
+                                            await authClient.signIn.social({ provider: 'microsoft', callbackURL: '/profiel' });
+                                        } catch (error) {
+                                            console.error('Fout bij inloggen:', error);
+                                        }
+                                    }}
+                                    className="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-sm transition cursor-pointer"
+                                    style={{
+                                        backgroundColor: 'var(--color-purple-50)',
+                                        color: 'var(--color-purple-700)',
+                                    }}
+                                >
+                                    Inloggen
+                                </button>
                             )}
                         </div>
                     </div>

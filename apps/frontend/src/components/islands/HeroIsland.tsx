@@ -117,7 +117,7 @@ export function HeroIsland({ banners, activiteiten }: HeroIslandProps) {
                             <div className="w-full max-w-full">
                                 <div className="flex flex-wrap gap-3 sm:gap-4 min-h-[100px]">
                                     {/* Laden: skeleton */}
-                                    {authLoading && (
+                                    {(!mounted || authLoading) && (
                                         <div className="w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/10 p-4 sm:p-6 shadow-lg backdrop-blur min-h-[90px] sm:min-h-[100px] animate-pulse border border-[var(--color-purple-300)]/10">
                                             <div className="h-4 w-24 bg-[var(--color-purple-300)]/10 rounded mb-3" />
                                             <div className="h-6 w-3/4 bg-[var(--color-purple-300)]/10 rounded mb-2" />
@@ -126,7 +126,7 @@ export function HeroIsland({ banners, activiteiten }: HeroIslandProps) {
                                     )}
 
                                     {/* Niet ingelogd: Word Lid kaart */}
-                                    {!authLoading && showMembershipLink && (
+                                    {(mounted && !authLoading && showMembershipLink) && (
                                         <Link
                                             href="/lidmaatschap"
                                             className="block w-full transition-transform hover:scale-[1.02] group/lid"
@@ -151,7 +151,7 @@ export function HeroIsland({ banners, activiteiten }: HeroIslandProps) {
                                     )}
 
                                     {/* Ingelogd + volgend evenement beschikbaar */}
-                                    {!authLoading && !showMembershipLink && nextEvent && (
+                                    {(mounted && !authLoading && !showMembershipLink && nextEvent) && (
                                         <Link
                                             href={`/activiteiten/${nextEvent.id}`}
                                             className="block w-full transition-transform hover:scale-[1.02] group/event"
@@ -176,7 +176,7 @@ export function HeroIsland({ banners, activiteiten }: HeroIslandProps) {
                                     )}
 
                                     {/* Ingelogd maar geen evenement */}
-                                    {!authLoading && !showMembershipLink && !nextEvent && (
+                                    {(mounted && !authLoading && !showMembershipLink && !nextEvent) && (
                                         <div className="w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-4 sm:p-6 shadow-lg backdrop-blur min-h-[90px] sm:min-h-[100px]">
                                             <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[var(--color-purple-300)]/60 dark:text-white/60">
                                                 Volgende evenement

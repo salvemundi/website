@@ -23,5 +23,9 @@
         "react-dom": "^19.0.0"
       }
     }
+  },
+  "dependencies": {
+    "better-auth": "1.5.5",
+    "pg": "^8.19.0"
   }
 }

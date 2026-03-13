@@ -33,7 +33,7 @@ export default function DocumentenLijst({ documenten, directusUrl }: DocumentenL
                         target="_blank"
                         rel="noopener noreferrer"
                         className="block text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors group"
-                        title={doc.description ?? doc.title}
+                        title={doc.description !== null ? doc.description : undefined}
                     >
                         {/* Kleine pijl-animatie op hover */}
                         <span className="group-hover:translate-x-1 inline-block transition-transform">→</span>{' '}
