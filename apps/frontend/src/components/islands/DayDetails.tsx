@@ -12,7 +12,7 @@ interface DayDetailsProps {
 }
 
 export default function DayDetails({ selectedDay, events, onClose, onEventClick }: DayDetailsProps) {
-    const dayEvents = events.filter(event => isSameDay(parseISO(event.event_date), selectedDay));
+    const dayEvents = events.filter(event => isSameDay(parseISO(event.datum_start || event.event_date), selectedDay));
 
     return (
         <div className="rounded-3xl bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-6 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-300">
@@ -42,17 +42,17 @@ export default function DayDetails({ selectedDay, events, onClose, onEventClick 
                             className="group cursor-pointer rounded-xl bg-[var(--bg-soft)] p-3 transition hover:ring-2 hover:ring-inset hover:ring-[var(--theme-purple)]/30"
                         >
                             <h4 className="font-semibold text-[var(--theme-purple)] dark:text-[var(--text-main)] group-hover:text-[var(--color-oranje)]">
-                                {event.name}
+                                {event.titel || event.name}
                             </h4>
                             <div className="mt-2 flex items-center gap-3 text-xs text-[var(--text-muted)]">
                                 <div className="flex items-center gap-1">
                                     <Clock className="h-3 w-3" />
-                                    <span>{format(parseISO(event.event_date), 'HH:mm')}</span>
+                                    <span>{format(parseISO(event.datum_start || event.event_date), 'HH:mm')}</span>
                                 </div>
-                                {event.location && (
+                                {(event.locatie || event.location) && (
                                     <div className="flex items-center gap-1">
                                         <MapPin className="h-3 w-3" />
-                                        <span className="truncate max-w-[120px]">{event.location}</span>
+                                        <span className="truncate max-w-[120px]">{event.locatie || event.location}</span>
                                     </div>
                                 )}
                             </div>

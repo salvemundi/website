@@ -26,7 +26,7 @@ const getDirectusHeaders = (): HeadersInit | null => {
  */
 export async function getDocumenten(): Promise<Document[]> {
     const directusUrl = getDirectusUrl();
-    const url = `${directusUrl}/items/documenten?sort=display_order&limit=50`;
+    const url = `${directusUrl}/items/documents?sort=display_order&limit=50`;
 
     const headers = getDirectusHeaders();
     if (!headers) {

@@ -31,13 +31,12 @@ const getDirectusHeaders = (): HeadersInit | null => {
 // ─── Hero Banners ─────────────────────────────────────────────────────────────
 
 /**
- * Haalt alle gepubliceerde hero-banners op uit Directus via de interne service-URL.
- * Resultaat 5 minuten gecached en chirurgisch invalideerbaar via 'hero_banners' tag.
+ * Haalt alle hero-banners op uit Directus en mapt deze naar het HeroBanner type.
  */
 export async function getHeroBanners(): Promise<HeroBanner[]> {
-
     const directusUrl = getDirectusUrl();
-    const url = `${directusUrl}/items/hero_banners?filter[status][_eq]=published&sort=display_order&limit=10`;
+    // Vraag alleen noodzakelijke velden op die in de DB bestaan
+    const url = `${directusUrl}/items/hero_banners?fields=id,title,image,sort&limit=10`;
 
     const headers = getDirectusHeaders();
     if (!headers) {
@@ -66,7 +65,19 @@ export async function getHeroBanners(): Promise<HeroBanner[]> {
     }
 
     const json = await res.json();
-    const parsed = heroBannersSchema.safeParse(json?.data ?? []);
+    const rawData = json?.data ?? [];
+
+    // Mapping van DB velden naar Zod Schema velden
+    const mappedData = rawData.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        subtitle: null, // Subtitle ontbreekt in huidige DB
+        afbeelding_id: item.image,
+        status: 'published', // Status ontbreekt in huidige DB, we nemen aan published
+        display_order: item.sort,
+    }));
+
+    const parsed = heroBannersSchema.safeParse(mappedData);
 
     if (!parsed.success) {
         console.error('[home.actions#getHeroBanners] Zod validatie mislukt:', {
@@ -81,14 +92,13 @@ export async function getHeroBanners(): Promise<HeroBanner[]> {
 // ─── Activiteiten ─────────────────────────────────────────────────────────────
 
 /**
- * Haalt de eerstvolgende gepubliceerde activiteiten op uit Directus.
- * Gesorteerd op datum_start (oplopend), standaard maximaal 4 resultaten.
- * Gecached en invalideerbaar via 'activiteiten' tag na mutaties.
+ * Haalt de eerstvolgende gepubliceerde evenementen op (gemapt van 'events' collectie).
  */
 export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> {
-
     const directusUrl = getDirectusUrl();
-    const url = `${directusUrl}/items/activiteiten?filter[status][_eq]=published&sort=datum_start&limit=${limit}`;
+    // Collectie op VPS heet 'events'. Vraag alleen op wat nodig is.
+    const fields = 'id,name,description,location,event_date,event_date_end,image,status';
+    const url = `${directusUrl}/items/events?fields=${fields}&filter[status][_eq]=published&sort=event_date&limit=${limit}`;
 
     const headers = getDirectusHeaders();
     if (!headers) {
@@ -117,13 +127,27 @@ export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> 
     }
 
     const json = await res.json();
-    const parsed = activiteitenSchema.safeParse(json?.data ?? []);
+    const rawData = json?.data ?? [];
+
+    // Mapping van DB velden ('events') naar Zod Schema velden ('Activiteit')
+    const mappedData = rawData.map((item: any) => ({
+        id: String(item.id), // Zod verwacht string (uuid-formaat), VPS id's zijn op dit moment nog numbers
+        titel: item.name,
+        beschrijving: item.description,
+        locatie: item.location,
+        datum_start: item.event_date ? new Date(item.event_date).toISOString() : new Date().toISOString(),
+        datum_eind: item.event_date_end ? new Date(item.event_date_end).toISOString() : null,
+        afbeelding_id: item.image,
+        status: item.status,
+    }));
+
+    const parsed = activiteitenSchema.safeParse(mappedData);
 
     if (!parsed.success) {
         console.error('[home.actions#getUpcomingActiviteiten] Zod validatie mislukt:', {
             fieldErrors: parsed.error.flatten().fieldErrors,
         });
-        return [];
+        return parsed.data ?? []; // Return data we hebben, of leeg als het echt stuk is
     }
 
     return parsed.data;

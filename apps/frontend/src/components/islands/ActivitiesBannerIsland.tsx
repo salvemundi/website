@@ -12,18 +12,21 @@ export default function ActivitiesBannerIsland({ events }: ActivitiesBannerIslan
         const now = new Date();
         return events
             .filter(e => {
+                const eDate = e.datum_start || e.event_date;
                 const eventDateTime = e.event_time
-                    ? new Date(`${e.event_date}T${e.event_time}`)
-                    : new Date(e.event_date);
+                    ? new Date(`${eDate}T${e.event_time}`)
+                    : new Date(eDate);
                 return eventDateTime >= now;
             })
             .sort((a, b) => {
+                const aDate = a.datum_start || a.event_date;
+                const bDate = b.datum_start || b.event_date;
                 const aDateTime = a.event_time
-                    ? new Date(`${a.event_date}T${a.event_time}`).getTime()
-                    : new Date(a.event_date).getTime();
+                    ? new Date(`${aDate}T${a.event_time}`).getTime()
+                    : new Date(aDate).getTime();
                 const bDateTime = b.event_time
-                    ? new Date(`${b.event_date}T${b.event_time}`).getTime()
-                    : new Date(b.event_date).getTime();
+                    ? new Date(`${bDate}T${b.event_time}`).getTime()
+                    : new Date(bDate).getTime();
                 return aDateTime - bDateTime;
             })[0];
     }, [events]);
@@ -40,10 +43,10 @@ export default function ActivitiesBannerIsland({ events }: ActivitiesBannerIslan
             dark:to-[#2a232b]">
             <FlipClock
                 targetDate={upcomingEvent.event_time
-                    ? `${upcomingEvent.event_date}T${upcomingEvent.event_time}`
-                    : upcomingEvent.event_date
+                    ? `${upcomingEvent.datum_start || upcomingEvent.event_date}T${upcomingEvent.event_time}`
+                    : (upcomingEvent.datum_start || upcomingEvent.event_date)
                 }
-                title={upcomingEvent.name}
+                title={upcomingEvent.titel || upcomingEvent.name}
                 href={`/activiteiten/${upcomingEvent.id}`}
             />
         </div>

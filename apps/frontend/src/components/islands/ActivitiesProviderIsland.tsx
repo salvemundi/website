@@ -27,19 +27,22 @@ export default function ActivitiesProviderIsland({ events }: ActivitiesProviderI
         if (!showPastActivities) {
             const now = new Date();
             filtered = filtered.filter(event => {
+                const eventDate = event.datum_start || event.event_date;
                 const eventDateTime = event.event_time
-                    ? new Date(`${event.event_date}T${event.event_time}`)
-                    : new Date(event.event_date);
+                    ? new Date(`${eventDate}T${event.event_time}`)
+                    : new Date(eventDate);
                 return eventDateTime >= now;
             });
         }
         return filtered.sort((a, b) => {
+            const aDate = a.datum_start || a.event_date;
+            const bDate = b.datum_start || b.event_date;
             const aDateTime = a.event_time
-                ? new Date(`${a.event_date}T${a.event_time}`).getTime()
-                : new Date(a.event_date).getTime();
+                ? new Date(`${aDate}T${a.event_time}`).getTime()
+                : new Date(aDate).getTime();
             const bDateTime = b.event_time
-                ? new Date(`${b.event_date}T${b.event_time}`).getTime()
-                : new Date(b.event_date).getTime();
+                ? new Date(`${bDate}T${b.event_time}`).getTime()
+                : new Date(bDate).getTime();
             return aDateTime - bDateTime;
         });
     }, [events, showPastActivities]);
@@ -48,18 +51,21 @@ export default function ActivitiesProviderIsland({ events }: ActivitiesProviderI
         const now = new Date();
         return events
             .filter(e => {
+                const eDate = e.datum_start || e.event_date;
                 const eventDateTime = e.event_time
-                    ? new Date(`${e.event_date}T${e.event_time}`)
-                    : new Date(e.event_date);
+                    ? new Date(`${eDate}T${e.event_time}`)
+                    : new Date(eDate);
                 return eventDateTime >= now;
             })
             .sort((a, b) => {
+                const aDate = a.datum_start || a.event_date;
+                const bDate = b.datum_start || b.event_date;
                 const aDateTime = a.event_time
-                    ? new Date(`${a.event_date}T${a.event_time}`).getTime()
-                    : new Date(a.event_date).getTime();
+                    ? new Date(`${aDate}T${a.event_time}`).getTime()
+                    : new Date(aDate).getTime();
                 const bDateTime = b.event_time
-                    ? new Date(`${b.event_date}T${b.event_time}`).getTime()
-                    : new Date(b.event_date).getTime();
+                    ? new Date(`${bDate}T${b.event_time}`).getTime()
+                    : new Date(bDate).getTime();
                 return aDateTime - bDateTime;
             })[0];
     }, [events]);

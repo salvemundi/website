@@ -1,5 +1,5 @@
-// MISSING SOURCE REQUIREMENT: Stubbed to satisfy compiler
+// Directus Assets via interne proxy om Public permissie restricties te omzeilen
 export function getImageUrl(id?: string): string {
     if (!id) return '/img/placeholder.svg';
-    return `${process.env.NEXT_PUBLIC_API_URL || 'https://api.salvemundi.nl'}/assets/${id}`;
+    return `/api/assets/${id}`;
 }

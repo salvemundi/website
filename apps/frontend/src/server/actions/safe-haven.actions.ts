@@ -29,7 +29,7 @@ const getDirectusHeaders = (): HeadersInit | null => {
  */
 async function fetchSafeHavensFromDirectus(): Promise<SafeHaven[]> {
     const directusUrl = getDirectusUrl();
-    const url = `${directusUrl}/items/safe_havens?filter[status][_eq]=published&sort=sort&limit=50`;
+    const url = `${directusUrl}/items/safe_havens?limit=50`;
 
     let res: Response;
     try {
@@ -56,9 +56,21 @@ async function fetchSafeHavensFromDirectus(): Promise<SafeHaven[]> {
     }
 
     const json = await res.json();
-    const data = json?.data ?? [];
+    const rawData = json?.data ?? [];
 
-    const parsed = safeHavensSchema.safeParse(data);
+    // Mapping van DB velden naar Zod Schema velden
+    const mappedData = rawData.map((item: any) => ({
+        id: item.id,
+        naam: item.contact_name,
+        email: item.email,
+        telefoon: item.phone_number,
+        beschrijving: null, // Beschrijving ontbreekt in huidige DB
+        afbeelding_id: item.image,
+        status: 'published',
+        sort: item.sort,
+    }));
+
+    const parsed = safeHavensSchema.safeParse(mappedData);
     if (!parsed.success) {
         console.error('[safe-haven.actions#fetchSafeHavensFromDirectus] Zod validatie mislukt:', {
             fieldErrors: parsed.error.flatten().fieldErrors,
