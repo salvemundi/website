@@ -39,11 +39,13 @@ jobs:
           AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID: ${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID }}
           AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET: ${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET }}
           DIRECTUS_ALLOWED_REDIRECTS: ${{ secrets.DIRECTUS_ALLOWED_REDIRECTS }}
+          PUBLIC_URL: "https://admin.salvemundi.nl"
+          CORS_ORIGIN: "https://admin.salvemundi.nl"
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          envs: INTERNAL_SERVER_IP,DB_USER,DB_PASSWORD,DB_NAME,DIRECTUS_KEY,DIRECTUS_SECRET,AZURE_WEBSITEV7_TENANT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET,DIRECTUS_ALLOWED_REDIRECTS
+          envs: INTERNAL_SERVER_IP,DB_USER,DB_PASSWORD,DB_NAME,DIRECTUS_KEY,DIRECTUS_SECRET,AZURE_WEBSITEV7_TENANT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET,DIRECTUS_ALLOWED_REDIRECTS,PUBLIC_URL,CORS_ORIGIN
           script_stop: true
           script: |
             cd /opt/salve-mundi-v7/infra
@@ -60,6 +62,8 @@ jobs:
             printf "AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID" | tr -d '\n\r')" >> .env
             printf "AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET" | tr -d '\n\r')" >> .env
             printf "DIRECTUS_ALLOWED_REDIRECTS=\"%s\"\n" "$(echo "$DIRECTUS_ALLOWED_REDIRECTS" | tr -d '\n\r')" >> .env
+            printf "PUBLIC_URL=\"%s\"\n" "$PUBLIC_URL" >> .env
+            printf "CORS_ORIGIN=\"%s\"\n" "$CORS_ORIGIN" >> .env
 
             # Ensure the shared network exists
             docker network create salve-mundi-v7-shared || true
