@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Instagram, Facebook, Linkedin } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
@@ -46,6 +47,12 @@ const MUTED_CLS = 'text-[var(--color-purple-800)] dark:text-[var(--text-light)]'
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const FooterIsland: React.FC<FooterIslandProps> = ({ documents, disabledRoutes = [] }) => {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     // Better Auth sessie — uitsluitend via authClient.useSession() conform V7-advies
     const { data: session } = authClient.useSession();
     const isAuthenticated = !!session?.user;
@@ -158,7 +165,7 @@ const FooterIsland: React.FC<FooterIslandProps> = ({ documents, disabledRoutes =
                             </li>
 
                             {/* WhatsApp-link: uitsluitend zichtbaar voor ingelogde leden */}
-                            {isAuthenticated && (
+                            {mounted && isAuthenticated && (
                                 <li>
                                     <a
                                         href="https://wa.me/31624827777"

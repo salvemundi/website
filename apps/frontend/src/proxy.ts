@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 import { PUBLIC_ROUTES } from '@/lib/routes';
+import { auth } from '@/server/auth/auth';
 
 /**
  * Haalt de lijst met uitgeschakelde routes op vanuit de Directus feature_flags collectie.
@@ -72,16 +73,15 @@ export async function proxy(request: NextRequest) {
     const isPublicRoute = PUBLIC_ROUTES.some((route: string) => pathname === route || pathname.startsWith(`${route}/`));
 
     if (!isPublicRoute) {
-        // Core Better Auth session check via cookie
-        const sessionToken = request.cookies.get('better-auth.session-token');
+        // Core Better Auth session check via API (handles cookie prefixes and validation)
+        const session = await auth.api.getSession({
+            headers: request.headers
+        });
 
-        if (!sessionToken) {
-            // Better Auth Redirect: Sends user to the API endpoint that triggers Microsoft Entra ID Login
-            // Met Better Auth is het endpoint `/api/auth/sign-in/microsoft` niet `/social/microsoft` (tenzij expliciet gedefinieerd).
-            // We behouden de callbackURL om na het inloggen de bezoeker terug te sturen
-            const callbackUrl = encodeURIComponent(request.url);
-            const loginUrl = new URL(`/api/auth/sign-in/microsoft?callbackURL=${callbackUrl}`, request.url);
-            return NextResponse.redirect(loginUrl);
+        if (!session) {
+            // NEVER redirect to external sites from the Proxy. 
+            // Send user to a 404 if they are not allowed to see this page.
+            return NextResponse.rewrite(new URL('/404', request.url));
         }
     }
 

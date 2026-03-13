@@ -7,6 +7,7 @@ export * from './schema/home.zod';
 export * from './schema/safe-havens.zod';
 export * from './schema/activity.zod';
 export * from './schema/azure-sync.zod';
+export * from './schema/profiel.zod';
 
 
 import { memberSchema } from './schema/members.zod';
@@ -23,6 +24,13 @@ export type HeroBanner = z.infer<typeof heroBannerSchema>;
 export type Activiteit = z.infer<typeof activiteitSchema>;
 export type Sponsor = z.infer<typeof sponsorSchema>;
 export type SafeHaven = z.infer<typeof safeHavenSchema>;
+
+export * from './schema/profiel.zod';
+import { whatsappGroupSchema, transactionSchema, eventSignupSchema } from './schema/profiel.zod';
+
+export type WhatsAppGroup = z.infer<typeof whatsappGroupSchema>;
+export type Transaction = z.infer<typeof transactionSchema>;
+export type EventSignup = z.infer<typeof eventSignupSchema>;
 
 export * from './schema/admin-reis.zod';
 import { tripSchema, tripSignupSchema, tripSignupActivitySchema } from './schema/admin-reis.zod';
