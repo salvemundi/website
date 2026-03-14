@@ -11,7 +11,9 @@ import {
 
 const DIRECTUS_STATIC_TOKEN = process.env.DIRECTUS_STATIC_TOKEN;
 const INTERNAL_SERVICE_TOKEN = process.env.INTERNAL_SERVICE_TOKEN;
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.salvemundi.nl';
+const getDirectusUrl = () =>
+    process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
+
 const FINANCE_URL = process.env.INTERNAL_FINANCE_URL || 'http://finance-prod:3001';
 
 /**
@@ -51,7 +53,7 @@ export async function getTrips() {
     }
 
     try {
-        const url = new URL(`${API_URL}/items/trips`);
+        const url = new URL(`${getDirectusUrl()}/items/trips`);
         url.searchParams.append('fields', 'id,name,event_date,start_date,end_date,registration_open,max_participants,base_price,crew_discount,deposit_amount,is_bus_trip,allow_final_payments');
         url.searchParams.append('sort', '-event_date');
 
@@ -89,7 +91,7 @@ export async function getTripSignups(tripId: number) {
     }
 
     try {
-        const url = new URL(`${API_URL}/items/trip_signups`);
+        const url = new URL(`${getDirectusUrl()}/items/trip_signups`);
         url.searchParams.append('filter[trip_id][_eq]', tripId.toString());
         url.searchParams.append('fields', '*');
         url.searchParams.append('sort', '-created_at');
@@ -130,7 +132,7 @@ export async function updateSignupStatus(signupId: number, status: string, tripI
     }
 
     try {
-        const url = new URL(`${API_URL}/items/trip_signups/${signupId}`);
+        const url = new URL(`${getDirectusUrl()}/items/trip_signups/${signupId}`);
         const response = await fetch(url.toString(), {
             method: 'PATCH',
             headers: {
@@ -163,7 +165,7 @@ export async function deleteSignup(signupId: number) {
     }
 
     try {
-        const url = new URL(`${API_URL}/items/trip_signups/${signupId}`);
+        const url = new URL(`${getDirectusUrl()}/items/trip_signups/${signupId}`);
         const response = await fetch(url.toString(), {
             method: 'DELETE',
             headers: {
@@ -230,7 +232,7 @@ export async function getSignupActivities(signupId: number) {
     }
 
     try {
-        const url = new URL(`${API_URL}/items/trip_signup_activities`);
+        const url = new URL(`${getDirectusUrl()}/items/trip_signup_activities`);
         // filter on signupId and grab relations
         url.searchParams.append('filter[trip_signup_id][_eq]', signupId.toString());
         url.searchParams.append('fields', 'trip_signup_id,trip_activity_id.*,selected_options');

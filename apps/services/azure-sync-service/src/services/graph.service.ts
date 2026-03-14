@@ -39,10 +39,9 @@ export class GraphService {
         let allUsers: AzureUser[] = [];
         const client = this.getClient(token);
         
+        console.log(`[GraphService] Fetching all users...`);
         let response = await client.api('/users')
-            .version('beta')
-            .header('ConsistencyLevel', 'eventual')
-            .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,customSecurityAttributes,jobTitle,birthday')
+            .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,jobTitle,birthday')
             .top(999)
             .get();
 

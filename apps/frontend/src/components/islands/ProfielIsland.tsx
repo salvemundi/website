@@ -14,6 +14,7 @@ import {
 import { authClient } from '@/lib/auth-client';
 import type { EventSignup } from '@salvemundi/validations';
 import { updateUserProfile } from '@/server/actions/profiel-update.actions';
+import { getImageUrl } from '@/shared/lib/api/salvemundi';
 
 interface ProfielIslandProps {
     initialSignups: EventSignup[];
@@ -142,8 +143,8 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
     const membershipStatus = useMemo(() => {
         const isLeader = Array.isArray(user.committees) && user.committees.some((c: any) => c.is_leader);
         const isInCommittee = isCommitteeMember;
-        const isMember = user.is_member;
         const status = user.membership_status;
+        const isMember = status === 'active';
 
         let role = "Gebruiker";
         if (isLeader) role = "Commissie Leider";
@@ -180,14 +181,15 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
                 <Tile className="h-fit">
                     <div className="flex flex-col gap-6 items-center text-center">
                         <div className="relative group shrink-0">
-                            <div className="relative h-28 w-28 sm:h-32 sm:w-32 rounded-full overflow-hidden border-4 border-[var(--color-purple-100)] shadow-lg">
-                                {user.image ? (
+                            <div className="relative h-28 w-28 sm:h-32 sm:w-32 rounded-full overflow-hidden border-4 border-[var(--color-purple-100)] shadow-lg bg-white">
+                                {user.avatar || user.image ? (
                                     <Image
-                                        src={user.image}
+                                        src={getImageUrl(user.avatar || user.image)}
                                         alt={user.name || "Avatar"}
                                         fill
                                         sizes="128px"
                                         className="object-cover"
+                                        unoptimized
                                     />
                                 ) : (
                                     <div className="h-full w-full bg-[var(--color-purple-50)] border border-[var(--color-purple-100)] flex items-center justify-center">

@@ -11,19 +11,22 @@ import {
 import { authClient } from '@/lib/auth-client';
 import { ThemeToggle } from '@/components/islands/ThemeToggle';
 import { ROUTES } from '@/lib/routes';
+import { getImageUrl } from '@/shared/lib/api/salvemundi';
 interface NavigationHeaderProps {
     disabledRoutes?: string[];
+    initialSession?: any;
 }
 
-const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = [] }) => {
+const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = [], initialSession }) => {
     const pathname = usePathname();
     const router = useRouter();
     const [mounted, setMounted] = useState(false);
 
     // Better Auth sessie — uitsluitend via useSession() conform V7-advies
     const { data: session } = authClient.useSession();
-    const isAuthenticated = !!session?.user;
-    const user = session?.user ?? null;
+    const currentSession = session || initialSession;
+    const isAuthenticated = !!currentSession?.user;
+    const user = currentSession?.user ?? null;
 
     const [menuOpen, setMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
@@ -232,18 +235,13 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                                 >
                                     <div className="relative h-8 w-8 rounded-full overflow-hidden">
                                         <Image
-                                            src={
-                                                (user as Record<string, unknown>)?.image
-                                                    ? String((user as Record<string, unknown>).image)
-                                                    : '/img/newlogo.png'
-                                            }
-                                            alt={(user as Record<string, unknown>)?.email
-                                                ? String((user as Record<string, unknown>).email)
-                                                : 'Profiel'}
+                                            src={getImageUrl((user as any)?.avatar || (user as any)?.image)}
+                                            alt={(user as any)?.email ? String((user as any).email) : 'Profiel'}
                                             fill
                                             sizes="32px"
                                             className="object-cover"
                                             priority
+                                            unoptimized
                                         />
                                     </div>
                                     <span className="hidden sm:inline">Mijn profiel</span>
@@ -327,14 +325,15 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                             className="flex items-center gap-3"
                         >
                             <span className="inline-flex relative h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-card)] shadow-sm overflow-hidden">
-                                {(user as Record<string, unknown>)?.image ? (
+                                {mounted && ((user as any)?.avatar || (user as any)?.image) ? (
                                     <Image
-                                        src={String((user as Record<string, unknown>).image)}
-                                        alt={String((user as Record<string, unknown>).email ?? '')}
+                                        src={getImageUrl((user as any)?.avatar || (user as any)?.image)}
+                                        alt={String((user as any).email ?? '')}
                                         fill
                                         sizes="40px"
                                         className="object-cover"
                                         priority
+                                        unoptimized
                                     />
                                 ) : (
                                     <img className="h-7 w-7" src="/img/newlogo.png" alt="" />
