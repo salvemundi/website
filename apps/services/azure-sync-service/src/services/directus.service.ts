@@ -1,9 +1,9 @@
 import { getDirectusClient } from '../config/directus.js';
-import { updateItem, updateItems, readItems, createItem, deleteItem } from '@directus/sdk';
+import { updateItem, readItems, createItem, deleteItem, readUsers, updateUser } from '@directus/sdk';
 
 export class DirectusService {
     static async getUserByEntraId(entraId: string) {
-        const users = await getDirectusClient().request(readItems('directus_users', {
+        const users = await getDirectusClient().request(readUsers({
             filter: { entra_id: { _eq: entraId } },
             fields: ['id', 'email', 'first_name', 'last_name', 'entra_id']
         }));
@@ -11,7 +11,7 @@ export class DirectusService {
     }
 
     static async getUserByEmail(email: string) {
-        const users = await getDirectusClient().request(readItems('directus_users', {
+        const users = await getDirectusClient().request(readUsers({
             filter: { email: { _eq: email.toLowerCase() } },
             fields: ['id', 'email', 'first_name', 'last_name', 'entra_id']
         }));
@@ -19,7 +19,7 @@ export class DirectusService {
     }
 
     static async updateUser(id: string, data: any) {
-        return await getDirectusClient().request(updateItem('directus_users', id, data));
+        return await getDirectusClient().request(updateUser(id, data));
     }
 
     static async getCommitteeByName(name: string) {
