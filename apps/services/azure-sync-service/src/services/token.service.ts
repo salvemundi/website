@@ -26,6 +26,7 @@ export class TokenService {
         }
 
         const tokenResponse = await this.credential.getToken('https://graph.microsoft.com/.default');
+        console.log(`[TokenService] Fetched new token starting with: ${tokenResponse.token.substring(0, 10)}...`);
         
         // 3. Save to Redis with 50m TTL (3000s)
         await redis.set(cacheKey, tokenResponse.token, {
