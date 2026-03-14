@@ -9,7 +9,7 @@ interface UserData {
     first_name: string;
     last_name?: string;
     email: string;
-    is_member: boolean;
+    membership_status?: string;
     membership_expiry?: string;
     phone_number?: string;
     date_of_birth?: string;
@@ -22,7 +22,7 @@ interface MembershipStatusIslandProps {
 
 export default function MembershipStatusIsland({ user, baseAmount }: MembershipStatusIslandProps) {
     const [isPending, startTransition] = useTransition();
-    const isExpired = !user.is_member;
+    const isExpired = user.membership_status !== 'active';
 
     const handleRenewal = async () => {
         startTransition(async () => {

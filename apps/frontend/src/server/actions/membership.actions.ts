@@ -85,7 +85,7 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
     });
 
     const user = session?.user;
-    const isExpired = user && !user.is_member; // Assuming is_member is on the user object
+    const isExpired = user && user.membership_status !== 'active';
 
     // Determine base amount (simplified logic based on legacy)
     // In a real V7 app, we would verify committee status via Azure Groups or Directus

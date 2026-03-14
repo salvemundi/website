@@ -64,7 +64,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     const handleSignupClick = (e: React.MouseEvent) => {
         e.stopPropagation();
 
-        if (onlyMembers && !user?.is_member) {
+        if (onlyMembers && user?.membership_status !== 'active') {
             if (!isAuthenticated) {
                 const returnTo = window.location.pathname + window.location.search;
                 localStorage.setItem('auth_return_to', returnTo);
