@@ -40,20 +40,35 @@ export class GraphService {
         let allUsers: AzureUser[] = [];
         const client = this.getClient(token);
         
+        const fetchWithRetry = async (url: string, selectFields?: string, top: number = 100, retries = 3): Promise<any> => {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    let request = client.api(url);
+                    if (selectFields) request = request.select(selectFields);
+                    return await request.top(top).get();
+                } catch (err: any) {
+                    if (i === retries - 1) throw err;
+                    const delay = Math.pow(2, i) * 1000;
+                    console.warn(`[GraphService] Request failed (Status ${err.statusCode}), retrying in ${delay}ms...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        };
+
         try {
-            console.log(`[GraphService] Sending request to /users...`);
-            let response = await client.api('/users')
-                .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,jobTitle,customSecurityAttributes')
-                .top(999)
-                .get();
+            const selectFields = 'id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,jobTitle,customSecurityAttributes';
+            console.log(`[GraphService] Fetching users (page 1)...`);
+            let response = await fetchWithRetry('/users', selectFields, 100);
 
             console.log(`[GraphService] Received response from /users. Count: ${response.value?.length}`);
             allUsers = [...(response.value || [])];
 
+            let page = 1;
             while (response['@odata.nextLink']) {
-                console.log(`[GraphService] Fetching next page...`);
-                response = await client.api(response['@odata.nextLink']).get();
-                allUsers = [...allUsers, ...response.value];
+                page++;
+                console.log(`[GraphService] Fetching users (page ${page})...`);
+                response = await fetchWithRetry(response['@odata.nextLink'], undefined, 100);
+                allUsers = [...allUsers, ...(response.value || [])];
             }
 
             return allUsers;
