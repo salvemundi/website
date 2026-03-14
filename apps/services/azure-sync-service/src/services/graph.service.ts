@@ -36,23 +36,31 @@ export class GraphService {
     }
 
     static async getAllUsers(token: string): Promise<AzureUser[]> {
+        console.log(`[GraphService] getAllUsers started`);
         let allUsers: AzureUser[] = [];
         const client = this.getClient(token);
         
-        console.log(`[GraphService] Fetching all users...`);
-        let response = await client.api('/users')
-            .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,jobTitle,birthday')
-            .top(999)
-            .get();
+        try {
+            console.log(`[GraphService] Sending request to /users...`);
+            let response = await client.api('/users')
+                .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,jobTitle,birthday')
+                .top(999)
+                .get();
 
-        allUsers = [...response.value];
+            console.log(`[GraphService] Received response from /users. Count: ${response.value?.length}`);
+            allUsers = [...(response.value || [])];
 
-        while (response['@odata.nextLink']) {
-            response = await client.api(response['@odata.nextLink']).get();
-            allUsers = [...allUsers, ...response.value];
+            while (response['@odata.nextLink']) {
+                console.log(`[GraphService] Fetching next page...`);
+                response = await client.api(response['@odata.nextLink']).get();
+                allUsers = [...allUsers, ...response.value];
+            }
+
+            return allUsers;
+        } catch (error: any) {
+            console.error(`[GraphService] Error in getAllUsers:`, JSON.stringify(error, null, 2));
+            throw error;
         }
-
-        return allUsers;
     }
 
     static async getUserGroups(userId: string, token: string): Promise<AzureGroup[]> {
