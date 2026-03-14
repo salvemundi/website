@@ -41,11 +41,12 @@ jobs:
           DIRECTUS_ALLOWED_REDIRECTS: ${{ secrets.DIRECTUS_ALLOWED_REDIRECTS }}
           PUBLIC_URL: "https://admin.salvemundi.nl"
           CORS_ORIGIN: "https://admin.salvemundi.nl"
+          DIRECTUS_STATIC_TOKEN: ${{ secrets.DIRECTUS_STATIC_TOKEN }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          envs: INTERNAL_SERVER_IP,DB_USER,DB_PASSWORD,DB_NAME,DIRECTUS_KEY,DIRECTUS_SECRET,AZURE_WEBSITEV7_TENANT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET,DIRECTUS_ALLOWED_REDIRECTS,PUBLIC_URL,CORS_ORIGIN
+          envs: INTERNAL_SERVER_IP,DB_USER,DB_PASSWORD,DB_NAME,DIRECTUS_KEY,DIRECTUS_SECRET,AZURE_WEBSITEV7_TENANT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET,DIRECTUS_ALLOWED_REDIRECTS,PUBLIC_URL,CORS_ORIGIN,DIRECTUS_STATIC_TOKEN
           script_stop: true
           script: |
             cd /opt/salve-mundi-v7/infra
@@ -64,6 +65,7 @@ jobs:
             printf "DIRECTUS_ALLOWED_REDIRECTS=\"%s\"\n" "$(echo "$DIRECTUS_ALLOWED_REDIRECTS" | tr -d '\n\r')" >> .env
             printf "PUBLIC_URL=\"%s\"\n" "$PUBLIC_URL" >> .env
             printf "CORS_ORIGIN=\"%s\"\n" "$CORS_ORIGIN" >> .env
+            printf "DIRECTUS_STATIC_TOKEN=\"%s\"\n" "$(echo "$DIRECTUS_STATIC_TOKEN" | tr -d '\n\r')" >> .env
 
             # Ensure the shared network exists
             docker network create salve-mundi-v7-shared || true
