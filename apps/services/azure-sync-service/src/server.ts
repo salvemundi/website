@@ -1,6 +1,5 @@
 import Fastify from 'fastify';
 import dotenv from 'dotenv';
-import syncRoutes from './routes/sync.js';
 
 dotenv.config();
 
@@ -8,8 +7,12 @@ const fastify = Fastify({
     logger: true
 });
 
+// Import Plugins & Routes
+import redisPlugin from './plugins/redis.js';
+import syncRoutes from './routes/sync.js';
+
 // Register Plugins
-fastify.register(import('./plugins/redis.js'));
+fastify.register(redisPlugin);
 
 // Register Routes
 fastify.register(syncRoutes, { prefix: '/api/sync' });

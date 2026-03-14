@@ -1,10 +1,10 @@
 import { ClientSecretCredential } from '@azure/identity';
-import { RedisClientType } from 'redis';
+import { createClient } from 'redis';
 
 export class TokenService {
     private static credential?: ClientSecretCredential;
 
-    static async getAccessToken(redis: RedisClientType): Promise<string> {
+    static async getAccessToken(redis: ReturnType<typeof createClient>): Promise<string> {
         const cacheKey = 'azure_sync_access_token';
         
         // 1. Check Redis

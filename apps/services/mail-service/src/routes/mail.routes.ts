@@ -1,4 +1,6 @@
 import { FastifyInstance } from 'fastify';
+import { MailerService } from '../services/mailer.js';
+import { AuditService } from '../services/audit.js';
 
 export default async function mailRoutes(fastify: FastifyInstance) {
     /**
@@ -15,11 +17,9 @@ export default async function mailRoutes(fastify: FastifyInstance) {
         fastify.log.info(`[MAIL] Sending ${templateId} email to ${to}`);
 
         try {
-            const { MailerService } = await import('../services/mailer.js');
             await MailerService.send(to, templateId, data);
 
             // Audit Trail: Log to Directus system_logs (as per docs)
-            const { AuditService } = await import('../services/audit.js');
             await AuditService.logMail(to, templateId, 'SUCCESS');
 
             return { success: true };
@@ -27,10 +27,9 @@ export default async function mailRoutes(fastify: FastifyInstance) {
             fastify.log.error(`[MAIL] Failed to send email to ${to}:`, err);
             
             try {
-                const { AuditService } = await import('../services/audit.js');
                 await AuditService.logMail(to, templateId, 'FAILED', err.message);
-            } catch (auditErr) {
-                fastify.log.error('[MAIL] Failed to log failure to audit trail', auditErr);
+            } catch (auditErr: any) {
+                fastify.log.error(auditErr, '[MAIL] Failed to log failure to audit trail');
             }
 
             return reply.status(500).send({ error: 'Failed to dispatch email' });
