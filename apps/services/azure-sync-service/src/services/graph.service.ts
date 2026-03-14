@@ -43,7 +43,7 @@ export class GraphService {
         try {
             console.log(`[GraphService] Sending request to /users...`);
             let response = await client.api('/users')
-                .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,jobTitle,birthday')
+                .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,jobTitle')
                 .top(999)
                 .get();
 
