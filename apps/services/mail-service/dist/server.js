@@ -14,6 +14,9 @@ const fastify = (0, fastify_1.default)({
 fastify.get('/health', async () => {
     return { status: 'ok', service: 'mail-service' };
 });
+const mail_routes_js_1 = __importDefault(require("./routes/mail.routes.js"));
+// Register Routes
+fastify.register(mail_routes_js_1.default, { prefix: '/api/mail' });
 const start = async () => {
     try {
         await fastify.listen({ port: 3003, host: '0.0.0.0' });

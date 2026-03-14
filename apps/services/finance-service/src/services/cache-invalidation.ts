@@ -1,4 +1,4 @@
-import { RedisClientType } from 'redis';
+import { createClient } from 'redis';
 
 export class CacheInvalidationService {
     /**
@@ -6,7 +6,7 @@ export class CacheInvalidationService {
      * In a full implementation, this would be picked up by a worker
      * that performs exponential backoff retries.
      */
-    static async queueInvalidation(redis: RedisClientType, userId: string) {
+    static async queueInvalidation(redis: ReturnType<typeof createClient>, userId: string) {
         const queueKey = 'cache_invalidation_queue';
         const payload = JSON.stringify({
             userId,

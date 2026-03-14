@@ -13,8 +13,10 @@ fastify.get('/health', async () => {
     return { status: 'ok', service: 'mail-service' };
 });
 
+import mailRoutes from './routes/mail.routes.js';
+
 // Register Routes
-fastify.register(import('./routes/mail.routes.js'), { prefix: '/api/mail' });
+fastify.register(mailRoutes, { prefix: '/api/mail' });
 
 const start = async () => {
     try {
