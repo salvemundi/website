@@ -214,6 +214,7 @@ jobs:
           AZURE_WEBSITEV7_MAIL_CLIENT_ID: ${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_ID }}
           AZURE_WEBSITEV7_MAIL_CLIENT_SECRET: ${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_SECRET }}
           DIRECTUS_STATIC_TOKEN: ${{ secrets.DIRECTUS_STATIC_TOKEN }}
+          INTERNAL_DIRECTUS_URL: "http://v7-core-directus:8055"
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
