@@ -3,6 +3,7 @@
 import { WhatsAppGroup } from '@salvemundi/validations';
 import { MessageCircle, ExternalLink, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
+import { stripHtml } from '@/shared/lib/text';
 
 interface WhatsAppGroupsIslandProps {
     groups: WhatsAppGroup[];
@@ -10,13 +11,6 @@ interface WhatsAppGroupsIslandProps {
 }
 
 export const WhatsAppGroupsIsland: React.FC<WhatsAppGroupsIslandProps> = ({ groups, gedragscodeUrl }) => {
-    
-    // Strip HTML as per legacy, safely in client
-    const stripHtml = (html?: string | null) => {
-        if (!html) return '';
-        const doc = new DOMParser().parseFromString(html, 'text/html');
-        return doc.body.textContent || '';
-    };
 
     const handleJoinGroup = (inviteLink: string) => {
         window.open(inviteLink, '_blank', 'noopener,noreferrer');
