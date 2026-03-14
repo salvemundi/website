@@ -1,4 +1,5 @@
-import { getGraphClient } from '../config/azure.js';
+import { Client } from '@microsoft/microsoft-graph-client';
+import 'isomorphic-fetch';
 
 export interface AzureUser {
     id: string;
@@ -26,9 +27,19 @@ export interface AzureGroup {
 }
 
 export class GraphService {
-    static async getAllUsers(): Promise<AzureUser[]> {
+    private static getClient(token: string): Client {
+        return Client.init({
+            authProvider: (done) => {
+                done(null, token);
+            }
+        });
+    }
+
+    static async getAllUsers(token: string): Promise<AzureUser[]> {
         let allUsers: AzureUser[] = [];
-        let response = await getGraphClient().api('/users')
+        const client = this.getClient(token);
+        
+        let response = await client.api('/users')
             .version('beta')
             .header('ConsistencyLevel', 'eventual')
             .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,customSecurityAttributes,jobTitle,birthday')
@@ -38,22 +49,22 @@ export class GraphService {
         allUsers = [...response.value];
 
         while (response['@odata.nextLink']) {
-            response = await getGraphClient().api(response['@odata.nextLink']).get();
+            response = await client.api(response['@odata.nextLink']).get();
             allUsers = [...allUsers, ...response.value];
         }
 
         return allUsers;
     }
 
-    static async getUserGroups(userId: string): Promise<AzureGroup[]> {
-        const response = await getGraphClient().api(`/users/${userId}/memberOf/microsoft.graph.group`)
+    static async getUserGroups(userId: string, token: string): Promise<AzureGroup[]> {
+        const response = await this.getClient(token).api(`/users/${userId}/memberOf/microsoft.graph.group`)
             .select('id,displayName')
             .get();
         return response.value || [];
     }
 
-    static async getGroupOwners(groupId: string): Promise<string[]> {
-        const response = await getGraphClient().api(`/groups/${groupId}/owners`)
+    static async getGroupOwners(groupId: string, token: string): Promise<string[]> {
+        const response = await this.getClient(token).api(`/groups/${groupId}/owners`)
             .select('id')
             .get();
         return (response.value || []).map((o: any) => o.id);

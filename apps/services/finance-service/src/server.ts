@@ -13,10 +13,12 @@ fastify.get('/health', async () => {
     return { status: 'ok', service: 'finance-service' };
 });
 
-// Endpoint from Docs 2.1
-fastify.post('/api/finance/webhook/mollie', async (request, reply) => {
-    return { received: true };
-});
+// Register Plugins
+fastify.register(import('./plugins/db.js'));
+fastify.register(import('./plugins/redis.js'));
+
+// Register Routes
+fastify.register(import('./routes/mollie.routes.js'), { prefix: '/api/finance' });
 
 const start = async () => {
     try {
