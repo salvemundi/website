@@ -15,9 +15,9 @@ export class TokenService {
 
         // 2. Fetch from Azure
         if (!this.credential) {
-            const tenantId = process.env.AZURE_WEBSITEV7_TENANT_ID;
-            const clientId = process.env.AZURE_WEBSITEV7_SYNC_CLIENT_ID;
-            const clientSecret = process.env.AZURE_WEBSITEV7_SYNC_CLIENT_SECRET;
+            const tenantId = process.env.AZURE_WEBSITEV7_TENANT_ID || process.env.AZURE_TENANT_ID;
+            const clientId = process.env.AZURE_WEBSITEV7_SYNC_CLIENT_ID || process.env.AZURE_SYNC_CLIENT_ID;
+            const clientSecret = process.env.AZURE_WEBSITEV7_SYNC_CLIENT_SECRET || process.env.AZURE_SYNC_CLIENT_SECRET;
 
             if (!tenantId || !clientId || !clientSecret) {
                 throw new Error('Missing Azure AD credentials');
