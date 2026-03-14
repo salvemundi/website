@@ -135,7 +135,7 @@ export async function getTransactionStatusAction(transactionId: string) {
         return { status: 'error' };
     }
 
-    const url = `${getDirectusUrl()}/items/transacties/${parsed.data.id}`;
+    const url = `${getDirectusUrl()}/items/transactions/${parsed.data.id}`;
 
     try {
         const response = await fetch(url, {

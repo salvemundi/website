@@ -123,6 +123,9 @@ importers:
       fastify:
         specifier: 5.1.0
         version: 5.1.0
+      fastify-plugin:
+        specifier: ^5.1.0
+        version: 5.1.0
       isomorphic-fetch:
         specifier: ^3.0.0
         version: 3.0.0
@@ -148,10 +151,22 @@ importers:
       fastify:
         specifier: 5.1.0
         version: 5.1.0
+      fastify-plugin:
+        specifier: ^5.1.0
+        version: 5.1.0
+      pg:
+        specifier: ^8.19.0
+        version: 8.19.0
+      redis:
+        specifier: ^4.6.13
+        version: 4.7.1
     devDependencies:
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.13
+      '@types/pg':
+        specifier: ^8.16.0
+        version: 8.16.0
       typescript:
         specifier: 5.7.3
         version: 5.7.3
@@ -163,6 +178,9 @@ importers:
         version: link:../../../packages/validations
       fastify:
         specifier: 5.1.0
+        version: 5.1.0
+      fastify-plugin:
+        specifier: ^5.1.0
         version: 5.1.0
     devDependencies:
       '@types/node':
@@ -2371,6 +2389,9 @@ packages:
 
   fast-uri@3.1.0:
     resolution: {integrity: sha512-iPeeDKJSWf4IEOasVVrknXpaBV0IApz/gp7S2bb7Z4Lljbl2MGJRqInZiUrQwV16cpzw/D3S5j5Julj/gT52AA==}
+
+  fastify-plugin@5.1.0:
+    resolution: {integrity: sha512-FAIDA8eovSt5qcDgcBvDuX/v0Cjz0ohGhENZ/wpc3y+oZCY2afZ9Baqql3g/lC+OHRnciQol4ww7tuthOb9idw==}
 
   fastify@5.1.0:
     resolution: {integrity: sha512-0SdUC5AoiSgMSc2Vxwv3WyKzyGMDJRAW/PgNsK1kZrnkO6MeqUIW9ovVg9F2UGIqtIcclYMyeJa4rK6OZc7Jxg==}
@@ -6118,6 +6139,8 @@ snapshots:
       fast-decode-uri-component: 1.0.1
 
   fast-uri@3.1.0: {}
+
+  fastify-plugin@5.1.0: {}
 
   fastify@5.1.0:
     dependencies:

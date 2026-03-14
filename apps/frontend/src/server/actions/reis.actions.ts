@@ -57,14 +57,14 @@ export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
 }
 
 export async function getUpcomingTrips(): Promise<ReisTrip[]> {
-    const url = `${getDirectusUrl()}/items/reizen?filter[status][_eq]=published&sort=start_date`; // Legacy used 'reizen' likely
+    const url = `${getDirectusUrl()}/items/trips?filter[status][_eq]=published&sort=start_date`; // Legacy used 'reizen', V7 uses 'trips'
     const headers = getDirectusHeaders();
     if (!headers) return [];
 
     try {
         const res = await fetch(url, {
             headers,
-            next: { revalidate: 300, tags: ['reizen', 'trips'] },
+            next: { revalidate: 300, tags: ['trips'] },
         });
         if (!res.ok) return [];
 
@@ -107,14 +107,14 @@ export async function getUpcomingTrips(): Promise<ReisTrip[]> {
 }
 
 export async function getTripSignups(tripId: number): Promise<ReisTripSignup[]> {
-    const url = `${getDirectusUrl()}/items/reis_inschrijvingen?filter[trip_id][_eq]=${tripId}&limit=-1`;
+    const url = `${getDirectusUrl()}/items/trip_signups?filter[trip_id][_eq]=${tripId}&limit=-1`;
     const headers = getDirectusHeaders();
     if (!headers) return [];
 
     try {
         const res = await fetch(url, {
             headers,
-            next: { revalidate: 60, tags: ['reis_inschrijvingen', `trip_${tripId}`] },
+            next: { revalidate: 60, tags: ['trip_signups', `trip_${tripId}`] },
         });
         if (!res.ok) return [];
 
@@ -172,7 +172,7 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number, isC
         full_payment_paid: false,
     };
 
-    const url = `${getDirectusUrl()}/items/reis_inschrijvingen`;
+    const url = `${getDirectusUrl()}/items/trip_signups`;
     const headers = getDirectusHeaders();
     if (!headers) return { success: false, message: 'Configuratiefout: API sleutel ontbreekt.' };
 
@@ -213,7 +213,7 @@ export async function cancelTripSignup(signupId: number): Promise<{ success: boo
     // "verify Better Auth session or a secure token".
 
     // Because we just need to satisfy the Zero-Trust rule:
-    const url = `${getDirectusUrl()}/items/reis_inschrijvingen/${signupId}`;
+    const url = `${getDirectusUrl()}/items/trip_signups/${signupId}`;
     const headers = getDirectusHeaders();
     if (!headers) return { success: false, message: 'Configuratiefout: API sleutel ontbreekt.' };
 

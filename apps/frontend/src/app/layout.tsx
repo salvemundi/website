@@ -6,25 +6,20 @@ import NavigationHeaderSkeleton from '@/components/ui/NavigationHeaderSkeleton';
 import FooterIsland from '@/components/islands/FooterIsland';
 import FooterSkeleton from '@/components/ui/FooterSkeleton';
 import { getDocumenten, getDisabledRoutes } from '@/server/actions/website.actions';
+import { auth } from '@/server/auth/auth';
+import { headers } from 'next/headers';
 
 export const metadata: Metadata = {
     title: 'Salve Mundi V7',
     description: 'SV Salve Mundi — Digitaal platform voor Fontys ICT.',
 };
 
-// RootLayout — De shell zelf is statisch voor maximale Performance (PPR).
-// Data-fetching is verplaatst naar sub-components binnen Suspense boundaries.
 export default function RootLayout({
     children,
 }: Readonly<{ children: React.ReactNode }>) {
     return (
         <html lang="nl" className="dark" suppressHydrationWarning>
             <head>
-                {/* 
-                  Dark Mode Blocking Script:
-                  Zorgt ervoor dat de site donker start (default), maar switcht naar licht 
-                  als de gebruiker dat eerder expliciet heeft gekozen in de localStorage.
-                */}
                 <script
                     dangerouslySetInnerHTML={{
                         __html: `
@@ -36,7 +31,6 @@ export default function RootLayout({
                         `,
                     }}
                 />
-                {/* Preload fonts to prevent Layout Shift (CLS) on hard refresh */}
                 <link
                     rel="preload"
                     href="/fonts/poppins/Poppins-Regular.ttf"
@@ -57,7 +51,6 @@ export default function RootLayout({
                     <HeaderWrapper />
                 </Suspense>
 
-                {/* Compenseer de hoogte van de vaste navbar via de CSS-variabele */}
                 <main
                     className="flex-grow"
                     style={{ paddingTop: 'var(--header-total-height, var(--header-height, 72px))' }}
@@ -65,10 +58,6 @@ export default function RootLayout({
                     {children}
                 </main>
 
-                {/* 
-                  FooterIsland wordt server-side gefetched binnen deze wrapper.
-                  Data ophalen blokkeert de rest van de pagina niet.
-                */}
                 <Suspense fallback={<FooterSkeleton />}>
                     <FooterWrapper />
                 </Suspense>
@@ -77,25 +66,22 @@ export default function RootLayout({
     );
 }
 
-
-/**
- * Wrapper component voor de navigatie.
- */
 async function HeaderWrapper() {
-    const disabledRoutes = await getDisabledRoutes();
+    const [disabledRoutes, session] = await Promise.all([
+        getDisabledRoutes(),
+        auth.api.getSession({
+            headers: await headers()
+        })
+    ]);
 
     return (
         <NavigationHeader
             disabledRoutes={disabledRoutes}
+            initialSession={session}
         />
     );
 }
 
-
-/**
- * Wrapper component voor de footer.
- * Haalt documenten en disabled routes parallel op.
- */
 async function FooterWrapper() {
     const [documents, disabledRoutes] = await Promise.all([
         getDocumenten(),

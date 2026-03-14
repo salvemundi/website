@@ -10,10 +10,12 @@ export const auth = betterAuth({
         additionalFields: {
             first_name: { type: "string" },
             last_name: { type: "string" },
-            is_member: { type: "boolean" },
+            membership_status: { type: "string" },
             membership_expiry: { type: "string" },
             phone_number: { type: "string" },
             date_of_birth: { type: "string" },
+            avatar: { type: "string" },
+            minecraft_username: { type: "string" },
         }
     },
     session: {

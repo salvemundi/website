@@ -38,8 +38,8 @@ export async function getUserEventSignups(): Promise<EventSignup[]> {
     const headersInit = getDirectusHeaders();
     if (!headersInit) return [];
 
-    // Assuming the collection is named 'event_signups' based on typical structure
-    const url = `${directusUrl}/items/event_signups?filter[user_id][_eq]=${user.id}&fields=id,created_at,event_id.id,event_id.name,event_id.event_date,event_id.description,event_id.image,event_id.contact_phone,event_id.contact_name&sort=-created_at`;
+    // Column names in V7 database: 'directus_relations' refers to the User ID.
+    const url = `${directusUrl}/items/event_signups?filter[directus_relations][_eq]=${user.id}&fields=id,created_at,event_id.id,event_id.name,event_id.event_date,event_id.description,event_id.image,event_id.contact&sort=-created_at`;
 
     try {
         const res = await fetch(url, {
@@ -79,7 +79,9 @@ export async function getUserTransactions(): Promise<Transaction[]> {
     const headersInit = getDirectusHeaders();
     if (!headersInit) return [];
 
-    const url = `${directusUrl}/items/transacties?filter[user_id][_eq]=${user.id}&sort=-created_at&limit=-1`;
+    // Column names in V7 database: 'user_id' can be empty for legacy/migrated records.
+    // We filter on both user_id and email (linked to the session user) for completeness.
+    const url = `${directusUrl}/items/transactions?filter[_or][0][user_id][_eq]=${user.id}&filter[_or][1][email][_eq]=${encodeURIComponent(user.email)}&sort=-created_at&limit=-1`;
 
     try {
         const res = await fetch(url, {
@@ -114,7 +116,7 @@ export async function getWhatsAppGroups(): Promise<WhatsAppGroup[]> {
     const headersInit = getDirectusHeaders();
     if (!headersInit) return [];
 
-    const url = `${directusUrl}/items/whatsapp_groepen?filter[status][_eq]=published&sort=sort`;
+    const url = `${directusUrl}/items/whatsapp_groups?filter[is_active][_eq]=true&sort=id`;
 
     try {
         const res = await fetch(url, {
