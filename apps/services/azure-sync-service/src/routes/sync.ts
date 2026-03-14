@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { SyncJob } from '../services/sync.job.js';
+import { TokenService } from '../services/token.service.js';
 
 export default async function syncRoutes(fastify: FastifyInstance) {
     fastify.post('/run', async (request, reply) => {
@@ -9,9 +10,17 @@ export default async function syncRoutes(fastify: FastifyInstance) {
             return reply.status(401).send({ error: 'Unauthorized' });
         }
 
-        // Run sync asynchronously
-        SyncJob.run().catch(err => console.error('[SYNC] Job failed:', err));
+        try {
+            // Get token (cached or new)
+            const token = await TokenService.getAccessToken(fastify.redis);
+            
+            // Run sync asynchronously
+            SyncJob.run(token).catch(err => console.error('[SYNC] Job failed:', err));
 
-        return { message: 'Sync job started' };
+            return { message: 'Sync job started' };
+        } catch (err: any) {
+            fastify.log.error(err);
+            return reply.status(500).send({ error: 'Failed to start sync job', details: err.message });
+        }
     });
 }

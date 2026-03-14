@@ -8,14 +8,14 @@ export class SyncJob {
         return `${dateStr.substring(0, 4)}-${dateStr.substring(4, 6)}-${dateStr.substring(6, 8)}`;
     }
 
-    static async run() {
+    static async run(token: string) {
         console.log('[SYNC] Starting synchronization job...');
         try {
-            const azureUsers = await GraphService.getAllUsers();
+            const azureUsers = await GraphService.getAllUsers(token);
             console.log(`[SYNC] Found ${azureUsers.length} users in Azure AD.`);
 
             for (const aUser of azureUsers) {
-                await this.syncUser(aUser);
+                await this.syncUser(aUser, token);
             }
 
             console.log('[SYNC] Completed synchronization job.');
@@ -24,7 +24,7 @@ export class SyncJob {
         }
     }
 
-    private static async syncUser(aUser: AzureUser) {
+    private static async syncUser(aUser: AzureUser, token: string) {
         const email = (aUser.mail || aUser.userPrincipalName).toLowerCase();
         
         // 1. Find or Link User
@@ -40,7 +40,6 @@ export class SyncJob {
 
         if (!dUser) {
             // User likely not yet provisioned by SSO, skip background sync for now
-            // or we could provision them, but user said "read-only entra koppeling" is for auth.
             return;
         }
 
@@ -69,26 +68,21 @@ export class SyncJob {
         }
 
         // 3. Sync Committee Memberships
-        const azureGroups = await GraphService.getUserGroups(aUser.id);
+        const azureGroups = await GraphService.getUserGroups(aUser.id, token);
         const currentMemberships = await DirectusService.getCommitteeMembers(dUser.id);
         
         const desiredCommittees: { id: number; isLeader: boolean }[] = [];
 
         for (const group of azureGroups) {
-            // We treat the board and committees the same way
             let dCommittee = await DirectusService.getCommitteeByName(group.displayName);
-            if (!dCommittee) {
-                // Optional: Auto-create committee if it doesn't exist?
-                // For now, only sync to known committees to avoid junk.
-                continue;
-            }
+            if (!dCommittee) continue;
 
-            const owners = await GraphService.getGroupOwners(group.id);
+            const owners = await GraphService.getGroupOwners(group.id, token);
             const isLeader = owners.includes(aUser.id);
             desiredCommittees.push({ id: dCommittee.id, isLeader });
         }
 
-        // Add missing memberships
+        // Add/Update memberships
         for (const desired of desiredCommittees) {
             const existing = currentMemberships.find((m: any) => m.committee_id === desired.id);
             if (!existing) {

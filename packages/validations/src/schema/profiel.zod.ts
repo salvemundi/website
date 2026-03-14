@@ -4,7 +4,8 @@ export const whatsappGroupSchema = z.object({
   id: z.string().or(z.number()),
   name: z.string(),
   description: z.string().nullable().optional(),
-  invite_link: z.string().url(),
+  invite_link: z.string().url().or(z.string()),
+  is_active: z.boolean().optional().nullable(),
 });
 
 export const transactionSchema = z.object({
@@ -32,7 +33,6 @@ export const eventSignupSchema = z.object({
     event_date: z.string(),
     description: z.string().nullable().optional(),
     image: z.string().nullable().optional(),
-    contact_phone: z.string().nullable().optional(),
-    contact_name: z.string().nullable().optional(),
+    contact: z.string().nullable().optional(),
   }),
 });
