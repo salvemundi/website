@@ -301,6 +301,7 @@ jobs:
               AZURE_WEBSITEV7_MAIL_CLIENT_ID="$AZURE_WEBSITEV7_MAIL_CLIENT_ID" \
               AZURE_WEBSITEV7_MAIL_CLIENT_SECRET="$AZURE_WEBSITEV7_MAIL_CLIENT_SECRET" \
               DIRECTUS_STATIC_TOKEN="$DIRECTUS_STATIC_TOKEN" \
+              INTERNAL_DIRECTUS_URL="$INTERNAL_DIRECTUS_URL" \
               $COMPOSE_CMD up -d --remove-orphans
             
             echo "Deep cleaning unused Docker images..."

@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const url = process.env.DIRECTUS_URL || 'http://directus:8055';
+const url = process.env.INTERNAL_DIRECTUS_URL || process.env.DIRECTUS_URL || 'http://v7-core-directus:8055';
 const token = process.env.DIRECTUS_STATIC_TOKEN;
 
 let _directus: DirectusClient<Schema> & RestClient<Schema> & StaticTokenClient<Schema> | null = null;
