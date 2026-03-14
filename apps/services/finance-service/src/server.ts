@@ -13,12 +13,17 @@ fastify.get('/health', async () => {
     return { status: 'ok', service: 'finance-service' };
 });
 
+// Import Plugins & Routes statically to avoid Fastify TS inference issues
+import dbPlugin from './plugins/db.js';
+import redisPlugin from './plugins/redis.js';
+import mollieRoutes from './routes/mollie.routes.js';
+
 // Register Plugins
-fastify.register(import('./plugins/db.js'));
-fastify.register(import('./plugins/redis.js'));
+fastify.register(dbPlugin);
+fastify.register(redisPlugin);
 
 // Register Routes
-fastify.register(import('./routes/mollie.routes.js'), { prefix: '/api/finance' });
+fastify.register(mollieRoutes, { prefix: '/api/finance' });
 
 const start = async () => {
     try {

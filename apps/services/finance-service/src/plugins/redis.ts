@@ -1,10 +1,10 @@
 import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
-import { createClient, RedisClientType } from 'redis';
+import { createClient } from 'redis';
 
 declare module 'fastify' {
     interface FastifyInstance {
-        redis: RedisClientType;
+        redis: ReturnType<typeof createClient>;
     }
 }
 

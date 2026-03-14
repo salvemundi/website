@@ -33,7 +33,9 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
             const { CacheInvalidationService } = await import('../services/cache-invalidation.js');
             
             // Get user identifier from payment metadata (assumed stored during checkout)
-            const userId = payment.metadata?.userId;
+            const metadata = payment.metadata as { userId?: string } | null;
+            const userId = metadata?.userId;
+            
             if (userId) {
                 await CacheInvalidationService.queueInvalidation(fastify.redis, userId);
             }

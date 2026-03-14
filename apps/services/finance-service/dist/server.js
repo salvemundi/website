@@ -14,10 +14,15 @@ const fastify = (0, fastify_1.default)({
 fastify.get('/health', async () => {
     return { status: 'ok', service: 'finance-service' };
 });
-// Endpoint from Docs 2.1
-fastify.post('/api/finance/webhook/mollie', async (request, reply) => {
-    return { received: true };
-});
+// Import Plugins & Routes statically to avoid Fastify TS inference issues
+const db_js_1 = __importDefault(require("./plugins/db.js"));
+const redis_js_1 = __importDefault(require("./plugins/redis.js"));
+const mollie_routes_js_1 = __importDefault(require("./routes/mollie.routes.js"));
+// Register Plugins
+fastify.register(db_js_1.default);
+fastify.register(redis_js_1.default);
+// Register Routes
+fastify.register(mollie_routes_js_1.default, { prefix: '/api/finance' });
 const start = async () => {
     try {
         await fastify.listen({ port: 3001, host: '0.0.0.0' });
