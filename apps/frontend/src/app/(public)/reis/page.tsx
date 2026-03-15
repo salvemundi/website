@@ -8,23 +8,17 @@ import { ReisTrip, ReisSiteSettings, ReisTripSignup } from '@salvemundi/validati
 import { ReisPageHeaderSkeleton, ReisFormSkeleton, ReisInfoSkeleton } from '@/components/ui/Reis/ReisSkeletons';
 import { ReisFormIsland } from '@/components/islands/Reis/ReisFormIsland';
 import { ReisInfoIsland } from '@/components/islands/Reis/ReisInfoIsland';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-
-interface ReisPageProps {
-    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-    params: Promise<{ [key: string]: string }>;
-}
 
 function ReisMainContent({
     trips,
     siteSettings,
     signups
 }: {
-    trips: any[],
-    siteSettings: any | null,
-    signups: any[]
+    trips: ReisTrip[],
+    siteSettings: ReisSiteSettings | null,
+    signups: ReisTripSignup[]
 }) {
     const isReisEnabled = siteSettings?.show ?? true;
     const reisDisabledMessage = siteSettings?.disabled_message || 'De inschrijvingen voor de reis zijn momenteel gesloten.';
@@ -82,7 +76,7 @@ function ReisMainContent({
 
 // Client-side data fetching wrapper to satisfy prerenderer
 function ReisPageDataWrapper() {
-    const [data, setData] = useState<{ trips: any[], settings: any, signups: any[] } | null>(null);
+    const [data, setData] = useState<{ trips: ReisTrip[]; settings: ReisSiteSettings | null; signups: ReisTripSignup[] } | null>(null);
 
     useEffect(() => {
         async function fetchData() {
@@ -90,7 +84,7 @@ function ReisPageDataWrapper() {
                 getUpcomingTrips(),
                 getReisSiteSettings()
             ]);
-            let signups: any[] = [];
+            let signups: ReisTripSignup[] = [];
             if (trips.length > 0) {
                 signups = await getTripSignups(trips[0].id);
             }

@@ -9,11 +9,13 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 export const Input: React.FC<InputProps> = ({
     className = '',
     error,
+    suppressHydrationWarning = true,
     ...props
 }) => {
     return (
         <input
             className={`form-input ${error ? 'border-theme-error ring-1 ring-theme-error' : ''} ${className}`}
+            suppressHydrationWarning={suppressHydrationWarning}
             {...props}
         />
     );

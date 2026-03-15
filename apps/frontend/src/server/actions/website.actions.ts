@@ -50,6 +50,7 @@ export async function getDocumenten(): Promise<Document[]> {
 
     if (!res.ok) {
         console.error(`[website.actions#getDocumenten] Directus fout op ${url}: ${res.status} ${res.statusText}`);
+        await res.text(); // Consume body to prevent hanging promises
         return [];
     }
 
@@ -95,11 +96,15 @@ export async function getDisabledRoutes(): Promise<string[]> {
         });
 
         if (!res.ok) {
+            await res.text(); // Consume body
             return [];
         }
 
         const json = await res.json();
-        return (json?.data ?? []).map((flag: any) => flag.route_match);
+        type FeatureFlag = { route_match?: string | null };
+        return (json?.data ?? [])
+            .map((flag: FeatureFlag) => flag.route_match)
+            .filter((route: string | null | undefined): route is string => Boolean(route));
     } catch (err) {
         console.error('[website.actions#getDisabledRoutes] Fout:', err);
         return [];

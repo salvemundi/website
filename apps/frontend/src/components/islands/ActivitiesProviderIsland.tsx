@@ -8,9 +8,10 @@ import CalendarView from "./CalendarView";
 import FeaturedEvent from "./FeaturedEvent";
 import DayDetails from "./DayDetails";
 import EventList from "./EventList";
+import type { Activiteit } from '@salvemundi/validations';
 
 interface ActivitiesProviderIslandProps {
-    events: any[];
+    events: Activiteit[];
 }
 
 export default function ActivitiesProviderIsland({ events }: ActivitiesProviderIslandProps) {
@@ -27,7 +28,7 @@ export default function ActivitiesProviderIsland({ events }: ActivitiesProviderI
         if (!showPastActivities) {
             const now = new Date();
             filtered = filtered.filter(event => {
-                const eventDate = event.datum_start || event.event_date;
+                const eventDate = event.datum_start;
                 // De server actions sturen nu ISO strings (datum_start) of YYYY-MM-DD (event_date)
                 // Als we een ISO string hebben, gebruiken we die direct.
                 // Als we een event_time hebben, combineren we die alleen met de YYYY-MM-DD variant.
@@ -41,8 +42,8 @@ export default function ActivitiesProviderIsland({ events }: ActivitiesProviderI
             });
         }
         return filtered.sort((a, b) => {
-            const aDate = a.datum_start || a.event_date;
-            const bDate = b.datum_start || b.event_date;
+            const aDate = a.datum_start;
+            const bDate = b.datum_start;
             
             const aDateTime = (a.event_time && aDate.length <= 10)
                 ? new Date(`${aDate}T${a.event_time}`).getTime()
@@ -58,26 +59,23 @@ export default function ActivitiesProviderIsland({ events }: ActivitiesProviderI
         const now = new Date();
         return events
             .filter(e => {
-                const eDate = e.datum_start || e.event_date;
                 const eventDateTime = e.event_time
-                    ? new Date(`${eDate}T${e.event_time}`)
-                    : new Date(eDate);
+                    ? new Date(`${e.datum_start}T${e.event_time}`)
+                    : new Date(e.datum_start);
                 return eventDateTime >= now;
             })
             .sort((a, b) => {
-                const aDate = a.datum_start || a.event_date;
-                const bDate = b.datum_start || b.event_date;
                 const aDateTime = a.event_time
-                    ? new Date(`${aDate}T${a.event_time}`).getTime()
-                    : new Date(aDate).getTime();
+                    ? new Date(`${a.datum_start}T${a.event_time}`).getTime()
+                    : new Date(a.datum_start).getTime();
                 const bDateTime = b.event_time
-                    ? new Date(`${bDate}T${b.event_time}`).getTime()
-                    : new Date(bDate).getTime();
+                    ? new Date(`${b.datum_start}T${b.event_time}`).getTime()
+                    : new Date(b.datum_start).getTime();
                 return aDateTime - bDateTime;
             })[0];
     }, [events]);
 
-    const handleShowDetails = useCallback((activity: any) => {
+    const handleShowDetails = useCallback((activity: Activiteit) => {
         router.push(`/activiteiten/${activity.id}`);
     }, [router]);
 
@@ -118,7 +116,7 @@ export default function ActivitiesProviderIsland({ events }: ActivitiesProviderI
                                 try {
                                     const webcalUrl = calendarUrl.replace(/^https?:/, 'webcal:');
                                     window.location.href = webcalUrl;
-                                } catch (e) {
+                                } catch {
                                     window.open(calendarUrl, '_blank');
                                 }
                             }

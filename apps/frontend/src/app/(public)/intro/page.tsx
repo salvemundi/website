@@ -1,5 +1,4 @@
 import React, { Suspense } from 'react';
-import Link from 'next/link';
 import PageHeader from '@/components/ui/PageHeader';
 import { hasParentSignup } from '@/server/actions/intro.actions';
 import { auth } from '@/server/auth/auth';

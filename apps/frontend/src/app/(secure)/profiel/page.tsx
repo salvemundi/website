@@ -1,4 +1,3 @@
-import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { headers } from 'next/headers';
 import { auth } from '@/server/auth/auth';
@@ -36,8 +35,6 @@ async function ProfielFetcher() {
 
     // Fetch user event signups
     const signups = await getUserEventSignups();
-    const publicUrl = process.env.PUBLIC_URL || 'https://salvemundi.nl';
-
-    return <ProfielIsland initialSignups={signups} user={user} publicUrl={publicUrl} />;
+    return <ProfielIsland initialSignups={signups} user={user} />;
 }
 

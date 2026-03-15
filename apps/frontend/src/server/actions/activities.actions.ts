@@ -41,29 +41,47 @@ export async function getActivities(): Promise<Activiteit[]> {
 
         if (!response.ok) {
             console.error(`[Activities] Fetch failed with status: ${response.status} for ${url}`);
+            await response.text(); // Consume body to prevent hanging promises
             return [];
         }
 
         const json = await response.json();
-        const rawData = json?.data ?? [];
+        type RawEvent = {
+            id?: string | number;
+            name?: string | null;
+            description?: string | null;
+            location?: string | null;
+            event_date?: string | null;
+            event_date_end?: string | null;
+            image?: string | null;
+            status?: string | null;
+            price_members?: number | string | null;
+            price_non_members?: number | string | null;
+            only_members?: boolean | null;
+            inschrijf_deadline?: string | null;
+            contact?: string | null;
+            event_time?: string | null;
+            event_time_end?: string | null;
+        };
+        const rawData: RawEvent[] = json?.data ?? [];
 
         // Mapping van DB velden ('events') naar Zod Schema velden ('Activiteit')
-        const mappedData = rawData.map((item: any) => ({
-            id: String(item.id),
-            titel: item.name,
-            beschrijving: item.description,
-            locatie: item.location,
+        const mappedData = rawData.map((item) => ({
+            id: String(item.id ?? ''),
+            titel: item.name ?? '',
+            beschrijving: item.description ?? null,
+            locatie: item.location ?? null,
             datum_start: item.event_date ? new Date(item.event_date).toISOString() : new Date().toISOString(),
             datum_eind: item.event_date_end ? new Date(item.event_date_end).toISOString() : null,
-            afbeelding_id: item.image,
-            status: item.status,
-            price_members: item.price_members ? Number(item.price_members) : 0,
-            price_non_members: item.price_non_members ? Number(item.price_non_members) : 0,
-            only_members: item.only_members,
-            inschrijf_deadline: item.inschrijf_deadline,
-            contact: item.contact,
-            event_time: item.event_time,
-            event_time_end: item.event_time_end,
+            afbeelding_id: item.image ?? null,
+            status: item.status ?? undefined,
+            price_members: item.price_members != null ? Number(item.price_members) : 0,
+            price_non_members: item.price_non_members != null ? Number(item.price_non_members) : 0,
+            only_members: item.only_members ?? false,
+            inschrijf_deadline: item.inschrijf_deadline ?? null,
+            contact: item.contact ?? null,
+            event_time: item.event_time ?? null,
+            event_time_end: item.event_time_end ?? null,
         }));
 
         const parsed = activiteitenSchema.safeParse(mappedData);

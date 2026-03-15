@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useMemo } from 'react';
+import { useMemo } from 'react';
 import { format } from 'date-fns';
 import { CreditCard, Clock, Tag, CheckCircle } from 'lucide-react';
 import type { Transaction } from '@salvemundi/validations';

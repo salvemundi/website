@@ -6,7 +6,8 @@
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
-        "check-lint": "next lint src"
+        "lint": "eslint src",
+        "check-lint": "eslint src"
     },
     "dependencies": {
         "@better-auth/cli": "^1.4.19",
@@ -31,7 +32,7 @@
         "@types/pg": "^8.16.0",
         "@types/react": "^19.0.0",
         "@types/react-dom": "^19.0.0",
-        "eslint": "^10.0.2",
+        "eslint": "^9.23.0",
         "eslint-config-next": "15.1.0",
         "postcss": "^8.5.6",
         "tailwindcss": "^4.2.1",

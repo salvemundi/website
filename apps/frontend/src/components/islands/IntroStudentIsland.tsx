@@ -60,8 +60,9 @@ export const IntroStudentIsland = () => {
             if (result.success) {
                 setSubmitted(true);
             }
-        } catch (err: any) {
-            setError(err?.message || 'Er is een fout opgetreden bij het versturen van je inschrijving.');
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Er is een fout opgetreden bij het versturen van je inschrijving.';
+            setError(message);
         } finally {
             setIsSubmitting(false);
         }

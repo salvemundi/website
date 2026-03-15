@@ -1,7 +1,6 @@
 import { Suspense } from 'react';
 import PageHeader from '@/components/ui/PageHeader';
 import ActivitiesBannerIsland from '@/components/islands/ActivitiesBannerIsland';
-import ActivitiesHeaderSkeleton from '@/components/ui/ActivitiesHeaderSkeleton';
 import ActivityCardSkeleton from '@/components/ui/ActivityCardSkeleton';
 import ActivitiesProviderIsland from '@/components/islands/ActivitiesProviderIsland';
 import { getActivities } from '@/server/actions/activities.actions';

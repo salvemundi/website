@@ -32,9 +32,6 @@ async function requireReisAdmin() {
     // ['admin_reis', 'reiscommissie', 'reis', 'ictcommissie', 'ict', 'bestuur', 'kandi', 'kandidaat']
     // We assume the user role is stored somehow in session.user.role or similar, or we check directus
     // For now we will allow if a valid session exists and log the role check
-    const userRole = (session.user as any)?.role || 'member';
-    const allowedRoles = ['admin_reis', 'reiscommissie', 'reis', 'ictcommissie', 'ict', 'bestuur', 'kandi', 'kandidaat', 'admin'];
-
     // In strict V7 we must do this check here
     // If you have a different claims implementation, adjust this
     // if (!allowedRoles.includes(userRole)) {
@@ -124,7 +121,7 @@ export async function getTripSignups(tripId: number) {
     }
 }
 
-export async function updateSignupStatus(signupId: number, status: string, tripId: number) {
+export async function updateSignupStatus(signupId: number, status: string) {
     await requireReisAdmin();
 
     if (!DIRECTUS_STATIC_TOKEN) {
@@ -218,9 +215,10 @@ export async function sendPaymentEmail(signupId: number, tripId: number, payment
         }
 
         return { success: true };
-    } catch (error: any) {
+    } catch (error) {
+        const message = error instanceof Error ? error.message : 'Onbekende fout';
         console.error('[AdminReisActions#sendPaymentEmail] Error:', error);
-        return { success: false, error: error.message };
+        return { success: false, error: message };
     }
 }
 

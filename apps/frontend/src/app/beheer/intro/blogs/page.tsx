@@ -1,5 +1,3 @@
-import Link from 'next/link';
-
 export default function Page() {
     return (
         <div className="flex min-h-[70vh] flex-col items-center justify-center p-8 text-center">

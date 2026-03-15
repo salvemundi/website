@@ -3,7 +3,7 @@
 import React from 'react';
 import { Input, InputProps } from './Input';
 
-export interface PhoneInputProps extends InputProps { }
+export type PhoneInputProps = InputProps;
 
 export const PhoneInput: React.FC<PhoneInputProps> = ({
     maxLength = 20,

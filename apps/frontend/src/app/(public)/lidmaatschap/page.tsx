@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 import PageHeader from '@/components/ui/PageHeader';
 import MembershipFormIsland from '@/components/islands/MembershipFormIsland';
-import MembershipStatusIsland from '@/components/islands/MembershipStatusIsland';
+import MembershipStatusIsland, { type MembershipUserData } from '@/components/islands/MembershipStatusIsland';
 import MembershipSkeleton from '@/components/ui/MembershipSkeleton';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
@@ -20,7 +20,6 @@ async function MembershipContent() {
     const isGuest = !user;
 
     // In V7, committee status should ideally be checked via Azure Groups or a dedicated service.
-    // For this migration, we'll assume a base amount.
     const baseAmount = 20.00;
 
     return (
@@ -33,7 +32,7 @@ async function MembershipContent() {
                 {isGuest ? (
                     <MembershipFormIsland baseAmount={baseAmount} />
                 ) : (
-                    <MembershipStatusIsland user={user as any} baseAmount={baseAmount} />
+                    <MembershipStatusIsland user={user as MembershipUserData} baseAmount={baseAmount} />
                 )}
             </section>
 

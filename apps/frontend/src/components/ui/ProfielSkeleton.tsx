@@ -1,4 +1,4 @@
-import { User, Gamepad2, Mail, Phone, Calendar } from 'lucide-react';
+import { Gamepad2, Mail, Calendar } from 'lucide-react';
 
 export const ProfielSkeleton: React.FC = () => {
     return (

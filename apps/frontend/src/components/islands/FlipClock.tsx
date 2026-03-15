@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -11,7 +11,7 @@ interface FlipClockProps {
 }
 
 const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href }) => {
-    const calculateTimeLeft = () => {
+    const calculateTimeLeft = useCallback(() => {
         const difference = +new Date(targetDate) - +new Date();
         let timeLeft = {
             days: 0,
@@ -30,9 +30,9 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href }) => {
         }
 
         return timeLeft;
-    };
+    }, [targetDate]);
 
-    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+    const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeft());
     const [hasMounted, setHasMounted] = useState(false);
 
     useEffect(() => {
@@ -42,7 +42,7 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href }) => {
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [targetDate]);
+    }, [calculateTimeLeft]);
 
     if (!hasMounted) {
         return null; // Prevent hydration mismatch

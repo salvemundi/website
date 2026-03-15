@@ -3,8 +3,6 @@
 import Image from 'next/image';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { Calendar } from 'lucide-react';
-import { isEventPast } from '@/shared/lib/utils/date';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
 
 interface ActiviteitCardProps {
     id: number | string;
@@ -31,9 +29,7 @@ interface ActiviteitCardProps {
 }
 
 const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
-    id: _id,
     description,
-    description_logged_in: _description_logged_in,
     image,
     title,
     date,

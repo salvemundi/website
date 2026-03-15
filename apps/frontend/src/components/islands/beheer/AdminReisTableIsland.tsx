@@ -4,7 +4,6 @@ import { useState, Fragment } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Download, Users, Plane, Edit, Trash2, Loader2, AlertCircle, UserCheck, UserX, Send } from 'lucide-react';
 import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
 import type { Trip, TripSignup, TripSignupActivity } from '@salvemundi/validations';
 import { updateSignupStatus, deleteSignup, sendPaymentEmail, getSignupActivities } from '@/server/actions/admin-reis.actions';
 
@@ -87,7 +86,7 @@ export default function AdminReisTableIsland({ initialSignups, trip, stats }: Ad
         }
 
         try {
-            const res = await updateSignupStatus(id, newStatus, trip.id);
+            const res = await updateSignupStatus(id, newStatus);
             if (res.success) {
                 setSignups(signups.map(s => s.id === id ? { ...s, status: newStatus } : s));
             } else {
@@ -160,9 +159,10 @@ export default function AdminReisTableIsland({ initialSignups, trip, stats }: Ad
             } else {
                 throw new Error(res.error);
             }
-        } catch (error: any) {
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Onbekende fout';
             console.error('Failed to send payment email:', error);
-            alert(`Er is een fout opgetreden bij het verzenden van de email: ${error.message}`);
+            alert(`Er is een fout opgetreden bij het verzenden van de email: ${message}`);
         } finally {
             setSendingEmailTo(null);
         }
