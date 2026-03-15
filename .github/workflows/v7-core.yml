@@ -72,10 +72,6 @@ jobs:
             # Ensure the shared network exists
             docker network create salve-mundi-v7-shared || true
 
-            # Force removal of containers that might conflict due to project name differences
-            # (e.g. if they were manually started vs. started via this workflow)
-            docker rm -f v7-core-directus v7-core-db v7-core-redis v7-core-redisinsight || true
-
             # Deploy the core project
             docker compose -p v7-core up -d --remove-orphans
 
