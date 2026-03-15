@@ -9,6 +9,7 @@ services:
       - DB_URL=postgresql://${DB_USER}:${DB_PASSWORD}@v7-core-db:5432/${DB_NAME}
       - DIRECTUS_STATIC_TOKEN=${DIRECTUS_STATIC_TOKEN}
       - INTERNAL_DIRECTUS_URL=${INTERNAL_DIRECTUS_URL}
+      - NEXT_APP_INTERNAL_URL=${NEXT_APP_INTERNAL_URL}
 
   sync-service:
     image: ghcr.io/salvemundi/v7-sync:${IMAGE_TAG:-latest}
@@ -21,6 +22,7 @@ services:
       - AZURE_SYNC_CLIENT_SECRET=${AZURE_WEBSITEV7_SYNC_CLIENT_SECRET}
       - DIRECTUS_STATIC_TOKEN=${DIRECTUS_STATIC_TOKEN}
       - INTERNAL_DIRECTUS_URL=${INTERNAL_DIRECTUS_URL}
+      - NEXT_APP_INTERNAL_URL=${NEXT_APP_INTERNAL_URL}
 
   mail-service:
     image: ghcr.io/salvemundi/v7-mail:${IMAGE_TAG:-latest}
@@ -32,6 +34,7 @@ services:
       - AZURE_MAIL_CLIENT_SECRET=${AZURE_WEBSITEV7_MAIL_CLIENT_SECRET}
       - DIRECTUS_STATIC_TOKEN=${DIRECTUS_STATIC_TOKEN}
       - INTERNAL_DIRECTUS_URL=${INTERNAL_DIRECTUS_URL}
+      - NEXT_APP_INTERNAL_URL=${NEXT_APP_INTERNAL_URL}
 
   frontend:
     image: ghcr.io/salvemundi/v7-app:${IMAGE_TAG:-latest}

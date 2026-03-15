@@ -64,6 +64,14 @@ services:
       - shared-network
       - proxy-network
 
+  v7-core-redisinsight:
+    image: redis/redisinsight:2.66
+    container_name: v7-core-redisinsight
+    expose:
+      - "5540"
+    networks:
+      - shared-network
+
 networks:
   shared-network:
     name: salve-mundi-v7-shared
