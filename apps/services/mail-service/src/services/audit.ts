@@ -13,11 +13,10 @@ export class AuditService {
                     'Authorization': `Bearer ${STATIC_TOKEN}`
                 },
                 body: JSON.stringify({
-                    type: 'email',
-                    recipient: to,
-                    template: templateId,
+                    emailadres: to,
+                    template_id: templateId,
                     status: status,
-                    details: error || `Email ${templateId} successfully dispatched`,
+                    error_details: error || `Email ${templateId} successfully dispatched`,
                     timestamp: new Date().toISOString()
                 })
             });

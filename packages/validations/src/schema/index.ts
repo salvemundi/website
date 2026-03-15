@@ -6,5 +6,6 @@ export * from './admin-reis.zod';
 export * from './members.zod';
 export * from './finance.zod';
 export * from './membership.zod';
-export * from './reis.zod';
+export * from './reis.zod.js';
+export * from './mail.zod.js';
 export * from './committees.zod';

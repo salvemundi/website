@@ -7,9 +7,11 @@
         "build": "tsc"
     },
     "dependencies": {
+        "@azure/identity": "^4.13.0",
         "@salvemundi/validations": "workspace:*",
         "fastify": "5.1.0",
-        "fastify-plugin": "^5.1.0"
+        "fastify-plugin": "^5.1.0",
+        "handlebars": "^4.7.8"
     },
     "devDependencies": {
         "@types/node": "^22.0.0",
