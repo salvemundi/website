@@ -7,3 +7,4 @@ export * from './members.zod';
 export * from './finance.zod';
 export * from './membership.zod';
 export * from './reis.zod';
+export * from './committees.zod';

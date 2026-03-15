@@ -79,8 +79,6 @@ export async function proxy(request: NextRequest) {
         });
 
         if (!session) {
-            // NEVER redirect to external sites from the Proxy. 
-            // Send user to a 404 if they are not allowed to see this page.
             return NextResponse.rewrite(new URL('/404', request.url));
         }
     }

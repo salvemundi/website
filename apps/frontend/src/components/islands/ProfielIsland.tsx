@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useMemo, useState, useRef } from 'react';
+import { Suspense, useMemo, useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -90,9 +90,30 @@ function QuickLink({
 
 export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, user: initialUser, publicUrl }) => {
     const router = useRouter();
+    const [mounted, setMounted] = useState(false);
     const { data: session } = authClient.useSession();
-    // Prefer real-time session user, fallback to server-fetched initialUser
-    const user: any = session?.user || initialUser;
+
+    // Bij hydratatie (mounted === false) gebruiken we ALTIJD initialUser om mismatch te voorkomen.
+    // Daarna schakelen we over naar de real-time session, maar MERGEN we de committees als die ontbreken.
+    const user = useMemo(() => {
+        const sUser = session?.user as any;
+        const iUser = initialUser as any;
+        
+        if (!mounted) return iUser;
+        
+        // Als de client-sessie er is, maar commissies mist (bijv. door cache/stripping),
+        // pakken we die van de initialUser (die we zeker weten van de server hebben).
+        if (sUser && !sUser.committees && iUser?.committees) {
+            return { ...sUser, committees: iUser.committees };
+        }
+        
+        return sUser || iUser;
+    }, [mounted, session?.user, initialUser]);
+
+    // Hydratatie fix
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const [eventSignups] = useState<EventSignup[]>(initialSignups || []);
     const [showPastEvents, setShowPastEvents] = useState(false);
