@@ -18,11 +18,15 @@ export default async function mailRoutes(fastify: FastifyInstance) {
             return reply.status(401).send({ error: 'Unauthorized' });
         }
 
-        const { to, templateId, data } = request.body;
+        // 1. Validate Payload
+        const { MailRequestSchema } = await import('@salvemundi/validations');
+        const validation = MailRequestSchema.safeParse(request.body);
 
-        if (!to || !templateId) {
-            return reply.status(400).send({ error: 'Missing recipient or template ID' });
+        if (!validation.success) {
+            return reply.status(400).send({ error: 'Invalid payload', details: validation.error.format() });
         }
+
+        const { to, templateId, data } = validation.data;
 
         fastify.log.info(`[MAIL] Queueing ${templateId} email for ${to}`);
 
