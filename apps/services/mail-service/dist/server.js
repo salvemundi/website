@@ -1,26 +1,27 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const fastify_1 = __importDefault(require("fastify"));
+import Fastify from 'fastify';
 /**
  * Mail Service - Salve Mundi V7
  * Handles email rendering and dispatching via templates.
  */
-const fastify = (0, fastify_1.default)({
+const fastify = Fastify({
     logger: true
 });
 fastify.get('/health', async () => {
     return { status: 'ok', service: 'mail-service' };
 });
-const mail_routes_js_1 = __importDefault(require("./routes/mail.routes.js"));
+import mailRoutes from './routes/mail.routes.js';
+// Register Plugins
+import redisPlugin from './plugins/redis.js';
+fastify.register(redisPlugin);
 // Register Routes
-fastify.register(mail_routes_js_1.default, { prefix: '/api/mail' });
+fastify.register(mailRoutes, { prefix: '/api/mail' });
 const start = async () => {
     try {
         await fastify.listen({ port: 3003, host: '0.0.0.0' });
         console.log('Mail Service listening on port 3003');
+        // Start the Mail Worker (background loop)
+        const { MailWorkerService } = await import('./services/mail-worker.js');
+        MailWorkerService.startWorker(fastify.redis);
     }
     catch (err) {
         fastify.log.error(err);
