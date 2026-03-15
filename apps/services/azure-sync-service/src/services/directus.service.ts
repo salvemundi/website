@@ -22,10 +22,18 @@ export class DirectusService {
         return await getDirectusClient().request(updateUser(id, data));
     }
 
+    static async getCommitteeByAzureId(azureGroupId: string) {
+        const committees = await getDirectusClient().request(readItems('committees', {
+            filter: { azure_group_id: { _eq: azureGroupId } },
+            fields: ['id', 'name', 'azure_group_id']
+        }));
+        return committees[0] || null;
+    }
+
     static async getCommitteeByName(name: string) {
         const committees = await getDirectusClient().request(readItems('committees', {
             filter: { name: { _eq: name } },
-            fields: ['id', 'name']
+            fields: ['id', 'name', 'azure_group_id']
         }));
         return committees[0] || null;
     }

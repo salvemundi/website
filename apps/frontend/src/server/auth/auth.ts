@@ -1,10 +1,19 @@
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
 
+const pool = new Pool({
+    connectionString: `postgres://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.INTERNAL_DB_HOST}:5432/${process.env.DB_NAME}`
+});
+
 export const auth = betterAuth({
-    database: new Pool({
-        connectionString: `postgres://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.INTERNAL_DB_HOST}:5432/${process.env.DB_NAME}`
-    }),
+    database: pool,
+    socialProviders: {
+        microsoft: {
+            clientId: process.env.AZURE_WEBSITEV7_AUTH_CLIENT_ID!,
+            clientSecret: process.env.AZURE_WEBSITEV7_AUTH_CLIENT_SECRET!,
+            tenantId: process.env.AZURE_WEBSITEV7_TENANT_ID!,
+        },
+    },
     user: {
         modelName: "directus_users",
         additionalFields: {
@@ -24,11 +33,36 @@ export const auth = betterAuth({
     account: {
         modelName: "auth_accounts"
     },
-    socialProviders: {
-        microsoft: {
-            clientId: process.env.AZURE_WEBSITEV7_AUTH_CLIENT_ID || "mock",
-            clientSecret: process.env.AZURE_WEBSITEV7_AUTH_CLIENT_SECRET || "mock",
-            tenantId: process.env.AZURE_WEBSITEV7_TENANT_ID || "common"
+    plugins: [
+        {
+            id: "committee-enrichment",
+            hooks: {
+                after: [
+                    {
+                        matcher: (ctx) => ctx.path.includes("get-session"),
+                        handler: async (ctx: any) => {
+                            const session = ctx.context?.returned || ctx.response || ctx.json || ctx.body;
+                            
+                            if (session && session.user) {
+                                try {
+                                    const { rows } = await pool.query(
+                                        `SELECT c.id, c.name, m.is_leader 
+                                         FROM committee_members m 
+                                         JOIN committees c ON m.committee_id = c.id 
+                                         WHERE m.user_id = $1`,
+                                        [session.user.id]
+                                    );
+                                    
+                                    session.user.committees = rows;
+                                } catch (error) {
+                                    console.error("[AUTH-PLUGIN] Error enrichment:", error);
+                                }
+                            }
+                            return ctx.context?.returned || ctx.response || ctx.json || ctx.body || ctx;
+                        }
+                    }
+                ]
+            }
         }
-    }
+    ]
 });

@@ -8,6 +8,7 @@ export * from './schema/safe-havens.zod';
 export * from './schema/activity.zod';
 export * from './schema/azure-sync.zod';
 export * from './schema/profiel.zod';
+export * from './schema/committees.zod';
 
 
 import { memberSchema } from './schema/members.zod';

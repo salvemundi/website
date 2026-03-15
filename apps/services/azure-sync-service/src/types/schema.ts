@@ -18,6 +18,7 @@ export interface DirectusUser {
 export interface Committee {
     id: number;
     name: string;
+    azure_group_id?: string;
 }
 
 export interface CommitteeMember {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
@@ -24,9 +24,24 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
 
     // Better Auth sessie — uitsluitend via useSession() conform V7-advies
     const { data: session } = authClient.useSession();
-    const currentSession = session || initialSession;
-    const isAuthenticated = !!currentSession?.user;
-    const user = currentSession?.user ?? null;
+    
+    // Bij hydratatie (mounted === false) gebruiken we ALTIJD initialSession om mismatch te voorkomen.
+    // Daarna schakelen we over naar de real-time session, maar MERGEN we de committees als die ontbreken.
+    const user = useMemo(() => {
+        const sUser = session?.user as any;
+        const iUser = initialSession?.user as any;
+        
+        if (!mounted) return iUser;
+        
+        // Als de client-sessie er is, maar commissies mist, pakken we die van de initialSession.
+        if (sUser && !sUser.committees && iUser?.committees) {
+            return { ...sUser, committees: iUser.committees };
+        }
+        
+        return sUser || iUser;
+    }, [mounted, session?.user, initialSession]);
+
+    const isAuthenticated = !!user;
 
     const [menuOpen, setMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);

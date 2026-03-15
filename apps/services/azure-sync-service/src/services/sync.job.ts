@@ -74,8 +74,11 @@ export class SyncJob {
         const desiredCommittees: { id: number; isLeader: boolean }[] = [];
 
         for (const group of azureGroups) {
-            let dCommittee = await DirectusService.getCommitteeByName(group.displayName);
-            if (!dCommittee) continue;
+            const dCommittee = await DirectusService.getCommitteeByAzureId(group.id);
+            if (!dCommittee) {
+                console.log(`[SYNC] Skipping Azure group "${group.displayName}" (${group.id}) - No matching committee with this azure_group_id in Directus.`);
+                continue;
+            }
 
             const owners = await GraphService.getGroupOwners(group.id, token);
             const isLeader = owners.includes(aUser.id);
