@@ -69,6 +69,8 @@ services:
     container_name: v7-core-redisinsight
     expose:
       - "5540"
+    volumes:
+      - v7_core_redisinsight_data:/data
     networks:
       - shared-network
 
@@ -83,3 +85,4 @@ volumes:
   v7_core_postgres_data:
   v7_core_redis_data:
   v7_core_directus_uploads:
+  v7_core_redisinsight_data:
