@@ -8,7 +8,7 @@ export default fp(async (fastify) => {
         url: redisUrl
     });
 
-    client.on('error', (err) => fastify.log.error('Redis Client Error', err));
+    client.on('error', (err: Error) => fastify.log.error(err, 'Redis Client Error'));
 
     await client.connect();
 
