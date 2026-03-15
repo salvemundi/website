@@ -1,8 +1,8 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import PageHeader from '@/components/ui/PageHeader';
-import CommitteeDetailDisplay from '@/components/islands/CommitteeDetailDisplay';
-import { CommitteeDetailSkeleton } from '@/components/ui/CommitteeDetailSkeleton';
+import PageHeader from '@/components/ui/layout/PageHeader';
+import CommitteeDetailDisplay from '@/components/islands/committees/CommitteeDetailDisplay';
+import { CommitteeDetailSkeleton } from '@/components/ui/committees/CommitteeDetailSkeleton';
 import { getCommitteeBySlug } from '@/server/actions/committees.actions';
 
 interface PageProps {

@@ -36,3 +36,8 @@ export const eventSignupSchema = z.object({
     contact: z.string().nullable().optional(),
   }),
 });
+
+export const updateProfileSchema = z.object({
+  minecraft_username: z.string().optional().nullable(),
+  phone_number: z.string().optional().nullable(),
+});

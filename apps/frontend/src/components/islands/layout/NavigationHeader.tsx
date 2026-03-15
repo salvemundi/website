@@ -9,7 +9,7 @@ import {
     Home, User, CalendarDays, Users, Beer, Map, Mail,
 } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
-import { ThemeToggle } from '@/components/islands/ThemeToggle';
+import { ThemeToggle } from '@/components/islands/layout/ThemeToggle';
 import { ROUTES } from '@/lib/routes';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 interface NavigationHeaderProps {
@@ -59,7 +59,10 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
 
     const [menuOpen, setMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
-    const [isCommitteeMember, setIsCommitteeMember] = useState(false);
+    const isCommitteeMember = useMemo(() => {
+        const committees = user?.committees;
+        return Array.isArray(committees) && committees.length > 0;
+    }, [user]);
     const headerRef = useRef<HTMLElement | null>(null);
 
     // Hydratatie fix
@@ -73,19 +76,6 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
-
-    // Commissielidmaatschap controleren via Better Auth sessie-metadata
-    useEffect(() => {
-        if (!user) {
-            setIsCommitteeMember(false);
-            return;
-        }
-        // Commissies zitten als metadata op de sessie (geladen tijdens auth)
-        const committees = user.committees;
-        if (Array.isArray(committees)) {
-            setIsCommitteeMember(committees.length > 0);
-        }
-    }, [user]);
 
     // Header-hoogte beschikbaar stellen als CSS-variabele voor andere componenten
     useEffect(() => {
@@ -183,13 +173,12 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                     }`}
             />
 
-            <div className="relative">
-                <div className="mx-auto flex items-center max-w-full justify-between gap-4 px-6 py-4 sm:px-10 lg:px-12 z-10 relative">
-                    {/* Logo Section */}
-                    <div className="flex-shrink-0">
+            <div className="mx-auto h-16 items-center px-6 sm:px-10 lg:px-12 z-10 relative flex justify-between gap-4 lg:gap-5">
+                    {/* 1. Left: Logo Section */}
+                    <div className="flex items-center justify-start shrink-0">
                         <Link
                             href="/"
-                            className="flex items-center gap-3 rounded-full px-4 py-2 shadow-sm hover:shadow-md transition"
+                            className="flex items-center gap-3 rounded-full px-4 py-2 shadow-sm hover:shadow-md transition shrink-0"
                             style={{ backgroundColor: 'color-mix(in srgb, var(--bg-card) 80%, transparent)' }}
                         >
                             <Image
@@ -197,10 +186,10 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                                 alt="Salve Mundi"
                                 width={36}
                                 height={36}
-                                className="h-9 w-9"
+                                className="h-9 w-9 shrink-0"
                                 priority
                             />
-                            <div className="hidden text-left sm:block whitespace-nowrap">
+                            <div className="hidden text-left sm:block whitespace-nowrap shrink-0">
                                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-purple-500)]">
                                     Salve Mundi
                                 </p>
@@ -211,23 +200,8 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                         </Link>
                     </div>
 
-                    {/* Spacer to push logo to the left */}
-                    <div className="flex-1" />
-
-                    {/* Admin-knop (desktop) */}
-                    {isCommitteeMember && (
-                        <Link
-                            href={ROUTES.ADMIN}
-                            className="hidden lg:flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] text-[var(--color-white)] px-3 py-1.5 text-sm font-medium shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
-                            title="Admin Panel"
-                        >
-                            <Shield className="h-4 w-4" />
-                            <span className="hidden xl:inline">Admin</span>
-                        </Link>
-                    )}
-
-                    {/* Desktopnavigatie */}
-                    <nav className="hidden items-center gap-4 xl:gap-5 lg:flex">
+                    {/* 2. Center: Desktopnavigatie */}
+                    <nav className="hidden items-center justify-center gap-5 lg:flex whitespace-nowrap">
                         {navItems.map((link) => {
                             const isActive =
                                 pathname === link.href ||
@@ -241,7 +215,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                                 >
                                     <span>{link.name}</span>
                                     <span
-                                        className={`absolute -bottom-2 left-0 h-0.5 w-full origin-left rounded-full bg-[var(--color-purple-500)] transition-transform duration-200 ease-out ${isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                                        className={`absolute -bottom-2 left-0 h-0.5 w-full origin-left rounded-full bg-[var(--color-purple-50)] transition-transform duration-200 ease-out ${isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
                                             }`}
                                     />
                                 </Link>
@@ -249,65 +223,68 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                         })}
                     </nav>
 
-                    {/* Rechts: acties */}
-                    <div className="flex items-center gap-3">
-                        {/* Admin-knop (mobiel) */}
+                    {/* 3. Right: Acties (Admin, Profiel, Theme, Menu) */}
+                    <div className="flex items-center justify-end gap-3 shrink-0">
+                        {/* Admin-knop (nu altijd in Acties groep voor layout-stabiliteit) */}
                         {isCommitteeMember && (
                             <Link
                                 href={ROUTES.ADMIN}
+                                className="flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] text-[var(--color-white)] px-3 py-1.5 h-8 text-sm font-medium shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg shrink-0 whitespace-nowrap"
                                 title="Admin Panel"
-                                className="inline-flex lg:hidden items-center justify-center rounded-full bg-[var(--color-purple-500)] text-[var(--color-white)] p-2 shadow-sm transition hover:shadow-lg"
                             >
-                                <Shield className="h-4 w-4" />
+                                <Shield className="h-4 w-4 shrink-0" />
+                                <span className="hidden xl:inline">Admin</span>
                             </Link>
                         )}
 
                         {/* Profielknop of inlogknop */}
-                        {mounted && (
-                            isAuthenticated ? (
+                        {isAuthenticated ? (
+                            mounted ? (
                                 <Link
                                     href={ROUTES.ACCOUNT}
-                                    className="flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium text-[var(--text-main)] shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+                                    className="flex items-center gap-2 rounded-full px-3 py-1.5 h-8 text-sm font-medium text-[var(--text-main)] shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg min-w-[136px] justify-center whitespace-nowrap"
                                 >
-                                    <div className="relative h-8 w-8 rounded-full overflow-hidden">
+                                    <div className="relative h-6 w-6 rounded-full overflow-hidden shrink-0">
                                         <Image
                                             src={getImageUrl(user?.avatar || user?.image)}
                                             alt={user?.email ? String(user.email) : 'Profiel'}
                                             fill
-                                            sizes="32px"
+                                            sizes="24px"
                                             className="object-cover"
                                             priority
                                             unoptimized
                                         />
                                     </div>
-                                    <span className="hidden sm:inline">Mijn profiel</span>
+                                    <span className="hidden sm:inline whitespace-nowrap">Mijn profiel</span>
                                 </Link>
                             ) : (
-                                <button
-                                    type="button"
-                                    onClick={async () => {
-                                        try {
-                                            await authClient.signIn.social({ provider: 'microsoft', callbackURL: '/profiel' });
-                                        } catch (error) {
-                                            console.error('Fout bij inloggen:', error);
-                                        }
-                                    }}
-                                    className="flex cursor-pointer items-center gap-2 rounded-full font-semibold px-3 py-1.5 text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
-                                    style={{
-                                        backgroundColor: 'var(--color-purple-50)',
-                                        color: 'var(--color-purple-700)',
-                                    }}
-                                >
-                                    Inloggen
-                                </button>
+                                <div className="h-8 w-[136px] rounded-full bg-[var(--color-purple-100)]/10 animate-pulse" />
                             )
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    try {
+                                        await authClient.signIn.social({ provider: 'microsoft', callbackURL: '/profiel' });
+                                    } catch (error) {
+                                        console.error('Fout bij inloggen:', error);
+                                    }
+                                }}
+                                className="flex cursor-pointer items-center justify-center gap-2 rounded-full font-semibold px-3 py-1.5 h-8 w-[88px] text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+                                style={{
+                                    backgroundColor: 'var(--color-purple-50)',
+                                    color: 'var(--color-purple-700)',
+                                }}
+                            >
+                                Inloggen
+                            </button>
                         )}
 
                         {/* Word-lid-knop (niet ingelogd) */}
-                        {mounted && !isAuthenticated && (
+                        {!isAuthenticated && (
                             <Link
                                 href={ROUTES.MEMBERSHIP}
-                                className="hidden items-center gap-2 rounded-full px-4 py-2 text-sm font-bold shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl md:inline-flex"
+                                className="hidden items-center justify-center gap-2 rounded-full px-4 py-2 h-9 w-[112px] text-sm font-bold shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl md:inline-flex"
                                 style={{
                                     background: 'linear-gradient(to right, var(--color-purple-100), var(--color-purple-200))',
                                     color: 'var(--color-purple-700)',
@@ -331,7 +308,6 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                         >
                             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                         </button>
-                    </div>
                 </div>
             </div>
 

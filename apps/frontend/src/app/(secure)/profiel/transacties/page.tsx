@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { TransactionsSkeleton } from '@/components/ui/TransactionsSkeleton';
-import { TransactionsIsland } from '@/components/islands/TransactionsIsland';
+import { TransactionsSkeleton } from '@/components/ui/account/TransactionsSkeleton';
+import { TransactionsIsland } from '@/components/islands/account/TransactionsIsland';
 import { getUserTransactions } from '@/server/actions/profiel.actions';
 
 export const metadata: Metadata = {

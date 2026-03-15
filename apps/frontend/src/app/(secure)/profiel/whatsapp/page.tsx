@@ -1,8 +1,8 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getWhatsAppGroups } from '@/server/actions/profiel.actions';
-import { WhatsAppGroupsSkeleton } from '@/components/ui/WhatsAppGroupsSkeleton';
-import { WhatsAppGroupsIsland } from '@/components/islands/WhatsAppGroupsIsland';
+import { WhatsAppGroupsSkeleton } from '@/components/ui/social/WhatsAppGroupsSkeleton';
+import { WhatsAppGroupsIsland } from '@/components/islands/social/WhatsAppGroupsIsland';
 
 export const metadata: Metadata = {
     title: 'WhatsApp Groepen | SV Salve Mundi',

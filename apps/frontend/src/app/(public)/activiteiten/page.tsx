@@ -1,8 +1,8 @@
 import { Suspense } from 'react';
-import PageHeader from '@/components/ui/PageHeader';
-import ActivitiesBannerIsland from '@/components/islands/ActivitiesBannerIsland';
-import ActivityCardSkeleton from '@/components/ui/ActivityCardSkeleton';
-import ActivitiesProviderIsland from '@/components/islands/ActivitiesProviderIsland';
+import PageHeader from '@/components/ui/layout/PageHeader';
+import ActivitiesBannerIsland from '@/components/islands/activities/ActivitiesBannerIsland';
+import ActivityCardSkeleton from '@/components/ui/activities/ActivityCardSkeleton';
+import ActivitiesProviderIsland from '@/components/islands/activities/ActivitiesProviderIsland';
 import { getActivities } from '@/server/actions/activities.actions';
 
 export const metadata = {

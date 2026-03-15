@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import ContactInfoCard from '@/components/ui/ContactInfoCard';
-import PageHeader from '@/components/ui/PageHeader';
+import ContactInfoCard from '@/components/ui/social/ContactInfoCard';
+import PageHeader from '@/components/ui/layout/PageHeader';
 
 // SEO metadata conform de V7 standaard
 export const metadata: Metadata = {

@@ -1,12 +1,12 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getHeroBanners, getUpcomingActiviteiten, getSponsors } from '@/server/actions/home.actions';
-import { HeroIsland } from '@/components/islands/HeroIsland';
-import { EventsSection } from '@/components/ui/EventsSection';
-import { WhySalveMundiSection } from '@/components/ui/WhySalveMundiSection';
-import { JoinSectionIsland } from '@/components/islands/JoinSectionIsland';
-import { SponsorsSection } from '@/components/ui/SponsorsSection';
-import { HeroSkeleton, EventsSkeleton, SponsorsSkeleton } from '@/components/ui/HomePageSkeleton';
+import { HeroIsland } from '@/components/islands/layout/HeroIsland';
+import { EventsSection } from '@/components/ui/activities/EventsSection';
+import { WhySalveMundiSection } from '@/components/ui/membership/WhySalveMundiSection';
+import { JoinSectionIsland } from '@/components/islands/membership/JoinSectionIsland';
+import { SponsorsSection } from '@/components/ui/layout/SponsorsSection';
+import { HeroSkeleton, EventsSkeleton, SponsorsSkeleton } from '@/components/ui/layout/HomePageSkeleton';
 
 export const metadata: Metadata = {
     title: 'Home | SV Salve Mundi',

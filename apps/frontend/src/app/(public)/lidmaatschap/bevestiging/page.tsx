@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
-import PageHeader from '@/components/ui/PageHeader';
-import ConfirmationIsland from '@/components/islands/ConfirmationIsland';
+import PageHeader from '@/components/ui/layout/PageHeader';
+import ConfirmationIsland from '@/components/islands/membership/ConfirmationIsland';
 import { Loader2 } from 'lucide-react';
 
 export const metadata = {

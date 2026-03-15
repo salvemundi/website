@@ -2,12 +2,12 @@
 
 import React, { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
-import PageHeader from '@/components/ui/PageHeader';
+import PageHeader from '@/components/ui/layout/PageHeader';
 import { getReisSiteSettings, getUpcomingTrips, getTripSignups } from '@/server/actions/reis.actions';
 import { ReisTrip, ReisSiteSettings, ReisTripSignup } from '@salvemundi/validations';
-import { ReisPageHeaderSkeleton, ReisFormSkeleton, ReisInfoSkeleton } from '@/components/ui/Reis/ReisSkeletons';
-import { ReisFormIsland } from '@/components/islands/Reis/ReisFormIsland';
-import { ReisInfoIsland } from '@/components/islands/Reis/ReisInfoIsland';
+import { ReisPageHeaderSkeleton, ReisFormSkeleton, ReisInfoSkeleton } from '@/components/ui/activities/ReisSkeletons';
+import { ReisFormIsland } from '@/components/islands/activities/ReisFormIsland';
+import { ReisInfoIsland } from '@/components/islands/activities/ReisInfoIsland';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 

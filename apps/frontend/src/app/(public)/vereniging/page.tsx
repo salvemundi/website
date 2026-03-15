@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import PageHeader from '@/components/ui/PageHeader';
-import CommitteesList from '@/components/islands/CommitteesList';
-import { CommitteeGridSkeleton } from '@/components/ui/CommitteeGridSkeleton';
+import PageHeader from '@/components/ui/layout/PageHeader';
+import CommitteesList from '@/components/islands/committees/CommitteesList';
+import { CommitteeGridSkeleton } from '@/components/ui/committees/CommitteeGridSkeleton';
 
 export const metadata: Metadata = {
     title: 'De Vereniging | SV Salve Mundi',

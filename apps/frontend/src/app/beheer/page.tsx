@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { getDashboardStats, getUpcomingBirthdays } from '@/server/actions/admin.actions';
-import AdminDashboardIsland from '@/components/islands/beheer/AdminDashboardIsland';
+import AdminDashboardIsland from '@/components/islands/admin/AdminDashboardIsland';
 
 export default async function BeheerPage() {
     return (

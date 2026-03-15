@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useTransition } from 'react';
-import DeletionTimer from '@/components/ui/DeletionTimer';
+import DeletionTimer from '@/components/ui/account/DeletionTimer';
 import { initiateMembershipPaymentAction } from '@/server/actions/membership.actions';
 import type { SignupFormData } from '@salvemundi/validations';
 

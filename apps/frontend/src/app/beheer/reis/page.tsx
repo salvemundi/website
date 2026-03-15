@@ -2,9 +2,9 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 
 // V7 Specifics
-import PageHeader from '@/components/ui/PageHeader';
-import AdminReisTripsFetcher from '@/components/ui/beheer/AdminReisTripsFetcher';
-import AdminReisDashboardSkeleton from '@/components/ui/beheer/AdminReisDashboardSkeleton';
+import PageHeader from '@/components/ui/layout/PageHeader';
+import AdminReisTripsFetcher from '@/components/ui/admin/AdminReisTripsFetcher';
+import AdminReisDashboardSkeleton from '@/components/ui/admin/AdminReisDashboardSkeleton';
 
 export const metadata: Metadata = {
     title: 'Beheer Reis | SV Salve Mundi',

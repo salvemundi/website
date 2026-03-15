@@ -4,11 +4,8 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
+import { updateProfileSchema } from '@salvemundi/validations';
 
-const updateProfileSchema = z.object({
-    minecraft_username: z.string().optional().nullable(),
-    phone_number: z.string().optional().nullable(),
-});
 
 export async function updateUserProfile(data: z.infer<typeof updateProfileSchema>) {
     const session = await auth.api.getSession({ headers: await headers() });

@@ -2,8 +2,8 @@ import { Suspense } from 'react';
 import { headers } from 'next/headers';
 import { auth } from '@/server/auth/auth';
 import { getUserEventSignups } from '@/server/actions/profiel.actions';
-import { ProfielSkeleton } from '@/components/ui/ProfielSkeleton';
-import { ProfielIsland } from '@/components/islands/ProfielIsland';
+import { ProfielSkeleton } from '@/components/ui/account/ProfielSkeleton';
+import { ProfielIsland } from '@/components/islands/account/ProfielIsland';
 
 export default function ProfielPage() {
     return (

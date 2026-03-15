@@ -1,6 +1,6 @@
 import React from 'react';
 import { getCommittees } from '@/server/actions/committees.actions';
-import { CommitteeCard } from '@/components/ui/CommitteeCard';
+import { CommitteeCard } from '@/components/ui/committees/CommitteeCard';
 
 // Helper to clean committee names (identical to card for consistency)
 function cleanCommitteeName(name: string): string {
