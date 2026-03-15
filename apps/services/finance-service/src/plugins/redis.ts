@@ -18,6 +18,8 @@ export default fp(async (fastify: FastifyInstance) => {
     fastify.decorate('redis', client);
 
     fastify.addHook('onClose', async (instance) => {
+        const { CacheInvalidationService } = await import('../services/cache-invalidation.js');
+        CacheInvalidationService.stopWorker();
         await instance.redis.disconnect();
     });
 });

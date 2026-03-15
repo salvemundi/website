@@ -29,6 +29,10 @@ const start = async () => {
     try {
         await fastify.listen({ port: 3001, host: '0.0.0.0' });
         console.log('Finance Service listening on port 3001');
+
+        // Start the Cache Invalidation Worker (background loop)
+        const { CacheInvalidationService } = await import('./services/cache-invalidation.js');
+        CacheInvalidationService.startWorker(fastify.redis);
     } catch (err) {
         fastify.log.error(err);
         process.exit(1);

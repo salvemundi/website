@@ -259,6 +259,7 @@ jobs:
             export INTERNAL_SYNC_URL="http://$SYNC_DNS:3002"
             export INTERNAL_MAIL_URL="http://$MAIL_DNS:3003"
             export INTERNAL_DIRECTUS_URL="http://v7-core-directus:8055"
+            export NEXT_APP_INTERNAL_URL="http://$FRONTEND_DNS:3000"
             
             export IMAGE_TAG="latest"
             export PUBLIC_URL="${{ vars.PUBLIC_URL }}"
@@ -303,6 +304,7 @@ jobs:
               AZURE_WEBSITEV7_MAIL_CLIENT_SECRET="$AZURE_WEBSITEV7_MAIL_CLIENT_SECRET" \
               DIRECTUS_STATIC_TOKEN="$DIRECTUS_STATIC_TOKEN" \
               INTERNAL_DIRECTUS_URL="$INTERNAL_DIRECTUS_URL" \
+              NEXT_APP_INTERNAL_URL="$NEXT_APP_INTERNAL_URL" \
               $COMPOSE_CMD up -d --remove-orphans
             
             echo "Deep cleaning unused Docker images..."
