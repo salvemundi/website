@@ -69,8 +69,11 @@ services:
     container_name: v7-core-redisinsight
     expose:
       - "5540"
+    environment:
+      - RI_PRE_SETUP_DATABASES_PATH=/db/databases.json
     volumes:
       - v7_core_redisinsight_data:/data
+      - ./databases.json:/db/databases.json
     networks:
       - shared-network
 

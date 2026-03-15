@@ -22,7 +22,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: "infrastructure/docker-compose.yml"
+          source: "infrastructure/docker-compose.yml,infrastructure/databases.json"
           target: "/opt/salve-mundi-v7/infra"
           strip_components: 1
 
