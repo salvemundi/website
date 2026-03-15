@@ -76,6 +76,7 @@ services:
       - ./databases.json:/db/databases.json
     networks:
       - shared-network
+      - proxy-network
 
 networks:
   shared-network:
