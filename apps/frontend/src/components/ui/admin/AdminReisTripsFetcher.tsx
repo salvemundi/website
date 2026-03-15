@@ -2,9 +2,9 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { getTrips } from '@/server/actions/admin-reis.actions';
 
-import AdminReisSelectorIsland from '@/components/islands/beheer/AdminReisSelectorIsland';
-import AdminReisDataFetcher from '@/components/ui/beheer/AdminReisDataFetcher';
-import AdminReisDashboardSkeleton from '@/components/ui/beheer/AdminReisDashboardSkeleton';
+import AdminReisSelectorIsland from '@/components/islands/admin/AdminReisSelectorIsland';
+import AdminReisDataFetcher from '@/components/ui/admin/AdminReisDataFetcher';
+import AdminReisDashboardSkeleton from '@/components/ui/admin/AdminReisDashboardSkeleton';
 
 import type { Trip } from '@salvemundi/validations';
 

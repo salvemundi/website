@@ -1,13 +1,13 @@
 import React, { Suspense } from 'react';
-import PageHeader from '@/components/ui/PageHeader';
+import PageHeader from '@/components/ui/layout/PageHeader';
 import { hasParentSignup } from '@/server/actions/intro.actions';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 
-import { IntroContentSkeleton } from '@/components/ui/IntroContentSkeleton';
-import { IntroStudentIsland } from '@/components/islands/IntroStudentIsland';
-import { IntroParentIsland } from '@/components/islands/IntroParentIsland';
-import { IntroLightboxIsland } from '@/components/islands/IntroLightboxIsland';
+import { IntroContentSkeleton } from '@/components/ui/intro/IntroContentSkeleton';
+import { IntroStudentIsland } from '@/components/islands/intro/IntroStudentIsland';
+import { IntroParentIsland } from '@/components/islands/intro/IntroParentIsland';
+import { IntroLightboxIsland } from '@/components/islands/intro/IntroLightboxIsland';
 
 export const metadata = {
     title: 'Introductie | Salve Mundi',

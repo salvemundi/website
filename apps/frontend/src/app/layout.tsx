@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import './globals.css';
-import NavigationHeader from '@/components/islands/NavigationHeader';
-import NavigationHeaderSkeleton from '@/components/ui/NavigationHeaderSkeleton';
-import FooterIsland from '@/components/islands/FooterIsland';
-import FooterSkeleton from '@/components/ui/FooterSkeleton';
+import NavigationHeader from '@/components/islands/layout/NavigationHeader';
+import NavigationHeaderSkeleton from '@/components/ui/layout/NavigationHeaderSkeleton';
+import FooterIsland from '@/components/islands/layout/FooterIsland';
+import FooterSkeleton from '@/components/ui/layout/FooterSkeleton';
 import { getDocumenten, getDisabledRoutes } from '@/server/actions/website.actions';
 import { getCommittees } from '@/server/actions/committees.actions';
 import { auth } from '@/server/auth/auth';

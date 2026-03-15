@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { getDocumenten } from '@/server/actions/website.actions';
-import DocumentenLijst from '@/components/ui/DocumentenLijst';
-import SafeHavenButton from '@/components/islands/SafeHavenButton';
-import WhatsAppLink from '@/components/islands/WhatsAppLink';
+import DocumentenLijst from '@/components/ui/social/DocumentenLijst';
+import SafeHavenButton from '@/components/islands/social/SafeHavenButton';
+import WhatsAppLink from '@/components/islands/social/WhatsAppLink';
 
 /**
  * Skeleton voor de documentenlijst om layout shift (CLS) te voorkomen.
@@ -13,7 +13,7 @@ function DocumentenSkeleton() {
     return (
         <div className="space-y-3 ml-14 animate-pulse">
             {[1, 2].map((i) => (
-                <div key={i} className="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-3/4" />
+                <div key={i} className="h-5 bg-[var(--bg-soft)] rounded-md w-3/4" />
             ))}
         </div>
     );

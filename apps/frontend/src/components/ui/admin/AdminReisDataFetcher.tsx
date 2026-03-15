@@ -1,5 +1,5 @@
 import { getTripSignups } from '@/server/actions/admin-reis.actions';
-import AdminReisTableIsland from '@/components/islands/beheer/AdminReisTableIsland';
+import AdminReisTableIsland from '@/components/islands/admin/AdminReisTableIsland';
 import type { Trip } from '@salvemundi/validations';
 
 interface AdminReisDataFetcherProps {

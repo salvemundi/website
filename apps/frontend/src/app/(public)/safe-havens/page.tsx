@@ -14,8 +14,9 @@ import {
 } from 'lucide-react';
 
 import { getSafeHavens } from '@/server/actions/safe-haven.actions';
-import SafeHavenCard from '@/components/ui/SafeHavenCard';
-import PageHeader from '@/components/ui/PageHeader';
+import SafeHavenCard from '@/components/ui/social/SafeHavenCard';
+import SafeHavenSkeleton from '@/components/ui/social/SafeHavenSkeleton';
+import PageHeader from '@/components/ui/layout/PageHeader';
 
 export const metadata: Metadata = {
     title: 'Vertrouwenspersonen',

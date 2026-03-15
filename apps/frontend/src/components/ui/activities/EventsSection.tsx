@@ -1,7 +1,7 @@
 import { CalendarClock, CalendarDays } from 'lucide-react';
 import Link from 'next/link';
 import type { Activiteit } from '@salvemundi/validations';
-import { EventCard } from '@/components/ui/EventCard';
+import { EventCard } from '@/components/ui/activities/EventCard';
 
 interface EventsSectionProps {
     activiteiten: Activiteit[];
