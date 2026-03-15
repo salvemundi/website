@@ -14,8 +14,8 @@ De repository is ingericht als een monorepo (gestuurd door `pnpm-workspace.yaml`
 
 ## 🛠 Technologie Stack
 
-- **Frontend**: Next.js 16, TailwindCSS, Better Auth.
-- **Backend/CMS**: Directus (Headless CMS).
+- **Frontend**: Next.js 16.1.1 (Turbopack, PPR), TailwindCSS 4, Better Auth.
+- **Backend/CMS**: Directus 11.1.1 (Requires `DIRECTUS_STATIC_TOKEN` for build verification).
 - **Database**: PostgreSQL (centrale opslag).
 - **Caching**: Redis.
 - **Infrastructuur**: Docker, Nginx Proxy Manager (NPM).
