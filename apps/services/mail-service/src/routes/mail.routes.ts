@@ -24,25 +24,16 @@ export default async function mailRoutes(fastify: FastifyInstance) {
             return reply.status(400).send({ error: 'Missing recipient or template ID' });
         }
 
-        fastify.log.info(`[MAIL] Sending ${templateId} email to ${to}`);
+        fastify.log.info(`[MAIL] Queueing ${templateId} email for ${to}`);
 
         try {
-            await MailerService.send(to, templateId, data);
+            const { MailWorkerService } = await import('../services/mail-worker.js');
+            await MailWorkerService.queueMail(fastify.redis, to, templateId, data);
 
-            // Audit Trail: Log to Directus system_logs (as per docs)
-            await AuditService.logMail(to, templateId, 'SUCCESS');
-
-            return { success: true };
+            return { success: true, message: 'Email queued for delivery' };
         } catch (err: any) {
-            fastify.log.error(`[MAIL] Failed to send email to ${to}:`, err);
-            
-            try {
-                await AuditService.logMail(to, templateId, 'FAILED', err.message);
-            } catch (auditErr: any) {
-                fastify.log.error(auditErr, '[MAIL] Failed to log failure to audit trail');
-            }
-
-            return reply.status(500).send({ error: 'Failed to dispatch email' });
+            fastify.log.error(`[MAIL] Failed to queue email to ${to}:`, err);
+            return reply.status(500).send({ error: 'Failed to queue email' });
         }
     });
 }
