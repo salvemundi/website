@@ -1,0 +1,10 @@
+[
+  {
+    "id": "v7-core-redis",
+    "name": "V7 Core Redis",
+    "connectionType": "STANDALONE",
+    "host": "v7-core-redis",
+    "port": 6379,
+    "db": 0
+  }
+]
