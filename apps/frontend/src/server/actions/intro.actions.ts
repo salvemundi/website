@@ -1,10 +1,8 @@
 'use server';
 
-import { z } from 'zod';
 import { introSignupFormSchema, introParentSignupFormSchema, type IntroSignupForm, type IntroParentSignupForm } from '@salvemundi/validations';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import { revalidateTag } from 'next/cache';
 
 const getDirectusUrl = () => process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
 const getMailUrl = () => process.env.INTERNAL_MAIL_URL || 'http://v7-acc-mail-service:3003';
@@ -47,7 +45,7 @@ export async function getIntroSettings() {
             show: data?.show ?? false,
             disabled_message: data?.disabled_message ?? 'De inschrijvingen voor de introweek zijn momenteel gesloten.',
         };
-    } catch (e) {
+    } catch {
         return { show: false, disabled_message: 'De inschrijvingen voor de introweek zijn momenteel gesloten.' };
     }
 }

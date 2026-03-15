@@ -3,16 +3,17 @@
 import Image from 'next/image';
 import { Calendar, Clock, MapPin } from 'lucide-react';
 import { getImageUrl } from '@/shared/lib/api/salvemundi'; // Assumption: provided by legacy
+import type { Activiteit } from '@salvemundi/validations';
 
 interface FeaturedEventProps {
-    event: any;
-    onEventClick: (event: any) => void;
+    event: Activiteit;
+    onEventClick: (event: Activiteit) => void;
 }
 
 export default function FeaturedEvent({ event, onEventClick }: FeaturedEventProps) {
     if (!event) return null;
 
-    const eventDateStr = event.datum_start || event.event_date;
+    const eventDateStr = event.datum_start;
     const eventTimeStr = event.event_time;
 
     const eventDate = eventTimeStr
@@ -71,8 +72,8 @@ export default function FeaturedEvent({ event, onEventClick }: FeaturedEventProp
             >
                 <div className="overflow-hidden rounded-2xl relative h-48">
                     <Image
-                        src={getImageUrl(event.afbeelding_id || event.image) || '/img/newlogo.png'}
-                        alt={event.titel || event.name || 'Featured Event'}
+                        src={getImageUrl(event.afbeelding_id) || '/img/newlogo.png'}
+                        alt={event.titel || 'Featured Event'}
                         fill
                         sizes="(max-width: 768px) 100vw, 400px"
                         className="object-cover transition duration-500 group-hover:scale-105"
@@ -88,17 +89,17 @@ export default function FeaturedEvent({ event, onEventClick }: FeaturedEventProp
 
                 <div>
                     <h2 className="text-2xl font-bold text-[var(--theme-purple)] transition group-hover:opacity-80">
-                        {event.titel || event.name}
+                        {event.titel}
                     </h2>
                     <div className="mt-3 space-y-2 text-sm text-[var(--text-muted)]">
                         <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4 text-[var(--theme-purple)]" />
                             <span>{formattedDate} om {formattedTime}</span>
                         </div>
-                        {(event.locatie || event.location) && (
+                        {event.locatie && (
                             <div className="flex items-center gap-2">
                                 <MapPin className="h-4 w-4 text-[var(--theme-purple)]" />
-                                <span>{event.locatie || event.location}</span>
+                                <span>{event.locatie}</span>
                             </div>
                         )}
                     </div>

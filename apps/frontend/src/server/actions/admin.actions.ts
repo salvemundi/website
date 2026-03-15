@@ -2,7 +2,6 @@
 
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 import { Pool } from "pg";
 
 const pool = new Pool({
@@ -21,11 +20,12 @@ async function checkAdminAccess() {
         return { isAuthorized: false, user: null };
     }
 
-    const committees = (session.user as any).committees || [];
-    const isAdmin = committees.some((c: any) => 
-        c.name.toLowerCase().includes('ict') || 
-        c.name.toLowerCase().includes('bestuur')
-    );
+    type CommitteeMeta = { name?: string | null };
+    const committees = (session.user as { committees?: CommitteeMeta[] }).committees ?? [];
+    const isAdmin = committees.some((c) => {
+        const name = c.name?.toLowerCase() ?? '';
+        return name.includes('ict') || name.includes('bestuur');
+    });
 
     return { isAuthorized: isAdmin, user: session.user };
 }

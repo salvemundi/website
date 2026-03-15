@@ -2,9 +2,10 @@
 
 import React, { useMemo } from 'react';
 import FlipClock from './FlipClock';
+import type { Activiteit } from '@salvemundi/validations';
 
 interface ActivitiesBannerIslandProps {
-    events: any[];
+    events: Activiteit[];
 }
 
 export default function ActivitiesBannerIsland({ events }: ActivitiesBannerIslandProps) {
@@ -12,21 +13,18 @@ export default function ActivitiesBannerIsland({ events }: ActivitiesBannerIslan
         const now = new Date();
         return events
             .filter(e => {
-                const eDate = e.datum_start || e.event_date;
                 const eventDateTime = e.event_time
-                    ? new Date(`${eDate}T${e.event_time}`)
-                    : new Date(eDate);
+                    ? new Date(`${e.datum_start}T${e.event_time}`)
+                    : new Date(e.datum_start);
                 return eventDateTime >= now;
             })
             .sort((a, b) => {
-                const aDate = a.datum_start || a.event_date;
-                const bDate = b.datum_start || b.event_date;
                 const aDateTime = a.event_time
-                    ? new Date(`${aDate}T${a.event_time}`).getTime()
-                    : new Date(aDate).getTime();
+                    ? new Date(`${a.datum_start}T${a.event_time}`).getTime()
+                    : new Date(a.datum_start).getTime();
                 const bDateTime = b.event_time
-                    ? new Date(`${bDate}T${b.event_time}`).getTime()
-                    : new Date(bDate).getTime();
+                    ? new Date(`${b.datum_start}T${b.event_time}`).getTime()
+                    : new Date(b.datum_start).getTime();
                 return aDateTime - bDateTime;
             })[0];
     }, [events]);
@@ -43,10 +41,10 @@ export default function ActivitiesBannerIsland({ events }: ActivitiesBannerIslan
             dark:to-[#2a232b]">
             <FlipClock
                 targetDate={upcomingEvent.event_time
-                    ? `${upcomingEvent.datum_start || upcomingEvent.event_date}T${upcomingEvent.event_time}`
-                    : (upcomingEvent.datum_start || upcomingEvent.event_date)
+                    ? `${upcomingEvent.datum_start}T${upcomingEvent.event_time}`
+                    : upcomingEvent.datum_start
                 }
-                title={upcomingEvent.titel || upcomingEvent.name}
+                title={upcomingEvent.titel}
                 href={`/activiteiten/${upcomingEvent.id}`}
             />
         </div>

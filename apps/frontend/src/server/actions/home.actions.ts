@@ -65,16 +65,22 @@ export async function getHeroBanners(): Promise<HeroBanner[]> {
     }
 
     const json = await res.json();
-    const rawData = json?.data ?? [];
+    type RawHeroBanner = {
+        id?: string | number;
+        title?: string | null;
+        image?: string | null;
+        sort?: number | null;
+    };
+    const rawData: RawHeroBanner[] = json?.data ?? [];
 
     // Mapping van DB velden naar Zod Schema velden
-    const mappedData = rawData.map((item: any) => ({
-        id: item.id,
-        title: item.title,
+    const mappedData = rawData.map((item) => ({
+        id: item.id ?? '',
+        title: item.title ?? '',
         subtitle: null, // Subtitle ontbreekt in huidige DB
-        afbeelding_id: item.image,
+        afbeelding_id: item.image ?? null,
         status: 'published', // Status ontbreekt in huidige DB, we nemen aan published
-        display_order: item.sort,
+        display_order: item.sort ?? 0,
     }));
 
     const parsed = heroBannersSchema.safeParse(mappedData);
@@ -127,25 +133,42 @@ export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> 
     }
 
     const json = await res.json();
-    const rawData = json?.data ?? [];
+    type RawEvent = {
+        id?: string | number;
+        name?: string | null;
+        description?: string | null;
+        location?: string | null;
+        event_date?: string | null;
+        event_date_end?: string | null;
+        image?: string | null;
+        status?: string | null;
+        price_members?: number | string | null;
+        price_non_members?: number | string | null;
+        only_members?: boolean | null;
+        inschrijf_deadline?: string | null;
+        contact?: string | null;
+        event_time?: string | null;
+        event_time_end?: string | null;
+    };
+    const rawData: RawEvent[] = json?.data ?? [];
 
     // Mapping van DB velden ('events') naar Zod Schema velden ('Activiteit')
-    const mappedData = rawData.map((item: any) => ({
-        id: String(item.id), // Zod verwacht string (uuid-formaat), VPS id's zijn op dit moment nog numbers
-        titel: item.name,
-        beschrijving: item.description,
-        locatie: item.location,
+    const mappedData = rawData.map((item) => ({
+        id: String(item.id ?? ''), // Zod verwacht string (uuid-formaat), VPS id's zijn op dit moment nog numbers
+        titel: item.name ?? '',
+        beschrijving: item.description ?? null,
+        locatie: item.location ?? null,
         datum_start: item.event_date ? new Date(item.event_date).toISOString() : new Date().toISOString(),
         datum_eind: item.event_date_end ? new Date(item.event_date_end).toISOString() : null,
-        afbeelding_id: item.image,
-        status: item.status,
-        price_members: item.price_members ? Number(item.price_members) : 0,
-        price_non_members: item.price_non_members ? Number(item.price_non_members) : 0,
-        only_members: item.only_members,
-        inschrijf_deadline: item.inschrijf_deadline,
-        contact: item.contact,
-        event_time: item.event_time,
-        event_time_end: item.event_time_end,
+        afbeelding_id: item.image ?? null,
+        status: item.status ?? undefined,
+        price_members: item.price_members != null ? Number(item.price_members) : 0,
+        price_non_members: item.price_non_members != null ? Number(item.price_non_members) : 0,
+        only_members: item.only_members ?? false,
+        inschrijf_deadline: item.inschrijf_deadline ?? null,
+        contact: item.contact ?? null,
+        event_time: item.event_time ?? null,
+        event_time_end: item.event_time_end ?? null,
     }));
 
     const parsed = activiteitenSchema.safeParse(mappedData);

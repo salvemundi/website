@@ -15,21 +15,21 @@ import {
 import { nl } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-interface Event {
-    id: number;
-    name: string;
-    event_date: string;
-    event_date_end?: string;
-    committee_name?: string;
-    image?: string;
+interface CalendarEvent {
+    id: number | string;
+    titel: string;
+    datum_start: string;
+    datum_eind?: string | null;
+    committee_name?: string | null;
+    afbeelding_id?: string | null;
 }
 
 interface CalendarViewProps {
     currentDate: Date;
-    events: Event[];
+    events: CalendarEvent[];
     selectedDay?: Date | null;
     onSelectDay: (day: Date) => void;
-    onEventClick: (event: Event) => void;
+    onEventClick: (event: CalendarEvent) => void;
     onPrevMonth: () => void;
     onNextMonth: () => void;
     onGoToDate?: (date: Date) => void;
@@ -59,8 +59,8 @@ export default function CalendarView({
 
     const getEventsForDay = (day: Date) => {
         return events.filter(event => {
-            const start = parseISO(event.event_date);
-            const end = event.event_date_end ? parseISO(event.event_date_end) : start;
+            const start = parseISO(event.datum_start);
+            const end = event.datum_eind ? parseISO(event.datum_eind) : start;
 
             const d = new Date(day.getFullYear(), day.getMonth(), day.getDate()).getTime();
             const s = new Date(start.getFullYear(), start.getMonth(), start.getDate()).getTime();
@@ -148,10 +148,10 @@ export default function CalendarView({
                                             onEventClick(event);
                                         }}
                                         className="w-full text-left text-xs p-1.5 rounded bg-[var(--theme-purple)]/10 hover:bg-[var(--theme-purple)]/20 text-[var(--theme-purple)] font-medium truncate transition-colors hover:ring-2 hover:ring-inset hover:ring-[var(--theme-purple)]/30"
-                                        title={`${format(parseISO(event.event_date), 'HH:mm')} - ${event.name}`}
+                                        title={`${format(parseISO(event.datum_start), 'HH:mm')} - ${event.titel}`}
                                     >
-                                        <span className="opacity-75 mr-1">{format(parseISO(event.event_date), 'HH:mm')}</span>
-                                        {event.name}
+                                        <span className="opacity-75 mr-1">{format(parseISO(event.datum_start), 'HH:mm')}</span>
+                                        {event.titel}
                                     </button>
                                 ))}
                             </div>

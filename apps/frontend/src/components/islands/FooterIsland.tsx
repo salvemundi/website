@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Instagram, Facebook, Linkedin } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import { ROUTES } from '@/lib/routes';
-import type { Document } from '@salvemundi/validations';
+import type { Committee, Document } from '@salvemundi/validations';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 // Alle data wordt server-side opgehaald en als props doorgegeven.
@@ -13,11 +13,22 @@ import type { Document } from '@salvemundi/validations';
 interface FooterIslandProps {
     documents: Document[];
     disabledRoutes?: string[];
+    committees: Committee[];
 }
 
 // Verwijdert het "|| SALVE MUNDI" achtervoegsel van commissienamen (legacy data-quirk)
 function cleanCommitteeName(name: string): string {
     return name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim();
+}
+
+function slugify(text: string): string {
+    return text
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w-]+/g, '')
+        .replace(/--+/g, '-');
 }
 
 // ─── CSS Token Strategie ──────────────────────────────────────────────────────
@@ -46,7 +57,7 @@ const LINK_CLS =
 const MUTED_CLS = 'text-[var(--color-purple-800)] dark:text-[var(--text-light)]';
 
 // ─── Component ────────────────────────────────────────────────────────────────
-const FooterIsland: React.FC<FooterIslandProps> = ({ documents, disabledRoutes = [] }) => {
+const FooterIsland: React.FC<FooterIslandProps> = ({ documents, disabledRoutes = [], committees }) => {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -75,6 +86,15 @@ const FooterIsland: React.FC<FooterIslandProps> = ({ documents, disabledRoutes =
 
     // Filter links die op een Feature Flag staan
     const pageLinks = allPageLinks.filter(link => !disabledRoutes.includes(link.href));
+
+    const sortedCommittees = [...committees].sort((a, b) => {
+        const aIsBestuur = cleanCommitteeName(a.name).toLowerCase().includes('bestuur');
+        const bIsBestuur = cleanCommitteeName(b.name).toLowerCase().includes('bestuur');
+
+        if (aIsBestuur && !bIsBestuur) return -1;
+        if (!aIsBestuur && bIsBestuur) return 1;
+        return 0;
+    });
 
     return (
         <footer className="relative overflow-hidden bg-gradient-theme">
@@ -126,21 +146,21 @@ const FooterIsland: React.FC<FooterIslandProps> = ({ documents, disabledRoutes =
                     {/* ── Kolom 3: Commissies ── */}
                     <div>
                         <h3 className={HEADING_CLS}>Commissies</h3>
-                        {/*
-                         * TODO: Commissies dynamisch inladen vanuit Directus via getCommissies().
-                         *
-                         * MISSING SOURCE REQUIREMENT: De exacte kolomnamen van de `commissies` tabel
-                         * zijn niet gedocumenteerd in het Datamodel ERD. Zodra de Directus-schema dump
-                         * (kolomnamen van de `commissies` collectie) beschikbaar is, dient er:
-                         *   1. Een `commissies.zod.ts` schema aangemaakt te worden in packages/validations/src/schema/
-                         *   2. Een `getCommissies()` Server Action toegevoegd te worden in footer.actions.ts
-                         *   3. De statische fallback hieronder vervangen te worden door de dynamische lijst
-                         *      (vergeet cleanCommitteeName() en de bestuur-sorteerlogica niet)
-                         *   4. De `FooterIslandProps` uitgebreid te worden met: `commissies: Commissie[]`
-                         *
-                         * Zie: implementation_plan.md § Missing Source Requirements
-                         */}
                         <ul className="space-y-2 text-sm">
+                            {sortedCommittees.length === 0 && (
+                                <li className={MUTED_CLS}>Geen commissies gevonden</li>
+                            )}
+                            {sortedCommittees.map((committee) => {
+                                const cleaned = cleanCommitteeName(committee.name);
+                                const slug = slugify(cleaned);
+                                return (
+                                    <li key={committee.id}>
+                                        <Link href={`${ROUTES.COMMITTEES}/commissies/${slug}`} className={LINK_CLS}>
+                                            {cleaned}
+                                        </Link>
+                                    </li>
+                                );
+                            })}
                             <li>
                                 <Link href={ROUTES.COMMITTEES} className={LINK_CLS}>
                                     Alle commissies bekijken

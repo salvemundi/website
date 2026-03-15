@@ -10,7 +10,7 @@
     "dev": "pnpm -r run dev",
     "build": "pnpm -r run build",
     "start": "pnpm -r run start",
-    "lint": "pnpm -r run lint"
+    "lint": "pnpm -r --if-present run lint"
   },
   "pnpm": {
     "overrides": {

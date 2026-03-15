@@ -5,10 +5,11 @@ import ActiviteitCard from './ActiviteitCard';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 import { isEventPast } from '@/shared/lib/utils/date';
 import { useAuth } from '@/features/auth/providers/auth-provider';
+import type { Activiteit } from '@salvemundi/validations';
 
 interface EventListProps {
-    events: any[];
-    onEventClick: (event: any) => void;
+    events: Activiteit[];
+    onEventClick: (event: Activiteit) => void;
     variant?: 'list' | 'grid';
 }
 
@@ -30,21 +31,21 @@ export default function EventList({ events, onEventClick, variant = 'list' }: Ev
                     <ActiviteitCard
                         key={event.id}
                         id={event.id}
-                        title={event.titel || event.name || 'Activiteit'}
-                        description={stripHtml(event.beschrijving || event.description || '')}
-                        date={event.datum_start || event.event_date}
-                        endDate={event.datum_eind || event.event_date_end}
-                        startTime={event.event_time}
-                        endTime={event.event_time_end || event.time_end}
-                        location={event.locatie || event.location}
-                        price={user?.membership_status === 'active' ? event.price_members : event.price_non_members}
-                        image={getImageUrl(event.afbeelding_id || event.image)}
-                        isPast={isEventPast(event.datum_start || event.event_date)}
+                        title={event.titel || 'Activiteit'}
+                        description={stripHtml(event.beschrijving || '')}
+                        date={event.datum_start}
+                        endDate={event.datum_eind ?? undefined}
+                        startTime={event.event_time ?? undefined}
+                        endTime={event.event_time_end ?? undefined}
+                        location={event.locatie ?? undefined}
+                        price={user?.membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
+                        image={getImageUrl(event.afbeelding_id) ?? undefined}
+                        isPast={isEventPast(event.datum_start)}
                         variant="grid"
-                        committeeName={event.committee_name}
-                        contact={event.contact}
-                        inschrijfDeadline={event.inschrijf_deadline}
-                        onlyMembers={event.only_members}
+                        committeeName={event.committee_name ?? undefined}
+                        contact={event.contact ?? undefined}
+                        inschrijfDeadline={event.inschrijf_deadline ?? undefined}
+                        onlyMembers={event.only_members ?? undefined}
                         onShowDetails={() => onEventClick(event)}
                         onSignup={() => onEventClick(event)}
                     />
@@ -59,21 +60,21 @@ export default function EventList({ events, onEventClick, variant = 'list' }: Ev
                 <ActiviteitCard
                     key={event.id}
                     id={event.id}
-                    title={event.titel || event.name || 'Activiteit'}
-                    description={stripHtml(event.beschrijving || event.description || '')}
-                    date={event.datum_start || event.event_date}
-                    endDate={event.datum_eind || event.event_date_end}
-                    startTime={event.event_time}
-                    endTime={event.event_time_end || event.time_end}
-                    location={event.locatie || event.location}
-                    price={user?.membership_status === 'active' ? event.price_members : event.price_non_members}
-                    image={getImageUrl(event.afbeelding_id || event.image)}
-                    isPast={isEventPast(event.datum_start || event.event_date)}
+                    title={event.titel || 'Activiteit'}
+                    description={stripHtml(event.beschrijving || '')}
+                    date={event.datum_start}
+                    endDate={event.datum_eind ?? undefined}
+                    startTime={event.event_time ?? undefined}
+                    endTime={event.event_time_end ?? undefined}
+                    location={event.locatie ?? undefined}
+                    price={user?.membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
+                    image={getImageUrl(event.afbeelding_id) ?? undefined}
+                    isPast={isEventPast(event.datum_start)}
                     variant="list"
-                    committeeName={event.committee_name}
-                    contact={event.contact}
-                    inschrijfDeadline={event.inschrijf_deadline}
-                    onlyMembers={event.only_members}
+                    committeeName={event.committee_name ?? undefined}
+                    contact={event.contact ?? undefined}
+                    inschrijfDeadline={event.inschrijf_deadline ?? undefined}
+                    onlyMembers={event.only_members ?? undefined}
                     onShowDetails={() => onEventClick(event)}
                     onSignup={() => onEventClick(event)}
                 />

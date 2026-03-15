@@ -18,7 +18,7 @@ interface ReisFormIslandProps {
     participantsCount: number;
 }
 
-export function ReisFormIsland({ nextTrip, userSignup, canSignUp, registrationStartText, participantsCount }: ReisFormIslandProps) {
+export function ReisFormIsland({ nextTrip, userSignup, canSignUp, registrationStartText }: ReisFormIslandProps) {
     const { data: session } = authClient.useSession(); // Access Better Auth session dynamically on client
     const currentUser = session?.user;
 
@@ -33,24 +33,11 @@ export function ReisFormIsland({ nextTrip, userSignup, canSignUp, registrationSt
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [isCommitteeMember, setIsCommitteeMember] = useState(false); // To be extracted from session ideally
+    const [isCommitteeMember] = useState(false); // To be extracted from session ideally
 
     // Prefill form when Better Auth session is present
     useEffect(() => {
         if (!currentUser) return;
-
-        let middleName = '';
-        let lastName = currentUser.name || ''; // Depending on how name is stored in session
-
-        // Attempting to replicate legacy prefill logic safely
-        if (currentUser.name && currentUser.name.includes(' ')) {
-            const parts = currentUser.name.split(' ');
-            const potentialLast = parts[parts.length - 1];
-            // Simple split if custom attributes aren't present
-            if (parts.length > 2) {
-                lastName = potentialLast;
-            }
-        }
 
         setForm(prev => ({
             ...prev,
@@ -85,7 +72,7 @@ export function ReisFormIsland({ nextTrip, userSignup, canSignUp, registrationSt
             } else {
                 window.location.reload();
             }
-        } catch (err) {
+        } catch {
             setError('Er is een fout opgetreden.');
         } finally {
             setLoading(false);
@@ -134,7 +121,7 @@ export function ReisFormIsland({ nextTrip, userSignup, canSignUp, registrationSt
                 window.scrollTo(0, 0);
                 window.location.reload();
             }
-        } catch (err) {
+        } catch {
             setError('Er is een onverwachte fout opgetreden bij het verzenden.');
         } finally {
             setLoading(false);

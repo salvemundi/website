@@ -43,20 +43,24 @@ export async function checkServiceStatus(url: string, serviceName: string): Prom
         const res = await fetch(url, { signal: controller.signal, cache: 'no-store' });
         clearTimeout(timeoutId);
 
+        const isOk = res.ok || res.status < 500;
+        await res.text(); // Explicitly consume body
+
         return {
             name: serviceName,
             target: url,
-            isOnline: res.ok || res.status < 500,
+            isOnline: isOk,
             status: res.status,
             error: null
         };
-    } catch (error: any) {
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error('Unknown error');
         return {
             name: serviceName,
             target: url,
             isOnline: false,
             status: null,
-            error: error.name === 'AbortError' ? 'Timeout (> 5s)' : error.message
+            error: err.name === 'AbortError' ? 'Timeout (> 5s)' : err.message
         };
     }
 }

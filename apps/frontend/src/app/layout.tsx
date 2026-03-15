@@ -6,8 +6,10 @@ import NavigationHeaderSkeleton from '@/components/ui/NavigationHeaderSkeleton';
 import FooterIsland from '@/components/islands/FooterIsland';
 import FooterSkeleton from '@/components/ui/FooterSkeleton';
 import { getDocumenten, getDisabledRoutes } from '@/server/actions/website.actions';
+import { getCommittees } from '@/server/actions/committees.actions';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
+import { connection } from 'next/server';
 
 export const metadata: Metadata = {
     title: 'Salve Mundi V7',
@@ -55,7 +57,9 @@ export default function RootLayout({
                     className="flex-grow"
                     style={{ paddingTop: 'var(--header-total-height, var(--header-height, 72px))' }}
                 >
-                    {children}
+                    <Suspense fallback={null}>
+                        {children}
+                    </Suspense>
                 </main>
 
                 <Suspense fallback={<FooterSkeleton />}>
@@ -67,6 +71,7 @@ export default function RootLayout({
 }
 
 async function HeaderWrapper() {
+    await connection();
     const [disabledRoutes, session] = await Promise.all([
         getDisabledRoutes(),
         auth.api.getSession({
@@ -83,15 +88,18 @@ async function HeaderWrapper() {
 }
 
 async function FooterWrapper() {
-    const [documents, disabledRoutes] = await Promise.all([
+    await connection();
+    const [documents, disabledRoutes, committees] = await Promise.all([
         getDocumenten(),
-        getDisabledRoutes()
+        getDisabledRoutes(),
+        getCommittees(),
     ]);
 
     return (
         <FooterIsland
             documents={documents}
             disabledRoutes={disabledRoutes}
+            committees={committees}
         />
     );
 }

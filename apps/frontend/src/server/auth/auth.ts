@@ -40,20 +40,29 @@ export const auth = betterAuth({
                 after: [
                     {
                         matcher: (ctx) => ctx.path.includes("get-session"),
-                        handler: async (ctx: any) => {
+                        handler: async (ctx: {
+                            path: string;
+                            context?: { returned?: unknown };
+                            response?: unknown;
+                            json?: unknown;
+                            body?: unknown;
+                        }) => {
                             const session = ctx.context?.returned || ctx.response || ctx.json || ctx.body;
                             
-                            if (session && session.user) {
+                            if (session && typeof session === 'object' && 'user' in session) {
+                                const sessionWithUser = session as { user?: { id?: string; committees?: unknown } };
                                 try {
                                     const { rows } = await pool.query(
                                         `SELECT c.id, c.name, m.is_leader 
                                          FROM committee_members m 
                                          JOIN committees c ON m.committee_id = c.id 
                                          WHERE m.user_id = $1`,
-                                        [session.user.id]
+                                        [sessionWithUser.user?.id]
                                     );
                                     
-                                    session.user.committees = rows;
+                                    if (sessionWithUser.user) {
+                                        sessionWithUser.user.committees = rows;
+                                    }
                                 } catch (error) {
                                     console.error("[AUTH-PLUGIN] Error enrichment:", error);
                                 }

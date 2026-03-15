@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Calendar } from 'lucide-react';
 import { getImageUrl } from '@/shared/lib/api/salvemundi'; // Keeping legacy getImageUrl logic, assuming it returns directus URL
 import { format } from 'date-fns';
@@ -14,6 +15,7 @@ interface ReisInfoIslandProps {
 export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+    const [imageError, setImageError] = useState(false);
 
     const openLightbox = (src: string) => {
         setLightboxSrc(src);
@@ -66,15 +68,16 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                             onClick={() => openLightbox(getImageUrl(nextTrip.image!))}
                             className="w-full rounded-xl sm:rounded-2xl overflow-hidden focus:outline-none group relative"
                         >
-                            <img
-                                src={getImageUrl(nextTrip.image)}
-                                alt={nextTrip.name}
-                                className="w-full max-h-64 sm:max-h-80 md:max-h-96 h-auto object-contain rounded-xl sm:rounded-2xl transition-transform duration-500 group-hover:scale-105"
-                                onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.src = '/img/placeholder.svg';
-                                }}
-                            />
+                            <div className="relative w-full max-h-64 sm:max-h-80 md:max-h-96 h-[240px] sm:h-[320px] md:h-[380px]">
+                                <Image
+                                    src={imageError ? '/img/placeholder.svg' : getImageUrl(nextTrip.image)}
+                                    alt={nextTrip.name}
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, 50vw"
+                                    className="object-contain rounded-xl sm:rounded-2xl transition-transform duration-500 group-hover:scale-105"
+                                    onError={() => setImageError(true)}
+                                />
+                            </div>
                             <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                 <span className="text-white bg-black/40 px-4 py-2 rounded-full backdrop-blur-md text-sm sm:text-base">Bekijk afbeelding</span>
                             </div>
@@ -150,12 +153,18 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                     >
                         ×
                     </button>
-                    <img
-                        src={lightboxSrc}
-                        alt={nextTrip?.name || 'Reis afbeelding'}
-                        className="max-h-[90vh] max-w-full rounded-2xl shadow-2xl animate-fade-in"
+                    <div
+                        className="relative w-full max-w-5xl h-[80vh] sm:h-[90vh]"
                         onClick={(e) => e.stopPropagation()}
-                    />
+                    >
+                        <Image
+                            src={lightboxSrc}
+                            alt={nextTrip?.name || 'Reis afbeelding'}
+                            fill
+                            sizes="(max-width: 1024px) 90vw, 1024px"
+                            className="object-contain rounded-2xl shadow-2xl animate-fade-in"
+                        />
+                    </div>
                 </div>
             )}
         </div>

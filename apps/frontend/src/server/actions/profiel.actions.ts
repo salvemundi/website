@@ -49,6 +49,7 @@ export async function getUserEventSignups(): Promise<EventSignup[]> {
 
         if (!res.ok) {
             console.error('[profiel.actions#getUserEventSignups] Directus error:', res.statusText);
+            await res.text();
             return [];
         }
 
@@ -91,6 +92,7 @@ export async function getUserTransactions(): Promise<Transaction[]> {
 
         if (!res.ok) {
             console.error('[profiel.actions#getUserTransactions] Directus error:', res.statusText);
+            await res.text();
             return [];
         }
 
@@ -126,6 +128,7 @@ export async function getWhatsAppGroups(): Promise<WhatsAppGroup[]> {
 
         if (!res.ok) {
             console.error('[profiel.actions#getWhatsAppGroups] Directus error:', res.statusText);
+            await res.text();
             return [];
         }
 

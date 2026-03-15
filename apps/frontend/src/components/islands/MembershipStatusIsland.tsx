@@ -3,8 +3,9 @@
 import React, { useTransition } from 'react';
 import DeletionTimer from '@/components/ui/DeletionTimer';
 import { initiateMembershipPaymentAction } from '@/server/actions/membership.actions';
+import type { SignupFormData } from '@salvemundi/validations';
 
-interface UserData {
+export interface MembershipUserData {
     id: string;
     first_name: string;
     last_name?: string;
@@ -16,7 +17,7 @@ interface UserData {
 }
 
 interface MembershipStatusIslandProps {
-    user: UserData;
+    user: MembershipUserData;
     baseAmount: number;
 }
 
@@ -26,15 +27,17 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
 
     const handleRenewal = async () => {
         startTransition(async () => {
-            const formData = {
+            const formData: SignupFormData = {
                 voornaam: user.first_name,
                 achternaam: user.last_name || '',
+                tussenvoegsel: '',
                 email: user.email,
                 telefoon: user.phone_number || '',
                 geboortedatum: user.date_of_birth || '',
+                coupon: '',
             };
 
-            const result = await initiateMembershipPaymentAction(formData as any);
+            const result = await initiateMembershipPaymentAction(formData);
 
             if (result.success && result.checkoutUrl) {
                 window.location.href = result.checkoutUrl;

@@ -14,8 +14,22 @@ import { ROUTES } from '@/lib/routes';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 interface NavigationHeaderProps {
     disabledRoutes?: string[];
-    initialSession?: any;
+    initialSession?: { user?: SessionUser | null } | null;
 }
+
+type CommitteeMeta = {
+    id?: number | string;
+    name?: string | null;
+    is_leader?: boolean | null;
+};
+
+type SessionUser = {
+    email?: string | null;
+    avatar?: string | null;
+    image?: string | null;
+    membership_status?: string | null;
+    committees?: CommitteeMeta[] | null;
+};
 
 const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = [], initialSession }) => {
     const pathname = usePathname();
@@ -28,8 +42,8 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
     // Bij hydratatie (mounted === false) gebruiken we ALTIJD initialSession om mismatch te voorkomen.
     // Daarna schakelen we over naar de real-time session, maar MERGEN we de committees als die ontbreken.
     const user = useMemo(() => {
-        const sUser = session?.user as any;
-        const iUser = initialSession?.user as any;
+        const sUser = session?.user as SessionUser | undefined;
+        const iUser = initialSession?.user ?? null;
         
         if (!mounted) return iUser;
         
@@ -67,7 +81,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
             return;
         }
         // Commissies zitten als metadata op de sessie (geladen tijdens auth)
-        const committees = (user as Record<string, unknown>).committees;
+        const committees = user.committees;
         if (Array.isArray(committees)) {
             setIsCommitteeMember(committees.length > 0);
         }
@@ -178,7 +192,14 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                             className="flex items-center gap-3 rounded-full px-4 py-2 shadow-sm hover:shadow-md transition"
                             style={{ backgroundColor: 'color-mix(in srgb, var(--bg-card) 80%, transparent)' }}
                         >
-                            <img className="h-9" src="/img/newlogo.png" alt="Salve Mundi" />
+                            <Image
+                                src="/img/newlogo.png"
+                                alt="Salve Mundi"
+                                width={36}
+                                height={36}
+                                className="h-9 w-9"
+                                priority
+                            />
                             <div className="hidden text-left sm:block whitespace-nowrap">
                                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-purple-500)]">
                                     Salve Mundi
@@ -250,8 +271,8 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                                 >
                                     <div className="relative h-8 w-8 rounded-full overflow-hidden">
                                         <Image
-                                            src={getImageUrl((user as any)?.avatar || (user as any)?.image)}
-                                            alt={(user as any)?.email ? String((user as any).email) : 'Profiel'}
+                                            src={getImageUrl(user?.avatar || user?.image)}
+                                            alt={user?.email ? String(user.email) : 'Profiel'}
                                             fill
                                             sizes="32px"
                                             className="object-cover"
@@ -340,10 +361,10 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                             className="flex items-center gap-3"
                         >
                             <span className="inline-flex relative h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-card)] shadow-sm overflow-hidden">
-                                {mounted && ((user as any)?.avatar || (user as any)?.image) ? (
+                                {mounted && (user?.avatar || user?.image) ? (
                                     <Image
-                                        src={getImageUrl((user as any)?.avatar || (user as any)?.image)}
-                                        alt={String((user as any).email ?? '')}
+                                        src={getImageUrl(user?.avatar || user?.image)}
+                                        alt={user?.email ? String(user.email) : ''}
                                         fill
                                         sizes="40px"
                                         className="object-cover"
@@ -351,7 +372,13 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                                         unoptimized
                                     />
                                 ) : (
-                                    <img className="h-7 w-7" src="/img/newlogo.png" alt="" />
+                                    <Image
+                                        src="/img/newlogo.png"
+                                        alt=""
+                                        width={28}
+                                        height={28}
+                                        className="h-7 w-7"
+                                    />
                                 )}
                             </span>
                             <span className="text-sm font-semibold text-[var(--text-main)]">

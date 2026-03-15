@@ -15,7 +15,6 @@ import {
 
 import { getSafeHavens } from '@/server/actions/safe-haven.actions';
 import SafeHavenCard from '@/components/ui/SafeHavenCard';
-import SafeHavensSkeleton from '@/components/ui/SafeHavensSkeleton';
 import PageHeader from '@/components/ui/PageHeader';
 
 export const metadata: Metadata = {

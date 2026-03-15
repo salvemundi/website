@@ -44,6 +44,7 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
 
         if (!res.ok) {
             console.error('[profiel.actions#updateUserProfile] Update failed:', res.statusText);
+            await res.text();
             return { success: false, error: 'Opslaan mislukt in Directus' };
         }
 

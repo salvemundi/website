@@ -8,6 +8,16 @@ export default async function mailRoutes(fastify: FastifyInstance) {
      * Payload: { to: "user@example.com", templateId: "welcome", data: { ... } }
      */
     fastify.post('/send', async (request: any, reply) => {
+        const token = process.env.INTERNAL_SERVICE_TOKEN;
+        if (!token) {
+            return reply.status(500).send({ error: 'INTERNAL_SERVICE_TOKEN is not configured' });
+        }
+
+        const authHeader = request.headers['authorization'];
+        if (authHeader !== `Bearer ${token}`) {
+            return reply.status(401).send({ error: 'Unauthorized' });
+        }
+
         const { to, templateId, data } = request.body;
 
         if (!to || !templateId) {

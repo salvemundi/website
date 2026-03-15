@@ -39,7 +39,10 @@ export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
             headers,
             next: { revalidate: 300, tags: ['site_settings', 'reis_settings'] },
         });
-        if (!res.ok) return null;
+        if (!res.ok) {
+            await res.text();
+            return null;
+        }
 
         const json = await res.json();
         if (!json.data || json.data.length === 0) return null;
@@ -66,7 +69,10 @@ export async function getUpcomingTrips(): Promise<ReisTrip[]> {
             headers,
             next: { revalidate: 300, tags: ['trips'] },
         });
-        if (!res.ok) return [];
+        if (!res.ok) {
+            await res.text();
+            return [];
+        }
 
         const json = await res.json();
         const parsed = reisTripSchema.array().safeParse(json.data ?? []);
@@ -116,7 +122,10 @@ export async function getTripSignups(tripId: number): Promise<ReisTripSignup[]> 
             headers,
             next: { revalidate: 60, tags: ['trip_signups', `trip_${tripId}`] },
         });
-        if (!res.ok) return [];
+        if (!res.ok) {
+            await res.text();
+            return [];
+        }
 
         const json = await res.json();
         const parsed = reisTripSignupSchema.array().safeParse(json.data ?? []);
@@ -185,6 +194,7 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number, isC
 
         if (!res.ok) {
             console.error('[reis.actions#createTripSignup] Failed to insert:', res.status, res.statusText);
+            await res.text();
             return { success: false, message: 'Er is een fout opgetreden bij het opslaan van de inschrijving.' };
         }
 
@@ -220,7 +230,10 @@ export async function cancelTripSignup(signupId: number): Promise<{ success: boo
     try {
         // Fetch existing logic to verify the token owner (Pseudo implementation for the migration)
         const fetchRes = await fetch(url, { headers });
-        if (!fetchRes.ok) return { success: false, message: 'Aanmelding niet gevonden.' };
+        if (!fetchRes.ok) {
+            await fetchRes.text();
+            return { success: false, message: 'Aanmelding niet gevonden.' };
+        }
 
         const currentData = await fetchRes.json();
 
@@ -236,6 +249,7 @@ export async function cancelTripSignup(signupId: number): Promise<{ success: boo
 
         if (!updateRes.ok) {
             console.error('[reis.actions#cancelTripSignup] Failed to update:', updateRes.status, updateRes.statusText);
+            await updateRes.text();
             return { success: false, message: 'Er is een fout opgetreden bij annulering.' };
         }
 

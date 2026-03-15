@@ -42,8 +42,11 @@ async function getDisabledRoutes(): Promise<string[]> {
         
         // Zorg ervoor dat data in juiste formaat is
         if (data && Array.isArray(data.data)) {
+            type FeatureFlag = { route_match?: string | null };
             // Transformeer [{ route_match: "/kroegentocht" }] naar ["/kroegentocht"]
-            return data.data.map((flag: any) => flag.route_match).filter(Boolean);
+            return (data.data as FeatureFlag[])
+                .map((flag) => flag.route_match)
+                .filter((route): route is string => Boolean(route));
         }
 
         return [];

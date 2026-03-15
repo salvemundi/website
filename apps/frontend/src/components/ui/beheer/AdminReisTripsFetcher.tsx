@@ -19,8 +19,9 @@ export default async function AdminReisTripsFetcher({ searchParams }: AdminReisT
     let trips: Trip[] = [];
     try {
         trips = await getTrips();
-    } catch (e: any) {
-        console.error('[AdminReisTripsFetcher] Error fetching trips:', e.message);
+    } catch (e) {
+        const message = e instanceof Error ? e.message : 'Onbekende fout';
+        console.error('[AdminReisTripsFetcher] Error fetching trips:', message);
         // Do not throw to prevent build failures, return empty
     }
 
@@ -36,7 +37,7 @@ export default async function AdminReisTripsFetcher({ searchParams }: AdminReisT
 
     // Determine currently selected trip
     const activeTripId = tripIdParam ? Number(tripIdParam) : trips[0].id;
-    const activeTrip = trips.find((t: any) => t.id === activeTripId);
+    const activeTrip = trips.find((t) => t.id === activeTripId);
 
     if (!activeTrip) {
         notFound();

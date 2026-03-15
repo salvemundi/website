@@ -33,9 +33,6 @@ function formatEventDate(dateString: string): string {
 // Auth-state via authClient.useSession() conform het NavigationHeader patroon.
 export function HeroIsland({ banners, activiteiten }: HeroIslandProps) {
     const { data: session, isPending: authLoading } = authClient.useSession();
-    const user = session?.user as (Record<string, unknown> & {
-        membership_status?: string;
-    }) | null ?? null;
     const isAuthenticated = !!session?.user;
 
     // Mount-gate: voorkomt hydration mismatch (zelfde patroon als JoinSectionIsland)

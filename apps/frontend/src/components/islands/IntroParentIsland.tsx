@@ -3,9 +3,8 @@
 import React, { useState } from 'react';
 import { submitIntroParentSignup } from '@/server/actions/intro.actions';
 import { FormField } from '@/shared/ui/FormField';
-import { Input } from '@/shared/ui/Input';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
-import { Heart, CheckCircle2 } from 'lucide-react';
+import { Heart } from 'lucide-react';
 
 interface IntroParentIslandProps {
     userName: string;
@@ -48,8 +47,9 @@ export const IntroParentIsland = ({ userName, userEmail, initialPhone }: IntroPa
             if (result.success) {
                 setSubmitted(true);
             }
-        } catch (err: any) {
-            setError(err?.message || 'Er is een fout opgetreden bij het versturen van je aanmelding.');
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Er is een fout opgetreden bij het versturen van je aanmelding.';
+            setError(message);
         } finally {
             setIsSubmitting(false);
         }
@@ -85,7 +85,7 @@ export const IntroParentIsland = ({ userName, userEmail, initialPhone }: IntroPa
                 <PhoneInput
                     name="telefoonnummer"
                     value={phone}
-                    onChange={(e: any) => { setPhone(e.target.value); setPhoneError(null); }}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setPhone(e.target.value); setPhoneError(null); }}
                     required
                     autoComplete="tel"
                     error={!!phoneError}

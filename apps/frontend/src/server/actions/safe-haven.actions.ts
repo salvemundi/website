@@ -56,18 +56,26 @@ async function fetchSafeHavensFromDirectus(): Promise<SafeHaven[]> {
     }
 
     const json = await res.json();
-    const rawData = json?.data ?? [];
+    type RawSafeHaven = {
+        id?: string | number;
+        contact_name?: string | null;
+        email?: string | null;
+        phone_number?: string | null;
+        image?: string | null;
+        sort?: number | null;
+    };
+    const rawData: RawSafeHaven[] = json?.data ?? [];
 
     // Mapping van DB velden naar Zod Schema velden
-    const mappedData = rawData.map((item: any) => ({
-        id: item.id,
-        naam: item.contact_name,
-        email: item.email,
-        telefoon: item.phone_number,
+    const mappedData = rawData.map((item) => ({
+        id: item.id ?? '',
+        naam: item.contact_name ?? '',
+        email: item.email ?? null,
+        telefoon: item.phone_number ?? null,
         beschrijving: null, // Beschrijving ontbreekt in huidige DB
-        afbeelding_id: item.image,
+        afbeelding_id: item.image ?? null,
         status: 'published',
-        sort: item.sort,
+        sort: item.sort ?? 0,
     }));
 
     const parsed = safeHavensSchema.safeParse(mappedData);

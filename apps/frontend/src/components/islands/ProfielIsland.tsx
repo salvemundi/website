@@ -1,25 +1,43 @@
 'use client';
 
-import { Suspense, useMemo, useState, useRef, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { format, startOfDay, isBefore } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { 
-    Gamepad2, Mail, Phone, Calendar, Upload, 
-    Check, X, Loader2, Users2, ChevronRight, 
-    CreditCard, MessageCircle, FileText, Shield, Lock, ExternalLink, Edit2, Save
+    Gamepad2, Mail, Phone, Calendar, X, Loader2, Users2, ChevronRight, 
+    CreditCard, MessageCircle, Shield, Lock, ExternalLink, Edit2, Save
 } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import type { EventSignup } from '@salvemundi/validations';
 import { updateUserProfile } from '@/server/actions/profiel-update.actions';
 import { getImageUrl } from '@/shared/lib/api/salvemundi';
 
+type CommitteeMeta = {
+    id?: string | number;
+    name?: string | null;
+    is_leader?: boolean | null;
+};
+
+type SessionUser = {
+    id?: string | number;
+    name?: string | null;
+    email?: string | null;
+    fontys_email?: string | null;
+    membership_status?: string | null;
+    membership_expiry?: string | null;
+    phone_number?: string | null;
+    date_of_birth?: string | null;
+    avatar?: string | null;
+    image?: string | null;
+    minecraft_username?: string | null;
+    committees?: CommitteeMeta[] | null;
+};
+
 interface ProfielIslandProps {
     initialSignups: EventSignup[];
-    user: Record<string, any>;
-    publicUrl: string;
+    user: SessionUser;
 }
 
 // Helper component for Tiles
@@ -88,16 +106,15 @@ function QuickLink({
     return <button type="button" onClick={onClick} className={common}>{inner}</button>;
 }
 
-export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, user: initialUser, publicUrl }) => {
-    const router = useRouter();
+export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, user: initialUser }) => {
     const [mounted, setMounted] = useState(false);
     const { data: session } = authClient.useSession();
 
     // Bij hydratatie (mounted === false) gebruiken we ALTIJD initialUser om mismatch te voorkomen.
     // Daarna schakelen we over naar de real-time session, maar MERGEN we de committees als die ontbreken.
-    const user = useMemo(() => {
-        const sUser = session?.user as any;
-        const iUser = initialUser as any;
+    const user = useMemo<SessionUser>(() => {
+        const sUser = session?.user as SessionUser | undefined;
+        const iUser = initialUser ?? {};
         
         if (!mounted) return iUser;
         
@@ -155,14 +172,14 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
                 if (!s?.event_id?.event_date) return true;
                 const eventDate = startOfDay(new Date(s.event_id.event_date));
                 return !isBefore(eventDate, todayStart);
-            } catch (e) {
+            } catch {
                 return true;
             }
         });
     }, [eventSignups, showPastEvents]);
 
     const membershipStatus = useMemo(() => {
-        const isLeader = Array.isArray(user.committees) && user.committees.some((c: any) => c.is_leader);
+        const isLeader = Array.isArray(user.committees) && user.committees.some((c) => c.is_leader);
         const isInCommittee = isCommitteeMember;
         const status = user.membership_status;
         const isMember = status === 'active';
@@ -240,9 +257,9 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
                                         Mijn Commissies
                                     </p>
                                     <div className="flex flex-wrap gap-2 justify-center">
-                                        {user.committees.map((committee: any) => (
+                                        {user.committees.map((committee) => (
                                             <span
-                                                key={committee.id || committee.name}
+                                                key={committee.id || (committee.name ?? 'unknown')}
                                                 className="group relative inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-purple-50)] dark:bg-white/10 border border-[var(--color-purple-100)] dark:border-white/20 rounded-full text-xs font-bold text-[var(--color-purple-700)] dark:text-white shadow-sm"
                                             >
                                                 {committee.is_leader && (
@@ -251,7 +268,7 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
                                                     </span>
                                                 )}
                                                 <Users2 className="h-3.5 w-3.5" />
-                                                <span>{committee.name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim()}</span>
+                                                <span>{(committee.name ?? '').replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim()}</span>
                                             </span>
                                         ))}
                                     </div>
@@ -327,7 +344,7 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
                                 <p className="text-[11px] text-[var(--color-purple-400)] font-bold uppercase tracking-wide mb-1">
                                     E-mailadres
                                 </p>
-                                <p className="font-bold text-[var(--color-purple-700)] dark:text-white truncate text-sm" title={user.email}>
+                                <p className="font-bold text-[var(--color-purple-700)] dark:text-white truncate text-sm" title={user.email ?? undefined}>
                                     {user.email || 'Geen email'}
                                 </p>
                             </div>
@@ -342,7 +359,7 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
                                     <p className="text-[11px] text-[var(--color-purple-400)] font-bold uppercase tracking-wide mb-1">
                                         Fontys e-mail
                                     </p>
-                                    <p className="font-bold text-[var(--color-purple-700)] dark:text-white truncate text-sm" title={user.fontys_email}>
+                                    <p className="font-bold text-[var(--color-purple-700)] dark:text-white truncate text-sm" title={user.fontys_email ?? undefined}>
                                         {user.fontys_email}
                                     </p>
                                 </div>
@@ -482,7 +499,7 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
                                     try {
                                         if (!signup.event_id?.event_date) return false;
                                         return isBefore(startOfDay(new Date(signup.event_id.event_date)), startOfDay(new Date()));
-                                    } catch (e) { return false; }
+                                    } catch { return false; }
                                 })();
 
                                 return (
