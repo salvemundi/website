@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { MailerService } from '../services/mailer.js';
 import { AuditService } from '../services/audit.js';
+import { MailRequestSchema } from '@salvemundi/validations';
 
 export default async function mailRoutes(fastify: FastifyInstance) {
     /**
@@ -19,7 +20,6 @@ export default async function mailRoutes(fastify: FastifyInstance) {
         }
 
         // 1. Validate Payload
-        const { MailRequestSchema } = await import('@salvemundi/validations');
         const validation = MailRequestSchema.safeParse(request.body);
 
         if (!validation.success) {

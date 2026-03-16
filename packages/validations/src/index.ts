@@ -10,6 +10,10 @@ export * from './schema/azure-sync.zod.js';
 export * from './schema/profiel.zod.js';
 export * from './schema/committees.zod.js';
 export * from './schema/mail.zod.js';
+export * from './schema/admin-reis.zod.js';
+export * from './schema/reis.zod.js';
+export * from './schema/intro.zod.js';
+export * from './schema/membership.zod.js';
 
 
 import { memberSchema } from './schema/members.zod.js';
@@ -27,7 +31,6 @@ export type Activiteit = z.infer<typeof activiteitSchema>;
 export type Sponsor = z.infer<typeof sponsorSchema>;
 export type SafeHaven = z.infer<typeof safeHavenSchema>;
 
-export * from './schema/profiel.zod.js';
 import { whatsappGroupSchema, transactionSchema, eventSignupSchema, updateProfileSchema } from './schema/profiel.zod.js';
 
 export type WhatsAppGroup = z.infer<typeof whatsappGroupSchema>;
@@ -35,14 +38,12 @@ export type Transaction = z.infer<typeof transactionSchema>;
 export type EventSignup = z.infer<typeof eventSignupSchema>;
 export type UpdateProfileData = z.infer<typeof updateProfileSchema>;
 
-export * from './schema/admin-reis.zod.js';
 import { tripSchema, tripSignupSchema, tripSignupActivitySchema } from './schema/admin-reis.zod.js';
 
 export type Trip = z.infer<typeof tripSchema>;
 export type TripSignup = z.infer<typeof tripSignupSchema>;
 export type TripSignupActivity = z.infer<typeof tripSignupActivitySchema>;
 
-export * from './schema/reis.zod.js';
 import { reisSiteSettingsSchema, reisTripSchema, reisTripSignupSchema, reisSignupFormSchema } from './schema/reis.zod.js';
 
 export type ReisSiteSettings = z.infer<typeof reisSiteSettingsSchema>;
@@ -50,13 +51,11 @@ export type ReisTrip = z.infer<typeof reisTripSchema>;
 export type ReisTripSignup = z.infer<typeof reisTripSignupSchema>;
 export type ReisSignupForm = z.infer<typeof reisSignupFormSchema>;
 
-export * from './schema/intro.zod.js';
 import { introSignupFormSchema, introParentSignupFormSchema } from './schema/intro.zod.js';
 
 export type IntroSignupForm = z.infer<typeof introSignupFormSchema>;
 export type IntroParentSignupForm = z.infer<typeof introParentSignupFormSchema>;
 
-export * from './schema/membership.zod.js';
 import { signupSchema, validateCouponSchema, transactionStatusSchema } from './schema/membership.zod.js';
 
 export type SignupFormData = z.infer<typeof signupSchema>;
