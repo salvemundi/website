@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { MailerService } from '../services/mailer.js';
 import { AuditService } from '../services/audit.js';
-import { MailRequestSchema } from '@salvemundi/validations';
+import { MailRequestSchema, timingSafeCompare } from '@salvemundi/validations';
 
 export default async function mailRoutes(fastify: FastifyInstance) {
     /**
@@ -15,7 +15,7 @@ export default async function mailRoutes(fastify: FastifyInstance) {
         }
 
         const authHeader = request.headers['authorization'];
-        if (authHeader !== `Bearer ${token}`) {
+        if (!authHeader || !timingSafeCompare(authHeader, `Bearer ${token}`)) {
             return reply.status(401).send({ error: 'Unauthorized' });
         }
 

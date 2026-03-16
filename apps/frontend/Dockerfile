@@ -29,6 +29,7 @@ RUN pnpm --filter=@salvemundi/frontend build
 # 3. Runner Stage
 FROM node:22.14.0-alpine AS runner
 WORKDIR /app
+RUN chown node:node /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -36,10 +37,12 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Copy standalone output from builder
 # Next.js standalone includes all necessary node_modules (including workspace dependencies)
 # Ensure public directory exists before copying to avoid build failure
-RUN mkdir -p apps/frontend/public
-COPY --from=builder /app/apps/frontend/public ./apps/frontend/public
-COPY --from=builder /app/apps/frontend/.next/standalone ./
-COPY --from=builder /app/apps/frontend/.next/static ./apps/frontend/.next/static
+RUN mkdir -p apps/frontend/public && chown -R node:node apps/frontend/public
+COPY --from=builder --chown=node:node /app/apps/frontend/public ./apps/frontend/public
+COPY --from=builder --chown=node:node /app/apps/frontend/.next/standalone ./
+COPY --from=builder --chown=node:node /app/apps/frontend/.next/static ./apps/frontend/.next/static
+
+USER node
 
 EXPOSE 3000
 ENV PORT=3000

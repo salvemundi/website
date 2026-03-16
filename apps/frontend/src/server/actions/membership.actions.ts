@@ -9,6 +9,8 @@ import {
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { revalidateTag } from 'next/cache';
+import { rateLimit } from '../utils/ratelimit';
+
 
 const getFinanceServiceUrl = () =>
     process.env.INTERNAL_FINANCE_URL || 'http://v7-acc-finance-service:3001';
@@ -42,6 +44,12 @@ export async function validateCouponAction(formData: FormData) {
     if (!parsed.success) {
         return { success: false, error: 'Ongeldige coupon code' };
     }
+
+    const { success } = await rateLimit('validate-coupon', 10, 60);
+    if (!success) {
+        return { success: false, error: 'Te veel verzoeken. Probeer het later opnieuw.' };
+    }
+
 
     const url = `${getFinanceServiceUrl()}/api/coupons/validate`;
 
@@ -80,6 +88,12 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
         return { success: false, errors: parsed.error.flatten().fieldErrors };
     }
 
+    const { success } = await rateLimit('membership-signup', 3, 300);
+    if (!success) {
+        return { success: false, error: 'Te veel inschrijfpogingen. Probeer het over een paar minuten opnieuw.' };
+    }
+
+
     const session = await auth.api.getSession({
         headers: await headers()
     });
@@ -108,7 +122,7 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
                 dateOfBirth: parsed.data.geboortedatum,
                 phoneNumber: parsed.data.telefoon,
                 couponCode: parsed.data.coupon,
-                redirectUrl: `${process.env.PUBLIC_URL}/lidmaatschap/bevestiging${isExpired ? '?type=renewal' : ''}`
+                redirectUrl: `${process.env.PUBLIC_URL || 'http://localhost:3000'}/lidmaatschap/bevestiging${isExpired ? '?type=renewal' : ''}`
             }),
         });
 

@@ -1,9 +1,24 @@
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
+import { createClient } from "redis";
 
+// Database Pool
 const pool = new Pool({
     connectionString: `postgres://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.INTERNAL_DB_HOST}:5432/${process.env.DB_NAME}`
 });
+
+// Redis Client voor sessie-caching (Node.js runtime alleen!)
+const redisUrl = process.env.REDIS_URL || 'redis://v7-core-redis:6379';
+let redisClient: ReturnType<typeof createClient> | null = null;
+
+async function getRedis() {
+    if (!redisClient) {
+        redisClient = createClient({ url: redisUrl });
+        redisClient.on('error', (err: Error) => console.error('Auth Redis Error:', err));
+        await redisClient.connect();
+    }
+    return redisClient;
+}
 
 export const auth = betterAuth({
     database: pool,
@@ -37,20 +52,41 @@ export const auth = betterAuth({
     },
     plugins: [
         {
-            id: "committee-enrichment",
+            id: "session-redis-cache",
             hooks: {
+                before: [
+                    {
+                        matcher: (ctx) => ctx.path.includes("get-session"),
+                        handler: async (ctx) => {
+                            // Alleen cachen als er een session token is
+                            const token = ctx.headers.get("authorization")?.split(" ")[1] || 
+                                          ctx.headers.get("cookie")?.split("better-auth.session-token=")[1]?.split(";")[0];
+                            
+                            if (token) {
+                                try {
+                                    const redis = await getRedis();
+                                    const cached = await redis.get(`session:${token}`);
+                                    if (cached) {
+                                        return {
+                                            json: JSON.parse(cached)
+                                        };
+                                    }
+                                } catch (e) {
+                                    console.warn("[AUTH-REDIS] Cache hit failed:", e);
+                                }
+                            }
+                        }
+                    }
+                ],
                 after: [
                     {
                         matcher: (ctx) => ctx.path.includes("get-session"),
-                        handler: async (ctx: {
-                            path: string;
-                            context?: { returned?: unknown };
-                            response?: unknown;
-                            json?: unknown;
-                            body?: unknown;
-                        }) => {
+                        handler: async (ctx) => {
                             const session = ctx.context?.returned || ctx.response || ctx.json || ctx.body;
-                            
+                            const token = ctx.headers.get("authorization")?.split(" ")[1] || 
+                                          ctx.headers.get("cookie")?.split("better-auth.session-token=")[1]?.split(";")[0];
+
+                            // Verrijk de sessie met commissies
                             if (session && typeof session === 'object' && 'user' in session) {
                                 const sessionWithUser = session as { user?: { id?: string; committees?: unknown } };
                                 try {
@@ -61,15 +97,18 @@ export const auth = betterAuth({
                                          WHERE m.user_id = $1`,
                                         [sessionWithUser.user?.id]
                                     );
+                                    if (sessionWithUser.user) sessionWithUser.user.committees = rows;
                                     
-                                    if (sessionWithUser.user) {
-                                        sessionWithUser.user.committees = rows;
+                                    // Sla op in Redis (TTL 5 minuten)
+                                    if (token) {
+                                        const redis = await getRedis();
+                                        await redis.set(`session:${token}`, JSON.stringify(session), { EX: 300 });
                                     }
                                 } catch (error) {
                                     console.error("[AUTH-PLUGIN] Error enrichment:", error);
                                 }
+                                return session;
                             }
-                            return ctx.context?.returned || ctx.response || ctx.json || ctx.body || ctx;
                         }
                     }
                 ]

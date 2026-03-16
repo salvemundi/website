@@ -70,21 +70,26 @@ export default function FeaturedEvent({ event, onEventClick }: FeaturedEventProp
                 onClick={() => onEventClick(event)}
                 className="group cursor-pointer space-y-4"
             >
-                <div className="overflow-hidden rounded-2xl relative h-48">
-                    <Image
-                        src={getImageUrl(event.afbeelding_id) || '/img/newlogo.png'}
-                        alt={event.titel || 'Featured Event'}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 400px"
-                        className="object-cover transition duration-500 group-hover:scale-105"
-                        loading="lazy"
-                        placeholder="blur"
-                        blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjE5MiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjE5MiIgZmlsbD0iI2VlZSIvPjwvc3ZnPg=="
-                        onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = '/img/newlogo.png';
-                        }}
-                    />
+                <div className="overflow-hidden rounded-2xl relative h-48 bg-[var(--bg-soft)]">
+                    {event.afbeelding_id ? (
+                        <Image
+                            src={getImageUrl(event.afbeelding_id) || '/img/newlogo.png'}
+                            alt={event.titel || 'Featured Event'}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 400px"
+                            className="object-cover transition duration-500 group-hover:scale-105"
+                            loading="lazy"
+                            unoptimized
+                            onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                            }}
+                        />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-[var(--theme-purple)]/5">
+                            <Calendar className="h-16 w-16 text-[var(--theme-purple)]/10" />
+                        </div>
+                    )}
                 </div>
 
                 <div>

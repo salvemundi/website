@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify';
+import { timingSafeCompare } from '@salvemundi/validations';
 
 export default async function mollieRoutes(fastify: FastifyInstance) {
     /**
@@ -13,7 +14,10 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
             const queryTokenRaw = request.query?.token;
             const queryToken = Array.isArray(queryTokenRaw) ? queryTokenRaw[0] : queryTokenRaw;
 
-            if (headerSecret !== webhookSecret && queryToken !== webhookSecret) {
+            const isAuthorized = timingSafeCompare(headerSecret || '', webhookSecret) || 
+                               timingSafeCompare(queryToken || '', webhookSecret);
+
+            if (!isAuthorized) {
                 return reply.status(401).send({ error: 'Unauthorized' });
             }
         }
@@ -50,6 +54,23 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
 
             if (userId) {
                 await CacheInvalidationService.queueInvalidation(fastify.redis, userId);
+            }
+
+            // 4. Publish Event to Redis Stream
+            if (payment.status === 'paid') {
+                const eventData = {
+                    event: 'PAYMENT_SUCCESS',
+                    userId: userId,
+                    paymentId: id,
+                    email: (payment as any).consumerEmail || (payment.metadata as any)?.email,
+                    timestamp: new Date().toISOString()
+                };
+
+                await fastify.redis.xAdd('v7:events', '*', {
+                    payload: JSON.stringify(eventData)
+                });
+
+                fastify.log.info(`[FINANCE] Published PAYMENT_SUCCESS event for payment ${id}`);
             }
 
             return { success: true };

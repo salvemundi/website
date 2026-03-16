@@ -24,7 +24,35 @@ export class SyncJob {
         }
     }
 
-    private static async syncUser(aUser: AzureUser, token: string) {
+    /**
+     * Synchronizes a single user by their Directus UUID.
+     * Useful for targeted provisioning after events.
+     */
+    static async syncUserById(userId: string, token: string) {
+        const dUser = await DirectusService.getUserById(userId);
+        if (!dUser) {
+            throw new Error(`User ${userId} not found in Directus.`);
+        }
+
+        const entraId = dUser.entra_id || dUser.external_identifier;
+        if (!entraId) {
+            // If no Entra ID, we might need to search by email if it's a new provision
+            console.log(`[SYNC] User ${dUser.email} has no Entra ID. Attempting to locate in Azure...`);
+            const aUser = await GraphService.getUserByEmail(dUser.email, token);
+            if (!aUser) {
+                throw new Error(`User ${dUser.email} not found in Azure AD.`);
+            }
+            await this.syncUser(aUser, token);
+        } else {
+            const aUser = await GraphService.getUser(entraId, token);
+            if (!aUser) {
+                throw new Error(`Entra ID ${entraId} not found in Azure.`);
+            }
+            await this.syncUser(aUser, token);
+        }
+    }
+
+    public static async syncUser(aUser: AzureUser, token: string) {
         const email = (aUser.mail || aUser.userPrincipalName).toLowerCase();
         
         // 1. Find or Link User

@@ -9,6 +9,7 @@
     },
     "dependencies": {
         "@azure/identity": "^4.13.0",
+        "@fastify/rate-limit": "^10.3.0",
         "@salvemundi/validations": "workspace:*",
         "fastify": "5.1.0",
         "fastify-plugin": "^5.1.0",

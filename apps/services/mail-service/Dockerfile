@@ -37,9 +37,11 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Copy the pruned service (includes production node_modules from workspace)
-COPY --from=builder /app/pruned ./
+COPY --from=builder --chown=node:node /app/pruned ./
 # Copy the compiled output
-COPY --from=builder /app/apps/services/mail-service/dist ./dist
+COPY --from=builder --chown=node:node /app/apps/services/mail-service/dist ./dist
+
+USER node
 
 EXPOSE 3003
 # Command points to the flattened dist directory

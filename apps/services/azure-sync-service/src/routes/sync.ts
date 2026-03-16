@@ -2,21 +2,24 @@ import { FastifyInstance } from 'fastify';
 import { SyncJob } from '../services/sync.job.js';
 import { TokenService } from '../services/token.service.js';
 import { GraphService } from '../services/graph.service.js';
+import { timingSafeCompare } from '@salvemundi/validations';
 
 export default async function syncRoutes(fastify: FastifyInstance) {
     fastify.post('/run', async (request, reply) => {
         // Simple internal security check
         const authHeader = request.headers['authorization'];
-        if (authHeader !== `Bearer ${process.env.INTERNAL_SERVICE_TOKEN}`) {
+        const token = process.env.INTERNAL_SERVICE_TOKEN;
+
+        if (!authHeader || !token || !timingSafeCompare(authHeader, `Bearer ${token}`)) {
             return reply.status(401).send({ error: 'Unauthorized' });
         }
 
         try {
             // Get token (cached or new)
-            const token = await TokenService.getAccessToken(fastify.redis);
+            const accessToken = await TokenService.getAccessToken(fastify.redis);
             
             // Run sync asynchronously
-            SyncJob.run(token).catch(err => console.error('[SYNC] Job failed:', err));
+            SyncJob.run(accessToken).catch(err => console.error('[SYNC] Job failed:', err));
 
             return { message: 'Sync job started' };
         } catch (err: any) {
@@ -27,7 +30,9 @@ export default async function syncRoutes(fastify: FastifyInstance) {
     
     fastify.get('/test-graph', async (request, reply) => {
         const authHeader = request.headers['authorization'];
-        if (authHeader !== `Bearer ${process.env.INTERNAL_SERVICE_TOKEN}`) {
+        const token = process.env.INTERNAL_SERVICE_TOKEN;
+
+        if (!authHeader || !token || !timingSafeCompare(authHeader, `Bearer ${token}`)) {
             return reply.status(401).send({ error: 'Unauthorized' });
         }
 

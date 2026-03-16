@@ -38,7 +38,7 @@ export default function EventList({ events, onEventClick, variant = 'list' }: Ev
                         startTime={event.event_time ?? undefined}
                         endTime={event.event_time_end ?? undefined}
                         location={event.locatie ?? undefined}
-                        price={user?.membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
+                        price={(user as any)?.membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
                         image={getImageUrl(event.afbeelding_id) ?? undefined}
                         isPast={isEventPast(event.datum_start)}
                         variant="grid"
@@ -67,7 +67,7 @@ export default function EventList({ events, onEventClick, variant = 'list' }: Ev
                     startTime={event.event_time ?? undefined}
                     endTime={event.event_time_end ?? undefined}
                     location={event.locatie ?? undefined}
-                    price={user?.membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
+                    price={(user as any)?.membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
                     image={getImageUrl(event.afbeelding_id) ?? undefined}
                     isPast={isEventPast(event.datum_start)}
                     variant="list"
