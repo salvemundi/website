@@ -7,15 +7,26 @@ WORKDIR /app
 
 # 2. Builder Stage
 FROM base AS builder
+# Copy only necessary files for installation to leverage cache
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
-COPY apps/services/finance-service/package.json apps/services/finance-service/tsconfig.json ./apps/services/finance-service/
-COPY packages/validations/package.json packages/validations/tsconfig.json ./packages/validations/
+COPY apps/frontend/package.json ./apps/frontend/
+COPY apps/services/finance-service/package.json ./apps/services/finance-service/
+COPY apps/services/azure-sync-service/package.json ./apps/services/azure-sync-service/
+COPY apps/services/mail-service/package.json ./apps/services/mail-service/
+COPY packages/validations/package.json ./packages/validations/
 
+# Install dependencies
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile
 
-COPY . .
+# Step 1: Build Shared Logic (packages/validations)
+COPY packages/validations ./packages/validations
 RUN pnpm --filter=@salvemundi/validations build
+
+# Step 2: Build Specific Service (apps/services/finance-service)
+COPY apps/services/finance-service ./apps/services/finance-service
 RUN pnpm --filter=@salvemundi/finance-service build
+
+# Step 3: Prune for production
 RUN pnpm deploy --filter=@salvemundi/finance-service --prod /app/pruned
 
 # 3. Runner Stage

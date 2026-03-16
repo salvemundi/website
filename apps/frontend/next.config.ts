@@ -23,6 +23,17 @@ const nextConfig: NextConfig = {
                 hostname: 'admin.salvemundi.nl',
                 pathname: '/assets/**',
             },
+            {
+                protocol: 'https',
+                hostname: 'acc.salvemundi.nl',
+                pathname: '/assets/**',
+            },
+            {
+                protocol: 'http',
+                hostname: 'localhost',
+                port: '3000',
+                pathname: '/assets/**',
+            },
         ],
     },
 };
