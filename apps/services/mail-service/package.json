@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "fastify start -w -l info src/server.ts",
-        "build": "tsc"
+        "build": "tsc && cp -r src/templates dist/"
     },
     "dependencies": {
         "@azure/identity": "^4.13.0",
