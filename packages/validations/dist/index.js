@@ -8,7 +8,6 @@ export * from './schema/azure-sync.zod.js';
 export * from './schema/profiel.zod.js';
 export * from './schema/committees.zod.js';
 export * from './schema/mail.zod.js';
-export * from './schema/profiel.zod.js';
 export * from './schema/admin-reis.zod.js';
 export * from './schema/reis.zod.js';
 export * from './schema/intro.zod.js';
