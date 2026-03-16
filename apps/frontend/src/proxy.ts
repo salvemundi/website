@@ -29,8 +29,10 @@ async function getDisabledRoutes(): Promise<string[]> {
             return cachedDisabledRoutes || [];
         }
 
-        // Haal alle feature flags op die NIET actief zijn
         const url = `${directusUrl}/items/feature_flags?filter[is_active][_eq]=false&fields=route_match`;
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
 
         const res = await fetch(url, {
             headers: {
@@ -38,7 +40,10 @@ async function getDisabledRoutes(): Promise<string[]> {
                 Accept: 'application/json',
             },
             cache: 'no-store', // We beheren zelf de in-memory cache
+            signal: controller.signal,
         });
+
+        clearTimeout(timeoutId);
 
         if (!res.ok) {
            console.error(`[Proxy] Kon feature flags niet ophalen: ${res.status} ${res.statusText}`);
