@@ -2,20 +2,18 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 import { PUBLIC_ROUTES } from '@/lib/routes';
-import { auth } from '@/server/auth/auth';
 
-// In-memory cache for feature flags
+// In-memory cache for feature flags (Proxy stays loeisnel)
 let cachedDisabledRoutes: string[] | null = null;
 let cacheTimestamp = 0;
 const CACHE_TTL = 60 * 1000; // 60 seconds
 
 /**
- * Haalt de lijst met uitgeschakelde routes op vanuit de Directus feature_flags collectie met caching.
+ * Haalt de lijst met uitgeschakelde routes op vanuit de Directus feature_flags collectie.
+ * Gebruikt fetch om Edge-compatible te blijven.
  */
 async function getDisabledRoutes(): Promise<string[]> {
     const now = Date.now();
-    
-    // Retourneer cache indien nog geldig
     if (cachedDisabledRoutes && (now - cacheTimestamp < CACHE_TTL)) {
         return cachedDisabledRoutes;
     }
@@ -24,84 +22,87 @@ async function getDisabledRoutes(): Promise<string[]> {
         const directusUrl = process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
         const token = process.env.DIRECTUS_STATIC_TOKEN;
         
-        if (!token) {
-            console.warn('[Proxy] DIRECTUS_STATIC_TOKEN ontbreekt, feature flags kunnen niet worden geladen.');
-            return cachedDisabledRoutes || [];
-        }
+        if (!token) return cachedDisabledRoutes || [];
 
         const url = `${directusUrl}/items/feature_flags?filter[is_active][_eq]=false&fields=route_match`;
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-
         const res = await fetch(url, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json',
-            },
-            cache: 'no-store', // We beheren zelf de in-memory cache
-            signal: controller.signal,
+            headers: { Authorization: `Bearer ${token}` },
+            cache: 'no-store',
         });
 
-        clearTimeout(timeoutId);
-
-        if (!res.ok) {
-           console.error(`[Proxy] Kon feature flags niet ophalen: ${res.status} ${res.statusText}`);
-           return cachedDisabledRoutes || [];
+        if (res.ok) {
+            const data = await res.json();
+            if (data && Array.isArray(data.data)) {
+                const routes = data.data.map((f: any) => f.route_match).filter(Boolean);
+                cachedDisabledRoutes = routes;
+                cacheTimestamp = now;
+                return routes;
+            }
         }
-
-        const data = await res.json();
-        
-        if (data && Array.isArray(data.data)) {
-            type FeatureFlag = { route_match?: string | null };
-            const routes = (data.data as FeatureFlag[])
-                .map((flag) => flag.route_match)
-                .filter((route): route is string => Boolean(route));
-            
-            // Update cache
-            cachedDisabledRoutes = routes;
-            cacheTimestamp = now;
-            return routes;
-        }
-
-        return cachedDisabledRoutes || [];
-    } catch (error) {
-        console.error('[Proxy] Fout tijdens laden van feature flags:', error);
-        return cachedDisabledRoutes || [];
+    } catch (e) {
+        console.error('[Proxy] Feature flags error:', e);
     }
+    return cachedDisabledRoutes || [];
 }
 
+/**
+ * Direct Provider Proxy (V7)
+ * Beheert toegang tot routes en voert de naadloze "Direct Provider" flow uit.
+ */
 export async function proxy(request: NextRequest) {
-    // Forceer Next.js om de proxy voor elk verzoek te draaien zonder cache
-    const response = NextResponse.next();
-    response.headers.set('x-middleware-cache', 'no-cache');
-    
-    const { pathname } = request.nextUrl;
+    const { pathname, origin } = request.nextUrl;
 
-    // 1. Check op uitgeschakelde routes (Feature Flags)
+    // 1. Whitelist & System checks (Bypass proxy for auth and internal tokens)
+    const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
+    if (internalToken && request.headers.get('authorization') === `Bearer ${internalToken}`) {
+        return NextResponse.next();
+    }
+    if (pathname === '/api/finance/webhook/mollie' || pathname.startsWith('/api/auth/')) {
+        return NextResponse.next();
+    }
+
+    // 2. Feature Flags
     const disabledRoutes = await getDisabledRoutes();
-    const isDisabled = disabledRoutes.some(route => pathname === route || pathname.startsWith(`${route}/`));
-
-    if (isDisabled) {
+    if (disabledRoutes.some(r => pathname === r || pathname.startsWith(`${r}/`))) {
         return NextResponse.rewrite(new URL('/404', request.url));
     }
 
-    // 2. Auth gating (Public vs. Secure)
-    const isPublicRoute = PUBLIC_ROUTES.some((route: string) => pathname === route || pathname.startsWith(`${route}/`));
-
-    if (!isPublicRoute) {
+    // 3. Auth Gating (Direct Redirect naar Microsoft)
+    const isPublic = PUBLIC_ROUTES.some(r => pathname === r || pathname.startsWith(`${r}/`));
+    if (!isPublic) {
         try {
-            // Core Better Auth session check via API
-            const session = await auth.api.getSession({
-                headers: request.headers
+            // Check sessie via fetch (Edge-safe) naar interne API
+            const sessionUrl = new URL('/api/auth/get-session', request.url);
+            const sessionRes = await fetch(sessionUrl, {
+                headers: { 
+                    cookie: request.headers.get('cookie') || '',
+                    'x-better-auth-origin': origin
+                }
             });
 
-            if (!session) {
-                console.log(`[Proxy] Geen sessie voor beveiligde route: ${pathname}, doorsturen naar 404`);
-                return NextResponse.rewrite(new URL('/404', request.url));
+            // Handle cases where session exists (200 OK) vs non-existent (204 or body "null")
+            let hasSession = sessionRes.ok && sessionRes.status !== 204;
+            if (hasSession) {
+                const text = await sessionRes.text();
+                // Sommige Better Auth responses geven "null" als string terug bij missing session
+                if (text === 'null' || !text) {
+                    hasSession = false;
+                }
+            }
+
+            if (!hasSession) {
+                // GEEN sessie: Redirect DIRECT naar Microsoft Sign-in (Direct Provider Flow)
+                const callbackUrl = encodeURIComponent(pathname);
+                const microsoftAuthUrl = new URL(
+                    `/api/auth/login/social?provider=microsoft&callbackURL=${callbackUrl}`, 
+                    request.url
+                );
+                
+                console.log(`[Proxy] No session for ${pathname}, redirecting to Microsoft.`);
+                return NextResponse.redirect(microsoftAuthUrl);
             }
         } catch (error) {
-            console.error(`[Proxy] Critical error tijdens getSession voor ${pathname}:`, error);
+            console.error('[Proxy] Auth gating critical error:', error);
             return NextResponse.rewrite(new URL('/404', request.url));
         }
     }
@@ -109,18 +110,8 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
 }
 
-// Config to explicitly match routes and exclude assets, common in Next.js 16 proxy setups
 export const config = {
-    matcher: [
-        /*
-         * Match all requests except:
-         * 1. /api (API routes)
-         * 2. /_next (Next.js internals)
-         * 3. Specific public folders (fonts, img)
-         * 4. Static files (favicon.ico, robots.txt)
-         */
-        '/((?!api|_next/static|_next/image|fonts|img|favicon.ico|robots.txt).*)',
-    ],
+    matcher: ['/((?!_next/static|_next/image|fonts|img|api/assets|favicon.ico|robots.txt|.well-known).*)'],
 };
 
 export default proxy;

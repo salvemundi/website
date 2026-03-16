@@ -60,7 +60,7 @@ export class MailWorkerService {
                         console.log(`[MailWorker] Processing mail to ${task.to}...`);
                         
                         // 2. Attempt dispatch
-                        const success = await MailerService.send(task.to, task.templateId, task.data);
+                        const success = await MailerService.send(redis, task.to, task.templateId, task.data);
                         
                         if (success) {
                             await redis.zRem(this.QUEUE_KEY, taskJson);

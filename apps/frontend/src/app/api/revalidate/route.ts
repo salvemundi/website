@@ -1,11 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
+import { timingSafeCompare } from '@salvemundi/validations';
 
 export async function POST(request: NextRequest) {
     const token = process.env.INTERNAL_SERVICE_TOKEN;
     const authHeader = request.headers.get('authorization');
+    const { searchParams } = new URL(request.url);
+    const querySecret = searchParams.get('secret');
 
-    if (!token || authHeader !== `Bearer ${token}`) {
+    const isAuthenticated = (token && (
+        timingSafeCompare(authHeader || '', `Bearer ${token}`) || 
+        timingSafeCompare(querySecret || '', token)
+    ));
+
+    if (!token || !isAuthenticated) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

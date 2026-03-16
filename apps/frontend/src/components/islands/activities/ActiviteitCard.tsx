@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useAuth } from '@/features/auth/providers/auth-provider';
+import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
 import { Calendar } from 'lucide-react';
 
 interface ActiviteitCardProps {
@@ -49,7 +49,8 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     inschrijfDeadline,
     onlyMembers = false,
 }) => {
-    const { isAuthenticated, user, loginWithMicrosoft } = useAuth();
+    const { isAuthenticated, user } = useAuth();
+    const { login: loginWithMicrosoft } = useAuthActions();
 
     const alreadySignedUp = Boolean(isSignedUp);
     const isListVariant = variant === 'list';
@@ -60,7 +61,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     const handleSignupClick = (e: React.MouseEvent) => {
         e.stopPropagation();
 
-        if (onlyMembers && user?.membership_status !== 'active') {
+        if (onlyMembers && (user as any)?.membership_status !== 'active') {
             if (!isAuthenticated) {
                 const returnTo = window.location.pathname + window.location.search;
                 localStorage.setItem('auth_return_to', returnTo);
@@ -188,21 +189,26 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
         >
             <span className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-[var(--theme-purple)]/10 transition-transform duration-500 group-hover:scale-125 pointer-events-none" />
 
-            <div className="relative z-10 h-44 sm:h-48 mb-5 rounded-2xl overflow-hidden shadow-inner">
-                <Image
-                    src={image || '/img/newlogo.png'}
-                    alt={title}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    loading="lazy"
-                    placeholder="blur"
-                    blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjE5MiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjE5MiIgZmlsbD0iI2VlZSIvPjwvc3ZnPg=="
-                    onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/img/newlogo.png';
-                    }}
-                />
+            <div className="relative z-10 h-44 sm:h-48 mb-5 rounded-2xl overflow-hidden shadow-inner bg-[var(--bg-soft)]">
+                {image ? (
+                    <Image
+                        src={image}
+                        alt={title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
+                        unoptimized
+                        onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                        }}
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-[var(--theme-purple)]/5">
+                        <Calendar className="h-12 w-12 text-[var(--theme-purple)]/20" />
+                    </div>
+                )}
                 {!isPast && (
                     <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 items-end">
                         <span className="bg-[var(--theme-purple)] text-[var(--color-white)] text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider">

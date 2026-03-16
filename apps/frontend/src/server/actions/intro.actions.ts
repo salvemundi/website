@@ -77,6 +77,12 @@ export async function submitIntroSignup(data: IntroSignupForm) {
         throw new Error('Validatie mislukt');
     }
 
+    const { rateLimit } = await import('../utils/ratelimit');
+    const { success } = await rateLimit('intro-signup', 3, 300);
+    if (!success) {
+        throw new Error('Te veel aanmeldingen vanaf dit IP-adres. Probeer het later opnieuw.');
+    }
+
     // Bot detection (honeypot)
     if (parsed.data.website) {
         console.log('[IntroAction] Bot detected via honeypot');

@@ -24,7 +24,7 @@ export default function DocumentenLijst({ documenten, directusUrl }: DocumentenL
         <div className="space-y-3 ml-14">
             {documenten.map((doc) => {
                 // Asset-URL opbouwen via de publieke Directus URL
-                const fileUrl = `${directusUrl}/assets/${doc.file}`;
+                const fileUrl = `/api/assets/${doc.file}`;
 
                 return (
                     <a

@@ -7,6 +7,7 @@ import { getImageUrl } from '@/shared/lib/api/salvemundi'; // Keeping legacy get
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import type { ReisTrip } from '@salvemundi/validations';
+import { SafeHtml } from '@/components/ui/security/SafeHtml';
 
 interface ReisInfoIslandProps {
     nextTrip: ReisTrip | null;
@@ -75,6 +76,7 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                                     fill
                                     sizes="(max-width: 768px) 100vw, 50vw"
                                     className="object-contain rounded-xl sm:rounded-2xl transition-transform duration-500 group-hover:scale-105"
+                                    unoptimized
                                     onError={() => setImageError(true)}
                                 />
                             </div>
@@ -110,9 +112,9 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                     <h2 className="text-xl sm:text-2xl font-bold text-theme-purple dark:text-theme-white mb-4 sm:mb-6 flex items-center gap-2">
                         <span>✈️</span> Over de Reis
                     </h2>
-                    <div
+                    <SafeHtml
                         className="text-theme-text-muted dark:text-theme-text-muted space-y-4 prose prose-sm sm:prose prose-purple dark:prose-invert max-w-none prose-p:leading-relaxed"
-                        dangerouslySetInnerHTML={{ __html: nextTrip.description }}
+                        html={nextTrip.description}
                     />
                 </div>
             )}
@@ -132,7 +134,11 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                     ].map((item, i) => (
                         <li key={i} className="flex items-start gap-3 sm:gap-4">
                             <span className="text-lg sm:text-xl flex-shrink-0">{item.icon}</span>
-                            <span className="text-sm sm:text-base text-theme-text-muted leading-snug" dangerouslySetInnerHTML={{ __html: item.text }} />
+                            <SafeHtml
+                                as="span"
+                                className="text-sm sm:text-base text-theme-text-muted leading-snug"
+                                html={item.text}
+                            />
                         </li>
                     ))}
                 </ul>
@@ -163,6 +169,7 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                             fill
                             sizes="(max-width: 1024px) 90vw, 1024px"
                             className="object-contain rounded-2xl shadow-2xl animate-fade-in"
+                            unoptimized
                         />
                     </div>
                 </div>

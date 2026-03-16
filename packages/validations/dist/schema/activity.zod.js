@@ -22,3 +22,14 @@ export const activitySchema = z.object({
 export const activitiesResponseSchema = z.object({
     data: z.array(activitySchema),
 });
+export const eventSignupFormSchema = z.object({
+    event_id: z.number(),
+    name: z.string().min(1, 'Naam is verplicht'),
+    email: z.string().email('Ongeldig e-mailadres'),
+    phoneNumber: z.string().min(1, 'Telefoonnummer is verplicht'),
+    website: z.string().optional(), // Honeypot
+});
+export const attendanceSchema = z.object({
+    signupId: z.number(),
+    status: z.boolean(),
+});

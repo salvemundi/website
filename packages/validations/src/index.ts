@@ -14,6 +14,8 @@ export * from './schema/admin-reis.zod.js';
 export * from './schema/reis.zod.js';
 export * from './schema/intro.zod.js';
 export * from './schema/membership.zod.js';
+export * from './schema/kroegentocht.zod.js';
+export * from './security.js';
 
 
 import { memberSchema } from './schema/members.zod.js';
@@ -61,3 +63,6 @@ import { signupSchema, validateCouponSchema, transactionStatusSchema } from './s
 export type SignupFormData = z.infer<typeof signupSchema>;
 export type ValidateCoupon = z.infer<typeof validateCouponSchema>;
 export type TransactionStatus = z.infer<typeof transactionStatusSchema>;
+
+import { eventSignupFormSchema } from './schema/activity.zod.js';
+export type EventSignupForm = z.infer<typeof eventSignupFormSchema>;

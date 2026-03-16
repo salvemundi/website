@@ -26,6 +26,14 @@ const start = async () => {
         const port = Number(process.env.PORT) || 3002;
         await fastify.listen({ port, host: '0.0.0.0' });
         console.log(`Azure Sync Service listening on port ${port}`);
+
+        // Start the Provisioning Worker
+        const { ProvisionWorkerService } = await import('./services/provision-worker.js');
+        ProvisionWorkerService.start(fastify.redis);
+
+        // Start the Event Listener
+        const { EventListenerService } = await import('./services/event-listener.js');
+        EventListenerService.start(fastify.redis);
     } catch (err) {
         fastify.log.error(err);
         process.exit(1);

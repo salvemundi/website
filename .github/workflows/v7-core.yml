@@ -10,6 +10,9 @@ on:
       - 'infrastructure/**'
       - '.github/workflows/v7-core.yml'
 
+permissions:
+  contents: read
+
 jobs:
   deploy-core:
     runs-on: ubuntu-latest

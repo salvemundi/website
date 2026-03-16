@@ -27,6 +27,20 @@ export interface AzureGroup {
 }
 
 export class GraphService {
+    static async getUser(userId: string, token: string): Promise<AzureUser> {
+        return await this.getClient(token).api(`/users/${userId}`)
+            .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,jobTitle,customSecurityAttributes,birthday')
+            .get();
+    }
+
+    static async getUserByEmail(email: string, token: string): Promise<AzureUser | null> {
+        const response = await this.getClient(token).api('/users')
+            .filter(`mail eq '${email}' or userPrincipalName eq '${email}'`)
+            .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,jobTitle,customSecurityAttributes,birthday')
+            .get();
+        return response.value?.[0] || null;
+    }
+
     private static getClient(token: string): Client {
         return Client.init({
             authProvider: (done) => {

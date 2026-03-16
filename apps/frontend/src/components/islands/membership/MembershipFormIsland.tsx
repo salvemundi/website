@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
-import { isValidPhoneNumber } from '@/shared/lib/phone-validation';
 import { validateCouponAction, initiateMembershipPaymentAction } from '@/server/actions/membership.actions';
-import { type SignupFormData } from '@salvemundi/validations';
+import { signupSchema, type SignupFormData } from '@salvemundi/validations';
 
 interface MembershipFormIslandProps {
     baseAmount: number;
@@ -15,28 +16,34 @@ interface MembershipFormIslandProps {
 export default function MembershipFormIsland({ baseAmount }: MembershipFormIslandProps) {
     const [isPending, startTransition] = useTransition();
     const [couponStatus, setCouponStatus] = useState<{ valid: boolean; message: string; discount?: number; type?: string } | null>(null);
-    const [phoneError, setPhoneError] = useState<string | null>(null);
 
-    const [form, setForm] = useState<SignupFormData>({
-        voornaam: '',
-        tussenvoegsel: '',
-        achternaam: '',
-        email: '',
-        geboortedatum: '',
-        telefoon: '',
-        coupon: '',
+    const {
+        register,
+        handleSubmit,
+        watch,
+        setValue,
+        formState: { errors }
+    } = useForm<SignupFormData>({
+        resolver: zodResolver(signupSchema),
+        defaultValues: {
+            voornaam: '',
+            tussenvoegsel: '',
+            achternaam: '',
+            email: '',
+            geboortedatum: '',
+            telefoon: '',
+            coupon: '',
+        }
     });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-        if (e.target.name === 'telefoon') setPhoneError(null);
-    };
+    const couponValue = watch('coupon');
+    const telefoonValue = watch('telefoon');
 
     const handleCouponCheck = async () => {
-        if (!form.coupon) return;
+        if (!couponValue) return;
 
         const formData = new FormData();
-        formData.append('couponCode', form.coupon);
+        formData.append('couponCode', couponValue);
 
         const result = await validateCouponAction(formData);
 
@@ -52,21 +59,14 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (!isValidPhoneNumber(form.telefoon)) {
-            setPhoneError('Ongeldig nummer');
-            return;
-        }
-
+    const onSubmit = async (data: SignupFormData) => {
         startTransition(async () => {
-            const result = await initiateMembershipPaymentAction(form);
+            const result = await initiateMembershipPaymentAction(data);
 
             if (result.success && result.checkoutUrl) {
                 window.location.href = result.checkoutUrl;
             } else if (result.errors) {
-                // Handle Zod server-side errors
+                // Handle Zod server-side errors if any returned
                 console.error('Validation errors:', result.errors);
             } else {
                 alert(result.error || 'Er ging iets mis');
@@ -88,7 +88,7 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
 
     return (
         <form
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmit(onSubmit)}
             className="flex flex-col gap-4 animate-in fade-in duration-500"
             suppressHydrationWarning
         >
@@ -97,56 +97,50 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField label="Voornaam" required>
+                <FormField label="Voornaam" required error={errors.voornaam?.message}>
                     <Input
-                        name="voornaam"
-                        value={form.voornaam}
-                        onChange={handleChange}
-                        required
+                        {...register('voornaam')}
                         autoComplete="given-name"
                     />
                 </FormField>
-                <FormField label="Achternaam" required>
+                <FormField label="Achternaam" required error={errors.achternaam?.message}>
                     <Input
-                        name="achternaam"
-                        value={form.achternaam}
-                        onChange={handleChange}
-                        required
+                        {...register('achternaam')}
                         autoComplete="family-name"
                     />
                 </FormField>
             </div>
 
-            <FormField label="E-mailadres" required>
+            <FormField label="Tussenvoegsel" error={errors.tussenvoegsel?.message}>
+                <Input
+                    {...register('tussenvoegsel')}
+                    autoComplete="additional-name"
+                />
+            </FormField>
+
+            <FormField label="E-mailadres" required error={errors.email?.message}>
                 <Input
                     type="email"
-                    name="email"
-                    value={form.email}
-                    onChange={handleChange}
-                    required
+                    {...register('email')}
                     autoComplete="email"
                 />
             </FormField>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField label="Geboortedatum" required>
+                <FormField label="Geboortedatum" required error={errors.geboortedatum?.message}>
                     <Input
                         type="date"
-                        name="geboortedatum"
-                        value={form.geboortedatum}
-                        onChange={handleChange}
-                        required
+                        {...register('geboortedatum')}
                         autoComplete="bday"
                     />
                 </FormField>
-                <FormField label="Telefoonnummer" required error={phoneError ?? undefined}>
+                <FormField label="Telefoonnummer" required error={errors.telefoon?.message}>
                     <PhoneInput
                         name="telefoon"
-                        value={form.telefoon}
-                        onChange={handleChange}
-                        required
+                        value={telefoonValue}
+                        onChange={(e) => setValue('telefoon', e.target.value, { shouldValidate: true })}
                         autoComplete="tel"
-                        error={!!phoneError}
+                        error={!!errors.telefoon}
                     />
                 </FormField>
             </div>
@@ -156,17 +150,16 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
                 <div className="flex gap-2">
                     <input
                         type="text"
-                        name="coupon"
-                        value={form.coupon}
-                        onChange={handleChange}
+                        {...register('coupon')}
                         placeholder="Bijv. ACTIE2024"
                         autoComplete="off"
                         className="form-input uppercase flex-grow"
+                        suppressHydrationWarning
                     />
                     <button
                         type="button"
                         onClick={handleCouponCheck}
-                        disabled={!form.coupon || isPending}
+                        disabled={!couponValue || isPending}
                         className="form-button !bg-theme-purple !text-white w-auto py-2 px-6 shadow-md shrink-0 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isPending ? '...' : 'Check'}

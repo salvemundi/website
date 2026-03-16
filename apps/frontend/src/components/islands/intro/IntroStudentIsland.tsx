@@ -79,26 +79,7 @@ export const IntroStudentIsland = () => {
     }
 
     return (
-        <form onSubmit={handleSubmit} className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4">
-            {/* Honeypot */}
-            <div className="opacity-0 absolute top-0 left-0 h-0 w-0 -z-10 pointer-events-none overflow-hidden" aria-hidden="true">
-                <label htmlFor="website">Website</label>
-                <input
-                    type="text"
-                    id="website"
-                    name="website"
-                    value={form.website}
-                    onChange={handleChange}
-                    tabIndex={-1}
-                    autoComplete="off"
-                />
-            </div>
-
-            <div className="flex items-center gap-2 mb-4">
-                <Users className="w-5 h-5 lg:w-6 lg:h-6 text-theme-purple" />
-                <h3 className="text-xl lg:text-2xl font-bold text-theme-purple">Meld je aan!</h3>
-            </div>
-
+        <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-6">
             <FormField label="Voornaam" required>
                 <Input
                     name="voornaam"

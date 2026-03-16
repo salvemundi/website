@@ -1,15 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 
 /**
  * Proxy route voor Directus assets.
  * Hiermee kunnen we afbeeldingen ophalen via de interne Directus URL (v7-core-directus)
  * met de DIRECTUS_STATIC_TOKEN, zonder dat de Public rol in Directus rechten nodig heeft.
  */
+
+// Strikte validatie: de ID móét een UUID zijn om Path Traversal / LFI te voorkomen.
+const assetIdSchema = z.string().uuid();
+
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     const { id } = await params;
+
+    // Valideer de ID
+    const validated = assetIdSchema.safeParse(id);
+    if (!validated.success) {
+        return new NextResponse('Invalid Asset ID', { status: 400 });
+    }
 
     const directusUrl = process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
     const token = process.env.DIRECTUS_STATIC_TOKEN;

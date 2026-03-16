@@ -1,25 +1,28 @@
 'use client';
-import { createContext } from 'react';
 
-// MISSING SOURCE REQUIREMENT: Stubbed to satisfy compiler
-type AuthUser = {
-    membership_status?: string | null;
-};
+import { authClient } from '@/lib/auth-client';
 
-type AuthContextValue = {
-    isAuthenticated: boolean;
-    user: AuthUser | null;
-    loginWithMicrosoft: () => void;
-};
-
-export const AuthContext = createContext<AuthContextValue | null>(null);
-
+/**
+ * Enhanced useAuth hook that leverages Better Auth session.
+ * Replaces previous stub to provide real authentication and membership state.
+ */
 export function useAuth() {
+    const { data: session, isPending, error } = authClient.useSession();
+
     return {
-        isAuthenticated: false as boolean,
-        user: null as AuthUser | null,
-        loginWithMicrosoft: () => {
-            console.log('Login triggered. Missing exact source.');
-        }
-    } satisfies AuthContextValue;
+        isAuthenticated: !!session,
+        user: session?.user ?? null,
+        isPending,
+        error
+    };
+}
+
+/**
+ * Legacy compatibility hook (if needed by some components)
+ */
+export function useAuthActions() {
+    return {
+        login: () => authClient.signIn.social({ provider: 'microsoft' }),
+        logout: () => authClient.signOut(),
+    };
 }

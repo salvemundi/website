@@ -2,6 +2,14 @@ import { getDirectusClient } from '../config/directus.js';
 import { updateItem, readItems, createItem, deleteItem, readUsers, updateUser } from '@directus/sdk';
 
 export class DirectusService {
+    static async getUserById(id: string) {
+        const users = await getDirectusClient().request(readUsers({
+            filter: { id: { _eq: id } },
+            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id']
+        }));
+        return users[0] || null;
+    }
+
     static async getUserByEntraId(entraId: string) {
         const users = await getDirectusClient().request(readUsers({
             filter: { entra_id: { _eq: entraId } },
