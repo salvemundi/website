@@ -18,11 +18,12 @@ COPY packages/validations/package.json ./packages/validations/
 # Install dependencies (including devDeps)
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile
 
-# Copy the rest of the source code
-COPY . .
+# Build shared validations first
+COPY packages/validations ./packages/validations
+RUN pnpm --filter=@salvemundi/validations build
 
 # Build the frontend
-RUN pnpm --filter=@salvemundi/validations build
+COPY apps/frontend ./apps/frontend
 RUN pnpm --filter=@salvemundi/frontend build
 
 # 3. Runner Stage

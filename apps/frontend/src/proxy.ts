@@ -4,55 +4,65 @@ import type { NextRequest } from 'next/server';
 import { PUBLIC_ROUTES } from '@/lib/routes';
 import { auth } from '@/server/auth/auth';
 
+// In-memory cache for feature flags
+let cachedDisabledRoutes: string[] | null = null;
+let cacheTimestamp = 0;
+const CACHE_TTL = 60 * 1000; // 60 seconds
+
 /**
- * Haalt de lijst met uitgeschakelde routes op vanuit de Directus feature_flags collectie.
+ * Haalt de lijst met uitgeschakelde routes op vanuit de Directus feature_flags collectie met caching.
  */
 async function getDisabledRoutes(): Promise<string[]> {
+    const now = Date.now();
+    
+    // Retourneer cache indien nog geldig
+    if (cachedDisabledRoutes && (now - cacheTimestamp < CACHE_TTL)) {
+        return cachedDisabledRoutes;
+    }
+
     try {
         const directusUrl = process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
         const token = process.env.DIRECTUS_STATIC_TOKEN;
         
         if (!token) {
             console.warn('[Proxy] DIRECTUS_STATIC_TOKEN ontbreekt, feature flags kunnen niet worden geladen.');
-            return [];
+            return cachedDisabledRoutes || [];
         }
 
         // Haal alle feature flags op die NIET actief zijn
-        // We voegen een timestamp toe als cache-buster en gebruiken cache: 'no-store'
-        // omdat we in de Proxy altijd de meest actuele status willen hebben.
         const url = `${directusUrl}/items/feature_flags?filter[is_active][_eq]=false&fields=route_match`;
 
         const res = await fetch(url, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 Accept: 'application/json',
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0',
             },
-            cache: 'no-store',
+            cache: 'no-store', // We beheren zelf de in-memory cache
         });
 
         if (!res.ok) {
            console.error(`[Proxy] Kon feature flags niet ophalen: ${res.status} ${res.statusText}`);
-           return [];
+           return cachedDisabledRoutes || [];
         }
 
         const data = await res.json();
         
-        // Zorg ervoor dat data in juiste formaat is
         if (data && Array.isArray(data.data)) {
             type FeatureFlag = { route_match?: string | null };
-            // Transformeer [{ route_match: "/kroegentocht" }] naar ["/kroegentocht"]
-            return (data.data as FeatureFlag[])
+            const routes = (data.data as FeatureFlag[])
                 .map((flag) => flag.route_match)
                 .filter((route): route is string => Boolean(route));
+            
+            // Update cache
+            cachedDisabledRoutes = routes;
+            cacheTimestamp = now;
+            return routes;
         }
 
-        return [];
+        return cachedDisabledRoutes || [];
     } catch (error) {
-        console.error('[Proxy] Fout tijdens laden van dynamische feature flags, fallback naar leeg:', error);
-        return [];
+        console.error('[Proxy] Fout tijdens laden van feature flags:', error);
+        return cachedDisabledRoutes || [];
     }
 }
 
@@ -63,12 +73,11 @@ export async function proxy(request: NextRequest) {
     
     const { pathname } = request.nextUrl;
 
-    // 1. Check op uitgeschakelde routes (Feature Flags) - Nu voorbereid op dynamische data
+    // 1. Check op uitgeschakelde routes (Feature Flags)
     const disabledRoutes = await getDisabledRoutes();
     const isDisabled = disabledRoutes.some(route => pathname === route || pathname.startsWith(`${route}/`));
 
     if (isDisabled) {
-        // Interne rewrite naar een route die niet bestaat; Next.js pakt automatisch onze not-found.tsx
         return NextResponse.rewrite(new URL('/404', request.url));
     }
 
@@ -76,12 +85,18 @@ export async function proxy(request: NextRequest) {
     const isPublicRoute = PUBLIC_ROUTES.some((route: string) => pathname === route || pathname.startsWith(`${route}/`));
 
     if (!isPublicRoute) {
-        // Core Better Auth session check via API (handles cookie prefixes and validation)
-        const session = await auth.api.getSession({
-            headers: request.headers
-        });
+        try {
+            // Core Better Auth session check via API
+            const session = await auth.api.getSession({
+                headers: request.headers
+            });
 
-        if (!session) {
+            if (!session) {
+                console.log(`[Proxy] Geen sessie voor beveiligde route: ${pathname}, doorsturen naar 404`);
+                return NextResponse.rewrite(new URL('/404', request.url));
+            }
+        } catch (error) {
+            console.error(`[Proxy] Critical error tijdens getSession voor ${pathname}:`, error);
             return NextResponse.rewrite(new URL('/404', request.url));
         }
     }
@@ -104,4 +119,3 @@ export const config = {
 };
 
 export default proxy;
-
