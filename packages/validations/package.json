@@ -2,7 +2,12 @@
     "name": "@salvemundi/validations",
     "version": "1.0.0",
     "private": true,
-    "main": "src/index.ts",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc"
+    },
     "dependencies": {
         "zod": "^3.23.8"
     },
