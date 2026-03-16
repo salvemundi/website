@@ -7,6 +7,8 @@ const pool = new Pool({
 
 export const auth = betterAuth({
     database: pool,
+    baseURL: process.env.BETTER_AUTH_URL,
+    trustedOrigins: [process.env.BETTER_AUTH_URL!],
     socialProviders: {
         microsoft: {
             clientId: process.env.AZURE_WEBSITEV7_AUTH_CLIENT_ID!,
