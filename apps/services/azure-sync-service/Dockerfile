@@ -14,6 +14,7 @@ COPY packages/validations/package.json packages/validations/tsconfig.json ./pack
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile
 
 COPY . .
+RUN pnpm --filter=@salvemundi/validations build
 RUN pnpm --filter=@salvemundi/azure-sync-service build
 RUN pnpm deploy --filter=@salvemundi/azure-sync-service --prod /app/pruned
 
