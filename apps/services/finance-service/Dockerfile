@@ -14,6 +14,7 @@ COPY packages/validations/package.json packages/validations/tsconfig.json ./pack
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile
 
 COPY . .
+RUN pnpm --filter=@salvemundi/validations build
 RUN pnpm --filter=@salvemundi/finance-service build
 RUN pnpm deploy --filter=@salvemundi/finance-service --prod /app/pruned
 
