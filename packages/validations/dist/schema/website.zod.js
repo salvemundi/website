@@ -1,16 +1,20 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.documentenSchema = exports.documentSchema = void 0;
-const zod_1 = require("zod");
+import { z } from 'zod';
 // Schema voor de 'documenten' collectie (statuten, avg, etc.) uit het ERD.
 // Kolommen zijn strict snake_case conform de Datamodel ERD.
-exports.documentSchema = zod_1.z.object({
-    id: zod_1.z.number().int(),
-    title: zod_1.z.string(),
-    description: zod_1.z.string().nullable().optional(),
+export const documentSchema = z.object({
+    id: z.union([z.string(), z.number()]),
+    title: z.string().nullable().optional(),
+    description: z.string().nullable().optional(),
     // UUID van het bestand binnen Directus files
-    file: zod_1.z.string(),
-    category: zod_1.z.string(),
-    display_order: zod_1.z.number().int(),
+    file: z.string().nullable().optional(),
+    category: z.string().nullable().optional(),
+    display_order: z.number().int().nullable().optional(),
 });
-exports.documentenSchema = zod_1.z.array(exports.documentSchema);
+export const documentenSchema = z.array(documentSchema);
+export const featureFlagSchema = z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    route_match: z.string(),
+    is_active: z.boolean(),
+});
+export const featureFlagsSchema = z.array(featureFlagSchema);

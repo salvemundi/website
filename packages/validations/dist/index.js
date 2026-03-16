@@ -1,23 +1,15 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./schema/finance.zod"), exports);
-__exportStar(require("./schema/members.zod"), exports);
-__exportStar(require("./schema/website.zod"), exports);
-__exportStar(require("./schema/home.zod"), exports);
-__exportStar(require("./schema/safe-havens.zod"), exports);
-__exportStar(require("./schema/activity.zod"), exports);
-__exportStar(require("./schema/admin-reis.zod"), exports);
+export * from './schema/finance.zod';
+export * from './schema/members.zod';
+export * from './schema/website.zod';
+export * from './schema/home.zod';
+export * from './schema/safe-havens.zod';
+export * from './schema/activity.zod';
+export * from './schema/azure-sync.zod';
+export * from './schema/profiel.zod';
+export * from './schema/committees.zod';
+export * from './schema/mail.zod';
+export * from './schema/profiel.zod';
+export * from './schema/admin-reis.zod';
+export * from './schema/reis.zod';
+export * from './schema/intro.zod';
+export * from './schema/membership.zod';

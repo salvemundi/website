@@ -1,34 +1,39 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.sponsorsSchema = exports.sponsorSchema = exports.activiteitenSchema = exports.activiteitSchema = exports.heroBannersSchema = exports.heroBannerSchema = void 0;
-const zod_1 = require("zod");
+import { z } from 'zod';
 // ─── Hero Banners ─────────────────────────────────────────────────────────────
 // Valideert records uit de 'hero_banners' collectie in Directus.
 // Kolommen zijn strict snake_case conform de Datamodel ERD.
-exports.heroBannerSchema = zod_1.z.object({
-    id: zod_1.z.number().int(),
-    title: zod_1.z.string(),
-    subtitle: zod_1.z.string().nullable().optional(),
+export const heroBannerSchema = z.object({
+    id: z.union([z.string(), z.number()]),
+    title: z.string(),
+    subtitle: z.string().nullable().optional(),
     // UUID van het achtergrondplaatje binnen Directus Files
-    afbeelding_id: zod_1.z.string().nullable().optional(),
-    status: zod_1.z.enum(['draft', 'published', 'archived']),
-    display_order: zod_1.z.number().int().default(0),
+    afbeelding_id: z.string().nullable().optional(),
+    status: z.enum(['draft', 'published', 'archived']).optional(),
+    display_order: z.number().int().default(0),
 });
-exports.heroBannersSchema = zod_1.z.array(exports.heroBannerSchema);
+export const heroBannersSchema = z.array(heroBannerSchema);
 // ─── Activiteiten ─────────────────────────────────────────────────────────────
 // Valideert records uit de 'activiteiten' collectie in Directus.
-exports.activiteitSchema = zod_1.z.object({
-    id: zod_1.z.string().uuid(),
-    titel: zod_1.z.string(),
-    beschrijving: zod_1.z.string().nullable().optional(),
-    locatie: zod_1.z.string().nullable().optional(),
-    datum_start: zod_1.z.string(), // ISO 8601 datetime string
-    datum_eind: zod_1.z.string().nullable().optional(),
+export const activiteitSchema = z.object({
+    id: z.union([z.string(), z.number()]),
+    titel: z.string(),
+    beschrijving: z.string().nullable().optional(),
+    locatie: z.string().nullable().optional(),
+    datum_start: z.string(), // ISO 8601 datetime string
+    datum_eind: z.string().nullable().optional(),
     // UUID van het preview-plaatje binnen Directus Files
-    afbeelding_id: zod_1.z.string().nullable().optional(),
-    status: zod_1.z.enum(['draft', 'published', 'archived']),
+    afbeelding_id: z.string().nullable().optional(),
+    status: z.string().optional(),
+    price_members: z.number().nullable().optional(),
+    price_non_members: z.number().nullable().optional(),
+    only_members: z.boolean().nullable().optional(),
+    inschrijf_deadline: z.string().nullable().optional(),
+    contact: z.string().nullable().optional(),
+    committee_name: z.string().nullable().optional(),
+    event_time: z.string().nullable().optional(),
+    event_time_end: z.string().nullable().optional(),
 });
-exports.activiteitenSchema = zod_1.z.array(exports.activiteitSchema);
+export const activiteitenSchema = z.array(activiteitSchema);
 // ─── Sponsors ─────────────────────────────────────────────────────────────────
 // Valideert records uit de 'sponsors' collectie in Directus.
 // `dark_bg` kan als boolean, integer (0/1) of string binnenkomen vanuit Directus;
@@ -42,17 +47,17 @@ const normalizeBool = (val) => {
     }
     return false;
 };
-exports.sponsorSchema = zod_1.z.object({
-    sponsor_id: zod_1.z.number().int(),
+export const sponsorSchema = z.object({
+    sponsor_id: z.number().int(),
     // `image` kan een UUID-string zijn of een object met een `id` veld
-    image: zod_1.z
+    image: z
         .union([
-        zod_1.z.string(),
-        zod_1.z.object({ id: zod_1.z.string() }).transform((obj) => obj.id),
+        z.string(),
+        z.object({ id: z.string() }).transform((obj) => obj.id),
     ])
         .nullable()
         .optional(),
-    website_url: zod_1.z.string().nullable().optional(),
-    dark_bg: zod_1.z.preprocess(normalizeBool, zod_1.z.boolean()).default(false),
+    website_url: z.string().nullable().optional(),
+    dark_bg: z.preprocess(normalizeBool, z.boolean()).default(false),
 });
-exports.sponsorsSchema = zod_1.z.array(exports.sponsorSchema);
+export const sponsorsSchema = z.array(sponsorSchema);
