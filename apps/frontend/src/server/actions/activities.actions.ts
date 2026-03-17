@@ -216,7 +216,8 @@ export async function signupForActivity(data: EventSignupForm) {
             return { success: false, error: 'Deze activiteit is alleen voor leden.' };
         }
 
-        const isMember = session?.user?.membership_status === 'active';
+        const user = session?.user as any;
+        const isMember = user?.membership_status === 'active';
         const price = (isMember ? activity.price_members : activity.price_non_members) ?? 0;
 
         // 4. Create signup in Directus
