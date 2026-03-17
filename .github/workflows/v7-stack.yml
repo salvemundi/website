@@ -195,10 +195,10 @@ jobs:
       url: ${{ vars.PUBLIC_URL }}
     permissions:
       contents: read
+      packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Network & SSH Diagnostics
         run: |
           echo "--- Starting Network Diagnostics ---"
