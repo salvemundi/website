@@ -34,9 +34,12 @@ export class SyncJob {
             throw new Error(`User ${userId} not found in Directus.`);
         }
 
-        const entraId = dUser.entra_id || dUser.external_identifier;
+        const entraId = dUser.entra_id;
         if (!entraId) {
             // If no Entra ID, we might need to search by email if it's a new provision
+            if (!dUser.email) {
+                throw new Error(`User ${dUser.id} has no email or Entra ID.`);
+            }
             console.log(`[SYNC] User ${dUser.email} has no Entra ID. Attempting to locate in Azure...`);
             const aUser = await GraphService.getUserByEmail(dUser.email, token);
             if (!aUser) {

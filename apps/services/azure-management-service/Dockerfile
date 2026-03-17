@@ -13,8 +13,14 @@ COPY packages/validations/package.json packages/validations/tsconfig.json ./pack
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile
 
-COPY . .
+# Step 1: Build Shared Logic (packages/validations)
+COPY packages/validations ./packages/validations
+RUN pnpm --filter=@salvemundi/validations build
+
+# Step 2: Build Specific Service (apps/services/azure-management-service)
+COPY apps/services/azure-management-service ./apps/services/azure-management-service
 RUN pnpm --filter=@salvemundi/azure-management-service build
+
 RUN pnpm deploy --filter=@salvemundi/azure-management-service --prod /app/pruned
 
 # 3. Runner Stage
