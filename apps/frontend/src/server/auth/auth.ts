@@ -59,8 +59,8 @@ export const auth = betterAuth({
                         matcher: (ctx) => ctx.path.includes("get-session"),
                         handler: async (ctx) => {
                             // Alleen cachen als er een session token is
-                            const token = ctx.headers.get("authorization")?.split(" ")[1] || 
-                                          ctx.headers.get("cookie")?.split("better-auth.session-token=")[1]?.split(";")[0];
+                            const token = ctx.headers?.get("authorization")?.split(" ")[1] || 
+                                          ctx.headers?.get("cookie")?.split("better-auth.session-token=")[1]?.split(";")[0];
                             
                             if (token) {
                                 try {
@@ -68,8 +68,14 @@ export const auth = betterAuth({
                                     const cached = await redis.get(`session:${token}`);
                                     if (cached) {
                                         return {
-                                            json: JSON.parse(cached)
-                                        };
+                                            response: {
+                                                headers: {
+                                                    "content-type": "application/json"
+                                                }
+                                            },
+                                            body: JSON.parse(cached),
+                                            _flag: "json"
+                                        } as any;
                                     }
                                 } catch (e) {
                                     console.warn("[AUTH-REDIS] Cache hit failed:", e);
@@ -82,9 +88,9 @@ export const auth = betterAuth({
                     {
                         matcher: (ctx) => ctx.path.includes("get-session"),
                         handler: async (ctx) => {
-                            const session = ctx.context?.returned || ctx.response || ctx.json || ctx.body;
-                            const token = ctx.headers.get("authorization")?.split(" ")[1] || 
-                                          ctx.headers.get("cookie")?.split("better-auth.session-token=")[1]?.split(";")[0];
+                            const session = ctx.context?.returned || (ctx as any).response || (ctx as any).json || (ctx as any).body;
+                            const token = ctx.headers?.get("authorization")?.split(" ")[1] || 
+                                          ctx.headers?.get("cookie")?.split("better-auth.session-token=")[1]?.split(";")[0];
 
                             // Verrijk de sessie met commissies
                             if (session && typeof session === 'object' && 'user' in session) {
