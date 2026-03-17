@@ -16,14 +16,14 @@ async function MembershipDynamicSection() {
         headers: await headers()
     });
 
-    const user = session?.user;
+    const user = session?.user as any;
     const isGuest = !user;
     const baseAmount = 20.00;
 
     return (
         <section className="w-full sm:w-1/2 bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2rem] shadow-xl p-6 sm:p-10">
             <h1 className="text-4xl font-black text-theme-purple dark:text-purple-400 mb-8 tracking-tight">
-                {isGuest ? 'INSCHRIJVEN' : (user.membership_status === 'active' ? 'STATUS' : 'VERLENGEN')}
+                {isGuest ? 'INSCHRIJVEN' : (user?.membership_status === 'active' ? 'STATUS' : 'VERLENGEN')}
             </h1>
 
             {isGuest ? (
