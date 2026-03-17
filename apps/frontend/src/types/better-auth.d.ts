@@ -1,6 +1,8 @@
+import "better-auth";
+
 declare module "better-auth" {
     interface User {
-        first_name: string;
+        first_name?: string;
         last_name?: string;
         membership_status?: string;
         membership_expiry?: string;
@@ -11,5 +13,3 @@ declare module "better-auth" {
         committees?: any[];
     }
 }
-
-export {};

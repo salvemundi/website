@@ -4,6 +4,8 @@ import { getActivityById } from '@/server/actions/activities.actions';
 import ActivityDetailIsland from '@/components/islands/activities/ActivityDetailIsland';
 import EventSignupIsland from '@/components/islands/activities/EventSignupIsland';
 import ActivityDetailSkeleton from '@/components/ui/activities/ActivityDetailSkeleton';
+import { auth } from '@/server/auth/auth';
+import { headers } from 'next/headers';
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -21,9 +23,6 @@ export async function generateMetadata({ params }: PageProps) {
     };
 }
 
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
-
 async function ActivityData({ id }: { id: string }) {
     const [activity, session] = await Promise.all([
         getActivityById(id),
@@ -37,7 +36,8 @@ async function ActivityData({ id }: { id: string }) {
     const isPast = new Date(activity.datum_start) < new Date();
     
     // Server-side authoritative price determination
-    const isMember = session?.user?.membership_status === 'active';
+    const user = session?.user as any;
+    const isMember = user?.membership_status === 'active';
     const price = isMember ? (activity.price_members ?? 0) : (activity.price_non_members ?? 0);
 
     return (
