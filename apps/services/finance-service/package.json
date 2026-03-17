@@ -2,6 +2,7 @@
     "name": "@salvemundi/finance-service",
     "version": "1.0.0",
     "private": true,
+    "type": "module",
     "scripts": {
         "dev": "fastify start -w -l info src/server.ts",
         "build": "tsc",
