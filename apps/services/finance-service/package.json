@@ -4,9 +4,8 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "dev": "fastify start -w -l info src/server.ts",
-        "build": "tsc",
-        "start": "fastify start -l info dist/server.js"
+        "dev": "fastify start -w -a 0.0.0.0 -l info src/server.ts",
+        "start": "fastify start -a 0.0.0.0 -l info dist/server.js"
     },
     "dependencies": {
         "@mollie/api-client": "^4.0.1",
@@ -14,7 +13,7 @@
         "fastify": "5.1.0",
         "fastify-plugin": "^5.1.0",
         "pg": "^8.19.0",
-        "redis": "^4.6.13"
+        "redis": "^4.7.1"
     },
     "devDependencies": {
         "@types/node": "^22.0.0",

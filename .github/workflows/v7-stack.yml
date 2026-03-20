@@ -15,219 +15,86 @@ permissions:
   contents: read
 
 jobs:
+  # Hulpservice om de juiste Docker tag te bepalen (branchnaam)
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ github.ref_name }}
+    steps:
+      - run: echo "Determining tag for branch ${{ github.ref_name }}"
+
   build-frontend:
+    needs: prepare
     name: Build Frontend
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-      actions: write
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build & Push Frontend Image
-        uses: docker/build-push-action@v5
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v5
         with:
           context: .
           file: apps/frontend/Dockerfile
           push: true
-          tags: |
-            ghcr.io/salvemundi/v7-app:latest
+          tags: ghcr.io/salvemundi/v7-app:${{ needs.prepare.outputs.tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-
-  build-finance:
-    name: Build Finance Service
+  build-services:
+    needs: prepare
+    name: Build Microservices
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      actions: write
-
+    strategy:
+      matrix:
+        service: [finance, azure-sync, mail, azure-management]
+        include:
+          - service: finance
+            file: apps/services/finance-service/Dockerfile
+            image: v7-finance
+          - service: azure-sync
+            file: apps/services/azure-sync-service/Dockerfile
+            image: v7-sync
+          - service: mail
+            file: apps/services/mail-service/Dockerfile
+            image: v7-mail
+          - service: azure-management
+            file: apps/services/azure-management-service/Dockerfile
+            image: v7-management
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build & Push Finance Service
-        uses: docker/build-push-action@v5
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v5
         with:
           context: .
-          file: apps/services/finance-service/Dockerfile
+          file: ${{ matrix.file }}
           push: true
-          tags: |
-            ghcr.io/salvemundi/v7-finance:latest
+          tags: ghcr.io/salvemundi/${{ matrix.image }}:${{ needs.prepare.outputs.tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-
-  build-sync:
-    name: Build Sync Service
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      actions: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build & Push Sync Service
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: apps/services/azure-sync-service/Dockerfile
-          push: true
-          tags: |
-            ghcr.io/salvemundi/v7-sync:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-  build-mail:
-    name: Build Mail Service
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      actions: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build & Push Mail Service
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: apps/services/mail-service/Dockerfile
-          push: true
-          tags: |
-            ghcr.io/salvemundi/v7-mail:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-  build-management:
-    name: Build Management Service
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      actions: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build & Push Management Service
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: apps/services/azure-management-service/Dockerfile
-          push: true
-          tags: |
-            ghcr.io/salvemundi/v7-management:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   deploy:
     name: Deploy to VPS
     runs-on: ubuntu-latest
-    needs: [build-frontend, build-finance, build-sync, build-mail, build-management]
+    needs: [prepare, build-frontend, build-services]
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     environment:
-      name: Acceptance
-      url: ${{ vars.PUBLIC_URL }}
-    permissions:
-      contents: read
-      packages: write
+      name: ${{ github.ref_name == 'main' && 'Production' || 'Acceptance' }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Network & SSH Diagnostics
-        run: |
-          echo "--- Starting Network Diagnostics ---"
-          echo "Checking if host is reachable on port 22..."
-          nc -zv -w 5 ${{ secrets.SSH_HOST }} 22 || echo "WARNING: Port 22 is NOT reachable. Is the SSH port different?"
-          
-          echo "--- Starting SSH Verbose Handshake Test ---"
-          # Create temporary key file
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          
-          # Try to connect with max verbosity (-vvv) to see the exact rejection reason
-          # We use -o StrictHostKeyChecking=no to avoid manual intervention
-          ssh -vvv -i ~/.ssh/deploy_key -p 22 -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=10 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "echo 'Handshake successful'" || true
-          
-          # Clean up
-          rm ~/.ssh/deploy_key
-          echo "--- Diagnostics Complete ---"
+      - uses: actions/checkout@v4
 
-      - name: Create Target Directory
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: mkdir -p /opt/salve-mundi-v7
-
-      - name: Upload Docker Compose File
+      - name: Upload Docker Compose
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -236,9 +103,10 @@ jobs:
           source: "docker-compose.yml"
           target: "/opt/salve-mundi-v7"
 
-      - name: Deploy via SSH
+      - name: Execute Deployment
         uses: appleboy/ssh-action@v1.0.3
         env:
+          # Alle secrets mappen naar env
           MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
@@ -258,127 +126,54 @@ jobs:
           AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET: ${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET }}
           BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
           DIRECTUS_STATIC_TOKEN: ${{ secrets.DIRECTUS_STATIC_TOKEN }}
+          # Variabelen
+          IMAGE_TAG: ${{ needs.prepare.outputs.tag }}
+          PUBLIC_URL: ${{ vars.PUBLIC_URL }}
           BETTER_AUTH_URL: ${{ vars.BETTER_AUTH_URL }}
-          BETTER_AUTH_TRUSTED_ORIGINS: ${{ vars.BETTER_AUTH_URL }}
-          TRUST_PROXY: "true"
-          INTERNAL_DIRECTUS_URL: "http://v7-core-directus:8055"
-          REDIS_URL: "redis://v7-core-redis:6379"
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          port: 22
-          debug: true
-          timeout: 60s
-          command_timeout: 10m
-          envs: MOLLIE_API_KEY,DB_USER,DB_PASSWORD,DB_NAME,DIRECTUS_KEY,DIRECTUS_SECRET,INTERNAL_SERVICE_TOKEN,AZURE_WEBSITEV7_TENANT_ID,AZURE_WEBSITEV7_SYNC_CLIENT_ID,AZURE_WEBSITEV7_SYNC_CLIENT_SECRET,AZURE_WEBSITEV7_MAIL_CLIENT_ID,AZURE_WEBSITEV7_MAIL_CLIENT_SECRET,AZURE_MAIL_SENDER,AZURE_WEBSITEV7_AUTH_CLIENT_ID,AZURE_WEBSITEV7_AUTH_CLIENT_SECRET,AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET,BETTER_AUTH_SECRET,DIRECTUS_STATIC_TOKEN,BETTER_AUTH_URL,BETTER_AUTH_TRUSTED_ORIGINS,TRUST_PROXY,REDIS_URL
-          script_stop: true
+          envs: MOLLIE_API_KEY,DB_USER,DB_PASSWORD,DB_NAME,DIRECTUS_KEY,DIRECTUS_SECRET,INTERNAL_SERVICE_TOKEN,AZURE_WEBSITEV7_TENANT_ID,AZURE_WEBSITEV7_SYNC_CLIENT_ID,AZURE_WEBSITEV7_SYNC_CLIENT_SECRET,AZURE_WEBSITEV7_MAIL_CLIENT_ID,AZURE_WEBSITEV7_MAIL_CLIENT_SECRET,AZURE_MAIL_SENDER,AZURE_WEBSITEV7_AUTH_CLIENT_ID,AZURE_WEBSITEV7_AUTH_CLIENT_SECRET,AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET,BETTER_AUTH_SECRET,DIRECTUS_STATIC_TOKEN,IMAGE_TAG,PUBLIC_URL,BETTER_AUTH_URL
           script: |
-            echo "--- Starting V7 Deployment on VPS ---"
-            mkdir -p /opt/salve-mundi-v7
             cd /opt/salve-mundi-v7
-            echo "Working Directory: $(pwd)"
             
-            echo "Checking Docker environment..."
-            docker version || { echo "Docker not found or no permissions!"; exit 1; }
-            docker compose version || { echo "Docker Compose not found!"; exit 1; }
-
-            echo "Logging into GHCR..."
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-            # Simplified Environment Check
-            ENV_SUFFIX="acc"
-            export FRONTEND_PORT="3000"
-            export COMPOSE_PROJECT_NAME="v7-acc"
-            if [ "${{ github.ref }}" = "refs/heads/main" ]; then 
-              ENV_SUFFIX="prod"
-              export FRONTEND_PORT="4000"
-              export COMPOSE_PROJECT_NAME="v7-prod"
+            # Omgevingsdetectie
+            ENV_NAME="acc"
+            FRONTEND_PORT="3000"
+            if [ "$IMAGE_TAG" = "main" ]; then 
+              ENV_NAME="prod"
+              FRONTEND_PORT="4000"
             fi
-            echo "Target Environment: $ENV_SUFFIX (Project: $COMPOSE_PROJECT_NAME, Port: $FRONTEND_PORT)"
-            
-            # Application Context
-            export FINANCE_DNS="finance-$ENV_SUFFIX"
-            export SYNC_DNS="sync-$ENV_SUFFIX"
-            export MAIL_DNS="mail-$ENV_SUFFIX"
-            export FRONTEND_DNS="frontend-$ENV_SUFFIX"
-            
-            export INTERNAL_FINANCE_URL="http://$FINANCE_DNS:3001"
-            export INTERNAL_SYNC_URL="http://$SYNC_DNS:3002"
-            export INTERNAL_MAIL_URL="http://$MAIL_DNS:3003"
-            export INTERNAL_DIRECTUS_URL="http://v7-core-directus:8055"
-            export NEXT_APP_INTERNAL_URL="http://$FRONTEND_DNS:3000"
-            export INTERNAL_DB_HOST="v7-core-db"
-            
-            export IMAGE_TAG="latest"
-            export PUBLIC_URL="${{ vars.PUBLIC_URL }}"
-            
-            # Sanitized Secrets (Stripping newlines/carriage returns from GitHub Secrets)
-            export MOLLIE_API_KEY="$(echo "$MOLLIE_API_KEY" | tr -d '\n\r')"
-            export DB_USER="$(echo "$DB_USER" | tr -d '\n\r')"
-            export DB_PASSWORD="$(echo "$DB_PASSWORD" | tr -d '\n\r')"
-            export DB_NAME="$(echo "$DB_NAME" | tr -d '\n\r')"
-            export DIRECTUS_KEY="$(echo "$DIRECTUS_KEY" | tr -d '\n\r')"
-            export DIRECTUS_SECRET="$(echo "$DIRECTUS_SECRET" | tr -d '\n\r')"
-            export INTERNAL_SERVICE_TOKEN="$(echo "$INTERNAL_SERVICE_TOKEN" | tr -d '\n\r')"
-            export AZURE_WEBSITEV7_TENANT_ID="$(echo "$AZURE_WEBSITEV7_TENANT_ID" | tr -d '\n\r')"
-            export AZURE_WEBSITEV7_SYNC_CLIENT_ID="$(echo "$AZURE_WEBSITEV7_SYNC_CLIENT_ID" | tr -d '\n\r')"
-            export AZURE_WEBSITEV7_SYNC_CLIENT_SECRET="$(echo "$AZURE_WEBSITEV7_SYNC_CLIENT_SECRET" | tr -d '\n\r')"
-            export AZURE_WEBSITEV7_MAIL_CLIENT_ID="$(echo "$AZURE_WEBSITEV7_MAIL_CLIENT_ID" | tr -d '\n\r')"
-            export AZURE_WEBSITEV7_MAIL_CLIENT_SECRET="$(echo "$AZURE_WEBSITEV7_MAIL_CLIENT_SECRET" | tr -d '\n\r')"
-            export AZURE_MAIL_SENDER="$(echo "$AZURE_MAIL_SENDER" | tr -d '\n\r')"
-            export AZURE_WEBSITEV7_AUTH_CLIENT_ID="$(echo "$AZURE_WEBSITEV7_AUTH_CLIENT_ID" | tr -d '\n\r')"
-            export AZURE_WEBSITEV7_AUTH_CLIENT_SECRET="$(echo "$AZURE_WEBSITEV7_AUTH_CLIENT_SECRET" | tr -d '\n\r')"
-            export AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID="$(echo "$AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID" | tr -d '\n\r')"
-            export AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET="$(echo "$AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET" | tr -d '\n\r')"
-            export BETTER_AUTH_SECRET="$(echo "$BETTER_AUTH_SECRET" | tr -d '\n\r')"
-            export DIRECTUS_STATIC_TOKEN="$(echo "$DIRECTUS_STATIC_TOKEN" | tr -d '\n\r')"
-            export BETTER_AUTH_TRUSTED_ORIGINS="$(echo "$BETTER_AUTH_TRUSTED_ORIGINS" | tr -d '\n\r')"
-            export TRUST_PROXY="$(echo "$TRUST_PROXY" | tr -d '\n\r')"
-            
-            COMPOSE_CMD="docker compose -p $COMPOSE_PROJECT_NAME"
 
-            echo "Pulling latest images..."
-            env \
-              IMAGE_TAG="$IMAGE_TAG" \
-              $COMPOSE_CMD pull
-            
-            echo "Restarting application stack..."
-            # Pass ALL variables explicitly to docker compose
-            env \
-              FRONTEND_PORT="$FRONTEND_PORT" \
-              IMAGE_TAG="$IMAGE_TAG" \
-              PUBLIC_URL="$PUBLIC_URL" \
-              MOLLIE_API_KEY="$MOLLIE_API_KEY" \
-              DB_USER="$DB_USER" \
-              DB_PASSWORD="$DB_PASSWORD" \
-              DB_NAME="$DB_NAME" \
-              INTERNAL_SERVICE_TOKEN="$INTERNAL_SERVICE_TOKEN" \
-              AZURE_WEBSITEV7_TENANT_ID="$AZURE_WEBSITEV7_TENANT_ID" \
-              AZURE_WEBSITEV7_SYNC_CLIENT_ID="$AZURE_WEBSITEV7_SYNC_CLIENT_ID" \
-              AZURE_WEBSITEV7_SYNC_CLIENT_SECRET="$AZURE_WEBSITEV7_SYNC_CLIENT_SECRET" \
-              AZURE_WEBSITEV7_MAIL_CLIENT_ID="$AZURE_WEBSITEV7_MAIL_CLIENT_ID" \
-              AZURE_WEBSITEV7_MAIL_CLIENT_SECRET="$AZURE_WEBSITEV7_MAIL_CLIENT_SECRET" \
-              AZURE_MAIL_SENDER="$AZURE_MAIL_SENDER" \
-              AZURE_WEBSITEV7_AUTH_CLIENT_ID="$AZURE_WEBSITEV7_AUTH_CLIENT_ID" \
-              AZURE_WEBSITEV7_AUTH_CLIENT_SECRET="$AZURE_WEBSITEV7_AUTH_CLIENT_SECRET" \
-              AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID="$AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID" \
-              AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET="$AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET" \
-              BETTER_AUTH_SECRET="$BETTER_AUTH_SECRET" \
-              DIRECTUS_STATIC_TOKEN="$DIRECTUS_STATIC_TOKEN" \
-              BETTER_AUTH_URL="$BETTER_AUTH_URL" \
-              BETTER_AUTH_TRUSTED_ORIGINS="$BETTER_AUTH_TRUSTED_ORIGINS" \
-              TRUST_PROXY="$TRUST_PROXY" \
-              NEXT_PUBLIC_BETTER_AUTH_URL="$BETTER_AUTH_URL" \
-              NEXT_PUBLIC_APP_URL="$PUBLIC_URL" \
-              INTERNAL_DIRECTUS_URL="$INTERNAL_DIRECTUS_URL" \
-              NEXT_APP_INTERNAL_URL="$NEXT_APP_INTERNAL_URL" \
-              INTERNAL_DB_HOST="$INTERNAL_DB_HOST" \
-              REDIS_URL="$REDIS_URL" \
-              $COMPOSE_CMD up -d --remove-orphans
-            
-            echo "Deep cleaning unused Docker images..."
+            # .env genereren via loop
+            echo "# Auto-generated V7 App Environment" > .env
+            VAR_LIST=(
+              "MOLLIE_API_KEY" "DB_USER" "DB_PASSWORD" "DB_NAME" 
+              "DIRECTUS_KEY" "DIRECTUS_SECRET" "INTERNAL_SERVICE_TOKEN" 
+              "AZURE_WEBSITEV7_TENANT_ID" "AZURE_WEBSITEV7_SYNC_CLIENT_ID" 
+              "AZURE_WEBSITEV7_SYNC_CLIENT_SECRET" "AZURE_WEBSITEV7_MAIL_CLIENT_ID" 
+              "AZURE_WEBSITEV7_MAIL_CLIENT_SECRET" "AZURE_MAIL_SENDER" 
+              "AZURE_WEBSITEV7_AUTH_CLIENT_ID" "AZURE_WEBSITEV7_AUTH_CLIENT_SECRET" 
+              "AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID" "AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET" 
+              "BETTER_AUTH_SECRET" "DIRECTUS_STATIC_TOKEN" "BETTER_AUTH_URL" "PUBLIC_URL"
+            )
+
+            for var in "${VAR_LIST[@]}"; do
+              val=$(echo "${!var}" | tr -d '\n\r')
+              printf "%s=\"%s\"\n" "$var" "$val" >> .env
+            done
+
+            # Systeem variabelen
+            printf "IMAGE_TAG=\"%s\"\n" "$IMAGE_TAG" >> .env
+            printf "FRONTEND_PORT=\"%s\"\n" "$FRONTEND_PORT" >> .env
+            printf "COMPOSE_PROJECT_NAME=\"v7-$ENV_NAME\"\n" >> .env
+            printf "TRUST_PROXY=\"true\"\n" >> .env
+            printf "REDIS_URL=\"redis://v7-core-redis:6379\"\n" >> .env
+            printf "INTERNAL_DIRECTUS_URL=\"http://v7-core-directus:8055\"\n" >> .env
+
+            # Deploy
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            docker compose pull
+            docker compose up -d --remove-orphans
             docker image prune -af
-            
-            echo "--- Deployment Successful ---"
-

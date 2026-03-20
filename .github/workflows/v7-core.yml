@@ -1,7 +1,7 @@
 name: Deploy V7 Core Infrastructure
 
 on:
-  workflow_dispatch: # Handmatig triggeren
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -19,6 +19,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # 1. Dynamische omgevingsvariabelen instellen op basis van de branch
+      - name: Set Environment Variables
+        run: |
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            echo "DOMAIN=admin.salvemundi.nl" >> $GITHUB_ENV
+          else
+            echo "DOMAIN=acc.salvemundi.nl" >> $GITHUB_ENV
+          fi
+
       - name: Copy Infrastructure files to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -32,6 +41,7 @@ jobs:
       - name: Deploy Core Stack via SSH
         uses: appleboy/ssh-action@v1.0.3
         env:
+          # Mapping van alle benodigde secrets
           INTERNAL_SERVER_IP: ${{ secrets.INTERNAL_SERVER_IP }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
@@ -42,40 +52,44 @@ jobs:
           AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID: ${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID }}
           AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET: ${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET }}
           DIRECTUS_ALLOWED_REDIRECTS: ${{ secrets.DIRECTUS_ALLOWED_REDIRECTS }}
-          PUBLIC_URL: "https://admin.salvemundi.nl"
-          CORS_ORIGIN: "https://admin.salvemundi.nl"
           DIRECTUS_STATIC_TOKEN: ${{ secrets.DIRECTUS_STATIC_TOKEN }}
+          # Gebruik de branch-specifieke domeinnaam
+          DOMAIN_URL: "https://${{ env.DOMAIN }}"
           INTERNAL_DIRECTUS_URL: "http://v7-core-directus:8055"
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          envs: INTERNAL_SERVER_IP,DB_USER,DB_PASSWORD,DB_NAME,DIRECTUS_KEY,DIRECTUS_SECRET,AZURE_WEBSITEV7_TENANT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET,DIRECTUS_ALLOWED_REDIRECTS,PUBLIC_URL,CORS_ORIGIN,DIRECTUS_STATIC_TOKEN,INTERNAL_DIRECTUS_URL
+          # Geef de lijst met omgevingsvariabelen door aan het script
+          envs: INTERNAL_SERVER_IP,DB_USER,DB_PASSWORD,DB_NAME,DIRECTUS_KEY,DIRECTUS_SECRET,AZURE_WEBSITEV7_TENANT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET,DIRECTUS_ALLOWED_REDIRECTS,DOMAIN_URL,DIRECTUS_STATIC_TOKEN,INTERNAL_DIRECTUS_URL
           script_stop: true
           script: |
             cd /opt/salve-mundi-v7/infra
             
-            # Generate .env file from environment variables to handle multi-line secrets safely
-            # We strip any newlines or carriage returns that might be present in the GitHub Secrets
-            printf "INTERNAL_SERVER_IP=\"%s\"\n" "$(echo "$INTERNAL_SERVER_IP" | tr -d '\n\r')" > .env
-            printf "DB_USER=\"%s\"\n" "$(echo "$DB_USER" | tr -d '\n\r')" >> .env
-            printf "DB_PASSWORD=\"%s\"\n" "$(echo "$DB_PASSWORD" | tr -d '\n\r')" >> .env
-            printf "DB_NAME=\"%s\"\n" "$(echo "$DB_NAME" | tr -d '\n\r')" >> .env
-            printf "DIRECTUS_KEY=\"%s\"\n" "$(echo "$DIRECTUS_KEY" | tr -d '\n\r')" >> .env
-            printf "DIRECTUS_SECRET=\"%s\"\n" "$(echo "$DIRECTUS_SECRET" | tr -d '\n\r')" >> .env
-            printf "AZURE_WEBSITEV7_TENANT_ID=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_TENANT_ID" | tr -d '\n\r')" >> .env
-            printf "AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID" | tr -d '\n\r')" >> .env
-            printf "AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET" | tr -d '\n\r')" >> .env
-            printf "DIRECTUS_ALLOWED_REDIRECTS=\"%s\"\n" "$(echo "$DIRECTUS_ALLOWED_REDIRECTS" | tr -d '\n\r')" >> .env
-            printf "PUBLIC_URL=\"%s\"\n" "$PUBLIC_URL" >> .env
-            printf "CORS_ORIGIN=\"%s\"\n" "$CORS_ORIGIN" >> .env
-            printf "DIRECTUS_STATIC_TOKEN=\"%s\"\n" "$(echo "$DIRECTUS_STATIC_TOKEN" | tr -d '\n\r')" >> .env
+            # 2. Schonere .env generatie middels een loop
+            # Dit voorkomt fouten en houdt multiline secrets veilig
+            echo "# Auto-generated V7 Core Environment" > .env
+            
+            VAR_LIST=(
+              "INTERNAL_SERVER_IP" "DB_USER" "DB_PASSWORD" "DB_NAME" 
+              "DIRECTUS_KEY" "DIRECTUS_SECRET" "AZURE_WEBSITEV7_TENANT_ID" 
+              "AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID" "AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET" 
+              "DIRECTUS_ALLOWED_REDIRECTS" "DIRECTUS_STATIC_TOKEN"
+            )
+
+            for var in "${VAR_LIST[@]}"; do
+              # Haal waarde op uit de shell env en strip newlines
+              val=$(echo "${!var}" | tr -d '\n\r')
+              printf "%s=\"%s\"\n" "$var" "$val" >> .env
+            done
+
+            # Handmatige mapping voor URL's (zonder tr -d nodig voor hardcoded envs)
+            printf "PUBLIC_URL=\"%s\"\n" "$DOMAIN_URL" >> .env
+            printf "CORS_ORIGIN=\"%s\"\n" "$DOMAIN_URL" >> .env
             printf "INTERNAL_DIRECTUS_URL=\"%s\"\n" "$INTERNAL_DIRECTUS_URL" >> .env
 
-            # Ensure the shared network exists
+            # 3. Infrastructuur acties
             docker network create salve-mundi-v7-shared || true
-
-            # Deploy the core project
             docker compose -p v7-core up -d --remove-orphans
 
-            echo "--- Core Infrastructure Deployed ---"
+            echo "--- Core Infrastructure Deployed to ${{ env.DOMAIN }} ---"

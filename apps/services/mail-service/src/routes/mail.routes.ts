@@ -1,34 +1,39 @@
 import { FastifyInstance } from 'fastify';
-import { MailerService } from '../services/mailer.js';
-import { AuditService } from '../services/audit.js';
 import { MailRequestSchema, timingSafeCompare } from '@salvemundi/validations';
 
 export default async function mailRoutes(fastify: FastifyInstance) {
     /**
-     * POST /api/mail/send
-     * Payload: { to: "user@example.com", templateId: "welcome", data: { ... } }
+     * Security hook: Valideert het interne service token voor alle routes in deze scope.
      */
-    fastify.post('/send', async (request: any, reply) => {
+    fastify.addHook('preHandler', async (request, reply) => {
         const token = process.env.INTERNAL_SERVICE_TOKEN;
+        const authHeader = request.headers.authorization;
+
         if (!token) {
-            return reply.status(500).send({ error: 'INTERNAL_SERVICE_TOKEN is not configured' });
+            fastify.log.error('[AUTH] INTERNAL_SERVICE_TOKEN is not configured in environment variables');
+            return reply.status(500).send({ error: 'Internal Server Configuration Error' });
         }
 
-        const authHeader = request.headers['authorization'];
         if (!authHeader || !timingSafeCompare(authHeader, `Bearer ${token}`)) {
             return reply.status(401).send({ error: 'Unauthorized' });
         }
+    });
 
-        // 1. Validate Payload
+    /**
+     * POST /send
+     * Verwerkt aanvragen voor het versturen van e-mails via de MailWorkerService.
+     */
+    fastify.post('/send', async (request, reply) => {
         const validation = MailRequestSchema.safeParse(request.body);
 
         if (!validation.success) {
-            return reply.status(400).send({ error: 'Invalid payload', details: validation.error.format() });
+            return reply.status(400).send({
+                error: 'Invalid payload',
+                details: validation.error.format()
+            });
         }
 
         const { to, templateId, data } = validation.data;
-
-        fastify.log.info(`[MAIL] Queueing ${templateId} email for ${to}`);
 
         try {
             const { MailWorkerService } = await import('../services/mail-worker.js');
