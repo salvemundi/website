@@ -14,7 +14,7 @@
         "@directus/sdk": "^21.1.0",
         "@hookform/resolvers": "^5.2.2",
         "@salvemundi/validations": "workspace:*",
-        "better-auth": "1.1.0",
+        "better-auth": "1.5.5",
         "date-fns": "^4.1.0",
         "dompurify": "^3.3.3",
         "framer-motion": "^12.34.5",
