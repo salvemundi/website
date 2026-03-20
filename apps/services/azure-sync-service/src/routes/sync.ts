@@ -27,8 +27,7 @@ export default async function syncRoutes(fastify: FastifyInstance) {
             return reply.status(500).send({ error: 'Failed to start sync job', details: err.message });
         }
     });
-    
-    fastify.get('/test-graph', async (request, reply) => {
+    fastify.post('/run/:userId', async (request: any, reply) => {
         const authHeader = request.headers['authorization'];
         const token = process.env.INTERNAL_SERVICE_TOKEN;
 
@@ -36,31 +35,18 @@ export default async function syncRoutes(fastify: FastifyInstance) {
             return reply.status(401).send({ error: 'Unauthorized' });
         }
 
+        const { userId } = request.params;
+
         try {
-            const token = await TokenService.getAccessToken(fastify.redis);
-            const client = GraphService['getClient'](token); // Access private method for testing
+            const accessToken = await TokenService.getAccessToken(fastify.redis);
             
-            fastify.log.info('[TEST-GRAPH] Fetching organization info...');
-            const org = await client.api('/organization').get();
-            
-            fastify.log.info('[TEST-GRAPH] Fetching users (top 1)...');
-            const users = await client.api('/users').top(1).get();
-            
-            return {
-                status: 'success',
-                organization: org.value?.[0]?.displayName,
-                userCount: users.value?.length,
-                firstUser: users.value?.[0]?.userPrincipalName
-            };
+            // Run sync for specific user
+            await SyncJob.syncUserById(userId, accessToken);
+
+            return { message: `Sync for user ${userId} completed` };
         } catch (err: any) {
-            fastify.log.error('[TEST-GRAPH] Failed:', err);
-            return reply.status(500).send({ 
-                error: 'Graph test failed', 
-                statusCode: err.statusCode,
-                code: err.code,
-                message: err.message,
-                body: err.body
-            });
+            fastify.log.error(err);
+            return reply.status(500).send({ error: 'Failed to sync user', details: err.message });
         }
     });
 }

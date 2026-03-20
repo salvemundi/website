@@ -2,16 +2,20 @@ import { z } from 'zod';
 export const tripSchema = z.object({
     id: z.number().int(),
     name: z.string(),
-    event_date: z.string(),
-    start_date: z.string().nullable().optional(),
-    end_date: z.string().nullable().optional(),
-    registration_open: z.boolean(),
-    max_participants: z.number().int(),
-    base_price: z.number(),
-    crew_discount: z.number(),
-    deposit_amount: z.number(),
-    is_bus_trip: z.boolean(),
-    allow_final_payments: z.boolean().nullable().optional(),
+    description: z.preprocess((v) => v === null ? null : String(v), z.string().nullable().optional()),
+    image: z.preprocess((v) => v === null ? null : String(v), z.string().nullable().optional()),
+    event_date: z.preprocess((v) => v === null ? null : String(v), z.string().nullable().optional()),
+    start_date: z.preprocess((v) => v === null ? null : String(v), z.string().nullable().optional()),
+    end_date: z.preprocess((v) => v === null ? null : String(v), z.string().nullable().optional()),
+    registration_start_date: z.preprocess((v) => v === null ? null : String(v), z.string().nullable().optional()),
+    registration_open: z.any().transform(v => !!v),
+    max_participants: z.coerce.number().int(),
+    max_crew: z.coerce.number().int().nullable().optional(),
+    base_price: z.coerce.number(),
+    crew_discount: z.coerce.number(),
+    deposit_amount: z.coerce.number(),
+    is_bus_trip: z.any().transform(v => !!v),
+    allow_final_payments: z.any().transform(v => !!v).nullable().optional(),
 });
 export const tripSignupSchema = z.object({
     id: z.number().int(),
@@ -35,10 +39,27 @@ export const tripSignupSchema = z.object({
     deposit_email_sent: z.boolean().nullable().optional(),
     final_email_sent: z.boolean().nullable().optional(),
     created_at: z.string(),
+    trip_id: z.coerce.number().int().nullable().optional(),
 });
 export const tripSignupActivitySchema = z.object({
     id: z.number().int().optional(),
     trip_signup_id: z.number().int(),
     trip_activity_id: z.any(), // Kan een ID zijn of een genest object vanuit Directus
     selected_options: z.any().nullable().optional(), // Array of strings meestal
+});
+export const tripActivitySchema = z.object({
+    id: z.number().int(),
+    trip_id: z.number().int(),
+    name: z.string(),
+    description: z.string().nullable().optional(),
+    price: z.coerce.number(),
+    image: z.string().nullable().optional(),
+    max_participants: z.coerce.number().int().nullable().optional(),
+    is_active: z.any().transform(v => !!v),
+    display_order: z.coerce.number().int(),
+    options: z.array(z.object({
+        name: z.string(),
+        price: z.coerce.number()
+    })).nullable().optional(),
+    max_selections: z.coerce.number().int().nullable().optional(),
 });

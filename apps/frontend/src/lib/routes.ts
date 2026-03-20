@@ -9,7 +9,7 @@ export const ROUTES = {
     TRIP: '/reis',
     CONTACT: '/contact',
     ACCOUNT: '/profiel',
-    STICKERS: '/safe-havens',
+    STICKERS: '/stickers',
     ADMIN: '/beheer',
 } as const;
 

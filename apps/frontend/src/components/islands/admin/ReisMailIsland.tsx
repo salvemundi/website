@@ -1,0 +1,351 @@
+'use client';
+
+import { useState, useEffect, useMemo, useTransition } from 'react';
+import { 
+    Mail, 
+    Send, 
+    Users, 
+    Filter, 
+    CheckCircle, 
+    AlertCircle, 
+    Loader2, 
+    ChevronDown, 
+    Search,
+    Info,
+    Layout
+} from 'lucide-react';
+import { 
+    getTripSignups, 
+    sendBulkTripEmail, 
+    sendBulkPaymentEmails 
+} from '@/server/actions/admin-reis.actions';
+import type { Trip, TripSignup } from '@salvemundi/validations';
+
+interface ReisMailIslandProps {
+    trips: Trip[];
+}
+
+export default function ReisMailIsland({ trips }: ReisMailIslandProps) {
+    const [selectedTripId, setSelectedTripId] = useState<number>(trips[0]?.id || 0);
+    const [signups, setSignups] = useState<TripSignup[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [sending, setSending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
+
+    // Filters
+    const [filterStatus, setFilterStatus] = useState<string>('all');
+    const [filterRole, setFilterRole] = useState<string>('all');
+    const [filterPayment, setFilterPayment] = useState<string>('all');
+    const [searchTerm, setSearchTerm] = useState('');
+
+    // Email Config
+    const [emailType, setEmailType] = useState<'custom' | 'deposit_request' | 'final_request'>('custom');
+    const [subject, setSubject] = useState('');
+    const [message, setMessage] = useState('');
+
+    useEffect(() => {
+        if (selectedTripId) {
+            loadSignups();
+        }
+    }, [selectedTripId]);
+
+    const loadSignups = async () => {
+        setLoading(true);
+        try {
+            const data = await getTripSignups(selectedTripId);
+            setSignups(data);
+        } catch (err) {
+            setError('Fout bij het laden van deelnemers');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const filteredRecipients = useMemo(() => {
+        return signups.filter(s => {
+            const matchesSearch = `${s.first_name} ${s.last_name} ${s.email}`.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesStatus = filterStatus === 'all' || s.status === filterStatus;
+            const matchesRole = filterRole === 'all' || s.role === filterRole;
+            const matchesPayment = 
+                filterPayment === 'all' ? true :
+                filterPayment === 'unpaid' ? (!s.deposit_paid && !s.full_payment_paid) :
+                filterPayment === 'deposit_paid' ? (s.deposit_paid && !s.full_payment_paid) :
+                filterPayment === 'full_paid' ? s.full_payment_paid : true;
+            
+            return matchesSearch && matchesStatus && matchesRole && matchesPayment;
+        });
+    }, [signups, searchTerm, filterStatus, filterRole, filterPayment]);
+
+    const handleSend = async () => {
+        if (filteredRecipients.length === 0) return;
+        
+        const confirmMsg = emailType === 'custom' 
+            ? `Weet je zeker dat je deze email wilt sturen naar ${filteredRecipients.length} deelnemers?`
+            : `Weet je zeker dat je een ${emailType === 'deposit_request' ? 'aanbetaling' : 'restbetaling'} verzoek wilt sturen naar ${filteredRecipients.length} deelnemers?`;
+            
+        if (!confirm(confirmMsg)) return;
+
+        setSending(true);
+        setError(null);
+        setSuccess(null);
+
+        try {
+            if (emailType === 'custom') {
+                const res = await sendBulkTripEmail({
+                    tripId: selectedTripId,
+                    recipients: filteredRecipients.map(r => ({ email: r.email, name: `${r.first_name} ${r.last_name}` })),
+                    subject,
+                    message
+                });
+                if (res.success) {
+                    setSuccess(`Email succesvol verzonden naar ${filteredRecipients.length} deelnemers!`);
+                    setSubject('');
+                    setMessage('');
+                } else {
+                    setError(res.error || 'Fout bij het verzenden');
+                }
+            } else {
+                const res = await sendBulkPaymentEmails(
+                    selectedTripId, 
+                    filteredRecipients.map(r => r.id), 
+                    emailType === 'deposit_request' ? 'deposit' : 'final'
+                );
+                if (res.success) {
+                    setSuccess(`${filteredRecipients.length} betalingsverzoeken succesvol verstuurd!`);
+                } else {
+                    setError(`Verzenden voltooid: ${res.successCount} gelukt, ${res.failCount} mislukt.`);
+                }
+            }
+        } catch (err) {
+            setError('Er is een onverwachte fout opgetreden');
+        } finally {
+            setSending(false);
+        }
+    };
+
+    return (
+        <div className="container mx-auto px-4 py-8 max-w-6xl animate-in fade-in duration-700">
+            {/* Alerts */}
+            {success && (
+                <div className="mb-6 p-4 bg-[var(--theme-success)]/10 text-[var(--theme-success)] rounded-[var(--radius-xl)] border border-[var(--theme-success)]/20 flex items-center gap-3 animate-in slide-in-from-top-4">
+                    <CheckCircle className="h-5 w-5" />
+                    <p className="font-semibold">{success}</p>
+                </div>
+            )}
+            {error && (
+                <div className="mb-6 p-4 bg-[var(--theme-error)]/10 text-[var(--theme-error)] rounded-[var(--radius-xl)] border border-[var(--theme-error)]/20 flex items-center gap-3 animate-in slide-in-from-top-4">
+                    <AlertCircle className="h-5 w-5" />
+                    <p className="font-semibold">{error}</p>
+                </div>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                {/* Left Column: Config & Filters */}
+                <div className="lg:col-span-1 space-y-6">
+                    {/* Trip Selector */}
+                    <Card title="Selecteer Reis" icon={<Layout className="h-4 w-4" />}>
+                        <div className="relative group">
+                            <select 
+                                value={selectedTripId}
+                                onChange={(e) => setSelectedTripId(parseInt(e.target.value))}
+                                className="w-full pl-4 pr-10 py-3 bg-[var(--bg-main)] border-0 ring-1 ring-[var(--border-color)]/50 rounded-xl text-sm font-bold text-[var(--text-main)] focus:ring-2 focus:ring-[var(--theme-purple)] transition-all appearance-none cursor-pointer"
+                            >
+                                {trips.map(trip => (
+                                    <option key={trip.id} value={trip.id}>{trip.name}</option>
+                                ))}
+                            </select>
+                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)] pointer-events-none group-hover:text-[var(--theme-purple)] transition-colors" />
+                        </div>
+                    </Card>
+
+                    {/* Filters */}
+                    <Card title="Recipients Filter" icon={<Filter className="h-4 w-4" />}>
+                        <div className="space-y-4">
+                            <FilterField label="Status" value={filterStatus} onChange={setFilterStatus}>
+                                <option value="all">Alle Statussen</option>
+                                <option value="registered">Geregistreerd</option>
+                                <option value="confirmed">Bevestigd</option>
+                                <option value="waitlist">Wachtlijst</option>
+                                <option value="cancelled">Geannuleerd</option>
+                            </FilterField>
+                            <FilterField label="Rol" value={filterRole} onChange={setFilterRole}>
+                                <option value="all">Alle Rollen</option>
+                                <option value="participant">Deelnemer</option>
+                                <option value="crew">Crew</option>
+                            </FilterField>
+                            <FilterField label="Betaling" value={filterPayment} onChange={setFilterPayment}>
+                                <option value="all">Alle Betalingen</option>
+                                <option value="unpaid">Onbetaald</option>
+                                <option value="deposit_paid">Aanbetaling OK</option>
+                                <option value="full_paid">Volledig OK</option>
+                            </FilterField>
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--text-muted)]" />
+                                <input 
+                                    type="text" 
+                                    placeholder="Zoek deelnemer..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-2 bg-[var(--bg-main)] hover:bg-[var(--border-color)]/5 ring-1 ring-[var(--border-color)]/50 rounded-xl text-[10px] uppercase font-bold tracking-widest text-[var(--text-main)] placeholder:text-[var(--text-muted)] focus:ring-2 focus:ring-[var(--theme-purple)] transition-all"
+                                />
+                            </div>
+                        </div>
+                    </Card>
+
+                    {/* Summary */}
+                    <div className="bg-[var(--theme-purple)]/5 rounded-[var(--radius-xl)] ring-1 ring-[var(--theme-purple)]/20 p-6">
+                        <div className="flex items-center gap-3 mb-2 text-[var(--theme-purple)]">
+                            <Users className="h-5 w-5" />
+                            <span className="text-2xl font-black italic">{filteredRecipients.length}</span>
+                        </div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                            Ontvangers geselecteerd
+                        </p>
+                    </div>
+                </div>
+
+                {/* Right Column: Content Editor */}
+                <div className="lg:col-span-3 space-y-8">
+                    <div className="bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)] overflow-hidden">
+                        {/* Editor Header */}
+                        <div className="p-8 border-b border-[var(--border-color)]/20 bg-[var(--bg-main)]/30 backdrop-blur-sm">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-12 w-12 rounded-2xl bg-[var(--theme-purple)] text-white flex items-center justify-center shadow-lg shadow-[var(--theme-purple)]/20">
+                                        <Mail className="h-6 w-6" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-bold text-[var(--text-main)] italic">Bericht Componeren</h2>
+                                        <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Verzend bulk communicatie</p>
+                                    </div>
+                                </div>
+                                <div className="flex bg-[var(--bg-main)] p-1.5 rounded-2xl ring-1 ring-[var(--border-color)]/50 shadow-inner">
+                                    <TypeTab active={emailType === 'custom'} onClick={() => setEmailType('custom')}>Custom</TypeTab>
+                                    <TypeTab active={emailType === 'deposit_request'} onClick={() => setEmailType('deposit_request')}>Deposit</TypeTab>
+                                    <TypeTab active={emailType === 'final_request'} onClick={() => setEmailType('final_request')}>Final</TypeTab>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Editor Body */}
+                        <div className="p-8 space-y-8">
+                            {emailType === 'custom' ? (
+                                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] ml-1">Onderwerp</label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Bijv: Belangrijke update over de reis"
+                                            value={subject}
+                                            onChange={(e) => setSubject(e.target.value)}
+                                            className="w-full px-6 py-4 bg-[var(--bg-main)]/50 border-0 ring-1 ring-[var(--border-color)]/30 rounded-2xl text-base text-[var(--text-main)] focus:ring-2 focus:ring-[var(--theme-purple)] transition-all font-semibold"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] ml-1">Bericht</label>
+                                        <textarea 
+                                            rows={12}
+                                            placeholder="Typ hier je bericht..."
+                                            value={message}
+                                            onChange={(e) => setMessage(e.target.value)}
+                                            className="w-full px-6 py-4 bg-[var(--bg-main)]/50 border-0 ring-1 ring-[var(--border-color)]/30 rounded-2xl text-base text-[var(--text-main)] focus:ring-2 focus:ring-[var(--theme-purple)] transition-all resize-none custom-scrollbar"
+                                        />
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="p-8 bg-[var(--theme-info)]/10 rounded-3xl border border-[var(--theme-info)]/20 flex items-start gap-6 animate-in zoom-in-95 duration-500">
+                                    <div className="p-4 bg-[var(--theme-info)]/20 rounded-2xl text-[var(--theme-info)]">
+                                        <Info className="h-8 w-8" />
+                                    </div>
+                                    <div className="space-y-4">
+                                        <h3 className="text-lg font-bold text-[var(--text-main)] italic">Automatisch Verzoek</h3>
+                                        <p className="text-sm text-[var(--text-muted)] leading-relaxed">
+                                            Je staat op het punt om een automatisch gegenereerde <strong>{emailType === 'deposit_request' ? 'aanbetaling' : 'restbetaling'}</strong> email te sturen.
+                                            Dit bericht bevat:
+                                        </p>
+                                        <ul className="space-y-2">
+                                            <TickItem>Gepersonaliseerde begroeting</TickItem>
+                                            <TickItem>Bedrag informatie en betaallink</TickItem>
+                                            <TickItem>Instructies voor de betreffende betaling</TickItem>
+                                            {emailType === 'final_request' && <TickItem>Overzicht van geselecteerde activiteiten</TickItem>}
+                                        </ul>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Actions */}
+                            <div className="pt-8 flex items-center justify-between border-t border-[var(--border-color)]/10">
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] italic">
+                                    Controleer de filters voordat je verstuurt.
+                                </p>
+                                <button
+                                    onClick={handleSend}
+                                    disabled={sending || filteredRecipients.length === 0 || (emailType === 'custom' && (!subject.trim() || !message.trim()))}
+                                    className="px-12 py-5 bg-[var(--theme-purple)] hover:opacity-95 text-white rounded-2xl font-bold shadow-2xl shadow-[var(--theme-purple)]/30 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-3 group"
+                                >
+                                    {sending ? <Loader2 className="h-6 w-6 animate-spin" /> : <Send className="h-6 w-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />}
+                                    <span className="text-xl italic">Verzenden</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function Card({ title, icon, children }: any) {
+    return (
+        <div className="bg-[var(--bg-card)] rounded-[var(--radius-xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)] p-6">
+            <div className="flex items-center gap-2 mb-4 text-[var(--text-muted)]">
+                {icon}
+                <span className="text-[10px] font-bold uppercase tracking-widest">{title}</span>
+            </div>
+            {children}
+        </div>
+    );
+}
+
+function FilterField({ label, value, onChange, children }: any) {
+    return (
+        <div className="space-y-1">
+            <label className="text-[9px] font-bold uppercase tracking-tighter text-[var(--text-muted)] ml-1">{label}</label>
+            <div className="relative group">
+                <select 
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    className="w-full pl-3 pr-8 py-2 bg-[var(--bg-main)] border-0 ring-1 ring-[var(--border-color)]/30 rounded-xl text-xs font-bold text-[var(--text-subtle)] focus:ring-2 focus:ring-[var(--theme-purple)] transition-all appearance-none cursor-pointer"
+                >
+                    {children}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-light)] pointer-events-none group-hover:text-[var(--theme-purple)] transition-colors" />
+            </div>
+        </div>
+    );
+}
+
+function TypeTab({ active, onClick, children }: any) {
+    return (
+        <button 
+            onClick={onClick}
+            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                active 
+                    ? 'bg-[var(--bg-card)] shadow-sm text-[var(--theme-purple)] ring-1 ring-[var(--border-color)]/20' 
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
+            }`}
+        >
+            {children}
+        </button>
+    );
+}
+
+function TickItem({ children }: any) {
+    return (
+        <li className="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)]">
+            <CheckCircle className="h-3 w-3 text-[var(--theme-info)]" />
+            {children}
+        </li>
+    );
+}

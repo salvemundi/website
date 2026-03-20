@@ -36,6 +36,8 @@ export default function AdminReisSelectorIsland({ trips }: AdminReisSelectorIsla
                 >
                     {trips.map(trip => {
                         const displayStartDate = trip.start_date || trip.event_date;
+                        if (!displayStartDate) return <option key={trip.id} value={trip.id}>{trip.name}</option>;
+
                         const dateDisplay = trip.end_date
                             ? `${format(new Date(displayStartDate), 'd MMMM yyyy', { locale: nl })} - ${format(new Date(trip.end_date), 'd MMMM yyyy', { locale: nl })}`
                             : format(new Date(displayStartDate), 'd MMMM yyyy', { locale: nl });
@@ -48,10 +50,17 @@ export default function AdminReisSelectorIsland({ trips }: AdminReisSelectorIsla
                 </select>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex flex-wrap gap-4">
+                <button
+                    onClick={() => router.push('/beheer/reis/mail')}
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] border border-[var(--theme-purple)]/30 rounded-lg hover:bg-[var(--theme-purple)]/20 transition w-full sm:w-auto font-semibold"
+                >
+                    <Plane className={`h-5 w-5 rotate-45`} />
+                    Email Versturen
+                </button>
                 <button
                     onClick={() => router.push('/beheer/reis/activiteiten')}
-                    className="flex items-center justify-center gap-2 px-4 py-2 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition w-full sm:w-auto"
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-[var(--theme-purple)] text-white rounded-lg hover:opacity-90 transition w-full sm:w-auto"
                 >
                     <Plane className="h-5 w-5" />
                     Activiteiten Beheren

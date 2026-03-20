@@ -344,3 +344,76 @@ export async function toggleCheckIn(signupId: number, status: boolean) {
         return { success: false };
     }
 }
+
+/**
+ * Fetches the current payment and registration status for a given signup.
+ * Supports both direct signup IDs and Transaction IDs (Mollie).
+ * 
+ * Why: This is used by the ConfirmationIsland to show the real-time status 
+ * after a payment redirect.
+ */
+export async function getSignupStatus(id?: string, transactionId?: string) {
+    const directusUrl = getDirectusUrl();
+
+    if (transactionId) {
+        // Resolve the signup ID from the transaction first
+        const transUrl = `${directusUrl}/items/transactions/${transactionId}?fields=id,payment_status,registration_id,registration_type`;
+        const transRes = await fetchWithTimeout(transUrl, { headers: getDirectusHeaders() });
+        if (!transRes.ok) return { status: 'error' };
+        
+        const trans = (await transRes.json()).data;
+
+        // Map the registration back to its specific collection for full detail
+        if (trans.registration_type === 'event_signup') {
+            const signupUrl = `${directusUrl}/items/event_signups/${trans.registration_id}?fields=*,event_id.*`;
+            const signupRes = await fetchWithTimeout(signupUrl, { headers: getDirectusHeaders() });
+            if (!signupRes.ok) return { status: trans.payment_status, transaction: trans };
+            return { status: trans.payment_status, signup: (await signupRes.json()).data, transaction: trans };
+        } else if (trans.registration_type === 'pub_crawl_signup') {
+            const signupUrl = `${directusUrl}/items/pub_crawl_signups/${trans.registration_id}?fields=*,pub_crawl_event_id.*,tickets.*`;
+            const signupRes = await fetchWithTimeout(signupUrl, { headers: getDirectusHeaders() });
+            if (!signupRes.ok) return { status: trans.payment_status, transaction: trans };
+            const signup = (await signupRes.json()).data;
+            if (signup) {
+                signup.amount_tickets = signup.tickets?.length || 1;
+            }
+            return { status: trans.payment_status, signup, transaction: trans };
+        } else if (trans.registration_type === 'membership') {
+            return { status: trans.payment_status, transaction: trans, isMembership: true };
+        }
+        return { status: trans.payment_status, transaction: trans };
+    } else if (id) {
+        const url = `${directusUrl}/items/event_signups/${id}?fields=*,event_id.*`;
+        const response = await fetchWithTimeout(url, { headers: getDirectusHeaders() });
+        if (!response.ok) return { status: 'error' };
+        const json = await response.json();
+        return { status: json.data?.payment_status || 'open', signup: json.data };
+    }
+
+    return { status: 'error' };
+}
+
+/**
+ * Retrieves all valid (paid) tickets for the authenticated user.
+ * 
+ * Why: Powers the 'Mijn Tickets' portal, allowing users to quickly access 
+ * their QR codes on the go.
+ */
+export async function getMyTickets() {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user) return [];
+
+    const directusUrl = getDirectusUrl();
+    // We only show 'paid' tickets as those are the only ones valid for entry
+    const url = `${directusUrl}/items/event_signups?filter[user_id][_eq]=${session.user.id}&filter[payment_status][_eq]=paid&fields=*,event_id.*&sort=-date_created`;
+
+    try {
+        const response = await fetchWithTimeout(url, { headers: getDirectusHeaders() });
+        if (!response.ok) return [];
+        const json = await response.json();
+        return json.data || [];
+    } catch (error) {
+        console.error('[Activities] Error fetching user tickets:', error);
+        return [];
+    }
+}

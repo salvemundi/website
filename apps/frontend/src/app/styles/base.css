@@ -106,6 +106,25 @@
         color: var(--theme-purple-light);
     }
 
+    /* Interactive Elements Cursor */
+    button, 
+    [role="button"],
+    input[type="button"],
+    input[type="submit"],
+    input[type="reset"],
+    select,
+    summary,
+    label[for],
+    label:has(input) {
+        cursor: pointer;
+    }
+
+    button:disabled,
+    [role="button"]:disabled,
+    input:disabled {
+        cursor: not-allowed;
+    }
+
     /* Mobile home page gradient — applied by a Client Island on the home route */
     @media (max-width: 768px) {
         body.mobile-home-theme {

@@ -10,3 +10,4 @@ export * from './reis.zod.js';
 export * from './mail.zod.js';
 export * from './committees.zod.js';
 export * from './kroegentocht.zod.js';
+export * from './admin.zod.js';
