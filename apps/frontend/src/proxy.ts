@@ -72,11 +72,14 @@ export async function proxy(request: NextRequest) {
     if (!isPublic) {
         try {
             // Check sessie via fetch (Edge-safe) naar interne API
-            const sessionUrl = new URL('/api/auth/get-session', request.url);
+            const internalBase = process.env.NEXT_APP_INTERNAL_URL || origin;
+            const sessionUrl = new URL('/api/auth/get-session', internalBase);
             const sessionRes = await fetch(sessionUrl, {
                 headers: { 
                     cookie: request.headers.get('cookie') || '',
-                    'x-better-auth-origin': origin
+                    'x-better-auth-origin': origin,
+                    'x-forwarded-host': request.nextUrl.host,
+                    'x-forwarded-proto': request.nextUrl.protocol.replace(':', '')
                 }
             });
 
