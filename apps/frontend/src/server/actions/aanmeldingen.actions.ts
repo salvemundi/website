@@ -12,7 +12,7 @@ import {
     readUsers
 } from "@directus/sdk";
 
-const NOTIFICATION_API = process.env.NEXT_PUBLIC_NOTIFICATION_API_URL || 'http://localhost:3001/api/send-email';
+const NOTIFICATION_API = process.env.NEXT_PUBLIC_NOTIFICATION_API_URL;
 
 async function getSession() {
     return await auth.api.getSession({
@@ -141,3 +141,4 @@ export async function toggleCheckInAction(signupId: number, eventId: number, che
         return { success: false, error: "Check-in bijwerken mislukt" };
     }
 }
+

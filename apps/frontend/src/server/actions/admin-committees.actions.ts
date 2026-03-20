@@ -3,8 +3,8 @@
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 
-const getDirectusUrl = () => process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
-const getAzureManagementUrl = () => process.env.AZURE_MANAGEMENT_SERVICE_URL || 'http://v7-azure-management:3006';
+const getDirectusUrl = () => process.env.INTERNAL_DIRECTUS_URL;
+const getAzureManagementUrl = () => process.env.AZURE_MANAGEMENT_SERVICE_URL;
 
 const directusHeaders = () => {
     const token = process.env.DIRECTUS_STATIC_TOKEN;
@@ -178,3 +178,5 @@ export async function toggleCommitteeLeader(
 
     return { success: true };
 }
+
+

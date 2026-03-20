@@ -10,7 +10,7 @@ import {
     type PubCrawlSignup 
 } from '@salvemundi/validations';
 
-const getDirectusUrl = () => process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
+const getDirectusUrl = () => process.env.INTERNAL_DIRECTUS_URL;
 
 const getDirectusHeaders = (): HeadersInit => {
     const token = process.env.DIRECTUS_STATIC_TOKEN;
@@ -168,3 +168,4 @@ export async function getKroegentochtSettings() {
     const json = await res.json();
     return json.data;
 }
+

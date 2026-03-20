@@ -12,7 +12,7 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 
 const getDirectusUrl = () =>
-    process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
+    process.env.INTERNAL_DIRECTUS_URL;
 
 const getDirectusHeaders = (): HeadersInit | null => {
     const token = process.env.DIRECTUS_STATIC_TOKEN;
@@ -146,3 +146,4 @@ export async function getWhatsAppGroups(): Promise<WhatsAppGroup[]> {
         return [];
     }
 }
+

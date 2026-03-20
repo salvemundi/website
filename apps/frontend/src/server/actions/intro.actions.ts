@@ -4,8 +4,8 @@ import { introSignupFormSchema, introParentSignupFormSchema, type IntroSignupFor
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 
-const getDirectusUrl = () => process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
-const getMailUrl = () => process.env.INTERNAL_MAIL_URL || 'http://v7-acc-mail-service:3003';
+const getDirectusUrl = () => process.env.INTERNAL_DIRECTUS_URL;
+const getMailUrl = () => process.env.INTERNAL_MAIL_URL;
 
 const getDirectusHeaders = (): HeadersInit => {
     const token = process.env.DIRECTUS_STATIC_TOKEN;
@@ -166,3 +166,5 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm) {
 
     return { success: true };
 }
+
+

@@ -3,22 +3,8 @@
 import { connection } from 'next/server';
 import { documentenSchema, type Document } from '@salvemundi/validations';
 
-// Intern Directus adres — nooit hardcoded, altijd via env
-const getDirectusUrl = () =>
-    process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
-
-// Service token voor interne Directus API-aanroepen.
-const getDirectusHeaders = (): HeadersInit | null => {
-    const token = process.env.DIRECTUS_STATIC_TOKEN;
-    if (!token) {
-        console.warn('[website.actions] DIRECTUS_STATIC_TOKEN missing. Some data might not be available.');
-        return null;
-    }
-    return {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-    };
-};
+import { directus } from '@/lib/directus';
+import { readItems } from '@directus/sdk';
 
 /**
  * Haalt alle documenten op uit de 'documenten' collectie in Directus.
@@ -26,47 +12,27 @@ const getDirectusHeaders = (): HeadersInit | null => {
  * Resultaat is gecached via de 'use cache' directive.
  */
 export async function getDocumenten(): Promise<Document[]> {
-    const directusUrl = getDirectusUrl();
-    const url = `${directusUrl}/items/documents?sort=display_order&limit=50`;
-
-    const headers = getDirectusHeaders();
-    if (!headers) {
-        return [];
-    }
-
-    let res: Response;
     try {
-        res = await fetch(url, {
-            headers,
-            // Data wordt periodiek gecached en gerevalieerd via tags
-            next: { tags: ['documenten'] },
-        });
+        const rawData = await directus.request(readItems('documents', {
+            sort: ['display_order'],
+            limit: 50
+        }));
+
+        // Valideer de Directus response met Zod
+        const parsed = documentenSchema.safeParse(rawData);
+
+        if (!parsed.success) {
+            console.error('[website.actions#getDocumenten] Zod validatie mislukt:', {
+                fieldErrors: parsed.error.flatten().fieldErrors,
+            });
+            return [];
+        }
+
+        return parsed.data;
     } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : String(err);
-        // Loggen met context zodat de fout traceerbaar is in server-logs
-        console.error(`[website.actions#getDocumenten] Fetch mislukt op ${url}: ${message}`);
+        console.error(`[website.actions#getDocumenten] Fetch mislukt:`, err);
         return [];
     }
-
-    if (!res.ok) {
-        console.error(`[website.actions#getDocumenten] Directus fout op ${url}: ${res.status} ${res.statusText}`);
-        await res.text(); // Consume body to prevent hanging promises
-        return [];
-    }
-
-    const json = await res.json();
-
-    // Valideer de Directus response client-side met Zod
-    const parsed = documentenSchema.safeParse(json?.data ?? []);
-
-    if (!parsed.success) {
-        console.error('[website.actions#getDocumenten] Zod validatie mislukt:', {
-            fieldErrors: parsed.error.flatten().fieldErrors,
-        });
-        return [];
-    }
-
-    return parsed.data;
 }
 
 /**
@@ -76,34 +42,14 @@ export async function getDocumenten(): Promise<Document[]> {
  */
 export async function getDisabledRoutes(): Promise<string[]> {
     await connection();
-    const directusUrl = getDirectusUrl();
-    const url = `${directusUrl}/items/feature_flags?filter[is_active][_eq]=false&fields=route_match`;
-
-    const headers = getDirectusHeaders();
-    if (!headers) {
-        return [];
-    }
-
     try {
-        const res = await fetch(url, {
-            headers: {
-                ...headers,
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0',
-            },
-            cache: 'no-store',
-        });
+        const result = await directus.request(readItems('feature_flags', {
+            filter: { is_active: { _eq: false } },
+            fields: ['route_match']
+        }));
 
-        if (!res.ok) {
-            await res.text(); // Consume body
-            return [];
-        }
-
-        const json = await res.json();
-        type FeatureFlag = { route_match?: string | null };
-        return (json?.data ?? [])
-            .map((flag: FeatureFlag) => flag.route_match)
+        return result
+            .map((flag: any) => flag.route_match)
             .filter((route: string | null | undefined): route is string => Boolean(route));
     } catch (err) {
         console.error('[website.actions#getDisabledRoutes] Fout:', err);

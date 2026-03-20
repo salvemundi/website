@@ -14,7 +14,7 @@ import {
 } from '@salvemundi/validations';
 
 const getDirectusUrl = () =>
-    process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
+    process.env.INTERNAL_DIRECTUS_URL;
 
 const getDirectusHeaders = (): HeadersInit | null => {
     const token = process.env.DIRECTUS_STATIC_TOKEN;
@@ -263,3 +263,4 @@ export async function cancelTripSignup(signupId: number): Promise<{ success: boo
         return { success: false, message: 'Interne serverfout bij annuleren.' };
     }
 }
+

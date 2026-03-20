@@ -20,7 +20,7 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
         return { success: false, error: 'Ongeldige data' };
     }
 
-    const directusUrl = process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
+    const directusUrl = process.env.INTERNAL_DIRECTUS_URL;
     const token = process.env.DIRECTUS_STATIC_TOKEN;
 
     if (!token) {
@@ -52,3 +52,4 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
         return { success: false, error: 'Netwerkfout' };
     }
 }
+

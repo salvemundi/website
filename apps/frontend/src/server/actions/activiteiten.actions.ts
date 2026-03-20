@@ -22,7 +22,7 @@ async function getSession() {
     });
 }
 
-const NOTIFICATION_API = process.env.NEXT_PUBLIC_NOTIFICATION_API_URL || 'http://localhost:3001/api/send-email';
+const NOTIFICATION_API = process.env.NEXT_PUBLIC_NOTIFICATION_API_URL!;
 
 async function checkAdminAccess() {
     const session = await getSession();
@@ -270,3 +270,4 @@ export async function updateActivityAction(eventId: number, prevState: any, form
         return { error: 'Interne serverfout', success: false };
     }
 }
+

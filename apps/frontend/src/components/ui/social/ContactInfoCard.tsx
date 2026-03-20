@@ -25,9 +25,8 @@ function DocumentenSkeleton() {
  */
 async function ContactDocumenten() {
     const documenten = await getDocumenten();
-    const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'https://admin.salvemundi.nl';
 
-    return <DocumentenLijst documenten={documenten} directusUrl={directusUrl} />;
+    return <DocumentenLijst documenten={documenten} />;
 }
 
 /**

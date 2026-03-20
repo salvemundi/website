@@ -278,7 +278,7 @@ function TripCard({ trip, onEdit, onDelete, isDeleting }: any) {
                 
                 {trip.image ? (
                     <img 
-                        src={`${process.env.NEXT_PUBLIC_DIRECTUS_URL}/assets/${trip.image}?width=600&height=400&fit=cover`} 
+                        src={`/api/assets/${trip.image}?width=600&height=400&fit=cover`} 
                         alt={trip.name}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />

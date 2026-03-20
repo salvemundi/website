@@ -13,10 +13,10 @@ import { rateLimit } from '../utils/ratelimit';
 
 
 const getFinanceServiceUrl = () =>
-    process.env.INTERNAL_FINANCE_URL || 'http://v7-acc-finance-service:3001';
+    process.env.INTERNAL_FINANCE_URL;
 
 const getDirectusUrl = () =>
-    process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
+    process.env.INTERNAL_DIRECTUS_URL;
 
 const getInternalHeaders = () => {
     const token = process.env.INTERNAL_SERVICE_TOKEN;
@@ -122,7 +122,7 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
                 dateOfBirth: parsed.data.geboortedatum,
                 phoneNumber: parsed.data.telefoon,
                 couponCode: parsed.data.coupon,
-                redirectUrl: `${process.env.PUBLIC_URL || 'http://localhost:3000'}/lidmaatschap/bevestiging${isExpired ? '?type=renewal' : ''}`
+                redirectUrl: `${process.env.PUBLIC_URL}/lidmaatschap/bevestiging${isExpired ? '?type=renewal' : ''}`
             }),
         });
 
@@ -176,3 +176,5 @@ export async function getTransactionStatusAction(transactionId: string) {
         return { status: 'error' };
     }
 }
+
+

@@ -3,10 +3,10 @@ import type { NextRequest } from 'next/server';
 
 import { PUBLIC_ROUTES } from '@/lib/routes';
 
-// In-memory cache for feature flags (Proxy stays loeisnel)
+// In-memory cache voor feature flags — Edge runtime ondersteunt geen Redis.
 let cachedDisabledRoutes: string[] | null = null;
 let cacheTimestamp = 0;
-const CACHE_TTL = 60 * 1000; // 60 seconds
+const CACHE_TTL = 60 * 1000; // 60 seconden
 
 /**
  * Haalt de lijst met uitgeschakelde routes op vanuit de Directus feature_flags collectie.
@@ -19,7 +19,7 @@ async function getDisabledRoutes(): Promise<string[]> {
     }
 
     try {
-        const directusUrl = process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
+        const directusUrl = process.env.INTERNAL_DIRECTUS_URL;
         const token = process.env.DIRECTUS_STATIC_TOKEN;
         
         if (!token) return cachedDisabledRoutes || [];
@@ -28,6 +28,7 @@ async function getDisabledRoutes(): Promise<string[]> {
         const res = await fetch(url, {
             headers: { Authorization: `Bearer ${token}` },
             cache: 'no-store',
+            signal: AbortSignal.timeout(10000), // V7: voorkomt Eternal Skeletons
         });
 
         if (res.ok) {
@@ -80,7 +81,8 @@ export async function proxy(request: NextRequest) {
                     'x-better-auth-origin': origin,
                     'x-forwarded-host': request.nextUrl.host,
                     'x-forwarded-proto': request.nextUrl.protocol.replace(':', '')
-                }
+                },
+                signal: AbortSignal.timeout(10000), // V7: voorkomt Eternal Skeletons
             });
 
             // Handle cases where session exists (200 OK) vs non-existent (204 or body "null")
@@ -95,7 +97,8 @@ export async function proxy(request: NextRequest) {
 
             if (!hasSession) {
                 // GEEN sessie: Redirect DIRECT naar Microsoft Sign-in (Direct Provider Flow)
-                const callbackUrl = encodeURIComponent(pathname);
+                // Behoud volledige URL inclusief query parameters na redirect
+                const callbackUrl = encodeURIComponent(pathname + request.nextUrl.search);
                 const microsoftAuthUrl = new URL(
                     `/api/auth/login/social?provider=microsoft&callbackURL=${callbackUrl}`, 
                     request.url

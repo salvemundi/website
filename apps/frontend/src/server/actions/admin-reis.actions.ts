@@ -15,9 +15,9 @@ import {
 const DIRECTUS_STATIC_TOKEN = process.env.DIRECTUS_STATIC_TOKEN;
 const INTERNAL_SERVICE_TOKEN = process.env.INTERNAL_SERVICE_TOKEN;
 const getDirectusUrl = () =>
-    process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
+    process.env.INTERNAL_DIRECTUS_URL;
 
-const FINANCE_URL = process.env.INTERNAL_FINANCE_URL || 'http://finance-prod:3001';
+const FINANCE_URL = process.env.INTERNAL_FINANCE_URL;
 
 /**
  * Shared Auth Checker to ensure ZERO-TRUST on every action
@@ -656,7 +656,7 @@ export async function sendBulkTripEmail(data: {
         throw new Error('Missing service token');
     }
 
-    const mailUrl = process.env.INTERNAL_MAIL_URL || 'http://mail-service:3003';
+    const mailUrl = process.env.INTERNAL_MAIL_URL;
     
     try {
         const response = await fetch(`${mailUrl}/api/mail/send-bulk`, {
@@ -845,3 +845,5 @@ export async function deleteTrip(id: number) {
         return { success: false, error: error instanceof Error ? error.message : 'Internal server error' };
     }
 }
+
+

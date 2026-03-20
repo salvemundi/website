@@ -67,18 +67,18 @@ export async function checkServiceStatus(url: string, serviceName: string): Prom
 
 export async function getHealthStatuses() {
     // Core Infra
-    const directusUrl = process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
+    const directusUrl = process.env.INTERNAL_DIRECTUS_URL!;
 
     // Services
-    const financeUrl = process.env.INTERNAL_FINANCE_URL || 'http://finance-service:3001';
-    const syncUrl = process.env.INTERNAL_SYNC_URL || 'http://sync-service:3002';
-    const mailUrl = process.env.INTERNAL_MAIL_URL || 'http://mail-service:3003';
+    const financeUrl = process.env.INTERNAL_FINANCE_URL!;
+    const syncUrl = process.env.INTERNAL_SYNC_URL!;
+    const mailUrl = process.env.INTERNAL_MAIL_URL!;
 
     const results = await Promise.all([
         // Shared Core Stack
         checkServiceStatus(`${directusUrl}/server/ping`, 'Core: Directus'),
-        checkPort(process.env.INTERNAL_DB_HOST || 'v7-core-db', 5432, 'Core: Database (Postgres)'),
-        checkPort(process.env.INTERNAL_REDIS_HOST || 'v7-core-redis', 6379, 'Core: Cache (Redis)'),
+        checkPort(process.env.INTERNAL_DB_HOST!, 5432, 'Core: Database (Postgres)'),
+        checkPort(process.env.INTERNAL_REDIS_HOST!, 6379, 'Core: Cache (Redis)'),
 
         // Application Stack
         checkServiceStatus(`${financeUrl}/health`, 'App: Finance Service'),
@@ -88,3 +88,5 @@ export async function getHealthStatuses() {
 
     return results;
 }
+
+
