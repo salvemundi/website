@@ -58,7 +58,6 @@ export const auth = betterAuth({
                     {
                         matcher: (ctx) => ctx.path.includes("get-session"),
                         handler: async (ctx) => {
-                            // Alleen cachen als er een session token is
                             const token = ctx.headers?.get("authorization")?.split(" ")[1] || 
                                           ctx.headers?.get("cookie")?.split("better-auth.session-token=")[1]?.split(";")[0];
                             
@@ -67,13 +66,14 @@ export const auth = betterAuth({
                                     const redis = await getRedis();
                                     const cached = await redis.get(`session:${token}`);
                                     if (cached) {
+                                        const session = JSON.parse(cached);
+                                        // DEBUG: Log cached session status
+                                        console.log(`[AUTH-CACHE] Hit for user: ${session?.user?.email || 'unknown'}`);
                                         return {
                                             response: {
-                                                headers: {
-                                                    "content-type": "application/json"
-                                                }
+                                                headers: { "content-type": "application/json" }
                                             },
-                                            body: JSON.parse(cached),
+                                            body: session,
                                             _flag: "json"
                                         } as any;
                                     }
@@ -92,20 +92,25 @@ export const auth = betterAuth({
                             const token = ctx.headers?.get("authorization")?.split(" ")[1] || 
                                           ctx.headers?.get("cookie")?.split("better-auth.session-token=")[1]?.split(";")[0];
 
-                            // Verrijk de sessie met commissies
                             if (session && typeof session === 'object' && 'user' in session) {
-                                const sessionWithUser = session as { user?: { id?: string; committees?: unknown } };
+                                const sessionWithUser = session as { user?: { id?: string; email?: string; committees?: unknown } };
+                                if (!sessionWithUser.user?.id) return session;
+
                                 try {
+                                    // DEBUG: Log enrichment attempt
+                                    console.log(`[AUTH-ENRICH] Enriching session for: ${sessionWithUser.user.email}`);
+                                    
                                     const { rows } = await pool.query(
                                         `SELECT c.id, c.name, m.is_leader 
                                          FROM committee_members m 
                                          JOIN committees c ON m.committee_id = c.id 
-                                         WHERE m.user_id = $1`,
-                                        [sessionWithUser.user?.id]
+                                         WHERE m.user_id = $1 AND m.is_visible = true`,
+                                        [sessionWithUser.user.id]
                                     );
-                                    if (sessionWithUser.user) sessionWithUser.user.committees = rows;
                                     
-                                    // Sla op in Redis (TTL 5 minuten)
+                                    console.log(`[AUTH-ENRICH] Found ${rows.length} committees for ${sessionWithUser.user.email}`);
+                                    sessionWithUser.user.committees = rows;
+                                    
                                     if (token) {
                                         const redis = await getRedis();
                                         await redis.set(`session:${token}`, JSON.stringify(session), { EX: 300 });
