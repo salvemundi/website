@@ -128,7 +128,8 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
         { name: 'De Vereniging', href: ROUTES.COMMITTEES, icon: Users },
         { name: 'Kroegentocht', href: ROUTES.PUB_CRAWL, icon: Beer },
         { name: 'Reis', href: ROUTES.TRIP, icon: Map },
-        { name: 'Safe Havens', href: ROUTES.STICKERS, icon: MapPin },
+        { name: 'Safe Havens', href: ROUTES.SAFE_HAVENS, icon: Shield },
+        { name: 'Stickers', href: ROUTES.STICKERS, icon: MapPin },
         { name: 'Contact', href: ROUTES.CONTACT, icon: Mail },
     ];
 
@@ -424,13 +425,13 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                     <div className="mt-auto w-full">
                         <div className="flex items-center justify-between px-2">
                             <Link
-                                href={ROUTES.STICKERS}
+                                href={ROUTES.SAFE_HAVENS}
                                 onClick={() => setMenuOpen(false)}
                                 className="inline-flex items-center justify-center h-12 w-12 rounded-full text-[var(--text-main)] shadow-sm"
                                 style={{ backgroundColor: 'color-mix(in srgb, var(--bg-card) 70%, transparent)' }}
                                 aria-label="Safe Havens"
                             >
-                                <MapPin className="h-5 w-5" aria-hidden />
+                                <Shield className="h-5 w-5" aria-hidden />
                                 <span className="sr-only">Safe Havens</span>
                             </Link>
 

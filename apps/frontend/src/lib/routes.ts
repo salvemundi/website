@@ -10,6 +10,7 @@ export const ROUTES = {
     CONTACT: '/contact',
     ACCOUNT: '/profiel',
     STICKERS: '/stickers',
+    SAFE_HAVENS: '/safe-havens',
     ADMIN: '/beheer',
 } as const;
 
@@ -18,6 +19,7 @@ export const PUBLIC_ROUTES: string[] = [
     ROUTES.HOME,
     ROUTES.CONTACT,
     ROUTES.STICKERS,
+    ROUTES.SAFE_HAVENS,
     ROUTES.MEMBERSHIP,
     ROUTES.COMMITTEES,
     ROUTES.ACTIVITIES,
