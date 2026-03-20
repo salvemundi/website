@@ -8,7 +8,7 @@ import { revalidateTag } from "next/cache";
  * Access the internal Directus URL for improved performance and security
  * within the cluster/VPS environment.
  */
-const getDirectusUrl = () => process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
+const getDirectusUrl = () => process.env.INTERNAL_DIRECTUS_URL;
 
 /**
  * Common headers for Directus API calls, using the static service token
@@ -94,3 +94,4 @@ export async function updateSticker(id: number, data: any) {
     const json = await res.json();
     return json.data;
 }
+

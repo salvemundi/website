@@ -12,7 +12,7 @@ import {
     Award,
     TrendingUp
 } from 'lucide-react';
-import { createStickerPublic } from '@/server/actions/stickers.actions';
+import { createStickerPublic, uploadFileAction } from '@/server/actions/stickers.actions';
 import StickerMap from '@/components/ui/maps/StickerMap';
 
 interface StickerMapIslandProps {
@@ -20,7 +20,7 @@ interface StickerMapIslandProps {
     user: any | null;
 }
 
-const DIRECTUS_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'http://localhost:8055';
+// No client-side Directus URL needed anymore.
 
 export default function StickerMapIsland({
     initialStickers,
@@ -67,18 +67,7 @@ export default function StickerMapIsland({
     const uploadImage = async (file: File) => {
         const formData = new FormData();
         formData.append('file', file);
-        
-        const res = await fetch(`${DIRECTUS_URL}/files`, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'Authorization': `Bearer ${process.env.DIRECTUS_STATIC_TOKEN}`
-            }
-        });
-        
-        if (!res.ok) throw new Error('Foto upload mislukt');
-        const json = await res.json();
-        return json.data.id;
+        return await uploadFileAction(formData);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {

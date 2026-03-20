@@ -4,7 +4,7 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import type { IntroBlog, IntroPlanningItem } from '@salvemundi/validations';
 
-const getDirectusUrl = () => process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
+const getDirectusUrl = () => process.env.INTERNAL_DIRECTUS_URL;
 
 const getDirectusHeaders = (): HeadersInit => {
     const token = process.env.DIRECTUS_STATIC_TOKEN;
@@ -256,3 +256,4 @@ export async function sendIntroCustomNotification(
         return { success: false, error: 'Verzenden mislukt' };
     }
 }
+

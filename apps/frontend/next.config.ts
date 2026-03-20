@@ -10,18 +10,6 @@ const nextConfig: NextConfig = {
     images: {
         remotePatterns: [
             {
-                protocol: 'http',
-                hostname: '100.77.182.130',
-                port: '',
-                pathname: '/assets/**',
-            },
-            {
-                protocol: 'http',
-                hostname: '100.77.182.130',
-                port: '8055',
-                pathname: '/assets/**',
-            },
-            {
                 protocol: 'https',
                 hostname: 'admin.salvemundi.nl',
                 pathname: '/assets/**',
@@ -46,7 +34,7 @@ const nextConfig: NextConfig = {
                 headers: [
                     {
                         key: 'X-Frame-Options',
-                        value: 'DENY',
+                        value: 'SAMEORIGIN',
                     },
                     {
                         key: 'X-Content-Type-Options',

@@ -5,18 +5,17 @@ import { createDirectus, rest, staticToken } from '@directus/sdk';
  * Provides the official SDK client configured for internal use.
  */
 
-const getDirectusUrl = () =>
-    process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
+const directusUrl = process.env.INTERNAL_DIRECTUS_URL!;
 
-const getDirectusToken = () => process.env.DIRECTUS_STATIC_TOKEN || '';
+const getDirectusToken = () => process.env.DIRECTUS_STATIC_TOKEN!;
 
-export const directus = createDirectus(getDirectusUrl())
+export const directus = createDirectus(directusUrl)
     .with(staticToken(getDirectusToken()))
     .with(rest());
 
 // Legacy support for direct fetch if needed, but preferred to use the SDK 'directus' object
 export async function directusFetch<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = endpoint.startsWith('http') ? endpoint : `${getDirectusUrl()}${endpoint}`;
+    const url = endpoint.startsWith('http') ? endpoint : `${directusUrl}${endpoint}`;
     
     const response = await fetch(url, {
         ...options,

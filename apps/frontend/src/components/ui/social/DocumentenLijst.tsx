@@ -3,15 +3,13 @@ import type { Document } from '@salvemundi/validations';
 interface DocumentenLijstProps {
     /** Lijst van documenten opgehaald door de server action */
     documenten: Document[];
-    /** Publieke Directus URL voor het opbouwen van asset-links */
-    directusUrl: string;
 }
 
 /**
  * Geeft de lijst van downloadbare documenten weer (statuten, avg, etc.).
  * Pure server-component — geen client-state nodig.
  */
-export default function DocumentenLijst({ documenten, directusUrl }: DocumentenLijstProps) {
+export default function DocumentenLijst({ documenten }: DocumentenLijstProps) {
     if (documenten.length === 0) {
         return (
             <p className="text-[var(--text-muted)] text-[var(--font-size-sm)]">

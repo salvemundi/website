@@ -9,7 +9,8 @@ import 'maplibre-gl/dist/maplibre-gl.css';
  * Public Directus URL for client-side asset loading.
  * Note: We use the public URL here because it's a client component.
  */
-const PUBLIC_DIRECTUS_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'http://localhost:8055';
+// All assets are now loaded through our local proxy to keep infrastructure private.
+const ASSET_PROXY_URL = '/api/assets';
 
 interface StickerMapProps {
     stickers?: any[];
@@ -106,7 +107,7 @@ export default function StickerMap({
                     const ownerId = typeof userObj === 'object' ? userObj.id : userObj;
                     const isMine = Boolean(user && ownerId && String(user.id) === String(ownerId));
                     const avatarUrl = (typeof userObj === 'object' && userObj?.avatar) 
-                        ? `${PUBLIC_DIRECTUS_URL}/assets/${userObj.avatar}?width=100&height=100&fit=cover` 
+                        ? `${ASSET_PROXY_URL}/${userObj.avatar}?width=100&height=100&fit=cover` 
                         : '/img/Logo.png';
 
                     return (
@@ -161,7 +162,7 @@ export default function StickerMap({
                             <div className="flex gap-4 items-center mb-4 pr-6">
                                 <img 
                                     src={typeof popupInfo.user_created === 'object' && popupInfo.user_created.avatar 
-                                        ? `${PUBLIC_DIRECTUS_URL}/assets/${popupInfo.user_created.avatar}?width=80&height=80&fit=cover` 
+                                        ? `${ASSET_PROXY_URL}/${popupInfo.user_created.avatar}?width=80&height=80&fit=cover` 
                                         : '/img/Logo.png'} 
                                     alt="avatar" 
                                     className="w-12 h-12 rounded-xl object-cover ring-2 ring-[var(--theme-purple)]/20" 
@@ -187,7 +188,7 @@ export default function StickerMap({
                                     {showImage ? (
                                         <div className="relative animate-in zoom-in-95 duration-300">
                                             <img 
-                                                src={`${PUBLIC_DIRECTUS_URL}/assets/${popupInfo.image}?width=600&quality=85`} 
+                                                src={`${ASSET_PROXY_URL}/${popupInfo.image}?width=600&quality=85`} 
                                                 alt="Sticker proof" 
                                                 className="w-full rounded-xl shadow-lg border border-[var(--border-color)]/30"
                                             />

@@ -1,106 +1,23 @@
-import { betterAuth, type BetterAuthPlugin } from "better-auth";
+import { betterAuth } from "better-auth";
 import { Pool } from "pg";
-import { createClient } from "redis";
+import { createRedisSessionPlugin } from "./redis-session-plugin";
 
-// Database Pool
+// Database Pool — gebruik object config zodat speciale tekens in wachtwoorden
+// geen URL-parseer problemen veroorzaken (bijv. @ of / in het wachtwoord).
 const pool = new Pool({
-    connectionString: `postgres://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.INTERNAL_DB_HOST}:5432/${process.env.DB_NAME}`
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    host: process.env.INTERNAL_DB_HOST,
+    port: 5432,
+    database: process.env.DB_NAME,
 });
-
-// Redis Client voor sessie-caching (Node.js runtime alleen!)
-const redisUrl = process.env.REDIS_URL || 'redis://v7-core-redis:6379';
-let redisClient: ReturnType<typeof createClient> | null = null;
-
-async function getRedis() {
-    if (!redisClient) {
-        redisClient = createClient({ url: redisUrl });
-        redisClient.on('error', (err: Error) => console.error('Auth Redis Error:', err));
-        await redisClient.connect();
-    }
-    return redisClient;
-}
-
-const redisSessionPlugin = {
-    id: "session-redis-cache",
-    hooks: {
-        before: [
-            {
-                matcher: (ctx) => ctx.path?.includes("get-session"),
-                handler: async (ctx) => {
-                    const requestHeaders = new Headers(ctx.headers || {});
-                    const token = requestHeaders.get("authorization")?.split(" ")[1] || 
-                                  requestHeaders.get("cookie")?.split("better-auth.session-token=")[1]?.split(";")[0];
-                    
-                    if (token) {
-                        try {
-                            const redis = await getRedis();
-                            const cached = await redis.get(`session:${token}`);
-                            if (cached) {
-                                const session = JSON.parse(cached);
-                                // DEBUG: Log cached session status
-                                console.log(`[AUTH-CACHE] Hit for user: ${session?.user?.email || 'unknown'}`);
-                                return {
-                                    response: {
-                                        headers: { "content-type": "application/json" }
-                                    },
-                                    body: session,
-                                    _flag: "json"
-                                } as any;
-                            }
-                        } catch (e) {
-                            console.warn("[AUTH-REDIS] Cache hit failed:", e);
-                        }
-                    }
-                }
-            }
-        ],
-        after: [
-            {
-                matcher: (ctx) => ctx.path?.includes("get-session"),
-                handler: async (ctx) => {
-                    const requestHeaders = new Headers(ctx.headers || {});
-                    const session = (ctx as any).context?.returned || (ctx as any).response || (ctx as any).json || (ctx as any).body;
-                    const token = requestHeaders.get("authorization")?.split(" ")[1] || 
-                                  requestHeaders.get("cookie")?.split("better-auth.session-token=")[1]?.split(";")[0];
-
-                    if (session && typeof session === 'object' && 'user' in session) {
-                        const sessionWithUser = session as { user?: { id?: string; email?: string; committees?: unknown } };
-                        if (!sessionWithUser.user?.id) return session;
-
-                        try {
-                            // DEBUG: Log enrichment attempt
-                            console.log(`[AUTH-ENRICH] Enriching session for: ${sessionWithUser.user.email}`);
-                            
-                            const { rows } = await pool.query(
-                                `SELECT c.id, c.name, m.is_leader 
-                                 FROM committee_members m 
-                                 JOIN committees c ON m.committee_id = c.id 
-                                 WHERE m.user_id = $1 AND m.is_visible = true`,
-                                [sessionWithUser.user.id]
-                            );
-                            
-                            console.log(`[AUTH-ENRICH] Found ${rows.length} committees for ${sessionWithUser.user.email}`);
-                            sessionWithUser.user.committees = rows;
-                            
-                            if (token) {
-                                const redis = await getRedis();
-                                await redis.set(`session:${token}`, JSON.stringify(session), { EX: 300 });
-                            }
-                        } catch (error) {
-                            console.error("[AUTH-PLUGIN] Error enrichment:", error);
-                        }
-                        return session;
-                    }
-                }
-            }
-        ]
-    }
-} as BetterAuthPlugin;
 
 export const auth = betterAuth({
     database: pool,
     baseURL: process.env.BETTER_AUTH_URL,
-    trustedOrigins: process.env.BETTER_AUTH_TRUSTED_ORIGINS ? process.env.BETTER_AUTH_TRUSTED_ORIGINS.split(',') : [process.env.BETTER_AUTH_URL!],
+    trustedOrigins: process.env.BETTER_AUTH_TRUSTED_ORIGINS
+        ? process.env.BETTER_AUTH_TRUSTED_ORIGINS.split(',')
+        : [process.env.BETTER_AUTH_URL!],
     socialProviders: {
         microsoft: {
             clientId: process.env.AZURE_WEBSITEV7_AUTH_CLIENT_ID!,
@@ -128,6 +45,6 @@ export const auth = betterAuth({
         modelName: "auth_accounts"
     },
     plugins: [
-        redisSessionPlugin
+        createRedisSessionPlugin(pool)
     ]
 });

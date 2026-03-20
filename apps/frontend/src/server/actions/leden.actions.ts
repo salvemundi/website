@@ -3,9 +3,11 @@
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
+import { directus } from "@/lib/directus";
+import { readItems, updateItem, updateUser, readUsers, readUser } from "@directus/sdk";
 
-const AZURE_MGMT_URL = process.env.AZURE_MANAGEMENT_SERVICE_URL || 'http://v7-azure-management:3004';
-const AZURE_SYNC_URL = process.env.AZURE_SYNC_SERVICE_URL || 'http://v7-azure-sync:3005';
+const AZURE_MGMT_URL = process.env.AZURE_MANAGEMENT_SERVICE_URL;
+const AZURE_SYNC_URL = process.env.AZURE_SYNC_SERVICE_URL;
 const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN;
 
 async function checkAdminAccess() {
@@ -85,8 +87,10 @@ export async function sendMembershipReminderAction(daysBeforeExpiry: number = 30
     const user = await checkAdminAccess();
     if (!user) return { success: false, error: "Unauthorized" };
 
+    const siteUrl = process.env.PUBLIC_URL || process.env.NEXT_PUBLIC_APP_URL || '';
+
     try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/notifications/send-membership-reminder`, {
+        const res = await fetch(`${siteUrl}/api/notifications/send-membership-reminder`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ daysBeforeExpiry })
@@ -118,10 +122,6 @@ export async function updateMemberProfileAction(
     const admin = await checkAdminAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
 
-    const DIRECTUS_URL = process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
-    const DIRECTUS_TOKEN = process.env.DIRECTUS_STATIC_TOKEN;
-    if (!DIRECTUS_TOKEN) return { success: false, error: "Server configuratie fout" };
-
     // Strip empty strings to avoid overwriting with blank
     const payload: Record<string, string> = {};
     if (data.first_name !== undefined && data.first_name.trim()) payload.first_name = data.first_name.trim();
@@ -134,20 +134,7 @@ export async function updateMemberProfileAction(
     }
 
     try {
-        const res = await fetch(`${DIRECTUS_URL}/users/${directusUserId}`, {
-            method: 'PATCH',
-            headers: {
-                Authorization: `Bearer ${DIRECTUS_TOKEN}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload),
-        });
-
-        if (!res.ok) {
-            const err = await res.text();
-            console.error('[updateMemberProfile] Failed:', err);
-            return { success: false, error: 'Opslaan mislukt' };
-        }
+        await directus.request(updateUser(directusUserId, payload));
 
         revalidatePath(`/beheer/leden/${directusUserId}`);
         return { success: true };
@@ -167,37 +154,27 @@ export async function renewMembershipAction(
     const admin = await checkAdminAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
 
-    const DIRECTUS_URL = process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
-    const DIRECTUS_TOKEN = process.env.DIRECTUS_STATIC_TOKEN;
-    if (!DIRECTUS_TOKEN) return { success: false, error: "Server configuratie fout" };
-
     try {
-        // Get current expiry
-        const userRes = await fetch(`${DIRECTUS_URL}/users/${directusUserId}?fields=membership_expiry`, {
-            headers: { Authorization: `Bearer ${DIRECTUS_TOKEN}` },
-        });
-        if (!userRes.ok) return { success: false, error: 'Kon lid niet ophalen' };
-        const userData = await userRes.json();
-
+        // Get current expiry using SDK
+        const users: any = await directus.request(readUsers({
+            fields: ['membership_expiry'] as any,
+            filter: { id: { _eq: directusUserId } } as any,
+            limit: 1
+        }));
+        const user = users?.[0];
+        
+        if (!user) return { success: false, error: 'Kon lid niet ophalen' };
+        
         // Compute new expiry: extend from current expiry or from today, whichever is later
         const today = new Date();
-        const currentExpiry = userData.data?.membership_expiry ? new Date(userData.data.membership_expiry) : null;
+        const currentExpiry = user.membership_expiry ? new Date(user.membership_expiry) : null;
         const baseDate = currentExpiry && currentExpiry > today ? currentExpiry : today;
 
         const newExpiry = new Date(baseDate);
         newExpiry.setMonth(newExpiry.getMonth() + months);
         const newExpiryStr = newExpiry.toISOString().substring(0, 10);
 
-        const patchRes = await fetch(`${DIRECTUS_URL}/users/${directusUserId}`, {
-            method: 'PATCH',
-            headers: {
-                Authorization: `Bearer ${DIRECTUS_TOKEN}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ membership_expiry: newExpiryStr }),
-        });
-
-        if (!patchRes.ok) return { success: false, error: 'Verlengen mislukt' };
+        await directus.request(updateUser(directusUserId, { membership_expiry: newExpiryStr } as any));
 
         // Trigger targeted Azure sync to update group membership (Leden_Actief etc.)
         if (INTERNAL_TOKEN) {
@@ -215,4 +192,6 @@ export async function renewMembershipAction(
         return { success: false, error: 'Er is een fout opgetreden' };
     }
 }
+
+
 

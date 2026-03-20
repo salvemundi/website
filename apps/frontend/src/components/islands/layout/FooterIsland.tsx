@@ -68,8 +68,8 @@ const FooterIsland: React.FC<FooterIslandProps> = ({ documents, disabledRoutes =
     const { data: session } = authClient.useSession();
     const isAuthenticated = !!session?.user;
 
-    // Publieke Directus URL voor bestandslinks (alleen voor client-zijdige href-opbouw)
-    const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL ?? 'https://admin.salvemundi.nl';
+    // Asset-links conform V7 (server-side proxy)
+    const assetUrl = '/api/assets';
 
     // Navigatielinks conform de V7 Frontend Routes & Server Actions documentatie
     const allPageLinks = [
@@ -116,7 +116,7 @@ const FooterIsland: React.FC<FooterIslandProps> = ({ documents, disabledRoutes =
                             {documents.map((doc) => (
                                 <li key={doc.id}>
                                     <a
-                                        href={`${directusUrl}/assets/${doc.file}`}
+                                        href={`${assetUrl}/${doc.file}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className={`${LINK_CLS} bg-[var(--color-white)]/10`}

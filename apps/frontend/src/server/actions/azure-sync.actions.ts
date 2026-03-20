@@ -4,7 +4,7 @@ import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
 
-const AZURE_SYNC_URL = process.env.AZURE_SYNC_SERVICE_URL || 'http://v7-azure-sync:3005';
+const AZURE_SYNC_URL = process.env.AZURE_SYNC_SERVICE_URL;
 const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN;
 
 async function checkSyncAccess() {
@@ -90,3 +90,4 @@ export async function triggerUserSyncAction(userId: string) {
         return { success: false, error: "Kon geen verbinding maken met de sync service." };
     }
 }
+

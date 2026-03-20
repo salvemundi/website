@@ -1,32 +1,18 @@
 'use server';
 
-import { activiteitenSchema, type Activiteit, eventSignupFormSchema, type EventSignupForm, attendanceSchema, activitiesResponseSchema } from '@salvemundi/validations';
+import { activiteitenSchema, type Activiteit, eventSignupFormSchema, type EventSignupForm } from '@salvemundi/validations';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { revalidateTag } from 'next/cache';
 
+import { directus } from '@/lib/directus';
+import { readItems, createItem, updateItem } from '@directus/sdk';
+
 const getFinanceServiceUrl = () =>
-    process.env.INTERNAL_FINANCE_URL || 'http://v7-acc-finance-service:3001';
+    process.env.INTERNAL_FINANCE_URL;
 
 const getMailServiceUrl = () =>
-    process.env.INTERNAL_MAIL_URL || 'http://v7-acc-mail-service:3002';
-
-// Intern Directus adres — nooit hardcoded, altijd via env
-const getDirectusUrl = () =>
-    process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
-
-// Service token voor interne Directus API-aanroepen.
-const getDirectusHeaders = (): HeadersInit => {
-    const token = process.env.DIRECTUS_STATIC_TOKEN;
-    if (!token) {
-        console.warn('[Activities] DIRECTUS_STATIC_TOKEN missing.');
-    }
-    return {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-    };
-};
+    process.env.INTERNAL_MAIL_URL;
 
 const getInternalHeaders = () => {
     const token = process.env.INTERNAL_SERVICE_TOKEN;
@@ -59,53 +45,16 @@ async function fetchWithTimeout(url: string, options: RequestInit & { timeout?: 
 
 /**
  * Fetch all upcoming and past activities
- * Features 'use cache' to ensure static rendering & caching
  */
 export async function getActivities(): Promise<Activiteit[]> {
-    // 'use cache'; // Temporarily disabled if causing issues with fetch
-
     try {
-        const directusUrl = getDirectusUrl();
-        const headers = getDirectusHeaders();
-        if (!headers) return [];
+        const events: any = await directus.request(readItems('events' as any, {
+            fields: ['*', { committee_id: ['name'] }] as any,
+            filter: { status: { _eq: 'published' } },
+            limit: -1
+        }));
 
-        // Collectie heet 'events' op de VPS.
-        const fields = '*,committee_id.name';
-        const url = `${directusUrl}/items/events?fields=${fields}&limit=-1&filter[status][_eq]=published`;
-
-        const response = await fetch(url, {
-            headers,
-        });
-
-        if (!response.ok) {
-            console.error(`[Activities] Fetch failed with status: ${response.status} for ${url}`);
-            await response.text(); // Consume body to prevent hanging promises
-            return [];
-        }
-
-        const json = await response.json();
-        type RawEvent = {
-            id?: string | number;
-            name?: string | null;
-            description?: string | null;
-            location?: string | null;
-            event_date?: string | null;
-            event_date_end?: string | null;
-            image?: string | null;
-            status?: string | null;
-            price_members?: number | string | null;
-            price_non_members?: number | string | null;
-            only_members?: boolean | null;
-            inschrijf_deadline?: string | null;
-            contact?: string | null;
-            event_time?: string | null;
-            event_time_end?: string | null;
-            committee_id?: { name?: string | null } | any;
-        };
-        const rawData: RawEvent[] = json?.data ?? [];
-
-        // Mapping van DB velden ('events') naar Zod Schema velden ('Activiteit')
-        const mappedData = rawData.map((item) => ({
+        const mappedData = events.map((item: any) => ({
             id: String(item.id ?? ''),
             titel: item.name ?? '',
             beschrijving: item.description ?? null,
@@ -125,7 +74,6 @@ export async function getActivities(): Promise<Activiteit[]> {
         }));
 
         const parsed = activiteitenSchema.safeParse(mappedData);
-
         if (!parsed.success) {
             console.error('[Activities] Zod validation failed:', parsed.error.flatten().fieldErrors);
             return [];
@@ -142,20 +90,14 @@ export async function getActivities(): Promise<Activiteit[]> {
  * Fetch a single activity by ID
  */
 export async function getActivityById(id: string): Promise<Activiteit | null> {
-    const directusUrl = getDirectusUrl();
-    const fields = '*,committee_id.*';
-    const url = `${directusUrl}/items/events/${id}?fields=${fields}`;
-
     try {
-        const response = await fetchWithTimeout(url, {
-            headers: getDirectusHeaders(),
-            next: { tags: [`activity-${id}`] }
-        });
-
-        if (!response.ok) return null;
-
-        const json = await response.json();
-        const item = json?.data;
+        const items: any = await directus.request(readItems('events' as any, {
+            fields: ['*', { committee_id: ['*'] }] as any,
+            filter: { id: { _eq: id } },
+            limit: 1
+        }));
+        
+        const item = items?.[0];
         if (!item) return null;
 
         const mapped = {
@@ -206,8 +148,6 @@ export async function signupForActivity(data: EventSignupForm) {
         });
         const userId = session?.user?.id;
 
-        const directusUrl = getDirectusUrl();
-        
         // 3. Fetch activity to check price and membership
         const activity = await getActivityById(String(parsed.data.event_id));
         if (!activity) return { success: false, error: 'Activiteit niet gevonden' };
@@ -221,25 +161,18 @@ export async function signupForActivity(data: EventSignupForm) {
         const price = (isMember ? activity.price_members : activity.price_non_members) ?? 0;
 
         // 4. Create signup in Directus
-        const signupUrl = `${directusUrl}/items/event_signups`;
         const qrToken = `r-${parsed.data.event_id}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-        const signupRes = await fetchWithTimeout(signupUrl, {
-            method: 'POST',
-            headers: getDirectusHeaders(),
-            body: JSON.stringify({
-                event_id: parsed.data.event_id,
-                participant_name: parsed.data.name,
-                participant_email: parsed.data.email,
-                participant_phone: parsed.data.phoneNumber,
-                user_id: userId || null,
-                payment_status: (price ?? 0) > 0 ? 'open' : 'paid',
-                qr_token: qrToken
-            })
-        });
+        const signup: any = await directus.request(createItem('event_signups' as any, {
+            event_id: parsed.data.event_id,
+            participant_name: parsed.data.name,
+            participant_email: parsed.data.email,
+            participant_phone: parsed.data.phoneNumber,
+            user_id: userId || null,
+            payment_status: (price ?? 0) > 0 ? 'open' : 'paid',
+            qr_token: qrToken
+        }));
 
-        if (!signupRes.ok) throw new Error('Kon inschrijving niet opslaan');
-        const signupJson = await signupRes.json();
-        const signupId = signupJson.data.id;
+        const signupId = signup.id;
 
         // 5. Trigger service (Finance or Mail)
         if ((price ?? 0) > 0) {
@@ -255,7 +188,7 @@ export async function signupForActivity(data: EventSignupForm) {
                     email: parsed.data.email,
                     firstName: parsed.data.name,
                     isContribution: false,
-                    redirectUrl: `${process.env.PUBLIC_URL || 'http://localhost:3000'}/activiteiten/bevestiging?id=${signupId}`
+                    redirectUrl: `${process.env.PUBLIC_URL}/activiteiten/bevestiging?id=${signupId}`
                 })
             });
             const paymentData = await paymentRes.json();
@@ -294,19 +227,11 @@ export async function signupForActivity(data: EventSignupForm) {
  * Get all signups for an activity (Admin only)
  */
 export async function getActivitySignups(eventId: string) {
-    // Auth check should ideally be done here too
-    const directusUrl = getDirectusUrl();
-    const url = `${directusUrl}/items/event_signups?filter[event_id][_eq]=${eventId}&fields=*,user_id.display_name`;
-
     try {
-        const response = await fetchWithTimeout(url, {
-            headers: getDirectusHeaders(),
-            next: { tags: [`signups-${eventId}`] }
-        });
-
-        if (!response.ok) return [];
-        const json = await response.json();
-        return json.data || [];
+        return await directus.request(readItems('event_signups' as any, {
+            filter: { event_id: { _eq: eventId } },
+            fields: ['*', { user_id: ['display_name'] }] as any
+        }));
     } catch (error) {
         console.error(`[Activities] Error fetching signups for ${eventId}:`, error);
         return [];
@@ -317,28 +242,16 @@ export async function getActivitySignups(eventId: string) {
  * Toggle check-in status
  */
 export async function toggleCheckIn(signupId: number, status: boolean) {
-    const directusUrl = getDirectusUrl();
-    const url = `${directusUrl}/items/event_signups/${signupId}`;
-
     try {
-        const response = await fetchWithTimeout(url, {
-            method: 'PATCH',
-            headers: getDirectusHeaders(),
-            body: JSON.stringify({ 
-                checked_in: status,
-                checked_in_at: status ? new Date().toISOString() : null
-            })
-        });
+        const signup: any = await directus.request(updateItem('event_signups' as any, signupId, { 
+            checked_in: status,
+            checked_in_at: status ? new Date().toISOString() : null
+        }));
 
-        if (response.ok) {
-            const json = await response.json();
-            const signup = json.data;
-            if (signup) {
-                revalidateTag(`signups-${signup.event_id}`, 'default');
-            }
-            return { success: true };
+        if (signup) {
+            revalidateTag(`signups-${signup.event_id}`, 'default');
         }
-        return { success: false };
+        return { success: true };
     } catch (error) {
         console.error(`[Activities] Error toggling check-in for ${signupId}:`, error);
         return { success: false };
@@ -347,47 +260,60 @@ export async function toggleCheckIn(signupId: number, status: boolean) {
 
 /**
  * Fetches the current payment and registration status for a given signup.
- * Supports both direct signup IDs and Transaction IDs (Mollie).
- * 
- * Why: This is used by the ConfirmationIsland to show the real-time status 
- * after a payment redirect.
  */
 export async function getSignupStatus(id?: string, transactionId?: string) {
-    const directusUrl = getDirectusUrl();
-
     if (transactionId) {
-        // Resolve the signup ID from the transaction first
-        const transUrl = `${directusUrl}/items/transactions/${transactionId}?fields=id,payment_status,registration_id,registration_type`;
-        const transRes = await fetchWithTimeout(transUrl, { headers: getDirectusHeaders() });
-        if (!transRes.ok) return { status: 'error' };
-        
-        const trans = (await transRes.json()).data;
+        try {
+            const transactions: any = await directus.request(readItems('transactions' as any, {
+                fields: ['id', 'payment_status', 'registration_id', 'registration_type'] as any,
+                filter: { id: { _eq: transactionId } },
+                limit: 1
+            }));
+            const trans = transactions?.[0];
 
-        // Map the registration back to its specific collection for full detail
-        if (trans.registration_type === 'event_signup') {
-            const signupUrl = `${directusUrl}/items/event_signups/${trans.registration_id}?fields=*,event_id.*`;
-            const signupRes = await fetchWithTimeout(signupUrl, { headers: getDirectusHeaders() });
-            if (!signupRes.ok) return { status: trans.payment_status, transaction: trans };
-            return { status: trans.payment_status, signup: (await signupRes.json()).data, transaction: trans };
-        } else if (trans.registration_type === 'pub_crawl_signup') {
-            const signupUrl = `${directusUrl}/items/pub_crawl_signups/${trans.registration_id}?fields=*,pub_crawl_event_id.*,tickets.*`;
-            const signupRes = await fetchWithTimeout(signupUrl, { headers: getDirectusHeaders() });
-            if (!signupRes.ok) return { status: trans.payment_status, transaction: trans };
-            const signup = (await signupRes.json()).data;
-            if (signup) {
-                signup.amount_tickets = signup.tickets?.length || 1;
+            if (!trans) return { status: 'error' };
+
+            if (trans.registration_type === 'event_signup') {
+                const signups: any = await directus.request(readItems('event_signups' as any, {
+                    fields: ['*', { event_id: ['*'] }] as any,
+                    filter: { id: { _eq: trans.registration_id } },
+                    limit: 1
+                }));
+                const signup = signups?.[0];
+                return { status: trans.payment_status, signup, transaction: trans };
+            } else if (trans.registration_type === 'pub_crawl_signup') {
+                const signups: any = await directus.request(readItems('pub_crawl_signups' as any, {
+                    fields: ['*', { pub_crawl_event_id: ['*'] }, { tickets: ['*'] }] as any,
+                    filter: { id: { _eq: trans.registration_id } },
+                    limit: 1
+                }));
+                const signup = signups?.[0];
+                if (signup) {
+                    signup.amount_tickets = signup.tickets?.length || 1;
+                }
+                return { status: trans.payment_status, signup, transaction: trans };
+            } else if (trans.registration_type === 'membership') {
+                return { status: trans.payment_status, transaction: trans, isMembership: true };
             }
-            return { status: trans.payment_status, signup, transaction: trans };
-        } else if (trans.registration_type === 'membership') {
-            return { status: trans.payment_status, transaction: trans, isMembership: true };
+            return { status: trans.payment_status, transaction: trans };
+        } catch (e) {
+            console.error('[Activities] Error resolving transaction:', e);
+            return { status: 'error' };
         }
-        return { status: trans.payment_status, transaction: trans };
     } else if (id) {
-        const url = `${directusUrl}/items/event_signups/${id}?fields=*,event_id.*`;
-        const response = await fetchWithTimeout(url, { headers: getDirectusHeaders() });
-        if (!response.ok) return { status: 'error' };
-        const json = await response.json();
-        return { status: json.data?.payment_status || 'open', signup: json.data };
+        try {
+            const signups: any = await directus.request(readItems('event_signups' as any, {
+                fields: ['*', { event_id: ['*'] }] as any,
+                filter: { id: { _eq: id } },
+                limit: 1
+            }));
+            const signup = signups?.[0];
+            if (!signup) return { status: 'error' };
+            return { status: signup.payment_status || 'open', signup };
+        } catch (e) {
+            console.error('[Activities] Error fetching signup status:', e);
+            return { status: 'error' };
+        }
     }
 
     return { status: 'error' };
@@ -395,23 +321,20 @@ export async function getSignupStatus(id?: string, transactionId?: string) {
 
 /**
  * Retrieves all valid (paid) tickets for the authenticated user.
- * 
- * Why: Powers the 'Mijn Tickets' portal, allowing users to quickly access 
- * their QR codes on the go.
  */
 export async function getMyTickets() {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) return [];
 
-    const directusUrl = getDirectusUrl();
-    // We only show 'paid' tickets as those are the only ones valid for entry
-    const url = `${directusUrl}/items/event_signups?filter[user_id][_eq]=${session.user.id}&filter[payment_status][_eq]=paid&fields=*,event_id.*&sort=-date_created`;
-
     try {
-        const response = await fetchWithTimeout(url, { headers: getDirectusHeaders() });
-        if (!response.ok) return [];
-        const json = await response.json();
-        return json.data || [];
+        return await directus.request(readItems('event_signups' as any, {
+            filter: { 
+                user_id: { _eq: session.user.id },
+                payment_status: { _eq: 'paid' }
+            },
+            fields: ['*', { event_id: ['*'] }] as any,
+            sort: ['-date_created'] as any
+        }));
     } catch (error) {
         console.error('[Activities] Error fetching user tickets:', error);
         return [];

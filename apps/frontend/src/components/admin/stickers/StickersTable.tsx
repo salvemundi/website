@@ -19,7 +19,7 @@ interface StickersTableProps {
     onDelete: (id: number) => void;
 }
 
-const DIRECTUS_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'http://localhost:8055';
+const ASSET_URL = '/api/assets';
 
 export default function StickersTable({ stickers, onDelete }: StickersTableProps) {
     const [searchQuery, setSearchQuery] = useState('');
@@ -105,11 +105,11 @@ export default function StickersTable({ stickers, onDelete }: StickersTableProps
                                         <td className="px-6 py-4 text-center">
                                             {sticker.image ? (
                                                 <button 
-                                                    onClick={() => setSelectedImage(`${DIRECTUS_URL}/assets/${sticker.image}`)}
+                                                    onClick={() => setSelectedImage(`${ASSET_URL}/${sticker.image}`)}
                                                     className="relative w-12 h-12 rounded-[var(--radius-lg)] overflow-hidden border border-[var(--border-color)] hover:border-[var(--theme-purple)] transition-all group/img"
                                                 >
                                                     <img 
-                                                        src={`${DIRECTUS_URL}/assets/${sticker.image}?width=100&height=100&fit=cover`} 
+                                                        src={`${ASSET_URL}/${sticker.image}?width=100&height=100&fit=cover`} 
                                                         alt="Sticker"
                                                         className="w-full h-full object-cover group-hover/img:scale-110 transition-transform"
                                                     />

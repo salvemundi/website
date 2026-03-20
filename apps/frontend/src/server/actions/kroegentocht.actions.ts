@@ -13,10 +13,10 @@ import { headers } from 'next/headers';
 import { revalidateTag } from 'next/cache';
 
 const getFinanceServiceUrl = () =>
-    process.env.INTERNAL_FINANCE_URL || 'http://v7-acc-finance-service:3001';
+    process.env.INTERNAL_FINANCE_URL;
 
 const getDirectusUrl = () =>
-    process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
+    process.env.INTERNAL_DIRECTUS_URL;
 
 const getInternalHeaders = () => {
     const token = process.env.INTERNAL_SERVICE_TOKEN;
@@ -206,3 +206,5 @@ export async function getKroegentochtStatus(signupId: string) {
         return { status: 'error' };
     }
 }
+
+

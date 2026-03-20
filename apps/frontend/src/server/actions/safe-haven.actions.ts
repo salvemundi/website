@@ -4,89 +4,44 @@ import { safeHavensSchema, type SafeHaven } from '@salvemundi/validations';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 
-// Intern Directus adres — nooit hardcoded, altijd via env
-const getDirectusUrl = () =>
-    process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
-
-/**
- * Helper voor Directus headers met de Service Token.
- */
-const getDirectusHeaders = (): HeadersInit | null => {
-    const token = process.env.DIRECTUS_STATIC_TOKEN;
-    if (!token) {
-        console.warn('[safe-haven.actions] DIRECTUS_STATIC_TOKEN is missing.');
-        return null;
-    }
-    return {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-    };
-};
+import { directus } from '@/lib/directus';
+import { readItems } from '@directus/sdk';
 
 /**
  * Interne helper die de data uit Directus ophaalt.
  * Deze functie is volledig statisch voor de cache en mag GEEN dynamic metadata (headers, cookies) bevatten.
  */
 async function fetchSafeHavensFromDirectus(): Promise<SafeHaven[]> {
-    const directusUrl = getDirectusUrl();
-    const url = `${directusUrl}/items/safe_havens?limit=50`;
-
-    let res: Response;
     try {
-        const headersInit = getDirectusHeaders();
-        if (!headersInit) {
+        const rawData = await directus.request(readItems('safe_havens', {
+            limit: 50
+        }));
+
+        // Mapping van DB velden naar Zod Schema velden
+        const mappedData = rawData.map((item: any) => ({
+            id: item.id ?? '',
+            naam: item.contact_name ?? '',
+            email: item.email ?? null,
+            telefoon: item.phone_number ?? null,
+            beschrijving: null, // Beschrijving ontbreekt in huidige DB
+            afbeelding_id: item.image ?? null,
+            status: 'published',
+            sort: item.sort ?? 0,
+        }));
+
+        const parsed = safeHavensSchema.safeParse(mappedData);
+        if (!parsed.success) {
+            console.error('[safe-haven.actions#fetchSafeHavensFromDirectus] Zod validatie mislukt:', {
+                fieldErrors: parsed.error.flatten().fieldErrors,
+            });
             return [];
         }
-        res = await fetch(url, {
-            headers: headersInit,
-            next: { tags: ['safe_havens'] },
-        });
+
+        return parsed.data;
     } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : String(err);
-        console.error('[safe-haven.actions#fetchSafeHavensFromDirectus] Fetch mislukt:', { url, message });
+        console.error('[safe-haven.actions#fetchSafeHavensFromDirectus] Fetch mislukt:', err);
         return [];
     }
-
-    if (!res.ok) {
-        console.error('[safe-haven.actions#fetchSafeHavensFromDirectus] Directus fout:', {
-            url,
-            status: res.status,
-        });
-        return [];
-    }
-
-    const json = await res.json();
-    type RawSafeHaven = {
-        id?: string | number;
-        contact_name?: string | null;
-        email?: string | null;
-        phone_number?: string | null;
-        image?: string | null;
-        sort?: number | null;
-    };
-    const rawData: RawSafeHaven[] = json?.data ?? [];
-
-    // Mapping van DB velden naar Zod Schema velden
-    const mappedData = rawData.map((item) => ({
-        id: item.id ?? '',
-        naam: item.contact_name ?? '',
-        email: item.email ?? null,
-        telefoon: item.phone_number ?? null,
-        beschrijving: null, // Beschrijving ontbreekt in huidige DB
-        afbeelding_id: item.image ?? null,
-        status: 'published',
-        sort: item.sort ?? 0,
-    }));
-
-    const parsed = safeHavensSchema.safeParse(mappedData);
-    if (!parsed.success) {
-        console.error('[safe-haven.actions#fetchSafeHavensFromDirectus] Zod validatie mislukt:', {
-            fieldErrors: parsed.error.flatten().fieldErrors,
-        });
-        return [];
-    }
-
-    return parsed.data;
 }
 
 /**

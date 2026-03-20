@@ -12,6 +12,7 @@ import { headers } from 'next/headers';
 import { connection } from 'next/server';
 
 export const metadata: Metadata = {
+    metadataBase: new URL(process.env.PUBLIC_URL!),
     title: 'Salve Mundi V7',
     description: 'SV Salve Mundi — Digitaal platform voor Fontys ICT.',
 };

@@ -22,7 +22,7 @@ export async function GET(
         return new NextResponse('Invalid Asset ID', { status: 400 });
     }
 
-    const directusUrl = process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
+    const directusUrl = process.env.INTERNAL_DIRECTUS_URL;
     const token = process.env.DIRECTUS_STATIC_TOKEN;
 
     if (!token) {

@@ -4,34 +4,24 @@ import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag } from "next/cache";
 
-/**
- * Publicly accessible stickers should use the internal URL when called from the server
- * to minimize latency and bypass external firewalls.
- */
-const getDirectusUrl = () => process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
-
-/**
- * Access tokens are managed via environment variables to keep our API calls 
- * authenticated without exposing credentials to the client.
- */
-const getDirectusHeaders = () => ({
-    'Authorization': `Bearer ${process.env.DIRECTUS_STATIC_TOKEN}`,
-    'Content-Type': 'application/json'
-});
+import { directus } from "@/lib/directus";
+import { readItems, createItem, uploadFiles } from "@directus/sdk";
 
 /**
  * Fetches all stickers marked as published for the public map view.
  * We include avatar and identity info to enable the leaderboard and custom markers.
  */
 export async function getPublicStickers() {
-    const res = await fetch(`${getDirectusUrl()}/items/stickers?fields=*,user_created.id,user_created.first_name,user_created.last_name,user_created.avatar&sort=-date_created&limit=-1`, {
-        headers: getDirectusHeaders(),
-        next: { tags: ['stickers'] }
-    });
-
-    if (!res.ok) throw new Error('Kon stickers niet ophalen');
-    const json = await res.json();
-    return json.data || [];
+    try {
+        return await directus.request(readItems('stickers', {
+            fields: ['*', { user_created: ['id', 'first_name', 'last_name', 'avatar'] }] as any,
+            sort: ['-date_created'],
+            limit: -1
+        }));
+    } catch (error) {
+        console.error('[Stickers] Error fetching stickers:', error);
+        return [];
+    }
 }
 
 /**
@@ -47,29 +37,33 @@ export async function createStickerPublic(data: any) {
         throw new Error('Je moet ingelogd zijn om een sticker toe te voegen.');
     }
 
-    /**
-     * We explicitly set user_created because we are using a static service token 
-     * which would otherwise attribute all stickers to the service account itself.
-     */
     const payload = {
         ...data,
         user_created: session.user.id
     };
 
-    const res = await fetch(`${getDirectusUrl()}/items/stickers`, {
-        method: 'POST',
-        headers: getDirectusHeaders(),
-        body: JSON.stringify(payload)
-    });
+    try {
+        const result = await directus.request(createItem('stickers', payload));
 
-    if (!res.ok) {
-        const err = await res.json();
-        console.error('Sticker create error:', err);
+        // Immediately update both admin and public views.
+        revalidateTag('stickers', 'default');
+        return result;
+    } catch (error) {
+        console.error('[Stickers] Sticker create error:', error);
         throw new Error('Kon sticker niet opslaan.');
     }
+}
 
-    // Immediately update both admin and public views.
-    revalidateTag('stickers', 'default');
-    const json = await res.json();
-    return json.data;
+/**
+ * Uploads a file to Directus from the server.
+ * This allows client components to upload files without needing DIRECTUS_STATIC_TOKEN in the browser.
+ */
+export async function uploadFileAction(formData: FormData) {
+    try {
+        const result = await directus.request(uploadFiles(formData));
+        return result.id;
+    } catch (error) {
+        console.error('[Stickers] Photo upload failed:', error);
+        throw new Error('Foto upload mislukt op de server.');
+    }
 }

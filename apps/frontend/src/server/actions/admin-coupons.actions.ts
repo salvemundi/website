@@ -4,7 +4,7 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 
-const getDirectusUrl = () => process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
+const getDirectusUrl = () => process.env.INTERNAL_DIRECTUS_URL;
 const getToken = () => {
     const token = process.env.DIRECTUS_STATIC_TOKEN;
     if (!token) throw new Error('DIRECTUS_STATIC_TOKEN is missing');
@@ -130,3 +130,4 @@ export async function toggleCouponActive(id: number, currentActive: boolean): Pr
     revalidatePath('/beheer/coupons');
     return { success: true };
 }
+
