@@ -15,6 +15,8 @@ export * from './schema/reis.zod.js';
 export * from './schema/intro.zod.js';
 export * from './schema/membership.zod.js';
 export * from './schema/kroegentocht.zod.js';
+export * from './schema/admin.zod.js';
+export * from './schema/audit.zod.js';
 export * from './security.js';
 
 
@@ -53,10 +55,17 @@ export type ReisTrip = z.infer<typeof reisTripSchema>;
 export type ReisTripSignup = z.infer<typeof reisTripSignupSchema>;
 export type ReisSignupForm = z.infer<typeof reisSignupFormSchema>;
 
-import { introSignupFormSchema, introParentSignupFormSchema } from './schema/intro.zod.js';
+import {
+    introSignupFormSchema,
+    introParentSignupFormSchema,
+    introBlogSchema,
+    introPlanningSchema,
+} from './schema/intro.zod.js';
 
 export type IntroSignupForm = z.infer<typeof introSignupFormSchema>;
 export type IntroParentSignupForm = z.infer<typeof introParentSignupFormSchema>;
+export type IntroBlog = z.infer<typeof introBlogSchema>;
+export type IntroPlanningItem = z.infer<typeof introPlanningSchema>;
 
 import { signupSchema, validateCouponSchema, transactionStatusSchema } from './schema/membership.zod.js';
 
@@ -64,5 +73,6 @@ export type SignupFormData = z.infer<typeof signupSchema>;
 export type ValidateCoupon = z.infer<typeof validateCouponSchema>;
 export type TransactionStatus = z.infer<typeof transactionStatusSchema>;
 
-import { eventSignupFormSchema } from './schema/activity.zod.js';
+import { eventSignupFormSchema, activityAdminSchema } from './schema/activity.zod.js';
 export type EventSignupForm = z.infer<typeof eventSignupFormSchema>;
+export type ActivityAdminValue = z.infer<typeof activityAdminSchema>;

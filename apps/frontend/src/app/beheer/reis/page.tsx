@@ -16,7 +16,7 @@ interface AdminReisPageProps {
 
 export default async function AdminReisPage({ searchParams }: AdminReisPageProps) {
     return (
-        <div className="min-h-screen bg-[#f3f4f6]">
+        <div className="min-h-screen bg-[var(--bg-main)]">
             {/* 1. Static Hoisting: PageHeader loaded outside of Suspense perfectly static */}
             <PageHeader
                 title="Reis Aanmeldingen"

@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "fastify start -w -l info src/server.ts",
-        "build": "tsc && cp -r src/templates dist/"
+        "build": "tsc && node -e \"require('fs').cpSync('src/templates', 'dist/templates', {recursive: true})\""
     },
     "dependencies": {
         "@azure/identity": "^4.13.0",

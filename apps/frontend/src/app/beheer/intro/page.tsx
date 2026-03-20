@@ -1,20 +1,60 @@
-import Link from 'next/link';
+import { Suspense } from 'react';
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 
-export default function Page() {
+import PageHeader from '@/components/ui/layout/PageHeader';
+import IntroManagementIsland from '@/components/islands/admin/IntroManagementIsland';
+import { auth } from '@/server/auth/auth';
+import {
+    getIntroSignups,
+    getIntroParentSignups,
+    getIntroBlogs,
+    getIntroPlanning,
+} from '@/server/actions/admin-intro.actions';
+import { getIntroSettings } from '@/server/actions/intro.actions';
+
+export const metadata: Metadata = {
+    title: 'Intro Beheer | SV Salve Mundi',
+};
+
+export default async function BeheerIntroPage() {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user) redirect('/login');
+
+    const [signups, parents, blogs, planning, settings] = await Promise.all([
+        getIntroSignups().catch(() => []),
+        getIntroParentSignups().catch(() => []),
+        getIntroBlogs().catch(() => []),
+        getIntroPlanning().catch(() => []),
+        getIntroSettings().catch(() => ({ show: false })),
+    ]);
+
     return (
-        <div className="flex min-h-[70vh] flex-col items-center justify-center p-8 text-center">
-            <h1 className="text-4xl font-bold mb-4 text-blue-900">Hello World</h1>
-            <p className="text-xl text-gray-600 mb-8">Route: /beheer/intro</p>
+        <div className="min-h-screen bg-[var(--bg-main)]">
+            <PageHeader
+                title="Intro Beheer"
+                description="Beheer aanmeldingen, ouders, blogs en de introweek-planning."
+                backLink="/beheer"
+            />
+            <Suspense fallback={<IntroPageLoader />}>
+                <IntroManagementIsland
+                    initialSignups={signups}
+                    initialParents={parents}
+                    initialBlogs={blogs}
+                    initialPlanning={planning}
+                    initialIntroVisible={settings.show ?? false}
+                />
+            </Suspense>
+        </div>
+    );
+}
 
-            <div className="mt-8 w-full max-w-xl text-left">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4 border-b pb-2">Sub-Routes</h2>
-                <div className="grid grid-cols-1 gap-4">
-                    <Link href="/beheer/intro/blogs" className="p-4 bg-white border rounded shadow-sm hover:shadow-md transition">
-                        <h3 className="font-semibold text-blue-800">/beheer/intro/blogs</h3>
-                        <p className="text-sm text-gray-500 mt-1">CMS voor Intro Blogs</p>
-                    </Link>
-                </div>
-            </div>
+function IntroPageLoader() {
+    return (
+        <div className="container mx-auto px-4 py-16 flex flex-col items-center justify-center">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-[var(--theme-purple)]/20 border-t-[var(--theme-purple)] mb-4" />
+            <p className="text-[var(--text-muted)] font-bold uppercase tracking-widest text-xs">Intro laden...</p>
         </div>
     );
 }

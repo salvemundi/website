@@ -1,44 +1,35 @@
-import React, { Suspense } from 'react';
+import { Suspense } from 'react';
+import { notFound } from 'next/navigation';
 import PageHeader from '@/components/ui/layout/PageHeader';
-import ConfirmationIsland from '@/components/islands/membership/ConfirmationIsland';
-import { Loader2 } from 'lucide-react';
+import ConfirmationIsland from '@/components/islands/activities/ConfirmationIsland';
 
-export const metadata = {
-    title: 'Bevestiging | Salve Mundi',
-};
-
-async function ConfirmationWrapper({ searchParams }: { searchParams: Promise<{ transaction_id?: string, type?: string }> }) {
-    const params = await searchParams;
-    const transactionId = params.transaction_id || null;
-    const type = params.type || null;
-
-    return (
-        <div className="flex flex-col items-center justify-center p-6 sm:p-10 mb-20 animate-in fade-in duration-700">
-            <ConfirmationIsland transactionId={transactionId} type={type} />
-        </div>
-    );
+interface PageProps {
+    searchParams: Promise<{ id?: string; transaction_id?: string }>;
 }
 
-export default function ConfirmationPage({ searchParams }: { searchParams: Promise<{ transaction_id?: string, type?: string }> }) {
-    return (
-        <>
-            <PageHeader
-                title="BEVESTIGING"
-                backgroundImage="/img/backgrounds/homepage-banner.jpg"
-                contentPadding="py-20"
-                imageFilter="brightness(0.65)"
-            />
+export default async function LidmaatschapConfirmationPage({ searchParams }: PageProps) {
+    const { id, transaction_id } = await searchParams;
 
-            <main className="max-w-app mx-auto min-h-[40vh]">
+    if (!id && !transaction_id) notFound();
+
+    return (
+        <main className="min-h-screen bg-[var(--bg-main)]">
+            <PageHeader 
+                title="BEVESTIGING"
+                backgroundImage="/img/backgrounds/Kroto2025.jpg"
+                variant="centered"
+                contentPadding="py-16"
+            />
+            <div className="container mx-auto px-4 max-w-7xl">
                 <Suspense fallback={
-                    <div className="flex flex-col items-center justify-center py-20 animate-pulse">
-                        <Loader2 className="w-16 h-16 text-theme-purple animate-spin mb-4" />
-                        <div className="h-4 w-32 bg-purple-100 rounded" />
+                    <div className="flex flex-col items-center justify-center py-40 animate-pulse">
+                        <div className="w-16 h-16 bg-[var(--theme-purple)]/10 rounded-full mb-4" />
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Lidmaatschap verifiëren...</p>
                     </div>
                 }>
-                    <ConfirmationWrapper searchParams={searchParams} />
+                    <ConfirmationIsland initialId={id} initialTransactionId={transaction_id} />
                 </Suspense>
-            </main>
-        </>
+            </div>
+        </main>
     );
 }

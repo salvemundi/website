@@ -1,26 +1,28 @@
+import { createDirectus, rest, staticToken } from '@directus/sdk';
+
 /**
  * Directus utility for V7.
- * Provides a fetch wrapper that handles internal URLs and static tokens.
+ * Provides the official SDK client configured for internal use.
  */
 
 const getDirectusUrl = () =>
     process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
 
-const getDirectusHeaders = () => {
-    const token = process.env.DIRECTUS_STATIC_TOKEN;
-    return {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-    };
-};
+const getDirectusToken = () => process.env.DIRECTUS_STATIC_TOKEN || '';
 
+export const directus = createDirectus(getDirectusUrl())
+    .with(staticToken(getDirectusToken()))
+    .with(rest());
+
+// Legacy support for direct fetch if needed, but preferred to use the SDK 'directus' object
 export async function directusFetch<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = endpoint.startsWith('http') ? endpoint : `${getDirectusUrl()}${endpoint}`;
     
     const response = await fetch(url, {
         ...options,
         headers: {
-            ...getDirectusHeaders(),
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getDirectusToken()}`,
             ...options.headers,
         },
     });
@@ -33,9 +35,3 @@ export async function directusFetch<T = any>(endpoint: string, options: RequestI
     const json = await response.json();
     return json.data as T;
 }
-
-export const createDirectusClient = () => {
-    return {
-        fetch: directusFetch,
-    };
-};

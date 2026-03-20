@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Search, Download, Users, Plane, Edit, Trash2, Loader2, AlertCircle, UserCheck, UserX, Send } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Trip, TripSignup, TripSignupActivity } from '@salvemundi/validations';
-import { updateSignupStatus, deleteSignup, sendPaymentEmail, getSignupActivities } from '@/server/actions/admin-reis.actions';
+import { updateSignupStatus, deleteTripSignup, sendPaymentEmail, getSignupActivities } from '@/server/actions/admin-reis.actions';
 
 interface AdminReisTableIslandProps {
     initialSignups: TripSignup[];
@@ -109,7 +109,7 @@ export default function AdminReisTableIsland({ initialSignups, trip, stats }: Ad
 
         setActionStates(prev => ({ ...prev, delete: new Set(prev.delete).add(id) }));
         try {
-            const res = await deleteSignup(id);
+            const res = await deleteTripSignup(id);
             if (res.success) {
                 setSignups(signups.filter(s => s.id !== id));
             } else {
@@ -229,22 +229,22 @@ export default function AdminReisTableIsland({ initialSignups, trip, stats }: Ad
 
     const getPaymentStatus = (signup: TripSignup) => {
         if (signup.full_payment_paid) {
-            return { label: 'Volledig betaald', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' };
+            return { label: 'Volledig betaald', color: 'bg-[var(--theme-success)]/10 text-[var(--theme-success)]' };
         } else if (signup.deposit_paid) {
-            return { label: 'Aanbetaling voldaan', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' };
+            return { label: 'Aanbetaling voldaan', color: 'bg-[var(--theme-warning)]/10 text-[var(--theme-warning)]' };
         } else {
-            return { label: 'Nog geen betaling', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' };
+            return { label: 'Nog geen betaling', color: 'bg-[var(--theme-error)]/10 text-[var(--theme-error)]' };
         }
     };
 
     const getStatusBadge = (status: string) => {
         const statusMap: Record<string, { label: string; color: string }> = {
-            registered: { label: 'Geregistreerd', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' },
-            waitlist: { label: 'Wachtlijst', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300' },
-            confirmed: { label: 'Bevestigd', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' },
-            cancelled: { label: 'Geannuleerd', color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' },
+            registered: { label: 'Geregistreerd', color: 'bg-[var(--theme-info)]/10 text-[var(--theme-info)]' },
+            waitlist: { label: 'Wachtlijst', color: 'bg-[var(--theme-warning)]/10 text-[var(--theme-warning)]' },
+            confirmed: { label: 'Bevestigd', color: 'bg-[var(--theme-success)]/10 text-[var(--theme-success)]' },
+            cancelled: { label: 'Geannuleerd', color: 'bg-[var(--text-light)]/10 text-[var(--text-light)]' },
         };
-        return statusMap[status] || { label: status, color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' };
+        return statusMap[status] || { label: status, color: 'bg-[var(--text-light)]/10 text-[var(--text-light)]' };
     };
 
     return (
@@ -345,7 +345,7 @@ export default function AdminReisTableIsland({ initialSignups, trip, stats }: Ad
                     <button
                         onClick={downloadExcel}
                         disabled={filteredSignups.length === 0}
-                        className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto">
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-[var(--theme-success)] text-white rounded-lg hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto">
                         <Download className="h-5 w-5" />
                         Export naar Excel
                     </button>
@@ -398,7 +398,7 @@ export default function AdminReisTableIsland({ initialSignups, trip, stats }: Ad
                                                     {signup.date_of_birth ? format(new Date(signup.date_of_birth), 'dd-MM-yyyy') : '-'}
                                                 </td>
                                                 <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap hidden md:table-cell">
-                                                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${signup.role === 'crew' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>
+                                                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${signup.role === 'crew' ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)]' : 'bg-[var(--text-light)]/10 text-[var(--text-light)]'}`}>
                                                         {signup.role === 'crew' ? 'Crew' : 'Deelnemer'}
                                                     </span>
                                                 </td>
@@ -425,7 +425,11 @@ export default function AdminReisTableIsland({ initialSignups, trip, stats }: Ad
                                                 </td>
                                                 <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right text-sm font-medium">
                                                     <div className="flex justify-end gap-1 sm:gap-2">
-                                                        <button disabled className="text-theme-purple opacity-50 p-1 sm:p-0" title="Bewerken onbeschikbaar in V7 migration demo">
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); router.push(`/beheer/reis/deelnemer/${signup.id}`); }}
+                                                            className="text-theme-purple hover:text-theme-purple-dark p-1 sm:p-0" 
+                                                            title="Bewerken"
+                                                        >
                                                             <Edit className="h-4 w-4 sm:h-5 sm:w-5" />
                                                         </button>
                                                         <button

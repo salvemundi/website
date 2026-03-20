@@ -13,4 +13,6 @@ export * from './schema/reis.zod.js';
 export * from './schema/intro.zod.js';
 export * from './schema/membership.zod.js';
 export * from './schema/kroegentocht.zod.js';
+export * from './schema/admin.zod.js';
+export * from './schema/audit.zod.js';
 export * from './security.js';

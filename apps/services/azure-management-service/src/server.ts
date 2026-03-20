@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import dotenv from 'dotenv';
 import provisioningRoutes from './routes/provisioning.js';
+import groupRoutes from './routes/groups.js';
 
 dotenv.config();
 
@@ -10,6 +11,7 @@ const fastify = Fastify({
 
 // Register Routes
 fastify.register(provisioningRoutes, { prefix: '/api/provisioning' });
+fastify.register(groupRoutes, { prefix: '/api/groups' });
 
 fastify.get('/health', async () => {
     return { status: 'ok', service: 'azure-management-service' };

@@ -1,0 +1,164 @@
+'use server';
+
+import { auth } from "@/server/auth/auth";
+import { headers } from "next/headers";
+import { revalidateTag, revalidatePath } from "next/cache";
+import { directus } from "@/lib/directus";
+import { 
+    readItems, 
+    updateItem,
+    readSingleton
+} from "@directus/sdk";
+import { PendingSignup } from "@salvemundi/validations";
+
+async function checkAuditAccess() {
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
+    if (!session || !session.user) return null;
+    
+    const user = session.user as any;
+    const memberships = user.committees || [];
+    const isAdmin = memberships.some((c: any) => {
+        const name = (c?.name || '').toString().toLowerCase();
+        return name.includes('bestuur') || name.includes('ict') || name.includes('kas') || name.includes('kandi');
+    });
+
+    if (!isAdmin) return null;
+    return user;
+}
+
+export async function getPendingSignupsAction() {
+    const admin = await checkAuditAccess();
+    if (!admin) return { success: false, error: "Unauthorized" };
+
+    try {
+        // Fetch from all 3 collections
+        // 1. Events
+        const eventSignups = await directus.request(readItems('event_signups', {
+            fields: ['id', 'date_created', 'participant_name', 'participant_email', 'approval_status', 'payment_status', { event_id: ['name'] }],
+            filter: { approval_status: { _eq: 'pending' } },
+            sort: ['-date_created']
+        }));
+
+        // 2. Pub Crawl
+        const pubCrawlSignups = await directus.request(readItems('pub_crawl_signups', {
+            fields: ['id', 'date_created', 'name', 'email', 'approval_status', 'payment_status', { pub_crawl_event_id: ['name'] }],
+            filter: { approval_status: { _eq: 'pending' } },
+            sort: ['-date_created']
+        }));
+
+        // 3. Trips
+        const tripSignups = await directus.request(readItems('trip_signups', {
+            fields: ['id', 'date_created', 'first_name', 'last_name', 'email', 'approval_status', 'payment_status', { trip_id: ['name'] }],
+            filter: { approval_status: { _eq: 'pending' } },
+            sort: ['-date_created']
+        }));
+
+        // Aggregate and map
+        const aggregated: PendingSignup[] = [
+            ...eventSignups.map(s => ({
+                id: s.id.toString(),
+                created_at: s.date_created,
+                email: s.participant_email,
+                first_name: s.participant_name.split(' ')[0],
+                last_name: s.participant_name.split(' ').slice(1).join(' '),
+                product_name: s.event_id?.name || 'Onbekend Event',
+                amount: 0, // In V7 prices are on the event, not the signup
+                approval_status: s.approval_status as any,
+                payment_status: s.payment_status,
+                type: 'event' as const
+            })),
+            ...pubCrawlSignups.map(s => ({
+                id: s.id.toString(),
+                created_at: s.date_created,
+                email: s.email,
+                first_name: s.name.split(' ')[0],
+                last_name: s.name.split(' ').slice(1).join(' '),
+                product_name: s.pub_crawl_event_id?.name || 'Kroegentocht',
+                amount: 0,
+                approval_status: s.approval_status as any,
+                payment_status: s.payment_status,
+                type: 'pub_crawl' as const
+            })),
+            ...tripSignups.map(s => ({
+                id: s.id.toString(),
+                created_at: s.date_created,
+                email: s.email,
+                first_name: s.first_name,
+                last_name: s.last_name,
+                product_name: s.trip_id?.name || 'Studiereis',
+                amount: 0,
+                approval_status: s.approval_status as any,
+                payment_status: s.payment_status,
+                type: 'trip' as const
+            }))
+        ];
+
+        return { success: true, data: aggregated.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) };
+    } catch (err) {
+        console.error("[AuditAction] Fetch error:", err);
+        return { success: false, error: "Kon inschrijvingen niet ophalen." };
+    }
+}
+
+export async function approveSignupAction(id: string, type: string) {
+    const admin = await checkAuditAccess();
+    if (!admin) return { success: false, error: "Unauthorized" };
+
+    const collection = type === 'event' ? 'event_signups' : type === 'pub_crawl' ? 'pub_crawl_signups' : 'trip_signups';
+
+    try {
+        await directus.request(updateItem(collection, id, { approval_status: 'approved' }));
+        revalidatePath('/beheer/logging');
+        return { success: true };
+    } catch (err) {
+        console.error("[AuditAction] Approve error:", err);
+        return { success: false, error: "Goedkeuren mislukt." };
+    }
+}
+
+export async function rejectSignupAction(id: string, type: string) {
+    const admin = await checkAuditAccess();
+    if (!admin) return { success: false, error: "Unauthorized" };
+
+    const collection = type === 'event' ? 'event_signups' : type === 'pub_crawl' ? 'pub_crawl_signups' : 'trip_signups';
+
+    try {
+        await directus.request(updateItem(collection, id, { approval_status: 'rejected' }));
+        revalidatePath('/beheer/logging');
+        return { success: true };
+    } catch (err) {
+        console.error("[AuditAction] Reject error:", err);
+        return { success: false, error: "Afwijzen mislukt." };
+    }
+}
+
+export async function getAuditSettingsAction() {
+    const admin = await checkAuditAccess();
+    if (!admin) return { success: false, error: "Unauthorized" };
+
+    try {
+        // App settings is often a singleton or a specific collection
+        // Based on ERD, it's a "NIEUW" table. Assuming it's a singleton called 'app_settings'
+        const settings = await directus.request(readSingleton('app_settings')).catch(() => ({ manual_approval: false }));
+        return { success: true, data: settings };
+    } catch {
+        return { success: true, data: { manual_approval: false } };
+    }
+}
+
+export async function updateAuditSettingsAction(manualApproval: boolean) {
+    const admin = await checkAuditAccess();
+    if (!admin) return { success: false, error: "Unauthorized" };
+
+    try {
+        // Assuming singleton update
+        await directus.request(updateItem('app_settings', undefined as any, { manual_approval: manualApproval }));
+        revalidateTag('app_settings', 'default');
+        return { success: true };
+    } catch (err) {
+        console.error("[AuditAction] Settings update error:", err);
+        return { success: false, error: "Bijwerken instellingen mislukt." };
+    }
+}
