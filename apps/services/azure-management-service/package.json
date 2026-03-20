@@ -5,14 +5,14 @@
   "type": "module",
   "description": "Administrative gateway for Azure AD writes (Provisioning)",
   "scripts": {
-    "dev": "fastify start -w -l info src/server.ts",
+    "dev": "fastify start -w -a 0.0.0.0 -l info src/server.ts",
     "build": "tsc"
   },
   "dependencies": {
     "fastify": "5.1.0",
     "dotenv": "^17.3.1",
     "@microsoft/microsoft-graph-client": "^3.0.7",
-    "@azure/identity": "^4.5.0",
+    "@azure/identity": "^4.13.0",
     "isomorphic-fetch": "^3.0.0",
     "@salvemundi/validations": "workspace:*"
   },

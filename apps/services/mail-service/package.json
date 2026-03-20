@@ -4,7 +4,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "dev": "fastify start -w -l info src/server.ts",
+        "dev": "fastify start -w -a 0.0.0.0 -l info src/server.ts",
         "build": "tsc && node -e \"require('fs').cpSync('src/templates', 'dist/templates', {recursive: true})\""
     },
     "dependencies": {
