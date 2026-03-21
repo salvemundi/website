@@ -30,6 +30,7 @@ services:
       - DB_NAME=${DB_NAME}
       - DB_HOST=v7-core-db
       - REDIS_URL=redis://v7-core-redis:6379
+      - NEXT_APP_INTERNAL_URL=http://localhost:3000
       - TRUST_PROXY=true
       - HOSTNAME=0.0.0.0
     volumes:
