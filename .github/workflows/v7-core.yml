@@ -13,6 +13,9 @@ on:
 permissions:
   contents: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   deploy-core:
     runs-on: ubuntu-latest
@@ -63,25 +66,14 @@ jobs:
           script: |
             cd /opt/salve-mundi-v7/infra
             
-            # 2. Expliciete .env generatie (POSIX compliant, werkt altijd)
+            # 2. Expliciete .env generatie (hufterproof)
             echo "# Auto-generated V7 Core Environment" > .env
             
-            printf "INTERNAL_SERVER_IP=\"%s\"\n" "$(echo "$INTERNAL_SERVER_IP" | tr -d '\n\r')" >> .env
-            printf "DB_USER=\"%s\"\n" "$(echo "$DB_USER" | tr -d '\n\r')" >> .env
-            printf "DB_PASSWORD=\"%s\"\n" "$(echo "$DB_PASSWORD" | tr -d '\n\r')" >> .env
-            printf "DB_NAME=\"%s\"\n" "$(echo "$DB_NAME" | tr -d '\n\r')" >> .env
-            printf "DIRECTUS_KEY=\"%s\"\n" "$(echo "$DIRECTUS_KEY" | tr -d '\n\r')" >> .env
-            printf "DIRECTUS_SECRET=\"%s\"\n" "$(echo "$DIRECTUS_SECRET" | tr -d '\n\r')" >> .env
-            printf "AZURE_WEBSITEV7_TENANT_ID=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_TENANT_ID" | tr -d '\n\r')" >> .env
-            printf "AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID" | tr -d '\n\r')" >> .env
-            printf "AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET" | tr -d '\n\r')" >> .env
-            printf "DIRECTUS_ALLOWED_REDIRECTS=\"%s\"\n" "$(echo "$DIRECTUS_ALLOWED_REDIRECTS" | tr -d '\n\r')" >> .env
-            printf "DIRECTUS_STATIC_TOKEN=\"%s\"\n" "$(echo "$DIRECTUS_STATIC_TOKEN" | tr -d '\n\r')" >> .env
-            
-            # Handmatige URL's
-            printf "PUBLIC_URL=\"%s\"\n" "$DOMAIN_URL" >> .env
-            printf "CORS_ORIGIN=\"%s\"\n" "$DOMAIN_URL" >> .env
-            printf "INTERNAL_DIRECTUS_URL=\"%s\"\n" "$INTERNAL_DIRECTUS_URL" >> .env
+            echo "PUBLIC_URL=${DOMAIN_URL}" >> .env
+            echo "CORS_ORIGIN=${DOMAIN_URL}" >> .env
+            echo "INTERNAL_DIRECTUS_URL=${INTERNAL_DIRECTUS_URL}" >> .env
+
+            env | grep -E '^(INTERNAL_SERVER_IP|DB_USER|DB_PASSWORD|DB_NAME|DIRECTUS_KEY|DIRECTUS_SECRET|AZURE_WEBSITEV7_[A-Z_]+|DIRECTUS_ALLOWED_REDIRECTS|DIRECTUS_STATIC_TOKEN)=' >> .env
 
             # 3. Start de infra
             docker network create salve-mundi-v7-shared || true

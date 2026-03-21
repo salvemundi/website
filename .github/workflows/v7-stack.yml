@@ -15,6 +15,9 @@ permissions:
   contents: read
   packages: write
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   # Hulpservice om de juiste Docker tag te bepalen (branchnaam)
   prepare:
