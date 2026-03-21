@@ -149,33 +149,18 @@ jobs:
 
             # Expliciete .env generatie (hufterproof)
             echo "# Auto-generated V7 App Environment" > .env
-            printf "MOLLIE_API_KEY=\"%s\"\n" "$(echo "$MOLLIE_API_KEY" | tr -d '\n\r')" >> .env
-            printf "DB_USER=\"%s\"\n" "$(echo "$DB_USER" | tr -d '\n\r')" >> .env
-            printf "DB_PASSWORD=\"%s\"\n" "$(echo "$DB_PASSWORD" | tr -d '\n\r')" >> .env
-            printf "DB_NAME=\"%s\"\n" "$(echo "$DB_NAME" | tr -d '\n\r')" >> .env
-            printf "DIRECTUS_KEY=\"%s\"\n" "$(echo "$DIRECTUS_KEY" | tr -d '\n\r')" >> .env
-            printf "DIRECTUS_SECRET=\"%s\"\n" "$(echo "$DIRECTUS_SECRET" | tr -d '\n\r')" >> .env
-            printf "INTERNAL_SERVICE_TOKEN=\"%s\"\n" "$(echo "$INTERNAL_SERVICE_TOKEN" | tr -d '\n\r')" >> .env
-            printf "AZURE_WEBSITEV7_TENANT_ID=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_TENANT_ID" | tr -d '\n\r')" >> .env
-            printf "AZURE_WEBSITEV7_SYNC_CLIENT_ID=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_SYNC_CLIENT_ID" | tr -d '\n\r')" >> .env
-            printf "AZURE_WEBSITEV7_SYNC_CLIENT_SECRET=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_SYNC_CLIENT_SECRET" | tr -d '\n\r')" >> .env
-            printf "AZURE_WEBSITEV7_MAIL_CLIENT_ID=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_MAIL_CLIENT_ID" | tr -d '\n\r')" >> .env
-            printf "AZURE_WEBSITEV7_MAIL_CLIENT_SECRET=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_MAIL_CLIENT_SECRET" | tr -d '\n\r')" >> .env
-            printf "AZURE_MAIL_SENDER=\"%s\"\n" "$(echo "$AZURE_MAIL_SENDER" | tr -d '\n\r')" >> .env
-            printf "AZURE_WEBSITEV7_AUTH_CLIENT_ID=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_AUTH_CLIENT_ID" | tr -d '\n\r')" >> .env
-            printf "AZURE_WEBSITEV7_AUTH_CLIENT_SECRET=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_AUTH_CLIENT_SECRET" | tr -d '\n\r')" >> .env
-            printf "AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID" | tr -d '\n\r')" >> .env
-            printf "AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET" | tr -d '\n\r')" >> .env
-            printf "BETTER_AUTH_SECRET=\"%s\"\n" "$(echo "$BETTER_AUTH_SECRET" | tr -d '\n\r')" >> .env
-            printf "DIRECTUS_STATIC_TOKEN=\"%s\"\n" "$(echo "$DIRECTUS_STATIC_TOKEN" | tr -d '\n\r')" >> .env
-            printf "BETTER_AUTH_URL=\"%s\"\n" "$BETTER_AUTH_URL" >> .env
-            printf "PUBLIC_URL=\"%s\"\n" "$PUBLIC_URL" >> .env
-            printf "IMAGE_TAG=\"%s\"\n" "${{ needs.prepare.outputs.tag }}" >> .env
-            printf "FRONTEND_PORT=\"%s\"\n" "$FRONTEND_PORT" >> .env
-            printf "COMPOSE_PROJECT_NAME=\"v7-$ENV_NAME\"\n" >> .env
-            printf "TRUST_PROXY=\"true\"\n" >> .env
-            printf "REDIS_URL=\"redis://v7-core-redis:6379\"\n" >> .env
-            printf "INTERNAL_DIRECTUS_URL=\"http://v7-core-directus:8055\"\n" >> .env
+            
+            echo "IMAGE_TAG=${{ needs.prepare.outputs.tag }}" >> .env
+            echo "PUBLIC_URL=${PUBLIC_URL}" >> .env
+            echo "BETTER_AUTH_URL=${BETTER_AUTH_URL}" >> .env
+            echo "FRONTEND_PORT=${FRONTEND_PORT}" >> .env
+            echo "COMPOSE_PROJECT_NAME=v7-${ENV_NAME}" >> .env
+            echo "TRUST_PROXY=true" >> .env
+            echo "REDIS_URL=redis://v7-core-redis:6379" >> .env
+            echo "INTERNAL_DIRECTUS_URL=http://v7-core-directus:8055" >> .env
+
+            # Veilig afdrukken van ruwe secrets uit de active shell environment zonder format strings
+            env | grep -E '^(MOLLIE_API_KEY|DB_USER|DB_PASSWORD|DB_NAME|DIRECTUS_KEY|DIRECTUS_SECRET|INTERNAL_SERVICE_TOKEN|AZURE_WEBSITEV7_[A-Z_]+|AZURE_MAIL_SENDER|BETTER_AUTH_SECRET|DIRECTUS_STATIC_TOKEN)=' >> .env
 
             # Login en start
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
