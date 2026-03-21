@@ -4,8 +4,10 @@ const nextConfig: NextConfig = {
     output: 'standalone',
     // Uitgeschakeld vanwege instabiliteit op Acceptance (Eternal Skeletons)
     // cacheComponents: true,
+    productionBrowserSourceMaps: true,
     experimental: {
         ppr: false,
+        serverSourceMaps: true,
     },
     images: {
         remotePatterns: [

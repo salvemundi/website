@@ -12,9 +12,9 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
         hooks: {
             before: [
                 {
-                    matcher: (ctx) => ctx.path?.includes("get-session"),
+                    matcher: (ctx) => ctx?.path?.includes("get-session"),
                     handler: async (ctx) => {
-                        const requestHeaders = new Headers(ctx.headers || {});
+                        const requestHeaders = new Headers(ctx?.headers || {});
                         const token = requestHeaders.get("authorization")?.split(" ")[1] ||
                             requestHeaders.get("cookie")?.split("better-auth.session-token=")[1]?.split(";")[0];
 
@@ -38,10 +38,10 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
             ],
             after: [
                 {
-                    matcher: (ctx) => ctx.path?.includes("get-session"),
+                    matcher: (ctx) => ctx?.path?.includes("get-session"),
                     handler: async (ctx) => {
-                        const requestHeaders = new Headers(ctx.headers || {});
-                        const session = (ctx as any).context?.returned || (ctx as any).response || (ctx as any).json || (ctx as any).body;
+                        const requestHeaders = new Headers(ctx?.headers || {});
+                        const session = (ctx as any)?.context?.returned || (ctx as any)?.response || (ctx as any)?.json || (ctx as any)?.body;
                         const token = requestHeaders.get("authorization")?.split(" ")[1] ||
                             requestHeaders.get("cookie")?.split("better-auth.session-token=")[1]?.split(";")[0];
 
